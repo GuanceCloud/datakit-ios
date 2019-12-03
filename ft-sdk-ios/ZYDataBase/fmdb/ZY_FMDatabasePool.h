@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class FMDatabase;
+@class ZY_FMDatabase;
 
 /** Pool of `<FMDatabase>` objects.
 
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
  in the main.m file.
  */
 
-@interface FMDatabasePool : NSObject
+@interface ZY_FMDatabasePool : NSObject
 
 /** Database path */
 
@@ -196,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block;
+- (void)inDatabase:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db))block;
 
 /** Synchronously perform database operations in pool using transaction.
  
@@ -211,28 +211,28 @@ NS_ASSUME_NONNULL_BEGIN
             to make your intent explicit, but also to future-proof your code.
   */
 
-- (void)inTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using exclusive transaction.
  
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inExclusiveTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inExclusiveTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using deferred transaction.
 
  @param block The code to be run on the `FMDatabasePool` pool.
  */
 
-- (void)inDeferredTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inDeferredTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations on queue, using immediate transactions.
 
  @param block The code to be run on the queue of `FMDatabaseQueue`
  */
 
-- (void)inImmediateTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inImmediateTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using save point.
 
@@ -243,7 +243,7 @@ NS_ASSUME_NONNULL_BEGIN
  @warning You can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock. If you need to nest, use `<[FMDatabase startSavePointWithName:error:]>` instead.
 */
 
-- (NSError * _Nullable)inSavePoint:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block;
+- (NSError * _Nullable)inSavePoint:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block;
 
 @end
 
@@ -253,7 +253,7 @@ NS_ASSUME_NONNULL_BEGIN
  This is a category that defines the protocol for the FMDatabasePool delegate
  */
 
-@interface NSObject (FMDatabasePoolDelegate)
+@interface NSObject (ZY_FMDatabasePoolDelegate)
 
 /** Asks the delegate whether database should be added to the pool. 
  
@@ -264,7 +264,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  */
 
-- (BOOL)databasePool:(FMDatabasePool*)pool shouldAddDatabaseToPool:(FMDatabase*)database;
+- (BOOL)databasePool:(ZY_FMDatabasePool*)pool shouldAddDatabaseToPool:(ZY_FMDatabase*)database;
 
 /** Tells the delegate that database was added to the pool.
  
@@ -273,7 +273,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  */
 
-- (void)databasePool:(FMDatabasePool*)pool didAddDatabase:(FMDatabase*)database;
+- (void)databasePool:(ZY_FMDatabasePool*)pool didAddDatabase:(ZY_FMDatabase*)database;
 
 @end
 

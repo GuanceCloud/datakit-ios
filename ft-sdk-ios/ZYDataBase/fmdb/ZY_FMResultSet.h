@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 #endif
 
-@class FMDatabase;
-@class FMStatement;
+@class ZY_FMDatabase;
+@class ZY_FMStatement;
 
 /** Represents the results of executing a query on an `<FMDatabase>`.
  
@@ -24,9 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
  - `<FMDatabase>`
  */
 
-@interface FMResultSet : NSObject
+@interface ZY_FMResultSet : NSObject
 
-@property (nonatomic, retain, nullable) FMDatabase *parentDB;
+@property (nonatomic, retain, nullable) ZY_FMDatabase *parentDB;
 
 ///-----------------
 /// @name Properties
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** `FMStatement` used by result set. */
 
-@property (atomic, retain, nullable) FMStatement *statement;
+@property (atomic, retain, nullable) ZY_FMStatement *statement;
 
 ///------------------------------------
 /// @name Creating and closing a result set
@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
  @return A `FMResultSet` on success; `nil` on failure
  */
 
-+ (instancetype)resultSetWithStatement:(FMStatement *)statement usingParentDatabase:(FMDatabase*)aDB;
++ (instancetype)resultSetWithStatement:(ZY_FMStatement *)statement usingParentDatabase:(ZY_FMDatabase*)aDB;
 
 /** Close result set */
 

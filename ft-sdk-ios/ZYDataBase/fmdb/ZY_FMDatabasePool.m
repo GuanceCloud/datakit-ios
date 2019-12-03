@@ -6,35 +6,35 @@
 //  Copyright 2011 Flying Meat Inc. All rights reserved.
 //
 
-#if FMDB_SQLITE_STANDALONE
+#if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
 #import <sqlite3.h>
 #endif
 
-#import "FMDatabasePool.h"
-#import "FMDatabase.h"
+#import "ZY_FMDatabasePool.h"
+#import "ZY_FMDatabase.h"
 
-typedef NS_ENUM(NSInteger, FMDBTransaction) {
-    FMDBTransactionExclusive,
-    FMDBTransactionDeferred,
-    FMDBTransactionImmediate,
+typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
+    ZY_FMDBTransactionExclusive,
+    ZY_FMDBTransactionDeferred,
+    ZY_FMDBTransactionImmediate,
 };
 
-@interface FMDatabasePool () {
+@interface ZY_FMDatabasePool () {
     dispatch_queue_t    _lockQueue;
     
     NSMutableArray      *_databaseInPool;
     NSMutableArray      *_databaseOutPool;
 }
 
-- (void)pushDatabaseBackInPool:(FMDatabase*)db;
-- (FMDatabase*)db;
+- (void)pushDatabaseBackInPool:(ZY_FMDatabase*)db;
+- (ZY_FMDatabase*)db;
 
 @end
 
 
-@implementation FMDatabasePool
+@implementation ZY_FMDatabasePool
 @synthesize path=_path;
 @synthesize delegate=_delegate;
 @synthesize maximumNumberOfDatabasesToCreate=_maximumNumberOfDatabasesToCreate;
@@ -42,19 +42,19 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
 
 
 + (instancetype)databasePoolWithPath:(NSString *)aPath {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
+    return ZY_FMDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
 }
 
 + (instancetype)databasePoolWithURL:(NSURL *)url {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:url.path]);
+    return ZY_FMDBReturnAutoreleased([[self alloc] initWithPath:url.path]);
 }
 
 + (instancetype)databasePoolWithPath:(NSString *)aPath flags:(int)openFlags {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath flags:openFlags]);
+    return ZY_FMDBReturnAutoreleased([[self alloc] initWithPath:aPath flags:openFlags]);
 }
 
 + (instancetype)databasePoolWithURL:(NSURL *)url flags:(int)openFlags {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:url.path flags:openFlags]);
+    return ZY_FMDBReturnAutoreleased([[self alloc] initWithPath:url.path flags:openFlags]);
 }
 
 - (instancetype)initWithURL:(NSURL *)url flags:(int)openFlags vfs:(NSString *)vfsName {
@@ -68,8 +68,8 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     if (self != nil) {
         _path               = [aPath copy];
         _lockQueue          = dispatch_queue_create([[NSString stringWithFormat:@"fmdb.%@", self] UTF8String], NULL);
-        _databaseInPool     = FMDBReturnRetained([NSMutableArray array]);
-        _databaseOutPool    = FMDBReturnRetained([NSMutableArray array]);
+        _databaseInPool     = ZY_FMDBReturnRetained([NSMutableArray array]);
+        _databaseOutPool    = ZY_FMDBReturnRetained([NSMutableArray array]);
         _openFlags          = openFlags;
         _vfsName            = [vfsName copy];
     }
@@ -99,19 +99,19 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
 }
 
 + (Class)databaseClass {
-    return [FMDatabase class];
+    return [ZY_FMDatabase class];
 }
 
 - (void)dealloc {
     
     _delegate = 0x00;
-    FMDBRelease(_path);
-    FMDBRelease(_databaseInPool);
-    FMDBRelease(_databaseOutPool);
-    FMDBRelease(_vfsName);
+    ZY_FMDBRelease(_path);
+    ZY_FMDBRelease(_databaseInPool);
+    ZY_FMDBRelease(_databaseOutPool);
+    ZY_FMDBRelease(_vfsName);
     
     if (_lockQueue) {
-        FMDBDispatchQueueRelease(_lockQueue);
+        ZY_FMDBDispatchQueueRelease(_lockQueue);
         _lockQueue = 0x00;
     }
 #if ! __has_feature(objc_arc)
@@ -124,7 +124,7 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     dispatch_sync(_lockQueue, aBlock);
 }
 
-- (void)pushDatabaseBackInPool:(FMDatabase*)db {
+- (void)pushDatabaseBackInPool:(ZY_FMDatabase*)db {
     
     if (!db) { // db can be null if we set an upper bound on the # of databases to create.
         return;
@@ -142,9 +142,9 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     }];
 }
 
-- (FMDatabase*)db {
+- (ZY_FMDatabase*)db {
     
-    __block FMDatabase *db;
+    __block ZY_FMDatabase *db;
     
     
     [self executeLocked:^() {
@@ -241,29 +241,29 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     }];
 }
 
-- (void)inDatabase:(__attribute__((noescape)) void (^)(FMDatabase *db))block {
+- (void)inDatabase:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db))block {
     
-    FMDatabase *db = [self db];
+    ZY_FMDatabase *db = [self db];
     
     block(db);
     
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)beginTransaction:(FMDBTransaction)transaction withBlock:(void (^)(FMDatabase *db, BOOL *rollback))block {
+- (void)beginTransaction:(ZY_FMDBTransaction)transaction withBlock:(void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
     
     BOOL shouldRollback = NO;
     
-    FMDatabase *db = [self db];
+    ZY_FMDatabase *db = [self db];
     
     switch (transaction) {
-        case FMDBTransactionExclusive:
+        case ZY_FMDBTransactionExclusive:
             [db beginTransaction];
             break;
-        case FMDBTransactionDeferred:
+        case ZY_FMDBTransactionDeferred:
             [db beginDeferredTransaction];
             break;
-        case FMDBTransactionImmediate:
+        case ZY_FMDBTransactionImmediate:
             [db beginImmediateTransaction];
             break;
     }
@@ -281,23 +281,23 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)inTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block {
-    [self beginTransaction:FMDBTransactionExclusive withBlock:block];
+- (void)inTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
+    [self beginTransaction:ZY_FMDBTransactionExclusive withBlock:block];
 }
 
-- (void)inDeferredTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block {
-    [self beginTransaction:FMDBTransactionDeferred withBlock:block];
+- (void)inDeferredTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
+    [self beginTransaction:ZY_FMDBTransactionDeferred withBlock:block];
 }
 
-- (void)inExclusiveTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block {
-    [self beginTransaction:FMDBTransactionExclusive withBlock:block];
+- (void)inExclusiveTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
+    [self beginTransaction:ZY_FMDBTransactionExclusive withBlock:block];
 }
 
-- (void)inImmediateTransaction:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block {
-    [self beginTransaction:FMDBTransactionImmediate withBlock:block];
+- (void)inImmediateTransaction:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
+    [self beginTransaction:ZY_FMDBTransactionImmediate withBlock:block];
 }
 
-- (NSError*)inSavePoint:(__attribute__((noescape)) void (^)(FMDatabase *db, BOOL *rollback))block {
+- (NSError*)inSavePoint:(__attribute__((noescape)) void (^)(ZY_FMDatabase *db, BOOL *rollback))block {
 #if SQLITE_VERSION_NUMBER >= 3007000
     static unsigned long savePointIdx = 0;
     
@@ -305,7 +305,7 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     
     BOOL shouldRollback = NO;
     
-    FMDatabase *db = [self db];
+    ZY_FMDatabase *db = [self db];
     
     NSError *err = 0x00;
     
@@ -326,9 +326,9 @@ typedef NS_ENUM(NSInteger, FMDBTransaction) {
     
     return err;
 #else
-    NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"FMDB", nil);
+    NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
-    return [NSError errorWithDomain:@"FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
+    return [NSError errorWithDomain:@"ZY_FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
 #endif
 }
 

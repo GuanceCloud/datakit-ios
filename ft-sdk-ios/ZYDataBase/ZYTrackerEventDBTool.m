@@ -8,18 +8,19 @@
 
 #import "ZYTrackerEventDBTool.h"
 #import "RecordModel.h"
+#import "ZYLog.h"
 @interface ZYTrackerEventDBTool ()
 @property (nonatomic, strong)NSString *dbPath;
-@property (nonatomic, strong)FMDatabaseQueue *dbQueue;
-@property (nonatomic, strong)FMDatabase *db;
+@property (nonatomic, strong)ZY_FMDatabaseQueue *dbQueue;
+@property (nonatomic, strong)ZY_FMDatabase *db;
 
 @end
 @implementation ZYTrackerEventDBTool
 static ZYTrackerEventDBTool *dbTool = nil;
-- (FMDatabaseQueue *)dbQueue
+- (ZY_FMDatabaseQueue *)dbQueue
 {
     if (!_dbQueue) {
-        FMDatabaseQueue *fmdb = [FMDatabaseQueue databaseQueueWithPath:_dbPath];
+        ZY_FMDatabaseQueue *fmdb = [ZY_FMDatabaseQueue databaseQueueWithPath:_dbPath];
         self.dbQueue = fmdb;
         [_db close];
         self.db = [fmdb valueForKey:@"_db"];
@@ -30,7 +31,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 + (instancetype)sharedManger {
     if (!dbTool) {
         NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"ZYFMDB.sqlite"];
-        FMDatabase *fmdb = [FMDatabase databaseWithPath:path];
+        ZY_FMDatabase *fmdb = [ZY_FMDatabase databaseWithPath:path];
         if ([fmdb open]) {
             dbTool = ZYTrackerEventDBTool.new;
             dbTool.db = fmdb;
@@ -38,7 +39,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
         }
     }
     if (![dbTool.db open]) {
-        NSLog(@"database can not open !");
+        ZYDebug(@"database can not open !");
         return nil;
     };
     return dbTool;
@@ -90,7 +91,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY _id DESC ;",ZY_DB_BASELOG_TABLE_NAME];
 
-    FMResultSet*set = [self.db executeQuery:sql];
+    ZY_FMResultSet*set = [self.db executeQuery:sql];
         NSMutableArray *array = [NSMutableArray new];
     while(set.next) {
 
@@ -122,7 +123,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 {
     [_db close];
 }
--(BOOL)isOpenDatabese:(FMDatabase *)db{
+-(BOOL)isOpenDatabese:(ZY_FMDatabase *)db{
     if (![db open]) {
         [db open];
     }
@@ -130,7 +131,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 }
 - (BOOL)zy_isExistTable:(NSString *)tableName
 {
-    FMResultSet *set = [_db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
+    ZY_FMResultSet *set = [_db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
                                          "WHERE type ='table' and name = ?", tableName];
 
     NSInteger count = 0;
@@ -143,7 +144,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 - (void)zy_inDatabase:(void(^)(void))block
 {
 
-    [[self dbQueue] inDatabase:^(FMDatabase *db) {
+    [[self dbQueue] inDatabase:^(ZY_FMDatabase *db) {
         block();
     }];
 }
@@ -151,7 +152,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 - (void)zy_inTransaction:(void(^)(BOOL *rollback))block
 {
 
-    [[self dbQueue] inTransaction:^(FMDatabase *db, BOOL *rollback) {
+    [[self dbQueue] inTransaction:^(ZY_FMDatabase *db, BOOL *rollback) {
         block(rollback);
     }];
 

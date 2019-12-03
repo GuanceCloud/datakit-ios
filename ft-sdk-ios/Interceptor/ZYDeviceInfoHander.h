@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZYDeviceInfoHander : NSObject
 + (NSString *)getDeviceType;
 + (NSString *)getTelephonyInfo;
-+ (NSString *)getCarrierInfo;
+//+ (NSString *)getCarrierInfo;
 + (NSString *)resolution;
 @end
 

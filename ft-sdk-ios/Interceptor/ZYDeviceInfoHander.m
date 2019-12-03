@@ -7,6 +7,7 @@
 //
 
 #import "ZYDeviceInfoHander.h"
+#import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>

@@ -1,36 +1,36 @@
 #import <Foundation/Foundation.h>
-#import "FMResultSet.h"
-#import "FMDatabasePool.h"
+#import "ZY_FMResultSet.h"
+#import "ZY_FMDatabasePool.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 #if ! __has_feature(objc_arc)
-    #define FMDBAutorelease(__v) ([__v autorelease]);
-    #define FMDBReturnAutoreleased FMDBAutorelease
+    #define ZY_FMDBAutorelease(__v) ([__v autorelease]);
+    #define ZY_FMDBReturnAutoreleased ZY_FMDBAutorelease
 
-    #define FMDBRetain(__v) ([__v retain]);
-    #define FMDBReturnRetained FMDBRetain
+    #define ZY_FMDBRetain(__v) ([__v retain]);
+    #define ZY_FMDBReturnRetained ZY_FMDBRetain
 
-    #define FMDBRelease(__v) ([__v release]);
+    #define ZY_FMDBRelease(__v) ([__v release]);
 
-    #define FMDBDispatchQueueRelease(__v) (dispatch_release(__v));
+    #define ZY_FMDBDispatchQueueRelease(__v) (dispatch_release(__v));
 #else
     // -fobjc-arc
-    #define FMDBAutorelease(__v)
-    #define FMDBReturnAutoreleased(__v) (__v)
+    #define ZY_FMDBAutorelease(__v)
+    #define ZY_FMDBReturnAutoreleased(__v) (__v)
 
-    #define FMDBRetain(__v)
-    #define FMDBReturnRetained(__v) (__v)
+    #define ZY_FMDBRetain(__v)
+    #define ZY_FMDBReturnRetained(__v) (__v)
 
-    #define FMDBRelease(__v)
+    #define ZY_FMDBRelease(__v)
 
 // If OS_OBJECT_USE_OBJC=1, then the dispatch objects will be treated like ObjC objects
 // and will participate in ARC.
 // See the section on "Dispatch Queues and Automatic Reference Counting" in "Grand Central Dispatch (GCD) Reference" for details. 
     #if OS_OBJECT_USE_OBJC
-        #define FMDBDispatchQueueRelease(__v)
+        #define ZY_FMDBDispatchQueueRelease(__v)
     #else
-        #define FMDBDispatchQueueRelease(__v) (dispatch_release(__v));
+        #define ZY_FMDBDispatchQueueRelease(__v) (dispatch_release(__v));
     #endif
 #endif
 
@@ -39,13 +39,13 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 
-typedef int(^FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary);
+typedef int(^ZY_FMDBExecuteStatementsCallbackBlock)(NSDictionary *resultsDictionary);
 
-typedef NS_ENUM(int, FMDBCheckpointMode) {
-    FMDBCheckpointModePassive  = 0, // SQLITE_CHECKPOINT_PASSIVE,
-    FMDBCheckpointModeFull     = 1, // SQLITE_CHECKPOINT_FULL,
-    FMDBCheckpointModeRestart  = 2, // SQLITE_CHECKPOINT_RESTART,
-    FMDBCheckpointModeTruncate = 3  // SQLITE_CHECKPOINT_TRUNCATE
+typedef NS_ENUM(int, ZY_FMDBCheckpointMode) {
+    ZY_FMDBCheckpointModePassive  = 0, // SQLITE_CHECKPOINT_PASSIVE,
+    ZY_FMDBCheckpointModeFull     = 1, // SQLITE_CHECKPOINT_FULL,
+    ZY_FMDBCheckpointModeRestart  = 2, // SQLITE_CHECKPOINT_RESTART,
+    ZY_FMDBCheckpointModeTruncate = 3  // SQLITE_CHECKPOINT_TRUNCATE
 };
 
 /** A SQLite ([http://sqlite.org/](http://sqlite.org/)) Objective-C wrapper.
@@ -77,7 +77,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 #pragma clang diagnostic ignored "-Wobjc-interface-ivars"
 
 
-@interface FMDatabase : NSObject
+@interface ZY_FMDatabase : NSObject
 
 ///-----------------
 /// @name Properties
@@ -521,7 +521,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
  */
 
-- (BOOL)executeStatements:(NSString *)sql withResultBlock:(__attribute__((noescape)) FMDBExecuteStatementsCallbackBlock _Nullable)block;
+- (BOOL)executeStatements:(NSString *)sql withResultBlock:(__attribute__((noescape)) ZY_FMDBExecuteStatementsCallbackBlock _Nullable)block;
 
 /** Last insert rowid
  
@@ -575,7 +575,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @note You cannot use this method from Swift due to incompatibilities between Swift and Objective-C variadic implementations. Consider using `<executeQuery:values:>` instead.
  */
 
-- (FMResultSet * _Nullable)executeQuery:(NSString*)sql, ...;
+- (ZY_FMResultSet * _Nullable)executeQuery:(NSString*)sql, ...;
 
 /** Execute select statement
 
@@ -605,7 +605,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  
  */
 
-- (FMResultSet * _Nullable)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
+- (ZY_FMResultSet * _Nullable)executeQueryWithFormat:(NSString*)format, ... NS_FORMAT_FUNCTION(1,2);
 
 /** Execute select statement
 
@@ -624,7 +624,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @see [`FMResultSet next`](<[FMResultSet next]>)
  */
 
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
+- (ZY_FMResultSet * _Nullable)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray *)arguments;
 
 /** Execute select statement
  
@@ -653,7 +653,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 
  */
 
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql values:(NSArray * _Nullable)values error:(NSError * _Nullable __autoreleasing *)error;
+- (ZY_FMResultSet * _Nullable)executeQuery:(NSString *)sql values:(NSArray * _Nullable)values error:(NSError * _Nullable __autoreleasing *)error;
 
 /** Execute select statement
 
@@ -671,11 +671,11 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @see [`FMResultSet next`](<[FMResultSet next]>)
  */
 
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary * _Nullable)arguments;
+- (ZY_FMResultSet * _Nullable)executeQuery:(NSString *)sql withParameterDictionary:(NSDictionary * _Nullable)arguments;
 
 
 // Documentation forthcoming.
-- (FMResultSet * _Nullable)executeQuery:(NSString *)sql withVAList:(va_list)args;
+- (ZY_FMResultSet * _Nullable)executeQuery:(NSString *)sql withVAList:(va_list)args;
 
 ///-------------------
 /// @name Transactions
@@ -1041,7 +1041,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @param error The NSError corresponding to the error, if any.
  @return YES on success, otherwise NO.
  */
-- (BOOL)checkpoint:(FMDBCheckpointMode)checkpointMode error:(NSError * _Nullable *)error;
+- (BOOL)checkpoint:(ZY_FMDBCheckpointMode)checkpointMode error:(NSError * _Nullable *)error;
 
 /** Performs a WAL checkpoint
  
@@ -1050,7 +1050,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @param error The NSError corresponding to the error, if any.
  @return YES on success, otherwise NO.
  */
-- (BOOL)checkpoint:(FMDBCheckpointMode)checkpointMode name:(NSString * _Nullable)name error:(NSError * _Nullable *)error;
+- (BOOL)checkpoint:(ZY_FMDBCheckpointMode)checkpointMode name:(NSString * _Nullable)name error:(NSError * _Nullable *)error;
 
 /** Performs a WAL checkpoint
  
@@ -1061,7 +1061,7 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
  @param checkpointCount If not NULL, then this is set to the total number of checkpointed frames in the log file (including any that were already checkpointed before the function was called) or to -1 if the checkpoint could not run due to an error or because the database is not in WAL mode.
  @return YES on success, otherwise NO.
  */
-- (BOOL)checkpoint:(FMDBCheckpointMode)checkpointMode name:(NSString * _Nullable)name logFrameCount:(int * _Nullable)logFrameCount checkpointCount:(int * _Nullable)checkpointCount error:(NSError * _Nullable *)error;
+- (BOOL)checkpoint:(ZY_FMDBCheckpointMode)checkpointMode name:(NSString * _Nullable)name logFrameCount:(int * _Nullable)logFrameCount checkpointCount:(int * _Nullable)checkpointCount error:(NSError * _Nullable *)error;
 
 ///----------------------------
 /// @name SQLite library status
@@ -1086,9 +1086,9 @@ typedef NS_ENUM(int, FMDBCheckpointMode) {
 + (NSString*)sqliteLibVersion;
 
 
-+ (NSString*)FMDBUserVersion;
++ (NSString*)ZY_FMDBUserVersion;
 
-+ (SInt32)FMDBVersion;
++ (SInt32)ZY_FMDBVersion;
 
 
 ///------------------------
@@ -1387,7 +1387,7 @@ typedef NS_ENUM(int, SqliteValueType) {
  - [`sqlite3_stmt`](http://www.sqlite.org/c3ref/stmt.html)
  */
 
-@interface FMStatement : NSObject {
+@interface ZY_FMStatement : NSObject {
     void *_statement;
     NSString *_query;
     long _useCount;

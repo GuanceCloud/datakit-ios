@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FMDatabase.h"
+#import "ZY_FMDatabase.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
  - `<FMDatabase>`
  */
 
-@interface FMDatabase (FMDatabaseAdditions)
+@interface ZY_FMDatabase (ZY_FMDatabaseAdditions)
 
 ///----------------------------------------
 /// @name Return results of SQL to variable
@@ -142,7 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
  @see [SQLite File Format](http://www.sqlite.org/fileformat.html)
  */
 
-- (FMResultSet * _Nullable)getSchema;
+- (ZY_FMResultSet * _Nullable)getSchema;
 
 /** The schema of the database.
 
@@ -166,7 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
  @see [table_info](http://www.sqlite.org/pragma.html#pragma_table_info)
  */
 
-- (FMResultSet * _Nullable)getTableSchema:(NSString*)tableName;
+- (ZY_FMResultSet * _Nullable)getTableSchema:(NSString*)tableName;
 
 /** Test to see if particular column exists for particular table in database
  

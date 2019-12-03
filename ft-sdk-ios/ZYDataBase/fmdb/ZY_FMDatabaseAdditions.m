@@ -6,26 +6,26 @@
 //  Copyright 2005 Flying Meat Inc.. All rights reserved.
 //
 
-#import "FMDatabase.h"
-#import "FMDatabaseAdditions.h"
+#import "ZY_FMDatabase.h"
+#import "ZY_FMDatabaseAdditions.h"
 #import "TargetConditionals.h"
 
-#if FMDB_SQLITE_STANDALONE
+#if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
 #import <sqlite3.h>
 #endif
 
-@interface FMDatabase (PrivateStuff)
-- (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray * _Nullable)arrayArgs orDictionary:(NSDictionary * _Nullable)dictionaryArgs orVAList:(va_list)args;
+@interface ZY_FMDatabase (PrivateStuff)
+- (ZY_FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray * _Nullable)arrayArgs orDictionary:(NSDictionary * _Nullable)dictionaryArgs orVAList:(va_list)args;
 @end
 
-@implementation FMDatabase (FMDatabaseAdditions)
+@implementation ZY_FMDatabase (ZY_FMDatabaseAdditions)
 
 #define RETURN_RESULT_FOR_QUERY_WITH_SELECTOR(type, sel)             \
 va_list args;                                                        \
 va_start(args, query);                                               \
-FMResultSet *resultSet = [self executeQuery:query withArgumentsInArray:0x00 orDictionary:0x00 orVAList:args];   \
+ZY_FMResultSet *resultSet = [self executeQuery:query withArgumentsInArray:0x00 orDictionary:0x00 orVAList:args];   \
 va_end(args);                                                        \
 if (![resultSet next]) { return (type)0; }                           \
 type ret = [resultSet sel:0];                                        \
@@ -67,7 +67,7 @@ return ret;
     
     tableName = [tableName lowercaseString];
     
-    FMResultSet *rs = [self executeQuery:@"select [sql] from sqlite_master where [type] = 'table' and lower(name) = ?", tableName];
+    ZY_FMResultSet *rs = [self executeQuery:@"select [sql] from sqlite_master where [type] = 'table' and lower(name) = ?", tableName];
     
     //if at least one next exists, table exists
     BOOL returnBool = [rs next];
@@ -82,10 +82,10 @@ return ret;
  get table with list of tables: result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
  check if table exist in database  (patch from OZLB)
 */
-- (FMResultSet * _Nullable)getSchema {
+- (ZY_FMResultSet * _Nullable)getSchema {
     
     //result colums: type[STRING], name[STRING],tbl_name[STRING],rootpage[INTEGER],sql[STRING]
-    FMResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
+    ZY_FMResultSet *rs = [self executeQuery:@"SELECT type, name, tbl_name, rootpage, sql FROM (SELECT * FROM sqlite_master UNION ALL SELECT * FROM sqlite_temp_master) WHERE type != 'meta' AND name NOT LIKE 'sqlite_%' ORDER BY tbl_name, type DESC, name"];
     
     return rs;
 }
@@ -93,10 +93,10 @@ return ret;
 /* 
  get table schema: result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
 */
-- (FMResultSet * _Nullable)getTableSchema:(NSString*)tableName {
+- (ZY_FMResultSet * _Nullable)getTableSchema:(NSString*)tableName {
     
     //result colums: cid[INTEGER], name,type [STRING], notnull[INTEGER], dflt_value[],pk[INTEGER]
-    FMResultSet *rs = [self executeQuery:[NSString stringWithFormat: @"pragma table_info('%@')", tableName]];
+    ZY_FMResultSet *rs = [self executeQuery:[NSString stringWithFormat: @"pragma table_info('%@')", tableName]];
     
     return rs;
 }
@@ -108,7 +108,7 @@ return ret;
     tableName  = [tableName lowercaseString];
     columnName = [columnName lowercaseString];
     
-    FMResultSet *rs = [self getTableSchema:tableName];
+    ZY_FMResultSet *rs = [self getTableSchema:tableName];
     
     //check if column is present in table schema
     while ([rs next]) {
@@ -130,7 +130,7 @@ return ret;
 #if SQLITE_VERSION_NUMBER >= 3007017
     uint32_t r = 0;
     
-    FMResultSet *rs = [self executeQuery:@"pragma application_id"];
+    ZY_FMResultSet *rs = [self executeQuery:@"pragma application_id"];
     
     if ([rs next]) {
         r = (uint32_t)[rs longLongIntForColumnIndex:0];
@@ -140,7 +140,7 @@ return ret;
     
     return r;
 #else
-    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"FMDB", nil);
+    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"ZY_FMDB", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
     return 0;
 #endif
@@ -149,11 +149,11 @@ return ret;
 - (void)setApplicationID:(uint32_t)appID {
 #if SQLITE_VERSION_NUMBER >= 3007017
     NSString *query = [NSString stringWithFormat:@"pragma application_id=%d", appID];
-    FMResultSet *rs = [self executeQuery:query];
+    ZY_FMResultSet *rs = [self executeQuery:query];
     [rs next];
     [rs close];
 #else
-    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"FMDB", nil);
+    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"ZY_FMDB", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
 #endif
 }
@@ -172,7 +172,7 @@ return ret;
     
     return s;
 #else
-    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"FMDB", nil);
+    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"ZY_FMDB", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
     return nil;
 #endif
@@ -186,7 +186,7 @@ return ret;
     
     [self setApplicationID:NSHFSTypeCodeFromFileType([NSString stringWithFormat:@"'%@'", s])];
 #else
-    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"FMDB", nil);
+    NSString *errorMessage = NSLocalizedStringFromTable(@"Application ID functions require SQLite 3.7.17", @"ZY_FMDB", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
 #endif
 }
@@ -196,7 +196,7 @@ return ret;
 - (uint32_t)userVersion {
     uint32_t r = 0;
     
-    FMResultSet *rs = [self executeQuery:@"pragma user_version"];
+    ZY_FMResultSet *rs = [self executeQuery:@"pragma user_version"];
     
     if ([rs next]) {
         r = (uint32_t)[rs longLongIntForColumnIndex:0];
@@ -208,7 +208,7 @@ return ret;
 
 - (void)setUserVersion:(uint32_t)version {
     NSString *query = [NSString stringWithFormat:@"pragma user_version = %d", version];
-    FMResultSet *rs = [self executeQuery:query];
+    ZY_FMResultSet *rs = [self executeQuery:query];
     [rs next];
     [rs close];
 }
