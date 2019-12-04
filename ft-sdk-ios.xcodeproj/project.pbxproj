@@ -31,6 +31,7 @@
 		4A945F962395FAF80018E657 /* ZYDeviceInfoHander.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A945F952395FAF80018E657 /* ZYDeviceInfoHander.m */; };
 		4A945F9B2396620B0018E657 /* ZYUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A945F9A2396620B0018E657 /* ZYUploadTool.m */; };
 		4A945F9E239665080018E657 /* RecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A945F9C239665080018E657 /* RecordModel.m */; };
+		6B6E2F74A350787288096F1B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2AE64DF63C535602DE59 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +83,7 @@
 		4A945F9A2396620B0018E657 /* ZYUploadTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYUploadTool.m; sourceTree = "<group>"; };
 		4A945F9C239665080018E657 /* RecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordModel.m; sourceTree = "<group>"; };
 		4A945F9D239665080018E657 /* RecordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordModel.h; sourceTree = "<group>"; };
+		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 			children = (
 				4A116958239113B600C0BC4E /* ft-sdk-ios */,
 				4A116957239113B600C0BC4E /* Products */,
+				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 			);
 			sourceTree = "<group>";
 		};
@@ -249,6 +252,7 @@
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
+				6B6E2F74A350787288096F1B /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
