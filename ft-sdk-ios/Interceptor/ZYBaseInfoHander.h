@@ -10,11 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZYDeviceInfoHander : NSObject
+@interface ZYBaseInfoHander : NSObject
 + (NSString *)getDeviceType;
 + (NSString *)getTelephonyInfo;
-//+ (NSString *)getCarrierInfo;
+//+ (NSString *)geZYBaseInfoHanderSString *)resolution;
++ (NSString *)convertToJsonData:(NSDictionary *)dict;
 + (NSString *)resolution;
++ (long)getCurrentTimestamp;
 @end
 
 NS_ASSUME_NONNULL_END
