@@ -15,7 +15,6 @@
 #import "ZYTrackerEventDBTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
-#import "RootViewController.h"
 #import <objc/runtime.h>
 @interface ZYViewController_log()
 

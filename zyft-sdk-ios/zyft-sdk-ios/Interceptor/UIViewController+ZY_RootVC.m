@@ -7,8 +7,6 @@
 //
 
 #import "UIViewController+ZY_RootVC.h"
-#import "AppDelegate.h"
-#import "SceneDelegate.h"
 #import "ZYLog.h"
 @implementation UIViewController (ZY_RootVC)
 + (NSString *)zy_getRootViewController{

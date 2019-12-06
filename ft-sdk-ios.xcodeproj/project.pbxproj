@@ -14,26 +14,22 @@
 		4A116966239113B900C0BC4E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A116965239113B900C0BC4E /* Assets.xcassets */; };
 		4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A116967239113B900C0BC4E /* LaunchScreen.storyboard */; };
 		4A11696C239113B900C0BC4E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11696B239113B900C0BC4E /* main.m */; };
-		4A11697D2391142200C0BC4E /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169742391142200C0BC4E /* ZYAspects.m */; };
-		4A11697E2391142200C0BC4E /* ZYInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169752391142200C0BC4E /* ZYInterceptor.m */; };
-		4A11697F2391142200C0BC4E /* ZYViewController_log.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169792391142200C0BC4E /* ZYViewController_log.m */; };
-		4A1169802391142200C0BC4E /* UIView+ZY_currentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11697B2391142200C0BC4E /* UIView+ZY_currentController.m */; };
 		4A1169842391145B00C0BC4E /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169832391145B00C0BC4E /* RootViewController.m */; };
 		4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169862391146600C0BC4E /* Test4ViewController.m */; };
 		4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* SecondViewController.m */; };
-		4A2D0F8C2394EA0C00AA85AD /* ZYTrackerEventDBTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D0F8B2394EA0C00AA85AD /* ZYTrackerEventDBTool.m */; };
-		4A455C6B239534AD0000731D /* ZY_FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C60239534AD0000731D /* ZY_FMDatabaseQueue.m */; };
-		4A455C6C239534AD0000731D /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C63239534AD0000731D /* ZY_FMDatabaseAdditions.m */; };
-		4A455C6D239534AD0000731D /* ZY_FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C64239534AD0000731D /* ZY_FMDatabase.m */; };
-		4A455C6E239534AD0000731D /* ZY_FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C68239534AD0000731D /* ZY_FMDatabasePool.m */; };
-		4A455C6F239534AD0000731D /* ZY_FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C69239534AD0000731D /* ZY_FMResultSet.m */; };
-		4A455C76239538930000731D /* UIViewController+ZY_RootVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A455C75239538930000731D /* UIViewController+ZY_RootVC.m */; };
-		4A5BCD6C239A74020056C12E /* ZYBaseInfoHander.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5BCD6A239A74020056C12E /* ZYBaseInfoHander.m */; };
-		4A5BCD71239A75090056C12E /* ZYConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5BCD70239A75090056C12E /* ZYConfig.m */; };
-		4A945F9B2396620B0018E657 /* ZYUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A945F9A2396620B0018E657 /* ZYUploadTool.m */; };
-		4A945F9E239665080018E657 /* RecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A945F9C239665080018E657 /* RecordModel.m */; };
+		4A5BCD9B239A77340056C12E /* libzyft-sdk-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A5BCD99239A770C0056C12E /* libzyft-sdk-ios.a */; };
 		6B6E2F74A350787288096F1B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2AE64DF63C535602DE59 /* .gitignore */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4A5BCD98239A770C0056C12E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A5BCD94239A770A0056C12E /* zyft-sdk-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A5BCD88239A770A0056C12E;
+			remoteInfo = "zyft-sdk-ios";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		4A116956239113B600C0BC4E /* ft-sdk-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ft-sdk-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -48,44 +44,13 @@
 		4A116968239113B900C0BC4E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4A11696A239113B900C0BC4E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A11696B239113B900C0BC4E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		4A1169732391142200C0BC4E /* ZYViewController_log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYViewController_log.h; sourceTree = "<group>"; };
-		4A1169742391142200C0BC4E /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
-		4A1169752391142200C0BC4E /* ZYInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYInterceptor.m; sourceTree = "<group>"; };
-		4A1169772391142200C0BC4E /* UIView+ZY_currentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+ZY_currentController.h"; sourceTree = "<group>"; };
-		4A1169782391142200C0BC4E /* ZYAspects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYAspects.h; sourceTree = "<group>"; };
-		4A1169792391142200C0BC4E /* ZYViewController_log.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYViewController_log.m; sourceTree = "<group>"; };
-		4A11697A2391142200C0BC4E /* ZYInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYInterceptor.h; sourceTree = "<group>"; };
-		4A11697B2391142200C0BC4E /* UIView+ZY_currentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+ZY_currentController.m"; sourceTree = "<group>"; };
 		4A1169822391145B00C0BC4E /* RootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
 		4A1169832391145B00C0BC4E /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
 		4A1169852391146600C0BC4E /* SecondViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
 		4A1169862391146600C0BC4E /* Test4ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test4ViewController.m; sourceTree = "<group>"; };
 		4A1169872391146600C0BC4E /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		4A1169882391146600C0BC4E /* Test4ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test4ViewController.h; sourceTree = "<group>"; };
-		4A2D0F8A2394EA0C00AA85AD /* ZYTrackerEventDBTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYTrackerEventDBTool.h; sourceTree = "<group>"; };
-		4A2D0F8B2394EA0C00AA85AD /* ZYTrackerEventDBTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYTrackerEventDBTool.m; sourceTree = "<group>"; };
-		4A455C5F239534AD0000731D /* ZY_FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabase.h; sourceTree = "<group>"; };
-		4A455C60239534AD0000731D /* ZY_FMDatabaseQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabaseQueue.m; sourceTree = "<group>"; };
-		4A455C61239534AD0000731D /* ZY_FMResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMResultSet.h; sourceTree = "<group>"; };
-		4A455C62239534AD0000731D /* ZY_FMDatabasePool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabasePool.h; sourceTree = "<group>"; };
-		4A455C63239534AD0000731D /* ZY_FMDatabaseAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabaseAdditions.m; sourceTree = "<group>"; };
-		4A455C64239534AD0000731D /* ZY_FMDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabase.m; sourceTree = "<group>"; };
-		4A455C65239534AD0000731D /* ZY_FMDatabaseQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabaseQueue.h; sourceTree = "<group>"; };
-		4A455C66239534AD0000731D /* ZY_FMDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDB.h; sourceTree = "<group>"; };
-		4A455C67239534AD0000731D /* ZY_FMDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabaseAdditions.h; sourceTree = "<group>"; };
-		4A455C68239534AD0000731D /* ZY_FMDatabasePool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabasePool.m; sourceTree = "<group>"; };
-		4A455C69239534AD0000731D /* ZY_FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMResultSet.m; sourceTree = "<group>"; };
-		4A455C74239538930000731D /* UIViewController+ZY_RootVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+ZY_RootVC.h"; sourceTree = "<group>"; };
-		4A455C75239538930000731D /* UIViewController+ZY_RootVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+ZY_RootVC.m"; sourceTree = "<group>"; };
-		4A5BCD6A239A74020056C12E /* ZYBaseInfoHander.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYBaseInfoHander.m; sourceTree = "<group>"; };
-		4A5BCD6B239A74020056C12E /* ZYBaseInfoHander.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYBaseInfoHander.h; sourceTree = "<group>"; };
-		4A5BCD6F239A75090056C12E /* ZYConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYConfig.h; sourceTree = "<group>"; };
-		4A5BCD70239A75090056C12E /* ZYConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYConfig.m; sourceTree = "<group>"; };
-		4A945F98239653C70018E657 /* ZYLog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYLog.h; sourceTree = "<group>"; };
-		4A945F992396620B0018E657 /* ZYUploadTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYUploadTool.h; sourceTree = "<group>"; };
-		4A945F9A2396620B0018E657 /* ZYUploadTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYUploadTool.m; sourceTree = "<group>"; };
-		4A945F9C239665080018E657 /* RecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordModel.m; sourceTree = "<group>"; };
-		4A945F9D239665080018E657 /* RecordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordModel.h; sourceTree = "<group>"; };
+		4A5BCD94239A770A0056C12E /* zyft-sdk-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "zyft-sdk-ios.xcodeproj"; path = "zyft-sdk-ios/zyft-sdk-ios.xcodeproj"; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A5BCD9B239A77340056C12E /* libzyft-sdk-ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,9 +69,11 @@
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
+				4A5BCD94239A770A0056C12E /* zyft-sdk-ios.xcodeproj */,
 				4A116958239113B600C0BC4E /* ft-sdk-ios */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
+				4A5BCD9A239A77340056C12E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,8 +88,6 @@
 		4A116958239113B600C0BC4E /* ft-sdk-ios */ = {
 			isa = PBXGroup;
 			children = (
-				4A2D0F892394DF5800AA85AD /* ZYDataBase */,
-				4A1169722391142200C0BC4E /* Interceptor */,
 				4A116959239113B600C0BC4E /* AppDelegate.h */,
 				4A11695A239113B600C0BC4E /* AppDelegate.m */,
 				4A11695C239113B600C0BC4E /* SceneDelegate.h */,
@@ -143,58 +109,19 @@
 			path = "ft-sdk-ios";
 			sourceTree = "<group>";
 		};
-		4A1169722391142200C0BC4E /* Interceptor */ = {
+		4A5BCD95239A770A0056C12E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4A1169782391142200C0BC4E /* ZYAspects.h */,
-				4A1169742391142200C0BC4E /* ZYAspects.m */,
-				4A11697A2391142200C0BC4E /* ZYInterceptor.h */,
-				4A1169752391142200C0BC4E /* ZYInterceptor.m */,
-				4A1169732391142200C0BC4E /* ZYViewController_log.h */,
-				4A1169792391142200C0BC4E /* ZYViewController_log.m */,
-				4A945F992396620B0018E657 /* ZYUploadTool.h */,
-				4A945F9A2396620B0018E657 /* ZYUploadTool.m */,
-				4A945F9D239665080018E657 /* RecordModel.h */,
-				4A945F9C239665080018E657 /* RecordModel.m */,
-				4A1169772391142200C0BC4E /* UIView+ZY_currentController.h */,
-				4A11697B2391142200C0BC4E /* UIView+ZY_currentController.m */,
-				4A455C74239538930000731D /* UIViewController+ZY_RootVC.h */,
-				4A455C75239538930000731D /* UIViewController+ZY_RootVC.m */,
-				4A5BCD6B239A74020056C12E /* ZYBaseInfoHander.h */,
-				4A5BCD6A239A74020056C12E /* ZYBaseInfoHander.m */,
-				4A5BCD6F239A75090056C12E /* ZYConfig.h */,
-				4A5BCD70239A75090056C12E /* ZYConfig.m */,
-				4A945F98239653C70018E657 /* ZYLog.h */,
+				4A5BCD99239A770C0056C12E /* libzyft-sdk-ios.a */,
 			);
-			path = Interceptor;
+			name = Products;
 			sourceTree = "<group>";
 		};
-		4A2D0F892394DF5800AA85AD /* ZYDataBase */ = {
+		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4A455C5E239534AD0000731D /* fmdb */,
-				4A2D0F8A2394EA0C00AA85AD /* ZYTrackerEventDBTool.h */,
-				4A2D0F8B2394EA0C00AA85AD /* ZYTrackerEventDBTool.m */,
 			);
-			path = ZYDataBase;
-			sourceTree = "<group>";
-		};
-		4A455C5E239534AD0000731D /* fmdb */ = {
-			isa = PBXGroup;
-			children = (
-				4A455C5F239534AD0000731D /* ZY_FMDatabase.h */,
-				4A455C64239534AD0000731D /* ZY_FMDatabase.m */,
-				4A455C65239534AD0000731D /* ZY_FMDatabaseQueue.h */,
-				4A455C60239534AD0000731D /* ZY_FMDatabaseQueue.m */,
-				4A455C61239534AD0000731D /* ZY_FMResultSet.h */,
-				4A455C69239534AD0000731D /* ZY_FMResultSet.m */,
-				4A455C62239534AD0000731D /* ZY_FMDatabasePool.h */,
-				4A455C68239534AD0000731D /* ZY_FMDatabasePool.m */,
-				4A455C67239534AD0000731D /* ZY_FMDatabaseAdditions.h */,
-				4A455C63239534AD0000731D /* ZY_FMDatabaseAdditions.m */,
-				4A455C66239534AD0000731D /* ZY_FMDB.h */,
-			);
-			path = fmdb;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -242,12 +169,28 @@
 			mainGroup = 4A11694D239113B600C0BC4E;
 			productRefGroup = 4A116957239113B600C0BC4E /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 4A5BCD95239A770A0056C12E /* Products */;
+					ProjectRef = 4A5BCD94239A770A0056C12E /* zyft-sdk-ios.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				4A116955239113B600C0BC4E /* ft-sdk-ios */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		4A5BCD99239A770C0056C12E /* libzyft-sdk-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libzyft-sdk-ios.a";
+			remoteRef = 4A5BCD98239A770C0056C12E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		4A116954239113B600C0BC4E /* Resources */ = {
@@ -269,27 +212,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */,
-				4A11697E2391142200C0BC4E /* ZYInterceptor.m in Sources */,
-				4A5BCD6C239A74020056C12E /* ZYBaseInfoHander.m in Sources */,
-				4A11697D2391142200C0BC4E /* ZYAspects.m in Sources */,
-				4A455C6B239534AD0000731D /* ZY_FMDatabaseQueue.m in Sources */,
 				4A116961239113B600C0BC4E /* ViewController.m in Sources */,
-				4A945F9E239665080018E657 /* RecordModel.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
-				4A455C6F239534AD0000731D /* ZY_FMResultSet.m in Sources */,
 				4A1169842391145B00C0BC4E /* RootViewController.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */,
-				4A945F9B2396620B0018E657 /* ZYUploadTool.m in Sources */,
-				4A1169802391142200C0BC4E /* UIView+ZY_currentController.m in Sources */,
-				4A11697F2391142200C0BC4E /* ZYViewController_log.m in Sources */,
-				4A2D0F8C2394EA0C00AA85AD /* ZYTrackerEventDBTool.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
-				4A455C76239538930000731D /* UIViewController+ZY_RootVC.m in Sources */,
-				4A5BCD71239A75090056C12E /* ZYConfig.m in Sources */,
-				4A455C6C239534AD0000731D /* ZY_FMDatabaseAdditions.m in Sources */,
-				4A455C6D239534AD0000731D /* ZY_FMDatabase.m in Sources */,
-				4A455C6E239534AD0000731D /* ZY_FMDatabasePool.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -431,14 +359,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios\"",
+					"\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios/Interceptor\"",
+				);
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios\"";
 				INFOPLIST_FILE = "ft-sdk-ios/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"$(inherited)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zyft-sdk-ios\"";
 			};
 			name = Debug;
 		};
@@ -448,14 +386,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios\"",
+					"\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios/Interceptor\"",
+				);
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zyft-sdk-ios/zyft-sdk-ios\"";
 				INFOPLIST_FILE = "ft-sdk-ios/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"-all_load",
+					"$(inherited)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zyft-sdk-ios\"";
 			};
 			name = Release;
 		};

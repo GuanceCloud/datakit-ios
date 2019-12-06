@@ -7,8 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "ZYInterceptor.h"
-
+#import <zyft-sdk-ios/ZYInterceptor.h>
 @interface AppDelegate ()
 
 @end
