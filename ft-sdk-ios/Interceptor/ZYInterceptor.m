@@ -12,16 +12,39 @@
 #import "ZYViewController_log.h"
 #import "ZYLog.h"
 #import "ZYTrackerEventDBTool.h"
+#import <SystemConfiguration/SystemConfiguration.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import "ZYUploadTool.h"
+#import "RecordModel.h"
+#import "ZYBaseInfoHander.h"
 @interface ZYInterceptor ()
 @property (nonatomic) BOOL isForeground;
+@property (nonatomic, assign) SCNetworkReachabilityRef reachability;
+@property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
+@property (nonatomic, strong) NSString *net;
+@property (nonatomic, strong) NSString *radio;
+@property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, strong) ZYUploadTool *upTool;
 
 @end
 @implementation ZYInterceptor{
     ZYViewController_log *_viewControllerLog;
 }
-
+static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
+    if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[ZYInterceptor class]]) {
+        @autoreleasepool {
+            ZYInterceptor *zy = (__bridge ZYInterceptor *)info;
+            [zy reachabilityChanged:flags];
+        }
+    }
+}
 + (void)setup{
    [ZYInterceptor sharedInstance];
+}
++(void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret{
+    [ZYInterceptor sharedInstance];
+
 }
 // 单例
 + (instancetype)sharedInstance {
@@ -35,16 +58,29 @@
 - (instancetype)init {
     if ([super init]) {
         //基础类型的记录
+        NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
+
+        self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
         _viewControllerLog = [[ZYViewController_log alloc]init];
-         
+
     }
     return self;
 }
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
-   
+   BOOL reachabilityOk = NO;
+   if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
+       SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
+       if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
+           if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.serialQueue)) {
+               reachabilityOk = YES;
+           } else {
+               SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+           }
+       }
+   }
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
     // 应用生命周期通知
@@ -64,16 +100,42 @@
                            selector:@selector(applicationDidEnterBackground:)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(appDidFinishLaunchingWithOptions:)
+                                  name:UIApplicationDidFinishLaunchingNotification
+                                object:nil];
+    
+}
+- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
+    if (flags & kSCNetworkReachabilityFlagsReachable) {
+        if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
+            self.net = @"0";//2G/3G/4G
+        } else {
+            self.net = @"4";//WIFI
+        }
+    } else {
+        self.net = @"-1";//未知
+    }
+    ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
          ZYDebug(@"applicationWillTerminate ");
 
 }
+- (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
+            RecordModel *model = [RecordModel new];
+            NSDictionary *data =@{
+                                @"op":@"lanc",
+                              };
+            model.data =[ZYBaseInfoHander convertToJsonData:data];
+            [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+            ZYDebug(@"data == %@",data);
+}
 - (void)applicationWillResignActive:(NSNotification *)notification {
      @try {
         self.isForeground = NO;
-        
+         [self stopFlushTimer];
      }
      @catch (NSException *exception) {
          ZYDebug(@"applicationWillResignActive exception %@",exception);
@@ -83,7 +145,7 @@
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-        
+        [self startFlushTimer];
       }
       @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
@@ -93,6 +155,43 @@
          ZYDebug(@"applicationDidEnterBackground ");
 
 }
+#pragma mark - 上报策略
 
+// 启动事件发送定时器
+- (void)startFlushTimer {
+    [self stopFlushTimer];
+    dispatch_async(dispatch_get_main_queue(), ^{
+            self.timer = [NSTimer scheduledTimerWithTimeInterval:2.0
+                                                          target:self
+                                                        selector:@selector(flush)
+                                                        userInfo:nil
+                                                         repeats:YES];
+            
+            ZYDebug(@"启动事件发送定时器");
+    });
+}
 
+// 关闭事件发送定时器
+- (void)stopFlushTimer {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.timer) {
+            [self.timer invalidate];
+            ZYDebug(@"关闭事件发送定时器");
+        }
+        self.timer = nil;
+    });
+}
+- (void)flush{
+    dispatch_async(self.serialQueue, ^{
+        if (![self.net isEqualToString:@"-1"]) {
+          [self.upTool upload];
+        }
+       });
+}
+-(ZYUploadTool *)upTool{
+    if (!_upTool) {
+        _upTool = [ZYUploadTool new];
+    }
+    return _upTool;
+}
 @end

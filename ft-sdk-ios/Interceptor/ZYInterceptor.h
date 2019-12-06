@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZYInterceptor : NSObject
 + (void)setup;
 
++ (void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret;
+
 @end
 
 NS_ASSUME_NONNULL_END
