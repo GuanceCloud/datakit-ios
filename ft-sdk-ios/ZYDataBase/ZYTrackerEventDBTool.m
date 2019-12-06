@@ -62,21 +62,26 @@ static ZYTrackerEventDBTool *dbTool = nil;
                    [sql appendString:key];
                    [sql appendString:@" "];
                    [sql appendString:[keyTypes valueForKey:key]];
+                   if ([key isEqualToString:@"_id"]) {
+                       [sql appendString:@" primary key AUTOINCREMENT"];
+                   }
                    if (count != [keyTypes count]) {
                         [sql appendString:@", "];
                    }
                }
                [sql appendString:@")"];
                NSLog(@"%@", sql);
-               [self.db executeUpdate:sql];
+             BOOL success =[self.db executeUpdate:sql];
+            ZYDebug(@"createTable success == %d",success);
            }
     }];
 }
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
    if([self isOpenDatabese:self.db]) {
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@ );",ZY_DB_BASELOG_TABLE_NAME,item.tm,item.data];
-            [self.db executeUpdate:sqlStr];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",ZY_DB_BASELOG_TABLE_NAME,item.tm,item.data];
+        BOOL  is=  [self.db executeUpdate:sqlStr];
+           ZYDebug(@"success == %d",is);
        }];
        return YES;
    }else{
@@ -89,7 +94,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
     //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
 
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY _id DESC LIMIT 10 ;",ZY_DB_BASELOG_TABLE_NAME];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC LIMIT 10 ;",ZY_DB_BASELOG_TABLE_NAME];
 
     ZY_FMResultSet*set = [self.db executeQuery:sql];
         NSMutableArray *array = [NSMutableArray new];
@@ -113,11 +118,11 @@ static ZYTrackerEventDBTool *dbTool = nil;
     return nil;
 }
 
--(BOOL)deleteItemWithID:(NSString *)ID
+-(BOOL)deleteItemWithTm:(long )tm
 {
-    NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id = %ld ;",ZY_DB_BASELOG_TABLE_NAME,(long)ID];
+    NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",ZY_DB_BASELOG_TABLE_NAME,tm];
 
-    return[self.db executeUpdate:sqlStr];
+    return [self.db executeUpdate:sqlStr];
 }
 - (void)close
 {
