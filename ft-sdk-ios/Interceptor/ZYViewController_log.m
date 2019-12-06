@@ -8,11 +8,15 @@
 
 #import "ZYViewController_log.h"
 #import "UIView+ZY_currentController.h"
+#import "UIViewController+ZY_RootVC.h"
 #import "ZYAspects.h"
 #import <UIKit/UIKit.h>
 #import "ZYLog.h"
 #import "ZYTrackerEventDBTool.h"
-
+#import "RecordModel.h"
+#import "ZYBaseInfoHander.h"
+#import "RootViewController.h"
+#import <objc/runtime.h>
 @interface ZYViewController_log()
 
 
@@ -34,23 +38,36 @@
 
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
-    [UIViewController aspect_hookSelector:@selector(viewWillAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
-           UIViewController * vc = [info instance];
-            ZYDebug(@"%@ viewWillAppear",[vc class]);
-       } error:nil];
-       [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
-             UIViewController *tempVC = (UIViewController *)info.instance;
-            ZYDebug(@"%@ viewDidLoad",[tempVC class]);
+       [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+            UIViewController * vc = [info instance];
+                   RecordModel *model = [RecordModel new];
+                   NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
+                                          @"rpn":[UIViewController zy_getRootViewController],
+                                          @"op":@"opn",
+                   };
+                   model.data =[ZYBaseInfoHander convertToJsonData:data];
+                   [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                   ZYDebug(@"data == %@",data);
          } error:nil];
-       [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
-                UIViewController *tempVC = (UIViewController *)info.instance;
-            ZYDebug(@"%@ viewDidDisappear",[tempVC class]);
+     
+       SEL sel= NSSelectorFromString(@"dealloc");
+       [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+           UIViewController *tempVC = (UIViewController *)info.instance;
+           RecordModel *model = [RecordModel new];
+           NSDictionary *data =@{@"cpn":NSStringFromClass([tempVC class]),
+                                 @"rpn":[UIViewController zy_getRootViewController],
+                                 @"op":@"cls",
+               };
+               model.data =[ZYBaseInfoHander convertToJsonData:data];
+               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+            ZYDebug(@"data == %@",data);
+
        } error:nil];
     
 }
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
-    // UITableView、UICollectionView 先找到设置代理的实例对象 再进行hook处理 
+    // UITableView、UICollectionView 先找到设置代理的实例对象 再进行hook处理
      [UITableView aspect_hookSelector:@selector(setDelegate:)
        withOptions:ZY_AspectPositionAfter
         usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
@@ -63,7 +80,15 @@
              }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
                  className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
              }
-                ZYDebug(@"\n当前控制器：%@ \n方法tableView:didSelectRowAtIndexPath：%@ ",className,indexPath);
+             RecordModel *model = [RecordModel new];
+             NSDictionary *data =@{@"cpn":className,
+                                   @"rpn":[UIViewController zy_getRootViewController],
+                                   @"op":@"clk",
+                                   @"opdata":[tableView getParentsView],
+                           };
+            model.data =[ZYBaseInfoHander convertToJsonData:data];
+            [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+             ZYDebug(@"data == %@",data);
               } error:NULL];
          
             
@@ -80,7 +105,16 @@
                 }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
                     className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
                 }
-            ZYDebug(@"当前控制器：%@ collectionView:didSelectItemAtIndexPath：%@ ",className,indexPath);
+             RecordModel *model = [RecordModel new];
+             NSDictionary *data =@{@"cpn":className,
+                                   @"rpn":[UIViewController zy_getRootViewController],
+                                   @"op":@"clk",
+                                   @"opdata":[collectionView getParentsView],
+                                  };
+             model.data =[ZYBaseInfoHander convertToJsonData:data];
+             [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+             ZYDebug(@"data == %@",data);
+
          } error:NULL];
          
      }error:nil];
@@ -107,7 +141,15 @@
                UIButton *button = aspectInfo.instance;
                id object =  [button.allTargets anyObject];
                NSString *className = NSStringFromClass([object class]);
-               ZYDebug(@"当前控制器：%@ 按钮方法：%@ aspectInfo%@",className,button.accessibilityHint,button);
+               RecordModel *model = [RecordModel new];
+               NSDictionary *data =@{@"cpn":className,
+                                     @"rpn":[UIViewController zy_getRootViewController],
+                                     @"op":@"clk",
+                                     @"opdata":[button getParentsView],
+                                     };
+               model.data =[ZYBaseInfoHander convertToJsonData:data];
+               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                ZYDebug(@"data == %@",data);
            }
        } error:NULL];
     //待处理：仅可以实现
@@ -120,14 +162,23 @@
             
             if ([target isKindOfClass:[UIViewController class]]) {
                 [target aspect_hookSelector:action withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                   ZYDebug(@"当前控制器：%@UIGestureRecognizer ：%@ selector name",[target class],NSStringFromSelector(action));
+                    RecordModel *model = [RecordModel new];
+                    NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
+                                          @"rpn":[UIViewController zy_getRootViewController],
+                                          @"op":@"clk",
+                                          @"opdata":[ges.view getParentsView],
+                                                        };
+                    model.data =[ZYBaseInfoHander convertToJsonData:data];
+                    [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                     ZYDebug(@"data == %@",data);
+
                 } error:nil];
             }
             
         }
        } error:NULL];
    
-      [UIEvent aspect_hookSelector:@selector(touchesForGestureRecognizer:)
+      [UITouch aspect_hookSelector:@selector(touchesForGestureRecognizer:)
               withOptions:ZY_AspectPositionAfter
                usingBlock:^(id<ZY_AspectInfo> aspectInfo, UIGestureRecognizer *gesture) {
                UIView *gesView = gesture.view;
@@ -137,5 +188,6 @@
                } error:NULL];
       
 }
+
 
 @end
