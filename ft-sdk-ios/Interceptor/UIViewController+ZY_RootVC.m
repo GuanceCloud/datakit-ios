@@ -7,12 +7,37 @@
 //
 
 #import "UIViewController+ZY_RootVC.h"
-
+#import "AppDelegate.h"
+#import "SceneDelegate.h"
+#import "ZYLog.h"
 @implementation UIViewController (ZY_RootVC)
-+ (UIViewController *)zy_getRootViewController{
-
-    UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
-    NSAssert(window, @"The window is empty");
-    return window.rootViewController;
++ (NSString *)zy_getRootViewController{
+    UIWindow* window = nil;
+       if (@available(iOS 13.0, *)) {
+           for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
+           {
+              if (windowScene.activationState == UISceneActivationStateForegroundActive)
+              {
+                   window = windowScene.windows.firstObject;
+                   break;
+              }
+           }
+       }else{
+           #pragma clang diagnostic push
+           #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+               // 这部分使用到的过期api
+            window = [UIApplication sharedApplication].keyWindow;
+           #pragma clang diagnostic pop
+       }
+    NSString *name = NSStringFromClass([window.rootViewController class]);
+    ZYDebug(@"window.rootViewController name === %@",name);
+    
+    if( [name isKindOfClass:NSNull.class]
+       ||name==nil){
+        return @"";
+    }else{
+        return  name;
+    }
 }
+
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "UIView+ZY_currentController.h"
-
+#import "ZYLog.h"
 
 
 @implementation UIView (ZY_currentController)
@@ -20,6 +20,21 @@
         next = [next nextResponder];
     } while (next != nil);
     return nil;
+}
+-(NSString *)getParentsView{
+    NSMutableString *str = [NSMutableString new];
+    [str appendString:NSStringFromClass([self class])];
+    [str appendString:@"[0]"];
+    UIView *currentView = self;
+    NSInteger index = 0;
+    
+    while (![currentView isKindOfClass:[UIWindow class]]) {
+        index++;
+        ZYDebug(@"superview ==%@",[currentView superview]);
+        currentView = [currentView superview];
+        [str insertString:[NSString stringWithFormat:@"%@[%ld]/",NSStringFromClass([currentView class]),(long)index] atIndex:0];
+    }
+    return str;
 }
 
 @end

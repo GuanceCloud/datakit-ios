@@ -7,7 +7,14 @@
 //
 
 #import "RecordModel.h"
+#import "ZYBaseInfoHander.h"
 
 @implementation RecordModel
-
+-(instancetype)init{
+   self = [super init];
+    if (self) {
+        self.tm = [ZYBaseInfoHander getCurrentTimestamp];
+    }
+    return self;
+}
 @end
