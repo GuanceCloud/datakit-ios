@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class ZYConfig;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZYUploadTool : NSObject
+@property (nonatomic, strong) ZYConfig *config;
 -(void)upload;
 @end
 

@@ -11,17 +11,12 @@
 @implementation ZYConfig
 - (instancetype)init {
     if (self = [super init]) {
-        self.sdkVersion = ZG_SDK_VERSION;
-        self.appVersion = ZG_APP_VERSION;
+        self.sdkVersion = ZY_SDK_VERSION;
+        self.appVersion = ZY_APP_VERSION;
         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
         self.channel = ZG_CHANNEL;
-        self.sendInterval = 10;
-        self.sendMaxSizePerDay = 500;
-        self.cacheMaxSize = 500;
-        self.sessionEnable = YES;
-        self.debug = NO;
-        self.apsProduction = YES;
-        self.exceptionTrack = NO;
+    
+
     }
     
     return self;
