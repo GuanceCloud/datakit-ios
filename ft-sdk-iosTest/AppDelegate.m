@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import <zyft-sdk-ios/ZYInterceptor.h>
+#import <ft-sdk-ios/FTMobileAgent.h>
 @interface AppDelegate ()
 
 @end
@@ -18,7 +18,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Override point for customization after application launch.
-     [ZYInterceptor setup];
+     [FTMobileAgent setup];
     return YES;
 }
 
