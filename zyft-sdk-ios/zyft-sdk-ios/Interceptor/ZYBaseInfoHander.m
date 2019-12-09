@@ -12,6 +12,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CommonCrypto/CommonDigest.h>
+#include <CommonCrypto/CommonHMAC.h>
 #import "ZYLog.h"
 @implementation ZYBaseInfoHander : NSObject
 + (NSString *)getDeviceType{
@@ -181,35 +182,32 @@
     return [datenow timeIntervalSince1970];
     
 }
--(NSString *)stringWithMD5:(NSString *)str{
-    const char *cStr = [str UTF8String];
-    unsigned char digest[CC_MD5_DIGEST_LENGTH];
-    CC_MD5( cStr, strlen(cStr), digest ); // This is the md5 call
 
-    NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
-
-    for(int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
-        [output appendFormat:@"%02x", digest[i]];
-
-    return  output;
++ (NSString *)md5EncryptStr:(NSString *)str {
+     const char *input = [str UTF8String];//UTF8转码
+     unsigned char result[CC_MD5_DIGEST_LENGTH];
+     CC_MD5(input, (CC_LONG)strlen(input), result);
+     NSData *data = [NSData dataWithBytes: result length:16];
+     NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
+     return string;
 }
-
-- (NSString*) sha1WirhData:(NSString *)str
++(NSString*)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSInteger)datetime data:(NSString *)data
 {
-    const char *cstr = [str cStringUsingEncoding:NSUTF8StringEncoding];
-
-    NSData *data = [NSData dataWithBytes:cstr length:str.length];
-    //使用对应的CC_SHA1,CC_SHA256,CC_SHA384,CC_SHA512的长度分别是20,32,48,64
-    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
-    //使用对应的CC_SHA256,CC_SHA384,CC_SHA512
-    CC_SHA1(data.bytes, data.length, digest);
+    NSMutableString *signString = [[NSMutableString alloc] init];
     
-    NSMutableString* output = [NSMutableString stringWithCapacity:CC_SHA1_DIGEST_LENGTH * 2];
+    [signString appendString:@"POST"];
+    [signString appendString:@"\n"];
+    [signString appendString:[self md5EncryptStr:data]];
+    [signString appendString:@"\n"];
+    [signString appendString:@"text/plain"];
+    [signString appendString:@"\n"];
+    [signString appendString:[NSString stringWithFormat:@"%ld",(long)datetime]];
+    const char *secretStr = [akSecret UTF8String];
+    const char * signStr = [signString UTF8String];
     
-    for(int i = 0; i < CC_SHA1_DIGEST_LENGTH; i++)
-        [output appendFormat:@"%02x", digest[i]];
-    
-    return output;
+    unsigned char cHMAC[CC_SHA1_DIGEST_LENGTH];
+    CCHmac(kCCHmacAlgSHA1, secretStr, strlen(secretStr), signStr, strlen(signStr), cHMAC);
+    NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
+    return [HMAC base64EncodedStringWithOptions:0];
 }
-
 @end
