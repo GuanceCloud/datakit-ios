@@ -17,7 +17,7 @@
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 @interface ZYViewController_log()
-
+@property (nonatomic, strong) NSDate *lastSentDate;
 
 @end
 @implementation ZYViewController_log
@@ -39,26 +39,22 @@
 - (void)logViewControllerLifeCycle{
        [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
-                   RecordModel *model = [RecordModel new];
                    NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"opn",
                    };
-                   model.data =[ZYBaseInfoHander convertToJsonData:data];
-                   [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                [self addDBWithData:data];
                    ZYDebug(@"data == %@",data);
          } error:nil];
      
        SEL sel= NSSelectorFromString(@"dealloc");
        [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
-           RecordModel *model = [RecordModel new];
            NSDictionary *data =@{@"cpn":NSStringFromClass([tempVC class]),
                                  @"rpn":[UIViewController zy_getRootViewController],
                                  @"op":@"cls",
                };
-               model.data =[ZYBaseInfoHander convertToJsonData:data];
-               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+              [self addDBWithData:data];
             ZYDebug(@"data == %@",data);
 
        } error:nil];
@@ -79,14 +75,12 @@
              }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
                  className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
              }
-             RecordModel *model = [RecordModel new];
              NSDictionary *data =@{@"cpn":className,
                                    @"rpn":[UIViewController zy_getRootViewController],
                                    @"op":@"clk",
                                    @"opdata":[tableView getParentsView],
                            };
-            model.data =[ZYBaseInfoHander convertToJsonData:data];
-            [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+            [self addDBWithData:data];
              ZYDebug(@"data == %@",data);
               } error:NULL];
          
@@ -104,14 +98,12 @@
                 }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
                     className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
                 }
-             RecordModel *model = [RecordModel new];
              NSDictionary *data =@{@"cpn":className,
                                    @"rpn":[UIViewController zy_getRootViewController],
                                    @"op":@"clk",
                                    @"opdata":[collectionView getParentsView],
                                   };
-             model.data =[ZYBaseInfoHander convertToJsonData:data];
-             [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+             [self addDBWithData:data];
              ZYDebug(@"data == %@",data);
 
          } error:NULL];
@@ -140,14 +132,12 @@
                UIButton *button = aspectInfo.instance;
                id object =  [button.allTargets anyObject];
                NSString *className = NSStringFromClass([object class]);
-               RecordModel *model = [RecordModel new];
                NSDictionary *data =@{@"cpn":className,
                                      @"rpn":[UIViewController zy_getRootViewController],
                                      @"op":@"clk",
                                      @"opdata":[button getParentsView],
                                      };
-               model.data =[ZYBaseInfoHander convertToJsonData:data];
-               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                [self addDBWithData:data];
                 ZYDebug(@"data == %@",data);
            }
        } error:NULL];
@@ -161,14 +151,12 @@
             
             if ([target isKindOfClass:[UIViewController class]]) {
                 [target aspect_hookSelector:action withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                    RecordModel *model = [RecordModel new];
                     NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"clk",
                                           @"opdata":[ges.view getParentsView],
                                                         };
-                    model.data =[ZYBaseInfoHander convertToJsonData:data];
-                    [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+                    [self addDBWithData:data];
                      ZYDebug(@"data == %@",data);
 
                 } error:nil];
@@ -188,5 +176,20 @@
       
 }
 
-
+-(void)addDBWithData:(NSDictionary *)data{
+    if (self.lastSentDate) {
+        NSDate* now = [NSDate date];
+        NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
+        if (time>10) {
+            if (self.block) {
+                self.block();
+            }
+        }
+    }else{
+        self.lastSentDate = [NSDate date];
+    }
+      RecordModel *model = [RecordModel new];
+      model.data =[ZYBaseInfoHander convertToJsonData:data];
+      [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+}
 @end
