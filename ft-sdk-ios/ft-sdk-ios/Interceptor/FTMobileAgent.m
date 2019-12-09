@@ -64,7 +64,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
         _viewControllerLog = [[ZYViewController_log alloc]init];
-
+         __weak typeof(self) weakSelf = self;
+        _viewControllerLog.block = ^(void){
+            [weakSelf flush];
+        };
     }
     return self;
 }
@@ -145,7 +148,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-        [self startFlushTimer];
+          [self flush];
       }
       @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
