@@ -94,7 +94,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
     //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
 
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC LIMIT 10 ;",ZY_DB_BASELOG_TABLE_NAME];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",ZY_DB_BASELOG_TABLE_NAME];
 
     ZY_FMResultSet*set = [self.db executeQuery:sql];
         NSMutableArray *array = [NSMutableArray new];
