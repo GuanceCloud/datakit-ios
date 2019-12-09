@@ -36,6 +36,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
             dbTool = ZYTrackerEventDBTool.new;
             dbTool.db = fmdb;
             dbTool.dbPath = path;
+            ZYDebug(@"db path:%@",path);
         }
     }
     if (![dbTool.db open]) {
@@ -109,7 +110,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
     item.tm= [[set stringForColumn:@"tm"] intValue];
 
     item.data= [set stringForColumn:@"data"];
-        
+
     [array addObject:item];
 
     }
