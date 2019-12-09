@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZYInterceptor : NSObject
+@interface FTMobileAgent : NSObject
 + (void)setup;
 
 + (void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret;
