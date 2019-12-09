@@ -6,7 +6,7 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "ZYInterceptor.h"
+#import "FTMobileAgent.h"
 #import "ZYAspects.h"
 #import <UIKit/UIKit.h>
 #import "ZYViewController_log.h"
@@ -17,7 +17,7 @@
 #import "ZYUploadTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
-@interface ZYInterceptor ()
+@interface FTMobileAgent ()
 @property (nonatomic) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -28,30 +28,30 @@
 @property (nonatomic, strong) ZYUploadTool *upTool;
 
 @end
-@implementation ZYInterceptor{
+@implementation FTMobileAgent{
     ZYViewController_log *_viewControllerLog;
 }
 static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
-    if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[ZYInterceptor class]]) {
+    if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
         @autoreleasepool {
-            ZYInterceptor *zy = (__bridge ZYInterceptor *)info;
+            FTMobileAgent *zy = (__bridge FTMobileAgent *)info;
             [zy reachabilityChanged:flags];
         }
     }
 }
 + (void)setup{
-   [ZYInterceptor sharedInstance];
+   [FTMobileAgent sharedInstance];
 }
 +(void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret{
-    [ZYInterceptor sharedInstance];
+    [FTMobileAgent sharedInstance];
 
 }
 // 单例
 + (instancetype)sharedInstance {
     static dispatch_once_t onceToken;
-    static ZYInterceptor *sharedInstance;
+    static FTMobileAgent *sharedInstance;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[ZYInterceptor alloc] init];
+        sharedInstance = [[FTMobileAgent alloc] init];
     });
     return sharedInstance;
 }
