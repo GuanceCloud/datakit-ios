@@ -17,6 +17,7 @@
 #import "ZYUploadTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
+#import "FTMobileConfig.h"
 @interface FTMobileAgent ()
 @property (nonatomic) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -26,11 +27,14 @@
 @property (nonatomic, strong) NSString *radio;
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) ZYUploadTool *upTool;
-
+@property (nonatomic, strong) FTMobileConfig *config;
 @end
 @implementation FTMobileAgent{
     ZYViewController_log *_viewControllerLog;
 }
+static FTMobileAgent *sharedInstance = nil;
+static dispatch_once_t onceToken;
+
 static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
     if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
         @autoreleasepool {
@@ -40,26 +44,34 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 + (void)setup{
-   [FTMobileAgent sharedInstance];
+     [FTMobileAgent sharedInstance];
 }
-+(void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret{
-    [FTMobileAgent sharedInstance];
 
++ (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
+    if (configOptions.enableRequestSigning) {
+//      NSAssert((configOptions.akSecret.length==0||configOptions.akId.length == 0), @"");
+    }
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
+    });
+     [FTMobileAgent sharedInstance];
 }
 // 单例
 + (instancetype)sharedInstance {
     static dispatch_once_t onceToken;
     static FTMobileAgent *sharedInstance;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTMobileAgent alloc] init];
+        sharedInstance = [[FTMobileAgent alloc] initWithConfig:nil];
     });
     return sharedInstance;
 }
-- (instancetype)init {
+- (instancetype)initWithConfig:(FTMobileConfig *)config{
     if ([super init]) {
         //基础类型的记录
+        if (config) {
+            self.config = config;
+        }
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
-
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
@@ -70,6 +82,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         };
     }
     return self;
+}
+-(FTMobileConfig *)config{
+    if (!_config) {
+        _config = [FTMobileConfig new];
+    }
+    return _config;
 }
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
@@ -129,7 +147,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
             RecordModel *model = [RecordModel new];
             NSDictionary *data =@{
-                                @"op":@"lanc",
+                                @"op":@"launch",
                               };
             model.data =[ZYBaseInfoHander convertToJsonData:data];
             [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
@@ -148,7 +166,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-          [self flush];
+        [self flush];
       }
       @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
@@ -193,7 +211,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 -(ZYUploadTool *)upTool{
     if (!_upTool) {
-        _upTool = [ZYUploadTool new];
+        _upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
     }
     return _upTool;
 }
