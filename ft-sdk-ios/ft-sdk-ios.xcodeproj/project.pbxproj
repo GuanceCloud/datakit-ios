@@ -13,7 +13,7 @@
 		4A88428A239E5768001B44C3 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884268239E5768001B44C3 /* ZYAspects.m */; };
 		4A88428B239E5768001B44C3 /* UIViewController+ZY_RootVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884269239E5768001B44C3 /* UIViewController+ZY_RootVC.m */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
-		4A88428D239E5768001B44C3 /* ZYConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* ZYConfig.h */; };
+		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A88428E239E5768001B44C3 /* ZYUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426C239E5768001B44C3 /* ZYUploadTool.m */; };
 		4A88428F239E5768001B44C3 /* RecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426D239E5768001B44C3 /* RecordModel.h */; };
 		4A884290239E5768001B44C3 /* UIView+ZY_currentController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426E239E5768001B44C3 /* UIView+ZY_currentController.h */; };
@@ -24,7 +24,7 @@
 		4A884295239E5768001B44C3 /* UIViewController+ZY_RootVC.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884273239E5768001B44C3 /* UIViewController+ZY_RootVC.h */; };
 		4A884296239E5768001B44C3 /* UIView+ZY_currentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884274239E5768001B44C3 /* UIView+ZY_currentController.m */; };
 		4A884297239E5768001B44C3 /* RecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884275239E5768001B44C3 /* RecordModel.m */; };
-		4A884298239E5768001B44C3 /* ZYConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884276239E5768001B44C3 /* ZYConfig.m */; };
+		4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884276239E5768001B44C3 /* FTMobileConfig.m */; };
 		4A884299239E5768001B44C3 /* ZYUploadTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884277239E5768001B44C3 /* ZYUploadTool.h */; };
 		4A88429A239E5768001B44C3 /* ZYLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884278239E5768001B44C3 /* ZYLog.h */; };
 		4A88429B239E5768001B44C3 /* ZYTrackerEventDBTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88427A239E5768001B44C3 /* ZYTrackerEventDBTool.h */; };
@@ -51,7 +51,7 @@
 		4A884268239E5768001B44C3 /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
 		4A884269239E5768001B44C3 /* UIViewController+ZY_RootVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+ZY_RootVC.m"; sourceTree = "<group>"; };
 		4A88426A239E5768001B44C3 /* FTMobileAgent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgent.m; sourceTree = "<group>"; };
-		4A88426B239E5768001B44C3 /* ZYConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYConfig.h; sourceTree = "<group>"; };
+		4A88426B239E5768001B44C3 /* FTMobileConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileConfig.h; sourceTree = "<group>"; };
 		4A88426C239E5768001B44C3 /* ZYUploadTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYUploadTool.m; sourceTree = "<group>"; };
 		4A88426D239E5768001B44C3 /* RecordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordModel.h; sourceTree = "<group>"; };
 		4A88426E239E5768001B44C3 /* UIView+ZY_currentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+ZY_currentController.h"; sourceTree = "<group>"; };
@@ -62,7 +62,7 @@
 		4A884273239E5768001B44C3 /* UIViewController+ZY_RootVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+ZY_RootVC.h"; sourceTree = "<group>"; };
 		4A884274239E5768001B44C3 /* UIView+ZY_currentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+ZY_currentController.m"; sourceTree = "<group>"; };
 		4A884275239E5768001B44C3 /* RecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordModel.m; sourceTree = "<group>"; };
-		4A884276239E5768001B44C3 /* ZYConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYConfig.m; sourceTree = "<group>"; };
+		4A884276239E5768001B44C3 /* FTMobileConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileConfig.m; sourceTree = "<group>"; };
 		4A884277239E5768001B44C3 /* ZYUploadTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYUploadTool.h; sourceTree = "<group>"; };
 		4A884278239E5768001B44C3 /* ZYLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYLog.h; sourceTree = "<group>"; };
 		4A88427A239E5768001B44C3 /* ZYTrackerEventDBTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYTrackerEventDBTool.h; sourceTree = "<group>"; };
@@ -111,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
+				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
 				4A884265239E5768001B44C3 /* Interceptor */,
 				4A884279239E5768001B44C3 /* ZYDataBase */,
 				4A88425D239E5754001B44C3 /* ft_sdk_ios.h */,
@@ -131,8 +132,7 @@
 				4A884268239E5768001B44C3 /* ZYAspects.m */,
 				4A884273239E5768001B44C3 /* UIViewController+ZY_RootVC.h */,
 				4A884269239E5768001B44C3 /* UIViewController+ZY_RootVC.m */,
-				4A88426B239E5768001B44C3 /* ZYConfig.h */,
-				4A884276239E5768001B44C3 /* ZYConfig.m */,
+				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
 				4A884277239E5768001B44C3 /* ZYUploadTool.h */,
 				4A88426C239E5768001B44C3 /* ZYUploadTool.m */,
 				4A88426D239E5768001B44C3 /* RecordModel.h */,
@@ -180,13 +180,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
+				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A884290239E5768001B44C3 /* UIView+ZY_currentController.h in Headers */,
 				4A88429A239E5768001B44C3 /* ZYLog.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A88428F239E5768001B44C3 /* RecordModel.h in Headers */,
 				4A88425F239E5754001B44C3 /* ft_sdk_ios.h in Headers */,
 				4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */,
-				4A88428D239E5768001B44C3 /* ZYConfig.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
 				4A88429B239E5768001B44C3 /* ZYTrackerEventDBTool.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
@@ -274,7 +274,7 @@
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A88429E239E5768001B44C3 /* ZY_FMDatabaseQueue.m in Sources */,
 				4A884291239E5768001B44C3 /* ZYBaseInfoHander.m in Sources */,
-				4A884298239E5768001B44C3 /* ZYConfig.m in Sources */,
+				4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */,
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
 				4A88429F239E5768001B44C3 /* ZY_FMDatabase.m in Sources */,
 				4A88428B239E5768001B44C3 /* UIViewController+ZY_RootVC.m in Sources */,
