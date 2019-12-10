@@ -21,7 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)createTable;
 -(BOOL)insertItemWithItemData:(RecordModel *)datas;
--(NSArray *)getDatas;
+-(NSArray *)getAllDatas;
+-(NSArray *)getFirstTenData;
 -(BOOL)deleteItemWithTm:(long )tm;
+- (NSInteger)getDatasCount;
 @end
 NS_ASSUME_NONNULL_END
