@@ -10,8 +10,10 @@
 
 
 NS_ASSUME_NONNULL_BEGIN
+typedef void(^UploadBlock)(void);
 
 @interface ZYViewController_log : NSObject
+@property (nonatomic, strong) UploadBlock block;
 
 
 @end
