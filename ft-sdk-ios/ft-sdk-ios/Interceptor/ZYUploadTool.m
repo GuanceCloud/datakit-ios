@@ -131,7 +131,7 @@
     });
 }
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
-    NSMutableString *requestDatas = [NSMutableString new];
+    __block NSMutableString *requestDatas = [NSMutableString new];
    
     [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
@@ -174,7 +174,7 @@
         }else{
                 [requestDatas appendFormat:@"\n%@,%@",field,[self getBasicData]];
         }
-       
+        appendTag = [appendTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
         [requestDatas appendString:appendTag];
         [requestDatas appendString:event];
         [requestDatas appendFormat:@" %ld",obj.tm*1000*1000];
