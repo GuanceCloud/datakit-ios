@@ -7,7 +7,8 @@
 //
 
 #import "AppDelegate.h"
-#import <ft-sdk-ios/FTMobileAgent.h>
+#import <ft_sdk_ios/FTMobileAgent.h>
+#import <ft_sdk_ios/FTMobileConfig.h>
 @interface AppDelegate ()
 
 @end
@@ -18,7 +19,11 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Override point for customization after application launch.
-     [FTMobileAgent setup];
+    FTMobileConfig *config = [FTMobileConfig new];
+    config.enableRequestSigning = YES;
+    config.akSecret = @"accsk";
+    config.akId = @"accid";
+     [FTMobileAgent startWithConfigOptions:config];
     return YES;
 }
 

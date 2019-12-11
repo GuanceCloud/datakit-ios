@@ -90,40 +90,65 @@ static ZYTrackerEventDBTool *dbTool = nil;
    }
 }
 
--(NSArray *)getDatas{
-    if([self isOpenDatabese:self.db]) {
-
-    //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
-
+-(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",ZY_DB_BASELOG_TABLE_NAME];
 
-    ZY_FMResultSet*set = [self.db executeQuery:sql];
-        NSMutableArray *array = [NSMutableArray new];
-    while(set.next) {
+    return [self getDatasWithFormat:sql];
 
-    //创建对象赋值
-
-    RecordModel* item = [[RecordModel alloc]init];
-
-    item._id= [[set stringForColumn:@"_id"]intValue];
-
-    item.tm= [[set stringForColumn:@"tm"] intValue];
-
-    item.data= [set stringForColumn:@"data"];
-
-    [array addObject:item];
-
-    }
-        return array;
-    }
-    return nil;
 }
+-(NSArray *)getFirstTenData{
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",ZY_DB_BASELOG_TABLE_NAME];
 
--(BOOL)deleteItemWithTm:(long )tm
+    return [self getDatasWithFormat:sql];
+}
+-(NSArray *)getDatasWithFormat:(NSString *)format{
+ if([self isOpenDatabese:self.db]) {
+     __block  NSMutableArray *array = [NSMutableArray new];
+  [self zy_inDatabase:^{
+      //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
+      ZY_FMResultSet*set = [self.db executeQuery:format];
+      while(set.next) {
+
+      //创建对象赋值
+
+      RecordModel* item = [[RecordModel alloc]init];
+
+      item._id= [[set stringForColumn:@"_id"]intValue];
+
+      item.tm= [[set stringForColumn:@"tm"] longLongValue];
+
+      item.data= [set stringForColumn:@"data"];
+
+      [array addObject:item];
+
+      }
+      }];
+        return array;
+    }else{
+        return nil;
+    }
+}
+- (NSInteger)getDatasCount
 {
-    NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",ZY_DB_BASELOG_TABLE_NAME,tm];
+    __block NSInteger count =0;
+    [self zy_inDatabase:^{
+        NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", ZY_DB_BASELOG_TABLE_NAME];
+          ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
 
-    return [self.db executeUpdate:sqlStr];
+          while ([set next]) {
+              count= [set intForColumn:@"count"];
+          }
+
+    }];
+     return count;
+}
+-(BOOL)deleteItemWithTm:(long )tm
+{   __block BOOL is;
+    [self zy_inDatabase:^{
+     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",ZY_DB_BASELOG_TABLE_NAME,tm];
+        is = [self.db executeUpdate:sqlStr];
+    }];
+    return is;
 }
 - (void)close
 {

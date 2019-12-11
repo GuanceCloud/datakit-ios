@@ -7,14 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class FTMobileConfig;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
 + (void)setup;
 
-+ (void)registerAkId:(NSString *)aKId akSecret:(NSString *)akSecret;
-
++ (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 @end
 
 NS_ASSUME_NONNULL_END

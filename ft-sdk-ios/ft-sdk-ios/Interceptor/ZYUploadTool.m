@@ -14,42 +14,45 @@
 #import "ZYTrackerEventDBTool.h"
 #import "ZYLog.h"
 #import "RecordModel.h"
-#import "ZYConfig.h"
+#import "FTMobileConfig.h"
 @interface ZYUploadTool()
-@property (nonatomic, strong) NSDictionary *tag;
+@property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
+@property (nonatomic, strong) FTMobileConfig *config;
+
 @end
 @implementation ZYUploadTool
-
+-(instancetype)initWithConfig:(FTMobileConfig *)config{
+     self = [super init];
+       if (self) {
+           self.config = config;
+       }
+       return self;
+}
 -(void)upload{
-    return; //逻辑不完整
     if (!self.isUploading) {
         //当前数据库所有数据
-        NSArray *data = [[ZYTrackerEventDBTool sharedManger] getDatas];
-        ZYDebug(@"getDatas == %@",data);
         self.isUploading = YES;
-        [self flushQueue:data];
+        [self flushQueue];
     }
 }
-- (void)flushQueue:(NSArray *)queue{
-    NSMutableArray *upDatas = [queue mutableCopy];
-    RecordModel *model = [upDatas lastObject];
-    long tm = model.tm-1;
+- (void)flushQueue{
+   
     @try {
-        while ([upDatas count]>0){
-         NSUInteger sendBatchSize = ([upDatas count] > 10) ? 10 : [queue count];
-         NSArray *events = [queue subarrayWithRange:NSMakeRange(0, sendBatchSize)];
-         RecordModel *model = [events lastObject];
-         BOOL scuess = [self apiRequestWithEventsAry:events andError:nil];
-            if (scuess) {//请求失败
+        while ([[ZYTrackerEventDBTool sharedManger] getDatasCount]>0){
+            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
+         NSArray *updata = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+        
+         RecordModel *model = [updata lastObject];
+         BOOL scuess = [self apiRequestWithEventsAry:updata andError:nil];
+            if (!scuess) {//请求失败
                 ZYDebug(@"上传事件失败");
                 break;
             }
                 ZYDebug(@"上传事件成功");
-                tm = model.tm;
-                [upDatas removeObjectsInArray:events];
+            BOOL delect = [[ZYTrackerEventDBTool sharedManger] deleteItemWithTm:model.tm];
+            ZYDebug(@"delect == %d",delect);
         }
-        [[ZYTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
         self.isUploading = NO;
     }
     @catch (NSException *exception) {
@@ -57,58 +60,115 @@
     }
 }
 - (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
-    
-    if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,self.config.akSecret];
-    }
-    __block BOOL success = NO;
+    __block BOOL success =NO;
     __block int  retry = 0;
-    NSString *requestData;
-    //请求不成功 重试 请求3次还不成功 结束
-    while (!success && retry < 3) {
-            NSURL *url = nil;
+    NSString *requestData = [self getRequestDataWithEventArray:events];
+   
+        NSString *date =[ZYBaseInfoHander currentGMT];
+        NSURL *url = [NSURL URLWithString:@"http://10.100.64.106:19557/v1/write/metrics"];
+        NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
             //设置请求地址
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-            //设置请求方式
-            request.HTTPMethod = @"POST";
-            [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+        //添加header
+        NSMutableURLRequest *mutableRequest = [request mutableCopy];    //拷贝request
+         
+       
+        mutableRequest.HTTPMethod = @"POST";
+         //添加header
+        [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+        [mutableRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+        [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+
             //设置请求参数
-            request.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
-          //关于parameters是NSDictionary拼接后的NSString.关于拼接看后面拼接方法说明
+        [mutableRequest setValue:self.config.sdkUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+        [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
+        [mutableRequest setValue:@"forethought datakit" forHTTPHeaderField:@"User-Agent"];
+        [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
+        mutableRequest.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
+        if (self.config.enableRequestSigning) {
+            NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[ZYBaseInfoHander getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
+            [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
+        }
+        request = [mutableRequest copy];        //拷贝回去
         
+        ZYDebug(@"allHTTPHeaderFields == %@ mutableRequest.HTTPBody = %@", request.allHTTPHeaderFields,requestData);
+
+ 
             //设置请求session
             NSURLSession *session = [NSURLSession sharedSession];
-            
+            dispatch_group_t group = dispatch_group_create();
+            dispatch_group_enter(group);
+
             //设置网络请求的返回接收器
             NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) {
+                        ZYDebug(@"%@error1 = %@",error);
                         retry++;
                     }else{
                         NSError *errors;
                         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
                         if (errors){
+                            ZYDebug(@"%@error2 = %@",error);
                             retry++;
                         }else {
                             ZYDebug(@"%@responseObject = %@",responseObject);
                             success = YES;
                         }
                     }
+                     dispatch_group_leave(group);
                 });
+                   
             }];
         //开始请求
             [dataTask resume];
-    }
+        dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+
     return success;
 }
+
 // 更新网络指示器
 - (void)updateNetworkActivityIndicator:(BOOL)on {
     dispatch_async(dispatch_get_main_queue(), ^{
         [UIApplication sharedApplication].networkActivityIndicatorVisible = on;
     });
 }
-
-- (NSDictionary *)getBasicData{
+- (NSString *)getRequestDataWithEventArray:(NSArray *)events{
+    NSMutableString *requestDatas = [NSMutableString new];
+   
+    [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
+        NSString *event = [item valueForKey:@"op"];
+        NSString *cpn = [item valueForKey:@"cpn"];
+        NSString *rpn = [item valueForKey:@"rpn"];
+        if (rpn.length==0) {
+            rpn = @"null";
+        }
+        NSDictionary *opdata = item[@"opdata"];
+        if (idx==0) {
+                  [requestDatas appendString:[self getBasicData]];
+               
+        }else{
+                  [requestDatas appendFormat:@"\n%@",[self getBasicData]];
+               }
+        if (opdata) {
+            [opdata enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                [requestDatas appendFormat:@"%@=%@,",key,obj];
+            }];
+        }
+        if(cpn){
+            [requestDatas appendFormat:@"current_page_name=%@,",cpn];
+        }
+        if (rpn) {
+            [requestDatas appendFormat:@"root_page_name=%@",rpn];
+        }
+        [requestDatas appendFormat:@" event=\"%@\"",event];
+        [requestDatas appendFormat:@" %ld",obj.tm*1000*1000];
+    
+    }];
+  
+    return requestDatas;
+}
+- (NSString *)getBasicData{
     if (_tag != nil) {
         return _tag;
     }
@@ -120,26 +180,24 @@
     NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
     NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
     NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
-    
-   
+
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
     NSString *version = [UIDevice currentDevice].systemVersion;
-
-
-    NSDictionary *tag = @{@"device_uuid":uuid,
-                          @"application_identifier":identifier,
-                          @"application_name":app_Name,
-                          @"sdk_version":app_Version,
-                          @"imei":@"",
-                          @"os":@"iOS",
-                          @"os_version":version,
-                          @"locale":preferredLanguage,
-                          @"device_band":@"",
-                          @"device_model":[ZYBaseInfoHander getDeviceType],
-                          @"display":[ZYBaseInfoHander resolution],
-                          @"carrier":[ZYBaseInfoHander getTelephonyInfo],
-    };
-    _tag = tag;
+    NSMutableString *tag = [NSMutableString string];
+    [tag appendString:@"mobile_tracker,"];
+    [tag appendFormat:@"device_uuid=%@,",uuid];
+    [tag appendFormat:@"application_identifier=%@,",identifier];
+    [tag appendFormat:@"application_name=%@,",app_Name];
+    [tag appendFormat:@"sdk_version=%@,",app_Version];
+    [tag appendString:@"os=iOS,"];
+    [tag appendFormat:@"os_version=%@,",version];
+    [tag appendString:@"imei=null,"];
+    [tag appendString:@"device_band=APPLE,"];
+    [tag appendFormat:@"locale=%@,",preferredLanguage];
+    [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
+    [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
+    [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
+    _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
     return _tag;
 }
 

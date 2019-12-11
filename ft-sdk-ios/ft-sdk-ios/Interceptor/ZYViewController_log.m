@@ -41,7 +41,7 @@
             UIViewController * vc = [info instance];
                    NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
-                                          @"op":@"opn",
+                                          @"op":@"open",
                    };
                 [self addDBWithData:data];
                    ZYDebug(@"data == %@",data);
@@ -52,7 +52,7 @@
            UIViewController *tempVC = (UIViewController *)info.instance;
            NSDictionary *data =@{@"cpn":NSStringFromClass([tempVC class]),
                                  @"rpn":[UIViewController zy_getRootViewController],
-                                 @"op":@"cls",
+                                 @"op":@"close",
                };
               [self addDBWithData:data];
             ZYDebug(@"data == %@",data);
@@ -77,8 +77,8 @@
              }
              NSDictionary *data =@{@"cpn":className,
                                    @"rpn":[UIViewController zy_getRootViewController],
-                                   @"op":@"clk",
-                                   @"opdata":[tableView getParentsView],
+                                   @"op":@"click",
+                                   @"opdata":@{@"vtp":[tableView getParentsView]},
                            };
             [self addDBWithData:data];
              ZYDebug(@"data == %@",data);
@@ -100,8 +100,8 @@
                 }
              NSDictionary *data =@{@"cpn":className,
                                    @"rpn":[UIViewController zy_getRootViewController],
-                                   @"op":@"clk",
-                                   @"opdata":[collectionView getParentsView],
+                                   @"op":@"click",
+                                   @"opdata":@{@"vtp":[collectionView getParentsView]},
                                   };
              [self addDBWithData:data];
              ZYDebug(@"data == %@",data);
@@ -134,8 +134,8 @@
                NSString *className = NSStringFromClass([object class]);
                NSDictionary *data =@{@"cpn":className,
                                      @"rpn":[UIViewController zy_getRootViewController],
-                                     @"op":@"clk",
-                                     @"opdata":[button getParentsView],
+                                     @"op":@"click",
+                                     @"opdata":@{@"vtp":[button getParentsView]},
                                      };
                 [self addDBWithData:data];
                 ZYDebug(@"data == %@",data);
@@ -153,8 +153,8 @@
                 [target aspect_hookSelector:action withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
                     NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
-                                          @"op":@"clk",
-                                          @"opdata":[ges.view getParentsView],
+                                          @"op":@"click",
+                                          @"opdata":@{@"vtp":[ges.view getParentsView]},
                                                         };
                     [self addDBWithData:data];
                      ZYDebug(@"data == %@",data);
@@ -189,6 +189,7 @@
         self.lastSentDate = [NSDate date];
     }
       RecordModel *model = [RecordModel new];
+      model.tm = [ZYBaseInfoHander getCurrentTimestamp];
       model.data =[ZYBaseInfoHander convertToJsonData:data];
       [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }

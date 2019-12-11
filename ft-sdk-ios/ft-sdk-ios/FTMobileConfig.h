@@ -18,7 +18,7 @@
 #define ZG_CHANNEL @"App Store"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZYConfig : NSObject
+@interface FTMobileConfig : NSObject
 #pragma mark - 基本设置
 // SDK版本
 @property (nonatomic, copy) NSString *sdkVersion;

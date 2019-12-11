@@ -17,8 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)convertToJsonData:(NSDictionary *)dict;
 + (NSString *)resolution;
 + (long)getCurrentTimestamp;
-+ (NSString *)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSInteger)datetime data:(NSString *)data;
-
++ (NSString *)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSString *)datetime data:(NSString *)data;
++ (NSString *)currentGMT;
++ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 @end
 
 NS_ASSUME_NONNULL_END
