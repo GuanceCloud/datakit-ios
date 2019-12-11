@@ -14,7 +14,6 @@
         self.sdkVersion = ZY_SDK_VERSION;
         self.appVersion = ZY_APP_VERSION;
         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
-        self.channel = ZG_CHANNEL;
         
         CFUUIDRef puuid = CFUUIDCreate ( nil ) ;
         CFStringRef uuidString = CFUUIDCreateString ( nil , puuid ) ;
