@@ -11,9 +11,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
-+ (void)setup;
+
++ (instancetype)sharedInstance;
 
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
+
+/**
+ 追踪自定义事件。
+ 
+ @param field      文件名称
+ @param tags       事件属性
+ @param values     事件名称
+ */
+- (void)track:(nonnull NSString *)field tags:(nullable NSDictionary*)tags values:(nullable NSDictionary *)values;
 @end
 
 NS_ASSUME_NONNULL_END
