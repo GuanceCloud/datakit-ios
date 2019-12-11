@@ -43,14 +43,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
 }
-+ (void)setup{
-     [FTMobileAgent sharedInstance];
-}
+
 
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     if (configOptions.enableRequestSigning) {
-//      NSAssert((configOptions.akSecret.length==0||configOptions.akId.length == 0), @"");
+      NSAssert((configOptions.akSecret.length!=0 && configOptions.akId.length != 0), @"设置需要进行请求签名 必须要填akId与akSecret");
     }
+    NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
+    
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
@@ -58,11 +58,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 // 单例
 + (instancetype)sharedInstance {
-    static dispatch_once_t onceToken;
-    static FTMobileAgent *sharedInstance;
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTMobileAgent alloc] initWithConfig:nil];
-    });
+    NSAssert(sharedInstance, @"请先使用 startWithConfigOptions: 初始化 SDK");
     return sharedInstance;
 }
 - (instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -75,11 +71,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
-        _viewControllerLog = [[ZYViewController_log alloc]init];
-         __weak typeof(self) weakSelf = self;
-        _viewControllerLog.block = ^(void){
-            [weakSelf flush];
-        };
+//        _viewControllerLog = [[ZYViewController_log alloc]init];
+//         __weak typeof(self) weakSelf = self;
+//        _viewControllerLog.block = ^(void){
+//            [weakSelf flush];
+//        };
     }
     return self;
 }
@@ -121,10 +117,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                            selector:@selector(applicationDidEnterBackground:)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(appDidFinishLaunchingWithOptions:)
-                                  name:UIApplicationDidFinishLaunchingNotification
-                                object:nil];
+
     
 }
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
@@ -144,15 +137,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
          ZYDebug(@"applicationWillTerminate ");
 
 }
-- (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
-            RecordModel *model = [RecordModel new];
-            NSDictionary *data =@{
-                                @"op":@"launch",
-                              };
-            model.data =[ZYBaseInfoHander convertToJsonData:data];
-            [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-            ZYDebug(@"data == %@",data);
-}
 - (void)applicationWillResignActive:(NSNotification *)notification {
      @try {
         self.isForeground = NO;
@@ -166,15 +150,37 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-        [self flush];
+        [self startFlushTimer];
       }
       @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
       }
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
-         ZYDebug(@"applicationDidEnterBackground ");
-
+       ZYDebug(@"applicationDidEnterBackground ");
+}
+- (void)track:(nonnull NSString *)field tags:(nullable NSDictionary*)tags values:(nullable NSDictionary *)values{
+    @try {
+        if (field == nil || [field length] == 0 || values == nil || [values allKeys].count == 0) {
+            ZYDebug(@"文件名 事件名不能为空");
+            return;
+        }
+     RecordModel *model = [RecordModel new];
+     NSDictionary *data =@{
+                            @"op":@"cstm",
+                            @"opdata":@{
+                               @"field":field,
+                               @"tags":tags,
+                               @"values":values
+                             },
+                            };
+        model.data =[ZYBaseInfoHander convertToJsonData:data];
+        [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        ZYDebug(@"data == %@",data);
+    }
+      @catch (NSException *exception) {
+        ZYDebug(@"track field tags values exception %@",exception);
+      }
 }
 #pragma mark - 上报策略
 
@@ -182,7 +188,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)startFlushTimer {
     [self stopFlushTimer];
     dispatch_async(dispatch_get_main_queue(), ^{
-            self.timer = [NSTimer scheduledTimerWithTimeInterval:2.0
+            self.timer = [NSTimer scheduledTimerWithTimeInterval:10.0
                                                           target:self
                                                         selector:@selector(flush)
                                                         userInfo:nil
