@@ -8,6 +8,7 @@
 
 #import "SecondViewController.h"
 #import "Test4ViewController.h"
+#import <ft_sdk_ios/FTMobileAgent.h>
 @interface SecondViewController ()
 
 @end
@@ -23,6 +24,8 @@
        [self.view addGestureRecognizer:tap];
 }
 - (void)tap{
+    [[FTMobileAgent sharedInstance] track:@"pushFile" tags:@{@"pushVC":@"Test4ViewController"} values:@{@"event":@"Gesture"}];
+
     [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
 }
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{

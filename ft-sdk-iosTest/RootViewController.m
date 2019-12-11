@@ -8,6 +8,7 @@
 
 #import "RootViewController.h"
 #import "SecondViewController.h"
+#import <ft_sdk_ios/FTMobileAgent.h>
 @interface RootViewController ()
 
 @end
@@ -24,7 +25,8 @@
        [self.view addSubview:button];
 }
 - (void)buttonClick{
-        [self.navigationController pushViewController:[SecondViewController new] animated:YES];
+    [[FTMobileAgent sharedInstance] track:@"pushFile" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+    [self.navigationController pushViewController:[SecondViewController new] animated:YES];
 }
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
