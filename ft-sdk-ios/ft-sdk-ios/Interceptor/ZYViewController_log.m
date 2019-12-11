@@ -30,11 +30,21 @@
     return self;
 }
 -(void)setLogContent{
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                               selector:@selector(appDidFinishLaunchingWithOptions:)
+                                      name:UIApplicationDidFinishLaunchingNotification
+                                    object:nil];
     [self logViewControllerLifeCycle];
     [self logTableViewCollectionView];
     [self logTargetAction];
 }
-
+- (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
+        NSDictionary *data =@{
+                            @"op":@"launch",
+                            };
+        [self addDBWithData:data];
+}
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
        [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
