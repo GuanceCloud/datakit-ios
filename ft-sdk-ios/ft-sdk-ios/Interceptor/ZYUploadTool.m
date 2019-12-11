@@ -65,13 +65,11 @@
     NSString *requestData = [self getRequestDataWithEventArray:events];
    
         NSString *date =[ZYBaseInfoHander currentGMT];
-        NSURL *url = [NSURL URLWithString:@"http://10.100.64.106:19557/v1/write/metrics"];
+        NSURL *url = [NSURL URLWithString:self.config.metricsUrl];
         NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
             //设置请求地址
         //添加header
         NSMutableURLRequest *mutableRequest = [request mutableCopy];    //拷贝request
-         
-       
         mutableRequest.HTTPMethod = @"POST";
          //添加header
         [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
@@ -81,7 +79,7 @@
             //设置请求参数
         [mutableRequest setValue:self.config.sdkUUID forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-        [mutableRequest setValue:@"forethought datakit" forHTTPHeaderField:@"User-Agent"];
+        [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
         mutableRequest.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
         if (self.config.enableRequestSigning) {
@@ -137,31 +135,48 @@
    
     [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
-        NSString *event = [item valueForKey:@"op"];
-        NSString *cpn = [item valueForKey:@"cpn"];
-        NSString *rpn = [item valueForKey:@"rpn"];
-        if (rpn.length==0) {
-            rpn = @"null";
-        }
+       __block NSString *event = @" ";
         NSDictionary *opdata = item[@"opdata"];
-        if (idx==0) {
-                  [requestDatas appendString:[self getBasicData]];
-               
-        }else{
-                  [requestDatas appendFormat:@"\n%@",[self getBasicData]];
-               }
-        if (opdata) {
-            [opdata enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                [requestDatas appendFormat:@"%@=%@,",key,obj];
+        NSString *field;
+        __block NSString *appendTag = @"";
+        NSDictionary *tags;
+        if([[item valueForKey:@"op"] isEqualToString:@"cstm"]){
+            field = [opdata valueForKey:@"field"];
+            NSDictionary *values = opdata[@"values"];
+            [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
             }];
+           event = event.length>1? [event substringToIndex:event.length-1]:event;
+           tags =opdata[@"tags"];
+            
+        }else{
+            NSString *cpn = [item valueForKey:@"cpn"];
+            NSString *rpn = [item valueForKey:@"rpn"];
+            field =@"mobile_tracker";
+            event = [event stringByAppendingFormat:@"event=\"%@\"",[item valueForKey:@"op"]];
+            if(cpn){
+               appendTag = [appendTag stringByAppendingFormat:@"current_page_name=%@,",cpn];
+            }
+            if (rpn) {
+               appendTag =[appendTag stringByAppendingFormat:@"root_page_name=%@,",rpn];
+            }
+            if (opdata) {
+                tags = opdata;
+            }
         }
-        if(cpn){
-            [requestDatas appendFormat:@"current_page_name=%@,",cpn];
+        [tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                appendTag = [appendTag stringByAppendingFormat:@"%@=%@,",key,obj];
+        }];
+        appendTag =appendTag.length>1? [appendTag substringToIndex:appendTag.length-1]:appendTag;
+
+        if (idx==0) {
+                [requestDatas appendFormat:@"%@,%@",field,[self getBasicData]];
+        }else{
+                [requestDatas appendFormat:@"\n%@,%@",field,[self getBasicData]];
         }
-        if (rpn) {
-            [requestDatas appendFormat:@"root_page_name=%@",rpn];
-        }
-        [requestDatas appendFormat:@" event=\"%@\"",event];
+       
+        [requestDatas appendString:appendTag];
+        [requestDatas appendString:event];
         [requestDatas appendFormat:@" %ld",obj.tm*1000*1000];
     
     }];
@@ -184,7 +199,7 @@
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
     NSString *version = [UIDevice currentDevice].systemVersion;
     NSMutableString *tag = [NSMutableString string];
-    [tag appendString:@"mobile_tracker,"];
+
     [tag appendFormat:@"device_uuid=%@,",uuid];
     [tag appendFormat:@"application_identifier=%@,",identifier];
     [tag appendFormat:@"application_name=%@,",app_Name];
