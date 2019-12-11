@@ -78,12 +78,13 @@ static ZYTrackerEventDBTool *dbTool = nil;
 }
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
    if([self isOpenDatabese:self.db]) {
+       __block BOOL  is = NO;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",ZY_DB_BASELOG_TABLE_NAME,item.tm,item.data];
         BOOL  is=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"success == %d",is);
        }];
-       return YES;
+       return is;
    }else{
    return NO;
    }
@@ -161,14 +162,16 @@ static ZYTrackerEventDBTool *dbTool = nil;
 }
 - (BOOL)zy_isExistTable:(NSString *)tableName
 {
-    ZY_FMResultSet *set = [_db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
-                                         "WHERE type ='table' and name = ?", tableName];
-
-    NSInteger count = 0;
-    if ([set next]) {
-        count = [set intForColumn:@"count"];
-    }
-    [set close];
+    __block NSInteger count = 0;
+    [self zy_inDatabase:^{
+        ZY_FMResultSet *set = [self.db executeQuery:@"SELECT count(*) as 'count' FROM sqlite_master "
+                                                "WHERE type ='table' and name = ?", tableName];
+           while([set next]) {
+               count = [set intForColumn:@"count"];
+           }
+           [set close];
+    }];
+   
     return count > 0;
 }
 - (void)zy_inDatabase:(void(^)(void))block
