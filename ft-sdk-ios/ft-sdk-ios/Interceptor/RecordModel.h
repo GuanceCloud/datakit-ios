@@ -11,10 +11,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RecordModel : NSObject
-@property (nonatomic, strong) NSString *cpn;//current page name，当前页面名称
-@property (nonatomic, strong) NSString *rpn;//root page name，根部页面名称
-@property (nonatomic, strong) NSString *op; //operation，操作 lanc\open\cls\clk
-@property (nonatomic, strong) NSDictionary *opdata; //@{@"vtp":@""} //
 
 @property (nonatomic, assign) long _id;
 @property (nonatomic, assign) long tm;

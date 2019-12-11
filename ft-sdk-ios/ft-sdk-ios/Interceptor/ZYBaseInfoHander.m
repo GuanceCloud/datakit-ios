@@ -139,12 +139,12 @@
 + (NSString *)resolution {
     CGRect rect = [[UIScreen mainScreen] bounds];
     CGFloat scale = [[UIScreen mainScreen] scale];
-    return [[NSString alloc] initWithFormat:@"%.fx%.f",rect.size.height*scale,rect.size.width*scale];
+    return [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
 }
 +(NSString *)convertToJsonData:(NSDictionary *)dict
 {
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingSortedKeys error:&error];
     NSString *jsonString;
     if (!jsonData) {
         ZYDebug(@"%@",error);
@@ -167,8 +167,6 @@
 + (long)getCurrentTimestamp{
     
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init] ;
-    
-    
     [formatter setDateFormat:@"YYYY-MM-dd HH:mm:ss.SSS"]; // ----------设置你想要的格式,hh与HH的区别:分别表示12小时制,24小时制
     
     //设置时区,这个对于时间的处理有时很重要
@@ -191,7 +189,7 @@
      NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
      return string;
 }
-+(NSString*)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSInteger)datetime data:(NSString *)data
++(NSString*)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSString *)datetime data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     
@@ -201,7 +199,7 @@
     [signString appendString:@"\n"];
     [signString appendString:@"text/plain"];
     [signString appendString:@"\n"];
-    [signString appendString:[NSString stringWithFormat:@"%ld",(long)datetime]];
+    [signString appendString:[NSString stringWithFormat:@"%@",datetime]];
     const char *secretStr = [akSecret UTF8String];
     const char * signStr = [signString UTF8String];
     
@@ -209,5 +207,39 @@
     CCHmac(kCCHmacAlgSHA1, secretStr, strlen(secretStr), signStr, strlen(signStr), cHMAC);
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
+}
++ (NSString *)currentGMT {
+    
+    NSDate *date = [NSDate date];
+    
+    NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
+    
+    [NSTimeZone setDefaultTimeZone:tzGMT];
+    
+    NSDateFormatter *iosDateFormater=[[NSDateFormatter alloc]init];
+    
+    iosDateFormater.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
+    
+    iosDateFormater.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
+    
+    return [iosDateFormater stringFromDate:date];
+}
++ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString
+{
+    if (jsonString == nil) {
+        return nil;
+    }
+
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    if(err)
+    {
+        NSLog(@"json解析失败：%@",err);
+        return nil;
+    }
+    return dic;
 }
 @end
