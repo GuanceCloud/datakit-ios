@@ -36,6 +36,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
             dbTool = ZYTrackerEventDBTool.new;
             dbTool.db = fmdb;
             dbTool.dbPath = path;
+            ZYDebug(@"db path:%@",path);
         }
     }
     if (![dbTool.db open]) {
@@ -94,7 +95,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",ZY_DB_BASELOG_TABLE_NAME];
 
     return [self getDatasWithFormat:sql];
-   
+
 }
 -(NSArray *)getFirstTenData{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",ZY_DB_BASELOG_TABLE_NAME];
@@ -118,9 +119,9 @@ static ZYTrackerEventDBTool *dbTool = nil;
       item.tm= [[set stringForColumn:@"tm"] longLongValue];
 
       item.data= [set stringForColumn:@"data"];
-          
+
       [array addObject:item];
-      
+
       }
       }];
         return array;

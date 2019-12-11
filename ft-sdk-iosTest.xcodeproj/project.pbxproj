@@ -18,6 +18,7 @@
 		4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169862391146600C0BC4E /* Test4ViewController.m */; };
 		4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* SecondViewController.m */; };
 		4A8842B1239E5A24001B44C3 /* ft_sdk_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */; };
+		6B6E2118C18DB458C6F0E9E9 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 6B6E2B890B98491C61DE3B19 /* README.md */; };
 		6B6E2F74A350787288096F1B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2AE64DF63C535602DE59 /* .gitignore */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +53,7 @@
 		4A1169882391146600C0BC4E /* Test4ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test4ViewController.h; sourceTree = "<group>"; };
 		4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ft-sdk-ios.xcodeproj"; path = "ft-sdk-ios/ft-sdk-ios.xcodeproj"; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
+		6B6E2B890B98491C61DE3B19 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +76,7 @@
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
+				6B6E2B890B98491C61DE3B19 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -218,6 +221,7 @@
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
+				6B6E2118C18DB458C6F0E9E9 /* README.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
