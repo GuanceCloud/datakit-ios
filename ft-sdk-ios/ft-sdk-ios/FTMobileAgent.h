@@ -23,7 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
  @param tags       事件属性
  @param values     事件名称
  */
-- (void)track:(nonnull NSString *)field tags:(nullable NSDictionary*)tags values:(nullable NSDictionary *)values;
+- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
+/**
+主动埋点
+ @param field   埋点事件名称
+ @param values 埋点数据
+*/
+
+- (void)track:(NSString *)field  values:(NSDictionary *)values;
 @end
 
 NS_ASSUME_NONNULL_END

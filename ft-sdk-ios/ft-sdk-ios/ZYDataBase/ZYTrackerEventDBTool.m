@@ -82,7 +82,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
        __block BOOL  is = NO;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",ZY_DB_BASELOG_TABLE_NAME,item.tm,item.data];
-        BOOL  is=  [self.db executeUpdate:sqlStr];
+          is=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"success == %d",is);
        }];
        return is;
