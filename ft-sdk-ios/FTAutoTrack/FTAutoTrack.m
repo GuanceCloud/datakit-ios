@@ -6,7 +6,7 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "ZYViewController_log.h"
+#import "FTAutoTrack.h"
 #import "UIView+ZY_currentController.h"
 #import "UIViewController+ZY_RootVC.h"
 #import "ZYAspects.h"
@@ -15,12 +15,13 @@
 #import "ZYTrackerEventDBTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
+
 #import <objc/runtime.h>
-@interface ZYViewController_log()
+@interface FTAutoTrack()
 @property (nonatomic, strong) NSDate *lastSentDate;
 
 @end
-@implementation ZYViewController_log
+@implementation FTAutoTrack
 
 - (instancetype)init {
     self = [super init];
@@ -120,6 +121,15 @@
          
      }error:nil];
     
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+     [notificationCenter addObserver:self
+                                  selector:@selector(tableViewSelectionDidChangeNotification:)
+                                         name:UITableViewSelectionDidChangeNotification
+                                       object:nil];
+    
+}
+- (void)tableViewSelectionDidChangeNotification:(NSNotification *)notification{
+    ZYDebug(@"tableViewSelectionDidChangeNotification == %@",notification);
 }
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{

@@ -7,9 +7,7 @@
 //
 
 #import "FTMobileAgent.h"
-#import "ZYAspects.h"
 #import <UIKit/UIKit.h>
-#import "ZYViewController_log.h"
 #import "ZYLog.h"
 #import "ZYTrackerEventDBTool.h"
 #import <SystemConfiguration/SystemConfiguration.h>
@@ -30,7 +28,7 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
 @implementation FTMobileAgent{
-    ZYViewController_log *_viewControllerLog;
+//    ZYViewController_log *_viewControllerLog;
 }
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;

@@ -8,6 +8,7 @@
 
 #import "ZYTrackerEventDBTool.h"
 #import "RecordModel.h"
+#import "ZY_FMDB.h"
 #import "ZYLog.h"
 @interface ZYTrackerEventDBTool ()
 @property (nonatomic, strong)NSString *dbPath;
