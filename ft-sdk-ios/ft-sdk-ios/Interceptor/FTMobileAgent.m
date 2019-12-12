@@ -159,20 +159,26 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
        ZYDebug(@"applicationDidEnterBackground ");
 }
-- (void)track:(nonnull NSString *)field tags:(nullable NSDictionary*)tags values:(nullable NSDictionary *)values{
+- (void)track:(NSString *)field  values:(NSDictionary *)values{
+    [self track:field tags:nil values:values];
+}
+- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values{
     @try {
         if (field == nil || [field length] == 0 || values == nil || [values allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
         }
+     NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+       @"field":field,
+       @"values":values
+     }];
+        if (tags) {
+            [opdata addEntriesFromDictionary:@{@"tags":tags}];
+        }
      RecordModel *model = [RecordModel new];
      NSDictionary *data =@{
                             @"op":@"cstm",
-                            @"opdata":@{
-                               @"field":field,
-                               @"tags":tags,
-                               @"values":values
-                             },
+                            @"opdata":opdata,
                             };
         model.data =[ZYBaseInfoHander convertToJsonData:data];
         [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
