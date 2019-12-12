@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "FTAutoTrack"
-  s.version      = "1.0.0-alpha.1"
+  s.version      = "1.0.0-alpha.2"
   s.summary      = "驻云 DataFlux FT Mobile SDK 无埋点"
 
   # This description is used to generate tags and improve search results.
@@ -79,7 +79,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "http://gitlab.jiagouyun.com/cma/ft-sdk-ios.git", :tag => "track_1.0.0-alpha.1" }
+  s.source       = { :git => "http://gitlab.jiagouyun.com/cma/ft-sdk-ios.git", :tag => "track_1.0.0-alpha.2" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
