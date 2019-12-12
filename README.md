@@ -40,6 +40,7 @@
  @param values     事件名称（必填）
 */ 
  - (void)track:( NSString *)field  values:(NSDictionary *)values;
+ 
  ```
 
 -  方法二：
@@ -52,10 +53,14 @@
  @param values     事件名称（必填）
  */
  - (void)track:( NSString *)field tags:(nullable NSDictionary*)tags values:( NSDictionary *)values;
+ 
  ```
+ 
 2、方法使用示例
+
 ```
    [[FTMobileAgent sharedInstance] track:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+   
 ```
 
 
