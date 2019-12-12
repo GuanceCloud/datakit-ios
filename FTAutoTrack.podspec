@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "FTAutoTrack"
-  s.version      = "1.0.0-alpha.3"
+  s.version      = "1.0.0-alpha.1"
   s.summary      = "驻云 DataFlux FT Mobile SDK 无埋点"
 
   # This description is used to generate tags and improve search results.
