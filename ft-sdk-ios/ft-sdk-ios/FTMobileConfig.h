@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *akId;
 
 @property (nonatomic, copy) NSString *akSecret;
+@property (nonatomic, assign) BOOL isDebug;
 @end
 
 NS_ASSUME_NONNULL_END
