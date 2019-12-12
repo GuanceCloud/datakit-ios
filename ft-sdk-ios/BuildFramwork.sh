@@ -10,7 +10,7 @@ DEVICE_DIR=${WORK_DIR}/'Release-iphoneos'/${FRAMEWORK_NAME}'.framework'
 #release环境下，simulator编译出的framework。这个framework只能供模拟器运行。
 SIMULATOR_DIR=${WORK_DIR}/'Release-iphonesimulator'/${FRAMEWORK_NAME}'.framework'
 #framework的输出目录
-OUTPUT_DIR=${SRCROOT}/'Products'/${FRAMEWORK_NAME}'.framework'
+OUTPUT_DIR=${SRCROOT}/'Pod_Products'/${FRAMEWORK_NAME}'.framework'
 
 ##xcodebuild打包
 xcodebuild -target ${FRAMEWORK_NAME} ONLY_ACTIVE_ARCH=NO -configuration 'Relase' -sdk iphoneos  
