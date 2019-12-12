@@ -17,12 +17,20 @@
 		4A1169842391145B00C0BC4E /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169832391145B00C0BC4E /* RootViewController.m */; };
 		4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169862391146600C0BC4E /* Test4ViewController.m */; };
 		4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* SecondViewController.m */; };
+		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A8842B1239E5A24001B44C3 /* ft_sdk_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */; };
 		6B6E2118C18DB458C6F0E9E9 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 6B6E2B890B98491C61DE3B19 /* README.md */; };
 		6B6E2F74A350787288096F1B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2AE64DF63C535602DE59 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		4A852FE723A241B700B40B5D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A852FCB23A2408600B40B5D;
+			remoteInfo = FTAutoTrack;
+		};
 		4A8842AC239E57B6001B44C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */;
@@ -61,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
 				4A8842B1239E5A24001B44C3 /* ft_sdk_ios.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -123,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */,
+				4A852FE823A241B700B40B5D /* FTAutoTrack.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -186,6 +196,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		4A852FE823A241B700B40B5D /* FTAutoTrack.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = FTAutoTrack.framework;
+			remoteRef = 4A852FE723A241B700B40B5D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;

@@ -32,18 +32,20 @@
 
 ## 方法
  1、FT SDK公开了2个埋点方法，用户通过这三个方法可以主动在需要的地方实现埋点，然后将数据上传到服务端。
--  方法一：
+- 方法一
+
  ```
   /**
 追踪自定义事件。
  @param field      文件名称（必填）
  @param values     事件名称（必填）
 */ 
- - (void)track:( NSString *)field  values:(NSDictionary *)values;
+  - (void)track:( NSString *)field  values:(NSDictionary *)values;
  
  ```
 
--  方法二：
+-  方法二
+
  ```
 /**
  追踪自定义事件。

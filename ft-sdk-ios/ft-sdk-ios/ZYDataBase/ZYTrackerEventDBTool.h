@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ZY_FMDB.h"
+
 NS_ASSUME_NONNULL_BEGIN
 #define ZY_DB_BASELOG_TABLE_NAME @"zy_base"
 @class RecordModel;
