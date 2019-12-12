@@ -8,13 +8,14 @@
 
 #ifndef ZYLog_h
 #define ZYLog_h
+#define SETISDEBUG(isdebug) [[NSUserDefaults standardUserDefaults] setBool:isdebug forKey:@"FTALLOWDEBUG"]
 #define ZYDebug_Log
 static inline void ZYLog(NSString * _Nullable format, ...) {
     __block va_list arg_list;
     va_start (arg_list, format);
     NSString *formattedString = [[NSString alloc] initWithFormat:format arguments:arg_list];
     va_end(arg_list);
-    NSLog(@"[ZYLog]: %@", formattedString);
+    [[NSUserDefaults standardUserDefaults] boolForKey:@"FTALLOWDEBUG"]? NSLog(@"[ZYLog]: %@", formattedString):nil;
 }
 #ifdef  ZYDebug_Log
 #define ZYDebug(...) ZYLog(__VA_ARGS__)

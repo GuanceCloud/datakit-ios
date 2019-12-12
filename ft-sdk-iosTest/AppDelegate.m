@@ -23,6 +23,7 @@
     config.enableRequestSigning = YES;
     config.akSecret = @"accsk";
     config.akId = @"accid";
+    config.isDebug = YES;
     config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
      [FTMobileAgent startWithConfigOptions:config];
     return YES;
