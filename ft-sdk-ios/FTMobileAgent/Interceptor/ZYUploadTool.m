@@ -100,16 +100,16 @@
             NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) {
-                        ZYDebug(@"%@error1 = %@",error);
+                        ZYDebug(@"response error = %@",error);
                         retry++;
                     }else{
                         NSError *errors;
                         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
                         if (errors){
-                            ZYDebug(@"%@error2 = %@",error);
+                            ZYDebug(@"response error = %@",error);
                             retry++;
                         }else {
-                            ZYDebug(@"%@responseObject = %@",responseObject);
+                            ZYDebug(@"responseObject = %@",responseObject);
                             success = YES;
                         }
                     }
