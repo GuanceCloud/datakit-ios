@@ -1,12 +1,13 @@
 # FT Mobile SDK iOS
 
 ## 安装
-选择 1：手动导入
-选择 2：Cocoapods 导入
+-  选择 1：手动导入
+-  选择 2：Cocoapods 导入
+ 配置Podfile文件
+ 在Podfile文件中添加`pod 'FTAutoTrack'`
 ## 配置
 - 添加头文件
-请将`#import "FTMobileAgent.h"
-`与`#import "FTMobileConfig.h"
+请将`#import <FTMobileAgent/FTMobileAgent.h>
 `添加到 AppDelegate.m 引用头文件的位置。
 
 - 添加初始化代码

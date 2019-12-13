@@ -1,0 +1,16 @@
+PODS:
+  - FTMobileAgent (1.0.0-alpha.4)
+
+DEPENDENCIES:
+  - FTMobileAgent (~> 1.0.0-alpha.2)
+
+SPEC REPOS:
+  trunk:
+    - FTMobileAgent
+
+SPEC CHECKSUMS:
+  FTMobileAgent: a535068d3a16577db029487511a382fff5df8910
+
+PODFILE CHECKSUM: bf9b5f1795354806cbd7732c69625222514a3362
+
+COCOAPODS: 1.8.3
