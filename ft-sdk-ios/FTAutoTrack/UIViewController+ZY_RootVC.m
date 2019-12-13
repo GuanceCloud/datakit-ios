@@ -7,7 +7,6 @@
 //
 
 #import "UIViewController+ZY_RootVC.h"
-#import "ZYLog.h"
 @implementation UIViewController (ZY_RootVC)
 + (NSString *)zy_getRootViewController{
     UIWindow* window = nil;
@@ -28,7 +27,6 @@
            #pragma clang diagnostic pop
        }
     NSString *name = NSStringFromClass([window.rootViewController class]);
-    ZYDebug(@"window.rootViewController name === %@",name);
     
     if( [name isKindOfClass:NSNull.class]
        ||name==nil){
