@@ -124,12 +124,7 @@
     return success;
 }
 
-// 更新网络指示器
-- (void)updateNetworkActivityIndicator:(BOOL)on {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = on;
-    });
-}
+
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
    
