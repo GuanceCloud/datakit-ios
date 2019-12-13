@@ -1,6 +1,6 @@
 //
 //  ZYConfig.h
-//  ft-sdk-ios
+//  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/6.
 //  Copyright © 2019 hll. All rights reserved.

@@ -8,7 +8,7 @@
 
 #import "RootViewController.h"
 #import "SecondViewController.h"
-#import <ft_sdk_ios/FTMobileAgent.h>
+#import <FTMobileAgent/FTMobileAgent.h>
 @interface RootViewController ()
 
 @end

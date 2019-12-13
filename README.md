@@ -11,7 +11,8 @@
 
 - 添加初始化代码
   请将以下代码添加到`-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions`
-  ```
+  
+  ```objective-c
     FTMobileConfig *config = [FTMobileConfig new];
     config.enableRequestSigning = YES;
     config.akSecret = akSecret;
@@ -32,21 +33,21 @@
 
 ## 方法
  1、FT SDK公开了2个埋点方法，用户通过这三个方法可以主动在需要的地方实现埋点，然后将数据上传到服务端。
-- 方法一
 
- ```
+-  方法一：
+
+```objective-c
   /**
 追踪自定义事件。
  @param field      文件名称（必填）
  @param values     事件名称（必填）
 */ 
-  - (void)track:( NSString *)field  values:(NSDictionary *)values;
+ - (void)track:( NSString *)field  values:(NSDictionary *)values;
+```
  
- ```
+-  方法二：
 
--  方法二
-
- ```
+```objective-c
 /**
  追踪自定义事件。
  
@@ -55,12 +56,11 @@
  @param values     事件名称（必填）
  */
  - (void)track:( NSString *)field tags:(nullable NSDictionary*)tags values:( NSDictionary *)values;
- 
- ```
- 
+```
+
 2、方法使用示例
 
-```
+```objective-c
    [[FTMobileAgent sharedInstance] track:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
    
 ```
