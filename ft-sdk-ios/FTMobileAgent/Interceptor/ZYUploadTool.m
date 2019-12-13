@@ -88,8 +88,6 @@
         }
         request = [mutableRequest copy];        //拷贝回去
         
-        ZYDebug(@"allHTTPHeaderFields == %@ mutableRequest.HTTPBody = %@", request.allHTTPHeaderFields,requestData);
-
  
             //设置请求session
             NSURLSession *session = [NSURLSession sharedSession];
