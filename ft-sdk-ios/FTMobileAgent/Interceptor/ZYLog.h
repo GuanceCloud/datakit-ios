@@ -17,11 +17,9 @@ static inline void ZYLog(NSString * _Nullable format, ...) {
     va_end(arg_list);
     [[NSUserDefaults standardUserDefaults] boolForKey:@"FTALLOWDEBUG"]? NSLog(@"[ZYLog]: %@", formattedString):nil;
 }
-#ifdef  ZYDebug_Log
+
 #define ZYDebug(...) ZYLog(__VA_ARGS__)
-#else
-#define ZYDebug(...)
-#endif
+
 
 
 #endif /* ZYLog_h */
