@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/FTMobileConfig.h>
 
 @interface AppDelegate ()
 

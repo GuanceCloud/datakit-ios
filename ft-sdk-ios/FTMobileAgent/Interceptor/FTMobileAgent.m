@@ -15,7 +15,6 @@
 #import "ZYUploadTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
-#import "FTMobileConfig.h"
 @interface FTMobileAgent ()
 @property (nonatomic) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
