@@ -1,10 +1,14 @@
 # FT Mobile SDK iOS
 
 ## 安装
--  选择 1：手动导入
--  选择 2：Cocoapods 导入
- 配置Podfile文件
- 在Podfile文件中添加`pod 'FTAutoTrack'`
+-  **通过源码集成**
+   - 获取源码。
+   - 将 SDK 源代码导入 App 项目，并选中 Copy items if needed;
+   - 添加依赖库：项目设置 "Build Phase" -> "Link Binary With Libraries" 添加：libicucore、libsqlite3 和 libz。
+-  **通过 CocoaPods 集成**
+  - 配置Podfile文件，在Podfile文件中添加`pod 'FTAutoTrack'`
+  - 在 Podfile 目录下执行 pod install 安装 SDK。
+ 
 ## 配置
 - 添加头文件
 请将`#import <FTMobileAgent/FTMobileAgent.h>
