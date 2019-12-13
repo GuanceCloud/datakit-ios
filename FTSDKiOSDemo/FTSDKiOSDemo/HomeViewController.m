@@ -24,6 +24,7 @@
     button.backgroundColor = [UIColor redColor];
     [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
           [self.view addSubview:button];
+    [self.view addSubview:self.tableView];
     // Do any additional setup after loading the view.
 }
 - (void)buttonClick{

@@ -6,5 +6,5 @@ target 'FTSDKiOSDemo' do
   use_frameworks!
 
   # Pods for FTSDKiOSDemo
-   pod 'FTMobileAgent', '~>1.0.0-alpha.2'
+   pod 'FTMobileAgent', '~>1.0.0-alpha.5'
 end
