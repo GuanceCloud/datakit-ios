@@ -35,7 +35,7 @@ FRAMEWORK_PATH="$PRODUCT_NAME.framework"
 
 zip -q -r "$ZIP_PATH" "$FRAMEWORK_PATH"
 
-~/ossutilmac64 cp "$ZIP_PATH" oss://zhuyun-static-files-production/ft-sdk-package/ios/"$PRODUCT_NAME"
+~/ossutilmac64 cp "$ZIP_PATH" oss://zhuyun-static-files-production/ft-sdk-package/ios/"$PRODUCT_NAME"/
 
 
 # 回到项目根目录
