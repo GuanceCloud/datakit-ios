@@ -7,15 +7,26 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		CA3063CD23A2553F000BE230 /* BuildFramwork */ = {
+		CA3063CD23A2553F000BE230 /* BuildFramworkAgent */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramwork" */;
+			buildConfigurationList = CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgent" */;
 			buildPhases = (
 				CA3063D123A25545000BE230 /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = BuildFramwork;
+			name = BuildFramworkAgent;
+			productName = BuildFramwork;
+		};
+		CACC4E2723A75AFB006BA378 /* BuildFramworkTrack */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = CACC4E2923A75AFB006BA378 /* Build configuration list for PBXAggregateTarget "BuildFramworkTrack" */;
+			buildPhases = (
+				CACC4E2823A75AFB006BA378 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = BuildFramworkTrack;
 			productName = BuildFramwork;
 		};
 /* End PBXAggregateTarget section */
@@ -92,6 +103,7 @@
 		4A884285239E5768001B44C3 /* ZY_FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabase.h; sourceTree = "<group>"; };
 		4A884286239E5768001B44C3 /* ZY_FMDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDB.h; sourceTree = "<group>"; };
 		4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabaseAdditions.m; sourceTree = "<group>"; };
+		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +150,7 @@
 		4A884250239E5754001B44C3 = {
 			isa = PBXGroup;
 			children = (
+				CACC4E2623A72A67006BA378 /* BuildFramwork.sh */,
 				4A88425C239E5754001B44C3 /* FTMobileAgent */,
 				4A852FCC23A2408600B40B5D /* FTAutoTrack */,
 				4A88425B239E5754001B44C3 /* Products */,
@@ -318,7 +331,8 @@
 			targets = (
 				4A884259239E5754001B44C3 /* FTMobileAgent */,
 				4A852FCA23A2408600B40B5D /* FTAutoTrack */,
-				CA3063CD23A2553F000BE230 /* BuildFramwork */,
+				CA3063CD23A2553F000BE230 /* BuildFramworkAgent */,
+				CACC4E2723A75AFB006BA378 /* BuildFramworkTrack */,
 			);
 		};
 /* End PBXProject section */
@@ -356,7 +370,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh FTMobileAgent\n";
+		};
+		CACC4E2823A75AFB006BA378 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh FTAutoTrack\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -410,7 +441,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = HLL.FTAutoTrack;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTAutoTrack;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -434,7 +465,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = HLL.FTAutoTrack;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTAutoTrack;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -576,7 +607,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-ios";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -602,7 +633,7 @@
 				);
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-ios";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -619,6 +650,23 @@
 			name = Debug;
 		};
 		CA3063D023A2553F000BE230 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		CACC4E2A23A75AFB006BA378 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		CACC4E2B23A75AFB006BA378 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -656,11 +704,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramwork" */ = {
+		CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgent" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CA3063CF23A2553F000BE230 /* Debug */,
 				CA3063D023A2553F000BE230 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CACC4E2923A75AFB006BA378 /* Build configuration list for PBXAggregateTarget "BuildFramworkTrack" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CACC4E2A23A75AFB006BA378 /* Debug */,
+				CACC4E2B23A75AFB006BA378 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

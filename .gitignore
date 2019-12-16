@@ -7,5 +7,6 @@ Pods/Pods.xcodeproj/xcuserdata/
 #CocoaPods
 Pods
 Pods/
+Pod_Products/
 !Podfile
 !Podfile.lock

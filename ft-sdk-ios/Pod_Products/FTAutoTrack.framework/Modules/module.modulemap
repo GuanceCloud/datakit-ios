@@ -1,6 +1,0 @@
-framework module FTAutoTrack {
-  umbrella header "FTAutoTrack.h"
-
-  export *
-  module * { export * }
-}
