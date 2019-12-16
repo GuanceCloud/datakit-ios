@@ -18,7 +18,7 @@
 		4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169862391146600C0BC4E /* Test4ViewController.m */; };
 		4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* SecondViewController.m */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
-		4A8842B1239E5A24001B44C3 /* ft_sdk_ios.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */; };
+		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		6B6E2C35DCA680E508F643B4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E21066A0E4C8BA3026ECC /* LICENSE */; };
 /* End PBXBuildFile section */
 
@@ -70,7 +70,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
-				4A8842B1239E5A24001B44C3 /* ft_sdk_ios.framework in Frameworks */,
+				4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,7 +132,7 @@
 		4A8842A9239E57B6001B44C3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */,
+				4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */,
 				4A852FE823A241B700B40B5D /* FTAutoTrack.framework */,
 			);
 			name = Products;
@@ -204,10 +204,10 @@
 			remoteRef = 4A852FE723A241B700B40B5D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4A8842AD239E57B6001B44C3 /* ft_sdk_ios.framework */ = {
+		4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = ft_sdk_ios.framework;
+			path = FTMobileAgent.framework;
 			remoteRef = 4A8842AC239E57B6001B44C3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
