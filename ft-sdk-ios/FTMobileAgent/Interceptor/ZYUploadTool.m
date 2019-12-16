@@ -180,9 +180,7 @@
     if (_tag != nil) {
         return _tag;
     }
-    CFUUIDRef puuid = CFUUIDCreate ( nil ) ;
-    CFStringRef uuidString = CFUUIDCreateString ( nil , puuid ) ;
-    NSString* uuid = (NSString*)CFBridgingRelease(CFStringCreateCopy(NULL, uuidString));
+    NSString* uuid =[ZYBaseInfoHander defaultDeviceId];
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     CFShow((__bridge CFTypeRef)(infoDictionary));
     NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];

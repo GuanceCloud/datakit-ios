@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSString *)datetime data:(NSString *)data;
 + (NSString *)currentGMT;
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
++ (NSString *)defaultDeviceId;
 @end
 
 NS_ASSUME_NONNULL_END
