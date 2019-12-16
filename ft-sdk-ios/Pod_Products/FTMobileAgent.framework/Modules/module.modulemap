@@ -1,6 +1,0 @@
-framework module FTMobileAgent {
-  umbrella header "FTMobileAgent.h"
-
-  export *
-  module * { export * }
-}
