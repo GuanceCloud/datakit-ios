@@ -35,7 +35,7 @@ THE SOFTWARE.
   # s.tvos.deployment_target = "9.0"
 
   # s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent_1.0.0-alpha.9.zip" }
-  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent_$JENKINS_DYNAMIC_VERSION.zip" }
+  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/$JENKINS_DYNAMIC_VERSION.zip" }
   s.vendored_frameworks = 'FTMobileAgent.framework'
   # s.dependency "JSONKit", "~> 1.4"
 

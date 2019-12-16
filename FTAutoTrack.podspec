@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   # s.tvos.deployment_target = "9.0"
 
   # s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack_1.0.0-alpha.2.zip" }
-  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack_$JENKINS_DYNAMIC_VERSION.zip" }
+  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/$JENKINS_DYNAMIC_VERSION.zip" }
   s.vendored_frameworks = 'FTAutoTrack.framework'
 
   s.dependency "FTMobileAgent", "~> 1.0.0-alpha.4"
