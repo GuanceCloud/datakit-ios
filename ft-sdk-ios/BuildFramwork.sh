@@ -32,13 +32,9 @@ lipo -create ${DEVICE_DIR}/${FRAMEWORK_NAME} ${SIMULATOR_DIR}/${FRAMEWORK_NAME} 
 
 rm -r ${WORK_DIR}
 
-# open ${OUTPUT_DIR}
+
 
 }
 
-buildFrameWorkWithName 'FTMobileAgent'
-buildFrameWorkWithName 'FTAutoTrack'
+buildFrameWorkWithName $1
 
-
-
-#打开输出目录
