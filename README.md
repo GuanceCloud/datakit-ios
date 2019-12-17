@@ -76,4 +76,6 @@
 - IMEI
   因为隐私问题，苹果用户在iOS5以后禁用代码直接获取IMEI的值。所以iOS sdk中不支持获取此字段。
    
+=======
+https://github.com/CloudCare/ft-sdk-ios-demo
 
