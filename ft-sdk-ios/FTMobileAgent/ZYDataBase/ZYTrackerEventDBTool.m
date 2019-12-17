@@ -72,7 +72,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
                    }
                }
                [sql appendString:@")"];
-               NSLog(@"%@", sql);
+               ZYDebug(@"%@", sql);
              BOOL success =[self.db executeUpdate:sql];
             ZYDebug(@"createTable success == %d",success);
            }
