@@ -2,22 +2,22 @@
 
 ## 安装
 -  **通过源码集成**
-   - 获取源码。
-    配置下载链接：将想获取的SDK版本的版本号替换下载链接中的VERSION。
-    下载链接：https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/VERSION.zip
+   - 获取源码。  
+     配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 VERSION。
+     下载链接：https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/VERSION.zip
    - 将 SDK 源代码导入 App 项目，并选中 Copy items if needed;
    - 添加依赖库：项目设置 "Build Phase" -> "Link Binary With Libraries" 添加：libicucore、libsqlite3 和 libz。
 -  **通过 CocoaPods 集成**
-  - 配置Podfile文件，在Podfile文件中添加`pod 'FTMobileAgent'`
+  - 配置 Podfile 文件，在 Podfile 文件中添加 `pod 'FTMobileAgent'`
   - 在 Podfile 目录下执行 pod install 安装 SDK。
  
 ## 配置
 - 添加头文件
-请将`#import <FTMobileAgent/FTMobileAgent.h>
-`添加到 AppDelegate.m 引用头文件的位置。
+请将 `#import <FTMobileAgent/FTMobileAgent.h>
+` 添加到 AppDelegate.m 引用头文件的位置。
 
 - 添加初始化代码
-  请将以下代码添加到`-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions`
+  请将以下代码添加到 `-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions`
   
   ```objective-c
     FTMobileConfig *config = [FTMobileConfig new];
@@ -39,15 +39,15 @@
 |isDebug|BOOL|设置是否允许打印日志|否（默认NO）|
 
 ## 方法
- 1、FT SDK公开了2个埋点方法，用户通过这三个方法可以主动在需要的地方实现埋点，然后将数据上传到服务端。
+ 1、FT SDK 公开了2个埋点方法，用户通过这三个方法可以主动在需要的地方实现埋点，然后将数据上传到服务端。
 
 -  方法一：
 
 ```objective-c
-  /**
+ /**
 追踪自定义事件。
- @param field      文件名称（必填）
- @param values     事件名称（必填）
+ @param field      指标（必填）
+ @param values     指标值（必填）
 */ 
  - (void)track:( NSString *)field  values:(NSDictionary *)values;
 ```
@@ -58,9 +58,9 @@
 /**
  追踪自定义事件。
  
- @param field      文件名称（必填）
- @param tags       事件属性（选填）
- @param values     事件名称（必填）
+ @param field      指标（必填）
+ @param tags       标签（选填）
+ @param values     指标值（必填）
  */
  - (void)track:( NSString *)field tags:(nullable NSDictionary*)tags values:( NSDictionary *)values;
 ```
@@ -74,10 +74,10 @@
 
 
 ## 常见问题
-**1.关于查询指标imei**
+**1.关于查询指标 IMEI**
 - IMEI
-  因为隐私问题，苹果用户在iOS5以后禁用代码直接获取IMEI的值。所以iOS sdk中不支持获取此字段。
+  因为隐私问题，苹果用户在 iOS5 以后禁用代码直接获取 IMEI 的值。所以 iOS sdk 中不支持获取 IMEI。
    
-=======
+=======   
 https://github.com/CloudCare/ft-sdk-ios-demo
 
