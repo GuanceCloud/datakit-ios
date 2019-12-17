@@ -40,7 +40,7 @@
    
     @try {
         while ([[ZYTrackerEventDBTool sharedManger] getDatasCount]>0){
-            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
+//            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
          NSArray *updata = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
         
          RecordModel *model = [updata lastObject];
@@ -77,7 +77,7 @@
         [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
 
             //设置请求参数
-        [mutableRequest setValue:self.config.sdkUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+        [mutableRequest setValue:[ZYBaseInfoHander defaultUUID] forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
@@ -180,7 +180,7 @@
     if (_tag != nil) {
         return _tag;
     }
-    NSString* uuid =[ZYBaseInfoHander defaultDeviceId];
+    NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     CFShow((__bridge CFTypeRef)(infoDictionary));
     NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
@@ -197,7 +197,6 @@
     [tag appendFormat:@"sdk_version=%@,",app_Version];
     [tag appendString:@"os=iOS,"];
     [tag appendFormat:@"os_version=%@,",version];
-    [tag appendString:@"imei=null,"];
     [tag appendString:@"device_band=APPLE,"];
     [tag appendFormat:@"locale=%@,",preferredLanguage];
     [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];

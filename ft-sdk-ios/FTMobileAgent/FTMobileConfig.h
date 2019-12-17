@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sdkVersion;
 
 // 应用版本(默认:info.plist中CFBundleShortVersionString对应的值)
-@property (nonatomic, copy) NSString *sdkUUID;
 @property (nonatomic, copy) NSString *appVersion;
 
 //应用名称（默认：info.plist中的CFBundleDisplayName）
@@ -36,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *akSecret;
 @property (nonatomic, assign) BOOL isDebug;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -7,6 +7,7 @@
 //
 
 #import "FTMobileConfig.h"
+#import "ZYBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
 - (instancetype)init {
@@ -14,11 +15,6 @@
         self.sdkVersion = ZY_SDK_VERSION;
         self.appVersion = ZY_APP_VERSION;
         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
-            
-        CFUUIDRef puuid = CFUUIDCreate ( nil ) ;
-        CFStringRef uuidString = CFUUIDCreateString ( nil , puuid ) ;
-        NSString* uuid = (NSString*)CFBridgingRelease(CFStringCreateCopy(NULL, uuidString));
-        self.sdkUUID =uuid;
         self.isDebug = NO;
     }
     
