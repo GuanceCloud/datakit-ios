@@ -25,11 +25,11 @@
     config.isDebug = YES;
     config.metricsUrl = 写入地址;
     [FTMobileAgent startWithConfigOptions:config];
-``` 
+  ``` 
 
 ### SDK 可配置参数
 | 字段 | 类型 |说明|是否必须|
-|:--------:|:--------:|:--------:|:--------:|
+|:-:|:-:|:-:|:-:|
 |  enableRequestSigning      |  BOOL      |配置是否需要进行请求签名  |是|
 |metricsUrl|NSString|FT-GateWay metrics 写入地址|是|
 |akId|NSString|access key ID| enableRequestSigning 为 true 时，必须要填|
@@ -74,6 +74,6 @@
 ## 常见问题
 **1.关于查询指标imei**
 - IMEI
-   英文名称是：International Mobile Equipment Identity，是国际移动设备身份码的缩写，国际移动装备辨识码，是由15位数字组成的”电子串号”，它与每台手机一一对应，而且该码是全世界唯一的。每一部手机在组装完成后都将被赋予一个全球唯一的一组号码，这个号码从生产到交付使用都将被制造生产的厂商所记录。手机用户可以在手机中查到自己手机的IMEI码。因为隐私问题，苹果用户在iOS5以后不能再获取IMEI的值了。所以iOS sdk中将此字段设为null。
+  因为隐私问题，苹果用户在iOS5以后禁用代码直接获取IMEI的值。所以iOS sdk中不支持获取此字段。
    
 
