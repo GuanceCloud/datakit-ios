@@ -252,6 +252,7 @@
     if (!deviceId) {
         deviceId = [[NSUUID UUID] UUIDString];
         setUUID(deviceId);
+        [[NSUserDefaults standardUserDefaults] synchronize];
     }
     return deviceId;
 }
