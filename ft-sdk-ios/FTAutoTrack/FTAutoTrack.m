@@ -15,30 +15,37 @@
 #import "ZYTrackerEventDBTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
-
 #import <objc/runtime.h>
+#import "FTMobileConfig.h"
 @interface FTAutoTrack()
 @property (nonatomic, strong) NSDate *lastSentDate;
+@property (nonatomic, strong) FTMobileConfig *config;
 
 @end
 @implementation FTAutoTrack
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        [self setLogContent];
-    }
-    return self;
+-(void)startWithConfig:(FTMobileConfig *)config{
+    self.config = config;
+    [self setLogContent];
 }
 -(void)setLogContent{
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter addObserver:self
-                               selector:@selector(appDidFinishLaunchingWithOptions:)
-                                      name:UIApplicationDidFinishLaunchingNotification
-                                    object:nil];
-    [self logViewControllerLifeCycle];
-    [self logTableViewCollectionView];
-    [self logTargetAction];
+    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppStart) {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                                     selector:@selector(appDidFinishLaunchingWithOptions:)
+                                            name:UIApplicationDidFinishLaunchingNotification
+                                          object:nil];
+    }
+    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppEnd) {
+        
+    }
+    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppClick) {
+        [self logTableViewCollectionView];
+        [self logTargetAction];
+    }
+    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppViewScreen) {
+        [self logViewControllerLifeCycle];
+    }
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
         NSDictionary *data =@{
@@ -185,17 +192,10 @@
         }
        } error:NULL];
    
-      [UITouch aspect_hookSelector:@selector(touchesForGestureRecognizer:)
-              withOptions:ZY_AspectPositionAfter
-               usingBlock:^(id<ZY_AspectInfo> aspectInfo, UIGestureRecognizer *gesture) {
-               UIView *gesView = gesture.view;
-               NSString *selName = gesture.accessibilityHint;
-               ZYDebug(@"当前控制器：%@ 按钮方法：%@  name = %@",[[gesView getCurrentViewController] class],selName,gesture.name);
-
-               } error:NULL];
+     
       
 }
-
+#pragma mark ========== 写入数据库操作 ==========
 -(void)addDBWithData:(NSDictionary *)data{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];

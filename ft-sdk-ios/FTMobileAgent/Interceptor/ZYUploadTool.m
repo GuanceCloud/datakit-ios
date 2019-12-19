@@ -185,7 +185,7 @@
     CFShow((__bridge CFTypeRef)(infoDictionary));
     NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
     NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+//    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
 
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
     NSString *version = [UIDevice currentDevice].systemVersion;
@@ -194,7 +194,7 @@
     [tag appendFormat:@"device_uuid=%@,",uuid];
     [tag appendFormat:@"application_identifier=%@,",identifier];
     [tag appendFormat:@"application_name=%@,",app_Name];
-    [tag appendFormat:@"sdk_version=%@,",app_Version];
+    [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
     [tag appendString:@"os=iOS,"];
     [tag appendFormat:@"os_version=%@,",version];
     [tag appendString:@"device_band=APPLE,"];
