@@ -25,7 +25,8 @@
     config.akId = @"accid";
     config.isDebug = YES;
     config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
-     [FTMobileAgent startWithConfigOptions:config];
+    config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
+    [FTMobileAgent startWithConfigOptions:config];
     return YES;
 }
 
@@ -45,6 +46,5 @@
     // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
     // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
 }
-
 
 @end

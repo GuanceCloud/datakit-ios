@@ -7,15 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-
-
+@class FTMobileConfig;
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^UploadBlock)(void);
 
 @interface FTAutoTrack : NSObject
-@property (nonatomic, strong) UploadBlock block;
 
-
+-(void)startWithConfig:(FTMobileConfig *)config;
 @end
 
 NS_ASSUME_NONNULL_END

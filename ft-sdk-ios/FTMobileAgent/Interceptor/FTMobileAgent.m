@@ -15,6 +15,8 @@
 #import "ZYUploadTool.h"
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
+#import <objc/runtime.h>
+
 @interface FTMobileAgent ()
 @property (nonatomic) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -46,6 +48,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (configOptions.enableRequestSigning) {
       NSAssert((configOptions.akSecret.length!=0 && configOptions.akId.length != 0), @"设置需要进行请求签名 必须要填akId与akSecret");
     }
+    if (configOptions.autoTrackEventType != FTAutoTrackTypeNone) {
+      NSAssert((NSClassFromString(@"FTAutoTrack")), @"开启自动采集需导入FTAutoTrackSDK");
+    }
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
     
     dispatch_once(&onceToken, ^{
@@ -68,19 +73,35 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
-//        _viewControllerLog = [[ZYViewController_log alloc]init];
-//         __weak typeof(self) weakSelf = self;
-//        _viewControllerLog.block = ^(void){
-//            [weakSelf flush];
-//        };
+        NSString *invokeMethod = @"startWithConfig:";
+        Class track =  NSClassFromString(@"FTAutoTrack");
+        if (track) {
+            id  aaa = [[NSClassFromString(@"FTAutoTrack") alloc]init];
+
+            SEL a = NSSelectorFromString(invokeMethod);
+            unsigned int methCount = 0;
+            Method *meths = class_copyMethodList(track, &methCount);
+            BOOL ishas = NO;
+            for(int i = 0; i < methCount; i++) {
+                Method meth = meths[i];
+                SEL sel = method_getName(meth);
+                const char *name = sel_getName(sel);
+                NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
+                if ([str isEqualToString:invokeMethod]) {
+                ishas = YES;
+                break;
+                }
+            }
+            free(meths);
+            if (ishas) {
+            IMP imp = [aaa methodForSelector:a];
+            void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
+               func(aaa,a,self.config);
+            }
+        }
+
     }
     return self;
-}
--(FTMobileConfig *)config{
-    if (!_config) {
-        _config = [FTMobileConfig new];
-    }
-    return _config;
 }
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
@@ -147,7 +168,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-        [self startFlushTimer];
+     //   [self startFlushTimer];
       }
       @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
