@@ -18,6 +18,8 @@
 		4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169862391146600C0BC4E /* Test4ViewController.m */; };
 		4A11698A2391146600C0BC4E /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* SecondViewController.m */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
+		4A85313923AB85FC00B40B5D /* ft_sdk_iosTestUnitTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* ft_sdk_iosTestUnitTests.m */; };
+		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 /* End PBXBuildFile section */
@@ -29,6 +31,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A852FCB23A2408600B40B5D;
 			remoteInfo = FTAutoTrack;
+		};
+		4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A116955239113B600C0BC4E;
+			remoteInfo = "ft-sdk-iosTest";
 		};
 		4A8842AC239E57B6001B44C3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -58,6 +67,11 @@
 		4A1169862391146600C0BC4E /* Test4ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Test4ViewController.m; sourceTree = "<group>"; };
 		4A1169872391146600C0BC4E /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		4A1169882391146600C0BC4E /* Test4ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Test4ViewController.h; sourceTree = "<group>"; };
+		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A85313823AB85FC00B40B5D /* ft_sdk_iosTestUnitTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUnitTests.m; sourceTree = "<group>"; };
+		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A85314423AC6B2700B40B5D /* UITestVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITestVC.h; sourceTree = "<group>"; };
+		4A85314523AC6B2700B40B5D /* UITestVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestVC.m; sourceTree = "<group>"; };
 		4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ft-sdk-ios.xcodeproj"; path = "ft-sdk-ios/ft-sdk-ios.xcodeproj"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
@@ -74,6 +88,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4A85313323AB85FC00B40B5D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -82,6 +103,7 @@
 			children = (
 				4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */,
 				4A116958239113B600C0BC4E /* ft-sdk-iosTest */,
+				4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
@@ -94,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				4A116956239113B600C0BC4E /* ft-sdk-iosTest.app */,
+				4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,6 +136,8 @@
 				4A1169862391146600C0BC4E /* Test4ViewController.m */,
 				4A1169852391146600C0BC4E /* SecondViewController.h */,
 				4A1169872391146600C0BC4E /* SecondViewController.m */,
+				4A85314423AC6B2700B40B5D /* UITestVC.h */,
+				4A85314523AC6B2700B40B5D /* UITestVC.m */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
@@ -127,6 +152,15 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				4A85313823AB85FC00B40B5D /* ft_sdk_iosTestUnitTests.m */,
+				4A85313A23AB85FC00B40B5D /* Info.plist */,
+			);
+			path = "ft-sdk-iosTestUnitTests";
 			sourceTree = "<group>";
 		};
 		4A8842A9239E57B6001B44C3 /* Products */ = {
@@ -158,6 +192,24 @@
 			productReference = 4A116956239113B600C0BC4E /* ft-sdk-iosTest.app */;
 			productType = "com.apple.product-type.application";
 		};
+		4A85313523AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUnitTests" */;
+			buildPhases = (
+				4A85313223AB85FC00B40B5D /* Sources */,
+				4A85313323AB85FC00B40B5D /* Frameworks */,
+				4A85313423AB85FC00B40B5D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4A85313C23AB85FC00B40B5D /* PBXTargetDependency */,
+			);
+			name = "ft-sdk-iosTestUnitTests";
+			productName = "ft-sdk-iosTestUnitTests";
+			productReference = 4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -169,6 +221,10 @@
 				TargetAttributes = {
 					4A116955239113B600C0BC4E = {
 						CreatedOnToolsVersion = 11.1;
+					};
+					4A85313523AB85FC00B40B5D = {
+						CreatedOnToolsVersion = 11.1;
+						TestTargetID = 4A116955239113B600C0BC4E;
 					};
 				};
 			};
@@ -192,6 +248,7 @@
 			projectRoot = "";
 			targets = (
 				4A116955239113B600C0BC4E /* ft-sdk-iosTest */,
+				4A85313523AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */,
 			);
 		};
 /* End PBXProject section */
@@ -225,6 +282,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4A85313423AB85FC00B40B5D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -236,13 +300,30 @@
 				4A116961239113B600C0BC4E /* ViewController.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* RootViewController.m in Sources */,
+				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A1169892391146600C0BC4E /* Test4ViewController.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4A85313223AB85FC00B40B5D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A85313923AB85FC00B40B5D /* ft_sdk_iosTestUnitTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4A85313C23AB85FC00B40B5D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A116955239113B600C0BC4E /* ft-sdk-iosTest */;
+			targetProxy = 4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		4A116962239113B600C0BC4E /* Main.storyboard */ = {
@@ -426,6 +507,42 @@
 			};
 			name = Release;
 		};
+		4A85313D23AB85FC00B40B5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = "ft-sdk-iosTestUnitTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTestUnitTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
+			};
+			name = Debug;
+		};
+		4A85313E23AB85FC00B40B5D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = "ft-sdk-iosTestUnitTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTestUnitTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -443,6 +560,15 @@
 			buildConfigurations = (
 				4A116970239113B900C0BC4E /* Debug */,
 				4A116971239113B900C0BC4E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A85313D23AB85FC00B40B5D /* Debug */,
+				4A85313E23AB85FC00B40B5D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
