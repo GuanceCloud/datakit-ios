@@ -7,12 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 /* SDK版本 */
 #define ZY_SDK_VERSION @"1.0.0"
 
 /* 默认应用版本 */
 #define ZY_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
-
+/* 抓取事件 枚举 */
 typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackTypeNone          = 0,
     FTAutoTrackEventTypeAppStart      = 1 << 0,
@@ -20,7 +21,6 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackEventTypeAppClick      = 1 << 2,
     FTAutoTrackEventTypeAppViewScreen = 1 << 3,
 };
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
@@ -43,25 +43,48 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isDebug;
 
 
-#pragma mark - FTAutoTrack 全埋点配置
-/// 是否自动收集 App Crash 日志，该功能默认是关闭的
-//@property (nonatomic) BOOL enableTrackAppCrash;
-
-/**
- * @property
- *
- * @abstract
- * 打开 SDK 自动追踪,默认只追踪 App 启动 / 关闭、进入页面、元素点击
- *
- * @discussion
- * 该功能自动追踪 App 的一些行为，例如 SDK 初始化、App 启动 / 关闭、进入页面 等等，具体信息请参考文档:
- * 该功能默认关闭   开启需要使用 FTAutoTrackSDK
- */
-@property (nonatomic) FTAutoTrackEventType autoTrackEventType;
+#pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
 * 默认为NO   开启需要使用 FTAutoTrackSDK
 */
 @property (nonatomic) BOOL enableAutoTrack;
+/**
+ * @property
+ *
+ * @abstract
+ * 打开 SDK 设置追踪事件类型, 默认只追踪 App 启动 / 关闭、进入页面、元素点击
+ *
+ * @discussion
+ * 该功能自动追踪 App 的一些行为，例如 SDK 初始化、App 启动 / 关闭、进入页面 等等，具体信息请参考文档:
+ * 该功能默认关闭   开启需要使用 FTAutoTrackSDK 且 enableAutoTrack = YES
+ */
+@property (nonatomic) FTAutoTrackEventType autoTrackEventType;
+
+/**
+* @abstract
+*  抓取某一类型的 View
+*  与 黑名单  二选一使用  若都没有则为全抓取
+*/
+@property (nonatomic,strong) NSArray<Class> *whiteViewClass;
+/**
+* @abstract
+*  忽略某一类型的 View
+*  与 白名单  二选一使用  若都没有则为全抓取
+*/
+@property (nonatomic,strong) NSArray<Class> *blackViewClass;
+
+/**
+*  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
+*/
+@property (nonatomic,strong) NSArray *whiteVCList;
+/**
+*  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
+*/
+@property (nonatomic,strong) NSArray *blackVCList;
+
+
+/// 是否自动收集 App Crash 日志，该功能默认是关闭的
+//@property (nonatomic) BOOL enableTrackAppCrash;
 @end
 
 NS_ASSUME_NONNULL_END
