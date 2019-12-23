@@ -29,15 +29,21 @@
     [self setLogContent];
 }
 -(void)setLogContent{
+    if (!self.config.enableAutoTrack) {
+        return;
+    }
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppStart) {
-        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                      selector:@selector(appDidFinishLaunchingWithOptions:)
                                             name:UIApplicationDidFinishLaunchingNotification
                                           object:nil];
     }
     if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppEnd) {
-        
+        [notificationCenter addObserver:self
+        selector:@selector(appWillTerminateNotification:)
+               name:UIApplicationWillTerminateNotification
+             object:nil];
     }
     if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppClick) {
         [self logTableViewCollectionView];
@@ -53,10 +59,16 @@
                             };
         [self addDBWithData:data];
 }
+- (void)appWillTerminateNotification:(NSNotification *)notification{
+       
+}
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
        [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
+           if ([self isBlackListContainsViewController:vc]) {
+               return ;
+           }
                    NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"open",
@@ -68,6 +80,9 @@
        SEL sel= NSSelectorFromString(@"dealloc");
        [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
+           if ([self isBlackListContainsViewController:tempVC]) {
+               return ;
+           }
            NSDictionary *data =@{@"cpn":NSStringFromClass([tempVC class]),
                                  @"rpn":[UIViewController zy_getRootViewController],
                                  @"op":@"close",
@@ -159,6 +174,9 @@
                UIButton *button = aspectInfo.instance;
                id object =  [button.allTargets anyObject];
                NSString *className = NSStringFromClass([object class]);
+               if ([self isBlackListContainsViewController:object]) {
+                             return ;
+                }
                NSDictionary *data =@{@"cpn":className,
                                      @"rpn":[UIViewController zy_getRootViewController],
                                      @"op":@"click",
@@ -195,15 +213,44 @@
      
       
 }
+- (BOOL)isBlackListContainsViewController:(UIViewController *)viewController {
+    static NSSet *blacklistedClasses = nil;
+    static dispatch_once_t onceToken;
+
+    dispatch_once(&onceToken, ^{
+       
+        NSBundle *sensorsBundle = [NSBundle bundleWithPath:[[NSBundle bundleForClass:[FTAutoTrack class]] pathForResource:@"FTAutoTrack" ofType:@"bundle"]];
+               //文件路径
+        NSString *jsonPath = [sensorsBundle pathForResource:@"ft_autotrack_viewcontroller_blacklist.json" ofType:nil];
+
+
+        NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
+        @try {
+            NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
+            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
+        } @catch(NSException *exception) {  // json加载和解析可能失败
+            ZYLog(@"%@ error: %@", self, exception);
+        }
+    });
+
+    __block BOOL isContains = NO;
+    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString *blackClassName = (NSString *)obj;
+        Class blackClass = NSClassFromString(blackClassName);
+        if (blackClass && [viewController isKindOfClass:blackClass]) {
+            isContains = YES;
+            *stop = YES;
+        }
+    }];
+    return isContains;
+}
 #pragma mark ========== 写入数据库操作 ==========
 -(void)addDBWithData:(NSDictionary *)data{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];
         NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
         if (time>10) {
-            if (self.block) {
-                self.block();
-            }
+        //待处理通知
         }
     }else{
         self.lastSentDate = [NSDate date];

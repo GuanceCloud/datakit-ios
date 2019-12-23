@@ -48,7 +48,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (configOptions.enableRequestSigning) {
       NSAssert((configOptions.akSecret.length!=0 && configOptions.akId.length != 0), @"设置需要进行请求签名 必须要填akId与akSecret");
     }
-    if (configOptions.autoTrackEventType != FTAutoTrackTypeNone) {
+    if (configOptions.autoTrackEventType != FTAutoTrackTypeNone && configOptions.enableAutoTrack) {
       NSAssert((NSClassFromString(@"FTAutoTrack")), @"开启自动采集需导入FTAutoTrackSDK");
     }
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
@@ -73,6 +73,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
+        if (self.config.enableAutoTrack) {
         NSString *invokeMethod = @"startWithConfig:";
         Class track =  NSClassFromString(@"FTAutoTrack");
         if (track) {
@@ -99,7 +100,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                func(aaa,a,self.config);
             }
         }
-
+        }
     }
     return self;
 }

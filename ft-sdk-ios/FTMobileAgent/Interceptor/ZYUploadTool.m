@@ -40,7 +40,7 @@
    
     @try {
         while ([[ZYTrackerEventDBTool sharedManger] getDatasCount]>0){
-//            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
+            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
          NSArray *updata = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
         
          RecordModel *model = [updata lastObject];

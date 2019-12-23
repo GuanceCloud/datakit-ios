@@ -16,8 +16,9 @@
         self.appVersion = ZY_APP_VERSION;
         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
         self.isDebug = NO;
-        self.enableTrackAppCrash = NO;
+//        self.enableTrackAppCrash = NO;
         self.autoTrackEventType = FTAutoTrackTypeNone;
+        self.enableAutoTrack = NO;
     }
     
     return self;
