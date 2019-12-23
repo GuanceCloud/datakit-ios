@@ -41,6 +41,7 @@
 		4A852FE023A240B400B40B5D /* FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FD823A240B300B40B5D /* FTAutoTrack.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A852FE123A240B400B40B5D /* UIViewController+ZY_RootVC.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FD923A240B400B40B5D /* UIViewController+ZY_RootVC.h */; };
 		4A852FE223A240B400B40B5D /* ZYAspects.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FDA23A240B400B40B5D /* ZYAspects.h */; };
+		4A85315023ACCBCB00B40B5D /* FTAutoTrack.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4A85314D23ACC01200B40B5D /* FTAutoTrack.bundle */; };
 		4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* ZYBaseInfoHander.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -78,6 +79,7 @@
 		4A852FD823A240B300B40B5D /* FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTAutoTrack.h; sourceTree = "<group>"; };
 		4A852FD923A240B400B40B5D /* UIViewController+ZY_RootVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+ZY_RootVC.h"; sourceTree = "<group>"; };
 		4A852FDA23A240B400B40B5D /* ZYAspects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYAspects.h; sourceTree = "<group>"; };
+		4A85314D23ACC01200B40B5D /* FTAutoTrack.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = FTAutoTrack.bundle; sourceTree = "<group>"; };
 		4A88425A239E5754001B44C3 /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A88425E239E5754001B44C3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
 		4A884266239E5768001B44C3 /* ZYBaseInfoHander.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYBaseInfoHander.h; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		4A852FCC23A2408600B40B5D /* FTAutoTrack */ = {
 			isa = PBXGroup;
 			children = (
+				4A85314D23ACC01200B40B5D /* FTAutoTrack.bundle */,
 				4A852FD823A240B300B40B5D /* FTAutoTrack.h */,
 				4A852FD723A240B300B40B5D /* FTAutoTrack.m */,
 				4A852FD623A240B300B40B5D /* UIView+ZY_currentController.h */,
@@ -342,6 +345,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A85315023ACCBCB00B40B5D /* FTAutoTrack.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
