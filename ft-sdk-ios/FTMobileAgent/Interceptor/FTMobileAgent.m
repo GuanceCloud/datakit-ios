@@ -28,9 +28,8 @@
 @property (nonatomic, strong) ZYUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
-@implementation FTMobileAgent{
-//    ZYViewController_log *_viewControllerLog;
-}
+@implementation FTMobileAgent
+
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
 

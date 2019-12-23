@@ -29,27 +29,27 @@
     [self setLogContent];
 }
 -(void)setLogContent{
-    if (!self.config.enableAutoTrack) {
+    if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
         return;
     }
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppStart) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppStart) {
         [notificationCenter addObserver:self
                                      selector:@selector(appDidFinishLaunchingWithOptions:)
                                             name:UIApplicationDidFinishLaunchingNotification
                                           object:nil];
     }
-    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppEnd) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppEnd) {
         [notificationCenter addObserver:self
         selector:@selector(appWillTerminateNotification:)
                name:UIApplicationWillTerminateNotification
              object:nil];
     }
-    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppClick) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick) {
         [self logTableViewCollectionView];
         [self logTargetAction];
     }
-    if (self.config.autoTrackEventType == FTAutoTrackEventTypeAppViewScreen) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
         [self logViewControllerLifeCycle];
     }
 }
@@ -66,7 +66,7 @@
 - (void)logViewControllerLifeCycle{
        [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
-           if ([self isBlackListContainsViewController:vc]) {
+           if (![self judgeWhiteAndBlackWithViewController:vc]) {
                return ;
            }
                    NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
@@ -95,105 +95,105 @@
 }
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
-    // UITableView、UICollectionView 先找到设置代理的实例对象 再进行hook处理
-     [UITableView aspect_hookSelector:@selector(setDelegate:)
-       withOptions:ZY_AspectPositionAfter
-        usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
-               withOptions:ZY_AspectPositionBefore
-                usingBlock:^(id<ZY_AspectInfo> aspectInfo,UITableView *tableView, NSIndexPath *indexPath) {
-             NSString *className;
-             if ([aspectInfo.instance isKindOfClass:[UIViewController class]]) {
-                 className  =NSStringFromClass([aspectInfo.instance class]);
-             }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
-                 className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
-             }
-             NSDictionary *data =@{@"cpn":className,
-                                   @"rpn":[UIViewController zy_getRootViewController],
-                                   @"op":@"click",
-                                   @"opdata":@{@"vtp":[tableView getParentsView]},
-                           };
-            [self addDBWithData:data];
-             ZYDebug(@"data == %@",data);
-              } error:NULL];
-         
-            
-      } error:NULL];
+    if( [self isAutoTrackUI:UITableView.class] || [self isAutoTrackUI:UITableViewCell.class]){
+     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+     [notificationCenter addObserver:self
+                                     selector:@selector(tableViewSelectionDidChangeNotification:)
+                                            name:UITableViewSelectionDidChangeNotification
+                                          object:nil];
+    }
+     if( [self isAutoTrackUI:UICollectionView.class] || [self isAutoTrackUI:UICollectionViewCell.class]){
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
          [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionAfter
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-                NSString *className;
-                if ([aspectInfo.instance isKindOfClass:[UIViewController class]]) {
-                    className  =NSStringFromClass([aspectInfo.instance class]);
-                }else if([aspectInfo.instance isKindOfClass:[UIView class]]){
-                    className  =NSStringFromClass([[aspectInfo.instance getCurrentViewController] class]);
+                UIViewController *vcclass;
+                if ([target isKindOfClass:[UIViewController class]]) {
+                    vcclass  = target;
+                }else if([target isKindOfClass:[UIView class]]){
+                    vcclass  = [target getCurrentViewController];
                 }
-             NSDictionary *data =@{@"cpn":className,
-                                   @"rpn":[UIViewController zy_getRootViewController],
-                                   @"op":@"click",
-                                   @"opdata":@{@"vtp":[collectionView getParentsView]},
-                                  };
-             [self addDBWithData:data];
+             if (![self judgeWhiteAndBlackWithViewController:vcclass]) {
+                 return ;
+             }
+            NSDictionary *data =@{@"cpn":NSStringFromClass(vcclass.class),
+                                                 @"rpn":[UIViewController zy_getRootViewController],
+                                                 @"op":@"click",
+                                                 @"opdata":@{@"vtp":[collectionView getParentsView]},
+                                                };
              ZYDebug(@"data == %@",data);
 
          } error:NULL];
          
      }error:nil];
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-     [notificationCenter addObserver:self
-                                  selector:@selector(tableViewSelectionDidChangeNotification:)
-                                         name:UITableViewSelectionDidChangeNotification
-                                       object:nil];
-    
+     }
+   
+
 }
 - (void)tableViewSelectionDidChangeNotification:(NSNotification *)notification{
-    ZYDebug(@"tableViewSelectionDidChangeNotification == %@",notification);
+    UITableView *tableview = notification.object;
+    UIViewController *current = [tableview getCurrentViewController];
+    if([self isWhiteListContainsViewController:current]){
+    NSDictionary *data =@{@"cpn":NSStringFromClass(current.class),
+                                      @"rpn":[UIViewController zy_getRootViewController],
+                                      @"op":@"click",
+                                      @"opdata":@{@"vtp":[tableview getParentsView]},
+                                     };
+    [self addDBWithData:data];
+    ZYDebug(@"tableViewSelectionDidChangeNotification == %@",data);
+    }
 }
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{
-    [UIButton aspect_hookSelector:@selector(addTarget:action:forControlEvents:)
-         withOptions:ZY_AspectPositionAfter
-          usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action, UIControlEvents controlEvents) {
+    if ([self isAutoTrackUI:UIButton.class]) {
+        [UIButton aspect_hookSelector:@selector(addTarget:action:forControlEvents:)
+             withOptions:ZY_AspectPositionAfter
+              usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action, UIControlEvents controlEvents) {
 
-              if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
+                  if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
 
-                  UIButton *button = aspectInfo.instance;
-                  button.accessibilityHint = NSStringFromSelector(action);
-              }
-          } error:NULL];
-      [UIControl aspect_hookSelector:@selector(beginTrackingWithTouch:withEvent:)
-      withOptions:ZY_AspectPositionAfter
-       usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITouch *touch, UIEvent *event) {
+                      UIButton *button = aspectInfo.instance;
+                      button.accessibilityHint = NSStringFromSelector(action);
+                  }
+              } error:NULL];
+          [UIControl aspect_hookSelector:@selector(beginTrackingWithTouch:withEvent:)
+          withOptions:ZY_AspectPositionAfter
+           usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITouch *touch, UIEvent *event) {
 
-           if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
+               if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
 
-               UIButton *button = aspectInfo.instance;
-               id object =  [button.allTargets anyObject];
-               NSString *className = NSStringFromClass([object class]);
-               if ([self isBlackListContainsViewController:object]) {
-                             return ;
-                }
-               NSDictionary *data =@{@"cpn":className,
-                                     @"rpn":[UIViewController zy_getRootViewController],
-                                     @"op":@"click",
-                                     @"opdata":@{@"vtp":[button getParentsView]},
-                                     };
-                [self addDBWithData:data];
-                ZYDebug(@"data == %@",data);
-           }
-       } error:NULL];
+                   UIButton *button = aspectInfo.instance;
+                   id object =  [button.allTargets anyObject];
+                   NSString *className = NSStringFromClass([object class]);
+                  if (![self judgeWhiteAndBlackWithViewController:object]) {
+                       return ;
+                   }
+                   NSDictionary *data =@{@"cpn":className,
+                                         @"rpn":[UIViewController zy_getRootViewController],
+                                         @"op":@"click",
+                                         @"opdata":@{@"vtp":[button getParentsView]},
+                                         };
+                    [self addDBWithData:data];
+                    ZYDebug(@"data == %@",data);
+               }
+           } error:NULL];
+    }
+
     //待处理：仅可以实现
     [UIGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
       withOptions:ZY_AspectPositionAfter
        usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
         if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
             UIGestureRecognizer *ges = aspectInfo.instance;
+            if (![self isAutoTrackUI:ges.view.class]) {
+                return ;
+            }
             ges.accessibilityHint = NSStringFromSelector(action);
-            
+            if (![self judgeWhiteAndBlackWithViewController:target]) {
+                             return ;
+            }
             if ([target isKindOfClass:[UIViewController class]]) {
                 [target aspect_hookSelector:action withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
                     NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
@@ -213,8 +213,61 @@
      
       
 }
+- (BOOL)isAutoTrackUI:(Class )view{
+    if (self.config.whiteViewClass.count == 0 && self.config.blackViewClass.count == 0) {
+        return YES;
+    }
+    if (self.config.whiteViewClass.count>0) {
+      return  [self isViewTypeWhite:view];
+    }
+    
+    return ![self isViewTypeIgnored:view];
+    
+}
+- (BOOL)isViewTypeWhite:(Class)aClass {
+    for (Class obj in self.config.whiteViewClass) {
+        if ([aClass isSubclassOfClass:obj]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+- (BOOL)isViewTypeIgnored:(Class)aClass {
+    for (Class obj in self.config.blackViewClass) {
+        if ([aClass isSubclassOfClass:obj]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+- (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
+    //没有设置白名单  就考虑黑名单
+    if (self.config.whiteVCList.count == 0) {
+        return ![self isBlackListContainsViewController:viewController];
+    }
+    
+    return [self isWhiteListContainsViewController:viewController];
+}
+- (BOOL)isWhiteListContainsViewController:(UIViewController *)viewController{
+    NSSet *whitelistedClasses = [NSSet setWithArray:self.config.whiteVCList];
+    __block BOOL isContains = NO;
+     [whitelistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+         NSString *whiteClassName = (NSString *)obj;
+         Class whiteClass = NSClassFromString(whiteClassName);
+         if (whiteClass && [viewController isKindOfClass:whiteClass]) {
+             isContains = YES;
+             *stop = YES;
+         }
+     }];
+    if (isContains) {
+        return YES;
+    }
+    
+    return isContains;
+    
+}
 - (BOOL)isBlackListContainsViewController:(UIViewController *)viewController {
-    static NSSet *blacklistedClasses = nil;
+    NSSet *blacklistedClasses = [[NSSet alloc]initWithArray:self.config.blackVCList];
     static dispatch_once_t onceToken;
 
     dispatch_once(&onceToken, ^{
@@ -227,7 +280,7 @@
         NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
         @try {
             NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
-            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
+            [blacklistedClasses setByAddingObjectsFromSet:[NSSet setWithArray:blacklistedViewControllerClassNames]];
         } @catch(NSException *exception) {  // json加载和解析可能失败
             ZYLog(@"%@ error: %@", self, exception);
         }
