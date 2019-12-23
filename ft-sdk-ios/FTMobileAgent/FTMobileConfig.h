@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
-* 默认为NO   开启需要使用 FTAutoTrackSDK
+* 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
 */
 @property (nonatomic) BOOL enableAutoTrack;
 /**
@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 * @abstract
 *  抓取某一类型的 View
 *  与 黑名单  二选一使用  若都没有则为全抓取
+*  eg: @[UITableView.class];
 */
 @property (nonatomic,strong) NSArray<Class> *whiteViewClass;
 /**
@@ -75,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
 *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
+* eg: @[@"HomeViewController"];  字符串类型
 */
 @property (nonatomic,strong) NSArray *whiteVCList;
 /**
