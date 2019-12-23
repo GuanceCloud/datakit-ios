@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - FTAutoTrack 全埋点配置
 /// 是否自动收集 App Crash 日志，该功能默认是关闭的
-@property (nonatomic) BOOL enableTrackAppCrash;
+//@property (nonatomic) BOOL enableTrackAppCrash;
 
 /**
  * @property
@@ -58,7 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 该功能默认关闭   开启需要使用 FTAutoTrackSDK
  */
 @property (nonatomic) FTAutoTrackEventType autoTrackEventType;
-
+/**
+* 默认为NO   开启需要使用 FTAutoTrackSDK
+*/
+@property (nonatomic) BOOL enableAutoTrack;
 @end
 
 NS_ASSUME_NONNULL_END
