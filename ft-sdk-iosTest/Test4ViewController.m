@@ -7,7 +7,7 @@
 //
 
 #import "Test4ViewController.h"
-
+#import "UITestVC.h"
 @interface Test4ViewController ()<UITableViewDelegate,UITableViewDataSource>
 
 @property(nonatomic,strong) UITableView *tableView;
@@ -92,6 +92,10 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (indexPath.row == 1) {
+        UITestVC *test = [[UITestVC alloc]init];
+        [self.navigationController pushViewController:test animated:YES];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

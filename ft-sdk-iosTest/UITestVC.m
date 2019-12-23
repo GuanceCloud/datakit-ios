@@ -17,6 +17,27 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self createUI];
+}
+-(void)createUI{
+    // 1.UIButton、UISwitch、UITextField、UIToolBar、UIDatePicker、UIPickerView、UIMenuController、UIActivityIndicator、UITextView、UIProgressView、UISlider、UISegmentControl
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(40, 20, 100, 40)];
+    button.backgroundColor = [UIColor redColor];
+    [self.view addSubview:button];
+   
+    UISwitch *swi = [[UISwitch alloc]initWithFrame:CGRectMake(40, 100, 100, 40)];
+    swi.backgroundColor = [UIColor yellowColor];
+    [self.view addSubview:swi];
+    
+    UITextField *tf = [[UITextField alloc]initWithFrame:CGRectMake(40, 160, 100, 40)];
+    [self.view addSubview:tf];
+    
+    UIToolbar *tool = [[UIToolbar alloc]initWithFrame:CGRectMake(40, 220, 100, 40)];
+    tool.backgroundColor = [UIColor greenColor];
+    [self.view addSubview:tool];
+    
+    
 }
 
 /*
