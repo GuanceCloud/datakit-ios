@@ -18,7 +18,6 @@
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 @interface FTAutoTrack()
-@property (nonatomic, strong) NSDate *lastSentDate;
 @property (nonatomic, strong) FTMobileConfig *config;
 
 @end
@@ -282,7 +281,7 @@
             NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
             [blacklistedClasses setByAddingObjectsFromSet:[NSSet setWithArray:blacklistedViewControllerClassNames]];
         } @catch(NSException *exception) {  // json加载和解析可能失败
-            ZYLog(@"%@ error: %@", self, exception);
+            ZYDebug(@"error: %@",exception);
         }
     });
 
@@ -299,18 +298,14 @@
 }
 #pragma mark ========== 写入数据库操作 ==========
 -(void)addDBWithData:(NSDictionary *)data{
-    if (self.lastSentDate) {
-        NSDate* now = [NSDate date];
-        NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
-        if (time>10) {
-        //待处理通知
-        }
-    }else{
-        self.lastSentDate = [NSDate date];
+    @try {
+          RecordModel *model = [RecordModel new];
+          model.tm = [ZYBaseInfoHander getCurrentTimestamp];
+          model.data =[ZYBaseInfoHander convertToJsonData:data];
+          [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    } @catch (NSException *exception) {
+         ZYDebug(@" error: %@", exception);
     }
-      RecordModel *model = [RecordModel new];
-      model.tm = [ZYBaseInfoHander getCurrentTimestamp];
-      model.data =[ZYBaseInfoHander convertToJsonData:data];
-      [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    
 }
 @end
