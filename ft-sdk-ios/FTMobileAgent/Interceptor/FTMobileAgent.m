@@ -72,6 +72,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(flush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
         NSString *invokeMethod = @"startWithConfig:";
         Class track =  NSClassFromString(@"FTAutoTrack");
@@ -158,7 +159,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
      @try {
         self.isForeground = NO;
-         [self stopFlushTimer];
      }
      @catch (NSException *exception) {
          ZYDebug(@"applicationWillResignActive exception %@",exception);
@@ -168,10 +168,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-     //   [self startFlushTimer];
+          [self flush];
       }
       @catch (NSException *exception) {
-        ZYDebug(@"applicationDidBecomeActive exception %@",exception);
+       ZYDebug(@"applicationDidBecomeActive exception %@",exception);
       }
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
@@ -208,30 +208,30 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 上报策略
 
-// 启动事件发送定时器
-- (void)startFlushTimer {
-    [self stopFlushTimer];
-    dispatch_async(dispatch_get_main_queue(), ^{
-            self.timer = [NSTimer scheduledTimerWithTimeInterval:10.0
-                                                          target:self
-                                                        selector:@selector(flush)
-                                                        userInfo:nil
-                                                         repeats:YES];
-            
-            ZYDebug(@"启动事件发送定时器");
-    });
-}
+//// 启动事件发送定时器
+//- (void)startFlushTimer {
+//    [self stopFlushTimer];
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//            self.timer = [NSTimer scheduledTimerWithTimeInterval:10.0
+//                                                          target:self
+//                                                        selector:@selector(flush)
+//                                                        userInfo:nil
+//                                                         repeats:YES];
+//
+//            ZYDebug(@"启动事件发送定时器");
+//    });
+//}
 
-// 关闭事件发送定时器
-- (void)stopFlushTimer {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.timer) {
-            [self.timer invalidate];
-            ZYDebug(@"关闭事件发送定时器");
-        }
-        self.timer = nil;
-    });
-}
+//// 关闭事件发送定时器
+//- (void)stopFlushTimer {
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        if (self.timer) {
+//            [self.timer invalidate];
+//            ZYDebug(@"关闭事件发送定时器");
+//        }
+//        self.timer = nil;
+//    });
+//}
 - (void)flush{
     dispatch_async(self.serialQueue, ^{
         if (![self.net isEqualToString:@"-1"]) {

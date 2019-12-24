@@ -15,6 +15,8 @@
 @property (nonatomic, strong)ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong)ZY_FMDatabase *db;
 
+@property (nonatomic, strong) NSDate *lastSentDate;
+
 @end
 @implementation ZYTrackerEventDBTool
 static ZYTrackerEventDBTool *dbTool = nil;
@@ -79,6 +81,17 @@ static ZYTrackerEventDBTool *dbTool = nil;
     }];
 }
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
+    if (self.lastSentDate) {
+        NSDate* now = [NSDate date];
+        NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
+        if (time>10) {
+        //待处理通知
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+        }
+    }else{
+        self.lastSentDate = [NSDate date];
+         [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+    }
    if([self isOpenDatabese:self.db]) {
        __block BOOL  is = NO;
        [self zy_inDatabase:^{
