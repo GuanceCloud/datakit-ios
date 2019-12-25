@@ -94,14 +94,14 @@
 }
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
-    if( [self isAutoTrackUI:UITableView.class] || [self isAutoTrackUI:UITableViewCell.class]){
+    if( [self isAutoTrackUI:UITableView.class] && [self isAutoTrackUI:UITableViewCell.class]){
      NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
      [notificationCenter addObserver:self
                                      selector:@selector(tableViewSelectionDidChangeNotification:)
                                             name:UITableViewSelectionDidChangeNotification
                                           object:nil];
     }
-     if( [self isAutoTrackUI:UICollectionView.class] || [self isAutoTrackUI:UICollectionViewCell.class]){
+     if( [self isAutoTrackUI:UICollectionView.class] && [self isAutoTrackUI:UICollectionViewCell.class]){
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
@@ -134,7 +134,7 @@
 - (void)tableViewSelectionDidChangeNotification:(NSNotification *)notification{
     UITableView *tableview = notification.object;
     UIViewController *current = [tableview getCurrentViewController];
-    if([self isWhiteListContainsViewController:current]){
+    if([self judgeWhiteAndBlackWithViewController:current]){
     NSDictionary *data =@{@"cpn":NSStringFromClass(current.class),
                                       @"rpn":[UIViewController zy_getRootViewController],
                                       @"op":@"click",
