@@ -26,8 +26,8 @@
     config.isDebug = YES;
     config.enableAutoTrack = YES;
     config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
-    config.whiteViewClass = @[UITableView.class];
-    config.whiteVCList = @[@"RootViewController"];
+    config.whiteVCList = @[@"Test4ViewController"];
+    config.blackViewClass = @[UITableView.class];
     config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
     [FTMobileAgent startWithConfigOptions:config];
     return YES;
