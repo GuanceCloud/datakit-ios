@@ -7,9 +7,18 @@
 //
 
 #import "UITestVC.h"
-
 @interface UITestVC ()
+@property (nonatomic, strong) UISlider *slider;
+@property (nonatomic, strong) UIStepper *stepper;
+@property (nonatomic, strong) UISwitch *uiswitch;
+@property (nonatomic, strong) UISegmentedControl *segmentedControl;
 
+@property (nonatomic, strong) UILabel *label;
+@property (nonatomic, strong) UIImageView *imageView;
+
+@property (nonatomic, strong) UITableView *tableView;
+
+@property (nonatomic, strong) UIScrollView *scrollView;
 @end
 
 @implementation UITestVC
@@ -21,7 +30,6 @@
     [self createUI];
 }
 -(void)createUI{
-    // 1.UIButton、UISwitch、UITextField、UIToolBar、UIDatePicker、UIPickerView、UIMenuController、UIActivityIndicator、UITextView、UIProgressView、UISlider、UISegmentControl
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(40, 20, 100, 40)];
     button.backgroundColor = [UIColor redColor];
     [self.view addSubview:button];
@@ -36,6 +44,7 @@
     UIToolbar *tool = [[UIToolbar alloc]initWithFrame:CGRectMake(40, 220, 100, 40)];
     tool.backgroundColor = [UIColor greenColor];
     [self.view addSubview:tool];
+    
     
     
 }
