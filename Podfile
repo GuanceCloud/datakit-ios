@@ -14,6 +14,7 @@ target 'ft-sdk-iosTest' do
   end
 
   target 'ft-sdk-iosTestUnitTests' do
+    use_frameworks!
     pod 'OHHTTPStubs'
 
     # Pods for testing

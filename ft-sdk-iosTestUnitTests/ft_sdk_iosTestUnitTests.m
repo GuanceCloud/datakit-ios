@@ -7,15 +7,11 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <ZYUploadTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <ZYDataBase/ZYTrackerEventDBTool.h>
-#import <ZYBaseInfoHander.h>
-#import <RecordModel.h>
-#import <FTAutoTrack/FTAutoTrack.h>
+#import <FTMobileAgent/FTMobileAgent.h>
 
 @interface ft_sdk_iosTestUnitTests : XCTestCase
-@property (nonatomic, strong) FTAutoTrack *autoTrack;
 @end
 
 
@@ -28,16 +24,15 @@
    config.akSecret = @"accsk";
    config.akId = @"accid";
    config.isDebug = YES;
-   config.enableAutoTrack = YES;
+   config.enableAutoTrack = NO;
    config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
-   self.autoTrack = [FTAutoTrack new];
-   [self.autoTrack startWithConfig:config];
+   [FTMobileAgent startWithConfigOptions:config];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
-    self.autoTrack = nil;
+  
 }
 
 - (void)testExample {
