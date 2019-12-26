@@ -10,7 +10,7 @@
 
 
 @implementation UIView (ZY_currentController)
--(UIViewController *)getCurrentViewController{
+-(UIViewController *)zy_getCurrentViewController{
     UIResponder *next = [self nextResponder];
     do {
         if ([next isKindOfClass:[UIViewController class]]) {
@@ -20,7 +20,7 @@
     } while (next != nil);
     return nil;
 }
--(NSString *)getParentsView{
+-(NSString *)zy_getParentsView{
     NSMutableString *str = [NSMutableString new];
     [str appendString:NSStringFromClass([self class])];
     [str appendString:@"[0]"];

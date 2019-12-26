@@ -25,7 +25,7 @@
     config.akId = @"accid";
     config.isDebug = YES;
     config.enableAutoTrack = YES;
-    config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
+    config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
     config.whiteVCList = @[@"Test4ViewController"];
     config.blackViewClass = @[UITableView.class];
     config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;

@@ -112,7 +112,7 @@
                 if ([target isKindOfClass:[UIViewController class]]) {
                     vcclass  = target;
                 }else if([target isKindOfClass:[UIView class]]){
-                    vcclass  = [target getCurrentViewController];
+                    vcclass  = [target zy_getCurrentViewController];
                 }
              if (![self judgeWhiteAndBlackWithViewController:vcclass]) {
                  return ;
@@ -120,7 +120,7 @@
             NSDictionary *data =@{@"cpn":NSStringFromClass(vcclass.class),
                                                  @"rpn":[UIViewController zy_getRootViewController],
                                                  @"op":@"click",
-                                                 @"opdata":@{@"vtp":[collectionView getParentsView]},
+                                                 @"opdata":@{@"vtp":[collectionView zy_getParentsView]},
                                                 };
              ZYDebug(@"data == %@",data);
 
@@ -133,12 +133,12 @@
 }
 - (void)tableViewSelectionDidChangeNotification:(NSNotification *)notification{
     UITableView *tableview = notification.object;
-    UIViewController *current = [tableview getCurrentViewController];
+    UIViewController *current = [tableview zy_getCurrentViewController];
     if([self judgeWhiteAndBlackWithViewController:current]){
     NSDictionary *data =@{@"cpn":NSStringFromClass(current.class),
                                       @"rpn":[UIViewController zy_getRootViewController],
                                       @"op":@"click",
-                                      @"opdata":@{@"vtp":[tableview getParentsView]},
+                                      @"opdata":@{@"vtp":[tableview zy_getParentsView]},
                                      };
     [self addDBWithData:data];
     ZYDebug(@"tableViewSelectionDidChangeNotification == %@",data);
@@ -172,7 +172,7 @@
                    NSDictionary *data =@{@"cpn":className,
                                          @"rpn":[UIViewController zy_getRootViewController],
                                          @"op":@"click",
-                                         @"opdata":@{@"vtp":[button getParentsView]},
+                                         @"opdata":@{@"vtp":[button zy_getParentsView]},
                                          };
                     [self addDBWithData:data];
                     ZYDebug(@"data == %@",data);
@@ -198,7 +198,7 @@
                     NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"click",
-                                          @"opdata":@{@"vtp":[ges.view getParentsView]},
+                                          @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
                                                         };
                     [self addDBWithData:data];
                      ZYDebug(@"data == %@",data);
