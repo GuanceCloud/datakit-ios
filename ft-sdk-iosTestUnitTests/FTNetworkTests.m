@@ -22,15 +22,16 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    FTMobileConfig *config = [FTMobileConfig new];
+       FTMobileConfig *config = [FTMobileConfig new];
        config.enableRequestSigning = YES;
        config.akSecret = @"accsk";
        config.akId = @"accid";
        config.isDebug = YES;
        config.enableAutoTrack = YES;
-       config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
+       config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
        long  tm =[ZYBaseInfoHander getCurrentTimestamp];
        self.upTool = [[ZYUploadTool alloc]initWithConfig:config];
+//       [self setOHHTTPStubs];
        [[ZYTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
        for (NSInteger i=0; i<100; i++) {
            NSDictionary *data= @{
@@ -66,7 +67,15 @@
        NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
        NSLog(@"Record Count == %ld",(long)count);
 }
-
+- (void)setOHHTTPStubs{
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+      return [request.URL.host isEqualToString:@"10.100.64.106"];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+      // Stub all those requests with "Hello World!" string
+      NSData* stubData = [@"Hello World!" dataUsingEncoding:NSUTF8StringEncoding];
+      return [OHHTTPStubsResponse responseWithData:stubData statusCode:200 headers:nil];
+    }];
+}
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }

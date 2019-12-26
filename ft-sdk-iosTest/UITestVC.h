@@ -11,7 +11,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UITestVC : UIViewController
+@property (nonatomic, strong) UIButton *firstButton;
+@property (nonatomic, strong) UIButton *secondButton;
+@property (nonatomic, strong) UISlider *slider;
+@property (nonatomic, strong) UIStepper *stepper;
+@property (nonatomic, strong) UISwitch *uiswitch;
+@property (nonatomic, strong) UISegmentedControl *segmentedControl;
 
+@property (nonatomic, strong) UILabel *label;
+@property (nonatomic, strong) UIImageView *imageView;
+
+@property (nonatomic, strong) UITableView *tableView;
+
+@property (nonatomic, strong) UIScrollView *scrollView;
 @end
 
 NS_ASSUME_NONNULL_END
