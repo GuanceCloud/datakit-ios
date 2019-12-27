@@ -106,7 +106,7 @@
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
          [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
-          withOptions:ZY_AspectPositionAfter
+          withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
                 UIViewController *vcclass;
                 if ([target isKindOfClass:[UIViewController class]]) {
@@ -158,7 +158,7 @@
                   }
               } error:NULL];
           [UIControl aspect_hookSelector:@selector(beginTrackingWithTouch:withEvent:)
-          withOptions:ZY_AspectPositionAfter
+          withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITouch *touch, UIEvent *event) {
 
                if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
@@ -194,7 +194,7 @@
                              return ;
             }
             if ([target isKindOfClass:[UIViewController class]]) {
-                [target aspect_hookSelector:action withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                [target aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
                     NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"click",
@@ -208,7 +208,33 @@
             
         }
        } error:NULL];
-   
+       [UIGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+            withOptions:ZY_AspectPositionAfter
+             usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
+              if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
+                  UIGestureRecognizer *ges = aspectInfo.instance;
+                  if (![self isAutoTrackUI:ges.view.class]) {
+                      return ;
+                  }
+                  ges.accessibilityHint = NSStringFromSelector(action);
+                  if (![self judgeWhiteAndBlackWithViewController:target]) {
+                                   return ;
+                  }
+                  if ([target isKindOfClass:[UIViewController class]]) {
+                      [target aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                          NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
+                                                @"rpn":[UIViewController zy_getRootViewController],
+                                                @"op":@"click",
+                                                @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
+                                                              };
+                          [self addDBWithData:data];
+                           ZYDebug(@"data == %@",data);
+
+                      } error:nil];
+                  }
+                  
+              }
+             } error:NULL];
      
       
 }
