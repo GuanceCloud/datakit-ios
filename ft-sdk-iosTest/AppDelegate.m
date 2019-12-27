@@ -7,8 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import <FTMobileAgent/FTMobileAgent.h>
-
 @interface AppDelegate ()
 
 @end
@@ -19,17 +17,29 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Override point for customization after application launch.
-    FTMobileConfig *config = [FTMobileConfig new];
-    config.enableRequestSigning = YES;
-    config.akSecret = @"accsk";
-    config.akId = @"accid";
-    config.isDebug = YES;
-    config.enableAutoTrack = YES;
-    config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
-    config.whiteVCList = @[@"Test4ViewController"];
-    config.blackViewClass = @[UITableView.class];
-    config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
-    [FTMobileAgent startWithConfigOptions:config];
+//    FTMobileConfig *config = [FTMobileConfig new];
+//    config.enableRequestSigning = YES;
+//    config.akSecret = @"accsk";
+//    config.akId = @"accid";
+//    config.isDebug = YES;
+//    config.enableAutoTrack = NO;
+//    config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
+//    config.blackViewClass = @[UITableView.class];
+//    config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
+//    [FTMobileAgent startWithConfigOptions:config];
+    
+    
+    // 测试autoTrack
+    self.config = [FTMobileConfig new];
+    self.config.enableRequestSigning = YES;
+    self.config.akSecret = @"accsk";
+    self.config.akId = @"accid";
+    self.config.isDebug = YES;
+    self.config.enableAutoTrack = YES;
+    self.config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
+    self.config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
+    FTAutoTrack *autoTrack =[FTAutoTrack new];
+    [autoTrack startWithConfig:self.config];
     return YES;
 }
 

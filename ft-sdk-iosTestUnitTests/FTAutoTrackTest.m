@@ -52,7 +52,9 @@
 }
 
 - (void)testExample {
+    [self.viewController.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     
+    [self.viewController.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     // This is an example of a functional test case.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
@@ -64,8 +66,8 @@
     }];
 }
 - (void)testControllerOfTheView{
-   UIViewController *currentVC = [self.viewController.firstButton zy_getCurrentViewController];
-   XCTAssertEqualObjects(self.viewController, currentVC);
+      UIViewController *currentVC = [self.viewController.firstButton zy_getCurrentViewController];
+      XCTAssertEqualObjects(self.viewController, currentVC);
 
 }
 - (void)testRootViewControllerOfTheView{

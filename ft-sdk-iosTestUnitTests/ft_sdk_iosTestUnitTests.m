@@ -38,10 +38,7 @@
 - (void)testExample {
     // This is an example of a functional test case.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
-}
-- (void)testWhiteListContainsViewController{
-    
-    
+    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
 }
 - (void)testPerformanceExample {
     // This is an example of a performance test case.

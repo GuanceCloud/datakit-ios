@@ -9,6 +9,7 @@
 #import "SecondViewController.h"
 #import "Test4ViewController.h"
 #import <FTMobileAgent/FTMobileAgent.h>
+#import "AutoTrackManger.h"
 @interface SecondViewController ()
 
 @end
@@ -17,19 +18,24 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor greenColor];
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]init];
-       [tap addTarget:self action:@selector(tap)];
-       [self.view addGestureRecognizer:tap];
+    [self createUI];
 }
-- (void)tap{
-    [[FTMobileAgent sharedInstance] track:@"pushFile" tags:@{@"pushVC":@"Test4ViewController"} values:@{@"event":@"Gesture"}];
-
-    [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
-}
--(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+- (void)createUI{
+    NSArray *array = [[AutoTrackManger sharedManger] getEndResult];
+    for (NSInteger i=0; i<array.count; i++) {
+        UILabel *lab = [[UILabel alloc]initWithFrame:CGRectMake(10, 100, 100, 50+i*100)];
+        lab.text = array[i];
+        lab.backgroundColor = [UIColor redColor];
+        [self.view addSubview:lab];
+    }
     
+}
+-(void)dealloc{
+    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
 }
 /*
 #pragma mark - Navigation

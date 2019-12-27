@@ -7,6 +7,8 @@
 //
 
 #import "UITestVC.h"
+#import "AutoTrackManger.h"
+#import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
 @interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
 
 @end
@@ -15,6 +17,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
@@ -62,7 +66,7 @@
 
     y = CGRectGetMaxY(_uiswitch.frame) + 16;
     _segmentedControl.frame = CGRectMake(x, y, width, 40);
-    _segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"第一个", @"第二个", @"第三个"]];
+    _segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"first", @"second", @"third"]];
     [_segmentedControl addTarget:self action:@selector(segmentedAction:) forControlEvents:UIControlEventValueChanged];
     [_scrollView addSubview:_segmentedControl];
 
@@ -70,7 +74,7 @@
     _label = [[UILabel alloc] initWithFrame:CGRectMake(x, y, width, 50)];
     _label.textAlignment = NSTextAlignmentCenter;
     _label.backgroundColor = [UIColor orangeColor];
-    _label.text = @"这是一个可以点击的 Label";
+    _label.text = @"get result";
     _label.userInteractionEnabled = YES;
     [_scrollView addSubview:_label];
 
@@ -104,10 +108,14 @@
 
 - (void)firstAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+
 }
 
 - (void)secondAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);
@@ -127,14 +135,20 @@
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
     NSLog(@"%@被点击了", label.text);
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
+   
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
     NSLog(@"UIImageView被点击了");
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
 }
 #pragma mark -
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -149,8 +163,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"%@", indexPath);
-}
+    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
 
+}
+-(void)dealloc{
+    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+
+}
 /*
 #pragma mark - Navigation
 
