@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SecondViewController : UIViewController
+@interface ResultVC : UIViewController
 
 @end
 

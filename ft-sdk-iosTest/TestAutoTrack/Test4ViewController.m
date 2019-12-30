@@ -8,7 +8,7 @@
 
 #import "Test4ViewController.h"
 #import "UITestVC.h"
-#import "AutoTrackManger.h"
+#import "UITestManger.h"
 @interface Test4ViewController ()<UITableViewDelegate,UITableViewDataSource>
 
 @property(nonatomic,strong) UITableView *tableView;
@@ -19,11 +19,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
 
     self.view.backgroundColor = [UIColor purpleColor];
     [self.view addSubview:self.tableView];
-    
+//    
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     [button setTitle:@"button 1" forState:UIControlStateNormal];
     
@@ -32,8 +32,8 @@
     
     [button addTarget:self action:@selector(otherButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button];
-    
-    
+
+
     UIButton *button1 = [UIButton buttonWithType:UIButtonTypeCustom];
     [button1 setTitle:@"button 2" forState:UIControlStateNormal];
     button1.backgroundColor = [UIColor redColor];
@@ -43,40 +43,40 @@
     UILabel *lab = [[UILabel alloc]initWithFrame:CGRectMake(200, 150, 90, 40)];
        lab.backgroundColor = [UIColor yellowColor];
     lab.text = @"lab";
-       [self.view addSubview:lab];
-       UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labtapClick)];
-       [lab addGestureRecognizer:tap2];
-    
-    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(200, 200, 90, 40)];
-    view.backgroundColor = [UIColor yellowColor];
-    [self.view addSubview:view];
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapClick)];
-    [view addGestureRecognizer:tap];
+    [self.view addSubview:lab];
+    UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labtapClick)];
+    lab.userInteractionEnabled = YES;
+    [lab addGestureRecognizer:tap2];
+//
+//    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(200, 200, 90, 40)];
+//    view.backgroundColor = [UIColor yellowColor];
+//    [self.view addSubview:view];
+//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapClick)];
+//    [view addGestureRecognizer:tap];
     
 }
 - (void)labtapClick{
     NSLog(@"tap点击");
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
--(void)tapClick{
-    
-    NSLog(@"tap点击");
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
-
-}
-
+//-(void)tapClick{
+//
+//    NSLog(@"tap点击");
+//    [[UITestManger sharedManger] addAutoTrackClickCount];
+//
+//}
+//
 -(void)testClick:(NSDictionary *)sender{
-    
+
     NSLog(@"testClick");
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 
 }
 
 -(void)otherButtonClick{
-    
+
     NSLog(@"点我了ya ");
-    [self.tableView becomeFirstResponder];
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 
 }
 
@@ -103,12 +103,12 @@
     if (cell == nil) {
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:indentifier];
     }
-    cell.textLabel.text = [NSString stringWithFormat:@"tableView Cell %d",indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"tableView Cell %ld",(long)indexPath.row];
     return cell;
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.row == 1) {
@@ -122,8 +122,9 @@
     // Dispose of any resources that can be recreated.
 }
 -(void)dealloc{
-    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
 }
+
 /*
 #pragma mark - Navigation
 
