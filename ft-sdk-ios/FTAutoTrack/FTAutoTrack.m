@@ -105,23 +105,25 @@
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
+         if (![self judgeWhiteAndBlackWithViewController:target]) {
+             return ;
+         }
+         Class vcClass = [target class];
+         [vcClass aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-                UIViewController *vcclass;
-                if ([target isKindOfClass:[UIViewController class]]) {
-                    vcclass  = target;
-                }else if([target isKindOfClass:[UIView class]]){
-                    vcclass  = [target zy_getCurrentViewController];
+             NSString *cpn;
+                if ([vcClass isKindOfClass:[UIViewController class]]) {
+                    cpn =NSStringFromClass(vcClass);
+                }else if([vcClass isKindOfClass:[UIView class]]){
+                    cpn  = NSStringFromClass([collectionView zy_getCurrentViewController].class);
                 }
-             if (![self judgeWhiteAndBlackWithViewController:vcclass]) {
-                 return ;
-             }
-            NSDictionary *data =@{@"cpn":NSStringFromClass(vcclass.class),
-                                                 @"rpn":[UIViewController zy_getRootViewController],
-                                                 @"op":@"click",
-                                                 @"opdata":@{@"vtp":[collectionView zy_getParentsView]},
-                                                };
+             
+            NSDictionary *data =@{@"cpn":cpn,
+                                  @"rpn":[UIViewController zy_getRootViewController],
+                                  @"op":@"click",
+                                  @"opdata":@{@"vtp":[collectionView zy_getParentsView]},
+                                };
              ZYDebug(@"data == %@",data);
 
          } error:NULL];
@@ -141,45 +143,11 @@
                                       @"opdata":@{@"vtp":[tableview zy_getParentsView]},
                                      };
     [self addDBWithData:data];
-    ZYDebug(@"tableViewSelectionDidChangeNotification == %@",data);
+    ZYDebug(@"data == %@",data);
     }
 }
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{
-    if ([self isAutoTrackUI:UIButton.class]) {
-        [UIButton aspect_hookSelector:@selector(addTarget:action:forControlEvents:)
-             withOptions:ZY_AspectPositionAfter
-              usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action, UIControlEvents controlEvents) {
-
-                  if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
-
-                      UIButton *button = aspectInfo.instance;
-                      button.accessibilityHint = NSStringFromSelector(action);
-                  }
-              } error:NULL];
-          [UIControl aspect_hookSelector:@selector(beginTrackingWithTouch:withEvent:)
-          withOptions:ZY_AspectPositionBefore
-           usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITouch *touch, UIEvent *event) {
-
-               if ([aspectInfo.instance isKindOfClass:[UIButton class]]) {
-
-                   UIButton *button = aspectInfo.instance;
-                   id object =  [button.allTargets anyObject];
-                   NSString *className = NSStringFromClass([object class]);
-                  if (![self judgeWhiteAndBlackWithViewController:object]) {
-                       return ;
-                   }
-                   NSDictionary *data =@{@"cpn":className,
-                                         @"rpn":[UIViewController zy_getRootViewController],
-                                         @"op":@"click",
-                                         @"opdata":@{@"vtp":[button zy_getParentsView]},
-                                         };
-                    [self addDBWithData:data];
-                    ZYDebug(@"data == %@",data);
-               }
-           } error:NULL];
-    }
-
     //待处理：仅可以实现
     [UIGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
       withOptions:ZY_AspectPositionAfter
@@ -194,8 +162,9 @@
                              return ;
             }
             if ([target isKindOfClass:[UIViewController class]]) {
-                [target aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                    NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
+                Class vcClass = [target class];
+                [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                    NSDictionary *data =@{@"cpn":NSStringFromClass(vcClass),
                                           @"rpn":[UIViewController zy_getRootViewController],
                                           @"op":@"click",
                                           @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
@@ -208,6 +177,7 @@
             
         }
        } error:NULL];
+
        [UIGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
             withOptions:ZY_AspectPositionAfter
              usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
@@ -221,8 +191,9 @@
                                    return ;
                   }
                   if ([target isKindOfClass:[UIViewController class]]) {
-                      [target aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                          NSDictionary *data =@{@"cpn":NSStringFromClass([target class]),
+                     Class vcClass = [target class];
+                     [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                          NSDictionary *data =@{@"cpn":NSStringFromClass(vcClass),
                                                 @"rpn":[UIViewController zy_getRootViewController],
                                                 @"op":@"click",
                                                 @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
@@ -235,8 +206,24 @@
                   
               }
              } error:NULL];
-     
-      
+       
+    [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
+        if ([self isAutoTrackUI:from]) {
+            if (![self judgeWhiteAndBlackWithViewController:to]) {
+                return ;
+            }
+            NSString *className = NSStringFromClass([to class]);
+
+            NSDictionary *data =@{@"cpn":className,
+                                  @"rpn":[UIViewController zy_getRootViewController],
+                                  @"op":@"click",
+                                  @"opdata":@{@"vtp":[from zy_getParentsView]},
+                                  };
+             [self addDBWithData:data];
+             ZYDebug(@"data == %@",data);
+            
+        }
+    } error:NULL];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
     if (self.config.whiteViewClass.count == 0 && self.config.blackViewClass.count == 0) {
