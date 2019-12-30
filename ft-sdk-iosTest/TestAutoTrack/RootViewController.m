@@ -7,10 +7,10 @@
 //
 
 #import "RootViewController.h"
-#import "SecondViewController.h"
+#import "ResultVC.h"
 #import "Test4ViewController.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import "AutoTrackManger.h"
+#import "UITestManger.h"
 
 @interface RootViewController ()
 
@@ -20,7 +20,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
     self.view.backgroundColor = [UIColor whiteColor];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
@@ -34,21 +34,18 @@
     [self.view addSubview:button2];
 }
 - (void)buttonClick{
-    [[FTMobileAgent sharedInstance] track:@"pushFile" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
-    [[AutoTrackManger sharedManger] addTrackCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
     [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
-
 }
 -(void)endBtnClick{
-    [[AutoTrackManger sharedManger] addAutoTrackClickCount];
-    [self.navigationController pushViewController:[SecondViewController new] animated:YES];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
 }
 -(void)dealloc{
-    [[AutoTrackManger sharedManger] addAutoTrackViewScreenCount];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
 }
 
 /*

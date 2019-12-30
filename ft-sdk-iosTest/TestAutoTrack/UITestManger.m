@@ -6,21 +6,18 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "AutoTrackManger.h"
+#import "UITestManger.h"
 #import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
 
-@interface AutoTrackManger ()
-@property (nonatomic, assign) NSInteger lastCount;
-@property (nonatomic, assign) NSInteger trackCount;
-@property (nonatomic, assign) NSInteger autoTrackViewScreenCount;
-@property (nonatomic, assign) NSInteger autoTrackClickCount;
+@interface UITestManger ()
+
 @end
-@implementation AutoTrackManger
-+(AutoTrackManger *)sharedManger{
-    static AutoTrackManger *sharedInstance = nil;
+@implementation UITestManger
++(UITestManger *)sharedManger{
+    static UITestManger *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-          sharedInstance = [[AutoTrackManger alloc] init];
+          sharedInstance = [[UITestManger alloc] init];
       });
     return sharedInstance;
 }
@@ -28,32 +25,32 @@
     if ([super init]) {
         self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
         NSLog(@"lastCount == %ld",self.lastCount);
-        self.trackCount = 0;
-        self.autoTrackViewScreenCount = 0;
+        self.trackCount = 1;//lunch
+        self.autoTrackViewScreenCount = 2; //ViewController (close)
         self.self.autoTrackClickCount = 0;
     }
     return self;
 }
 -(void)addTrackCount{
     self.trackCount++;
-    NSLog(@"trackCount == %ld",self.trackCount);
+    NSLog(@"add == %ld",self.trackCount);
 
 }
 - (void)addAutoTrackViewScreenCount{
     self.autoTrackViewScreenCount ++;
-    NSLog(@"autoTrackViewScreenCount == %ld",self.autoTrackViewScreenCount);
+    NSLog(@"add == %ld",self.autoTrackViewScreenCount);
 
 }
 - (void)addAutoTrackClickCount{
     self.autoTrackClickCount++;
-    NSLog(@"autoTrackClickCount == %ld",self.autoTrackClickCount);
+    NSLog(@"add == %ld",self.autoTrackClickCount);
 
 }
 -(NSArray *)getEndResult{
     NSMutableArray *result = [NSMutableArray new];
     NSInteger addCount = [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     
-    NSInteger trueCount = self.lastCount+self.trackCount+self.autoTrackClickCount+self.autoTrackClickCount;
+    NSInteger trueCount = self.lastCount+self.trackCount+self.autoTrackClickCount+self.autoTrackViewScreenCount;
 //    if (addCount == trueCount) {
         [result addObject:@"All Right"];
 //    }

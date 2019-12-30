@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#import "UITestManger.h"
+#import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
 @interface AppDelegate ()
 
 @end
@@ -38,8 +40,12 @@
     self.config.enableAutoTrack = YES;
     self.config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
     self.config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
+//    self.config.blackVCList = @[@"Test4ViewController"];
+    [UITestManger sharedManger];
+    [[ZYTrackerEventDBTool sharedManger] createTable];
     FTAutoTrack *autoTrack =[FTAutoTrack new];
     [autoTrack startWithConfig:self.config];
+   
     return YES;
 }
 

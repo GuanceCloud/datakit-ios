@@ -37,12 +37,10 @@
     [app.buttons[@"track"] tap];
     [app.buttons[@"button 1"] tap];
     [app.buttons[@"button 2"] tap];
-    [app.staticTexts[@"lab"] tap];
-    [[[[[[[[[[app childrenMatchingType:XCUIElementTypeWindow] elementBoundByIndex:0] childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element childrenMatchingType:XCUIElementTypeOther].element tap];
+    [app.buttons[@"lab"] tap];
     
     XCUIElementQuery *tablesQuery = app.tables;
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"tableView Cell 0"]/*[[".cells.staticTexts[@\"tableView Cell 0\"]",".staticTexts[@\"tableView Cell 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"tableView Cell 2"]/*[[".cells.staticTexts[@\"tableView Cell 2\"]",".staticTexts[@\"tableView Cell 2\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"tableView Cell 1"]/*[[".cells.staticTexts[@\"tableView Cell 1\"]",".staticTexts[@\"tableView Cell 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
@@ -55,19 +53,19 @@
     [app2/*@START_MENU_TOKEN@*/.buttons[@"SecondButton"]/*[[".scrollViews.buttons[@\"SecondButton\"]",".buttons[@\"SecondButton\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     
     XCUIElementQuery *steppersQuery = app2/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
-    [steppersQuery.buttons[@"Decrement"] tap];
     [steppersQuery.buttons[@"Increment"] tap];
+    [steppersQuery.buttons[@"Decrement"] tap];
+    [app2/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [[app.scrollViews childrenMatchingType:XCUIElementTypeImage].element tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 2"]/*[[".cells.staticTexts[@\"Section: 0, Row: 2\"]",".staticTexts[@\"Section: 0, Row: 2\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [app.navigationBars[@"testUI"].buttons[@"Back"] tap];
     [app.navigationBars[@"Test4View"].buttons[@"Back"] tap];
     [app.buttons[@"result"] tap];
-    XCUIElement *lab = app.staticTexts[@"All Right"];
     
-    XCTAssertNil(lab,@"Track Fail");
-     
+ 
     
+   
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
