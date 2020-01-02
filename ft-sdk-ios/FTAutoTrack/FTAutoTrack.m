@@ -17,6 +17,12 @@
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
+
+NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
+NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
+NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
+NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
+
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
 
@@ -53,10 +59,9 @@
     }
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
-        NSDictionary *data =@{
-                            @"op":@"launch",
-                            };
-        [self addDBWithData:data];
+    
+    [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
+    
 }
 - (void)appWillTerminateNotification:(NSNotification *)notification{
        
@@ -68,12 +73,8 @@
            if (![self judgeWhiteAndBlackWithViewController:vc]) {
                return ;
            }
-                   NSDictionary *data = @{@"cpn":NSStringFromClass([vc class]),
-                                          @"rpn":[UIViewController zy_getRootViewController],
-                                          @"op":@"open",
-                   };
-                [self addDBWithData:data];
-                   ZYDebug(@"data == %@",data);
+           [self track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil];
+           
          } error:nil];
      
        SEL sel= NSSelectorFromString(@"dealloc");
@@ -82,13 +83,7 @@
            if ([self isBlackListContainsViewController:tempVC]) {
                return ;
            }
-           NSDictionary *data =@{@"cpn":NSStringFromClass([tempVC class]),
-                                 @"rpn":[UIViewController zy_getRootViewController],
-                                 @"op":@"close",
-               };
-              [self addDBWithData:data];
-            ZYDebug(@"data == %@",data);
-
+           [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
        } error:nil];
     
 }
@@ -118,14 +113,7 @@
                 }else if([vcClass isKindOfClass:[UIView class]]){
                     cpn  = NSStringFromClass([collectionView zy_getCurrentViewController].class);
                 }
-             
-            NSDictionary *data =@{@"cpn":cpn,
-                                  @"rpn":[UIViewController zy_getRootViewController],
-                                  @"op":@"click",
-                                  @"opdata":@{@"vtp":[collectionView zy_getParentsView]},
-                                };
-             ZYDebug(@"data == %@",data);
-
+             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vcClass WithClickView:collectionView];
          } error:NULL];
          
      }error:nil];
@@ -137,13 +125,7 @@
     UITableView *tableview = notification.object;
     UIViewController *current = [tableview zy_getCurrentViewController];
     if([self judgeWhiteAndBlackWithViewController:current]){
-    NSDictionary *data =@{@"cpn":NSStringFromClass(current.class),
-                                      @"rpn":[UIViewController zy_getRootViewController],
-                                      @"op":@"click",
-                                      @"opdata":@{@"vtp":[tableview zy_getParentsView]},
-                                     };
-    [self addDBWithData:data];
-    ZYDebug(@"data == %@",data);
+        [self track:FT_AUTO_TRACK_OP_CLICK withCpn:current WithClickView:tableview];
     }
 }
 #pragma mark ========== button,Gesture的点击事件 ==========
@@ -164,13 +146,7 @@
             if ([target isKindOfClass:[UIViewController class]]) {
                 Class vcClass = [target class];
                 [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                    NSDictionary *data =@{@"cpn":NSStringFromClass(vcClass),
-                                          @"rpn":[UIViewController zy_getRootViewController],
-                                          @"op":@"click",
-                                          @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
-                                                        };
-                    [self addDBWithData:data];
-                     ZYDebug(@"data == %@",data);
+                [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
 
                 } error:nil];
             }
@@ -192,14 +168,9 @@
                   }
                   if ([target isKindOfClass:[UIViewController class]]) {
                      Class vcClass = [target class];
+                      
                      [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                          NSDictionary *data =@{@"cpn":NSStringFromClass(vcClass),
-                                                @"rpn":[UIViewController zy_getRootViewController],
-                                                @"op":@"click",
-                                                @"opdata":@{@"vtp":[ges.view zy_getParentsView]},
-                                                              };
-                          [self addDBWithData:data];
-                           ZYDebug(@"data == %@",data);
+                      [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
 
                       } error:nil];
                   }
@@ -223,13 +194,7 @@
             if (![self judgeWhiteAndBlackWithViewController:vc]) {
                                               return ;
             }
-            NSDictionary *data =@{@"cpn":className,
-                                  @"rpn":[UIViewController zy_getRootViewController],
-                                  @"op":@"click",
-                                  @"opdata":@{@"vtp":[from zy_getParentsView]},
-                                  };
-             [self addDBWithData:data];
-             ZYDebug(@"data == %@",data);
+            [self track:FT_AUTO_TRACK_OP_CLICK withCpn:to WithClickView:from];
             
         }
     } error:NULL];
@@ -317,6 +282,29 @@
     return isContains;
 }
 #pragma mark ========== 写入数据库操作 ==========
+-(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
+  
+    @try {
+        NSMutableDictionary *data = [NSMutableDictionary new];
+        [data addEntriesFromDictionary:@{@"op":op}];
+        if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
+            [data addEntriesFromDictionary:@{@"rpn":[UIViewController zy_getRootViewController]}];
+            if ([cpn isKindOfClass:UIView.class]) {
+              [data addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn zy_getCurrentViewController].class)}];
+            }else if ([cpn isKindOfClass:UIViewController.class]){
+              [data addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn class])}];
+            }
+            if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
+                [data addEntriesFromDictionary:@{@"opdata":@{@"vtp":[view zy_getParentsView]}}];
+            }
+        }
+        ZYDebug(@"data == %@",data);
+        [self addDBWithData:data];
+    } @catch (NSException *exception) {
+        ZYDebug(@" error: %@", exception);
+    }
+}
+
 -(void)addDBWithData:(NSDictionary *)data{
     @try {
           RecordModel *model = [RecordModel new];
