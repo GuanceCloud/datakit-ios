@@ -208,12 +208,21 @@
              } error:NULL];
        
     [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
+        if (![from isKindOfClass:UIView.class]) {
+            return ;
+        }
         if ([self isAutoTrackUI:from]) {
-            if (![self judgeWhiteAndBlackWithViewController:to]) {
-                return ;
+             NSString *className = NSStringFromClass([to class]);
+            UIViewController *vc;
+            if (![to isKindOfClass:UIViewController.class]) {
+                vc = [to zy_getCurrentViewController];
+                className = NSStringFromClass([vc class]);
+            }else{
+                vc = to;
             }
-            NSString *className = NSStringFromClass([to class]);
-
+            if (![self judgeWhiteAndBlackWithViewController:vc]) {
+                                              return ;
+            }
             NSDictionary *data =@{@"cpn":className,
                                   @"rpn":[UIViewController zy_getRootViewController],
                                   @"op":@"click",
@@ -226,15 +235,12 @@
     } error:NULL];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
-    if (self.config.whiteViewClass.count == 0 && self.config.blackViewClass.count == 0) {
-        return YES;
-    }
+
     if (self.config.whiteViewClass.count>0) {
       return  [self isViewTypeWhite:view];
     }
     
     return ![self isViewTypeIgnored:view];
-    
 }
 - (BOOL)isViewTypeWhite:(Class)aClass {
     for (Class obj in self.config.whiteViewClass) {
@@ -279,7 +285,7 @@
     
 }
 - (BOOL)isBlackListContainsViewController:(UIViewController *)viewController {
-    NSSet *blacklistedClasses = [[NSSet alloc]initWithArray:self.config.blackVCList];
+    static NSSet *blacklistedClasses = nil;
     static dispatch_once_t onceToken;
 
     dispatch_once(&onceToken, ^{
@@ -291,13 +297,14 @@
 
         NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
         @try {
+            NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
             NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
-            [blacklistedClasses setByAddingObjectsFromSet:[NSSet setWithArray:blacklistedViewControllerClassNames]];
+            [array addObjectsFromArray:blacklistedViewControllerClassNames];
+            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
         } @catch(NSException *exception) {  // json加载和解析可能失败
             ZYDebug(@"error: %@",exception);
         }
     });
-
     __block BOOL isContains = NO;
     [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *blackClassName = (NSString *)obj;

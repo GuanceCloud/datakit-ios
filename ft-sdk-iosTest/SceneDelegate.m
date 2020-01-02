@@ -9,9 +9,16 @@
 
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
+    UITabBarController *tab = [[UITabBarController alloc]init];
     RootViewController *rootVC = [[RootViewController alloc] init];
+    rootVC.title = @"home";
+   
     UINavigationController *rootNav = [[UINavigationController alloc] initWithRootViewController:rootVC];
-    self.window.rootViewController = rootNav;
+    UIViewController *second =  [UIViewController new];
+    second.title = @"second";
+    tab.viewControllers = @[rootNav,[UIViewController new]];
+   
+    self.window.rootViewController = tab;
     [self.window makeKeyAndVisible];
 }
 
