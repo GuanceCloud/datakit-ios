@@ -23,8 +23,7 @@
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) NSString *net;
-@property (nonatomic, strong) NSString *radio;
-@property (nonatomic, strong) NSTimer *timer;
+//@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) ZYUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
