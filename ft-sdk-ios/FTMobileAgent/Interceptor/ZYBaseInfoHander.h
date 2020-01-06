@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)currentGMT;
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 + (NSString *)defaultUUID;
++ (NSString *)ft_cpuUsage;
++ (NSString *)ft_getCPUType;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -17,7 +17,7 @@
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
-
+#import "FTUncaughtExceptionHandler.h"
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
@@ -28,13 +28,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
 @end
 @implementation FTAutoTrack
-void UncaughtExceptionHandler(NSException *exception) {
-    NSArray *arr = [exception callStackSymbols];
-    NSString *reason = [exception reason];
-    NSString *name = [exception name];
-    ZYDebug(@"\n%@\n%@\n%@",arr,reason,name);
-}
-
 
 -(void)startWithConfig:(FTMobileConfig *)config{
     self.config = config;
@@ -59,9 +52,9 @@ void UncaughtExceptionHandler(NSException *exception) {
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
         [self logViewControllerLifeCycle];
     }
-//    if (self.config.enableTrackAppCrash) {
-//        NSSetUncaughtExceptionHandler(&UncaughtExceptionHandler);
-//    }
+    if (self.config.enableTrackAppCrash) {
+        [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
+    }
   
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{

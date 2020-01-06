@@ -39,6 +39,7 @@
     self.config.isDebug = YES;
     self.config.enableAutoTrack = YES;
     self.config.metricsUrl = @"http://10.100.64.106:19457/v1/write/metrics";
+    self.config.enableTrackAppCrash = YES;
     self.config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
 //    self.config.blackVCList = @[@"Test4ViewController"];
     [UITestManger sharedManger];
