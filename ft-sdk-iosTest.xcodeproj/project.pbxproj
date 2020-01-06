@@ -24,7 +24,7 @@
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
 		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
-		6232D9370EF123C2DDA63ED9 /* Pods_ft_sdk_iosTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */; };
+		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 		A6D3692B29703A54FE7D45C8 /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23F3900E34E961780EA3B13D /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUnitTests.framework */; };
 /* End PBXBuildFile section */
@@ -59,6 +59,19 @@
 			remoteInfo = "ft-sdk-ios";
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4AB783AF23C2D660001FC994 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -113,7 +126,6 @@
 			files = (
 				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
 				4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */,
-				6232D9370EF123C2DDA63ED9 /* Pods_ft_sdk_iosTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +273,7 @@
 				4A116953239113B600C0BC4E /* Frameworks */,
 				4A116954239113B600C0BC4E /* Resources */,
 				6DA71D03B5472CB135F74268 /* [CP] Embed Pods Frameworks */,
+				4AB783AF23C2D660001FC994 /* CopyFiles */,
 			);
 			buildRules = (
 			);

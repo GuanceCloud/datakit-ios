@@ -17,9 +17,8 @@
 typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackTypeNone          = 0,
     FTAutoTrackEventTypeAppStart      = 1 << 0,
-    FTAutoTrackEventTypeAppEnd        = 1 << 1,
-    FTAutoTrackEventTypeAppClick      = 1 << 2,
-    FTAutoTrackEventTypeAppViewScreen = 1 << 3,
+    FTAutoTrackEventTypeAppClick      = 1 << 1,
+    FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
 NS_ASSUME_NONNULL_BEGIN
 

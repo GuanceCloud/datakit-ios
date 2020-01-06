@@ -28,6 +28,13 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
 @end
 @implementation FTAutoTrack
+void UncaughtExceptionHandler(NSException *exception) {
+    NSArray *arr = [exception callStackSymbols];
+    NSString *reason = [exception reason];
+    NSString *name = [exception name];
+    ZYDebug(@"\n%@\n%@\n%@",arr,reason,name);
+}
+
 
 -(void)startWithConfig:(FTMobileConfig *)config{
     self.config = config;
@@ -44,12 +51,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                                             name:UIApplicationDidFinishLaunchingNotification
                                           object:nil];
     }
-    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppEnd) {
-        [notificationCenter addObserver:self
-        selector:@selector(appWillTerminateNotification:)
-               name:UIApplicationWillTerminateNotification
-             object:nil];
-    }
+  
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick) {
         [self logTableViewCollectionView];
         [self logTargetAction];
@@ -57,6 +59,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
         [self logViewControllerLifeCycle];
     }
+//    if (self.config.enableTrackAppCrash) {
+//        NSSetUncaughtExceptionHandler(&UncaughtExceptionHandler);
+//    }
+  
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
     
@@ -107,13 +113,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          [vcClass aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-             NSString *cpn;
-                if ([vcClass isKindOfClass:[UIViewController class]]) {
-                    cpn =NSStringFromClass(vcClass);
-                }else if([vcClass isKindOfClass:[UIView class]]){
-                    cpn  = NSStringFromClass([collectionView zy_getCurrentViewController].class);
-                }
-             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vcClass WithClickView:collectionView];
+             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
          } error:NULL];
          
      }error:nil];
@@ -254,13 +254,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     static dispatch_once_t onceToken;
 
     dispatch_once(&onceToken, ^{
-       
-        NSBundle *sensorsBundle = [NSBundle bundleWithPath:[[NSBundle bundleForClass:[FTAutoTrack class]] pathForResource:@"FTAutoTrack" ofType:@"bundle"]];
-               //文件路径
-        NSString *jsonPath = [sensorsBundle pathForResource:@"ft_autotrack_viewcontroller_blacklist.json" ofType:nil];
-
-
-        NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
+       NSString *strPath = [[NSBundle mainBundle] pathForResource:@"FTAutoTrack" ofType:@"framework"];
+       NSString *bundlePath = [[NSBundle bundleWithPath:strPath] pathForResource:@"FTAutoTrack" ofType:@"bundle"];
+       NSString *jsonPath = [[NSBundle bundleWithPath:bundlePath] pathForResource:@"ft_autotrack_viewcontroller_blacklist" ofType:@"json"];
+       NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
         @try {
             NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
             NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
