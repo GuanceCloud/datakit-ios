@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL isDebug;
 
-
+@property (nonatomic, copy) NSString *sessionid;
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
 * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
@@ -85,7 +85,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /// 是否自动收集 App Crash 日志，该功能默认是关闭的
-//@property (nonatomic) BOOL enableTrackAppCrash;
+@property (nonatomic) BOOL enableTrackAppCrash;
+
+
+
 @end
 
 NS_ASSUME_NONNULL_END
