@@ -48,18 +48,27 @@ static ZYTrackerEventDBTool *dbTool = nil;
     };
     return dbTool;
 }
--(void)createTable
+- (void)createTable{
+    @try {
+        [self createEventTable];
+        [self createUserTable];
+    } @catch (NSException *exception) {
+        ZYDebug(@"%@",exception);
+    }
+}
+-(void)createEventTable
 {
-    if ([self zy_isExistTable:ZY_DB_BASELOG_TABLE_NAME]) {
+    if ([self zy_isExistTable:FT_DB_TRACREVENT_TABLE_NAME]) {
         return;
     }
       [self zy_inTransaction:^(BOOL *rollback) {
         NSDictionary *keyTypes = @{@"_id":@"INTEGER",
                                    @"tm":@"INTEGER",
                                    @"data":@"TEXT",
+                                   @"sessionid":@"TEXT",
         };
         if ([self isOpenDatabese:self.db]) {
-               NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",ZY_DB_BASELOG_TABLE_NAME]];
+               NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACREVENT_TABLE_NAME]];
                int count = 0;
                for (NSString *key in keyTypes) {
                    count++;
@@ -80,6 +89,67 @@ static ZYTrackerEventDBTool *dbTool = nil;
            }
     }];
 }
+- (void)createUserTable{
+    if ([self zy_isExistTable:FT_DB_USERSESSION_TABLE_NAME]) {
+           return;
+       }
+    [self zy_inTransaction:^(BOOL *rollback) {
+           NSDictionary *keyTypes = @{@"usersessionid":@"TEXT",
+                                      @"userdata":@"TEXT",
+           };
+           if ([self isOpenDatabese:self.db]) {
+                  NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_USERSESSION_TABLE_NAME]];
+                  int count = 0;
+                  for (NSString *key in keyTypes) {
+                      count++;
+                      [sql appendString:key];
+                      [sql appendString:@" "];
+                      [sql appendString:[keyTypes valueForKey:key]];
+                      if (count != [keyTypes count]) {
+                           [sql appendString:@", "];
+                      }
+                  }
+                  [sql appendString:@")"];
+                  ZYDebug(@"%@", sql);
+                BOOL success =[self.db executeUpdate:sql];
+               ZYDebug(@"createUserTable success == %d",success);
+              }
+       }];
+}
+-(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
+    NSDictionary *data = @{@"name":name,
+                           @"id":Id,
+                           @"exts":exts,
+    };
+    NSError *parseError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
+    
+    NSString *userdata = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    if([self isOpenDatabese:self.db]) {
+        __block BOOL  is = NO;
+        [self zy_inDatabase:^{
+            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '%@' , '%@' );",FT_DB_USERSESSION_TABLE_NAME,get_ft_sessionid,userdata];
+           is=  [self.db executeUpdate:sqlStr];
+            ZYDebug(@"success == %d",is);
+        }];
+        return is;
+    }else{
+    return NO;
+    }
+}
+-(BOOL)existsTheUserWithUserId:(NSString *)userId{
+     __block NSInteger count =0;
+      [self zy_inDatabase:^{
+          NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE usersessionid = '%@' ", FT_DB_TRACREVENT_TABLE_NAME,userId];
+            ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
+
+            while ([set next]) {
+                count= [set intForColumn:@"count"];
+            }
+
+      }];
+       return count>0;
+}
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];
@@ -95,7 +165,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
    if([self isOpenDatabese:self.db]) {
        __block BOOL  is = NO;
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",ZY_DB_BASELOG_TABLE_NAME,item.tm,item.data];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data];
           is=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"success == %d",is);
        }];
@@ -106,15 +176,28 @@ static ZYTrackerEventDBTool *dbTool = nil;
 }
 
 -(NSArray *)getAllDatas{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",ZY_DB_BASELOG_TABLE_NAME];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
 
     return [self getDatasWithFormat:sql];
 
 }
 -(NSArray *)getFirstTenData{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",ZY_DB_BASELOG_TABLE_NAME];
-
-    return [self getDatasWithFormat:sql];
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT sessionid FROM '%@' ORDER BY tm ASC group by sessionid;",FT_DB_TRACREVENT_TABLE_NAME];
+    NSArray *session =[self getDatasWithFormat:sessionidSql];
+    __block NSString *sessionId = nil;
+    [session enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([self existsTheUserWithUserId:obj]){
+            sessionId = obj;
+            *stop = YES;
+        }
+    }];
+    if (sessionId) {
+        NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE sessionid = '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME,sessionId];
+         return [self getDatasWithFormat:sql];
+    }
+  
+    return nil;
+   
 }
 -(NSArray *)getDatasWithFormat:(NSString *)format{
  if([self isOpenDatabese:self.db]) {
@@ -147,7 +230,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 {
     __block NSInteger count =0;
     [self zy_inDatabase:^{
-        NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", ZY_DB_BASELOG_TABLE_NAME];
+        NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", FT_DB_TRACREVENT_TABLE_NAME];
           ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
 
           while ([set next]) {
@@ -160,7 +243,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 -(BOOL)deleteItemWithTm:(long )tm
 {   __block BOOL is;
     [self zy_inDatabase:^{
-     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",ZY_DB_BASELOG_TABLE_NAME,tm];
+     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,tm];
         is = [self.db executeUpdate:sqlStr];
     }];
     return is;
