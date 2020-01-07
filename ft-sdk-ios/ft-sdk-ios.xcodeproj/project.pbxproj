@@ -65,6 +65,8 @@
 		4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884286239E5768001B44C3 /* ZY_FMDB.h */; };
 		4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */; };
 		4AAF0E7B23BAF26D00817C52 /* FTAutoTrack.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4A85314D23ACC01200B40B5D /* FTAutoTrack.bundle */; };
+		4AB783B523C30CFA001FC994 /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB783B323C30CFA001FC994 /* FTUncaughtExceptionHandler.h */; };
+		4AB783B623C30CFA001FC994 /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783B423C30CFA001FC994 /* FTUncaughtExceptionHandler.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -105,6 +107,8 @@
 		4A884285239E5768001B44C3 /* ZY_FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDatabase.h; sourceTree = "<group>"; };
 		4A884286239E5768001B44C3 /* ZY_FMDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZY_FMDB.h; sourceTree = "<group>"; };
 		4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMDatabaseAdditions.m; sourceTree = "<group>"; };
+		4AB783B323C30CFA001FC994 /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUncaughtExceptionHandler.h; sourceTree = "<group>"; };
+		4AB783B423C30CFA001FC994 /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -146,6 +150,8 @@
 				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
 				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4A852FCE23A2408600B40B5D /* Info.plist */,
+				4AB783B323C30CFA001FC994 /* FTUncaughtExceptionHandler.h */,
+				4AB783B423C30CFA001FC994 /* FTUncaughtExceptionHandler.m */,
 			);
 			path = FTAutoTrack;
 			sourceTree = "<group>";
@@ -237,6 +243,7 @@
 				4A852FE123A240B400B40B5D /* UIViewController+ZY_RootVC.h in Headers */,
 				4A852FDE23A240B400B40B5D /* UIView+ZY_currentController.h in Headers */,
 				4A852FE223A240B400B40B5D /* ZYAspects.h in Headers */,
+				4AB783B523C30CFA001FC994 /* FTUncaughtExceptionHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +411,7 @@
 				4A852FDB23A240B400B40B5D /* ZYAspects.m in Sources */,
 				4A852FDD23A240B400B40B5D /* UIViewController+ZY_RootVC.m in Sources */,
 				4A852FDC23A240B400B40B5D /* UIView+ZY_currentController.m in Sources */,
+				4AB783B623C30CFA001FC994 /* FTUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

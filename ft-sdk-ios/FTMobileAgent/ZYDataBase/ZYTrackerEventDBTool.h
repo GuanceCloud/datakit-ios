@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-#define ZY_DB_BASELOG_TABLE_NAME @"zy_base"
+#define FT_DB_TRACREVENT_TABLE_NAME @"trace_event"
+#define FT_DB_USERSESSION_TABLE_NAME    @"user_session_data"
 @class RecordModel;
 @interface ZYTrackerEventDBTool : NSObject
 
@@ -25,5 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSArray *)getFirstTenData;
 -(BOOL)deleteItemWithTm:(long )tm;
 - (NSInteger)getDatasCount;
+
+-(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts;
 @end
 NS_ASSUME_NONNULL_END
