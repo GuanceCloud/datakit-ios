@@ -258,6 +258,7 @@
     }
     return deviceId;
 }
+#pragma mark ========== cpu ==========
 + (NSString *)ft_cpuUsage
 {
    kern_return_t kr;
@@ -356,11 +357,27 @@
     }
     return @"";
 }
+#pragma mark ========== 电池 ==========
+//电池电量
 +(double)deviceLevel{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
     return deviceLevel;
 }
+-(NSString*) getBatteryState {
+    UIDevice *device = [UIDevice currentDevice];
+    if (device.batteryState == UIDeviceBatteryStateUnknown) {
+        return @"UnKnow";
+    }else if (device.batteryState == UIDeviceBatteryStateUnplugged){
+        return @"Unplugged";
+    }else if (device.batteryState == UIDeviceBatteryStateCharging){
+        return @"Charging";
+    }else if (device.batteryState == UIDeviceBatteryStateFull){
+        return @"Full";
+    }
+    return nil;
+}
+#pragma mark ========== 内存 ==========
 //当前设备可用内存
 + (double)availableMemory
 {
@@ -377,4 +394,27 @@
     
     return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
 }
+//当前任务所占用的内存
++ (double)usedMemory
+{
+    task_basic_info_data_t taskInfo;
+    mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
+    kern_return_t kernReturn = task_info(mach_task_self(),
+                                         TASK_BASIC_INFO,
+                                         (task_info_t)&taskInfo,
+                                         &infoCount);
+    
+    if (kernReturn != KERN_SUCCESS) {
+        return NSNotFound;
+    }
+    
+    return taskInfo.resident_size / 1024.0 / 1024.0;
+}
+//总内存
++(long long)getTotalMemorySize{
+    return [NSProcessInfo processInfo].physicalMemory;
+
+}
+
+
 @end
