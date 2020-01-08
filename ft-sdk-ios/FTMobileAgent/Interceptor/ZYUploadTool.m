@@ -42,7 +42,9 @@
         while ([[ZYTrackerEventDBTool sharedManger] getDatasCount]>0){
             ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
          NSArray *updata = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
-        
+            if(updata.count == 0){
+                break;
+            }
          RecordModel *model = [updata lastObject];
          BOOL scuess = [self apiRequestWithEventsAry:updata andError:nil];
             if (!scuess) {//请求失败
