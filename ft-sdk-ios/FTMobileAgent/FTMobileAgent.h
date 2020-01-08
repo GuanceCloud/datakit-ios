@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 */
 
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
+
+- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts;
+/**
+ 注销当前用户
+*/
+- (void)logout;
 @end
 
 NS_ASSUME_NONNULL_END

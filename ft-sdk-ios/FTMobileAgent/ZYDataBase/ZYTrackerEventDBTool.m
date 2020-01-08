@@ -130,26 +130,14 @@ static ZYTrackerEventDBTool *dbTool = nil;
         [self zy_inDatabase:^{
             NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '%@' , '%@' );",FT_DB_USERSESSION_TABLE_NAME,get_ft_sessionid,userdata];
            is=  [self.db executeUpdate:sqlStr];
-            ZYDebug(@"success == %d",is);
+            ZYDebug(@"success == %ld",is);
         }];
         return is;
     }else{
     return NO;
     }
 }
--(BOOL)existsTheUserWithUserId:(NSString *)userId{
-     __block NSInteger count =0;
-      [self zy_inDatabase:^{
-          NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE usersessionid = '%@' ", FT_DB_TRACREVENT_TABLE_NAME,userId];
-            ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
 
-            while ([set next]) {
-                count= [set intForColumn:@"count"];
-            }
-
-      }];
-       return count>0;
-}
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];
@@ -182,21 +170,10 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
 }
 -(NSArray *)getFirstTenData{
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT sessionid FROM '%@' ORDER BY tm ASC group by sessionid;",FT_DB_TRACREVENT_TABLE_NAME];
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@'  left join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
     NSArray *session =[self getDatasWithFormat:sessionidSql];
-    __block NSString *sessionId = nil;
-    [session enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([self existsTheUserWithUserId:obj]){
-            sessionId = obj;
-            *stop = YES;
-        }
-    }];
-    if (sessionId) {
-        NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE sessionid = '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME,sessionId];
-         return [self getDatasWithFormat:sql];
-    }
-  
-    return nil;
+
+    return session;
    
 }
 -(NSArray *)getDatasWithFormat:(NSString *)format{
@@ -216,7 +193,9 @@ static ZYTrackerEventDBTool *dbTool = nil;
       item.tm= [[set stringForColumn:@"tm"] longLongValue];
 
       item.data= [set stringForColumn:@"data"];
-
+      
+      item.userdata = [set stringForColumn:@"userdata"];
+      
       [array addObject:item];
 
       }

@@ -205,6 +205,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track field tags values exception %@",exception);
       }
 }
+
+- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
+    [[ZYTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+}
+- (void)logout{
+    NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
+    [defatluts removeObjectForKey:FT_SESSIONID];
+    [defatluts synchronize];
+}
 #pragma mark - 上报策略
 
 //// 启动事件发送定时器
