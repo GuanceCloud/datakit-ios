@@ -32,6 +32,8 @@ static ZYTrackerEventDBTool *dbTool = nil;
 }
 #pragma mark --创建数据库
 + (instancetype)sharedManger {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
     if (!dbTool) {
         NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"ZYFMDB.sqlite"];
         ZY_FMDatabase *fmdb = [ZY_FMDatabase databaseWithPath:path];
@@ -41,7 +43,8 @@ static ZYTrackerEventDBTool *dbTool = nil;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
         }
-    }
+     }
+    });
     if (![dbTool.db open]) {
         ZYDebug(@"database can not open !");
         return nil;
