@@ -10,6 +10,7 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#import "ZYLog.h"
 @interface FTNetMonitorFlow ()
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, assign)long long int lastBytes;
@@ -63,7 +64,7 @@
         }
     }
     freeifaddrs(ifa_list);
-    NSLog(@"\n[getInterfaceBytes-Total]%d,%d",iBytes,oBytes);
+    ZYDebug(@"\n[getInterfaceBytes-Total]%d,%d",iBytes,oBytes);
     return iBytes + oBytes;
 }
 
@@ -75,7 +76,7 @@
     } else if (rate >=1024*1024&& rate <1024*1024*1024) {
         return [NSString stringWithFormat:@"%.2fMB/秒", (double)rate / (1024*1024)];
     } else {
-        return@"10Kb/秒";
+        return @"10Kb/秒";
     };
 }
 @end
