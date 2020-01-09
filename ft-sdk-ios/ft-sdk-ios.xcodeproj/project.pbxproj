@@ -69,6 +69,8 @@
 		4AB783B623C30CFA001FC994 /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783B423C30CFA001FC994 /* FTUncaughtExceptionHandler.m */; };
 		4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB783C723C5B802001FC994 /* FTLocationManager.h */; };
 		4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783C823C5B802001FC994 /* FTLocationManager.m */; };
+		4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */; };
+		4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -113,6 +115,8 @@
 		4AB783B423C30CFA001FC994 /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		4AB783C723C5B802001FC994 /* FTLocationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLocationManager.h; sourceTree = "<group>"; };
 		4AB783C823C5B802001FC994 /* FTLocationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLocationManager.m; sourceTree = "<group>"; };
+		4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetMonitorFlow.m; sourceTree = "<group>"; };
+		4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetMonitorFlow.h; sourceTree = "<group>"; };
 		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -206,6 +210,8 @@
 				4A852FAB23A221DE00B40B5D /* ZYLog.h */,
 				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
+				4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */,
+				4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */,
 			);
 			path = Interceptor;
 			sourceTree = "<group>";
@@ -264,6 +270,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
+				4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */,
 				4A88429B239E5768001B44C3 /* ZYTrackerEventDBTool.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
@@ -438,6 +445,7 @@
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				4A88429C239E5768001B44C3 /* ZYTrackerEventDBTool.m in Sources */,
 				4A88428E239E5768001B44C3 /* ZYUploadTool.m in Sources */,
+				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
