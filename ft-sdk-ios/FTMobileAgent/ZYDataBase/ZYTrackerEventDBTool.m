@@ -11,9 +11,9 @@
 #import "ZY_FMDB.h"
 #import "ZYLog.h"
 @interface ZYTrackerEventDBTool ()
-@property (nonatomic, strong)NSString *dbPath;
-@property (nonatomic, strong)ZY_FMDatabaseQueue *dbQueue;
-@property (nonatomic, strong)ZY_FMDatabase *db;
+@property (nonatomic, strong) NSString *dbPath;
+@property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
+@property (nonatomic, strong) ZY_FMDatabase *db;
 
 @property (nonatomic, strong) NSDate *lastSentDate;
 
@@ -156,7 +156,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
    if([self isOpenDatabese:self.db]) {
        __block BOOL  is = NO;
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data') VALUES (  '%ld' , '%@' );",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%ld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
           is=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"success == %d",is);
        }];
@@ -173,7 +173,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
 }
 -(NSArray *)getFirstTenData{
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@'  left join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
     NSArray *session =[self getDatasWithFormat:sessionidSql];
 
     return session;
@@ -193,7 +193,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
       item._id= [[set stringForColumn:@"_id"]intValue];
 
-      item.tm= [[set stringForColumn:@"tm"] longLongValue];
+      item.tm = [set longForColumn:@"tm"];
 
       item.data= [set stringForColumn:@"data"];
       
