@@ -175,7 +175,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         if (![from isKindOfClass:UIView.class]) {
             return ;
         }
-        if ([self isAutoTrackUI:from]) {
+        if ([self isAutoTrackUI:[from class]]) {
              NSString *className = NSStringFromClass([to class]);
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
@@ -197,8 +197,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     if (self.config.whiteViewClass.count>0) {
       return  [self isViewTypeWhite:view];
     }
-    
-    return ![self isViewTypeIgnored:view];
+    if(self.config.blackViewClass.count>0)   return ![self isViewTypeIgnored:view];
+  
+    return YES;
 }
 - (BOOL)isViewTypeWhite:(Class)aClass {
     for (Class obj in self.config.whiteViewClass) {
