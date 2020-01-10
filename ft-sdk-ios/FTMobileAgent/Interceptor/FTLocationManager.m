@@ -7,6 +7,9 @@
 //
 
 #import "FTLocationManager.h"
+#import <CoreLocation/CoreLocation.h>
+
+
 #import "ZYLog.h"
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;
@@ -15,12 +18,9 @@
 @implementation FTLocationManager
 - (instancetype)init {
     if (self = [super init]) {
-        //默认设置设置精度为 100 ,也就是 100 米定位一次 ；准确性 kCLLocationAccuracyHundredMeters
         self.locationManager = [[CLLocationManager alloc] init];
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        // 设置过滤器为无
-        self.locationManager.distanceFilter = kCLDistanceFilterNone;
         self.locationManager.delegate = self;
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
     }
     return self;
 }
@@ -75,11 +75,33 @@
     ZYDebug(@"An error occurred = %@", error);
 
     }
-        if (self.updateLocationBlock) {
+        if (self.isUpdatingLocation&&self.updateLocationBlock) {
             self.updateLocationBlock(city, error);
         }
+        self.isUpdatingLocation = NO;
     }
     }];
     [manager stopUpdatingLocation];
+}
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    switch (status)
+    {
+        case kCLAuthorizationStatusDenied:                  // 拒绝授权
+            NSLog(@"授权失败：用户拒绝授权或未开启定位服务");
+            break;
+        case kCLAuthorizationStatusAuthorizedWhenInUse:     // 在使用期间使用定位
+            NSLog(@"授权成功：用户允许应用“使用期间”使用定位服务");
+            break;
+        case kCLAuthorizationStatusAuthorizedAlways:
+            NSLog(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
+            break;
+        case kCLAuthorizationStatusNotDetermined:
+            
+            break;
+        case kCLAuthorizationStatusRestricted:
+            
+            break;
+    }
 }
 @end
