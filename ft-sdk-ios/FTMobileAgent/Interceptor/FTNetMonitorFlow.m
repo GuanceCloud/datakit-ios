@@ -70,13 +70,13 @@
 
 - (NSString *)formatNetWork:(long long int)rate {
     if (rate <1024) {
-        return [NSString stringWithFormat:@"%lldB/秒", rate];
+        return [NSString stringWithFormat:@"%lldB/s", rate];
     } else if (rate >=1024&& rate <1024*1024) {
-        return [NSString stringWithFormat:@"%.1fKB/秒", (double)rate /1024];
+        return [NSString stringWithFormat:@"%.1fKB/s", (double)rate /1024];
     } else if (rate >=1024*1024&& rate <1024*1024*1024) {
-        return [NSString stringWithFormat:@"%.2fMB/秒", (double)rate / (1024*1024)];
+        return [NSString stringWithFormat:@"%.2fMB/s", (double)rate / (1024*1024)];
     } else {
-        return @"10Kb/秒";
+        return @"10Kb/s";
     };
 }
 @end

@@ -12,8 +12,8 @@
 @implementation FTMobileConfig
 - (instancetype)init {
     if (self = [super init]) {
-        self.sdkVersion = ZY_SDK_VERSION;
-        self.appVersion = ZY_APP_VERSION;
+        self.sdkVersion = FT_SDK_VERSION;
+        self.appVersion = FT_APP_VERSION;
         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
         self.isDebug = NO;
 //        self.enableTrackAppCrash = NO;

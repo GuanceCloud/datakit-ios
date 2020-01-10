@@ -25,7 +25,9 @@
 		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
 		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
+		74E7A903FA5998A9A205FB09 /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1804C2982595A0EC17D9C3A /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework */; };
 		A6D3692B29703A54FE7D45C8 /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23F3900E34E961780EA3B13D /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUnitTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -126,6 +128,7 @@
 			files = (
 				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
 				4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */,
+				4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74E7A903FA5998A9A205FB09 /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,9 +292,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A22527323B5AC7600B0ED41 /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUITests" */;
 			buildPhases = (
+				930B51D93238CABBB3D8E67D /* [CP] Check Pods Manifest.lock */,
 				4A22526823B5AC7600B0ED41 /* Sources */,
 				4A22526923B5AC7600B0ED41 /* Frameworks */,
 				4A22526A23B5AC7600B0ED41 /* Resources */,
+				5B7717D2A6D12625B2B72F89 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -416,6 +422,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		5B7717D2A6D12625B2B72F89 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		6177BECAEEC68B7AC555C8E0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -453,6 +476,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ft-sdk-iosTest/Pods-ft-sdk-iosTest-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		930B51D93238CABBB3D8E67D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		9F68AFC96271DEE2B2F610E4 /* [CP] Check Pods Manifest.lock */ = {
@@ -751,6 +796,7 @@
 		};
 		4A22527423B5AC7600B0ED41 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
@@ -768,6 +814,7 @@
 		};
 		4A22527523B5AC7600B0ED41 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CD55C805E57315E634BCC5B3 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
@@ -817,7 +864,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = " $(inherited) ";
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -855,7 +902,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = " $(inherited) ";
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

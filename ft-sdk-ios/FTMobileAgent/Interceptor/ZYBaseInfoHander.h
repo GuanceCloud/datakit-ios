@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)defaultUUID;
 + (NSString *)ft_cpuUsage;
 + (NSString *)ft_getCPUType;
++(long long)getTotalMemorySize;
++ (double)usedMemory;
 @end
 
 NS_ASSUME_NONNULL_END

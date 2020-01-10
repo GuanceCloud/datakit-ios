@@ -16,7 +16,7 @@
 #import "RecordModel.h"
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
-
+#import "FTLocationManager.h"
 @interface FTMobileAgent ()
 @property (nonatomic) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -26,6 +26,7 @@
 //@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) ZYUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
+@property (nonatomic, strong) FTLocationManager *locationManger;
 @end
 @implementation FTMobileAgent
 
@@ -71,7 +72,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(flush) name:@"FTUploadNotification" object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
         NSString *invokeMethod = @"startWithConfig:";
         Class track =  NSClassFromString(@"FTAutoTrack");
@@ -100,8 +101,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         }
         }
+        self.upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
+
+//        [self dealMonitorInfoType];
+       
     }
     return self;
+}
+- (void)dealMonitorInfoType{
+    if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
+        self.locationManger = [[FTLocationManager alloc]init];
+        self.locationManger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
+            
+        };
+        [self.locationManger startUpdatingLocation];
+    }
 }
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
@@ -167,7 +181,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
       @try {
         self.isForeground = YES;
-          [self flush];
+          [self uploadFlush];
       }
       @catch (NSException *exception) {
        ZYDebug(@"applicationDidBecomeActive exception %@",exception);
@@ -215,7 +229,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [defatluts synchronize];
 }
 #pragma mark - 上报策略
-
 //// 启动事件发送定时器
 //- (void)startFlushTimer {
 //    [self stopFlushTimer];
@@ -240,17 +253,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 //        self.timer = nil;
 //    });
 //}
-- (void)flush{
+- (void)uploadFlush{
+    
     dispatch_async(self.serialQueue, ^{
         if (![self.net isEqualToString:@"-1"]) {
           [self.upTool upload];
         }
        });
 }
--(ZYUploadTool *)upTool{
-    if (!_upTool) {
-        _upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
-    }
-    return _upTool;
-}
+
 @end

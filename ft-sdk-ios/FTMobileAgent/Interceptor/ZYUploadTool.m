@@ -15,20 +15,31 @@
 #import "ZYLog.h"
 #import "RecordModel.h"
 #import "FTMobileConfig.h"
+#import "FTLocationManager.h"
 @interface ZYUploadTool()
 @property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
-
+@property (nonatomic, strong) FTLocationManager *manger;
 @end
 @implementation ZYUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
      self = [super init];
        if (self) {
            self.config = config;
+           if(self.config.monitorInfoType & FTMonitorInfoTypeLocation){
+               self.manger = [[FTLocationManager alloc]init];
+               __weak typeof(self) weakSelf = self;
+                self.manger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
+                [weakSelf addLocationInfo:location];
+                };
+            [self.manger startUpdatingLocation];
+               
+           }
        }
        return self;
 }
+
 -(void)upload{
     if (!self.isUploading) {
         //当前数据库所有数据
@@ -178,34 +189,69 @@
   
     return requestDatas;
 }
-- (NSString *)getBasicData{
+- (void)addLocationInfo:(NSString *)location{
+    [self basicTags];
+    _tag = [_tag stringByAppendingFormat:@"location_city=%@",location];
+   
+}
+- (NSString *)basicTags{
     if (_tag != nil) {
-        return _tag;
+           return _tag;
+       }
+       NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
+       NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+       CFShow((__bridge CFTypeRef)(infoDictionary));
+       NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
+       NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+
+       NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+       NSString *version = [UIDevice currentDevice].systemVersion;
+       NSMutableString *tag = [NSMutableString string];
+
+       [tag appendFormat:@"device_uuid=%@,",uuid];
+       [tag appendFormat:@"application_identifier=%@,",identifier];
+       [tag appendFormat:@"application_name=%@,",app_Name];
+       [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
+       [tag appendString:@"os=iOS,"];
+       [tag appendFormat:@"os_version=%@,",version];
+       [tag appendString:@"device_band=APPLE,"];
+       [tag appendFormat:@"locale=%@,",preferredLanguage];
+       [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
+       [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
+       [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
+    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
+        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander getTelephonyInfo]];
     }
-    NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    CFShow((__bridge CFTypeRef)(infoDictionary));
-    NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
-    NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-//    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
-
-    NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-    NSString *version = [UIDevice currentDevice].systemVersion;
-    NSMutableString *tag = [NSMutableString string];
-
-    [tag appendFormat:@"device_uuid=%@,",uuid];
-    [tag appendFormat:@"application_identifier=%@,",identifier];
-    [tag appendFormat:@"application_name=%@,",app_Name];
-    [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
-    [tag appendString:@"os=iOS,"];
-    [tag appendFormat:@"os_version=%@,",version];
-    [tag appendString:@"device_band=APPLE,"];
-    [tag appendFormat:@"locale=%@,",preferredLanguage];
-    [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
-    [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
-    [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-    _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    return _tag;
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+        [tag appendFormat:@"memory_total=%lld,",[ZYBaseInfoHander getTotalMemorySize]];
+    }
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu) {
+        [tag appendFormat:@"cpu_no=%lld",[ZYBaseInfoHander ft_getCPUType]];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera) {
+      //camera_front_px
+     // camera_back_px
+    }
+     _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+     return _tag;
+}
+- (NSString *)getBasicData{
+    NSString *basicTag = [self basicTags];
+    /*
+     battery_total
+     battery_use
+     network_type
+     network_strength
+     network_speed
+     */
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu) {
+     basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%@,",[ZYBaseInfoHander ft_cpuUsage]];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+    basicTag=  [basicTag stringByAppendingFormat:@"memory_use=%lld,",[ZYBaseInfoHander usedMemory]];
+    }
+    basicTag = [basicTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+    return basicTag
 }
 
 @end
