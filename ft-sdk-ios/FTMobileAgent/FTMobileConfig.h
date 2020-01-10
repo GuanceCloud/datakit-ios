@@ -9,16 +9,45 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 /* SDK版本 */
-#define ZY_SDK_VERSION @"1.0.0"
+#define FT_SDK_VERSION @"1.0.0"
 
 /* 默认应用版本 */
-#define ZY_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
-/* 抓取事件 枚举 */
+#define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
+/**
+* @abstract
+* AutoTrack 抓取信息
+*
+* @discussion
+*   FTAutoTrackEventTypeAppStart       - 项目启动
+*   FTAutoTrackEventTypeAppClick       - 点击事件
+*   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
+*/
 typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackTypeNone          = 0,
     FTAutoTrackEventTypeAppStart      = 1 << 0,
     FTAutoTrackEventTypeAppClick      = 1 << 1,
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
+};
+/**
+* @abstract
+* TAG 中的设备信息
+*
+* @discussion
+*   FTMonitorInfoTypeBattery  - 电池总量、使用量
+*   FTMonitorInfoTypeMemory   - 内存总量、使用率
+*   FTMonitorInfoTypeCpu      - CPU型号、占用率
+*   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
+*   FTMonitorInfoTypeCamera   - 前置/后置 像素
+*   FTMonitorInfoTypeLocation - 位置信息  eg:上海
+*/
+typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
+    FTMonitorInfoTypeAll          = 0,
+    FTMonitorInfoTypeBattery      = 1 << 0,
+    FTMonitorInfoTypeMemory       = 1 << 1,
+    FTMonitorInfoTypeCpu          = 1 << 2,
+    FTMonitorInfoTypeNetwork      = 1 << 3,
+    FTMonitorInfoTypeCamera       = 1 << 4,
+    FTMonitorInfoTypeLocation     = 1 << 5,
 };
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,6 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isDebug;
 
 @property (nonatomic, copy) NSString *sessionid;
+
+@property (nonatomic) FTMonitorInfoType monitorInfoType;
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
 * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
