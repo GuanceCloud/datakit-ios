@@ -29,10 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
  @param field   埋点事件名称
  @param values 埋点数据
 */
-
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
-
-- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts;
+/**
+绑定用户信息
+ @param name     用户名
+ @param Id       用户Id
+ @param exts     用户其他信息
+*/
+- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 /**
  注销当前用户
 */
