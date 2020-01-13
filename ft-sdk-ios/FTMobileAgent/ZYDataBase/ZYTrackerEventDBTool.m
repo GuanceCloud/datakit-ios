@@ -120,10 +120,13 @@ static ZYTrackerEventDBTool *dbTool = nil;
        }];
 }
 -(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    NSDictionary *data = @{@"name":name,
+    NSMutableDictionary *data = [@{@"name":name,
                            @"id":Id,
-                           @"exts":exts,
-    };
+    } mutableCopy];
+    if (exts) {
+        [data addEntriesFromDictionary:@{@"exts":exts}];
+    }
+    
     NSError *parseError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
     
@@ -140,7 +143,9 @@ static ZYTrackerEventDBTool *dbTool = nil;
     return NO;
     }
 }
-
+-(void)delectLogoutUser{
+    
+}
 -(BOOL)insertItemWithItemData:(RecordModel *)item{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];

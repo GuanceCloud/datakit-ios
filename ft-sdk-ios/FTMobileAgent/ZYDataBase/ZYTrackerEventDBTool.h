@@ -28,5 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger)getDatasCount;
 
 -(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts;
+-(void)delectLogoutUser;
 @end
 NS_ASSUME_NONNULL_END
