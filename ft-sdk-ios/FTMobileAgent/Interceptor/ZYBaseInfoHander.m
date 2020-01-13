@@ -16,6 +16,8 @@
 #import "ZYLog.h"
 #import <mach/mach.h>
 #import <assert.h>
+#import <SystemConfiguration/SystemConfiguration.h>
+
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 
@@ -117,7 +119,7 @@
      if ([platform isEqualToString:@"i386"] ||
          [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
      
-     return @"Unknown";
+     return platform;
 }
 +(NSString *)getTelephonyInfo     // 获取运营商信息
 {
@@ -259,75 +261,65 @@
     return deviceId;
 }
 #pragma mark ========== cpu ==========
-+ (NSString *)ft_cpuUsage
-{
-   kern_return_t kr;
-   task_info_data_t tinfo;
-   mach_msg_type_number_t task_info_count;
++ (long )ft_cpuUsage{
+    kern_return_t kr;
+    task_info_data_t tinfo;
+    mach_msg_type_number_t task_info_count;
 
-   task_info_count = TASK_INFO_MAX;
-   kr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
-   if (kr != KERN_SUCCESS)
-   {
-     return @"NA";
-   }
+    task_info_count = TASK_INFO_MAX;
+    kr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
+    if (kr != KERN_SUCCESS) {
+        return -1;
+    }
 
-   task_basic_info_t      basic_info;
-   thread_array_t         thread_list;
-   mach_msg_type_number_t thread_count;
-   thread_info_data_t     thinfo;
-   mach_msg_type_number_t thread_info_count;
-   thread_basic_info_t basic_info_th;
-   uint32_t stat_thread = 0; // Mach threads
+    task_basic_info_t      basic_info;
+    thread_array_t         thread_list;
+    mach_msg_type_number_t thread_count;
 
-   basic_info = (task_basic_info_t)tinfo;
+    thread_info_data_t     thinfo;
+    mach_msg_type_number_t thread_info_count;
 
-   // get threads in the task
-   kr = task_threads(mach_task_self(), &thread_list, &thread_count);
-   if (kr != KERN_SUCCESS)
-   {
-      return @"NA";
-   }
-   if (thread_count > 0)
-    stat_thread += thread_count;
+    thread_basic_info_t basic_info_th;
+    uint32_t stat_thread = 0; // Mach threads
 
-   long tot_idle = 0;
-   long tot_user = 0;
-   long tot_kernel = 0;
-   int j;
+    basic_info = (task_basic_info_t)tinfo;
 
-   for (j = 0; j < thread_count; j++)
-   {
-      thread_info_count = THREAD_INFO_MAX;
-      kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
-                     (thread_info_t)thinfo, &thread_info_count);
-      if (kr != KERN_SUCCESS)
-      {
-          return nil;
-      }
+    // get threads in the task
+    kr = task_threads(mach_task_self(), &thread_list, &thread_count);
+    if (kr != KERN_SUCCESS) {
+        return -1;
+    }
+    if (thread_count > 0)
+        stat_thread += thread_count;
 
-      basic_info_th = (thread_basic_info_t)thinfo;
+    long tot_sec = 0;
+    long tot_usec = 0;
+    float tot_cpu = 0;
+    int j;
 
-      if (basic_info_th->flags & TH_FLAGS_IDLE)
-      {
-          //This is idle
-          tot_idle = tot_idle + basic_info_th->user_time.microseconds + basic_info_th->system_time.microseconds;
-      } else {
-          //This is user
-          tot_user = tot_user + basic_info_th->user_time.microseconds;
+    for (j = 0; j < (int)thread_count; j++)
+    {
+        thread_info_count = THREAD_INFO_MAX;
+        kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
+                         (thread_info_t)thinfo, &thread_info_count);
+        if (kr != KERN_SUCCESS) {
+            return -1;
+        }
 
-          //This is kernel
-          tot_kernel = tot_kernel + basic_info_th->system_time.microseconds;
-      }
+        basic_info_th = (thread_basic_info_t)thinfo;
 
-  } // for each thread
+        if (!(basic_info_th->flags & TH_FLAGS_IDLE)) {
+            tot_sec = tot_sec + basic_info_th->user_time.seconds + basic_info_th->system_time.seconds;
+            tot_usec = tot_usec + basic_info_th->user_time.microseconds + basic_info_th->system_time.microseconds;
+            tot_cpu = tot_cpu + basic_info_th->cpu_usage / (float)TH_USAGE_SCALE * 100.0;
+        }
 
-  kr = vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
-  assert(kr == KERN_SUCCESS);
+    } // for each thread
 
-    long tot_cpu = tot_idle + tot_user + tot_kernel;
+    kr = vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
+    assert(kr == KERN_SUCCESS);
 
-    return [NSString stringWithFormat:@"Idle: %.2ld, User: %.2ld, Kernel: %.2ld", tot_idle/tot_cpu, tot_user/tot_cpu, tot_kernel/tot_cpu];
+    return tot_cpu;
 }
 + (NSString *)ft_getCPUType{
     host_basic_info_data_t hostInfo;
@@ -395,26 +387,100 @@
     return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
 }
 //当前任务所占用的内存
-+ (double)usedMemory
++ (NSString *)usedMemory
 {
-    task_basic_info_data_t taskInfo;
-    mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
-    kern_return_t kernReturn = task_info(mach_task_self(),
-                                         TASK_BASIC_INFO,
-                                         (task_info_t)&taskInfo,
-                                         &infoCount);
+    vm_statistics_data_t vmStats;
+       mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
+       kern_return_t kernReturn = host_statistics(mach_host_self(),
+                                                  HOST_VM_INFO,
+                                                  (host_info_t)&vmStats,
+                                                  &infoCount);
+       
+       if (kernReturn != KERN_SUCCESS) {
+           return @"0";
+       }
+       
+    double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
+    double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
     
-    if (kernReturn != KERN_SUCCESS) {
-        return NSNotFound;
-    }
-    
-    return taskInfo.resident_size / 1024.0 / 1024.0;
+    return [NSString stringWithFormat:@"%.2f%%",(total-availableMemory)/total*1.00*100];
 }
 //总内存
 +(long long)getTotalMemorySize{
-    return [NSProcessInfo processInfo].physicalMemory;
+    return [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
 
 }
 
-
++ (int)getNetSignalStrength{
+       
+        int signalStrength = 0;
+    //    判断类型是否为WIFI
+    //        判断是否为iOS 13
+            if (@available(iOS 13.0, *)) {
+                UIStatusBarManager *statusBarManager = [UIApplication sharedApplication].keyWindow.windowScene.statusBarManager;
+                 
+                id statusBar = nil;
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wundeclared-selector"
+                if ([statusBarManager respondsToSelector:@selector(createLocalStatusBar)]) {
+                    UIView *localStatusBar = [statusBarManager performSelector:@selector(createLocalStatusBar)];
+                    if ([localStatusBar respondsToSelector:@selector(statusBar)]) {
+                        statusBar = [localStatusBar performSelector:@selector(statusBar)];
+                    }
+                }
+    #pragma clang diagnostic pop
+                if (statusBar) {
+                    id currentData = [[statusBar valueForKeyPath:@"_statusBar"] valueForKeyPath:@"currentData"];
+                    id wifiEntry = [currentData valueForKeyPath:@"wifiEntry"];
+                    if ([wifiEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataIntegerEntry")]) {
+    //                    层级：_UIStatusBarDataNetworkEntry、_UIStatusBarDataIntegerEntry、_UIStatusBarDataEntry
+                        
+                        signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
+                    }
+                }
+            }else {
+                UIApplication *app = [UIApplication sharedApplication];
+                id statusBar = [app valueForKey:@"statusBar"];
+                if ([[UIApplication sharedApplication] statusBarFrame].size.height>20) {
+    //                刘海屏
+                    id statusBarView = [statusBar valueForKeyPath:@"statusBar"];
+                    UIView *foregroundView = [statusBarView valueForKeyPath:@"foregroundView"];
+                    NSArray *subviews = [[foregroundView subviews][2] subviews];
+                           
+                    if (subviews.count == 0) {
+    //                    iOS 12
+                        id currentData = [statusBarView valueForKeyPath:@"currentData"];
+                        id wifiEntry = [currentData valueForKey:@"wifiEntry"];
+                        signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
+    //                    dBm
+    //                    int rawValue = [[wifiEntry valueForKey:@"rawValue"] intValue];
+                    }else {
+                        for (id subview in subviews) {
+                            if ([subview isKindOfClass:NSClassFromString(@"_UIStatusBarWifiSignalView")]) {
+                                signalStrength = [[subview valueForKey:@"_numberOfActiveBars"] intValue];
+                            }
+                        }
+                    }
+                }else {
+    //                非刘海屏
+                    UIView *foregroundView = [statusBar valueForKey:@"foregroundView"];
+                         
+                    NSArray *subviews = [foregroundView subviews];
+                    NSString *dataNetworkItemView = nil;
+                           
+                    for (id subview in subviews) {
+                        if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]]) {
+                            dataNetworkItemView = subview;
+                            break;
+                        }
+                    }
+                           
+                    signalStrength = [[dataNetworkItemView valueForKey:@"_wifiStrengthBars"] intValue];
+                            
+                    return signalStrength;
+                }
+            }
+        
+        return signalStrength;
+}
 @end

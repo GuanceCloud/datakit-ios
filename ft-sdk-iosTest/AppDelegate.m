@@ -30,7 +30,7 @@
     config.autoTrackEventType = FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeLocation|FTMonitorInfoTypeMemory|FTMonitorInfoTypeCpu|FTMonitorInfoTypeBattery|FTMonitorInfoTypeCamera|FTMonitorInfoTypeNetwork;
     [FTMobileAgent startWithConfigOptions:config];
-//    [[FTMobileAgent sharedInstance] bindUserWithName:@"123" Id:@"1111111" exts:@{}];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"123" Id:@"1111111" exts:nil];
     // 测试autoTrack
 //    self.config = [FTMobileConfig new];
 //    self.config.enableRequestSigning = YES;
