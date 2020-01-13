@@ -21,10 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)currentGMT;
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 + (NSString *)defaultUUID;
-+ (NSString *)ft_cpuUsage;
++ (long )ft_cpuUsage;
 + (NSString *)ft_getCPUType;
++(double)deviceLevel;
 +(long long)getTotalMemorySize;
-+ (double)usedMemory;
++ (NSString *)usedMemory;
++ (int)getNetSignalStrength;
 @end
 
 NS_ASSUME_NONNULL_END
