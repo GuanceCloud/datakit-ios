@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZYUploadTool : NSObject
+@property (nonatomic, copy) NSString *net;
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 -(void)upload;
 @end

@@ -27,7 +27,7 @@
      self = [super init];
        if (self) {
            self.config = config;
-           if(self.config.monitorInfoType & FTMonitorInfoTypeLocation){
+           if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
                self.manger = [[FTLocationManager alloc]init];
                __weak typeof(self) weakSelf = self;
                 self.manger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
@@ -141,6 +141,7 @@
    
     [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
+        NSDictionary *userData = [ZYBaseInfoHander dictionaryWithJsonString:obj.userdata];
        __block NSString *event = @" ";
         NSDictionary *opdata = item[@"opdata"];
         NSString *field;
@@ -172,6 +173,16 @@
         }
         [tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 appendTag = [appendTag stringByAppendingFormat:@"%@=%@,",key,obj];
+        }];
+        [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            if ([obj isKindOfClass:NSString.class]) {
+                appendTag = [appendTag stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+            }
+            if ([obj isKindOfClass:NSDictionary.class]) {
+                [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
+                    appendTag = [appendTag stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+                }];
+            }
         }];
         appendTag =appendTag.length>1? [appendTag substringToIndex:appendTag.length-1]:appendTag;
 
@@ -219,16 +230,16 @@
        [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
        [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
        [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
-        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+//    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
+//        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander getTelephonyInfo]];
+//    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"memory_total=%lld,",[ZYBaseInfoHander getTotalMemorySize]];
     }
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu) {
-        [tag appendFormat:@"cpu_no=%lld",[ZYBaseInfoHander ft_getCPUType]];
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [tag appendFormat:@"cpu_no=%@,",[ZYBaseInfoHander ft_getCPUType]];
     }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera) {
+    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
       //camera_front_px
      // camera_back_px
     }
@@ -240,18 +251,23 @@
     /*
      battery_total
      battery_use
-     network_type
-     network_strength
      network_speed
      */
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu) {
-     basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%@,",[ZYBaseInfoHander ft_cpuUsage]];
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%ld,",[ZYBaseInfoHander ft_cpuUsage]];
     }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
-    basicTag=  [basicTag stringByAppendingFormat:@"memory_use=%lld,",[ZYBaseInfoHander usedMemory]];
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        basicTag=  [basicTag stringByAppendingFormat:@"memory_use=%@,",[ZYBaseInfoHander usedMemory]];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",self.net];
+//        basicTag =[basicTag stringByAppendingFormat:@"network_strength=%d,",[ZYBaseInfoHander getNetSignalStrength]];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        basicTag =[basicTag stringByAppendingFormat:@"battery_use=%.2f,",[ZYBaseInfoHander deviceLevel]];
     }
     basicTag = [basicTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    return basicTag
+    return basicTag;
 }
 
 @end
