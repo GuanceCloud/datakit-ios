@@ -17,6 +17,7 @@
 #import <mach/mach.h>
 #import <assert.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <AVFoundation/AVFoundation.h>
 
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
@@ -351,12 +352,12 @@
 }
 #pragma mark ========== 电池 ==========
 //电池电量
-+(double)deviceLevel{
++(NSString *)ft_getBatteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
-    return deviceLevel;
+    return [NSString stringWithFormat:@"%.f%%",(1-deviceLevel)*100];
 }
--(NSString*) getBatteryState {
+-(NSString *) getBatteryState {
     UIDevice *device = [UIDevice currentDevice];
     if (device.batteryState == UIDeviceBatteryStateUnknown) {
         return @"UnKnow";
@@ -410,77 +411,36 @@
     return [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
 
 }
-
-+ (int)getNetSignalStrength{
-       
-        int signalStrength = 0;
-    //    判断类型是否为WIFI
-    //        判断是否为iOS 13
-            if (@available(iOS 13.0, *)) {
-                UIStatusBarManager *statusBarManager = [UIApplication sharedApplication].keyWindow.windowScene.statusBarManager;
-                 
-                id statusBar = nil;
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wundeclared-selector"
-                if ([statusBarManager respondsToSelector:@selector(createLocalStatusBar)]) {
-                    UIView *localStatusBar = [statusBarManager performSelector:@selector(createLocalStatusBar)];
-                    if ([localStatusBar respondsToSelector:@selector(statusBar)]) {
-                        statusBar = [localStatusBar performSelector:@selector(statusBar)];
-                    }
-                }
-    #pragma clang diagnostic pop
-                if (statusBar) {
-                    id currentData = [[statusBar valueForKeyPath:@"_statusBar"] valueForKeyPath:@"currentData"];
-                    id wifiEntry = [currentData valueForKeyPath:@"wifiEntry"];
-                    if ([wifiEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataIntegerEntry")]) {
-    //                    层级：_UIStatusBarDataNetworkEntry、_UIStatusBarDataIntegerEntry、_UIStatusBarDataEntry
-                        
-                        signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
-                    }
-                }
-            }else {
-                UIApplication *app = [UIApplication sharedApplication];
-                id statusBar = [app valueForKey:@"statusBar"];
-                if ([[UIApplication sharedApplication] statusBarFrame].size.height>20) {
-    //                刘海屏
-                    id statusBarView = [statusBar valueForKeyPath:@"statusBar"];
-                    UIView *foregroundView = [statusBarView valueForKeyPath:@"foregroundView"];
-                    NSArray *subviews = [[foregroundView subviews][2] subviews];
-                           
-                    if (subviews.count == 0) {
-    //                    iOS 12
-                        id currentData = [statusBarView valueForKeyPath:@"currentData"];
-                        id wifiEntry = [currentData valueForKey:@"wifiEntry"];
-                        signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
-    //                    dBm
-    //                    int rawValue = [[wifiEntry valueForKey:@"rawValue"] intValue];
-                    }else {
-                        for (id subview in subviews) {
-                            if ([subview isKindOfClass:NSClassFromString(@"_UIStatusBarWifiSignalView")]) {
-                                signalStrength = [[subview valueForKey:@"_numberOfActiveBars"] intValue];
-                            }
-                        }
-                    }
-                }else {
-    //                非刘海屏
-                    UIView *foregroundView = [statusBar valueForKey:@"foregroundView"];
-                         
-                    NSArray *subviews = [foregroundView subviews];
-                    NSString *dataNetworkItemView = nil;
-                           
-                    for (id subview in subviews) {
-                        if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]]) {
-                            dataNetworkItemView = subview;
-                            break;
-                        }
-                    }
-                           
-                    signalStrength = [[dataNetworkItemView valueForKey:@"_wifiStrengthBars"] intValue];
-                            
-                    return signalStrength;
-                }
-            }
-        
-        return signalStrength;
++ (NSString *)gt_getFrontCameraPixel{
+      AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionFront];
+      NSArray* availFormat=captureDevice.formats;
+      AVCaptureDeviceFormat *format = [availFormat lastObject];
+      CMVideoDimensions dis = format.highResolutionStillImageDimensions;
+      return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
 }
++ (NSString *)gt_getBackCameraPixel{
+    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionBack];
+    NSArray* availFormat=captureDevice.formats;
+    AVCaptureDeviceFormat *format = [availFormat lastObject];
+    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
+    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
+}
+
++ (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition) position
+{
+     NSArray *devices;
+    if (@available(iOS 10.0, *)) {
+        AVCaptureDeviceDiscoverySession *devicesIOS10 = [AVCaptureDeviceDiscoverySession  discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
+        devices  = devicesIOS10.devices;
+    } else {
+        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];    }
+
+    for (AVCaptureDevice *device in devices) {
+        if ([device position] == position) {
+            return device;
+        }
+    }
+    return nil;
+}
+
 @end

@@ -16,6 +16,7 @@
 #import "RecordModel.h"
 #import "FTMobileConfig.h"
 #import "FTLocationManager.h"
+#import "FTNetworkInfo.h"
 @interface ZYUploadTool()
 @property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
@@ -240,8 +241,8 @@
         [tag appendFormat:@"cpu_no=%@,",[ZYBaseInfoHander ft_getCPUType]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-      //camera_front_px
-     // camera_back_px
+        [tag appendFormat:@"camera_front_px=%@,",[ZYBaseInfoHander gt_getFrontCameraPixel]];
+        [tag appendFormat:@"camera_back_px=%@,",[ZYBaseInfoHander gt_getBackCameraPixel]];
     }
      _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
      return _tag;
@@ -250,21 +251,25 @@
     NSString *basicTag = [self basicTags];
     /*
      battery_total
-     battery_use
      network_speed
      */
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%ld,",[ZYBaseInfoHander ft_cpuUsage]];
+        basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%ld%%,",[ZYBaseInfoHander ft_cpuUsage]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         basicTag=  [basicTag stringByAppendingFormat:@"memory_use=%@,",[ZYBaseInfoHander usedMemory]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",self.net];
-//        basicTag =[basicTag stringByAppendingFormat:@"network_strength=%d,",[ZYBaseInfoHander getNetSignalStrength]];
+       __block NSString *network_type,*network_strength;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            network_type =[FTNetworkInfo getNetworkType];
+            network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
+        });
+        basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",network_type];
+        basicTag =[basicTag stringByAppendingFormat:@"network_strength=%@,",network_strength];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag =[basicTag stringByAppendingFormat:@"battery_use=%.2f,",[ZYBaseInfoHander deviceLevel]];
+        basicTag =[basicTag stringByAppendingFormat:@"battery_use=%@,",[ZYBaseInfoHander ft_getBatteryUse]];
     }
     basicTag = [basicTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
     return basicTag;
