@@ -17,11 +17,13 @@
 #import "FTMobileConfig.h"
 #import "FTLocationManager.h"
 #import "FTNetworkInfo.h"
+#import "FTNetMonitorFlow.h"
 @interface ZYUploadTool()
 @property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTLocationManager *manger;
+@property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @end
 @implementation ZYUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -36,6 +38,10 @@
                 };
             [self.manger startUpdatingLocation];
                
+           }
+           if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+               self.netFlow = [FTNetMonitorFlow new];
+               [self.netFlow startMonitor];
            }
        }
        return self;
@@ -267,6 +273,8 @@
         });
         basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",network_type];
         basicTag =[basicTag stringByAppendingFormat:@"network_strength=%@,",network_strength];
+        basicTag =[basicTag stringByAppendingFormat:@"network_speed=%@,",[self.netFlow refreshFlow]];
+
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         basicTag =[basicTag stringByAppendingFormat:@"battery_use=%@,",[ZYBaseInfoHander ft_getBatteryUse]];

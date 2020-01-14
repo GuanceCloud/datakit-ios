@@ -12,13 +12,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetMonitorFlow : NSObject
 //开始检测
-@property (nonatomic, copy) void(^updateNetFlowBlock)(NSString *flow);
+//@property (nonatomic, copy) void(^updateNetFlowBlock)(NSString *flow);
 
 - (void)startMonitor;
 
-//停止检测
-
-- (void)stopMonitor;
+////停止检测
+//
+//- (void)stopMonitor;
+- (NSString *)refreshFlow;
 @end
 
 NS_ASSUME_NONNULL_END
