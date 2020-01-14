@@ -5,9 +5,9 @@
 //  Created by 胡蕾蕾 on 2020/1/14.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
+#import <UIKit/UIKit.h>
 #import "FTNetworkInfo.h"
-#import "AppDelegate.h"
+
 #define kDevice_Is_iPhoneX \
 ({BOOL isPhoneX = NO;\
 if (@available(iOS 11.0, *)) {\

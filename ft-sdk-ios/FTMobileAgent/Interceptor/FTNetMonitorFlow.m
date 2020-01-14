@@ -13,33 +13,35 @@
 #import "ZYLog.h"
 @interface FTNetMonitorFlow ()
 @property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, assign)long long int lastBytes;
+@property (nonatomic, assign) long long int lastBytes;
+@property (nonatomic, assign) CFAbsoluteTime lastTime;
 
 @end
 @implementation FTNetMonitorFlow
 
 -(void)startMonitor{
     self.lastBytes = [self getInterfaceBytes];
-    self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
+    self.lastTime = CFAbsoluteTimeGetCurrent();
+//    self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
+//    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
     
 }
--(void)stopMonitor{
-    [self.timer invalidate];
-}
-- (void)refreshFlow{
+//-(void)stopMonitor{
+//    [self.timer invalidate];
+//}
+- (NSString *)refreshFlow{
     long long int rate = 0;
     long long int currentBytes = [self getInterfaceBytes];
     
     if(self.lastBytes) {
      //用上当前的下行总流量减去上一秒的下行流量达到下行速录
-        rate = currentBytes -self.lastBytes;
+        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - self.lastTime);
+        rate = (currentBytes -self.lastBytes)/linkTime;
     }
     self.lastBytes = currentBytes;
+    self.lastTime = CFAbsoluteTimeGetCurrent();
     NSString *flow = [self formatNetWork:rate];
-    if (self.updateNetFlowBlock) {
-        self.updateNetFlowBlock(flow);
-    }
+    return flow;
 }
 - (long long) getInterfaceBytes {
     struct ifaddrs *ifa_list = 0, *ifa;
