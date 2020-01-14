@@ -102,7 +102,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         }
         self.upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
-        self.upTool.net =[@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI";
        
     }
     return self;
@@ -162,7 +161,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.net = @"-1";//未知
     }
     ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
-    self.upTool.net =[@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI";
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {

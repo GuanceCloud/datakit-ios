@@ -32,8 +32,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		4A31E75023CDA1320077531B /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E74E23CDA1320077531B /* FTNetworkInfo.m */; };
-		4A31E75123CDA1320077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E74F23CDA1320077531B /* FTNetworkInfo.h */; };
+		4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
+		4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E75323CDA69C0077531B /* FTNetworkInfo.m */; };
 		4A852FAC23A221DF00B40B5D /* ZYLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FAB23A221DE00B40B5D /* ZYLog.h */; };
 		4A852FDB23A240B400B40B5D /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A852FDC23A240B400B40B5D /* UIView+ZY_currentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD423A240B300B40B5D /* UIView+ZY_currentController.m */; };
@@ -76,8 +76,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4A31E74E23CDA1320077531B /* FTNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTNetworkInfo.m; path = ../../../../testdemo/testdemo/FTNetworkInfo.m; sourceTree = "<group>"; };
-		4A31E74F23CDA1320077531B /* FTNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTNetworkInfo.h; path = ../../../../testdemo/testdemo/FTNetworkInfo.h; sourceTree = "<group>"; };
+		4A31E75223CDA69C0077531B /* FTNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfo.h; sourceTree = "<group>"; };
+		4A31E75323CDA69C0077531B /* FTNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfo.m; sourceTree = "<group>"; };
 		4A852FAB23A221DE00B40B5D /* ZYLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYLog.h; sourceTree = "<group>"; };
 		4A852FCB23A2408600B40B5D /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A852FCE23A2408600B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -216,8 +216,8 @@
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */,
 				4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */,
-				4A31E74F23CDA1320077531B /* FTNetworkInfo.h */,
-				4A31E74E23CDA1320077531B /* FTNetworkInfo.m */,
+				4A31E75223CDA69C0077531B /* FTNetworkInfo.h */,
+				4A31E75323CDA69C0077531B /* FTNetworkInfo.m */,
 			);
 			path = Interceptor;
 			sourceTree = "<group>";
@@ -274,7 +274,7 @@
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A88428F239E5768001B44C3 /* RecordModel.h in Headers */,
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
-				4A31E75123CDA1320077531B /* FTNetworkInfo.h in Headers */,
+				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
 				4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */,
@@ -440,7 +440,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A31E75023CDA1320077531B /* FTNetworkInfo.m in Sources */,
+				4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */,
 				4A884297239E5768001B44C3 /* RecordModel.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,

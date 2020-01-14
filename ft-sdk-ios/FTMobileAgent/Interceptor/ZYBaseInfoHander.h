@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZYBaseInfoHander : NSObject
 + (NSString *)getDeviceType;
 + (NSString *)getTelephonyInfo;
-//+ (NSString *)geZYBaseInfoHanderSString *)resolution;
 + (NSString *)convertToJsonData:(NSDictionary *)dict;
 + (NSString *)resolution;
 + (long)getCurrentTimestamp;
@@ -23,10 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)defaultUUID;
 + (long )ft_cpuUsage;
 + (NSString *)ft_getCPUType;
-+(double)deviceLevel;
-+(long long)getTotalMemorySize;
++ (NSString *)ft_getBatteryUse;
++ (long long)getTotalMemorySize;
 + (NSString *)usedMemory;
-+ (int)getNetSignalStrength;
++ (NSString *)gt_getFrontCameraPixel;
++ (NSString *)gt_getBackCameraPixel;
 @end
 
 NS_ASSUME_NONNULL_END
