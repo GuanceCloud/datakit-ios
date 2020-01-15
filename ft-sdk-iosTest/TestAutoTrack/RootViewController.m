@@ -24,7 +24,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
-    [button setTitle:@"track" forState:UIControlStateNormal];
+    [button setTitle:@"login" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button];
     UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 100, 100)];

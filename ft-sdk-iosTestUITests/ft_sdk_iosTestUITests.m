@@ -34,7 +34,7 @@
     
     [app launch];
     
-    [app.buttons[@"track"] tap];
+    [app.buttons[@"login"] tap];
     [app.buttons[@"button 1"] tap];
     [app.buttons[@"button 2"] tap];
     [app.buttons[@"lab"] tap];
