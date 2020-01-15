@@ -12,7 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
 /**
-SDK 调用方法
+* @abstract
+* 返回之前所初始化好的单例
+*
+* @discussion
+* 调用这个方法之前，必须先调用 startWithConfigOptions 这个方法
+*
+* @return 返回的单例
 */
 + (instancetype)sharedInstance;
 /**

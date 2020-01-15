@@ -78,9 +78,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSString *invokeMethod = @"startWithConfig:";
         Class track =  NSClassFromString(@"FTAutoTrack");
         if (track) {
-            id  aaa = [[NSClassFromString(@"FTAutoTrack") alloc]init];
+            id  autoTrack = [[NSClassFromString(@"FTAutoTrack") alloc]init];
 
-            SEL a = NSSelectorFromString(invokeMethod);
+            SEL startMethod = NSSelectorFromString(invokeMethod);
             unsigned int methCount = 0;
             Method *meths = class_copyMethodList(track, &methCount);
             BOOL ishas = NO;
@@ -96,9 +96,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
             free(meths);
             if (ishas) {
-            IMP imp = [aaa methodForSelector:a];
+            IMP imp = [autoTrack methodForSelector:startMethod];
             void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
-               func(aaa,a,self.config);
+               func(autoTrack,startMethod,self.config);
             }
         }
         }
