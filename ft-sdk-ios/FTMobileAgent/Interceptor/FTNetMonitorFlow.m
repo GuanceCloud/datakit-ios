@@ -31,17 +31,16 @@
 //}
 - (NSString *)refreshFlow{
     long long int rate = 0;
+
     long long int currentBytes = [self getInterfaceBytes];
+
+         
+    [NSThread sleepForTimeInterval:1.0f];
+    long long int newBytes = [self getInterfaceBytes];
     
-    if(self.lastBytes) {
-     //用上当前的下行总流量减去上一秒的下行流量达到下行速录
-        CFAbsoluteTime linkTime = (CFAbsoluteTimeGetCurrent() - self.lastTime);
-        rate = (currentBytes -self.lastBytes)/linkTime;
-    }
-    self.lastBytes = currentBytes;
-    self.lastTime = CFAbsoluteTimeGetCurrent();
-    NSString *flow = [self formatNetWork:rate];
-    return flow;
+    rate = newBytes -currentBytes;
+    
+    return [self formatNetWork:rate];
 }
 - (long long) getInterfaceBytes {
     struct ifaddrs *ifa_list = 0, *ifa;

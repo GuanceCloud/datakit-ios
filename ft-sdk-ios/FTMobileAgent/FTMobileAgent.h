@@ -11,9 +11,15 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
-
+/**
+SDK 调用方法
+*/
 + (instancetype)sharedInstance;
+/**
+SDK 初始化方法
 
+@param configOptions     配置参数
+*/
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 
 /**

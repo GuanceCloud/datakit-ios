@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 //开始检测
 //@property (nonatomic, copy) void(^updateNetFlowBlock)(NSString *flow);
 
-- (void)startMonitor;
+//- (void)startMonitor;
 
 ////停止检测
 //

@@ -41,7 +41,6 @@
            }
            if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
                self.netFlow = [FTNetMonitorFlow new];
-               [self.netFlow startMonitor];
            }
        }
        return self;
@@ -145,7 +144,7 @@
 
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
-   
+    NSString *basicData = [self getBasicData];
     [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [ZYBaseInfoHander dictionaryWithJsonString:obj.userdata];
@@ -194,9 +193,9 @@
         appendTag =appendTag.length>1? [appendTag substringToIndex:appendTag.length-1]:appendTag;
 
         if (idx==0) {
-                [requestDatas appendFormat:@"%@,%@",field,[self getBasicData]];
+                [requestDatas appendFormat:@"%@,%@",field,basicData];
         }else{
-                [requestDatas appendFormat:@"\n%@,%@",field,[self getBasicData]];
+                [requestDatas appendFormat:@"\n%@,%@",field,basicData];
         }
         appendTag = [appendTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
         [requestDatas appendString:appendTag];
