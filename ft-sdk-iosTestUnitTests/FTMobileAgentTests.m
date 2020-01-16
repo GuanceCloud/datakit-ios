@@ -10,7 +10,8 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <ZYDataBase/ZYTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
-
+#import <ZYBaseInfoHander.h>
+#import <RecordModel.h>
 @interface ft_sdk_iosTestUnitTests : XCTestCase
 @end
 
@@ -19,14 +20,14 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-   FTMobileConfig *config = [FTMobileConfig new];
-   config.enableRequestSigning = YES;
-   config.akSecret = @"accsk";
-   config.akId = @"accid";
-   config.isDebug = YES;
-   config.enableAutoTrack = NO;
-   config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
-   [FTMobileAgent startWithConfigOptions:config];
+//   FTMobileConfig *config = [FTMobileConfig new];
+//   config.enableRequestSigning = YES;
+//   config.akSecret = @"accsk";
+//   config.akId = @"accid";
+//   config.isDebug = YES;
+//   config.enableAutoTrack = NO;
+//   config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
+//   [FTMobileAgent startWithConfigOptions:config];
 }
 
 - (void)tearDown {
@@ -38,7 +39,22 @@
 - (void)testExample {
     // This is an example of a functional test case.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
+    
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+    NSArray *all  = [[ZYTrackerEventDBTool sharedManger] getAllDatas];
+    NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+          @"field":@"testTrack",
+          @"values":@{@"event":@"testTrack"}
+        }];
+    NSDictionary *datas =@{
+                        @"op":@"cstm",
+                        @"opdata":opdata,
+                        };
+   ;
+    RecordModel *model =  [all lastObject];
+    NSString *str = [ZYBaseInfoHander convertToJsonData:datas];
+    XCTAssertTrue([model.data isEqualToString:str]);
+
 }
 - (void)testPerformanceExample {
     // This is an example of a performance test case.
