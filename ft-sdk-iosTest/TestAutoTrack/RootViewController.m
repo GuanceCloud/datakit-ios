@@ -29,15 +29,17 @@
        [self.view addSubview:button];
     UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 100, 100)];
     button2.backgroundColor = [UIColor orangeColor];
-    [button2 setTitle:@"result" forState:UIControlStateNormal];
+    [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
 }
 - (void)buttonClick{
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"123" Id:@"1111111" exts:nil];
     [[UITestManger sharedManger] addAutoTrackClickCount];
     [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
 }
 -(void)endBtnClick{
+    [[FTMobileAgent sharedInstance] logout];
     [[UITestManger sharedManger] addAutoTrackClickCount];
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }

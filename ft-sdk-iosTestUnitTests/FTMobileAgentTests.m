@@ -12,22 +12,20 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <ZYBaseInfoHander.h>
 #import <RecordModel.h>
-@interface ft_sdk_iosTestUnitTests : XCTestCase
+#import <FTLocationManager.h>
+#import "AppDelegate.h"
+#import <ZYUploadTool.h>
+@interface FTMobileAgentTests : XCTestCase
+@property (nonatomic, strong) FTMobileConfig *config;
 @end
 
 
-@implementation ft_sdk_iosTestUnitTests
+@implementation FTMobileAgentTests
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
-//   FTMobileConfig *config = [FTMobileConfig new];
-//   config.enableRequestSigning = YES;
-//   config.akSecret = @"accsk";
-//   config.akId = @"accid";
-//   config.isDebug = YES;
-//   config.enableAutoTrack = NO;
-//   config.metricsUrl = @"http://10.100.64.106:19557/v1/write/metrics";
-//   [FTMobileAgent startWithConfigOptions:config];
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+
+    self.config = appDelegate.config;
 }
 
 - (void)tearDown {
@@ -36,10 +34,10 @@
   
 }
 
-- (void)testExample {
+- (void)testTrackMethod {
     // This is an example of a functional test case.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
-    
+    NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
     NSArray *all  = [[ZYTrackerEventDBTool sharedManger] getAllDatas];
     NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
@@ -54,15 +52,45 @@
     RecordModel *model =  [all lastObject];
     NSString *str = [ZYBaseInfoHander convertToJsonData:datas];
     XCTAssertTrue([model.data isEqualToString:str]);
+    NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount-count==1);
 
 }
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
+- (void)testLocation{
+    FTLocationManager *location = [[FTLocationManager alloc]init];
+    location.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
+        XCTAssertTrue([location isEqualToString:@"上海市"]);
+
+    };
 }
-- (void)testBtnClick{
-    
+
+- (void)testTags{
+    dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
+       __block NSString *tag;
+      ZYUploadTool *tool = [[ZYUploadTool alloc]initWithConfig:self.config];
+
+       dispatch_async(queue, ^{
+           [NSThread sleepForTimeInterval:1.0f];
+             tag= [tool performSelector:@selector(getBasicData)];
+    if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+        XCTAssertTrue([tag rangeOfString:@"location_city"].location != NSNotFound);
+    }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+         XCTAssertTrue([tag rangeOfString:@"camera_front_px"].location != NSNotFound);
+     }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+        XCTAssertTrue([tag rangeOfString:@"network_type"].location != NSNotFound);
+    }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+            XCTAssertTrue([tag rangeOfString:@"cpu_no"].location != NSNotFound);
+    }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+              XCTAssertTrue([tag rangeOfString:@"memory_total"].location != NSNotFound);
+      }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+            XCTAssertTrue([tag rangeOfString:@"battery_use"].location != NSNotFound);
+    }
+           
+  });
 }
 @end

@@ -34,9 +34,11 @@
     
     [app launch];
     
+    
     [app.buttons[@"login"] tap];
-    [app.buttons[@"button 1"] tap];
-    [app.buttons[@"button 2"] tap];
+    XCUIElement *button1Button = app.buttons[@"button 1"];
+    [button1Button tap];
+    [button1Button swipeDown];
     [app.buttons[@"lab"] tap];
     
     XCUIElementQuery *tablesQuery = app.tables;
@@ -48,24 +50,22 @@
     [segmentedControlsQuery.buttons[@"second"] tap];
     [segmentedControlsQuery.buttons[@"third"] tap];
     
-    XCUIApplication *app2 = app;
-    [app2/*@START_MENU_TOKEN@*/.buttons[@"FirstButton"]/*[[".scrollViews.buttons[@\"FirstButton\"]",".buttons[@\"FirstButton\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [app2/*@START_MENU_TOKEN@*/.buttons[@"SecondButton"]/*[[".scrollViews.buttons[@\"SecondButton\"]",".buttons[@\"SecondButton\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    
-    XCUIElementQuery *steppersQuery = app2/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
+    XCUIElementQuery *steppersQuery = app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
     [steppersQuery.buttons[@"Increment"] tap];
     [steppersQuery.buttons[@"Decrement"] tap];
-    [app2/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [app/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [[app.scrollViews childrenMatchingType:XCUIElementTypeImage].element tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [app.navigationBars[@"testUI"].buttons[@"Back"] tap];
-    [app.navigationBars[@"Test4View"].buttons[@"Back"] tap];
-    [app.buttons[@"result"] tap];
+    [app.navigationBars[@"home"].buttons[@"home"] tap];
+    [app.buttons[@"result logout"] tap];
     
- 
+    XCUIElement *window = [app.windows elementBoundByIndex:0];
+
+    [window pressForDuration:10];
+  
     
-   
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
