@@ -31,6 +31,13 @@
     }
     return self;
 }
+-(void)reset{
+          self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+           NSLog(@"lastCount == %ld",self.lastCount);
+           self.trackCount = 0;//lunch
+           self.autoTrackViewScreenCount = 0; //ViewController (close)
+           self.self.autoTrackClickCount = 0;
+}
 -(void)addTrackCount{
     self.trackCount++;
     NSLog(@"add == %ld",self.trackCount);

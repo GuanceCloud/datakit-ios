@@ -82,7 +82,7 @@
         XCTAssertTrue([tag rangeOfString:@"network_type"].location != NSNotFound);
     }
     if(self.config.monitorInfoType & FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-            XCTAssertTrue([tag rangeOfString:@"cpu_no"].location != NSNotFound);
+        XCTAssertTrue([tag rangeOfString:@"cpu_no"].location != NSNotFound);
     }
     if(self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll){
               XCTAssertTrue([tag rangeOfString:@"memory_total"].location != NSNotFound);

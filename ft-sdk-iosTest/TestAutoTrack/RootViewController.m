@@ -27,7 +27,7 @@
     [button setTitle:@"login" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button];
-    UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 100, 100)];
+    UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 150, 100)];
     button2.backgroundColor = [UIColor orangeColor];
     [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
@@ -39,7 +39,7 @@
     [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
 }
 -(void)endBtnClick{
-    [[FTMobileAgent sharedInstance] logout];
+//    [[FTMobileAgent sharedInstance] logout];
     [[UITestManger sharedManger] addAutoTrackClickCount];
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }

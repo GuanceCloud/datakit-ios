@@ -53,6 +53,62 @@
 //    [self.view addSubview:view];
 //    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapClick)];
 //    [view addGestureRecognizer:tap];
+      [self setIsShowLiftBack];
+}
+- (void)setIsShowLiftBack
+{
+    NSInteger VCCount = self.navigationController.viewControllers.count;
+    //下面判断的意义是 当VC所在的导航控制器中的VC个数大于1 或者 是present出来的VC时，才展示返回按钮，其他情况不展示
+    if (( VCCount > 1 || self.navigationController.presentingViewController != nil)) {
+        [self addNavigationItemWithImageNames:@[@"icon_back"] isLeft:YES target:self action:@selector(backBtnClicked) tags:nil];
+        
+    } else {
+        self.navigationItem.hidesBackButton = YES;
+        UIBarButtonItem * NULLBar=[[UIBarButtonItem alloc]initWithCustomView:[UIView new]];
+        self.navigationItem.leftBarButtonItem = NULLBar;
+    }
+}
+- (void)addNavigationItemWithImageNames:(NSArray *)imageNames isLeft:(BOOL)isLeft target:(id)target action:(SEL)action tags:(NSArray *)tags
+{
+    NSMutableArray * items = [[NSMutableArray alloc] init];
+    //调整按钮位置
+    //    UIBarButtonItem* spaceItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    //    //将宽度设为负值
+    //    spaceItem.width= -5;
+    //    [items addObject:spaceItem];
+    NSInteger i = 0;
+    for (NSString * imageName in imageNames) {
+        UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
+        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateSelected];
+        btn.frame = CGRectMake(0, 0, 30, 30);
+        [btn addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+        
+        if (isLeft) {
+            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, -10, 0, 10)];
+        }else{
+            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, 10, 0, -10)];
+        }
+        
+        btn.tag = [tags[i++] integerValue];
+        UIBarButtonItem * item = [[UIBarButtonItem alloc] initWithCustomView:btn];
+        [items addObject:item];
+        
+    }
+    if (isLeft) {
+        self.navigationItem.leftBarButtonItems = items;
+    } else {
+        self.navigationItem.rightBarButtonItems = items;
+    }
+}
+- (void)backBtnClicked
+{
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    if (self.presentingViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }else{
+        [self.navigationController popViewControllerAnimated:YES];
+    }
     
 }
 - (void)labtapClick{

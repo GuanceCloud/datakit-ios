@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addAutoTrackClickCount;
 - (void)addTrackCount;
 - (NSArray *)getEndResult;
+-(void)reset;
 @end
 
 NS_ASSUME_NONNULL_END
