@@ -101,6 +101,7 @@
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
         mutableRequest.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
+        ZYDebug(@"requestData = %@",requestData);
         if (self.config.enableRequestSigning) {
             NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[ZYBaseInfoHander getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
             [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
@@ -208,7 +209,7 @@
 }
 - (void)addLocationInfo:(NSString *)location{
     [self basicTags];
-    _tag = [_tag stringByAppendingFormat:@"location_city=%@",location];
+    _tag = [_tag stringByAppendingFormat:@"location_city=%@,",location];
    
 }
 - (NSString *)basicTags{
