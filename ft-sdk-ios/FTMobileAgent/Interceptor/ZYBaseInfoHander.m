@@ -184,7 +184,7 @@
     [formatter setTimeZone:timeZone];
     
     NSDate *datenow = [NSDate date];//现在时间,你可以输出来看下是什么格式
-    long time= [datenow timeIntervalSince1970]*1000;
+    long time= (long)([datenow timeIntervalSince1970]*1000);
     return  time;
     
 }
