@@ -165,14 +165,16 @@
             
         }else{
             NSString *cpn = [item valueForKey:@"cpn"];
-            NSString *rpn = [item valueForKey:@"rpn"];
+            NSString *rpn = (NSString *)[item valueForKey:@"rpn"];
             field =@"mobile_tracker";
             event = [event stringByAppendingFormat:@"event=\"%@\"",[item valueForKey:@"op"]];
             if(cpn){
                appendTag = [appendTag stringByAppendingFormat:@"current_page_name=%@,",cpn];
             }
-            if (rpn) {
+            if (rpn && ![rpn isEqualToString:@"null"]) {
+                if(rpn.length>0){
                appendTag =[appendTag stringByAppendingFormat:@"root_page_name=%@,",rpn];
+                }
             }
             if (opdata) {
                 tags = opdata;
@@ -201,7 +203,7 @@
         appendTag = [appendTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
         [requestDatas appendString:appendTag];
         [requestDatas appendString:event];
-        [requestDatas appendFormat:@" %ld",obj.tm*1000*1000];
+        [requestDatas appendFormat:@" %ld",obj.tm*1000];
     
     }];
   

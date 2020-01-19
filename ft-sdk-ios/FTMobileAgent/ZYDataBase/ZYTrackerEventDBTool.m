@@ -102,12 +102,15 @@ static ZYTrackerEventDBTool *dbTool = nil;
            };
            if ([self isOpenDatabese:self.db]) {
                   NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_USERSESSION_TABLE_NAME]];
-                  int count = 0;
+                  int count = 0;//%@  INTEGER PRIMARY KEY
                   for (NSString *key in keyTypes) {
                       count++;
                       [sql appendString:key];
                       [sql appendString:@" "];
                       [sql appendString:[keyTypes valueForKey:key]];
+                      if ([key isEqualToString:@"usersessionid"]) {
+                           [sql appendString:@" PRIMARY KEY"];
+                      }
                       if (count != [keyTypes count]) {
                            [sql appendString:@", "];
                       }
@@ -231,6 +234,14 @@ static ZYTrackerEventDBTool *dbTool = nil;
 {   __block BOOL is;
     [self zy_inDatabase:^{
      NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,tm];
+        is = [self.db executeUpdate:sqlStr];
+    }];
+    return is;
+}
+-(BOOL)deleteItemWithId:(long )Id
+{   __block BOOL is;
+    [self zy_inDatabase:^{
+     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,Id];
         is = [self.db executeUpdate:sqlStr];
     }];
     return is;

@@ -34,7 +34,7 @@
     [self.view addSubview:button2];
 }
 - (void)buttonClick{
-    [[FTMobileAgent sharedInstance] bindUserWithName:@"123" Id:@"1111111" exts:nil];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"666666" Id:@"1111111" exts:nil];
     [[UITestManger sharedManger] addAutoTrackClickCount];
     [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
 }

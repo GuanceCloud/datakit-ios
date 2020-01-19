@@ -89,11 +89,26 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
     if( [self isAutoTrackUI:UITableView.class] && [self isAutoTrackUI:UITableViewCell.class]){
-     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-     [notificationCenter addObserver:self
-                                     selector:@selector(tableViewSelectionDidChangeNotification:)
-                                            name:UITableViewSelectionDidChangeNotification
-                                          object:nil];
+//     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+//     [notificationCenter addObserver:self
+//                                     selector:@selector(tableViewSelectionDidChangeNotification:)
+//                                            name:UITableViewSelectionDidChangeNotification
+//                                          object:nil];
+        [UITableView aspect_hookSelector:@selector(setDelegate:)
+                  withOptions:ZY_AspectPositionAfter
+                                  usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
+                if (![self judgeWhiteAndBlackWithViewController:target]) {
+                    return ;
+                }
+                Class vcClass = [target class];
+                [vcClass aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
+                 withOptions:ZY_AspectPositionBefore
+                  usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
+                    [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
+                } error:NULL];
+                
+            }error:nil];
+           
     }
      if( [self isAutoTrackUI:UICollectionView.class] && [self isAutoTrackUI:UICollectionViewCell.class]){
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)

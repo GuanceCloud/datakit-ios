@@ -30,7 +30,7 @@
     
     if( [name isKindOfClass:NSNull.class]
        ||name==nil){
-        return @"";
+        return @"null";
     }else{
         return  name;
     }
