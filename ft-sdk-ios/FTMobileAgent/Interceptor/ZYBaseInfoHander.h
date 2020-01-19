@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ZYBaseInfoHander : NSObject
 + (NSString *)getDeviceType;
++(NSString *)getCPUClock;
 + (NSString *)getTelephonyInfo;
 + (NSString *)convertToJsonData:(NSDictionary *)dict;
 + (NSString *)resolution;

@@ -122,6 +122,113 @@
      
      return platform;
 }
++(NSString *)getCPUClock{
+    struct utsname systemInfo;
+        uname(&systemInfo);
+        NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
+        
+        //------------------------------iPhone---------------------------
+        if ([platform isEqualToString:@"iPhone1,1"]
+            ||[platform isEqualToString:@"iPhone1,2"]) return @"412";
+        if ([platform isEqualToString:@"iPhone2,1"] ) return @"600";
+        if ([platform isEqualToString:@"iPhone3,1"] ||
+            [platform isEqualToString:@"iPhone3,2"] ||
+            [platform isEqualToString:@"iPhone3,3"] ||
+            [platform isEqualToString:@"iPhone4,1"]) return @"800";
+        if ([platform isEqualToString:@"iPhone5,1"] ||
+            [platform isEqualToString:@"iPhone5,2"] ||
+            [platform isEqualToString:@"iPhone5,3"] ||
+            [platform isEqualToString:@"iPhone5,4"] ||
+            [platform isEqualToString:@"iPhone6,1"] ||
+            [platform isEqualToString:@"iPhone6,2"] ||
+            [platform isEqualToString:@"iPhone6,3"]) return @"1300";
+        if ([platform isEqualToString:@"iPhone7,2"] ||
+            [platform isEqualToString:@"iPhone7,1"]) return @"1400";
+        if ([platform isEqualToString:@"iPhone8,2"] ||
+            [platform isEqualToString:@"iPhone8,2"] ||
+            [platform isEqualToString:@"iPhone8,4"]) return @"1850";
+        if ([platform isEqualToString:@"iPhone9,1"] ||
+            [platform isEqualToString:@"iPhone9,3"] ||
+            [platform isEqualToString:@"iPhone9,2"] ||
+            [platform isEqualToString:@"iPhone9,4"] ||
+            [platform isEqualToString:@"iPhone9,5"] ||
+            [platform isEqualToString:@"iPhone9,6"] ) return @"2340";
+        if ([platform isEqualToString:@"iPhone10,1"] ||
+            [platform isEqualToString:@"iPhone10,4"]) return @"2340";
+        if ([platform isEqualToString:@"iPhone10,2"] ||
+            [platform isEqualToString:@"iPhone10,5"]) return @"2340";
+        if ([platform isEqualToString:@"iPhone10,3"] ||
+            [platform isEqualToString:@"iPhone10,6"]) return @"iPhone X";
+        if ([platform isEqualToString:@"iPhone11,8"]) return @"2490";
+        if ([platform isEqualToString:@"iPhone11,2"]) return @"2490";
+        if ([platform isEqualToString:@"iPhone11,4"] ||
+            [platform isEqualToString:@"iPhone11,6"]) return @"2490";
+        if ([platform isEqualToString:@"iPhone12,1"]) return @"2490";
+        if ([platform isEqualToString:@"iPhone12,3"]) return @"2490";
+        if ([platform isEqualToString:@"iPhone12,5"]) return @"2490";
+
+        //------------------------------iPad--------------------------
+        if ([platform isEqualToString:@"iPad1,1"]) return @"1000";
+        if ([platform isEqualToString:@"iPad2,1"] ||
+            [platform isEqualToString:@"iPad2,2"] ||
+            [platform isEqualToString:@"iPad2,3"] ||
+            [platform isEqualToString:@"iPad2,4"]) return @"1000";
+        if ([platform isEqualToString:@"iPad3,1"] ||
+            [platform isEqualToString:@"iPad3,2"] ||
+            [platform isEqualToString:@"iPad3,3"]) return @"1000";
+        if ([platform isEqualToString:@"iPad3,4"] ||
+            [platform isEqualToString:@"iPad3,5"] ||
+            [platform isEqualToString:@"iPad3,6"]) return @"1400";
+        if ([platform isEqualToString:@"iPad4,1"] ||
+            [platform isEqualToString:@"iPad4,2"] ||
+            [platform isEqualToString:@"iPad4,3"]) return @"1400";
+        if ([platform isEqualToString:@"iPad5,3"] ||
+            [platform isEqualToString:@"iPad5,4"]) return @"1500";
+        if ([platform isEqualToString:@"iPad6,3"] ||
+            [platform isEqualToString:@"iPad6,4"]) return @"2260";
+        if ([platform isEqualToString:@"iPad6,7"] ||
+            [platform isEqualToString:@"iPad6,8"]) return @"2360";
+        if ([platform isEqualToString:@"iPad6,11"] ||
+            [platform isEqualToString:@"iPad6,12"]) return @"1850";
+        if ([platform isEqualToString:@"iPad7,11"] ||
+            [platform isEqualToString:@"iPad7,12"]) return @"1850";
+        if ([platform isEqualToString:@"iPad7,1"] ||
+            [platform isEqualToString:@"iPad7,2"]) return @"2360";
+        if ([platform isEqualToString:@"iPad7,3"] ||
+            [platform isEqualToString:@"iPad7,4"]) return @"2360";
+        if ([platform isEqualToString:@"iPad8,5"] ||
+            [platform isEqualToString:@"iPad8,6"] ||
+            [platform isEqualToString:@"iPad8,1"] ||
+            [platform isEqualToString:@"iPad8,2"] ) return @"2490";
+        //------------------------------iPad Mini-----------------------
+        if ([platform isEqualToString:@"iPad2,5"] ||
+            [platform isEqualToString:@"iPad2,6"] ||
+            [platform isEqualToString:@"iPad2,7"]) return @"1000";
+        if ([platform isEqualToString:@"iPad4,4"] ||
+            [platform isEqualToString:@"iPad4,5"] ||
+            [platform isEqualToString:@"iPad4,6"]) return @"1300";
+        if ([platform isEqualToString:@"iPad4,7"] ||
+            [platform isEqualToString:@"iPad4,8"] ||
+            [platform isEqualToString:@"iPad4,9"]) return @"1300";
+        if ([platform isEqualToString:@"iPad5,1"] ||
+            [platform isEqualToString:@"iPad5,2"]) return @"1400";
+        
+        //------------------------------iTouch------------------------
+        if ([platform isEqualToString:@"iPod1,1"]) return @"412";
+        if ([platform isEqualToString:@"iPod2,1"]) return @"532";
+        if ([platform isEqualToString:@"iPod3,1"]) return @"600";
+        if ([platform isEqualToString:@"iPod4,1"]) return @"800";
+        if ([platform isEqualToString:@"iPod5,1"]) return @"800";
+        if ([platform isEqualToString:@"iPod7,1"]) return @"800";
+        
+        //------------------------------Samulitor-------------------------------------
+        if ([platform isEqualToString:@"i386"] ||
+            [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
+        
+        return @"unknown";
+    
+    
+}
 +(NSString *)getTelephonyInfo     // 获取运营商信息
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
