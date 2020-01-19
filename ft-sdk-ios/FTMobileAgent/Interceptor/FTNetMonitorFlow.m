@@ -14,33 +14,33 @@
 @interface FTNetMonitorFlow ()
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, assign) long long int lastBytes;
-@property (nonatomic, assign) CFAbsoluteTime lastTime;
 
 @end
 @implementation FTNetMonitorFlow
 
 -(void)startMonitor{
+    self.flow = @"0dB/s";
     self.lastBytes = [self getInterfaceBytes];
-    self.lastTime = CFAbsoluteTimeGetCurrent();
-//    self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
-//    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
+    self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
     
 }
-//-(void)stopMonitor{
-//    [self.timer invalidate];
-//}
-- (NSString *)refreshFlow{
+-(void)stopMonitor{
+    if (self.timer) {
+        [self.timer invalidate];
+    }
+    self.timer = nil;
+}
+- (void)refreshFlow{
     long long int rate = 0;
-
     long long int currentBytes = [self getInterfaceBytes];
-
-         
-    [NSThread sleepForTimeInterval:1.0f];
-    long long int newBytes = [self getInterfaceBytes];
     
-    rate = newBytes -currentBytes;
-    
-    return [self formatNetWork:rate];
+    if(self.lastBytes) {
+     //用上当前的下行总流量减去上一秒的下行流量达到下行速录
+        rate = currentBytes -self.lastBytes;
+    }
+    self.lastBytes = currentBytes;
+    self.flow  = [self formatNetWork:rate];
 }
 - (long long) getInterfaceBytes {
     struct ifaddrs *ifa_list = 0, *ifa;

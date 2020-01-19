@@ -24,6 +24,8 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTLocationManager *manger;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
+@property (nonatomic, strong) dispatch_queue_t timerQueue;
+
 @end
 @implementation ZYUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -40,7 +42,12 @@
                
            }
            if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+               NSString *label = [NSString stringWithFormat:@"io.timer.%p", self];
+               self.timerQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
                self.netFlow = [FTNetMonitorFlow new];
+              
+                [self.netFlow startMonitor];
+             
            }
        }
        return self;
@@ -275,7 +282,7 @@
         });
         basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",network_type];
         basicTag =[basicTag stringByAppendingFormat:@"network_strength=%@,",network_strength];
-        basicTag =[basicTag stringByAppendingFormat:@"network_speed=%@,",[self.netFlow refreshFlow]];
+        basicTag =[basicTag stringByAppendingFormat:@"network_speed=%@,",self.netFlow.flow];
 
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
