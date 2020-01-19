@@ -8,7 +8,7 @@
 
 #import "RootViewController.h"
 #import "ResultVC.h"
-#import "Test4ViewController.h"
+#import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import "UITestManger.h"
 
@@ -34,9 +34,9 @@
     [self.view addSubview:button2];
 }
 - (void)buttonClick{
-    [[FTMobileAgent sharedInstance] bindUserWithName:@"666666" Id:@"1111111" exts:nil];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"test5" Id:@"1111111" exts:nil];
     [[UITestManger sharedManger] addAutoTrackClickCount];
-    [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
+    [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }
 -(void)endBtnClick{
 //    [[FTMobileAgent sharedInstance] logout];
