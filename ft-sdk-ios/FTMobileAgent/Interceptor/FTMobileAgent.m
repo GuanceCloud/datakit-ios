@@ -103,19 +103,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         }
         self.upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
-       
+        
     }
     return self;
 }
-- (void)dealMonitorInfoType{
-    if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
-        self.locationManger = [[FTLocationManager alloc]init];
-        self.locationManger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
-            
-        };
-        [self.locationManger startUpdatingLocation];
-    }
-}
+
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
    BOOL reachabilityOk = NO;
@@ -155,8 +147,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (flags & kSCNetworkReachabilityFlagsReachable) {
         if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
             self.net = @"0";//2G/3G/4G
+              [self uploadFlush];
         } else {
             self.net = @"4";//WIFI
+              [self uploadFlush];
         }
     } else {
         self.net = @"-1";//未知
@@ -232,30 +226,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [defatluts synchronize];
 }
 #pragma mark - 上报策略
-//// 启动事件发送定时器
-//- (void)startFlushTimer {
-//    [self stopFlushTimer];
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//            self.timer = [NSTimer scheduledTimerWithTimeInterval:10.0
-//                                                          target:self
-//                                                        selector:@selector(flush)
-//                                                        userInfo:nil
-//                                                         repeats:YES];
-//
-//            ZYDebug(@"启动事件发送定时器");
-//    });
-//}
 
-//// 关闭事件发送定时器
-//- (void)stopFlushTimer {
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        if (self.timer) {
-//            [self.timer invalidate];
-//            ZYDebug(@"关闭事件发送定时器");
-//        }
-//        self.timer = nil;
-//    });
-//}
 - (void)uploadFlush{
     
     dispatch_async(self.serialQueue, ^{
