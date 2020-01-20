@@ -246,14 +246,15 @@
        [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
        [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
        [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-//    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
-//        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-//    }
+    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
+        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander ft_getBatteryTotal]];
+    }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"memory_total=%lld,",[ZYBaseInfoHander getTotalMemorySize]];
     }
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"cpu_no=%@,",[ZYBaseInfoHander ft_getCPUType]];
+        [tag appendFormat:@"cpu_hz=%@MHz,",[ZYBaseInfoHander getCPUClock]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"camera_front_px=%@,",[ZYBaseInfoHander gt_getFrontCameraPixel]];

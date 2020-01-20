@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (long )ft_cpuUsage;
 + (NSString *)ft_getCPUType;
 + (NSString *)ft_getBatteryUse;
++ (NSString *)ft_getBatteryTotal;
 + (long long)getTotalMemorySize;
 + (NSString *)usedMemory;
 + (NSString *)gt_getFrontCameraPixel;

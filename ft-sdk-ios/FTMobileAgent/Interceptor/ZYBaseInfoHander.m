@@ -158,7 +158,7 @@
         if ([platform isEqualToString:@"iPhone10,2"] ||
             [platform isEqualToString:@"iPhone10,5"]) return @"2340";
         if ([platform isEqualToString:@"iPhone10,3"] ||
-            [platform isEqualToString:@"iPhone10,6"]) return @"iPhone X";
+            [platform isEqualToString:@"iPhone10,6"]) return @"2390";
         if ([platform isEqualToString:@"iPhone11,8"]) return @"2490";
         if ([platform isEqualToString:@"iPhone11,2"]) return @"2490";
         if ([platform isEqualToString:@"iPhone11,4"] ||
@@ -228,6 +228,94 @@
         return @"unknown";
     
     
+}
++(NSString *)ft_getBatteryTotal{
+    struct utsname systemInfo;
+        uname(&systemInfo);
+        NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
+        
+        //------------------------------iPhone---------------------------
+        if ([platform isEqualToString:@"iPhone1,1"]) return @"iPhone 2G";
+        if ([platform isEqualToString:@"iPhone1,2"]) return @"1280mAh";
+        if ([platform isEqualToString:@"iPhone2,1"]) return @"1280mAh";
+        if ([platform isEqualToString:@"iPhone3,1"] ||
+            [platform isEqualToString:@"iPhone3,2"] ||
+            [platform isEqualToString:@"iPhone3,3"]) return @"1420mAH";
+        if ([platform isEqualToString:@"iPhone4,1"]) return @"1420mAH";
+        if ([platform isEqualToString:@"iPhone5,1"] ||
+            [platform isEqualToString:@"iPhone5,2"]) return @"1440mAh";
+        if ([platform isEqualToString:@"iPhone5,3"] ||
+            [platform isEqualToString:@"iPhone5,4"]) return @"1510mAh";
+        if ([platform isEqualToString:@"iPhone6,1"] ||
+            [platform isEqualToString:@"iPhone6,2"]) return @"1560mAh";
+        if ([platform isEqualToString:@"iPhone7,2"]) return @"1810mAh";
+        if ([platform isEqualToString:@"iPhone7,1"]) return @"2915mAh";
+        if ([platform isEqualToString:@"iPhone8,1"]) return @"1715mAh";
+        if ([platform isEqualToString:@"iPhone8,2"]) return @"2750mAh";
+        if ([platform isEqualToString:@"iPhone8,4"]) return @"1642mah";
+        if ([platform isEqualToString:@"iPhone9,1"] ||
+            [platform isEqualToString:@"iPhone9,3"]) return @"1960mAh";
+        if ([platform isEqualToString:@"iPhone9,2"] ||
+            [platform isEqualToString:@"iPhone9,4"]) return @"2900mAh";
+        if ([platform isEqualToString:@"iPhone10,1"] ||
+            [platform isEqualToString:@"iPhone10,4"]) return @"1821mah";
+        if ([platform isEqualToString:@"iPhone10,2"] ||
+            [platform isEqualToString:@"iPhone10,5"]) return @"2675mAh";
+        if ([platform isEqualToString:@"iPhone10,3"] ||
+            [platform isEqualToString:@"iPhone10,6"]) return @"2716mAh";
+        if ([platform isEqualToString:@"iPhone11,8"]) return @"2942mAh";
+        if ([platform isEqualToString:@"iPhone11,2"]) return @"2658mAh";
+        if ([platform isEqualToString:@"iPhone11,4"] ||
+            [platform isEqualToString:@"iPhone11,6"]) return @"3174mAh";
+        if ([platform isEqualToString:@"iPhone12,1"]) return @"3110mAh";
+        if ([platform isEqualToString:@"iPhone12,3"]) return @"3190mAh";
+        if ([platform isEqualToString:@"iPhone12,5"]) return @"3500mAh";
+    //------------------------------iPad--------------------------
+              if ([platform isEqualToString:@"iPad1,1"]) return @"25Wh";
+              if ([platform isEqualToString:@"iPad2,1"] ||
+                  [platform isEqualToString:@"iPad2,2"] ||
+                  [platform isEqualToString:@"iPad2,3"] ||
+                  [platform isEqualToString:@"iPad2,4"]) return @"25Wh";
+              if ([platform isEqualToString:@"iPad3,1"] ||
+                  [platform isEqualToString:@"iPad3,2"] ||
+                  [platform isEqualToString:@"iPad3,3"]) return @"42.5Wh";
+              if ([platform isEqualToString:@"iPad3,4"] ||
+                  [platform isEqualToString:@"iPad3,5"] ||
+                  [platform isEqualToString:@"iPad3,6"]) return @"42.5Wh";
+              if ([platform isEqualToString:@"iPad4,1"] ||
+                  [platform isEqualToString:@"iPad4,2"] ||
+                  [platform isEqualToString:@"iPad4,3"]) return @"30.2Wh";
+              if ([platform isEqualToString:@"iPad5,3"] ||
+                  [platform isEqualToString:@"iPad5,4"]) return @"27.3Wh";
+              if ([platform isEqualToString:@"iPad6,3"] ||
+                  [platform isEqualToString:@"iPad6,4"]) return @"27.5Wh";
+              if ([platform isEqualToString:@"iPad6,7"] ||
+                  [platform isEqualToString:@"iPad6,8"]) return @"38.5Wh";
+              if ([platform isEqualToString:@"iPad6,11"] ||
+                  [platform isEqualToString:@"iPad6,12"]) return @"32.4Wh";
+              if ([platform isEqualToString:@"iPad7,11"] ||
+                  [platform isEqualToString:@"iPad7,12"]) return @"32.4Wh";
+              if ([platform isEqualToString:@"iPad7,1"] ||
+                  [platform isEqualToString:@"iPad7,2"]) return @"38.5Wh";
+              if ([platform isEqualToString:@"iPad7,3"] ||
+                  [platform isEqualToString:@"iPad7,4"]) return @"30.4Wh";
+    //------------------------------iPad Mini-----------------------
+        if ([platform isEqualToString:@"iPad2,5"] ||
+            [platform isEqualToString:@"iPad2,6"] ||
+            [platform isEqualToString:@"iPad2,7"]) return @"16.3Wh";
+        if ([platform isEqualToString:@"iPad4,4"] ||
+            [platform isEqualToString:@"iPad4,5"] ||
+            [platform isEqualToString:@"iPad4,6"]) return @"23.8Wh";
+        if ([platform isEqualToString:@"iPad4,7"] ||
+            [platform isEqualToString:@"iPad4,8"] ||
+            [platform isEqualToString:@"iPad4,9"]) return @"23.8Wh";
+        if ([platform isEqualToString:@"iPad5,1"] ||
+            [platform isEqualToString:@"iPad5,2"]) return @"19.1Wh";
+        
+    //------------------------------Samulitor-------------------------------------
+          if ([platform isEqualToString:@"i386"] ||
+              [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
+          return @"unknown";
 }
 +(NSString *)getTelephonyInfo     // 获取运营商信息
 {
