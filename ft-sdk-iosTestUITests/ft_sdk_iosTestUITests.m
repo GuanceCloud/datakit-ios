@@ -58,11 +58,11 @@
     [app.buttons[@"result logout"] tap];
     
        
-    [window pressForDuration:70];
+    [window pressForDuration:100];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
 //       //判断是否登陆
     XCTAssertTrue(success.exists);
-    // 1 、  6  、 12
+
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }

@@ -281,10 +281,15 @@
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
        __block NSString *network_type,*network_strength;
+        if ([NSThread isMainThread]) { // do something in main thread } else { // do something in other
+            network_type =[FTNetworkInfo getNetworkType];
+            network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
+        }else{
         dispatch_sync(dispatch_get_main_queue(), ^{
             network_type =[FTNetworkInfo getNetworkType];
             network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
         });
+        }
         basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",network_type];
         basicTag =[basicTag stringByAppendingFormat:@"network_strength=%@,",network_strength];
         basicTag =[basicTag stringByAppendingFormat:@"network_speed=%@,",self.netFlow.flow];
