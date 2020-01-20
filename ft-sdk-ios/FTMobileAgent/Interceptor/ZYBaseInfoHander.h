@@ -7,12 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
+extern NSString * _Nullable const ZYBaseInfoHanderDeviceType;
+extern NSString * _Nullable const ZYBaseInfoHanderDeviceCPUType;
+extern NSString * _Nullable const ZYBaseInfoHanderDeviceCPUClock;
+extern NSString * _Nullable const ZYBaseInfoHanderBatteryTotal;
+extern NSString * _Nullable const ZYBaseInfoHanderDeviceGPUType;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZYBaseInfoHander : NSObject
-+ (NSString *)getDeviceType;
-+(NSString *)getCPUClock;
++ (NSDictionary *)ft_getDeviceInfo;
 + (NSString *)getTelephonyInfo;
 + (NSString *)convertToJsonData:(NSDictionary *)dict;
 + (NSString *)resolution;
@@ -22,9 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString;
 + (NSString *)defaultUUID;
 + (long )ft_cpuUsage;
-+ (NSString *)ft_getCPUType;
 + (NSString *)ft_getBatteryUse;
-+ (NSString *)ft_getBatteryTotal;
 + (long long)getTotalMemorySize;
 + (NSString *)usedMemory;
 + (NSString *)gt_getFrontCameraPixel;

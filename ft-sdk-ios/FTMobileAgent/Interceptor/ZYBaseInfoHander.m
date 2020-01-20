@@ -21,301 +21,499 @@
 
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
+NSString *const ZYBaseInfoHanderDeviceType = @"ZYBaseInfoHanderDeviceType";
+NSString *const ZYBaseInfoHanderDeviceCPUType = @"ZYBaseInfoHanderDeviceCPUType";
+NSString *const ZYBaseInfoHanderDeviceCPUClock = @"ZYBaseInfoHanderDeviceCPUClock";
+NSString *const ZYBaseInfoHanderBatteryTotal = @"ZYBaseInfoHanderBatteryTotal";
+NSString *const ZYBaseInfoHanderDeviceGPUType = @"ZYBaseInfoHanderDeviceGPUType";
 
 @implementation ZYBaseInfoHander : NSObject
-+ (NSString *)getDeviceType{
++ (NSDictionary *)ft_getDeviceInfo{
     struct utsname systemInfo;
      uname(&systemInfo);
      NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
      
      //------------------------------iPhone---------------------------
-     if ([platform isEqualToString:@"iPhone1,1"]) return @"iPhone 2G";
-     if ([platform isEqualToString:@"iPhone1,2"]) return @"iPhone 3G";
-     if ([platform isEqualToString:@"iPhone2,1"]) return @"iPhone 3GS";
+    if ([platform isEqualToString:@"iPhone1,1"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 2G",
+                 ZYBaseInfoHanderDeviceCPUType:@"ARM1176JZ(F)-S v1.0",
+                 ZYBaseInfoHanderDeviceCPUClock:@"412MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1280mA",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR MBX Lite",
+        };
+    }
+    if ([platform isEqualToString:@"iPhone1,2"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 3G",
+                 ZYBaseInfoHanderDeviceCPUType:@"ARM1176JZ(F)-S v1.0",
+                 ZYBaseInfoHanderDeviceCPUClock:@"412MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1280mA",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR MBX Lite",
+        };
+    }
+    if ([platform isEqualToString:@"iPhone2,1"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 3GS",
+                 ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A8",
+                 ZYBaseInfoHanderDeviceCPUClock:@"600MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1280mAh",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX535",
+               };
+    }
      if ([platform isEqualToString:@"iPhone3,1"] ||
          [platform isEqualToString:@"iPhone3,2"] ||
-         [platform isEqualToString:@"iPhone3,3"]) return @"iPhone 4";
-     if ([platform isEqualToString:@"iPhone4,1"]) return @"iPhone 4S";
+         [platform isEqualToString:@"iPhone3,3"]){
+         return @{ZYBaseInfoHanderDeviceType:@"iPhone 4",
+                  ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A8",
+                  ZYBaseInfoHanderDeviceCPUClock:@"800MHz",
+                  ZYBaseInfoHanderBatteryTotal:@"1420mAH",
+                  ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX535",
+                };
+     }
+    if ([platform isEqualToString:@"iPhone4,1"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 4S",
+                 ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A9",
+                 ZYBaseInfoHanderDeviceCPUClock:@"800MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1420mAH",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP2",
+                };
+        
+    }
      if ([platform isEqualToString:@"iPhone5,1"] ||
-         [platform isEqualToString:@"iPhone5,2"]) return @"iPhone 5";
+         [platform isEqualToString:@"iPhone5,2"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 5",
+                 ZYBaseInfoHanderDeviceCPUType:@"Swift",
+                 ZYBaseInfoHanderDeviceCPUClock:@"1300MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1440mAh",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP3",
+                };
+         
+     }
      if ([platform isEqualToString:@"iPhone5,3"] ||
-         [platform isEqualToString:@"iPhone5,4"]) return @"iPhone 5c";
+         [platform isEqualToString:@"iPhone5,4"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 5c",
+                 ZYBaseInfoHanderDeviceCPUType:@"Swift",
+                 ZYBaseInfoHanderDeviceCPUClock:@"1300MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1510mAh",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP3",
+                };
+         }
      if ([platform isEqualToString:@"iPhone6,1"] ||
-         [platform isEqualToString:@"iPhone6,2"]) return @"iPhone 5s";
-     if ([platform isEqualToString:@"iPhone7,2"]) return @"iPhone 6";
-     if ([platform isEqualToString:@"iPhone7,1"]) return @"iPhone 6 Plus";
-     if ([platform isEqualToString:@"iPhone8,1"]) return @"iPhone 6s";
-     if ([platform isEqualToString:@"iPhone8,2"]) return @"iPhone 6s Plus";
-     if ([platform isEqualToString:@"iPhone8,4"]) return @"iPhone SE";
+         [platform isEqualToString:@"iPhone6,2"] ||
+         [platform isEqualToString:@"iPhone6,3"]){
+         return @{ZYBaseInfoHanderDeviceType:@"iPhone 5s",
+                  ZYBaseInfoHanderDeviceCPUType:@"Cyclone",
+                  ZYBaseInfoHanderDeviceCPUClock:@"1300MHz",
+                  ZYBaseInfoHanderBatteryTotal:@"1560mAh",
+                  ZYBaseInfoHanderDeviceGPUType:@"PowerVR G6430",
+                 };
+          }
+     if ([platform isEqualToString:@"iPhone7,2"]){
+        return @{ZYBaseInfoHanderDeviceType:@"iPhone 6",
+                 ZYBaseInfoHanderDeviceCPUType:@"Typhoon",
+                 ZYBaseInfoHanderDeviceCPUClock:@"1400MHz",
+                 ZYBaseInfoHanderBatteryTotal:@"1810mAh",
+                 ZYBaseInfoHanderDeviceGPUType:@"PowerVR GX6450",
+               };
+      }
+     if ([platform isEqualToString:@"iPhone7,1"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 6 Plus",
+                ZYBaseInfoHanderDeviceCPUType:@"Typhoon",
+                ZYBaseInfoHanderDeviceCPUClock:@"1400MHz",
+                ZYBaseInfoHanderBatteryTotal:@"2915mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"PowerVR GX6450",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone8,1"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 6s",
+                ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                ZYBaseInfoHanderDeviceCPUClock:@"1850MHz",
+                ZYBaseInfoHanderBatteryTotal:@"1715mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone8,2"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 6s Plus",
+                ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                ZYBaseInfoHanderDeviceCPUClock:@"1850MHz",
+                ZYBaseInfoHanderBatteryTotal:@"2750mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone8,4"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone SE",
+                ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                ZYBaseInfoHanderDeviceCPUClock:@"1850MHz",
+                ZYBaseInfoHanderBatteryTotal:@"1642mah",
+                ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+              };
+     }
      if ([platform isEqualToString:@"iPhone9,1"] ||
-         [platform isEqualToString:@"iPhone9,3"]) return @"iPhone 7";
+         [platform isEqualToString:@"iPhone9,3"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone 7",
+                    ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x2) + Zephyr (x2)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2340MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"1960mAh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600 Plus",
+                  };
+         }
      if ([platform isEqualToString:@"iPhone9,2"] ||
-         [platform isEqualToString:@"iPhone9,4"]) return @"iPhone 7 Plus";
+         [platform isEqualToString:@"iPhone9,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone 7 Plus",
+                    ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x2) + Zephyr (x2)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2340MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"2900mAh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600 Plus",
+                  };
+         }
      if ([platform isEqualToString:@"iPhone10,1"] ||
-         [platform isEqualToString:@"iPhone10,4"]) return @"iPhone 8";
+         [platform isEqualToString:@"iPhone10,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone 8",
+                    ZYBaseInfoHanderDeviceCPUType:@"Monsoon (x2) + Mistral (x4)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2390MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"1821mah",
+                    ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                  };
+         }
      if ([platform isEqualToString:@"iPhone10,2"] ||
-         [platform isEqualToString:@"iPhone10,5"]) return @"iPhone 8 Plus";
+         [platform isEqualToString:@"iPhone10,5"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone 8 Plus",
+                    ZYBaseInfoHanderDeviceCPUType:@"Monsoon (x2) + Mistral (x4)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2390MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"2675mAh",
+                    ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                  };
+         }
      if ([platform isEqualToString:@"iPhone10,3"] ||
-         [platform isEqualToString:@"iPhone10,6"]) return @"iPhone X";
-     if ([platform isEqualToString:@"iPhone11,8"]) return @"iPhone XR";
-     if ([platform isEqualToString:@"iPhone11,2"]) return @"iPhone XS";
+         [platform isEqualToString:@"iPhone10,6"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone X",
+                    ZYBaseInfoHanderDeviceCPUType:@"Monsoon (x2) + Mistral (x4)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2390MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"2716mAh",
+                    ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                  };
+         }
+     if ([platform isEqualToString:@"iPhone11,8"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone XR",
+                ZYBaseInfoHanderDeviceCPUType:@"Vortex (x2) + Tempest (x4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                ZYBaseInfoHanderBatteryTotal:@"2942mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone11,2"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone XS",
+                ZYBaseInfoHanderDeviceCPUType:@"Vortex (x2) + Tempest (x4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                ZYBaseInfoHanderBatteryTotal:@"2658mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
      if ([platform isEqualToString:@"iPhone11,4"] ||
-         [platform isEqualToString:@"iPhone11,6"]) return @"iPhone XS Max";
-     if ([platform isEqualToString:@"iPhone12,1"]) return @"iPhone 11";
-     if ([platform isEqualToString:@"iPhone12,3"]) return @"iPhone 11 Pro";
-     if ([platform isEqualToString:@"iPhone12,5"]) return @"iPhone 11 Pro Max";
+         [platform isEqualToString:@"iPhone11,6"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPhone XS Max",
+                    ZYBaseInfoHanderDeviceCPUType:@"Vortex (x2) + Tempest (x4)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"3174mAh",
+                    ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                  };
+         }
+     if ([platform isEqualToString:@"iPhone12,1"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 11",
+                ZYBaseInfoHanderDeviceCPUType:@"Lightning (×2) + Thunder (×4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2650MHz",
+                ZYBaseInfoHanderBatteryTotal:@"3110mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone12,3"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 11 Pro",
+                ZYBaseInfoHanderDeviceCPUType:@"Lightning (×2) + Thunder (×4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2650MHz",
+                ZYBaseInfoHanderBatteryTotal:@"3190mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
+     if ([platform isEqualToString:@"iPhone12,5"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPhone 11 Pro Max",
+                ZYBaseInfoHanderDeviceCPUType:@"Lightning (×2) + Thunder (×4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2650MHz",
+                ZYBaseInfoHanderBatteryTotal:@"3500mAh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
 
      //------------------------------iPad--------------------------
-     if ([platform isEqualToString:@"iPad1,1"]) return @"iPad";
+     if ([platform isEqualToString:@"iPad1,1"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPad",
+                ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A8",
+                ZYBaseInfoHanderDeviceCPUClock:@"1000MHz",
+                ZYBaseInfoHanderBatteryTotal:@"25Wh",
+                ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX535",
+              };
+     }
      if ([platform isEqualToString:@"iPad2,1"] ||
          [platform isEqualToString:@"iPad2,2"] ||
          [platform isEqualToString:@"iPad2,3"] ||
-         [platform isEqualToString:@"iPad2,4"]) return @"iPad 2";
+         [platform isEqualToString:@"iPad2,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad 2",
+                    ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A9",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1000MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"25Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP2",
+                  };
+         }
      if ([platform isEqualToString:@"iPad3,1"] ||
          [platform isEqualToString:@"iPad3,2"] ||
-         [platform isEqualToString:@"iPad3,3"]) return @"iPad 3";
+         [platform isEqualToString:@"iPad3,3"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad 3",
+                    ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A9",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1000MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"42.5Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP4",
+                  };
+         }
      if ([platform isEqualToString:@"iPad3,4"] ||
          [platform isEqualToString:@"iPad3,5"] ||
-         [platform isEqualToString:@"iPad3,6"]) return @"iPad 4";
+         [platform isEqualToString:@"iPad3,6"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad 4",
+                    ZYBaseInfoHanderDeviceCPUType:@"Swift",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1400MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"42.5Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX554MP4",
+                  };
+         }
      if ([platform isEqualToString:@"iPad4,1"] ||
          [platform isEqualToString:@"iPad4,2"] ||
-         [platform isEqualToString:@"iPad4,3"]) return @"iPad Air";
+         [platform isEqualToString:@"iPad4,3"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Air",
+                    ZYBaseInfoHanderDeviceCPUType:@"Cyclone",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1400MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"30.2Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR G6430",
+                  };
+         }
      if ([platform isEqualToString:@"iPad5,3"] ||
-         [platform isEqualToString:@"iPad5,4"]) return @"iPad Air 2";
+         [platform isEqualToString:@"iPad5,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Air 2",
+                    ZYBaseInfoHanderDeviceCPUType:@"Typhoon",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1500MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"27.3Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GXA6850",
+                  };
+         }
      if ([platform isEqualToString:@"iPad6,3"] ||
-         [platform isEqualToString:@"iPad6,4"]) return @"iPad Pro 9.7-inch";
+         [platform isEqualToString:@"iPad6,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 9.7-inch",
+                    ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2260MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"27.5Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GTA7850",
+                  };
+         }
      if ([platform isEqualToString:@"iPad6,7"] ||
-         [platform isEqualToString:@"iPad6,8"]) return @"iPad Pro 12.9-inch";
+         [platform isEqualToString:@"iPad6,8"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 12.9-inch",
+                    ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2260MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"38.5Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GTA7850",
+                  };
+         }
      if ([platform isEqualToString:@"iPad6,11"] ||
-         [platform isEqualToString:@"iPad6,12"]) return @"iPad 5";
-     if ([platform isEqualToString:@"iPad7,11"] ||
-         [platform isEqualToString:@"iPad7,12"]) return @"iPad 6";
+         [platform isEqualToString:@"iPad6,12"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad 5",
+                    ZYBaseInfoHanderDeviceCPUType:@"Twister",
+                    ZYBaseInfoHanderDeviceCPUClock:@"1850MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"32.4Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+                  };
+         }
+     if ([platform isEqualToString:@"iPad7,5"] ||
+         [platform isEqualToString:@"iPad7,6"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad 6",
+                    ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x2) + Zephyr (x2)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2340MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"32.4Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600 Plus",
+                  };
+         }
+    if ([platform isEqualToString:@"iPad7,11"] ||
+       [platform isEqualToString:@"iPad7,12"]){
+      return @{ZYBaseInfoHanderDeviceType:@"iPad 7",
+               ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x2) + Zephyr (x2)",
+               ZYBaseInfoHanderDeviceCPUClock:@"2340MHz",
+               ZYBaseInfoHanderBatteryTotal:@"32.4Wh",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600 Plus",
+             };
+    }
      if ([platform isEqualToString:@"iPad7,1"] ||
-         [platform isEqualToString:@"iPad7,2"]) return @"iPad Pro 12.9-inch 2";
+         [platform isEqualToString:@"iPad7,2"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 12.9-inch 2",
+                    ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x3) + Zephyr (×3)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2360MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"41Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+                  };
+         }
      if ([platform isEqualToString:@"iPad7,3"] ||
-         [platform isEqualToString:@"iPad7,4"]) return @"iPad Pro 10.5-inch";
-     
+         [platform isEqualToString:@"iPad7,4"]){
+           return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 10.5-inch",
+                    ZYBaseInfoHanderDeviceCPUType:@"Hurricane (x3) + Zephyr (×3)",
+                    ZYBaseInfoHanderDeviceCPUClock:@"2360MHz",
+                    ZYBaseInfoHanderBatteryTotal:@"30.4Wh",
+                    ZYBaseInfoHanderDeviceGPUType:@"PowerVR GT7600",
+                  };
+         }
+     if ([platform isEqualToString:@"iPad8,5"] ||
+         [platform isEqualToString:@"iPad8,6"] ||
+         [platform isEqualToString:@"iPad8,7"] ||
+         [platform isEqualToString:@"iPad8,8"]){
+         return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 12.9-inch 3",
+                  ZYBaseInfoHanderDeviceCPUType:@"Vortex (x4) + Tempest (x4)",
+                  ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                  ZYBaseInfoHanderBatteryTotal:@"36.71Wh",
+                  ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                };
+       }
+     if ([platform isEqualToString:@"iPad8,1"] ||
+       [platform isEqualToString:@"iPad8,2"] ||
+         [platform isEqualToString:@"iPad8,3"] ||
+         [platform isEqualToString:@"iPad8,4"]){
+       return @{ZYBaseInfoHanderDeviceType:@"iPad Pro 11.0-inch",
+                ZYBaseInfoHanderDeviceCPUType:@"Vortex (x4) + Tempest (x4)",
+                ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                ZYBaseInfoHanderBatteryTotal:@"29.37Wh",
+                ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+              };
+     }
+       if ([platform isEqualToString:@"iPad11,3"] ||
+         [platform isEqualToString:@"iPad11,4"]){
+         return @{ZYBaseInfoHanderDeviceType:@"iPad Air 3",
+                  ZYBaseInfoHanderDeviceCPUType:@"Vortex (x2) + Tempest (x4)",
+                  ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                  ZYBaseInfoHanderBatteryTotal:@"30.2Wh",
+                  ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                };
+       }
+    
      //------------------------------iPad Mini-----------------------
      if ([platform isEqualToString:@"iPad2,5"] ||
          [platform isEqualToString:@"iPad2,6"] ||
-         [platform isEqualToString:@"iPad2,7"]) return @"iPad mini";
+         [platform isEqualToString:@"iPad2,7"]){
+    return  @{ZYBaseInfoHanderDeviceType:@"iPad mini",
+              ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A9",
+              ZYBaseInfoHanderDeviceCPUClock:@"1000MHz",
+              ZYBaseInfoHanderBatteryTotal:@"16.3Wh",
+              ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP2",
+            };
+     }
      if ([platform isEqualToString:@"iPad4,4"] ||
          [platform isEqualToString:@"iPad4,5"] ||
-         [platform isEqualToString:@"iPad4,6"]) return @"iPad mini 2";
+         [platform isEqualToString:@"iPad4,6"]){
+         return  @{ZYBaseInfoHanderDeviceType:@"iPad mini 2",
+                   ZYBaseInfoHanderDeviceCPUType:@"Cyclone",
+                   ZYBaseInfoHanderDeviceCPUClock:@"1300MHz",
+                   ZYBaseInfoHanderBatteryTotal:@"16.3Wh",
+                   ZYBaseInfoHanderDeviceGPUType:@"PowerVR G6430",
+                 };
+          }
      if ([platform isEqualToString:@"iPad4,7"] ||
          [platform isEqualToString:@"iPad4,8"] ||
-         [platform isEqualToString:@"iPad4,9"]) return @"iPad mini 3";
+         [platform isEqualToString:@"iPad4,9"]){
+         return  @{ZYBaseInfoHanderDeviceType:@"iPad mini 3",
+                   ZYBaseInfoHanderDeviceCPUType:@"Cyclone",
+                   ZYBaseInfoHanderDeviceCPUClock:@"1300MHz",
+                   ZYBaseInfoHanderBatteryTotal:@"23.8Wh",
+                   ZYBaseInfoHanderDeviceGPUType:@"PowerVR G6430",
+                 };
+          }
      if ([platform isEqualToString:@"iPad5,1"] ||
-         [platform isEqualToString:@"iPad5,2"]) return @"iPad mini 4";
+         [platform isEqualToString:@"iPad5,2"]){
+         return  @{ZYBaseInfoHanderDeviceType:@"iPad mini 4",
+                   ZYBaseInfoHanderDeviceCPUType:@"Typhoon",
+                   ZYBaseInfoHanderDeviceCPUClock:@"1400MHz",
+                   ZYBaseInfoHanderBatteryTotal:@"19.1Wh",
+                   ZYBaseInfoHanderDeviceGPUType:@"PowerVR GX6450",
+                 };
+          }
+    if ([platform isEqualToString:@"iPad11,1"] ||
+        [platform isEqualToString:@"iPad11,2"]){
+         return @{ZYBaseInfoHanderDeviceType:@"iPad mini 5",
+                  ZYBaseInfoHanderDeviceCPUType:@"Vortex (x2) + Tempest (x4)",
+                  ZYBaseInfoHanderDeviceCPUClock:@"2490MHz",
+                       ZYBaseInfoHanderBatteryTotal:@"19.1Wh",
+                  ZYBaseInfoHanderDeviceGPUType:@"Custom design",
+                     };
+     }
      
      //------------------------------iTouch------------------------
-     if ([platform isEqualToString:@"iPod1,1"]) return @"iTouch";
-     if ([platform isEqualToString:@"iPod2,1"]) return @"iTouch2";
-     if ([platform isEqualToString:@"iPod3,1"]) return @"iTouch3";
-     if ([platform isEqualToString:@"iPod4,1"]) return @"iTouch4";
-     if ([platform isEqualToString:@"iPod5,1"]) return @"iTouch5";
-     if ([platform isEqualToString:@"iPod7,1"]) return @"iTouch6";
+     if ([platform isEqualToString:@"iPod1,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch",
+               ZYBaseInfoHanderDeviceCPUType:@"ARM1176JZ(F)-S v1.0",
+               ZYBaseInfoHanderDeviceCPUClock:@"412MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR MBX Lite",
+             };
+      }
+     if ([platform isEqualToString:@"iPod2,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch2",
+               ZYBaseInfoHanderDeviceCPUType:@"ARM1176JZ(F)-S v1.0",
+               ZYBaseInfoHanderDeviceCPUClock:@"532MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR MBX Lite",
+             };
+      }
+     if ([platform isEqualToString:@"iPod3,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch3",
+               ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A8",
+               ZYBaseInfoHanderDeviceCPUClock:@"600MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX535",
+             };
+      }
+     if ([platform isEqualToString:@"iPod4,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch4",
+               ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A8",
+               ZYBaseInfoHanderDeviceCPUClock:@"800MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX535",
+             };
+      }
+     if ([platform isEqualToString:@"iPod5,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch5",
+               ZYBaseInfoHanderDeviceCPUType:@"ARM Cortex-A9",
+               ZYBaseInfoHanderDeviceCPUClock:@"800MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR SGX543MP2",
+             };
+      }
+     if ([platform isEqualToString:@"iPod7,1"]){
+     return  @{ZYBaseInfoHanderDeviceType:@"iTouch6",
+               ZYBaseInfoHanderDeviceCPUType:@"Typhoon",
+               ZYBaseInfoHanderDeviceCPUClock:@"1100MHz",
+               ZYBaseInfoHanderBatteryTotal:@"unknown",
+               ZYBaseInfoHanderDeviceGPUType:@"PowerVR GX6450",
+             };
+      }
      
      //------------------------------Samulitor-------------------------------------
      if ([platform isEqualToString:@"i386"] ||
-         [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
+         [platform isEqualToString:@"x86_64"]){
+         return  @{ZYBaseInfoHanderDeviceType:@"iPhone Simulator",
+                   ZYBaseInfoHanderDeviceCPUType:@"unknown",
+                   ZYBaseInfoHanderDeviceCPUClock:@"unknown",
+                   ZYBaseInfoHanderBatteryTotal:@"unknown",
+                   ZYBaseInfoHanderDeviceGPUType:@"unknown",
+                 };
+          }
      
-     return platform;
-}
-+(NSString *)getCPUClock{
-    struct utsname systemInfo;
-        uname(&systemInfo);
-        NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
-        
-        //------------------------------iPhone---------------------------
-        if ([platform isEqualToString:@"iPhone1,1"]
-            ||[platform isEqualToString:@"iPhone1,2"]) return @"412";
-        if ([platform isEqualToString:@"iPhone2,1"] ) return @"600";
-        if ([platform isEqualToString:@"iPhone3,1"] ||
-            [platform isEqualToString:@"iPhone3,2"] ||
-            [platform isEqualToString:@"iPhone3,3"] ||
-            [platform isEqualToString:@"iPhone4,1"]) return @"800";
-        if ([platform isEqualToString:@"iPhone5,1"] ||
-            [platform isEqualToString:@"iPhone5,2"] ||
-            [platform isEqualToString:@"iPhone5,3"] ||
-            [platform isEqualToString:@"iPhone5,4"] ||
-            [platform isEqualToString:@"iPhone6,1"] ||
-            [platform isEqualToString:@"iPhone6,2"] ||
-            [platform isEqualToString:@"iPhone6,3"]) return @"1300";
-        if ([platform isEqualToString:@"iPhone7,2"] ||
-            [platform isEqualToString:@"iPhone7,1"]) return @"1400";
-        if ([platform isEqualToString:@"iPhone8,2"] ||
-            [platform isEqualToString:@"iPhone8,2"] ||
-            [platform isEqualToString:@"iPhone8,4"]) return @"1850";
-        if ([platform isEqualToString:@"iPhone9,1"] ||
-            [platform isEqualToString:@"iPhone9,3"] ||
-            [platform isEqualToString:@"iPhone9,2"] ||
-            [platform isEqualToString:@"iPhone9,4"] ||
-            [platform isEqualToString:@"iPhone9,5"] ||
-            [platform isEqualToString:@"iPhone9,6"] ) return @"2340";
-        if ([platform isEqualToString:@"iPhone10,1"] ||
-            [platform isEqualToString:@"iPhone10,4"]) return @"2340";
-        if ([platform isEqualToString:@"iPhone10,2"] ||
-            [platform isEqualToString:@"iPhone10,5"]) return @"2340";
-        if ([platform isEqualToString:@"iPhone10,3"] ||
-            [platform isEqualToString:@"iPhone10,6"]) return @"2390";
-        if ([platform isEqualToString:@"iPhone11,8"]) return @"2490";
-        if ([platform isEqualToString:@"iPhone11,2"]) return @"2490";
-        if ([platform isEqualToString:@"iPhone11,4"] ||
-            [platform isEqualToString:@"iPhone11,6"]) return @"2490";
-        if ([platform isEqualToString:@"iPhone12,1"]) return @"2490";
-        if ([platform isEqualToString:@"iPhone12,3"]) return @"2490";
-        if ([platform isEqualToString:@"iPhone12,5"]) return @"2490";
 
-        //------------------------------iPad--------------------------
-        if ([platform isEqualToString:@"iPad1,1"]) return @"1000";
-        if ([platform isEqualToString:@"iPad2,1"] ||
-            [platform isEqualToString:@"iPad2,2"] ||
-            [platform isEqualToString:@"iPad2,3"] ||
-            [platform isEqualToString:@"iPad2,4"]) return @"1000";
-        if ([platform isEqualToString:@"iPad3,1"] ||
-            [platform isEqualToString:@"iPad3,2"] ||
-            [platform isEqualToString:@"iPad3,3"]) return @"1000";
-        if ([platform isEqualToString:@"iPad3,4"] ||
-            [platform isEqualToString:@"iPad3,5"] ||
-            [platform isEqualToString:@"iPad3,6"]) return @"1400";
-        if ([platform isEqualToString:@"iPad4,1"] ||
-            [platform isEqualToString:@"iPad4,2"] ||
-            [platform isEqualToString:@"iPad4,3"]) return @"1400";
-        if ([platform isEqualToString:@"iPad5,3"] ||
-            [platform isEqualToString:@"iPad5,4"]) return @"1500";
-        if ([platform isEqualToString:@"iPad6,3"] ||
-            [platform isEqualToString:@"iPad6,4"]) return @"2260";
-        if ([platform isEqualToString:@"iPad6,7"] ||
-            [platform isEqualToString:@"iPad6,8"]) return @"2360";
-        if ([platform isEqualToString:@"iPad6,11"] ||
-            [platform isEqualToString:@"iPad6,12"]) return @"1850";
-        if ([platform isEqualToString:@"iPad7,11"] ||
-            [platform isEqualToString:@"iPad7,12"]) return @"1850";
-        if ([platform isEqualToString:@"iPad7,1"] ||
-            [platform isEqualToString:@"iPad7,2"]) return @"2360";
-        if ([platform isEqualToString:@"iPad7,3"] ||
-            [platform isEqualToString:@"iPad7,4"]) return @"2360";
-        if ([platform isEqualToString:@"iPad8,5"] ||
-            [platform isEqualToString:@"iPad8,6"] ||
-            [platform isEqualToString:@"iPad8,1"] ||
-            [platform isEqualToString:@"iPad8,2"] ) return @"2490";
-        //------------------------------iPad Mini-----------------------
-        if ([platform isEqualToString:@"iPad2,5"] ||
-            [platform isEqualToString:@"iPad2,6"] ||
-            [platform isEqualToString:@"iPad2,7"]) return @"1000";
-        if ([platform isEqualToString:@"iPad4,4"] ||
-            [platform isEqualToString:@"iPad4,5"] ||
-            [platform isEqualToString:@"iPad4,6"]) return @"1300";
-        if ([platform isEqualToString:@"iPad4,7"] ||
-            [platform isEqualToString:@"iPad4,8"] ||
-            [platform isEqualToString:@"iPad4,9"]) return @"1300";
-        if ([platform isEqualToString:@"iPad5,1"] ||
-            [platform isEqualToString:@"iPad5,2"]) return @"1400";
-        
-        //------------------------------iTouch------------------------
-        if ([platform isEqualToString:@"iPod1,1"]) return @"412";
-        if ([platform isEqualToString:@"iPod2,1"]) return @"532";
-        if ([platform isEqualToString:@"iPod3,1"]) return @"600";
-        if ([platform isEqualToString:@"iPod4,1"]) return @"800";
-        if ([platform isEqualToString:@"iPod5,1"]) return @"800";
-        if ([platform isEqualToString:@"iPod7,1"]) return @"800";
-        
-        //------------------------------Samulitor-------------------------------------
-        if ([platform isEqualToString:@"i386"] ||
-            [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
-        
-        return @"unknown";
+       return @{ZYBaseInfoHanderDeviceType:platform,
+                ZYBaseInfoHanderDeviceCPUType:@"unknown",
+                ZYBaseInfoHanderDeviceCPUClock:@"unknown",
+                ZYBaseInfoHanderBatteryTotal:@"unknown",
+                ZYBaseInfoHanderDeviceGPUType:@"unknown",
+              };
     
-    
-}
-+(NSString *)ft_getBatteryTotal{
-    struct utsname systemInfo;
-        uname(&systemInfo);
-        NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
-        
-        //------------------------------iPhone---------------------------
-        if ([platform isEqualToString:@"iPhone1,1"]) return @"iPhone 2G";
-        if ([platform isEqualToString:@"iPhone1,2"]) return @"1280mAh";
-        if ([platform isEqualToString:@"iPhone2,1"]) return @"1280mAh";
-        if ([platform isEqualToString:@"iPhone3,1"] ||
-            [platform isEqualToString:@"iPhone3,2"] ||
-            [platform isEqualToString:@"iPhone3,3"]) return @"1420mAH";
-        if ([platform isEqualToString:@"iPhone4,1"]) return @"1420mAH";
-        if ([platform isEqualToString:@"iPhone5,1"] ||
-            [platform isEqualToString:@"iPhone5,2"]) return @"1440mAh";
-        if ([platform isEqualToString:@"iPhone5,3"] ||
-            [platform isEqualToString:@"iPhone5,4"]) return @"1510mAh";
-        if ([platform isEqualToString:@"iPhone6,1"] ||
-            [platform isEqualToString:@"iPhone6,2"]) return @"1560mAh";
-        if ([platform isEqualToString:@"iPhone7,2"]) return @"1810mAh";
-        if ([platform isEqualToString:@"iPhone7,1"]) return @"2915mAh";
-        if ([platform isEqualToString:@"iPhone8,1"]) return @"1715mAh";
-        if ([platform isEqualToString:@"iPhone8,2"]) return @"2750mAh";
-        if ([platform isEqualToString:@"iPhone8,4"]) return @"1642mah";
-        if ([platform isEqualToString:@"iPhone9,1"] ||
-            [platform isEqualToString:@"iPhone9,3"]) return @"1960mAh";
-        if ([platform isEqualToString:@"iPhone9,2"] ||
-            [platform isEqualToString:@"iPhone9,4"]) return @"2900mAh";
-        if ([platform isEqualToString:@"iPhone10,1"] ||
-            [platform isEqualToString:@"iPhone10,4"]) return @"1821mah";
-        if ([platform isEqualToString:@"iPhone10,2"] ||
-            [platform isEqualToString:@"iPhone10,5"]) return @"2675mAh";
-        if ([platform isEqualToString:@"iPhone10,3"] ||
-            [platform isEqualToString:@"iPhone10,6"]) return @"2716mAh";
-        if ([platform isEqualToString:@"iPhone11,8"]) return @"2942mAh";
-        if ([platform isEqualToString:@"iPhone11,2"]) return @"2658mAh";
-        if ([platform isEqualToString:@"iPhone11,4"] ||
-            [platform isEqualToString:@"iPhone11,6"]) return @"3174mAh";
-        if ([platform isEqualToString:@"iPhone12,1"]) return @"3110mAh";
-        if ([platform isEqualToString:@"iPhone12,3"]) return @"3190mAh";
-        if ([platform isEqualToString:@"iPhone12,5"]) return @"3500mAh";
-    //------------------------------iPad--------------------------
-              if ([platform isEqualToString:@"iPad1,1"]) return @"25Wh";
-              if ([platform isEqualToString:@"iPad2,1"] ||
-                  [platform isEqualToString:@"iPad2,2"] ||
-                  [platform isEqualToString:@"iPad2,3"] ||
-                  [platform isEqualToString:@"iPad2,4"]) return @"25Wh";
-              if ([platform isEqualToString:@"iPad3,1"] ||
-                  [platform isEqualToString:@"iPad3,2"] ||
-                  [platform isEqualToString:@"iPad3,3"]) return @"42.5Wh";
-              if ([platform isEqualToString:@"iPad3,4"] ||
-                  [platform isEqualToString:@"iPad3,5"] ||
-                  [platform isEqualToString:@"iPad3,6"]) return @"42.5Wh";
-              if ([platform isEqualToString:@"iPad4,1"] ||
-                  [platform isEqualToString:@"iPad4,2"] ||
-                  [platform isEqualToString:@"iPad4,3"]) return @"30.2Wh";
-              if ([platform isEqualToString:@"iPad5,3"] ||
-                  [platform isEqualToString:@"iPad5,4"]) return @"27.3Wh";
-              if ([platform isEqualToString:@"iPad6,3"] ||
-                  [platform isEqualToString:@"iPad6,4"]) return @"27.5Wh";
-              if ([platform isEqualToString:@"iPad6,7"] ||
-                  [platform isEqualToString:@"iPad6,8"]) return @"38.5Wh";
-              if ([platform isEqualToString:@"iPad6,11"] ||
-                  [platform isEqualToString:@"iPad6,12"]) return @"32.4Wh";
-              if ([platform isEqualToString:@"iPad7,11"] ||
-                  [platform isEqualToString:@"iPad7,12"]) return @"32.4Wh";
-              if ([platform isEqualToString:@"iPad7,1"] ||
-                  [platform isEqualToString:@"iPad7,2"]) return @"38.5Wh";
-              if ([platform isEqualToString:@"iPad7,3"] ||
-                  [platform isEqualToString:@"iPad7,4"]) return @"30.4Wh";
-    //------------------------------iPad Mini-----------------------
-        if ([platform isEqualToString:@"iPad2,5"] ||
-            [platform isEqualToString:@"iPad2,6"] ||
-            [platform isEqualToString:@"iPad2,7"]) return @"16.3Wh";
-        if ([platform isEqualToString:@"iPad4,4"] ||
-            [platform isEqualToString:@"iPad4,5"] ||
-            [platform isEqualToString:@"iPad4,6"]) return @"23.8Wh";
-        if ([platform isEqualToString:@"iPad4,7"] ||
-            [platform isEqualToString:@"iPad4,8"] ||
-            [platform isEqualToString:@"iPad4,9"]) return @"23.8Wh";
-        if ([platform isEqualToString:@"iPad5,1"] ||
-            [platform isEqualToString:@"iPad5,2"]) return @"19.1Wh";
-        
-    //------------------------------Samulitor-------------------------------------
-          if ([platform isEqualToString:@"i386"] ||
-              [platform isEqualToString:@"x86_64"]) return @"iPhone Simulator";
-          return @"unknown";
 }
 +(NSString *)getTelephonyInfo     // 获取运营商信息
 {

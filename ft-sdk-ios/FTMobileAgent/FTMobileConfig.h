@@ -36,18 +36,20 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 *   FTMonitorInfoTypeBattery  - 电池总量、使用量
 *   FTMonitorInfoTypeMemory   - 内存总量、使用率
 *   FTMonitorInfoTypeCpu      - CPU型号、占用率
+*   FTMonitorInfoTypeCpu      - GPU型号、占用率
 *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
 *   FTMonitorInfoTypeCamera   - 前置/后置 像素
 *   FTMonitorInfoTypeLocation - 位置信息  eg:上海
 */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
-    FTMonitorInfoTypeAll          = 0,
-    FTMonitorInfoTypeBattery      = 1 << 0,
-    FTMonitorInfoTypeMemory       = 1 << 1,
-    FTMonitorInfoTypeCpu          = 1 << 2,
-    FTMonitorInfoTypeNetwork      = 1 << 3,
-    FTMonitorInfoTypeCamera       = 1 << 4,
-    FTMonitorInfoTypeLocation     = 1 << 5,
+    FTMonitorInfoTypeAll          = 1 << 0,
+    FTMonitorInfoTypeBattery      = 1 << 1,
+    FTMonitorInfoTypeMemory       = 1 << 2,
+    FTMonitorInfoTypeCpu          = 1 << 3,
+    FTMonitorInfoTypeGpu          = 1 << 4,
+    FTMonitorInfoTypeNetwork      = 1 << 5,
+    FTMonitorInfoTypeCamera       = 1 << 6,
+    FTMonitorInfoTypeLocation     = 1 << 7,
 };
 NS_ASSUME_NONNULL_BEGIN
 

@@ -225,6 +225,7 @@
     if (_tag != nil) {
            return _tag;
        }
+       NSDictionary *deviceInfo = [ZYBaseInfoHander ft_getDeviceInfo];
        NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
        CFShow((__bridge CFTypeRef)(infoDictionary));
@@ -243,18 +244,21 @@
        [tag appendFormat:@"os_version=%@,",version];
        [tag appendString:@"device_band=APPLE,"];
        [tag appendFormat:@"locale=%@,",preferredLanguage];
-       [tag appendFormat:@"device_model=%@,",[ZYBaseInfoHander getDeviceType]];
+       [tag appendFormat:@"device_model=%@,",deviceInfo[ZYBaseInfoHanderDeviceType]];
        [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
        [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
     if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
-        [tag appendFormat:@"battery_total=%@,",[ZYBaseInfoHander ft_getBatteryTotal]];
+        [tag appendFormat:@"battery_total=%@,",deviceInfo[ZYBaseInfoHanderBatteryTotal]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"memory_total=%lld,",[ZYBaseInfoHander getTotalMemorySize]];
     }
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"cpu_no=%@,",[ZYBaseInfoHander ft_getCPUType]];
-        [tag appendFormat:@"cpu_hz=%@MHz,",[ZYBaseInfoHander getCPUClock]];
+        [tag appendFormat:@"cpu_no=%@,",deviceInfo[ZYBaseInfoHanderDeviceCPUType]];
+        [tag appendFormat:@"cpu_hz=%@,",deviceInfo[ZYBaseInfoHanderDeviceCPUClock]];
+    }
+    if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+        [tag appendFormat:@"gpu_model=%@,",deviceInfo[ZYBaseInfoHanderDeviceGPUType]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"camera_front_px=%@,",[ZYBaseInfoHander gt_getFrontCameraPixel]];
