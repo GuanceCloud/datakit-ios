@@ -22,8 +22,10 @@
     self.flow = @"0dB/s";
     self.lastBytes = [self getInterfaceBytes];
     self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-    
+    ZYDebug(@"currentloop = %@",[NSRunLoop currentRunLoop]);
+    NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+    [runloop addTimer:self.timer forMode:NSDefaultRunLoopMode];
+    [runloop run];
 }
 -(void)stopMonitor{
     if (self.timer) {
@@ -65,7 +67,6 @@
         }
     }
     freeifaddrs(ifa_list);
-    ZYDebug(@"\n[getInterfaceBytes-Total]%d,%d",iBytes,oBytes);
     return iBytes + oBytes;
 }
 

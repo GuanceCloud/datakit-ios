@@ -15,15 +15,12 @@
 #import "ZYLog.h"
 #import "RecordModel.h"
 #import "FTMobileConfig.h"
-#import "FTLocationManager.h"
 #import "FTNetworkInfo.h"
-#import "FTNetMonitorFlow.h"
+#import <objc/runtime.h>
 @interface ZYUploadTool()
 @property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, strong) FTLocationManager *manger;
-@property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 
 @end
@@ -32,23 +29,6 @@
      self = [super init];
        if (self) {
            self.config = config;
-           if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-               self.manger = [[FTLocationManager alloc]init];
-               __weak typeof(self) weakSelf = self;
-                self.manger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
-                [weakSelf addLocationInfo:location];
-                };
-            [self.manger startUpdatingLocation];
-               
-           }
-           if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-               NSString *label = [NSString stringWithFormat:@"io.timer.%p", self];
-               self.timerQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
-               self.netFlow = [FTNetMonitorFlow new];
-              
-                [self.netFlow startMonitor];
-             
-           }
        }
        return self;
 }
@@ -161,32 +141,15 @@
         NSString *field;
         __block NSString *appendTag = @"";
         NSDictionary *tags;
-        if([[item valueForKey:@"op"] isEqualToString:@"cstm"]){
-            field = [opdata valueForKey:@"field"];
-            NSDictionary *values = opdata[@"values"];
-            [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                    event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+        
+        field = [opdata valueForKey:@"field"];
+        NSDictionary *values = opdata[@"values"];
+        [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
             }];
-           event = event.length>1? [event substringToIndex:event.length-1]:event;
-           tags =opdata[@"tags"];
-            
-        }else{
-            NSString *cpn = [item valueForKey:@"cpn"];
-            NSString *rpn = (NSString *)[item valueForKey:@"rpn"];
-            field =@"mobile_tracker";
-            event = [event stringByAppendingFormat:@"event=\"%@\"",[item valueForKey:@"op"]];
-            if(cpn){
-               appendTag = [appendTag stringByAppendingFormat:@"current_page_name=%@,",cpn];
-            }
-            if (rpn && ![rpn isEqualToString:@"null"]) {
-                if(rpn.length>0){
-               appendTag =[appendTag stringByAppendingFormat:@"root_page_name=%@,",rpn];
-                }
-            }
-            if (opdata) {
-                tags = opdata;
-            }
-        }
+        event = event.length>1? [event substringToIndex:event.length-1]:event;
+        tags =opdata[@"tags"];
+        
         [tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 appendTag = [appendTag stringByAppendingFormat:@"%@=%@,",key,obj];
         }];
@@ -213,15 +176,12 @@
         [requestDatas appendFormat:@" %ld",obj.tm*1000];
     
     }];
-  
-    return requestDatas;
+    NSString *request = requestDatas;
+    request = [request stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+    return request;
 }
-- (void)addLocationInfo:(NSString *)location{
-    [self basicTags];
-    _tag = [_tag stringByAppendingFormat:@"location_city=%@,",location];
-   
-}
-- (NSString *)basicTags{
+
+- (NSString *)getBasicData{
     if (_tag != nil) {
            return _tag;
        }
@@ -247,7 +207,7 @@
        [tag appendFormat:@"device_model=%@,",deviceInfo[ZYBaseInfoHanderDeviceType]];
        [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
        [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
-    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery) {
+    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag appendFormat:@"battery_total=%@,",deviceInfo[ZYBaseInfoHanderBatteryTotal]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
@@ -266,40 +226,6 @@
     }
      _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
      return _tag;
-}
-- (NSString *)getBasicData{
-    NSString *basicTag = [self basicTags];
-    /*
-     battery_total
-     network_speed
-     */
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag =  [basicTag stringByAppendingFormat:@"cpu_use=%ld%%,",[ZYBaseInfoHander ft_cpuUsage]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag=  [basicTag stringByAppendingFormat:@"memory_use=%@,",[ZYBaseInfoHander usedMemory]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-       __block NSString *network_type,*network_strength;
-        if ([NSThread isMainThread]) { // do something in main thread } else { // do something in other
-            network_type =[FTNetworkInfo getNetworkType];
-            network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
-        }else{
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            network_type =[FTNetworkInfo getNetworkType];
-            network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
-        });
-        }
-        basicTag =[basicTag stringByAppendingFormat:@"network_type=%@,",network_type];
-        basicTag =[basicTag stringByAppendingFormat:@"network_strength=%@,",network_strength];
-        basicTag =[basicTag stringByAppendingFormat:@"network_speed=%@,",self.netFlow.flow];
-
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        basicTag =[basicTag stringByAppendingFormat:@"battery_use=%@,",[ZYBaseInfoHander ft_getBatteryUse]];
-    }
-    basicTag = [basicTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    return basicTag;
 }
 
 @end

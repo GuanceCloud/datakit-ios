@@ -17,6 +17,7 @@
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
+#import "FTMobileAgent.h"
 #import "FTUncaughtExceptionHandler.h"
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
@@ -89,11 +90,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
     if( [self isAutoTrackUI:UITableView.class] && [self isAutoTrackUI:UITableViewCell.class]){
-//     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-//     [notificationCenter addObserver:self
-//                                     selector:@selector(tableViewSelectionDidChangeNotification:)
-//                                            name:UITableViewSelectionDidChangeNotification
-//                                          object:nil];
+
         [UITableView aspect_hookSelector:@selector(setDelegate:)
                   withOptions:ZY_AspectPositionAfter
                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
@@ -291,35 +288,24 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
   
     @try {
-        NSMutableDictionary *data = [NSMutableDictionary new];
-        [data addEntriesFromDictionary:@{@"op":op}];
+        NSMutableDictionary *tags = [NSMutableDictionary new];
+        NSDictionary *value = @{@"event":op};
+        NSString *field = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
-            [data addEntriesFromDictionary:@{@"rpn":[UIViewController zy_getRootViewController]}];
+            [tags addEntriesFromDictionary:@{@"rpn":[UIViewController zy_getRootViewController]}];
             if ([cpn isKindOfClass:UIView.class]) {
-              [data addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn zy_getCurrentViewController].class)}];
+              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn zy_getCurrentViewController].class)}];
             }else if ([cpn isKindOfClass:UIViewController.class]){
-              [data addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn class])}];
+              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn class])}];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                [data addEntriesFromDictionary:@{@"opdata":@{@"vtp":[view zy_getParentsView]}}];
+                [tags addEntriesFromDictionary:@{@"vtp":[view zy_getParentsView]}];
             }
         }
-        ZYDebug(@"data == %@",data);
-        [self addDBWithData:data];
+        [[FTMobileAgent sharedInstance] track:field tags:tags values:value];
+       
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
     }
-}
-
--(void)addDBWithData:(NSDictionary *)data{
-    @try {
-          RecordModel *model = [RecordModel new];
-          model.tm = [ZYBaseInfoHander getCurrentTimestamp];
-          model.data =[ZYBaseInfoHander convertToJsonData:data];
-          [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-    } @catch (NSException *exception) {
-         ZYDebug(@" error: %@", exception);
-    }
-    
 }
 @end
