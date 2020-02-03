@@ -7,7 +7,7 @@
 //
 
 #import "ZYTrackerEventDBTool.h"
-#import "RecordModel.h"
+#import "FTRecordModel.h"
 #import "ZY_FMDB.h"
 #import "ZYLog.h"
 @interface ZYTrackerEventDBTool ()
@@ -149,7 +149,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 -(void)delectLogoutUser{
     
 }
--(BOOL)insertItemWithItemData:(RecordModel *)item{
+-(BOOL)insertItemWithItemData:(FTRecordModel *)item{
     if (self.lastSentDate) {
         NSDate* now = [NSDate date];
         NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
@@ -197,7 +197,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
 
       //创建对象赋值
 
-      RecordModel* item = [[RecordModel alloc]init];
+      FTRecordModel* item = [[FTRecordModel alloc]init];
 
       item._id= [[set stringForColumn:@"_id"]intValue];
 

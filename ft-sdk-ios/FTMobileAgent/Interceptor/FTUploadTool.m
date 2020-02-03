@@ -6,25 +6,25 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "ZYUploadTool.h"
+#import "FTUploadTool.h"
 #import <UIKit/UIKit.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import "ZYBaseInfoHander.h"
 #import "ZYTrackerEventDBTool.h"
 #import "ZYLog.h"
-#import "RecordModel.h"
+#import "FTRecordModel.h"
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
-@interface ZYUploadTool()
+@interface FTUploadTool()
 @property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 
 @end
-@implementation ZYUploadTool
+@implementation FTUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
      self = [super init];
        if (self) {
@@ -49,7 +49,7 @@
             if(updata.count == 0){
                 break;
             }
-         RecordModel *model = [updata lastObject];
+         FTRecordModel *model = [updata lastObject];
          BOOL scuess = [self apiRequestWithEventsAry:updata andError:nil];
             if (!scuess) {//请求失败
                 ZYDebug(@"上传事件失败");
@@ -82,13 +82,14 @@
         [mutableRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
         [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
 
-            //设置请求参数
+         //设置请求参数
         [mutableRequest setValue:[ZYBaseInfoHander defaultUUID] forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
         mutableRequest.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
         ZYDebug(@"requestData = %@",requestData);
+
         if (self.config.enableRequestSigning) {
             NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[ZYBaseInfoHander getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
             [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
@@ -133,7 +134,7 @@
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
     NSString *basicData = [self getBasicData];
-    [events enumerateObjectsUsingBlock:^(RecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [ZYBaseInfoHander dictionaryWithJsonString:obj.userdata];
        __block NSString *event = @" ";

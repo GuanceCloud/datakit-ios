@@ -10,7 +10,7 @@
 @class FTMobileConfig;
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ZYUploadTool : NSObject
+@interface FTUploadTool : NSObject
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 -(void)upload;
 @end

@@ -13,7 +13,7 @@
 #import <UIKit/UIKit.h>
 #import "ZYLog.h"
 #import "ZYTrackerEventDBTool.h"
-#import "RecordModel.h"
+#import "FTRecordModel.h"
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"

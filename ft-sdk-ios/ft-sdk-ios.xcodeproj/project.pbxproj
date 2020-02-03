@@ -46,13 +46,13 @@
 		4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* ZYBaseInfoHander.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A88428E239E5768001B44C3 /* ZYUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426C239E5768001B44C3 /* ZYUploadTool.m */; };
-		4A88428F239E5768001B44C3 /* RecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426D239E5768001B44C3 /* RecordModel.h */; };
+		4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426C239E5768001B44C3 /* FTUploadTool.m */; };
+		4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426D239E5768001B44C3 /* FTRecordModel.h */; };
 		4A884291239E5768001B44C3 /* ZYBaseInfoHander.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426F239E5768001B44C3 /* ZYBaseInfoHander.m */; };
 		4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884272239E5768001B44C3 /* FTMobileAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A884297239E5768001B44C3 /* RecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884275239E5768001B44C3 /* RecordModel.m */; };
+		4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884275239E5768001B44C3 /* FTRecordModel.m */; };
 		4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884276239E5768001B44C3 /* FTMobileConfig.m */; };
-		4A884299239E5768001B44C3 /* ZYUploadTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884277239E5768001B44C3 /* ZYUploadTool.h */; };
+		4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884277239E5768001B44C3 /* FTUploadTool.h */; };
 		4A88429B239E5768001B44C3 /* ZYTrackerEventDBTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88427A239E5768001B44C3 /* ZYTrackerEventDBTool.h */; };
 		4A88429C239E5768001B44C3 /* ZYTrackerEventDBTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427B239E5768001B44C3 /* ZYTrackerEventDBTool.m */; };
 		4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427D239E5768001B44C3 /* ZY_FMResultSet.m */; };
@@ -95,13 +95,13 @@
 		4A884266239E5768001B44C3 /* ZYBaseInfoHander.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYBaseInfoHander.h; sourceTree = "<group>"; };
 		4A88426A239E5768001B44C3 /* FTMobileAgent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgent.m; sourceTree = "<group>"; };
 		4A88426B239E5768001B44C3 /* FTMobileConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileConfig.h; sourceTree = "<group>"; };
-		4A88426C239E5768001B44C3 /* ZYUploadTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYUploadTool.m; sourceTree = "<group>"; };
-		4A88426D239E5768001B44C3 /* RecordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordModel.h; sourceTree = "<group>"; };
+		4A88426C239E5768001B44C3 /* FTUploadTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUploadTool.m; sourceTree = "<group>"; };
+		4A88426D239E5768001B44C3 /* FTRecordModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRecordModel.h; sourceTree = "<group>"; };
 		4A88426F239E5768001B44C3 /* ZYBaseInfoHander.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYBaseInfoHander.m; sourceTree = "<group>"; };
 		4A884272239E5768001B44C3 /* FTMobileAgent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileAgent.h; sourceTree = "<group>"; };
-		4A884275239E5768001B44C3 /* RecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RecordModel.m; sourceTree = "<group>"; };
+		4A884275239E5768001B44C3 /* FTRecordModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRecordModel.m; sourceTree = "<group>"; };
 		4A884276239E5768001B44C3 /* FTMobileConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileConfig.m; sourceTree = "<group>"; };
-		4A884277239E5768001B44C3 /* ZYUploadTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYUploadTool.h; sourceTree = "<group>"; };
+		4A884277239E5768001B44C3 /* FTUploadTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTUploadTool.h; sourceTree = "<group>"; };
 		4A88427A239E5768001B44C3 /* ZYTrackerEventDBTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYTrackerEventDBTool.h; sourceTree = "<group>"; };
 		4A88427B239E5768001B44C3 /* ZYTrackerEventDBTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYTrackerEventDBTool.m; sourceTree = "<group>"; };
 		4A88427D239E5768001B44C3 /* ZY_FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZY_FMResultSet.m; sourceTree = "<group>"; };
@@ -205,10 +205,10 @@
 			children = (
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
 				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
-				4A884277239E5768001B44C3 /* ZYUploadTool.h */,
-				4A88426C239E5768001B44C3 /* ZYUploadTool.m */,
-				4A88426D239E5768001B44C3 /* RecordModel.h */,
-				4A884275239E5768001B44C3 /* RecordModel.m */,
+				4A884277239E5768001B44C3 /* FTUploadTool.h */,
+				4A88426C239E5768001B44C3 /* FTUploadTool.m */,
+				4A88426D239E5768001B44C3 /* FTRecordModel.h */,
+				4A884275239E5768001B44C3 /* FTRecordModel.m */,
 				4A884266239E5768001B44C3 /* ZYBaseInfoHander.h */,
 				4A88426F239E5768001B44C3 /* ZYBaseInfoHander.m */,
 				4A852FAB23A221DE00B40B5D /* ZYLog.h */,
@@ -272,7 +272,7 @@
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
-				4A88428F239E5768001B44C3 /* RecordModel.h in Headers */,
+				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A884288239E5768001B44C3 /* ZYBaseInfoHander.h in Headers */,
@@ -282,7 +282,7 @@
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A852FAC23A221DF00B40B5D /* ZYLog.h in Headers */,
-				4A884299239E5768001B44C3 /* ZYUploadTool.h in Headers */,
+				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
 			);
@@ -441,7 +441,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */,
-				4A884297239E5768001B44C3 /* RecordModel.m in Sources */,
+				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */,
@@ -452,7 +452,7 @@
 				4A88429F239E5768001B44C3 /* ZY_FMDatabase.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				4A88429C239E5768001B44C3 /* ZYTrackerEventDBTool.m in Sources */,
-				4A88428E239E5768001B44C3 /* ZYUploadTool.m in Sources */,
+				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -6,10 +6,10 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "RecordModel.h"
+#import "FTRecordModel.h"
 #import "ZYBaseInfoHander.h"
 
-@implementation RecordModel
+@implementation FTRecordModel
 -(instancetype)init{
    self = [super init];
     if (self) {

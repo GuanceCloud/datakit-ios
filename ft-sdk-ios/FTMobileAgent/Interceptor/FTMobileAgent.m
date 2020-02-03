@@ -12,8 +12,8 @@
 #import "ZYTrackerEventDBTool.h"
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import "ZYUploadTool.h"
-#import "RecordModel.h"
+#import "FTUploadTool.h"
+#import "FTRecordModel.h"
 #import "ZYBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTLocationManager.h"
@@ -29,7 +29,7 @@
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, copy) NSString *net;
 //@property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, strong) ZYUploadTool *upTool;
+@property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTLocationManager *locationManger;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
@@ -125,7 +125,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         }
         }
-        self.upTool = [[ZYUploadTool alloc]initWithConfig:self.config];
+        self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
         
     }
     return self;
@@ -285,7 +285,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
 
         [opdata addEntriesFromDictionary:@{@"tags":tag}];
-        RecordModel *model = [RecordModel new];
+        FTRecordModel *model = [FTRecordModel new];
         NSDictionary *data =@{
                             @"opdata":opdata,
                             };
