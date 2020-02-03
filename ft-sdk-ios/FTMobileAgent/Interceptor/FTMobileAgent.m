@@ -206,6 +206,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
        ZYDebug(@"applicationDidEnterBackground ");
+    [self stopFlushTimer];
 }
 - (void)track:(NSString *)field  values:(NSDictionary *)values{
     [self track:field tags:nil values:values];
@@ -323,6 +324,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // 关闭获取实时网络定时器
 - (void)stopFlushTimer {
+    if (!_netFlow) {
+        return;
+    }
     dispatch_async(self.timerQueue, ^{
        [self.netFlow stopMonitor];
     });
