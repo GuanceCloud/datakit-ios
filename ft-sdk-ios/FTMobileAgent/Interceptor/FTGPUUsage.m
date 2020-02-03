@@ -1,10 +1,16 @@
-#ifndef IOKIT_H
-#define IOKIT_H
+//
+//  FTGPUUsage.m
+//  testdemo
+//
+//  Created by 胡蕾蕾 on 2020/1/21.
+//  Copyright © 2020 hll. All rights reserved.
+//
 
+#import "FTGPUUsage.h"
+#ifdef FT_TRACK_GPUUSAGE
 #include <stdint.h>
 #include <mach/mach.h>
 #include <CoreFoundation/CoreFoundation.h>
-
 typedef char io_name_t[128];
 typedef char io_string_t[512];
 typedef char io_struct_inband_t[4096];
@@ -106,4 +112,99 @@ kern_return_t IOConnectCallAsyncScalarMethod(io_connect_t client, uint32_t selec
 kern_return_t IOConnectCallAsyncStructMethod(io_connect_t client, uint32_t selector, mach_port_t wake_port, uint64_t *ref, uint32_t refCnt, const void *inStruct, size_t inStructCnt, void *outStruct, size_t *outStructCnt);
 kern_return_t IOConnectTrap6(io_connect_t client, uint32_t index, uintptr_t a, uintptr_t b, uintptr_t c, uintptr_t d, uintptr_t e, uintptr_t f);
 
+const char *kIOServicePlane = "IOService";
+#define GPU_UTILI_KEY(key, value)   static NSString * const GPU ## key ##Key = @#value;
+
+GPU_UTILI_KEY(DeviceUtilization, Device Utilization %)
+GPU_UTILI_KEY(RendererUtilization, Renderer Utilization %)
+GPU_UTILI_KEY(TilerUtilization, Tiler Utilization %)
+GPU_UTILI_KEY(HardwareWaitTime, hardwareWaitTime)
+GPU_UTILI_KEY(FinishGLWaitTime, finishGLWaitTime)
+GPU_UTILI_KEY(FreeToAllocGPUAddressWaitTime, freeToAllocGPUAddressWaitTime)
+GPU_UTILI_KEY(ContextGLCount, contextGLCount)
+GPU_UTILI_KEY(RenderCount, CommandBufferRenderCount)
+GPU_UTILI_KEY(RecoveryCount, recoveryCount)
+GPU_UTILI_KEY(TextureCount, textureCount)
 #endif
+
+@implementation FTGPUUsage{
+    NSDictionary        * _utilizationInfo;
+}
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+      _utilizationInfo =  [self utilizeDictionary];
+    }
+    return self;
+}
+- (NSDictionary *)utilizeDictionary
+{
+    NSDictionary *dictionary = nil;
+#ifdef FT_TRACK_GPUUSAGE
+
+    io_iterator_t iterator;
+#if TARGET_IPHONE_SIMULATOR
+    
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceNameMatching("IntelAccelerator"), &iterator) == kIOReturnSuccess) {
+        
+        for (io_registry_entry_t regEntry = IOIteratorNext(iterator); regEntry; regEntry = IOIteratorNext(iterator)) {
+            CFMutableDictionaryRef serviceDictionary;
+            if (IORegistryEntryCreateCFProperties(regEntry, &serviceDictionary, kCFAllocatorDefault, kNilOptions) != kIOReturnSuccess) {
+                IOObjectRelease(regEntry);
+                continue;
+            }
+            
+            dictionary = ((__bridge NSDictionary *)serviceDictionary)[@"PerformanceStatistics"];
+            
+            CFRelease(serviceDictionary);
+            IOObjectRelease(regEntry);
+            break;
+        }
+        IOObjectRelease(iterator);
+    }
+    
+#elif TARGET_OS_IOS
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceNameMatching("sgx"), &iterator) == kIOReturnSuccess) {
+        
+        for (io_registry_entry_t regEntry = IOIteratorNext(iterator); regEntry; regEntry = IOIteratorNext(iterator)) {
+            
+            io_iterator_t innerIterator;
+            if (IORegistryEntryGetChildIterator(regEntry, kIOServicePlane, &innerIterator) == kIOReturnSuccess) {
+                
+                for (io_registry_entry_t gpuEntry = IOIteratorNext(innerIterator); gpuEntry ; gpuEntry = IOIteratorNext(innerIterator)) {
+                    CFMutableDictionaryRef serviceDictionary;
+                    if (IORegistryEntryCreateCFProperties(gpuEntry, &serviceDictionary, kCFAllocatorDefault, kNilOptions) != kIOReturnSuccess) {
+                        IOObjectRelease(gpuEntry);
+                        continue;
+                    }
+                    else {
+                        dictionary = ((__bridge NSDictionary *)serviceDictionary)[@"PerformanceStatistics"];
+                        
+                        CFRelease(serviceDictionary);
+                        IOObjectRelease(gpuEntry);
+                        break;
+                    }
+                }
+                IOObjectRelease(innerIterator);
+                IOObjectRelease(regEntry);
+                break;
+            }
+            IOObjectRelease(regEntry);
+        }
+        IOObjectRelease(iterator);
+    }
+#endif
+#endif
+
+    return dictionary;
+}
+
+- (NSString *)fetchCurrentGpuUsage{
+#ifdef FT_TRACK_GPUUSAGE
+
+    return  [NSString stringWithFormat:@"%2zd%%", [_utilizationInfo[GPUDeviceUtilizationKey] integerValue]];
+#endif
+    return @"null";
+}
+
+@end

@@ -25,7 +25,6 @@
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
 		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
-		4A89DC0323D6F770006EB6BB /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A89DC0123D6F770006EB6BB /* FTGPUUsage.m */; };
 		4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A89DD1B23D70C07006EB6BB /* IOKit.framework */; };
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
 		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -113,9 +112,6 @@
 		4A85318B23B23A4000B40B5D /* FTNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTests.m; sourceTree = "<group>"; };
 		4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackTest.m; sourceTree = "<group>"; };
 		4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ft-sdk-ios.xcodeproj"; path = "ft-sdk-ios/ft-sdk-ios.xcodeproj"; sourceTree = "<group>"; };
-		4A89DC0023D6F770006EB6BB /* FTGPUUsage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGPUUsage.h; sourceTree = "<group>"; };
-		4A89DC0123D6F770006EB6BB /* FTGPUUsage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGPUUsage.m; sourceTree = "<group>"; };
-		4A89DC0223D6F770006EB6BB /* IOKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOKit.h; sourceTree = "<group>"; };
 		4A89DD1B23D70C07006EB6BB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
 		4AAF0E7023B5E75900817C52 /* UITestManger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITestManger.h; sourceTree = "<group>"; };
 		4AAF0E7123B5E75900817C52 /* UITestManger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestManger.m; sourceTree = "<group>"; };
@@ -197,7 +193,6 @@
 				4A11695A239113B600C0BC4E /* AppDelegate.m */,
 				4A11695C239113B600C0BC4E /* SceneDelegate.h */,
 				4A11695D239113B600C0BC4E /* SceneDelegate.m */,
-				4A89DBFF23D6F770006EB6BB /* Classes */,
 				4AAF0E7723B9901500817C52 /* TestAutoTrack */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
@@ -247,16 +242,6 @@
 				4A852FE823A241B700B40B5D /* FTAutoTrack.framework */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		4A89DBFF23D6F770006EB6BB /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				4A89DC0023D6F770006EB6BB /* FTGPUUsage.h */,
-				4A89DC0123D6F770006EB6BB /* FTGPUUsage.m */,
-				4A89DC0223D6F770006EB6BB /* IOKit.h */,
-			);
-			path = Classes;
 			sourceTree = "<group>";
 		};
 		4AAF0E7723B9901500817C52 /* TestAutoTrack */ = {
@@ -574,7 +559,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A89DC0323D6F770006EB6BB /* FTGPUUsage.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* RootViewController.m in Sources */,
@@ -762,7 +746,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
-					FTMONITORGPU,
+					"FT_TRACK_GPUUSAGE=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/ft-sdk-ios\"",
@@ -796,7 +780,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
-					FTMONITORGPU,
+					"FT_TRACK_GPUUSAGE=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/ft-sdk-ios\"",
