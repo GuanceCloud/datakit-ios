@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACREVENT_TABLE_NAME @"trace_event"
 #define FT_DB_USERSESSION_TABLE_NAME    @"user_session_data"
-@class RecordModel;
+@class FTRecordModel;
 @interface ZYTrackerEventDBTool : NSObject
 
 +(ZYTrackerEventDBTool *)sharedManger;
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)mutableCopy NS_UNAVAILABLE; // 没有遵循协议可以不写
 
 -(void)createTable;
--(BOOL)insertItemWithItemData:(RecordModel *)datas;
+-(BOOL)insertItemWithItemData:(FTRecordModel *)datas;
 -(NSArray *)getAllDatas;
 -(NSArray *)getFirstTenData;
 -(BOOL)deleteItemWithTm:(long )tm;
