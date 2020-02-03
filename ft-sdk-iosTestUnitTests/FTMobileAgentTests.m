@@ -11,10 +11,10 @@
 #import <ZYDataBase/ZYTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <ZYBaseInfoHander.h>
-#import <RecordModel.h>
+#import <FTRecordModel.h>
 #import <FTLocationManager.h>
 #import "AppDelegate.h"
-#import <ZYUploadTool.h>
+#import <FTUploadTool.h>
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
@@ -49,7 +49,7 @@
                         @"opdata":opdata,
                         };
    ;
-    RecordModel *model =  [all lastObject];
+    FTRecordModel *model =  [all lastObject];
     NSString *str = [ZYBaseInfoHander convertToJsonData:datas];
     XCTAssertTrue([model.data isEqualToString:str]);
     NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
@@ -67,7 +67,7 @@
 - (void)testTags{
     dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
        __block NSString *tag;
-      ZYUploadTool *tool = [[ZYUploadTool alloc]initWithConfig:self.config];
+      FTUploadTool *tool = [[FTUploadTool alloc]initWithConfig:self.config];
 
        dispatch_async(queue, ^{
            [NSThread sleepForTimeInterval:1.0f];
