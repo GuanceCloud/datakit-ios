@@ -18,6 +18,7 @@
 		4A11698A2391146600C0BC4E /* ResultVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* ResultVC.m */; };
 		4A159F3823D3F3BD00804D70 /* SecondTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* SecondTabbarVC.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
+		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -103,6 +104,7 @@
 		4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -135,10 +137,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
+				4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */,
 				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
 				4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */,
 				4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */,
-				4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,6 +220,7 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */,
 				4A89DD1B23D70C07006EB6BB /* IOKit.framework */,
 				E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */,
 				A1804C2982595A0EC17D9C3A /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework */,
@@ -754,14 +758,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"/**",
-					"$(PODS_ROOT)/**",
-					"$(inherited)/**",
-					"$(PROJECT_DIR)/**",
-					"$(PROJECT_DIR)/ft-sdk-iosTest/Classes",
-					"$(PROJECT_DIR)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)/**";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
@@ -795,13 +792,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
-				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
-					"$(PODS_ROOT)/**",
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/ft-sdk-iosTest/Classes",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
