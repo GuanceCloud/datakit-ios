@@ -154,6 +154,7 @@ static ZYTrackerEventDBTool *dbTool = nil;
         NSDate* now = [NSDate date];
         NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
         if (time>10) {
+            self.lastSentDate = [NSDate date];
         //待处理通知
             [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
         }
