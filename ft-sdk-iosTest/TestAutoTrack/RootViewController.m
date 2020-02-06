@@ -12,6 +12,7 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import "UITestManger.h"
 #import "AppDelegate.h"
+#import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
 
 @interface RootViewController ()
 
@@ -27,7 +28,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
-    [button setTitle:@"login" forState:UIControlStateNormal];
+    [button setTitle:@"start" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button];
     UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 150, 100)];
@@ -35,9 +36,15 @@
     [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
+    
+    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(300, 300, 100, 100)];
+       button3.backgroundColor = [UIColor grayColor];
+       [button3 setTitle:@"login" forState:UIControlStateNormal];
+       [button3 addTarget:self action:@selector(loginBtnClick) forControlEvents:UIControlEventTouchUpInside];
+       [self.view addSubview:button3];
 }
 - (void)buttonClick{
-    [[FTMobileAgent sharedInstance] bindUserWithName:@"test7" Id:@"1111111" exts:nil];
+   
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
        [[UITestManger sharedManger] addAutoTrackClickCount];
         }
@@ -49,6 +56,22 @@
     [[UITestManger sharedManger] addAutoTrackClickCount];
      }
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
+}
+- (void)loginBtnClick{
+     [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+     }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if([[ZYTrackerEventDBTool sharedManger] getDatasCount] <=[UITestManger sharedManger].autoTrackClickCount+[UITestManger sharedManger].autoTrackViewScreenCount+[UITestManger sharedManger].trackCount+[UITestManger sharedManger].lastCount){
+          UILabel *bindUser = [[UILabel alloc]initWithFrame:CGRectMake(100, 500, 100, 100)];
+          bindUser.backgroundColor = [UIColor orangeColor];
+          bindUser.textColor = [UIColor blackColor];
+          bindUser.text = @"bindUser";
+          [self.view addSubview:bindUser];
+        }
+    });
+    
 }
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
