@@ -11,6 +11,7 @@
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import "UITestManger.h"
+#import "AppDelegate.h"
 
 @interface RootViewController ()
 
@@ -20,7 +21,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+    if ([self isAutoTrackVC]) {
+        [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+    }
     self.view.backgroundColor = [UIColor whiteColor];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
@@ -35,21 +38,49 @@
 }
 - (void)buttonClick{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"test7" Id:@"1111111" exts:nil];
-    [[UITestManger sharedManger] addAutoTrackClickCount];
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+       [[UITestManger sharedManger] addAutoTrackClickCount];
+        }
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }
 -(void)endBtnClick{
 //    [[FTMobileAgent sharedInstance] logout];
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
+     }
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
 }
 -(void)dealloc{
+    if ([self isAutoTrackVC]) {
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+    }
 }
-
+- (BOOL)isAutoTrackUI:(Class )view{
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+   
+    if (appDelegate.config.whiteViewClass.count>0) {
+        [appDelegate.config.whiteViewClass containsObject:view];
+    }
+    if(appDelegate.config.blackViewClass.count>0)
+        return ! [appDelegate.config.blackViewClass containsObject:view];;
+    return YES;
+}
+- (BOOL)isAutoTrackVC{
+    
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (!appDelegate.config.enableAutoTrack) {
+        return NO;
+    }
+     if (appDelegate.config.whiteVCList.count>0) {
+         [appDelegate.config.whiteVCList containsObject:@"RootViewController"];
+     }
+     if(appDelegate.config.blackVCList.count>0)
+         return ! [appDelegate.config.blackVCList containsObject:@"RootViewController"];;
+     return YES;
+}
 /*
 #pragma mark - Navigation
 

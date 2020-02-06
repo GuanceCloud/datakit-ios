@@ -8,6 +8,7 @@
 
 #import "UITestManger.h"
 #import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
+#import "AppDelegate.h"
 
 @interface UITestManger ()
 
@@ -23,11 +24,20 @@
 }
 -(instancetype)init{
     if ([super init]) {
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        
         self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
         self.autoTrackViewScreenCount = 2; //ViewController (close)
-        self.self.autoTrackClickCount = 0;
+        self.autoTrackClickCount = 0;
+        if (appDelegate.config.enableAutoTrack==NO || appDelegate.config.autoTrackEventType & FTAutoTrackEventTypeAppStart) {
+            self.trackCount = 0;
+        }
+        if (appDelegate.config.enableAutoTrack==NO || appDelegate.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
+            self.autoTrackViewScreenCount = 0;
+        }
+       
     }
     return self;
 }

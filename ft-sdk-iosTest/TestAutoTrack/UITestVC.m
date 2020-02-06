@@ -8,6 +8,8 @@
 
 #import "UITestVC.h"
 #import "UITestManger.h"
+#import "AppDelegate.h"
+
 @interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
 
 @end
@@ -16,8 +18,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-
+    if ([self isAutoTrackVC]) {
+        [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+    }
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
@@ -71,7 +74,9 @@
 }
 - (void)backBtnClicked
 {
-    [[UITestManger sharedManger] addAutoTrackClickCount];
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
     if (self.presentingViewController) {
         [self dismissViewControllerAnimated:YES completion:nil];
     }else{
@@ -161,50 +166,58 @@
 
 - (void)firstAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
 }
 
 - (void)secondAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIStepper.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
 }
 
 - (void)switchAction:(UISwitch *)sender {
     NSLog(@"UISwitch on:%d", sender.isOn);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UISwitch.class]) {
+           [[UITestManger sharedManger] addAutoTrackClickCount];
+       }
 }
 
 - (void)segmentedAction:(UISegmentedControl *)sender {
     NSLog(@"UISwitch on:%ld", sender.selectedSegmentIndex);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UISegmentedControl.class]) {
+              [[UITestManger sharedManger] addAutoTrackClickCount];
+          }
 }
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
     NSLog(@"%@被点击了", label.text);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+        }
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
-   
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-
+   if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
+   [[UITestManger sharedManger] addAutoTrackClickCount];
+   }
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
     NSLog(@"UIImageView被点击了");
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIImageView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
 }
 #pragma mark -
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -219,13 +232,36 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"%@", indexPath);
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UITableView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
-
+    }
 }
 -(void)dealloc{
-   
+    if ([self isAutoTrackVC]){
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-
+    }
+}
+- (BOOL)isAutoTrackUI:(Class )view{
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+   
+    if (appDelegate.config.whiteViewClass.count>0) {
+        [appDelegate.config.whiteViewClass containsObject:view];
+    }
+    if(appDelegate.config.blackViewClass.count>0)
+        return ! [appDelegate.config.blackViewClass containsObject:view];;
+    return YES;
+}
+- (BOOL)isAutoTrackVC{
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (!appDelegate.config.enableAutoTrack) {
+        return NO;
+    }
+     if (appDelegate.config.whiteVCList.count>0) {
+         [appDelegate.config.whiteVCList containsObject:@"UITestVC"];
+     }
+     if(appDelegate.config.blackVCList.count>0)
+         return ! [appDelegate.config.blackVCList containsObject:@"UITestVC"];;
+     return YES;
 }
 /*
 #pragma mark - Navigation
