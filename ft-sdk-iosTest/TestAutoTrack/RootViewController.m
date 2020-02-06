@@ -13,7 +13,7 @@
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
-
+#import "Test4ViewController.h"
 @interface RootViewController ()
 
 @end
@@ -26,22 +26,28 @@
         [[UITestManger sharedManger] addAutoTrackViewScreenCount];
     }
     self.view.backgroundColor = [UIColor whiteColor];
-    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(50, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
     [button setTitle:@"start" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button];
-    UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(100, 300, 150, 100)];
+    UIButton *button2 = [[UIButton alloc]initWithFrame:CGRectMake(50, 300, 150, 100)];
     button2.backgroundColor = [UIColor orangeColor];
     [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
     
-    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(300, 300, 100, 100)];
+    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(250, 300, 100, 100)];
        button3.backgroundColor = [UIColor grayColor];
        [button3 setTitle:@"login" forState:UIControlStateNormal];
        [button3 addTarget:self action:@selector(loginBtnClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button3];
+    
+    UIButton *button4 = [[UIButton alloc]initWithFrame:CGRectMake(250, 450, 100, 100)];
+          button4.backgroundColor = [UIColor greenColor];
+          [button4 setTitle:@"testBindUser" forState:UIControlStateNormal];
+          [button4 addTarget:self action:@selector(testBindClick) forControlEvents:UIControlEventTouchUpInside];
+          [self.view addSubview:button4];
 }
 - (void)buttonClick{
    
@@ -67,11 +73,17 @@
           UILabel *bindUser = [[UILabel alloc]initWithFrame:CGRectMake(100, 500, 100, 100)];
           bindUser.backgroundColor = [UIColor orangeColor];
           bindUser.textColor = [UIColor blackColor];
-          bindUser.text = @"bindUser";
+          bindUser.text = @"bindUserSuccess";
           [self.view addSubview:bindUser];
         }
     });
     
+}
+- (void)testBindClick{
+    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
+        [[UITestManger sharedManger] addAutoTrackClickCount];
+    }
+    [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
 }
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];

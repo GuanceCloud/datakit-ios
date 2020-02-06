@@ -55,17 +55,37 @@
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [app.navigationBars[@"testUI"].buttons[@"icon back"] tap];
     [app.buttons[@"result logout"] tap];
+    [window pressForDuration:5];
     XCUIElement *list = app.staticTexts[@"WhiteBlackList"];
     //  判断黑白名单设置 数据库总数 == 记录各个事件数  未登录状态
     XCTAssertTrue(list.exists);
     [app.navigationBars[@"Result"].buttons[@"icon back"] tap];
     [app.buttons[@"login"] tap];
     
-    XCUIElement *bind = app.staticTexts[@"bindUser"];
     [window pressForDuration:10];
+    XCUIElement *bind = app.staticTexts[@"bindUserSuccess"];
     //验证 绑定用户成功    绑定用户后 会上传数据库数据
     XCTAssertTrue(bind.exists);
+    [app.buttons[@"testBindUser"] tap];
+    [app.buttons[@"labTap"] tap];
+    [app.buttons[@"labTap"] tap];
 
+    [app.buttons[@"logout"] tap];
     
+    XCUIElementQuery *tablesQuery2 = app.tables;
+    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"tableView Cell 0"]/*[[".cells.staticTexts[@\"tableView Cell 0\"]",".staticTexts[@\"tableView Cell 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [tablesQuery2.staticTexts[@"tableView Cell 1"] tap];
+    [app.buttons[@"newlogin"] tap];
+        
+    [tablesQuery2.staticTexts[@"tableView Cell 1"] tap];
+    [tablesQuery2.staticTexts[@"tableView Cell 2"] tap];
+
+    [window pressForDuration:5];
+
+    XCUIElement *newUser = app.staticTexts[@"changeUserSuccess"];
+    //验证切换用户是否成功
+    //获取注销前数据库数据userdata 与 新登录后 数据库新数据userdata比对
+    XCTAssertTrue(newUser.exists);
+
 }
 @end
