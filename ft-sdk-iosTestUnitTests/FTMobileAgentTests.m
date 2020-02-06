@@ -41,11 +41,6 @@
     NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
     NSArray *all  = [[ZYTrackerEventDBTool sharedManger] getAllDatas];
-    NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-          @"field":@"testTrack",
-          @"values":@{@"event":@"testTrack"}
-        }];
-   
     FTRecordModel *model =  [all lastObject];
     NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:model.data];
     NSDictionary *op = item[@"opdata"];
