@@ -35,6 +35,7 @@
 }
 
 - (void)testTrackMethod {
+    // 测试主动埋点是否成功
     // This is an example of a functional test case.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
     NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
@@ -44,27 +45,26 @@
           @"field":@"testTrack",
           @"values":@{@"event":@"testTrack"}
         }];
-    NSDictionary *datas =@{
-                        @"op":@"cstm",
-                        @"opdata":opdata,
-                        };
-   ;
+   
     FTRecordModel *model =  [all lastObject];
-    NSString *str = [ZYBaseInfoHander convertToJsonData:datas];
-    XCTAssertTrue([model.data isEqualToString:str]);
+    NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:model.data];
+    NSDictionary *op = item[@"opdata"];
+    XCTAssertTrue([op[@"field"] isEqualToString:@"testTrack"] && [op[@"values"] isEqual:@{@"event":@"testTrack"}]);
     NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-count==1);
 
 }
 - (void)testLocation{
+    //测试是否能够获取地理位置
     FTLocationManager *location = [[FTLocationManager alloc]init];
     location.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
-        XCTAssertTrue([location isEqualToString:@"上海市"]);
+        XCTAssertTrue(location.length>0);
 
     };
 }
 
 - (void)testTags{
+    // 测试 FTMonitorInfoType 是否按类型抓取
     dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
        __block NSString *tag;
       FTUploadTool *tool = [[FTUploadTool alloc]initWithConfig:self.config];
