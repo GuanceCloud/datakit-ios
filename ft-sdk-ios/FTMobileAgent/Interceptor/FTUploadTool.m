@@ -104,7 +104,6 @@
 
             //设置网络请求的返回接收器
             NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) {
                         ZYDebug(@"response error = %@",error);
                         retry++;
@@ -120,7 +119,6 @@
                         }
                     }
                      dispatch_group_leave(group);
-                });
                    
             }];
         //开始请求
