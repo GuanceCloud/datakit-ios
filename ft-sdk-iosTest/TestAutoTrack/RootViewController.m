@@ -39,21 +39,12 @@
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
     
-    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(250, 300, 100, 100)];
-       button3.backgroundColor = [UIColor grayColor];
-       [button3 setTitle:@"login" forState:UIControlStateNormal];
-       [button3 addTarget:self action:@selector(loginBtnClick) forControlEvents:UIControlEventTouchUpInside];
-       [self.view addSubview:button3];
-    
 }
 - (void)buttonClick{
-   AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+  [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
 
-   [FTMobileAgent startWithConfigOptions:appDelegate.config];
-   [[FTMobileAgent sharedInstance] logout];
-   [[UITestManger sharedManger] reset];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-//       [[UITestManger sharedManger] addAutoTrackClickCount];
+       [[UITestManger sharedManger] addAutoTrackClickCount];
         }
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }
@@ -64,12 +55,7 @@
      }
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
-- (void)loginBtnClick{
-     [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-     }
-}
+
 - (void)testBindClick{
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
         [[UITestManger sharedManger] addAutoTrackClickCount];
