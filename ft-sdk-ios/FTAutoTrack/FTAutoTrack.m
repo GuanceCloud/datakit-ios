@@ -225,23 +225,26 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     
 }
 - (BOOL)isBlackListContainsViewController:(UIViewController *)viewController {
-    static NSSet *blacklistedClasses = nil;
+    static NSArray *blacklistedViewControllerClassNames = nil;
     static dispatch_once_t onceToken;
-
+   
     dispatch_once(&onceToken, ^{
        NSString *strPath = [[NSBundle mainBundle] pathForResource:@"FTAutoTrack" ofType:@"framework"];
        NSString *bundlePath = [[NSBundle bundleWithPath:strPath] pathForResource:@"FTAutoTrack" ofType:@"bundle"];
        NSString *jsonPath = [[NSBundle bundleWithPath:bundlePath] pathForResource:@"ft_autotrack_viewcontroller_blacklist" ofType:@"json"];
        NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
+       
         @try {
-            NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
-            NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
-            [array addObjectsFromArray:blacklistedViewControllerClassNames];
-            blacklistedClasses = [NSSet setWithArray:array];
+            blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
+           
         } @catch(NSException *exception) {  // json加载和解析可能失败
             ZYDebug(@"error: %@",exception);
         }
     });
+    NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
+    [array addObjectsFromArray:blacklistedViewControllerClassNames];
+    NSSet * blacklistedClasses = [NSSet setWithArray:array];
+
     __block BOOL isContains = NO;
     [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *blackClassName = (NSString *)obj;
