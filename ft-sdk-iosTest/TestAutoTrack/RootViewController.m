@@ -14,6 +14,8 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
 #import "Test4ViewController.h"
+#import "AppDelegate.h"
+
 @interface RootViewController ()
 
 @end
@@ -45,9 +47,13 @@
     
 }
 - (void)buttonClick{
-   
+   AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+
+   [FTMobileAgent startWithConfigOptions:appDelegate.config];
+   [[FTMobileAgent sharedInstance] logout];
+   [[UITestManger sharedManger] reset];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-       [[UITestManger sharedManger] addAutoTrackClickCount];
+//       [[UITestManger sharedManger] addAutoTrackClickCount];
         }
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }

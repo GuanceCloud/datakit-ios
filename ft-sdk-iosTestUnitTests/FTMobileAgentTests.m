@@ -27,7 +27,7 @@
 
     self.config = appDelegate.config;
      
-   
+    [FTMobileAgent startWithConfigOptions:self.config];
     [[FTMobileAgent sharedInstance] logout];
                NSDictionary *data= @{
                    @"op" : @"cstm",
