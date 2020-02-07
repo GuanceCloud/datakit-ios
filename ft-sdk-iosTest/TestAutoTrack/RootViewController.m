@@ -43,11 +43,6 @@
        [button3 addTarget:self action:@selector(loginBtnClick) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button3];
     
-    UIButton *button4 = [[UIButton alloc]initWithFrame:CGRectMake(250, 450, 100, 100)];
-          button4.backgroundColor = [UIColor greenColor];
-          [button4 setTitle:@"testBindUser" forState:UIControlStateNormal];
-          [button4 addTarget:self action:@selector(testBindClick) forControlEvents:UIControlEventTouchUpInside];
-          [self.view addSubview:button4];
 }
 - (void)buttonClick{
    
@@ -68,16 +63,6 @@
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
      }
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if([[ZYTrackerEventDBTool sharedManger] getDatasCount] <=[UITestManger sharedManger].autoTrackClickCount+[UITestManger sharedManger].autoTrackViewScreenCount+[UITestManger sharedManger].trackCount+[UITestManger sharedManger].lastCount){
-          UILabel *bindUser = [[UILabel alloc]initWithFrame:CGRectMake(100, 500, 100, 100)];
-          bindUser.backgroundColor = [UIColor orangeColor];
-          bindUser.textColor = [UIColor blackColor];
-          bindUser.text = @"bindUserSuccess";
-          [self.view addSubview:bindUser];
-        }
-    });
-    
 }
 - (void)testBindClick{
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
