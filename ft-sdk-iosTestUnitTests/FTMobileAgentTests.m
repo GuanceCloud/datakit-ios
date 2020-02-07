@@ -26,6 +26,39 @@
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
     self.config = appDelegate.config;
+     
+   
+    [[FTMobileAgent sharedInstance] logout];
+               NSDictionary *data= @{
+                   @"op" : @"cstm",
+                   @"opdata" :@{
+                           @"field" :@"pushFile",
+                           @"tags":@{
+                                   @"pushVC":@"Test4ViewController",
+                       },
+                   @"values":@{
+                              @"event" :@"Gesture",
+                       },
+                   },
+               } ;
+               FTRecordModel *model = [FTRecordModel new];
+               model.tm = [ZYBaseInfoHander getCurrentTimestamp];
+               model.data =[ZYBaseInfoHander convertToJsonData:data];
+               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+               
+               NSDictionary *data2 = @{
+                   @"cpn":@"Test4ViewController",
+                   @"op": @"click",
+                   @"opdata":@{
+                           @"vtp": @"UIWindow[7]/UITransitionView[6]/UIDropShadowView[5]/UILayoutContainerView[4]/UINavigationTransitionView[3]/UIViewControllerWrapperView[2]/UIView[1]/UITableView[0]",
+                   },
+                   @"rpn":@"UINavigationController",
+               };
+               FTRecordModel *model2 = [FTRecordModel new];
+               model2.tm = [ZYBaseInfoHander getCurrentTimestamp];
+               model2.data =[ZYBaseInfoHander convertToJsonData:data2];
+               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
+          
 }
 
 - (void)tearDown {
@@ -87,5 +120,41 @@
     }
            
   });
+}
+- (void)testBindUser{
+
+    NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
+    [NSThread sleepForTimeInterval:10.0];
+
+    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+
+   [NSThread sleepForTimeInterval:2.0];
+    NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount<count);
+}
+-(void)testChangeUser{
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
+   NSArray *array = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+    NSString *lastUserData;
+    if (array.count>0) {
+        FTRecordModel *model = [array lastObject];
+        lastUserData = model.userdata;
+    }
+    
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindNewUser" Id:@"bindNewUserId" exts:nil];
+
+    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+
+    NSArray *newarray = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+    NSString *newUserData;
+    if (array.count>0) {
+        FTRecordModel *model = [newarray lastObject];
+        newUserData = model.userdata;
+    }
+    XCTAssertTrue(newUserData.length>0 && lastUserData.length>0 && ![newUserData isEqualToString:lastUserData]);
+
 }
 @end
