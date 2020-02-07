@@ -250,33 +250,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
               [tag setObject:[ZYBaseInfoHander ft_getBatteryUse] forKey:@"battery_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-//              NSString *invokeMethod = @"fetchCurrentGpuUsage";
-//              Class track =  NSClassFromString(@"FTGPUUsage");
-//              if (track) {
-//              id  gpuUsage = [[NSClassFromString(@"FTGPUUsage") alloc]init];
-//
-//              SEL startMethod = NSSelectorFromString(invokeMethod);
-//              unsigned int methCount = 0;
-//              Method *meths = class_copyMethodList(track, &methCount);
-//              BOOL ishas = NO;
-//              for(int i = 0; i < methCount; i++) {
-//                  Method meth = meths[i];
-//                  SEL sel = method_getName(meth);
-//                  const char *name = sel_getName(sel);
-//                  NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-//                  if ([str isEqualToString:invokeMethod]) {
-//                  ishas = YES;
-//                  break;
-//                  }
-//              }
-//              free(meths);
-//              if (ishas) {
-//              IMP imp = [gpuUsage methodForSelector:startMethod];
-//              NSString* (*func)(id, SEL) = (void *)imp;
-//              NSString *usage = func(gpuUsage,startMethod);
-//              [tag setObject:usage forKey:@"gpu_rate"];
-//              }
-//          }
               NSString *usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
               [tag setObject:usage forKey:@"gpu_rate"];
           }
