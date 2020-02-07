@@ -70,9 +70,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 - (void)logViewControllerLifeCycle{
        [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
-           if (![self judgeWhiteAndBlackWithViewController:vc]) {
-               return ;
-           }
+
            [self track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil];
            
          } error:nil];
@@ -80,40 +78,32 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
        SEL sel= NSSelectorFromString(@"dealloc");
        [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
-           if ([self isBlackListContainsViewController:tempVC]) {
-               return ;
-           }
+
            [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
        } error:nil];
     
 }
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
-    if( [self isAutoTrackUI:UITableView.class] && [self isAutoTrackUI:UITableViewCell.class]){
 
         [UITableView aspect_hookSelector:@selector(setDelegate:)
                   withOptions:ZY_AspectPositionAfter
                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-                if (![self judgeWhiteAndBlackWithViewController:target]) {
-                    return ;
-                }
+
                 Class vcClass = [target class];
                 [vcClass aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                  withOptions:ZY_AspectPositionBefore
-                  usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-                    [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
+                  usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
+                    [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView];
                 } error:NULL];
                 
             }error:nil];
            
-    }
-     if( [self isAutoTrackUI:UICollectionView.class] && [self isAutoTrackUI:UICollectionViewCell.class]){
+
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-         if (![self judgeWhiteAndBlackWithViewController:target]) {
-             return ;
-         }
+
          Class vcClass = [target class];
          [vcClass aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionBefore
@@ -122,17 +112,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          } error:NULL];
          
      }error:nil];
-     }
    
 
 }
-- (void)tableViewSelectionDidChangeNotification:(NSNotification *)notification{
-    UITableView *tableview = notification.object;
-    UIViewController *current = [tableview zy_getCurrentViewController];
-    if([self judgeWhiteAndBlackWithViewController:current]){
-        [self track:FT_AUTO_TRACK_OP_CLICK withCpn:current WithClickView:tableview];
-    }
-}
+
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{
     //待处理：仅可以实现
@@ -141,13 +124,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
        usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
         if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
             UIGestureRecognizer *ges = aspectInfo.instance;
-            if (![self isAutoTrackUI:ges.view.class]) {
-                return ;
-            }
+
             ges.accessibilityHint = NSStringFromSelector(action);
-            if (![self judgeWhiteAndBlackWithViewController:target]) {
-                             return ;
-            }
+
             if ([target isKindOfClass:[UIViewController class]]) {
                 Class vcClass = [target class];
                 [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
@@ -164,13 +143,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
              usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
               if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
                   UIGestureRecognizer *ges = aspectInfo.instance;
-                  if (![self isAutoTrackUI:ges.view.class]) {
-                      return ;
-                  }
+
                   ges.accessibilityHint = NSStringFromSelector(action);
-                  if (![self judgeWhiteAndBlackWithViewController:target]) {
-                                   return ;
-                  }
+
                   if ([target isKindOfClass:[UIViewController class]]) {
                      Class vcClass = [target class];
                       
@@ -187,7 +162,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         if (![from isKindOfClass:UIView.class]) {
             return ;
         }
-        if ([self isAutoTrackUI:[from class]]) {
              NSString *className = NSStringFromClass([to class]);
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
@@ -196,13 +170,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             }else{
                 vc = to;
             }
-            if (![self judgeWhiteAndBlackWithViewController:vc]) {
-                                              return ;
-            }
             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:to WithClickView:from];
-            
-        }
-    } error:NULL];
+          } error:NULL];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
 
@@ -268,7 +237,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
             NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
             [array addObjectsFromArray:blacklistedViewControllerClassNames];
-            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
+            blacklistedClasses = [NSSet setWithArray:array];
         } @catch(NSException *exception) {  // json加载和解析可能失败
             ZYDebug(@"error: %@",exception);
         }
@@ -286,7 +255,12 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 }
 #pragma mark ========== 写入数据库操作 ==========
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
-  
+    if (![self judgeWhiteAndBlackWithViewController:cpn]) {
+        return ;
+    }
+    if (view != nil && ![self isAutoTrackUI:[view class]]) {
+        return ;
+    }
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
         NSDictionary *value = @{@"event":op};
