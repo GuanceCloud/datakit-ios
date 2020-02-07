@@ -30,6 +30,9 @@
     while (![currentView isKindOfClass:[UIWindow class]]) {
         index++;
         currentView = [currentView superview];
+        if (!currentView) {
+            break;
+        }
         [str insertString:[NSString stringWithFormat:@"%@[%ld]/",NSStringFromClass([currentView class]),(long)index] atIndex:0];
     }
     return str;
