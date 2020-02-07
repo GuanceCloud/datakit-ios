@@ -134,6 +134,11 @@ static ZYTrackerEventDBTool *dbTool = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
     
     NSString *userdata = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    if (!get_ft_sessionid) {
+        NSString *sessionid = [[NSUUID UUID] UUIDString];
+        set_ft_sessionid(sessionid);
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
     if([self isOpenDatabese:self.db]) {
         __block BOOL  is = NO;
         [self zy_inDatabase:^{
