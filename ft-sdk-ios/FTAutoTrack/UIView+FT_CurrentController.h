@@ -12,9 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIView (ZY_currentController)
--(UIViewController *)zy_getCurrentViewController;
--(NSString *)zy_getParentsView;
+@interface UIView (FT_CurrentController)
+-(UIViewController *)ft_getCurrentViewController;
+-(NSString *)ft_getParentsView;
 @end
 
 NS_ASSUME_NONNULL_END

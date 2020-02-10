@@ -7,13 +7,13 @@
 //
 
 #import "FTRecordModel.h"
-#import "ZYBaseInfoHander.h"
+#import "FTBaseInfoHander.h"
 
 @implementation FTRecordModel
 -(instancetype)init{
    self = [super init];
     if (self) {
-        self.tm = [ZYBaseInfoHander getCurrentTimestamp];
+        self.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
         NSString *sessionid;
            sessionid =get_ft_sessionid;
            if (!sessionid) {

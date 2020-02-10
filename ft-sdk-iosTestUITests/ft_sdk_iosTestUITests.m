@@ -27,6 +27,9 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
+/**
+  测试全埋点流程
+ */
 - (void)testAutoTrackUIExample {
     // UI tests must launch the application that they test.
     XCUIApplication *app = [[XCUIApplication alloc] init];
@@ -61,7 +64,7 @@
     
     [window pressForDuration:100];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
-//       //判断是否登陆
+    //判断上传成功数量 与 实际上传数量是否相等
     XCTAssertTrue(success.exists);
 
     // Use recording to get started writing UI tests.

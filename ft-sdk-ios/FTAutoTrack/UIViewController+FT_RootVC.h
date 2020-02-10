@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIViewController (ZY_RootVC)
-+ (NSString *)zy_getRootViewController;
+@interface UIViewController (FT_RootVC)
++ (NSString *)ft_getRootViewController;
 @end
 
 NS_ASSUME_NONNULL_END

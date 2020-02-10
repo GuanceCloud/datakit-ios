@@ -6,9 +6,9 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "UIViewController+ZY_RootVC.h"
-@implementation UIViewController (ZY_RootVC)
-+ (NSString *)zy_getRootViewController{
+#import "UIViewController+FT_RootVC.H"
+@implementation UIViewController (FT_RootVC)
++ (NSString *)ft_getRootViewController{
     UIWindow* window = nil;
        if (@available(iOS 13.0, *)) {
            for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)

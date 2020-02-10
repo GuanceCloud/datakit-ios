@@ -13,7 +13,6 @@
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
-#import "Test4ViewController.h"
 #import "AppDelegate.h"
 
 @interface RootViewController ()
@@ -49,26 +48,18 @@
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }
 -(void)endBtnClick{
-//    [[FTMobileAgent sharedInstance] logout];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
-     }
-    [self.navigationController pushViewController:[ResultVC new] animated:YES];
+    }
+    [self.navigationController pushViewController:[UITestVC new] animated:YES];
 }
 
-- (void)testBindClick{
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
-    [self.navigationController pushViewController:[Test4ViewController new] animated:YES];
-}
+
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
 }
 -(void)dealloc{
-    if ([self isAutoTrackVC]) {
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
 }
 - (BOOL)isAutoTrackUI:(Class )view{
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];

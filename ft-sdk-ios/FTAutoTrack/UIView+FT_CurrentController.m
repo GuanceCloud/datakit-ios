@@ -6,11 +6,11 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "UIView+ZY_currentController.h"
+#import "UIView+FT_CurrentController.h"
 
 
-@implementation UIView (ZY_currentController)
--(UIViewController *)zy_getCurrentViewController{
+@implementation UIView (FT_CurrentController)
+-(UIViewController *)ft_getCurrentViewController{
     UIResponder *next = [self nextResponder];
     do {
         if ([next isKindOfClass:[UIViewController class]]) {
@@ -20,7 +20,7 @@
     } while (next != nil);
     return nil;
 }
--(NSString *)zy_getParentsView{
+-(NSString *)ft_getParentsView{
     NSMutableString *str = [NSMutableString new];
     [str appendString:NSStringFromClass([self class])];
     [str appendString:@"[0]"];

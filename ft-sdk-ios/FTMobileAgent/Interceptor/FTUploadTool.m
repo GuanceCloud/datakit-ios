@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
-#import "ZYBaseInfoHander.h"
+#import "FTBaseInfoHander.h"
 #import "ZYTrackerEventDBTool.h"
 #import "ZYLog.h"
 #import "FTRecordModel.h"
@@ -70,7 +70,7 @@
     __block int  retry = 0;
     NSString *requestData = [self getRequestDataWithEventArray:events];
    
-        NSString *date =[ZYBaseInfoHander currentGMT];
+        NSString *date =[FTBaseInfoHander ft_currentGMT];
         NSURL *url = [NSURL URLWithString:self.config.metricsUrl];
         NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
             //设置请求地址
@@ -83,7 +83,7 @@
         [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
 
          //设置请求参数
-        [mutableRequest setValue:[ZYBaseInfoHander defaultUUID] forHTTPHeaderField:@"X-Datakit-UUID"];
+        [mutableRequest setValue:[FTBaseInfoHander ft_defaultUUID] forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
@@ -91,7 +91,7 @@
         ZYDebug(@"requestData = %@",requestData);
 
         if (self.config.enableRequestSigning) {
-            NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[ZYBaseInfoHander getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
+            NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
             [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
         }
         request = [mutableRequest copy];        //拷贝回去
@@ -114,8 +114,12 @@
                             ZYDebug(@"response error = %@",error);
                             retry++;
                         }else {
+                            if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
+                                success = YES;
+                            }else{
+                                success = NO;
+                            }
                             ZYDebug(@"responseObject = %@",responseObject);
-                            success = YES;
                         }
                     }
                      dispatch_group_leave(group);
@@ -133,8 +137,8 @@
     __block NSMutableString *requestDatas = [NSMutableString new];
     NSString *basicData = [self getBasicData];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:obj.data];
-        NSDictionary *userData = [ZYBaseInfoHander dictionaryWithJsonString:obj.userdata];
+        NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
+        NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
        __block NSString *event = @" ";
         NSDictionary *opdata = item[@"opdata"];
         NSString *field;
@@ -184,7 +188,7 @@
     if (_tag != nil) {
            return _tag;
        }
-       NSDictionary *deviceInfo = [ZYBaseInfoHander ft_getDeviceInfo];
+       NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
        NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
        CFShow((__bridge CFTypeRef)(infoDictionary));
@@ -203,25 +207,25 @@
        [tag appendFormat:@"os_version=%@,",version];
        [tag appendString:@"device_band=APPLE,"];
        [tag appendFormat:@"locale=%@,",preferredLanguage];
-       [tag appendFormat:@"device_model=%@,",deviceInfo[ZYBaseInfoHanderDeviceType]];
-       [tag appendFormat:@"display=%@,",[ZYBaseInfoHander resolution]];
-       [tag appendFormat:@"carrier=%@,",[ZYBaseInfoHander getTelephonyInfo]];
+       [tag appendFormat:@"device_model=%@,",deviceInfo[FTBaseInfoHanderDeviceType]];
+       [tag appendFormat:@"display=%@,",[FTBaseInfoHander ft_resolution]];
+       [tag appendFormat:@"carrier=%@,",[FTBaseInfoHander ft_getTelephonyInfo]];
     if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"battery_total=%@,",deviceInfo[ZYBaseInfoHanderBatteryTotal]];
+        [tag appendFormat:@"battery_total=%@,",deviceInfo[FTBaseInfoHanderBatteryTotal]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"memory_total=%lld,",[ZYBaseInfoHander getTotalMemorySize]];
+        [tag appendFormat:@"memory_total=%lld,",[FTBaseInfoHander ft_getTotalMemorySize]];
     }
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"cpu_no=%@,",deviceInfo[ZYBaseInfoHanderDeviceCPUType]];
-        [tag appendFormat:@"cpu_hz=%@,",deviceInfo[ZYBaseInfoHanderDeviceCPUClock]];
+        [tag appendFormat:@"cpu_no=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUType]];
+        [tag appendFormat:@"cpu_hz=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUClock]];
     }
     if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        [tag appendFormat:@"gpu_model=%@,",deviceInfo[ZYBaseInfoHanderDeviceGPUType]];
+        [tag appendFormat:@"gpu_model=%@,",deviceInfo[FTBaseInfoHanderDeviceGPUType]];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"camera_front_px=%@,",[ZYBaseInfoHander gt_getFrontCameraPixel]];
-        [tag appendFormat:@"camera_back_px=%@,",[ZYBaseInfoHander gt_getBackCameraPixel]];
+        [tag appendFormat:@"camera_front_px=%@,",[FTBaseInfoHander ft_getFrontCameraPixel]];
+        [tag appendFormat:@"camera_back_px=%@,",[FTBaseInfoHander ft_getBackCameraPixel]];
     }
      _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
      return _tag;

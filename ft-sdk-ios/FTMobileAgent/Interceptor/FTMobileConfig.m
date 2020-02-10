@@ -7,7 +7,7 @@
 //
 
 #import "FTMobileConfig.h"
-#import "ZYBaseInfoHander.h"
+#import "FTBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
 - (instancetype)init {

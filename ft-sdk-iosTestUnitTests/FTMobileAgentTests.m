@@ -10,7 +10,7 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <ZYDataBase/ZYTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <ZYBaseInfoHander.h>
+#import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTLocationManager.h>
 #import "AppDelegate.h"
@@ -41,8 +41,8 @@
                    },
                } ;
                FTRecordModel *model = [FTRecordModel new];
-               model.tm = [ZYBaseInfoHander getCurrentTimestamp];
-               model.data =[ZYBaseInfoHander convertToJsonData:data];
+               model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+               model.data =[FTBaseInfoHander ft_convertToJsonData:data];
                [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
                
                NSDictionary *data2 = @{
@@ -54,8 +54,8 @@
                    @"rpn":@"UINavigationController",
                };
                FTRecordModel *model2 = [FTRecordModel new];
-               model2.tm = [ZYBaseInfoHander getCurrentTimestamp];
-               model2.data =[ZYBaseInfoHander convertToJsonData:data2];
+               model2.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+               model2.data =[FTBaseInfoHander ft_convertToJsonData:data2];
                [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
           
 }
@@ -65,33 +65,38 @@
     [super tearDown];
   
 }
-
+/**
+ 测试主动埋点是否成功
+ */
 - (void)testTrackMethod {
-    // 测试主动埋点是否成功
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
+
     NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
     NSArray *all  = [[ZYTrackerEventDBTool sharedManger] getAllDatas];
     FTRecordModel *model =  [all lastObject];
-    NSDictionary *item = [ZYBaseInfoHander dictionaryWithJsonString:model.data];
+    NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = item[@"opdata"];
     XCTAssertTrue([op[@"field"] isEqualToString:@"testTrack"] && [op[@"values"] isEqual:@{@"event":@"testTrack"}]);
     NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-count==1);
 
 }
+/**
+ 测试是否能够获取地理位置
+*/
 - (void)testLocation{
-    //测试是否能够获取地理位置
+    
     FTLocationManager *location = [[FTLocationManager alloc]init];
     location.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
         XCTAssertTrue(location.length>0);
 
     };
 }
-
+/**
+ 测试 FTMonitorInfoType 是否按类型抓取
+*/
 - (void)testTags{
-    // 测试 FTMonitorInfoType 是否按类型抓取
+
     dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
        __block NSString *tag;
       FTUploadTool *tool = [[FTUploadTool alloc]initWithConfig:self.config];
@@ -120,6 +125,9 @@
            
   });
 }
+/**
+ 测试 绑定用户 是否成功 判断获取上传信息里是否有用户信息
+*/
 - (void)testBindUser{
 
     NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
@@ -132,9 +140,12 @@
     NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount<count);
 }
+/**
+ 测试 切换用户 是否成功 判断切换用户前后 获取上传信息里用户信息是否正确
+*/
 -(void)testChangeUser{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-   NSArray *array = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+    NSArray *array = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
     NSString *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];

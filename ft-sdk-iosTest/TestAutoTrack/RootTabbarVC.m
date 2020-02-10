@@ -6,13 +6,13 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import "SecondTabbarVC.h"
+#import "RootTabbarVC.h"
 
-@interface SecondTabbarVC ()
+@interface RootTabbarVC ()
 
 @end
 
-@implementation SecondTabbarVC
+@implementation RootTabbarVC
 
 - (void)viewDidLoad {
     [super viewDidLoad];

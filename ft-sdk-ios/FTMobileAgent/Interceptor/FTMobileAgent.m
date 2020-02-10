@@ -14,7 +14,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import "FTUploadTool.h"
 #import "FTRecordModel.h"
-#import "ZYBaseInfoHander.h"
+#import "FTBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTLocationManager.h"
 #import "FTNetMonitorFlow.h"
@@ -226,10 +226,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tag addEntriesFromDictionary:tags];
         }
         if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[NSString stringWithFormat:@"cpu_use=%ld%%,",[ZYBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
+            [tag setObject:[NSString stringWithFormat:@"cpu_use=%ld%%,",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-              [tag setObject:[ZYBaseInfoHander usedMemory] forKey:@"memory_use"];
+              [tag setObject:[FTBaseInfoHander ft_usedMemory] forKey:@"memory_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
              __block NSString *network_type,*network_strength;
@@ -247,7 +247,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
               [tag setObject:self.netFlow.flow forKey:@"network_speed"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-              [tag setObject:[ZYBaseInfoHander ft_getBatteryUse] forKey:@"battery_use"];
+              [tag setObject:[FTBaseInfoHander ft_getBatteryUse] forKey:@"battery_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
               NSString *usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
@@ -265,7 +265,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSDictionary *data =@{
                             @"opdata":opdata,
                             };
-        model.data =[ZYBaseInfoHander convertToJsonData:data];
+        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
         ZYDebug(@"data == %@",data);
     }

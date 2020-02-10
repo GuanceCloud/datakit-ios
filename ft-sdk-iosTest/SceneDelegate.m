@@ -1,6 +1,6 @@
 #import "SceneDelegate.h"
 #import "RootViewController.h"
-#import "SecondTabbarVC.h"
+#import "RootTabbarVC.h"
 @interface SceneDelegate ()
 
 @end
@@ -14,7 +14,7 @@
     rootVC.title = @"home";
    
     UINavigationController *rootNav = [[UINavigationController alloc] initWithRootViewController:rootVC];
-    SecondTabbarVC *second =  [SecondTabbarVC new];
+    RootTabbarVC *second =  [RootTabbarVC new];
     second.title = @"second";
     tab.viewControllers = @[rootNav,second];
    

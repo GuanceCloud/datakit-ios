@@ -7,14 +7,14 @@
 //
 
 #import "FTAutoTrack.h"
-#import "UIView+ZY_currentController.h"
-#import "UIViewController+ZY_RootVC.h"
+#import "UIView+FT_CurrentController.h"
+#import "UIViewController+FT_RootVC.h"
 #import "ZYAspects.h"
 #import <UIKit/UIKit.h>
 #import "ZYLog.h"
 #import "ZYTrackerEventDBTool.h"
 #import "FTRecordModel.h"
-#import "ZYBaseInfoHander.h"
+#import "FTBaseInfoHander.h"
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
@@ -165,7 +165,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
              NSString *className = NSStringFromClass([to class]);
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
-                vc = [to zy_getCurrentViewController];
+                vc = [to ft_getCurrentViewController];
                 className = NSStringFromClass([vc class]);
             }else{
                 vc = to;
@@ -269,14 +269,14 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         NSDictionary *value = @{@"event":op};
         NSString *field = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
-            [tags addEntriesFromDictionary:@{@"rpn":[UIViewController zy_getRootViewController]}];
+            [tags addEntriesFromDictionary:@{@"rpn":[UIViewController ft_getRootViewController]}];
             if ([cpn isKindOfClass:UIView.class]) {
-              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn zy_getCurrentViewController].class)}];
+              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
             }else if ([cpn isKindOfClass:UIViewController.class]){
               [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn class])}];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                [tags addEntriesFromDictionary:@{@"vtp":[view zy_getParentsView]}];
+                [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
         }
         [[FTMobileAgent sharedInstance] track:field tags:tags values:value];
