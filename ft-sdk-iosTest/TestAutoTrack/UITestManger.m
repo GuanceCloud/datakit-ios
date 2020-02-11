@@ -26,8 +26,8 @@
         self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
-        self.autoTrackClickCount = 2;
-        self.autoTrackViewScreenCount = 0;
+        self.autoTrackClickCount = 0;
+        self.autoTrackViewScreenCount = 2;
     }
     return self;
 }

@@ -51,7 +51,7 @@
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
     }
-    [self.navigationController pushViewController:[UITestVC new] animated:YES];
+    [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
 
 
