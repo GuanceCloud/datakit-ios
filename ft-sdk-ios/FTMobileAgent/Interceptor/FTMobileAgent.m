@@ -94,7 +94,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
          [self.manger startUpdatingLocation];
             
         }
-        [[ZYTrackerEventDBTool sharedManger] createTable];
         [self setupAppNetworkListeners];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
@@ -226,7 +225,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tag addEntriesFromDictionary:tags];
         }
         if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[NSString stringWithFormat:@"cpu_use=%ld%%,",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
+            [tag setObject:[NSString stringWithFormat:@"%ld",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
               [tag setObject:[FTBaseInfoHander ft_usedMemory] forKey:@"memory_use"];

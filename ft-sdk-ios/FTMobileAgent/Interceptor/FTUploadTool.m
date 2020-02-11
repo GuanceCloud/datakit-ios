@@ -153,8 +153,20 @@
         event = event.length>1? [event substringToIndex:event.length-1]:event;
         tags =opdata[@"tags"];
         
-        [tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
+            if ([key isEqualToString:@"cpn"]) {
+                if (obj) {
+                   appendTag = [appendTag stringByAppendingFormat:@"current_page_name=%@,",obj];
+                }
+            }else if ([key isEqualToString:@"rpn"]){
+                if (obj && ![obj isEqualToString:@"null"]) {
+                    if(obj.length>0){
+                    appendTag =[appendTag stringByAppendingFormat:@"root_page_name=%@,",obj];
+                    }
+                }
+            }else{
                 appendTag = [appendTag stringByAppendingFormat:@"%@=%@,",key,obj];
+            }
         }];
         [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
             if ([obj isKindOfClass:NSString.class]) {
@@ -179,9 +191,8 @@
         [requestDatas appendFormat:@" %ld",obj.tm*1000];
     
     }];
-    NSString *request = requestDatas;
-    request = [request stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    return request;
+
+    return requestDatas;
 }
 
 - (NSString *)getBasicData{
