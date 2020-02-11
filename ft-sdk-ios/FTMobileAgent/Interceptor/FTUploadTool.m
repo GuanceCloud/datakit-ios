@@ -11,7 +11,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import "FTBaseInfoHander.h"
-#import "ZYTrackerEventDBTool.h"
+#import "FTTrackerEventDBTool.h"
 #import "ZYLog.h"
 #import "FTRecordModel.h"
 #import "FTMobileConfig.h"
@@ -43,9 +43,9 @@
 - (void)flushQueue{
    
     @try {
-        while ([[ZYTrackerEventDBTool sharedManger] getDatasCount]>0){
-            ZYDebug(@"DB DATAS COUNT = %ld",[[ZYTrackerEventDBTool sharedManger] getDatasCount]);
-         NSArray *updata = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+        while ([[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+            ZYDebug(@"DB DATAS COUNT = %ld",[[FTTrackerEventDBTool sharedManger] getDatasCount]);
+         NSArray *updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
             if(updata.count == 0){
                 break;
             }
@@ -56,7 +56,7 @@
                 break;
             }
                 ZYDebug(@"上传事件成功");
-            BOOL delect = [[ZYTrackerEventDBTool sharedManger] deleteItemWithTm:model.tm];
+            BOOL delect = [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:model.tm];
             ZYDebug(@"delect == %d",delect);
         }
         self.isUploading = NO;

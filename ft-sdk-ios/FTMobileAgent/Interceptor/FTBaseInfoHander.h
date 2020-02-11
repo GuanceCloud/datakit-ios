@@ -16,6 +16,9 @@ extern NSString * _Nullable const FTBaseInfoHanderDeviceGPUType;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTBaseInfoHander : NSObject
+/**
+  获取运营商信息
+*/
 + (NSDictionary *)ft_getDeviceInfo;
 /**
   获取运营商信息

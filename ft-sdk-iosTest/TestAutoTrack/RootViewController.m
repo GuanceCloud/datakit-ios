@@ -12,7 +12,7 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import "UITestManger.h"
 #import "AppDelegate.h"
-#import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
+#import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "AppDelegate.h"
 
 @interface RootViewController ()

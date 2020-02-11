@@ -7,7 +7,7 @@
 //
 
 #import "UITestManger.h"
-#import <FTMobileAgent/ZYDataBase/ZYTrackerEventDBTool.h>
+#import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 
 @interface UITestManger ()
 
@@ -23,7 +23,7 @@
 }
 -(instancetype)init{
     if ([super init]) {
-        self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+        self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
         self.autoTrackClickCount = 0;
@@ -32,7 +32,7 @@
     return self;
 }
 -(void)reset{
-          self.lastCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+          self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
            NSLog(@"lastCount == %ld",self.lastCount);
            self.trackCount = 1;//lunch
            self.autoTrackViewScreenCount = 2; //ViewController (close)
@@ -55,7 +55,7 @@
 }
 -(NSArray *)getEndResult{
     NSMutableArray *result = [NSMutableArray new];
-    NSInteger addCount = [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger addCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     
     NSInteger trueCount = self.lastCount+self.trackCount+self.autoTrackClickCount+self.autoTrackViewScreenCount;
 //    if (addCount == trueCount) {

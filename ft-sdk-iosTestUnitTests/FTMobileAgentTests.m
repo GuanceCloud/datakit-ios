@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <ZYDataBase/ZYTrackerEventDBTool.h>
+#import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
@@ -43,7 +43,7 @@
                FTRecordModel *model = [FTRecordModel new];
                model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
                model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+               [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
                
                NSDictionary *data2 = @{
                    @"cpn":@"Test4ViewController",
@@ -56,7 +56,7 @@
                FTRecordModel *model2 = [FTRecordModel new];
                model2.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
                model2.data =[FTBaseInfoHander ft_convertToJsonData:data2];
-               [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
+               [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
           
 }
 
@@ -70,14 +70,14 @@
  */
 - (void)testTrackMethod {
 
-    NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
-    NSArray *all  = [[ZYTrackerEventDBTool sharedManger] getAllDatas];
+    NSArray *all  = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     FTRecordModel *model =  [all lastObject];
     NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = item[@"opdata"];
     XCTAssertTrue([op[@"field"] isEqualToString:@"testTrack"] && [op[@"values"] isEqual:@{@"event":@"testTrack"}]);
-    NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-count==1);
 
 }
@@ -130,14 +130,14 @@
 */
 - (void)testBindUser{
 
-    NSInteger count =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
     [NSThread sleepForTimeInterval:10.0];
 
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
 
    [NSThread sleepForTimeInterval:2.0];
-    NSInteger newCount =  [[ZYTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount<count);
 }
 /**
@@ -145,7 +145,7 @@
 */
 -(void)testChangeUser{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-    NSArray *array = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
     NSString *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];
@@ -158,7 +158,7 @@
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
 
-    NSArray *newarray = [[ZYTrackerEventDBTool sharedManger] getFirstTenData];
+    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
     NSString *newUserData;
     if (array.count>0) {
         FTRecordModel *model = [newarray lastObject];

@@ -9,7 +9,7 @@
 #import "FTMobileAgent.h"
 #import <UIKit/UIKit.h>
 #import "ZYLog.h"
-#import "ZYTrackerEventDBTool.h"
+#import "FTTrackerEventDBTool.h"
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import "FTUploadTool.h"
@@ -265,7 +265,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                             @"opdata":opdata,
                             };
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-        [[ZYTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
         ZYDebug(@"data == %@",data);
     }
       @catch (NSException *exception) {
@@ -278,7 +278,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"绑定用户失败！！！ 用户名和用户Id 不能为空");
         return;
     }
-    [[ZYTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+    [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
 }
 - (void)logout{
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];

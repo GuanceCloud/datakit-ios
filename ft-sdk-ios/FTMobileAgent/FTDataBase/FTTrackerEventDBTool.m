@@ -6,11 +6,11 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "ZYTrackerEventDBTool.h"
+#import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "ZY_FMDB.h"
 #import "ZYLog.h"
-@interface ZYTrackerEventDBTool ()
+@interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong) ZY_FMDatabase *db;
@@ -18,8 +18,8 @@
 @property (nonatomic, strong) NSDate *lastSentDate;
 
 @end
-@implementation ZYTrackerEventDBTool
-static ZYTrackerEventDBTool *dbTool = nil;
+@implementation FTTrackerEventDBTool
+static FTTrackerEventDBTool *dbTool = nil;
 - (ZY_FMDatabaseQueue *)dbQueue
 {
     if (!_dbQueue) {
@@ -38,11 +38,12 @@ static ZYTrackerEventDBTool *dbTool = nil;
         NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"ZYFMDB.sqlite"];
         ZY_FMDatabase *fmdb = [ZY_FMDatabase databaseWithPath:path];
         if ([fmdb open]) {
-            dbTool = ZYTrackerEventDBTool.new;
+            dbTool = FTTrackerEventDBTool.new;
             dbTool.db = fmdb;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
         }
+        [dbTool createTable];
      }
     });
     if (![dbTool.db open]) {
