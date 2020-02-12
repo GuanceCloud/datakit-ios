@@ -36,7 +36,6 @@
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
-        
     
     [app.buttons[@"start"] tap];
     
@@ -55,18 +54,32 @@
     
     XCUIElementQuery *tablesQuery = app2.tables;
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ pressForDuration:2];
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ pressForDuration:2];
+    [tablesQuery.staticTexts[@"Section: 0, Row: 1"] pressForDuration:2];
     [app.navigationBars[@"testUI"].buttons[@"icon back"] tap];
 
+    
     [app.buttons[@"result logout"] tap];
-    
-    
-    
-    [window pressForDuration:100];
-    XCUIElement *success = app.staticTexts[@"SUCCESS"];
-    //判断上传成功数量 与 实际上传数量是否相等
-    XCTAssertTrue(success.exists);
+  
+   XCUIElement * accountTextField = app.textFields[@"account"];
+   XCUIElement *passwordTextField = app.textFields[@"password"];
 
+   NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+    //获取DataFlux账号密码 获取真实上传数据数量 与本地上传进行比对
+    NSString *account = environment[@"FTTestAccount"];
+    NSString *password =environment[@"FTTestPassword"];
+    if (account) {
+
+        [accountTextField tap];
+        [accountTextField typeText:account];
+        
+        [passwordTextField tap];
+        [passwordTextField typeText:password];
+        [app.buttons[@"confirm"] tap];
+        [window pressForDuration:100];
+        XCUIElement *success = app.staticTexts[@"SUCCESS"];
+         //判断上传成功数量 与 实际上传数量是否相等
+        XCTAssertTrue(success.exists);
+    }
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
