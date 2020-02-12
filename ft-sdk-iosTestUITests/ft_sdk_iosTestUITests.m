@@ -36,7 +36,11 @@
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
-    
+    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+    NSString *account = environment[@"FTTestAccount"];
+    NSString *password =environment[@"FTTestPassword"];
+    //使用NSProcessInfo存储 获取DataFlux账号密码 获取真实上传数据数量 与本地上传进行比对
+    if (account && password) {
     [app.buttons[@"start"] tap];
     
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
@@ -60,25 +64,22 @@
     
     [app.buttons[@"result logout"] tap];
   
-   XCUIElement * accountTextField = app.textFields[@"account"];
+   XCUIElement *accountTextField = app.textFields[@"account"];
    XCUIElement *passwordTextField = app.textFields[@"password"];
-
-   NSDictionary *environment = [[NSProcessInfo processInfo] environment];
-    //获取DataFlux账号密码 获取真实上传数据数量 与本地上传进行比对
-    NSString *account = environment[@"FTTestAccount"];
-    NSString *password =environment[@"FTTestPassword"];
-    if (account) {
-
-        [accountTextField tap];
-        [accountTextField typeText:account];
+   
+    
+    [accountTextField tap];
+    [accountTextField typeText:account];
         
-        [passwordTextField tap];
-        [passwordTextField typeText:password];
-        [app.buttons[@"confirm"] tap];
-        [window pressForDuration:100];
-        XCUIElement *success = app.staticTexts[@"SUCCESS"];
+    [passwordTextField tap];
+    [passwordTextField typeText:password];
+    [app.buttons[@"confirm"] tap];
+    [window pressForDuration:100];
+    XCUIElement *success = app.staticTexts[@"SUCCESS"];
          //判断上传成功数量 与 实际上传数量是否相等
-        XCTAssertTrue(success.exists);
+    XCTAssertTrue(success.exists);
+    }else{
+    XCTFail(@"需要DataFlux账号密码");
     }
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
