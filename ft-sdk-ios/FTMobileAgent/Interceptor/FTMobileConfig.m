@@ -10,20 +10,40 @@
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
-- (instancetype)init {
-    if (self = [super init]) {
-        self.sdkVersion = FT_SDK_VERSION;
-        self.appVersion = FT_APP_VERSION;
-        self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
-        self.isDebug = NO;
-//        self.enableTrackAppCrash = NO;
-        self.autoTrackEventType = FTAutoTrackTypeNone;
-        self.enableAutoTrack = NO;
-    }
-    
-    return self;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(NSString *)akId akSecret:(NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
+     if (self = [super init]) {
+         self.metricsUrl = metricsUrl;
+         self.akId = akId;
+         self.akSecret = akSecret;
+         self.enableRequestSigning = enableRequestSigning;
+         self.sdkVersion = FT_SDK_VERSION;
+         self.appVersion = FT_APP_VERSION;
+         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+         self.enableLog = NO;
+         self.autoTrackEventType = FTAutoTrackTypeNone;
+         self.enableAutoTrack = NO;
+        }
+      return self;
 }
--(void)setIsDebug:(BOOL)isDebug{
-     SETISDEBUG(isDebug);
+#pragma mark NSCopying
+- (id)copyWithZone:(nullable NSZone *)zone {
+    FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
+    options.metricsUrl = self.metricsUrl;
+    options.autoTrackEventType = self.autoTrackEventType;
+    options.enableTrackAppCrash = self.enableTrackAppCrash;
+    options.akId = self.akId;
+    options.akSecret = self.akSecret;
+    options.enableRequestSigning = self.enableRequestSigning;
+
+    options.sdkVersion = self.sdkVersion;
+    options.appVersion = self.sdkVersion;
+    
+    options.appName = self.appName;
+    options.enableLog = self.enableLog;
+    return options;
+}
+
+-(void)enableLog:(BOOL)enableLog{
+     SETISDEBUG(enableLog);
 }
 @end

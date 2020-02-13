@@ -54,26 +54,46 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
+/**
+指定初始化方法，设置 metricsUrl
+@param metricsUrl FT-GateWay metrics 写入地址
+@param akId       access key ID
+@param akSecret   access key Secret
+@param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
+@return 配置对象
+*/
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning; NS_DESIGNATED_INITIALIZER;
+/// 禁用 init 初始化
+- (instancetype)init NS_UNAVAILABLE;
+
+/// 禁用 new 初始化
++ (instancetype)new NS_UNAVAILABLE;
 #pragma mark - 基本设置
 /* SDK版本 */
 @property (nonatomic, copy) NSString *sdkVersion;
 
 /* 应用版本(默认:info.plist中CFBundleShortVersionString对应的值)*/
 @property (nonatomic, copy) NSString *appVersion;
+
 /*应用名称（默认：info.plist中的CFBundleDisplayName）*/
 @property (nonatomic ,copy) NSString *appName;
+
+/*FT-GateWay metrics 写入地址*/
 @property (nonatomic, copy) NSString *metricsUrl;
 
+/*配置是否需要进行请求签名*/
 @property (nonatomic, assign) BOOL enableRequestSigning;
 
+/*access key ID*/
 @property (nonatomic, copy) NSString *akId;
 
+/*access key Secret*/
 @property (nonatomic, copy) NSString *akSecret;
 
-@property (nonatomic, assign) BOOL isDebug;
+/*设置是否允许打印日志*/
+@property (nonatomic, assign) BOOL enableLog;
 
-@property (nonatomic, copy) NSString *sessionid;
-
+/*TAG 中的设备信息*/
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
