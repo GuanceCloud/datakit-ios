@@ -70,8 +70,8 @@
     
     [accountTextField tap];
     [accountTextField typeText:account];
-        
     [passwordTextField tap];
+    //如果运行模拟器 在此失败 选择模拟器 Hardware -> Keyboard -> 取消选中 Connect Hardware Keyboard
     [passwordTextField typeText:password];
     [app.buttons[@"confirm"] tap];
     [window pressForDuration:100];
