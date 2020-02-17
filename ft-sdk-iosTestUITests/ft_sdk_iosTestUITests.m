@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "TestAccount.h"
 
 @interface ft_sdk_iosTestUITests : XCTestCase
 
@@ -36,11 +37,10 @@
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
-    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
-    NSString *account = environment[@"FTTestAccount"];
-    NSString *password =environment[@"FTTestPassword"];
-    //使用NSProcessInfo存储 获取DataFlux账号密码 获取真实上传数据数量 与本地上传进行比对
-    if (account && password) {
+    NSString *account = FTTestAccount;
+    NSString *password =FTTestPassword;
+    //请在TestAccount.h 配置DataFlux账号密码 用以获取真实上传数据数量 与本地上传进行比对
+    if (account.length>0 && password.length>0) {
     [app.buttons[@"start"] tap];
     
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
@@ -64,16 +64,7 @@
     
     [app.buttons[@"result logout"] tap];
   
-   XCUIElement *accountTextField = app.textFields[@"account"];
-   XCUIElement *passwordTextField = app.textFields[@"password"];
    
-    
-    [accountTextField tap];
-    [accountTextField typeText:account];
-    [passwordTextField tap];
-    //如果运行模拟器 在此失败 选择模拟器 Hardware -> Keyboard -> 取消选中 Connect Hardware Keyboard
-    [passwordTextField typeText:password];
-    [app.buttons[@"confirm"] tap];
     [window pressForDuration:100];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
          //判断上传成功数量 与 实际上传数量是否相等
