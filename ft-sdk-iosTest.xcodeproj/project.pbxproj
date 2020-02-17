@@ -870,7 +870,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -908,7 +911,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};
