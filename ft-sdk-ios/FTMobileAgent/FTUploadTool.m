@@ -45,7 +45,13 @@
     @try {
         while ([[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
             ZYDebug(@"DB DATAS COUNT = %ld",[[FTTrackerEventDBTool sharedManger] getDatasCount]);
-         NSArray *updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
+            NSArray *updata;
+            if (self.config.needBindUser) {
+                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
+            }else{
+                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
+
+            }
             if(updata.count == 0){
                 break;
             }

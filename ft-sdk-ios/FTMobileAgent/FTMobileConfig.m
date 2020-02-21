@@ -22,6 +22,7 @@
          self.enableLog = NO;
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
+         self.needBindUser = YES;
         }
       return self;
 }
@@ -40,6 +41,7 @@
     
     options.appName = self.appName;
     options.enableLog = self.enableLog;
+    options.needBindUser = self.needBindUser;
     return options;
 }
 

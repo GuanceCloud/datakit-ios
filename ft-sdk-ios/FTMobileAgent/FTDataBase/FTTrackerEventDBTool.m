@@ -187,12 +187,17 @@ static FTTrackerEventDBTool *dbTool = nil;
     return [self getDatasWithFormat:sql];
 
 }
--(NSArray *)getFirstTenData{
+-(NSArray *)getFirstTenDataWithUser{
     NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
     NSArray *session =[self getDatasWithFormat:sessionidSql];
 
     return session;
    
+}
+-(NSArray *)getFirstTenData{
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME];
+
+    return [self getDatasWithFormat:sql];
 }
 -(NSArray *)getDatasWithFormat:(NSString *)format{
  if([self isOpenDatabese:self.db]) {

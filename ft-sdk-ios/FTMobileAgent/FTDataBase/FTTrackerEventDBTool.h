@@ -41,7 +41,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 *  @return 获取的数据
 */
+-(NSArray *)getFirstTenDataWithUser;
+/**
+*  @abstract
+*  从数据库前端，获取十条记录
+
+*  @return 获取的数据
+*/
 -(NSArray *)getFirstTenData;
+
 /**
 *  @abstract
 *  删除已上传的数据

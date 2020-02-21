@@ -95,6 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*TAG 中的设备信息*/
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
+
+/*是否开启绑定用户数据*/
+@property (nonatomic, assign) BOOL needBindUser;
+
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
 * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
