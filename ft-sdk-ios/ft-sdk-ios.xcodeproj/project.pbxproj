@@ -196,18 +196,8 @@
 			isa = PBXGroup;
 			children = (
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
-				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
-				4A884265239E5768001B44C3 /* Interceptor */,
-				4A884279239E5768001B44C3 /* FTDataBase */,
-				4A88425E239E5754001B44C3 /* Info.plist */,
-			);
-			path = FTMobileAgent;
-			sourceTree = "<group>";
-		};
-		4A884265239E5768001B44C3 /* Interceptor */ = {
-			isa = PBXGroup;
-			children = (
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
+				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
 				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
 				4A884277239E5768001B44C3 /* FTUploadTool.h */,
 				4A88426C239E5768001B44C3 /* FTUploadTool.m */,
@@ -215,7 +205,6 @@
 				4A884275239E5768001B44C3 /* FTRecordModel.m */,
 				4A884266239E5768001B44C3 /* FTBaseInfoHander.h */,
 				4A88426F239E5768001B44C3 /* FTBaseInfoHander.m */,
-				4A852FAB23A221DE00B40B5D /* ZYLog.h */,
 				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */,
@@ -224,8 +213,11 @@
 				4A31E75323CDA69C0077531B /* FTNetworkInfo.m */,
 				4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */,
 				4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */,
+				4A852FAB23A221DE00B40B5D /* ZYLog.h */,
+				4A884279239E5768001B44C3 /* FTDataBase */,
+				4A88425E239E5754001B44C3 /* Info.plist */,
 			);
-			path = Interceptor;
+			path = FTMobileAgent;
 			sourceTree = "<group>";
 		};
 		4A884279239E5768001B44C3 /* FTDataBase */ = {

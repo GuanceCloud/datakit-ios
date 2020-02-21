@@ -9,7 +9,7 @@
 #import "AppDelegate.h"
 #import "UITestManger.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/Interceptor/FTBaseInfoHander.h>
+#import <FTMobileAgent/FTBaseInfoHander.h>
 #import "TestAccount.h"
 @interface AppDelegate ()
 

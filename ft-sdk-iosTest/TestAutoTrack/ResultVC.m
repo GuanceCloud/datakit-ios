@@ -11,7 +11,7 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "UITestManger.h"
-#import <FTMobileAgent/Interceptor/FTUploadTool.h>
+#import <FTMobileAgent/FTUploadTool.h>
 #import "TestAccount.h"
 
 @interface ResultVC ()
