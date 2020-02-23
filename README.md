@@ -1,5 +1,7 @@
 # Dataflux-SDK-iOS
 
+Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo    
+
 **FTMobileAgent**
 
 ![Cocoapods platforms](https://img.shields.io/cocoapods/p/FTMobileAgent)
