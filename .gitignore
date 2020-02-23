@@ -1,0 +1,12 @@
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/xcshareddata/
+Pods/Pods.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+.DS_Store
+#CocoaPods
+Pods
+Pods/
+Pod_Products/
+!Podfile
+!Podfile.lock
