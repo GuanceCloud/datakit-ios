@@ -22,19 +22,19 @@
 #import "FTLocationManager.h"
 #import "FTGPUUsage.h"
 @interface FTMobileAgent ()
-@property (nonatomic) BOOL isForeground;
+@property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, copy) NSString *net;
-//@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTLocationManager *locationManger;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @property (nonatomic, strong) FTLocationManager *manger;
 @property (nonatomic, copy)  NSString *location;
+@property (nonatomic, assign) int preFlowTime;
 @end
 @implementation FTMobileAgent
 

@@ -23,6 +23,7 @@
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
          self.needBindUser = YES;
+         self.needViewFlow = NO;
         }
       return self;
 }

@@ -170,7 +170,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             }else{
                 vc = to;
             }
-            [self track:FT_AUTO_TRACK_OP_CLICK withCpn:to WithClickView:from];
+            [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
           } error:NULL];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
@@ -277,6 +277,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
+            }
+            if (([op isEqualToString:FT_AUTO_TRACK_OP_OPEN] || [op isEqualToString:FT_AUTO_TRACK_OP_CLOSE])&& self.config.needViewFlow){
+                
             }
         }
         [[FTMobileAgent sharedInstance] track:field tags:tags values:value];
