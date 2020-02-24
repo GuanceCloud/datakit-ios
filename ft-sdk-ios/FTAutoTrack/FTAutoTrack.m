@@ -18,7 +18,6 @@
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
-#import "FTUncaughtExceptionHandler.h"
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
@@ -53,9 +52,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
         [self logViewControllerLifeCycle];
     }
-    if (self.config.enableTrackAppCrash) {
-        [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
-    }
+    
   
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
