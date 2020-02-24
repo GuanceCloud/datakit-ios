@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
 @return 配置对象
 */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning; NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning NS_DESIGNATED_INITIALIZER;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 

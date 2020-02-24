@@ -6,7 +6,7 @@
 //  Copyright © 2019 hll. All rights reserved.
 //
 
-#import "UIViewController+FT_RootVC.H"
+#import "UIViewController+FT_RootVC.h"
 @implementation UIViewController (FT_RootVC)
 + (NSString *)ft_getRootViewController{
     UIWindow* window = nil;
