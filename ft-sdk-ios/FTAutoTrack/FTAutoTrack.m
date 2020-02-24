@@ -167,7 +167,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             }else{
                 vc = to;
             }
-            [self track:FT_AUTO_TRACK_OP_CLICK withCpn:to WithClickView:from];
+            [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
           } error:NULL];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
