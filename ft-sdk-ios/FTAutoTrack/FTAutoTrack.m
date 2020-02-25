@@ -156,10 +156,11 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
              } error:NULL];
        
     [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
-        if (![from isKindOfClass:UIView.class]) {
-            return ;
-        }
-             NSString *className = NSStringFromClass([to class]);
+        if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
+            NSString *className = NSStringFromClass([to class]);
+            if ([to isKindOfClass:[UITabBar class]] ) {
+              return;
+            }
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
                 vc = [to ft_getCurrentViewController];
@@ -168,7 +169,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 vc = to;
             }
             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
+        }
           } error:NULL];
+   
 }
 - (BOOL)isAutoTrackUI:(Class )view{
 
