@@ -14,9 +14,10 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "AppDelegate.h"
-
+#define kWidth [UIScreen mainScreen].bounds.size.width
+#define kHeight [UIScreen mainScreen].bounds.size.height
 @interface RootViewController ()
-
+@property (nonatomic, strong) UITextField *tf ;
 @end
 
 @implementation RootViewController
@@ -37,7 +38,12 @@
     [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
-    
+    self.tf = [[UITextField alloc]initWithFrame:CGRectMake(50, 450, 300, 20)];
+    self.tf.backgroundColor = [UIColor grayColor];
+    [self.view addSubview:self.tf];
+}
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+    [self.tf resignFirstResponder];
 }
 - (void)buttonClick{
    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
