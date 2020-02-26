@@ -14,6 +14,7 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "AppDelegate.h"
+#import "SecondViewController.h"
 #define kWidth [UIScreen mainScreen].bounds.size.width
 #define kHeight [UIScreen mainScreen].bounds.size.height
 @interface RootViewController ()
@@ -41,13 +42,19 @@
     self.tf = [[UITextField alloc]initWithFrame:CGRectMake(50, 450, 300, 20)];
     self.tf.backgroundColor = [UIColor grayColor];
     [self.view addSubview:self.tf];
+    
+    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(200, 100, 100, 100)];
+    button3.backgroundColor = [UIColor redColor];
+    [button3 setTitle:@"前往第二页" forState:UIControlStateNormal];
+    [button3 addTarget:self action:@selector(buttonClick3) forControlEvents:UIControlEventTouchUpInside];
+       [self.view addSubview:button3];
 }
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     [self.tf resignFirstResponder];
 }
 - (void)buttonClick{
    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
-
+    [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"首页startBtn" parent:nil duration:0];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
        [[UITestManger sharedManger] addAutoTrackClickCount];
         }
@@ -59,7 +66,9 @@
     }
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
-
+- (void)buttonClick3{
+    [self.navigationController pushViewController:[SecondViewController new] animated:YES];
+}
 
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];

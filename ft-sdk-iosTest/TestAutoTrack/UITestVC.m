@@ -9,13 +9,15 @@
 #import "UITestVC.h"
 #import "UITestManger.h"
 #import "AppDelegate.h"
-
+#import "ResultVC.h"
 @interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
 
 @end
 
 @implementation UITestVC
-
+-(void)viewDidAppear:(BOOL)animated{
+    
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
     if ([self isAutoTrackVC]) {
@@ -208,12 +210,15 @@
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
+     [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"UItest_UILabel1" parent:@"首页startBtn" duration:1222];
    if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
    [[UITestManger sharedManger] addAutoTrackClickCount];
    }
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
+    [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"UItest_UILabel2" parent:@"UItest_UILabel1" duration:1222];
+
     NSLog(@"UIImageView被点击了");
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIImageView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
@@ -235,6 +240,7 @@
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UITableView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
     }
+    
 }
 -(void)dealloc{
     if ([self isAutoTrackVC]){

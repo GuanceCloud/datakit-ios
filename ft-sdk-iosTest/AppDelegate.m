@@ -26,6 +26,8 @@
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
+    config.product = @"iOSDemo";
+    config.needViewFlow = YES;
     self.config = config;
      long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];

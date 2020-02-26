@@ -31,7 +31,7 @@
     }
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     self.config = appDelegate.config;
-    [self createUI];
+//    [self createUI];
     [self setIsShowLiftBack];
 }
 - (void)setIsShowLiftBack

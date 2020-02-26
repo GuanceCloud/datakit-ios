@@ -18,6 +18,8 @@
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
+		4A4B603F240682D7002BB8EF /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B603E240682D7002BB8EF /* SecondViewController.m */; };
+		4A4B6046240682E6002BB8EF /* ThirdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B6045240682E6002BB8EF /* ThirdViewController.m */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -102,6 +104,10 @@
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A30B89E23F97856004548ED /* TestAccount.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestAccount.h; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		4A4B603D240682D7002BB8EF /* SecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
+		4A4B603E240682D7002BB8EF /* SecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
+		4A4B6044240682E6002BB8EF /* ThirdViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThirdViewController.h; sourceTree = "<group>"; };
+		4A4B6045240682E6002BB8EF /* ThirdViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThirdViewController.m; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -256,6 +262,10 @@
 				4AAF0E7023B5E75900817C52 /* UITestManger.h */,
 				4AAF0E7123B5E75900817C52 /* UITestManger.m */,
 				4A30B89E23F97856004548ED /* TestAccount.h */,
+				4A4B603D240682D7002BB8EF /* SecondViewController.h */,
+				4A4B603E240682D7002BB8EF /* SecondViewController.m */,
+				4A4B6044240682E6002BB8EF /* ThirdViewController.h */,
+				4A4B6045240682E6002BB8EF /* ThirdViewController.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -556,11 +566,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A4B603F240682D7002BB8EF /* SecondViewController.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* RootViewController.m in Sources */,
 				4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */,
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
+				4A4B6046240682E6002BB8EF /* ThirdViewController.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
@@ -870,10 +882,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -911,10 +920,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

@@ -16,9 +16,23 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    self.view.backgroundColor = [UIColor whiteColor];
+    self.title = @"3";
+    [self createUI];
+        // Do any additional setup after loading the view.
 }
-
+- (void)createUI{
+    UIButton *btn = [[UIButton alloc]initWithFrame:CGRectMake(50, 150, 200, 40)];
+    [btn setTitle:@"回到首页" forState:UIControlStateNormal];
+    btn.backgroundColor = [UIColor yellowColor];
+    [btn addTarget:self action:@selector(btnClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:btn];
+        
+}
+- (void)btnClick{
+    UIViewController *vc =self.navigationController.viewControllers[0];
+    [self.navigationController popToViewController:vc animated:YES];
+}
 /*
 #pragma mark - Navigation
 

@@ -7,7 +7,7 @@
 //
 
 #import "SecondViewController.h"
-
+#import "ThirdViewController.h"
 @interface SecondViewController ()
 
 @end
@@ -16,9 +16,22 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor whiteColor];
+    self.title = @"2";
+    [self createUI];
     // Do any additional setup after loading the view.
 }
-
+- (void)createUI{
+    UIButton *btn = [[UIButton alloc]initWithFrame:CGRectMake(50, 150, 200, 40)];
+    [btn setTitle:@"前往第三页" forState:UIControlStateNormal];
+    btn.backgroundColor = [UIColor yellowColor];
+    [btn addTarget:self action:@selector(btnClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:btn];
+    
+}
+- (void)btnClick{
+    [self.navigationController pushViewController:[ThirdViewController new] animated:YES];
+}
 /*
 #pragma mark - Navigation
 
