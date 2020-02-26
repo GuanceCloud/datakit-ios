@@ -147,6 +147,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL needViewFlow;
 
+@property (nonatomic, copy) NSString *product;
+
 @end
 
 NS_ASSUME_NONNULL_END

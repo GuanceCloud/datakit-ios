@@ -43,6 +43,15 @@ SDK 初始化方法
 */
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
 /**
+ 上报流程图
+ @param product   指标集
+ @param traceId   标示一个流程单的唯一 ID
+ @param name      流程节点名称
+ @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
+ @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
+*/
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
+/**
 绑定用户信息
  @param name     用户名
  @param Id       用户Id

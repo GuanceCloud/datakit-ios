@@ -43,6 +43,7 @@
     options.appName = self.appName;
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
+    options.needViewFlow = self.needViewFlow;
     return options;
 }
 
