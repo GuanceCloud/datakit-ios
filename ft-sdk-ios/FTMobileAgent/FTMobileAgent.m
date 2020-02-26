@@ -81,6 +81,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *timerLabel = [NSString stringWithFormat:@"io.zytimer.%p", self];
         self.timerQueue = dispatch_queue_create([timerLabel UTF8String], DISPATCH_QUEUE_SERIAL);
+       
         if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             self.netFlow = [FTNetMonitorFlow new];
             [self startFlushTimer];
@@ -224,7 +225,56 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        if ([self getMonitorInfoTag].allKeys.count>0) {
+            [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+        }
+        [opdata addEntriesFromDictionary:@{@"tags":tag}];
+        FTRecordModel *model = [FTRecordModel new];
+        NSDictionary *data =@{
+                            @"opdata":opdata,
+                            };
+        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        ZYDebug(@"data == %@",data);
+    }
+      @catch (NSException *exception) {
+        ZYDebug(@"track field tags values exception %@",exception);
+      }
+}
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration{
+    @try {
+        if (product == nil || [product length] == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
+                ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
+                return;
+        }
+        FTRecordModel *model = [FTRecordModel new];
+        NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
+        
+        
+        
+           NSMutableDictionary *opdata = [@{@"product":product,
+                                    @"traceId":traceId,
+                                    @"name":name,
+                                    @"duration":durationStr
+           } mutableCopy];
+           if (parent.length>0) {
+               [opdata setObject:parent forKey:@"parent"];
+           }
+           if ([self getMonitorInfoTag].allKeys.count>0) {
+               [opdata addEntriesFromDictionary:@{@"tags":[self getMonitorInfoTag]}];
+           }
+           NSDictionary *data =@{
+                               @"opdata":opdata,
+                               };
+           model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+           [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    } @catch (NSException *exception) {
+         ZYDebug(@"flowTrack product traceId name exception %@",exception);
+    }
+}
+- (NSDictionary *)getMonitorInfoTag{
+    NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             [tag setObject:[NSString stringWithFormat:@"%ld",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
@@ -258,21 +308,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
             }
         }
-
-        [opdata addEntriesFromDictionary:@{@"tags":tag}];
-        FTRecordModel *model = [FTRecordModel new];
-        NSDictionary *data =@{
-                            @"opdata":opdata,
-                            };
-        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-        ZYDebug(@"data == %@",data);
-    }
-      @catch (NSException *exception) {
-        ZYDebug(@"track field tags values exception %@",exception);
-      }
+    return tag;
 }
-
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     if (name.length == 0 || Id.length == 0) {
         ZYDebug(@"绑定用户失败！！！ 用户名和用户Id 不能为空");

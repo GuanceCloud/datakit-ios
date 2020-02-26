@@ -26,12 +26,16 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
-
+@property (nonatomic, assign) long preFlowTime;
+@property (nonatomic, copy)  NSString *flowId;
+@property (nonatomic, copy)  NSString *preOpenName;
 @end
 @implementation FTAutoTrack
 
 -(void)startWithConfig:(FTMobileConfig *)config{
     self.config = config;
+    self.preFlowTime = 0;
+    self.flowId = [[NSUUID UUID] UUIDString];
     [self setLogContent];
 }
 -(void)setLogContent{
@@ -68,21 +72,44 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 }
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
-       [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+       [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
 
            [self track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil];
-           
+           [self flowOpenTrack:vc];
          } error:nil];
-     
+    
        SEL sel= NSSelectorFromString(@"dealloc");
        [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
 
            [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
        } error:nil];
-    
 }
+- (void)flowOpenTrack:(UIViewController *)vc{
+    if (!self.config.needViewFlow) {
+        return;
+    }
+   if ([vc isKindOfClass:UINavigationController.class]) {
+         return;
+    }
+     NSLog(@"vc:%@ open:%@ %d",vc,vc.parentViewController,[vc.parentViewController isKindOfClass:NSNull.class]);
+     if ([vc.parentViewController isKindOfClass:NSNull.class] ||[vc.parentViewController isKindOfClass:UINavigationController.class] ||[vc.parentViewController isKindOfClass:UITabBarController.class]) {
+         NSString *parent = self.preOpenName;
+         self.preOpenName = NSStringFromClass(vc.class);
+         long duration;
+         long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+         if (self.preFlowTime==0) {
+             duration = 0;
+         }else{
+             duration = (tm-self.preFlowTime)/1000;
+         }
+          self.preFlowTime = tm;
+         NSString *product = [NSString stringWithFormat:@"mobile_activity_%@",self.config.product];
+         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
+         }
+}
+
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
 
