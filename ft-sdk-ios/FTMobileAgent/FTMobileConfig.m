@@ -32,7 +32,6 @@
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
     options.metricsUrl = self.metricsUrl;
     options.autoTrackEventType = self.autoTrackEventType;
-    options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.akId = self.akId;
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;

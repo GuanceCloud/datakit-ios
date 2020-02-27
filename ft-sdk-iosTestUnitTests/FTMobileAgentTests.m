@@ -145,7 +145,7 @@
 */
 -(void)testChangeUser{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
     NSString *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];
@@ -158,7 +158,7 @@
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
     [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
 
-    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
+    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
     NSString *newUserData;
     if (array.count>0) {
         FTRecordModel *model = [newarray lastObject];

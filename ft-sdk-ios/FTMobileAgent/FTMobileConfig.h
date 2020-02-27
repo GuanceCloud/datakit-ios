@@ -141,8 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong) NSArray *blackVCList;
 
 
-/// 是否自动收集 App Crash 日志，该功能默认是关闭的
-@property (nonatomic) BOOL enableTrackAppCrash;
 
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL needViewFlow;

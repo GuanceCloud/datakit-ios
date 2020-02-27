@@ -18,7 +18,6 @@
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
-#import "FTUncaughtExceptionHandler.h"
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
@@ -57,9 +56,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen) {
         [self logViewControllerLifeCycle];
     }
-    if (self.config.enableTrackAppCrash) {
-        [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
-    }
+    
   
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
@@ -185,10 +182,11 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
              } error:NULL];
        
     [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
-        if (![from isKindOfClass:UIView.class]) {
-            return ;
-        }
-             NSString *className = NSStringFromClass([to class]);
+        if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
+            NSString *className = NSStringFromClass([to class]);
+            if ([to isKindOfClass:[UITabBar class]] ) {
+              return;
+            }
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
                 vc = [to ft_getCurrentViewController];
@@ -197,7 +195,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 vc = to;
             }
             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
+
+        }
           } error:NULL];
+   
 }
 - (BOOL)isAutoTrackUI:(Class )view{
 
