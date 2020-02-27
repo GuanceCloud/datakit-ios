@@ -44,7 +44,7 @@ SDK 初始化方法
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
 /**
  上报流程图
- @param product   指标集
+ @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
  @param traceId   标示一个流程单的唯一 ID
  @param name      流程节点名称
  @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
