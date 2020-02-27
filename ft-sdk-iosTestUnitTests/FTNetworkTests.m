@@ -16,7 +16,7 @@
 #import "TestAccount.h"
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) FTUploadTool *upTool;
-
+@property (nonatomic, strong) TestAccount *testAccount;
 @end
 
 @implementation FTNetworkTests
@@ -59,25 +59,28 @@
        }
        NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
        [[FTMobileAgent sharedInstance] bindUserWithName:@"11222" Id:@"000000" exts:nil];
-
+       self.testAccount = [[TestAccount alloc]init];
        NSLog(@"Record Count == %ld",(long)count);
 }
 - (void)setRightConfig{
-     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+   
+     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.testAccount.accessServerUrl akId:self.testAccount.accessKeyID akSecret:self.testAccount.accessKeySecret enableRequestSigning:YES];
       config.enableLog = YES;
       config.enableAutoTrack = YES;
       self.upTool = [[FTUploadTool alloc]initWithConfig:config];
 }
 -(void)setBadMetricsUrl{
-      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"http://10.100.64.106:10000/v1/write/metrics" akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" akId:self.testAccount.accessKeyID akSecret:self.testAccount.accessKeySecret enableRequestSigning:YES];
+
       config.enableLog = YES;
       config.enableAutoTrack = YES;
       self.upTool = [[FTUploadTool alloc]initWithConfig:config];
 }
 - (void)setOHHTTPStubs{
     [self setRightConfig];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-      return [request.URL.host isEqualToString:@"10.100.64.106"];
+      return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
@@ -88,8 +91,10 @@
 }
 -(void)setBadNetOHHTTPStubs{
     [self setRightConfig];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:@"10.100.64.106"];
+        return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
 
@@ -101,8 +106,9 @@
 
 -(void)setErrorNetOHHTTPStubs{
     [self setRightConfig];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:@"10.100.64.106"];
+        return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorNotConnectedToInternet userInfo:nil];
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
@@ -111,8 +117,9 @@
 }
 -(void)setErrorResponseOHHTTPStubs{
     [self setRightConfig];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-      return [request.URL.host isEqualToString:@"10.100.64.106"];
+      return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
@@ -123,8 +130,9 @@
 }
 -(void)setNoJsonResponseOHHTTPStubs{
     [self setRightConfig];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:@"10.100.64.106"];
+        return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =@"Hello World!";
 
@@ -134,8 +142,10 @@
 }
 -(void)setWrongJsonResponseOHHTTPStubs{
     [self setRightConfig];
-       [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-           return [request.URL.host isEqualToString:@"10.100.64.106"];
+    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+           return [request.URL.host isEqualToString:url.host];
        } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
            NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
            data = [data stringByAppendingString:@"/n/t"];
@@ -145,8 +155,10 @@
 }
 -(void)setEmptyResponseOHHTTPStubs{
      [self setRightConfig];
+     NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+
      [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-         return [request.URL.host isEqualToString:@"10.100.64.106"];
+         return [request.URL.host isEqualToString:url.host];
      } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
          return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];

@@ -2,19 +2,22 @@
 //  TestAccount.h
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2020/2/16.
+//  Created by 胡蕾蕾 on 2020/2/27.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#ifndef TestAccount_h
-#define TestAccount_h
+#import <Foundation/Foundation.h>
 
-//请配置测试 DataFlux账号
-#define FTTestAccount     @""
-#define FTTestPassword    @""
+NS_ASSUME_NONNULL_BEGIN
 
-//配置测试 SDK config
-#define ACCESS_KEY_ID     @"Your App akId"
-#define ACCESS_KEY_SECRET @"Your App akSecret"
-#define ACCESS_SERVER_URL @"Your App metricsUrl"
-#endif /* TestAccount_h */
+@interface TestAccount : NSObject
+@property (nonatomic, copy) NSString *ftTestAccount;
+@property (nonatomic, copy) NSString *ftTestPassword;
+
+@property (nonatomic, copy) NSString *accessKeyID;
+@property (nonatomic, copy) NSString *accessKeySecret;
+@property (nonatomic, copy) NSString *accessServerUrl;
+
+@end
+
+NS_ASSUME_NONNULL_END

@@ -37,8 +37,9 @@
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
-    NSString *account = FTTestAccount;
-    NSString *password =FTTestPassword;
+    TestAccount *test = [[TestAccount alloc]init];
+    NSString *account = test.ftTestAccount;
+    NSString *password =test.ftTestPassword;
     //请在TestAccount.h 配置DataFlux账号密码 用以获取真实上传数据数量 与本地上传进行比对
     if (account.length>0 && password.length>0) {
     [app.buttons[@"start"] tap];

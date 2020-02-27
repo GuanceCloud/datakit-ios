@@ -135,8 +135,9 @@
     }
 }
 -(NSString *)login{
-    NSString *account = FTTestAccount;
-    NSString *password = FTTestPassword;
+    TestAccount *test = [[TestAccount alloc]init];
+    NSString *account = test.ftTestAccount;
+    NSString *password = test.ftTestPassword;
     if (account.length>0 && password.length>0) {
         NSLog(@"account:%@,password:%@",account,password);
     }else{
