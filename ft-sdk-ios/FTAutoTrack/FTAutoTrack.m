@@ -79,8 +79,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
            [self flowOpenTrack:vc];
          } error:nil];
     
-       SEL sel= NSSelectorFromString(@"dealloc");
-       [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+       [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
 
            [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
