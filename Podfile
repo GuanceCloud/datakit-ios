@@ -4,7 +4,7 @@
 target 'ft-sdk-iosTest' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
-      pod 'OHHTTPStubs'
+      pod 'OHHTTPStubs','8.0.0'
 
   # Pods for ft-sdk-iosTest
 
@@ -15,7 +15,7 @@ target 'ft-sdk-iosTest' do
 
   target 'ft-sdk-iosTestUnitTests' do
     use_frameworks!
-    pod 'OHHTTPStubs'
+    pod 'OHHTTPStubs','8.0.0'
 
     # Pods for testing
   end
