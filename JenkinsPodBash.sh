@@ -43,4 +43,4 @@ cd ..&&cd ..
 # 替代文件中的版本号
 sed  -i -e 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' "$PRODUCT_NAME".podspec
 
-pod trunk push "$PRODUCT_NAME".podspec --verbose
+pod trunk push "$PRODUCT_NAME".podspec --verbose --allow-warnings
