@@ -1,5 +1,5 @@
 //
-//  ZYConfig.h
+//  FTMobileConfig.h
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/6.
@@ -14,10 +14,10 @@
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
 /**
-* @abstract
+* @enum
 * AutoTrack 抓取信息
 *
-* @discussion
+* @constant
 *   FTAutoTrackEventTypeAppStart       - 项目启动
 *   FTAutoTrackEventTypeAppClick       - 点击事件
 *   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
@@ -29,17 +29,16 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
 /**
-* @abstract
-* TAG 中的设备信息
-*
-* @discussion
-*   FTMonitorInfoTypeBattery  - 电池总量、使用量
-*   FTMonitorInfoTypeMemory   - 内存总量、使用率
-*   FTMonitorInfoTypeCpu      - CPU型号、占用率
-*   FTMonitorInfoTypeCpu      - GPU型号、占用率
-*   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
-*   FTMonitorInfoTypeCamera   - 前置/后置 像素
-*   FTMonitorInfoTypeLocation - 位置信息  eg:上海
+ * @enum  TAG 中的设备信息
+ *
+ * @constant
+ *   FTMonitorInfoTypeBattery  - 电池总量、使用量
+ *   FTMonitorInfoTypeMemory   - 内存总量、使用率
+ *   FTMonitorInfoTypeCpu      - CPU型号、占用率
+ *   FTMonitorInfoTypeCpu      - GPU型号、占用率
+ *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
+ *   FTMonitorInfoTypeCamera   - 前置/后置 像素
+ *   FTMonitorInfoTypeLocation - 位置信息  eg:上海
 */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
@@ -55,12 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
 /**
-指定初始化方法，设置 metricsUrl
-@param metricsUrl FT-GateWay metrics 写入地址
-@param akId       access key ID
-@param akSecret   access key Secret
-@param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
-@return 配置对象
+ * @method 指定初始化方法，设置 metricsUrl
+ * @param metricsUrl FT-GateWay metrics 写入地址
+ * @param akId       access key ID
+ * @param akSecret   access key Secret
+ * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
+ * @return 配置对象
 */
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning NS_DESIGNATED_INITIALIZER;
 /// 禁用 init 初始化
@@ -68,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-#pragma mark - 基本设置
+#pragma mark ========== 基本设置 ==========
 /* SDK版本 */
 @property (nonatomic, copy) NSString *sdkVersion;
 
@@ -117,34 +116,43 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) FTAutoTrackEventType autoTrackEventType;
 
 /**
-* @abstract
-*  抓取某一类型的 View
-*  与 黑名单  二选一使用  若都没有则为全抓取
-*  eg: @[UITableView.class];
+ * @abstract
+ *  抓取某一类型的 View
+ *  与 黑名单  二选一使用  若都没有则为全抓取
+ *  eg: @[UITableView.class];
 */
 @property (nonatomic,strong) NSArray<Class> *whiteViewClass;
 /**
-* @abstract
-*  忽略某一类型的 View
-*  与 白名单  二选一使用  若都没有则为全抓取
+ * @abstract
+ *  忽略某一类型的 View
+ *  与 白名单  二选一使用  若都没有则为全抓取
 */
 @property (nonatomic,strong) NSArray<Class> *blackViewClass;
 
 /**
-*  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
-* eg: @[@"HomeViewController"];  字符串类型
+ *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
+ * eg: @[@"HomeViewController"];  字符串类型
 */
 @property (nonatomic,strong) NSArray *whiteVCList;
 /**
-*  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
+ *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
 */
 @property (nonatomic,strong) NSArray *blackVCList;
-
-
+#pragma mark ========== 上报流程图 ==========
+/**
+ * @abstract
+ *  设置是否抓取页面流程图
+*/
+- (void)enableTrackScreenFlow:(BOOL)enable;
+/**
+ * @abstract
+ *  设置上报流程行为指标集名
+ */
+- (void)setTrackViewFlowProduct:(NSString *)product;
 
 /*设置是否需要视图跳转流程图*/
-@property (nonatomic, assign) BOOL needViewFlow;
-
+@property (nonatomic, assign) BOOL enableScreenFlow;
+/*上报流程行为指标集名称*/
 @property (nonatomic, copy) NSString *product;
 
 @end
