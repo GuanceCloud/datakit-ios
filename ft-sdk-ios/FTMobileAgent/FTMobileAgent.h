@@ -37,11 +37,22 @@ SDK 初始化方法
  */
 - (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
 /**
-主动埋点
+ 主动埋点
  @param field   埋点事件名称
- @param values 埋点数据
+ @param values  埋点数据
 */
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
+/**
+ 上报流程图
+ @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
+ @param traceId   标示一个流程单的唯一 ID
+ @param name      流程节点名称
+ @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
+ @param tags      自定义标签
+ @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
+ @param values    自定义指标
+*/
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration values:(nullable NSDictionary *)values;
 /**
  上报流程图
  @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写

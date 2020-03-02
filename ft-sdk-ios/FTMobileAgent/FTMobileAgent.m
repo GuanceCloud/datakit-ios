@@ -241,17 +241,28 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track field tags values exception %@",exception);
       }
 }
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration{
+-(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
+    [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration values:nil];
+}
+
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration values:(nullable NSDictionary *)values{
     @try {
         if (product == nil || [product length] == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
                 ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
         }
+        if (![self verifyProductStr:product]) {
+            return;
+        }
         FTRecordModel *model = [FTRecordModel new];
-        NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
-        
-        
-        
+       __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
+        if (values.allKeys.count>0) {
+            [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                if (obj!=nil && ![obj isKindOfClass:NSNull.class]) {
+                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",key,obj];
+                }
+            }];
+        }
            NSMutableDictionary *opdata = [@{@"product":product,
                                     @"traceId":traceId,
                                     @"name":name,
@@ -260,9 +271,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
            if (parent.length>0) {
                [opdata setObject:parent forKey:@"parent"];
            }
+            NSMutableDictionary *tag = [NSMutableDictionary new];
+            if (tags) {
+                [tag addEntriesFromDictionary:tags];
+            }
            if ([self getMonitorInfoTag].allKeys.count>0) {
-               [opdata addEntriesFromDictionary:@{@"tags":[self getMonitorInfoTag]}];
-           }
+                [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+            }
            NSDictionary *data =@{
                                @"opdata":opdata,
                                };
@@ -271,6 +286,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     } @catch (NSException *exception) {
          ZYDebug(@"flowTrack product traceId name exception %@",exception);
     }
+
+}
+- (BOOL)verifyProductStr:(NSString *)product{
+    BOOL result= NO;
+    @try {
+      NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";
+      NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
+    // 字符串判断，然后BOOL值
+      result = [predicate evaluateWithObject:product];
+      ZYDebug(@"result : %@",result ? @"指标集命名正确" : @"验证失败");
+    }@catch (NSException *exception) {
+      ZYDebug(@"verifyProductStr %@",exception);
+    }
+    return result;
 }
 - (NSDictionary *)getMonitorInfoTag{
     NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
