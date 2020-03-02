@@ -1,6 +1,6 @@
 //
-//  ZYInterceptor.m
-//  RuntimDemo
+//  FTMobileAgent.m
+//  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
@@ -60,7 +60,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
       NSAssert((NSClassFromString(@"FTAutoTrack")), @"开启自动采集需导入FTAutoTrackSDK");
     }
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
-    
+    if (configOptions.enableScreenFlow) {
+        NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
+    }
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
@@ -288,6 +290,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 
 }
+// 验证指标集名称是否符合要求
 - (BOOL)verifyProductStr:(NSString *)product{
     BOOL result= NO;
     @try {

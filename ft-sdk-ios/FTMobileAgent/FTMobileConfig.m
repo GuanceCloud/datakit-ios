@@ -1,5 +1,5 @@
 //
-//  ZYConfig.m
+//  FTMobileConfig.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/6.
@@ -23,7 +23,7 @@
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
          self.needBindUser = YES;
-         self.needViewFlow = NO;
+         self.enableScreenFlow = NO;
         }
       return self;
 }
@@ -42,11 +42,17 @@
     options.appName = self.appName;
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
-    options.needViewFlow = self.needViewFlow;
+    options.enableScreenFlow = self.enableScreenFlow;
     return options;
 }
 
 -(void)enableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);
+}
+-(void)enableTrackScreenFlow:(BOOL)enable{
+    self.enableScreenFlow = enable;
+}
+-(void)setTrackViewFlowProduct:(NSString *)product{
+    self.product = product;
 }
 @end

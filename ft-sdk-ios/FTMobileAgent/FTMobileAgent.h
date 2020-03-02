@@ -1,6 +1,6 @@
 //
-//  ZYInterceptor.h
-//  RuntimDemo
+//  FTMobileAgent.h
+//  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
@@ -12,13 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
 /**
-* @abstract
-* 返回之前所初始化好的单例
-*
-* @discussion
-* 调用这个方法之前，必须先调用 startWithConfigOptions 这个方法
-*
-* @return 返回的单例
+ * @abstract
+ * 返回之前所初始化好的单例
+ *
+ * @discussion
+ * 调用这个方法之前，必须先调用 startWithConfigOptions 这个方法
+ *
+ * @return 返回的单例
 */
 + (instancetype)sharedInstance;
 /**
@@ -27,21 +27,20 @@ SDK 初始化方法
 @param configOptions     配置参数
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
-
 /**
- 追踪自定义事件。
- 
- @param field      文件名称
- @param tags       事件属性
- @param values     事件名称
- */
-- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
-/**
- 主动埋点
- @param field   埋点事件名称
- @param values  埋点数据
+ 主动埋点，追踪自定义事件。
+ @param field      当前数据点所属的指标集
+ @param values     自定义指标
 */
 - (void)track:(NSString *)field  values:(NSDictionary *)values;
+/**
+ 主动埋点，追踪自定义事件。
+ @param field      当前数据点所属的指标集
+ @param tags       自定义标签
+ @param values     自定义指标
+ */
+- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
+
 /**
  上报流程图
  @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
@@ -64,9 +63,9 @@ SDK 初始化方法
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
 /**
 绑定用户信息
- @param name     用户名
- @param Id       用户Id
- @param exts     用户其他信息
+ @param name      用户名
+ @param Id        用户Id
+ @param exts      用户其他信息
 */
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 /**

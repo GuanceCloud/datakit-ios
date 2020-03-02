@@ -1,6 +1,6 @@
 //
-//  ZYViewController_log.m
-//  RuntimDemo
+//  FTAutoTrack.m
+//  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
@@ -83,7 +83,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
        } error:nil];
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
-    if (!self.config.needViewFlow) {
+    if (!self.config.enableScreenFlow) {
         return;
     }
    if ([vc isKindOfClass:UINavigationController.class]) {
@@ -305,7 +305,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
-            if (([op isEqualToString:FT_AUTO_TRACK_OP_OPEN] || [op isEqualToString:FT_AUTO_TRACK_OP_CLOSE])&& self.config.needViewFlow){
+            if (([op isEqualToString:FT_AUTO_TRACK_OP_OPEN] || [op isEqualToString:FT_AUTO_TRACK_OP_CLOSE])&& self.config.enableScreenFlow){
                 
             }
         }
