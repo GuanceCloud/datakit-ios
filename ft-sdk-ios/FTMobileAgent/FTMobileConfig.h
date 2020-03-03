@@ -18,13 +18,13 @@
 * AutoTrack 抓取信息
 *
 * @constant
-*   FTAutoTrackEventTypeAppStart       - 项目启动
+*   FTAutoTrackEventTypeAppLaunch       - 项目启动
 *   FTAutoTrackEventTypeAppClick       - 点击事件
 *   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
 */
 typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackTypeNone          = 0,
-    FTAutoTrackEventTypeAppStart      = 1 << 0,
+    FTAutoTrackEventTypeAppLaunch     = 1 << 0,
     FTAutoTrackEventTypeAppClick      = 1 << 1,
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
@@ -61,7 +61,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
  * @return 配置对象
 */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
+/**
+ * @method 指定初始化方法，设置 metricsUrl 配置是否不需要进行请求签名
+ * @param metricsUrl FT-GateWay metrics 写入地址
+ * @return 配置对象
+*/
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
+
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 

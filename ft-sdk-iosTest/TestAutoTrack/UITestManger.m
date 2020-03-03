@@ -42,7 +42,7 @@
            self.self.autoTrackClickCount = 0;
 }
 -(void)addTrackCount{
-    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppStart){
+    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch){
     self.trackCount++;
     NSLog(@"add == %ld",self.trackCount);
     }

@@ -10,7 +10,10 @@
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(NSString *)akId akSecret:(NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl{
+   return  [self initWithMetricsUrl:metricsUrl akId:nil akSecret:nil enableRequestSigning:NO];
+}
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
      if (self = [super init]) {
          self.metricsUrl = metricsUrl;
          self.akId = akId;

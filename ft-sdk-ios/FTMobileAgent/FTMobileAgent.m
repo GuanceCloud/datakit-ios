@@ -66,7 +66,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
-     [FTMobileAgent sharedInstance];
+
 }
 // 单例
 + (instancetype)sharedInstance {
