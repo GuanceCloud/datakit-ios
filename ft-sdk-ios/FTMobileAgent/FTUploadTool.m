@@ -18,7 +18,6 @@
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 @interface FTUploadTool()
-@property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
@@ -197,7 +196,7 @@
     return requestDatas;
 }
 - (NSString *)getTagStr:(NSDictionary *)dict{
-    __block NSString *tagStr = [self getBasicData];
+    __block NSString *tagStr = @"";
     NSDictionary *tags =dict[@"tags"];
     
     [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
@@ -217,51 +216,6 @@
     }];
     return tagStr;
 }
-- (NSString *)getBasicData{
-    if (_tag != nil) {
-           return _tag;
-       }
-       NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-       NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-       NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-       CFShow((__bridge CFTypeRef)(infoDictionary));
-       NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
-       NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
 
-       NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-       NSString *version = [UIDevice currentDevice].systemVersion;
-       NSMutableString *tag = [NSMutableString string];
-
-       [tag appendFormat:@"device_uuid=%@,",uuid];
-       [tag appendFormat:@"application_identifier=%@,",identifier];
-       [tag appendFormat:@"application_name=%@,",app_Name];
-       [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
-       [tag appendString:@"os=iOS,"];
-       [tag appendFormat:@"os_version=%@,",version];
-       [tag appendString:@"device_band=APPLE,"];
-       [tag appendFormat:@"locale=%@,",preferredLanguage];
-       [tag appendFormat:@"device_model=%@,",deviceInfo[FTBaseInfoHanderDeviceType]];
-       [tag appendFormat:@"display=%@,",[FTBaseInfoHander ft_resolution]];
-       [tag appendFormat:@"carrier=%@,",[FTBaseInfoHander ft_getTelephonyInfo]];
-    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"battery_total=%@,",deviceInfo[FTBaseInfoHanderBatteryTotal]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"memory_total=%lld,",[FTBaseInfoHander ft_getTotalMemorySize]];
-    }
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"cpu_no=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUType]];
-        [tag appendFormat:@"cpu_hz=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUClock]];
-    }
-    if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        [tag appendFormat:@"gpu_model=%@,",deviceInfo[FTBaseInfoHanderDeviceGPUType]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"camera_front_px=%@,",[FTBaseInfoHander ft_getFrontCameraPixel]];
-        [tag appendFormat:@"camera_back_px=%@,",[FTBaseInfoHander ft_getBackCameraPixel]];
-    }
-     _tag = tag;
-     return _tag;
-}
 
 @end

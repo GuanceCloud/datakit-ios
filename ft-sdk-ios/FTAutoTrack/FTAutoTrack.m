@@ -28,6 +28,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 @property (nonatomic, assign) long preFlowTime;
 @property (nonatomic, copy)  NSString *flowId;
 @property (nonatomic, copy)  NSString *preOpenName;
+@property (nonatomic, strong) NSDictionary *tag;
 @end
 @implementation FTAutoTrack
 
@@ -42,7 +43,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         return;
     }
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppStart) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch) {
         [notificationCenter addObserver:self
                                      selector:@selector(appDidFinishLaunchingWithOptions:)
                                             name:UIApplicationDidFinishLaunchingNotification
@@ -305,14 +306,58 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
-            if (([op isEqualToString:FT_AUTO_TRACK_OP_OPEN] || [op isEqualToString:FT_AUTO_TRACK_OP_CLOSE])&& self.config.enableScreenFlow){
-                
-            }
         }
+        [tags addEntriesFromDictionary:[self getBasicData]];
         [[FTMobileAgent sharedInstance] track:field tags:tags values:value];
        
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
     }
+}
+- (NSDictionary *)getBasicData{
+    if (_tag != nil) {
+           return _tag;
+       }
+       NSMutableDictionary *tag = [NSMutableDictionary new];
+       NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
+       NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
+       NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+       CFShow((__bridge CFTypeRef)(infoDictionary));
+       NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
+       NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+
+       NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+       NSString *version = [UIDevice currentDevice].systemVersion;
+       [tag setObject:uuid forKey:@"device_uuid"];
+       [tag setObject:identifier forKey:@"application_identifier"];
+       [tag setObject:app_Name forKey:@"application_name"];
+       [tag setObject:self.config.sdkVersion forKey:@"sdk_version"];
+       [tag setObject:@"iOS" forKey:@"os"];
+       [tag setObject:version forKey:@"os_version"];
+       [tag setObject:@"APPLE" forKey:@"device_band"];
+       [tag setObject:preferredLanguage forKey:@"locale"];
+       [tag setObject:deviceInfo[FTBaseInfoHanderDeviceType] forKey:@"device_model"];
+       [tag setObject:[FTBaseInfoHander ft_resolution] forKey:@"display"];
+       [tag setObject:[FTBaseInfoHander ft_getTelephonyInfo] forKey:@"carrier"];
+
+    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [tag setObject:[NSString stringWithFormat:@"%lld",[FTBaseInfoHander ft_getTotalMemorySize]] forKey:@"memory_total"];
+    }
+    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
+        [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:@"cpu_hz"];
+    }
+    if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+        [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
+    }
+    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
+        [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
+    }
+     _tag = tag;
+     return _tag;
 }
 @end
