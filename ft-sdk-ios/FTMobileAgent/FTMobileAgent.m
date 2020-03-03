@@ -294,7 +294,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (BOOL)verifyProductStr:(NSString *)product{
     BOOL result= NO;
     @try {
-      NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";
+      NSString *regex = @"^[A-Za-z0-9_\\-]{0,35}+$";//$flow_
       NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
     // 字符串判断，然后BOOL值
       result = [predicate evaluateWithObject:product];
