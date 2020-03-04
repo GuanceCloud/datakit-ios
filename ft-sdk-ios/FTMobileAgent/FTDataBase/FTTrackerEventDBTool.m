@@ -156,29 +156,27 @@ static FTTrackerEventDBTool *dbTool = nil;
     
 }
 -(BOOL)insertItemWithItemData:(FTRecordModel *)item{
-    if (self.lastSentDate) {
-        NSDate* now = [NSDate date];
-        NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
-        if (time>10) {
-            self.lastSentDate = [NSDate date];
-        //待处理通知
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
-        }
-    }else{
-        self.lastSentDate = [NSDate date];
-         [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
-    }
+    __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
-       __block BOOL  is = NO;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%ld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
-          is=  [self.db executeUpdate:sqlStr];
-           ZYDebug(@"success == %d",is);
+          success=  [self.db executeUpdate:sqlStr];
+           ZYDebug(@"success == %d",success);
        }];
-       return is;
-   }else{
-   return NO;
    }
+    if (self.lastSentDate) {
+           NSDate* now = [NSDate date];
+           NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
+           if (time>10) {
+               self.lastSentDate = [NSDate date];
+           //待处理通知
+               [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+           }
+       }else{
+           self.lastSentDate = [NSDate date];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+       }
+    return success;
 }
 
 -(NSArray *)getAllDatas{
