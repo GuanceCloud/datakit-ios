@@ -13,10 +13,8 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
-#import "TestAccount.h"
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) FTUploadTool *upTool;
-@property (nonatomic, strong) TestAccount *testAccount;
 @end
 
 @implementation FTNetworkTests
@@ -59,18 +57,25 @@
        }
        NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
        [[FTMobileAgent sharedInstance] bindUserWithName:@"11222" Id:@"000000" exts:nil];
-       self.testAccount = [[TestAccount alloc]init];
        NSLog(@"Record Count == %ld",(long)count);
 }
 - (void)setRightConfig{
-   
-     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.testAccount.accessServerUrl akId:self.testAccount.accessKeyID akSecret:self.testAccount.accessKeySecret enableRequestSigning:YES];
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    if (akId && akSecret && url) {
+     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
       config.enableLog = YES;
       config.enableAutoTrack = YES;
       self.upTool = [[FTUploadTool alloc]initWithConfig:config];
+    }
 }
 -(void)setBadMetricsUrl{
-      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" akId:self.testAccount.accessKeyID akSecret:self.testAccount.accessKeySecret enableRequestSigning:YES];
+     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" akId:akId akSecret:akSecret enableRequestSigning:YES];
 
       config.enableLog = YES;
       config.enableAutoTrack = YES;
@@ -78,7 +83,9 @@
 }
 - (void)setOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
       return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
@@ -91,7 +98,8 @@
 }
 -(void)setBadNetOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    NSURL *url = [NSURL URLWithString:urlStr];
 
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
@@ -106,7 +114,9 @@
 
 -(void)setErrorNetOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
@@ -117,7 +127,9 @@
 }
 -(void)setErrorResponseOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
       return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
@@ -130,7 +142,9 @@
 }
 -(void)setNoJsonResponseOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
@@ -142,8 +156,8 @@
 }
 -(void)setWrongJsonResponseOHHTTPStubs{
     [self setRightConfig];
-    NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
-
+     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
            return [request.URL.host isEqualToString:url.host];
        } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
@@ -155,8 +169,9 @@
 }
 -(void)setEmptyResponseOHHTTPStubs{
      [self setRightConfig];
-     NSURL *url = [NSURL URLWithString:self.testAccount.accessServerUrl];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
+    NSURL *url = [NSURL URLWithString:urlStr];
      [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
          return [request.URL.host isEqualToString:url.host];
      } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {

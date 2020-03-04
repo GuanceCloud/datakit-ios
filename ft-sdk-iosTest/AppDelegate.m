@@ -10,7 +10,6 @@
 #import "UITestManger.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
-#import "TestAccount.h"
 @interface AppDelegate ()
 
 @end
@@ -21,8 +20,23 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Override point for customization after application launch.
-    TestAccount *account = [[TestAccount alloc]init];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:account.accessServerUrl akId:account.accessKeyID akSecret:account.accessKeySecret enableRequestSigning:YES];
+    /**
+      测试时 请在scheme 中配置  Environment Variables 键值
+      测试 DataFlux账号
+      FTTestAccount  = @"Your Test Account";
+      FTTestPassword  = @"Your Test Password";
+
+      测试 SDK config
+      ACCESS_KEY_ID  = @"Your App akId";
+      ACCESS_KEY_SECRET  = @"Your App akSecret";
+      ACCESS_SERVER_URL  = @"Your App metricsUrl";
+     */
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    if (akId && akSecret && url) {
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
@@ -33,6 +47,7 @@
     [UITestManger sharedManger];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] logout];
+    }
     return YES;
 }
 
