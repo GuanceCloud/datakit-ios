@@ -18,8 +18,6 @@
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
-		4A4B604E24076C2B002BB8EF /* TestAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B604D24076C2B002BB8EF /* TestAccount.m */; };
-		4A4B60502407996B002BB8EF /* testAccount.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A4B604F2407996B002BB8EF /* testAccount.json */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -28,10 +26,9 @@
 		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A89DD1B23D70C07006EB6BB /* IOKit.framework */; };
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
+		4AAF2B47240FB17C00552B6D /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B46240FB17C00552B6D /* SecondViewController.m */; };
+		4AAF2B4E240FB19C00552B6D /* ThirdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B4D240FB19C00552B6D /* ThirdViewController.m */; };
 		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		4ABDE5012407C89F0070D712 /* TestAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B604D24076C2B002BB8EF /* TestAccount.m */; };
-		4ABDE5062407C8A00070D712 /* TestAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B604D24076C2B002BB8EF /* TestAccount.m */; };
-		4ABDE52D240D16450070D712 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABDE52C240D16450070D712 /* SecondViewController.m */; };
 		4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 		74E7A903FA5998A9A205FB09 /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1804C2982595A0EC17D9C3A /* Pods_ft_sdk_iosTest_ft_sdk_iosTestUITests.framework */; };
@@ -106,9 +103,6 @@
 		4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		4A4B604C24076C2B002BB8EF /* TestAccount.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestAccount.h; sourceTree = "<group>"; };
-		4A4B604D24076C2B002BB8EF /* TestAccount.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestAccount.m; sourceTree = "<group>"; };
-		4A4B604F2407996B002BB8EF /* testAccount.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testAccount.json; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -120,8 +114,10 @@
 		4A89DD1B23D70C07006EB6BB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
 		4AAF0E7023B5E75900817C52 /* UITestManger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITestManger.h; sourceTree = "<group>"; };
 		4AAF0E7123B5E75900817C52 /* UITestManger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestManger.m; sourceTree = "<group>"; };
-		4ABDE52B240D16450070D712 /* SecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SecondViewController.h; path = ../SecondViewController.h; sourceTree = "<group>"; };
-		4ABDE52C240D16450070D712 /* SecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SecondViewController.m; path = ../SecondViewController.m; sourceTree = "<group>"; };
+		4AAF2B45240FB17C00552B6D /* SecondViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
+		4AAF2B46240FB17C00552B6D /* SecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
+		4AAF2B4C240FB19C00552B6D /* ThirdViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThirdViewController.h; sourceTree = "<group>"; };
+		4AAF2B4D240FB19C00552B6D /* ThirdViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThirdViewController.m; sourceTree = "<group>"; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
@@ -200,7 +196,6 @@
 				4A11695A239113B600C0BC4E /* AppDelegate.m */,
 				4A11695C239113B600C0BC4E /* SceneDelegate.h */,
 				4A11695D239113B600C0BC4E /* SceneDelegate.m */,
-				4A4B604F2407996B002BB8EF /* testAccount.json */,
 				4AAF0E7723B9901500817C52 /* TestAutoTrack */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
@@ -265,10 +260,10 @@
 				4A1169872391146600C0BC4E /* ResultVC.m */,
 				4AAF0E7023B5E75900817C52 /* UITestManger.h */,
 				4AAF0E7123B5E75900817C52 /* UITestManger.m */,
-				4A4B604C24076C2B002BB8EF /* TestAccount.h */,
-				4A4B604D24076C2B002BB8EF /* TestAccount.m */,
-				4ABDE52B240D16450070D712 /* SecondViewController.h */,
-				4ABDE52C240D16450070D712 /* SecondViewController.m */,
+				4AAF2B45240FB17C00552B6D /* SecondViewController.h */,
+				4AAF2B46240FB17C00552B6D /* SecondViewController.m */,
+				4AAF2B4C240FB19C00552B6D /* ThirdViewController.h */,
+				4AAF2B4D240FB19C00552B6D /* ThirdViewController.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -423,7 +418,6 @@
 			files = (
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
-				4A4B60502407996B002BB8EF /* testAccount.json in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
 				6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */,
 			);
@@ -570,13 +564,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4ABDE52D240D16450070D712 /* SecondViewController.m in Sources */,
-				4A4B604E24076C2B002BB8EF /* TestAccount.m in Sources */,
+				4AAF2B47240FB17C00552B6D /* SecondViewController.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* RootViewController.m in Sources */,
 				4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */,
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
+				4AAF2B4E240FB19C00552B6D /* ThirdViewController.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
@@ -588,7 +582,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */,
-				4ABDE5062407C8A00070D712 /* TestAccount.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,7 +590,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
-				4ABDE5012407C89F0070D712 /* TestAccount.m in Sources */,
 				4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 			);

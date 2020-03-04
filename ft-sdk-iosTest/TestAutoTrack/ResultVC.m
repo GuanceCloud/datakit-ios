@@ -12,7 +12,6 @@
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "UITestManger.h"
 #import <FTMobileAgent/FTUploadTool.h>
-#import "TestAccount.h"
 
 @interface ResultVC ()
 @property (nonatomic ,strong) FTMobileConfig *config;
@@ -139,9 +138,9 @@
     }
 }
 -(NSString *)login{
-    TestAccount *test = [[TestAccount alloc]init];
-    NSString *account = test.ftTestAccount;
-    NSString *password = test.ftTestPassword;
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *account =[processInfo environment][@"FTTestAccount"];
+    NSString *password = [processInfo environment][@"FTTestPassword"];
     if (account.length>0 && password.length>0) {
         NSLog(@"account:%@,password:%@",account,password);
     }else{
