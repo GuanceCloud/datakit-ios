@@ -34,6 +34,8 @@
 - (void)testAutoTrackUIExample {
     // UI tests must launch the application that they test.
     XCUIApplication *app = [[XCUIApplication alloc] init];
+    app.launchEnvironment = [[NSProcessInfo processInfo] environment];  //将test 运行使用环境赋值给 application
+
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
