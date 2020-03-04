@@ -55,14 +55,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
 /**
-指定初始化方法，设置 metricsUrl
+初始化方法，设置 metricsUrl
 @param metricsUrl FT-GateWay metrics 写入地址
 @param akId       access key ID
 @param akSecret   access key Secret
 @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
 @return 配置对象
 */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
+/**
+初始化方法，设置 metricsUrl 不需要进行请求签名
+@param metricsUrl FT-GateWay metrics 写入地址
+@return 配置对象
+ */
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
