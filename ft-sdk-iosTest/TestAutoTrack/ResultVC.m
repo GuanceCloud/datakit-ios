@@ -23,7 +23,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"Result";
+    self.title = @"UITest Result";
     self.view.backgroundColor = [UIColor whiteColor];
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     self.config = appDelegate.config;

@@ -18,7 +18,6 @@
 #define kWidth [UIScreen mainScreen].bounds.size.width
 #define kHeight [UIScreen mainScreen].bounds.size.height
 @interface RootViewController ()
-@property (nonatomic, strong) UITextField *tf ;
 @end
 
 @implementation RootViewController
@@ -36,14 +35,11 @@
     [button2 setTitle:@"result logout" forState:UIControlStateNormal];
     [button2 addTarget:self action:@selector(endBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button2];
-    self.tf = [[UITextField alloc]initWithFrame:CGRectMake(50, 450, 300, 20)];
-    self.tf.backgroundColor = [UIColor grayColor];
-    [self.view addSubview:self.tf];
-    
-    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(200, 100, 100, 100)];
+   
+    UIButton *button3 = [[UIButton alloc]initWithFrame:CGRectMake(50, 450, 150, 100)];
     button3.backgroundColor = [UIColor redColor];
-    [button3 setTitle:@"前往第二页" forState:UIControlStateNormal];
-    [button3 addTarget:self action:@selector(buttonClick3) forControlEvents:UIControlEventTouchUpInside];
+    [button3 setTitle:@"testImmediate" forState:UIControlStateNormal];
+    [button3 addTarget:self action:@selector(testImmediate) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button3];
 }
 -(void)viewDidAppear:(BOOL)animated{
@@ -52,9 +48,7 @@
            [[UITestManger sharedManger] addAutoTrackViewScreenCount];
        }
 }
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    [self.tf resignFirstResponder];
-}
+
 - (void)buttonClick{
    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
@@ -68,14 +62,20 @@
     }
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
-- (void)buttonClick3{
-    [[FTMobileAgent sharedInstance] trackBackgroud:@"testBackground" values:@{@"test":@"testBackground"}];
+- (void)testImmediate{
     [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" values:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
            NSLog(@"success = %d",isSuccess);
+        dispatch_async(dispatch_get_main_queue(), ^{
+        [self showResult:isSuccess?@"success":@"fail"];
+        });
        }];
-    [self.navigationController pushViewController:[SecondViewController new] animated:YES];
 }
-
+-(void)showResult:(NSString *)title{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *commit = [UIAlertAction actionWithTitle:@"ok" style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:commit];
+    [self presentViewController:alert animated:YES completion:nil];
+}
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
