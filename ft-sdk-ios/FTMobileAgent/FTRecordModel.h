@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *sessionid;
 @property (nonatomic, strong) NSString *data;
 @property (nonatomic, strong) NSString *userdata;
-@property (nonatomic, strong) NSString *op;
 
 @end
 
