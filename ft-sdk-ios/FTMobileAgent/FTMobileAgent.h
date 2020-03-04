@@ -32,15 +32,27 @@ SDK 初始化方法
  @param field      当前数据点所属的指标集
  @param values     自定义指标
 */
-- (void)track:(NSString *)field  values:(NSDictionary *)values;
+- (void)trackBackgroud:(NSString *)field  values:(NSDictionary *)values;
 /**
  主动埋点，追踪自定义事件。
  @param field      当前数据点所属的指标集
  @param tags       自定义标签
  @param values     自定义指标
  */
-- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
-
+- (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
+/**
+ 主动埋点，追踪自定义事件。 --- 立即上传
+ @param field      当前数据点所属的指标集
+ @param values     自定义指标
+*/
+- (void)trackImmediate:(NSString *)field  values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;
+/**
+主动埋点，追踪自定义事件。 --- 立即上传
+@param field      当前数据点所属的指标集
+@param tags       自定义标签
+@param values     自定义指标
+*/
+- (void)trackImmediate:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
  上报流程图
  @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写

@@ -8,11 +8,13 @@
 
 #import <Foundation/Foundation.h>
 @class FTMobileConfig;
+@class FTRecordModel;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTUploadTool : NSObject
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 -(void)upload;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(BOOL isSuccess))callBackStatus;
 @end
 
 NS_ASSUME_NONNULL_END

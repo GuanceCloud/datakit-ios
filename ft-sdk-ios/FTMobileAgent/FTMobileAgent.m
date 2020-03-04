@@ -19,7 +19,6 @@
 #import "FTLocationManager.h"
 #import "FTNetMonitorFlow.h"
 #import "FTNetworkInfo.h"
-#import "FTLocationManager.h"
 #import "FTGPUUsage.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
@@ -27,6 +26,7 @@
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
+@property (nonatomic, strong) dispatch_queue_t immediateLabel;
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -83,7 +83,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *timerLabel = [NSString stringWithFormat:@"io.zytimer.%p", self];
         self.timerQueue = dispatch_queue_create([timerLabel UTF8String], DISPATCH_QUEUE_SERIAL);
-       
+        NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
+        self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
         if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             self.netFlow = [FTNetMonitorFlow new];
             [self startFlushTimer];
@@ -208,12 +209,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
        ZYDebug(@"applicationDidEnterBackground ");
-    [self stopFlushTimer];
 }
-- (void)track:(NSString *)field  values:(NSDictionary *)values{
-    [self track:field tags:nil values:values];
+- (void)trackBackgroud:(NSString *)field values:(NSDictionary *)values{
+    [self trackBackgroud:field tags:nil values:values];
 }
-- (void)track:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values{
+- (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values{
     @try {
         if (field == nil || [field length] == 0 || values == nil || [values allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
@@ -243,6 +243,46 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track field tags values exception %@",exception);
       }
 }
+-(void)trackImmediate:(NSString *)field values:(NSDictionary *)values callBack:(void (^)(BOOL))callBackStatus{
+    [self trackImmediate:field tags:nil values:values callBack:^(BOOL isSuccess) {
+        callBackStatus? callBackStatus(isSuccess):nil;
+    }];
+}
+- (void)trackImmediate:(NSString *)field tags:(NSDictionary *)tags values:(NSDictionary *)values callBack:(void (^)(BOOL))callBackStatus{
+    @try {
+          if (field == nil || [field length] == 0 || values == nil || [values allKeys].count == 0) {
+              ZYDebug(@"文件名 事件名不能为空");
+              return;
+          }
+       NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+         @"field":field,
+         @"values":values
+       }];
+          NSMutableDictionary *tag = [NSMutableDictionary new];
+          if (tags) {
+              [tag addEntriesFromDictionary:tags];
+          }
+          if ([self getMonitorInfoTag].allKeys.count>0) {
+              [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+            }
+          [opdata addEntriesFromDictionary:@{@"tags":tag}];
+          FTRecordModel *model = [FTRecordModel new];
+          model.op = @"cstm";
+          NSDictionary *data =@{
+                              @"opdata":opdata,
+                              };
+          model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+          ZYDebug(@"trackImmediateData == %@",data);
+           dispatch_async(self.immediateLabel, ^{
+               [self.upTool trackImmediate:model callBack:^(BOOL isSuccess) {
+                 callBackStatus? callBackStatus(isSuccess):nil;
+               }];
+           });
+      }
+        @catch (NSException *exception) {
+          ZYDebug(@"track field tags values exception %@",exception);
+        }
+}
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
     [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration values:nil];
 }
@@ -257,6 +297,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         FTRecordModel *model = [FTRecordModel new];
+        model.op = @"cstm";
        __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
         if (values.allKeys.count>0) {
             [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
