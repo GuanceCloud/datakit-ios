@@ -7,7 +7,6 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "TestAccount.h"
 
 @interface ft_sdk_iosTestUITests : XCTestCase
 
