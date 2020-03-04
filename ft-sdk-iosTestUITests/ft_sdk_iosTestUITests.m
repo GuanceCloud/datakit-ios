@@ -35,7 +35,7 @@
     // UI tests must launch the application that they test.
     XCUIApplication *app = [[XCUIApplication alloc] init];
     XCUIElement *window = [app.windows elementBoundByIndex:0];
-
+    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
     [app launch];
     
    

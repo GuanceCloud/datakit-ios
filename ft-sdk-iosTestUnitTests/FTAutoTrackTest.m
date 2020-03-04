@@ -79,7 +79,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteVCList = @[@"UITestVC"];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -96,7 +96,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
     config.blackVCList = @[@"UITestVC"];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -113,7 +113,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -129,7 +129,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:account.accessServerUrl akId:account.accessKeyID akSecret:account.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.blackViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];

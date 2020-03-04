@@ -25,9 +25,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([self isAutoTrackVC]) {
-        [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
     self.view.backgroundColor = [UIColor whiteColor];
     UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(50, 100, 100, 100)];
     button.backgroundColor = [UIColor redColor];
@@ -49,12 +46,17 @@
     [button3 addTarget:self action:@selector(buttonClick3) forControlEvents:UIControlEventTouchUpInside];
        [self.view addSubview:button3];
 }
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if ([self isAutoTrackVC]) {
+           [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+       }
+}
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     [self.tf resignFirstResponder];
 }
 - (void)buttonClick{
    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
-    [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"首页startBtn" parent:nil duration:0];
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
        [[UITestManger sharedManger] addAutoTrackClickCount];
         }
@@ -67,15 +69,19 @@
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
 - (void)buttonClick3{
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"testBackground" values:@{@"test":@"testBackground"}];
+    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" values:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
+           NSLog(@"success = %d",isSuccess);
+       }];
     [self.navigationController pushViewController:[SecondViewController new] animated:YES];
 }
 
 -(void)viewDidDisappear:(BOOL)animated{
     [super viewDidDisappear:animated];
-}
--(void)dealloc{
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+
 }
+
 - (BOOL)isAutoTrackUI:(Class )view{
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
    

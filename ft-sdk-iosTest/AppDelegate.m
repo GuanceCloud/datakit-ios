@@ -27,7 +27,7 @@
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
-    [config enableTrackScreenFlow:YES];
+    [config enableTrackScreenFlow:NO];
     [config setTrackViewFlowProduct:@"iOSDemo"];
     self.config = config;
      long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];

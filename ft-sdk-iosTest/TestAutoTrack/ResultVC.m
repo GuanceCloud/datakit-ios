@@ -26,13 +26,17 @@
     [super viewDidLoad];
     self.title = @"Result";
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self isAutoTrackVC]) {
-    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     self.config = appDelegate.config;
-//    [self createUI];
+   
     [self setIsShowLiftBack];
+}
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if ([self isAutoTrackVC]) {
+           [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+       }
+     [self createUI];
 }
 - (void)setIsShowLiftBack
 {

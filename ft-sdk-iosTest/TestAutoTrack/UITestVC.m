@@ -15,18 +15,19 @@
 @end
 
 @implementation UITestVC
--(void)viewDidAppear:(BOOL)animated{
-    
-}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([self isAutoTrackVC]) {
-        [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
     [self setIsShowLiftBack];
+}
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if ([self isAutoTrackVC]) {
+           [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+       }
 }
 - (void)setIsShowLiftBack
 {
@@ -210,14 +211,12 @@
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
-     [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"UItest_UILabel1" parent:@"首页startBtn" duration:1222];
    if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
    [[UITestManger sharedManger] addAutoTrackClickCount];
    }
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
-    [[FTMobileAgent sharedInstance] flowTrack:@"testFlowTrack" traceId:@"ios_flowTrack" name:@"UItest_UILabel2" parent:@"UItest_UILabel1" duration:1222];
 
     NSLog(@"UIImageView被点击了");
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIImageView.class]) {
@@ -242,10 +241,10 @@
     }
     
 }
--(void)dealloc{
-    if ([self isAutoTrackVC]){
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
+
 }
 - (BOOL)isAutoTrackUI:(Class )view{
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
