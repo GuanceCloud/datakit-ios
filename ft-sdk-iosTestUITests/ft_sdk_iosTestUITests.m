@@ -39,10 +39,8 @@
     XCUIElement *window = [app.windows elementBoundByIndex:0];
 
     [app launch];
-    NSString *account = FTTestAccount;
-    NSString *password =FTTestPassword;
-    //请在TestAccount.h 配置DataFlux账号密码 用以获取真实上传数据数量 与本地上传进行比对
-    if (account.length>0 && password.length>0) {
+    
+   
     [app.buttons[@"start"] tap];
     
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
@@ -71,9 +69,7 @@
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
          //判断上传成功数量 与 实际上传数量是否相等
     XCTAssertTrue(success.exists);
-    }else{
-    XCTFail(@"需要DataFlux账号密码");
-    }
+    
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }

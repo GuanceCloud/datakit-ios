@@ -22,6 +22,7 @@
          self.enableLog = NO;
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
+         self.needBindUser = YES;
         }
       return self;
 }
@@ -30,7 +31,6 @@
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
     options.metricsUrl = self.metricsUrl;
     options.autoTrackEventType = self.autoTrackEventType;
-    options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.akId = self.akId;
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;
@@ -40,6 +40,7 @@
     
     options.appName = self.appName;
     options.enableLog = self.enableLog;
+    options.needBindUser = self.needBindUser;
     return options;
 }
 

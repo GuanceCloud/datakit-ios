@@ -75,7 +75,8 @@
   验证控制器白名单
 */
 - (void)testWhiteVCList{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+    TestAccount *test = [[TestAccount alloc]init];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
@@ -91,7 +92,8 @@
   验证控制器黑名单
 */
 - (void)testBlackVCList{
-   FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+    TestAccount *test = [[TestAccount alloc]init];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
@@ -107,7 +109,8 @@
   验证UI白名单
 */
 - (void)testWhiteViewList{
-   FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+    TestAccount *test = [[TestAccount alloc]init];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
@@ -122,7 +125,8 @@
   验证UI黑名单
 */
 - (void)testBlackViewList{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+    TestAccount *account = [[TestAccount alloc]init];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:account.accessServerUrl akId:account.accessKeyID akSecret:account.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;

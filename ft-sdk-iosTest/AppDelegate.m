@@ -9,7 +9,7 @@
 #import "AppDelegate.h"
 #import "UITestManger.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/Interceptor/FTBaseInfoHander.h>
+#import <FTMobileAgent/FTBaseInfoHander.h>
 #import "TestAccount.h"
 @interface AppDelegate ()
 
@@ -21,7 +21,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Override point for customization after application launch.
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:ACCESS_SERVER_URL akId:ACCESS_KEY_ID akSecret:ACCESS_KEY_SECRET enableRequestSigning:YES];
+    TestAccount *account = [[TestAccount alloc]init];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:account.accessServerUrl akId:account.accessKeyID akSecret:account.accessKeySecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;

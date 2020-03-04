@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
 @return 配置对象
 */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning; NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nonnull NSString *)akId akSecret:(nonnull NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning NS_DESIGNATED_INITIALIZER;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -95,6 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*TAG 中的设备信息*/
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
+
+/*是否开启绑定用户数据*/
+@property (nonatomic, assign) BOOL needBindUser;
+
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
 * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
@@ -137,8 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong) NSArray *blackVCList;
 
 
-/// 是否自动收集 App Crash 日志，该功能默认是关闭的
-@property (nonatomic) BOOL enableTrackAppCrash;
 
 
 
