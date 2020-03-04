@@ -267,7 +267,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
           [opdata addEntriesFromDictionary:@{@"tags":tag}];
           FTRecordModel *model = [FTRecordModel new];
-          model.op = @"cstm";
           NSDictionary *data =@{
                               @"opdata":opdata,
                               };
@@ -297,7 +296,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         FTRecordModel *model = [FTRecordModel new];
-        model.op = @"cstm";
        __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
         if (values.allKeys.count>0) {
             [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
@@ -321,6 +319,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
            if ([self getMonitorInfoTag].allKeys.count>0) {
                 [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
             }
+           [opdata addEntriesFromDictionary:@{@"tags":tag}];
            NSDictionary *data =@{
                                @"opdata":opdata,
                                };
