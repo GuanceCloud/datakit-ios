@@ -26,6 +26,9 @@
         }
       return self;
 }
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl{
+    return [self initWithMetricsUrl:metricsUrl akId:nil akSecret:nil enableRequestSigning:NO];
+}
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
@@ -43,8 +46,7 @@
     options.needBindUser = self.needBindUser;
     return options;
 }
-
--(void)enableLog:(BOOL)enableLog{
+-(void)setEnableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);
 }
 @end
