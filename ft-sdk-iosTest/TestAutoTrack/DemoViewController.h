@@ -1,5 +1,5 @@
 //
-//  RootViewController.h
+//  DemoViewController.h
 //  ft-sdk-iosTest
 //
 //  Created by 胡蕾蕾 on 2019/11/28.
@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "RootVController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RootViewController : UIViewController
+@interface DemoViewController : RootVController
 
 @end
 

@@ -1,5 +1,5 @@
 //
-//  ThirdViewController.h
+//  RootVController.h
 //  ft-sdk-iosTest
 //
 //  Created by 胡蕾蕾 on 2020/3/4.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ThirdViewController : UIViewController
+@interface RootVController : UIViewController
 
 @end
 
