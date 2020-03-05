@@ -17,7 +17,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
     self.title = @"测试流程图";
     [self createUI];
     // Do any additional setup after loading the view.
@@ -67,7 +66,6 @@
     long duration = time-self.preTime;
     self.preTime = time;
     [[FTMobileAgent sharedInstance] flowTrack:@"track_flow" traceId:self.traceId name:@"流程图节点3" parent:@"流程图节点2" duration:duration];
-    
 }
 /*
  #pragma mark - Navigation

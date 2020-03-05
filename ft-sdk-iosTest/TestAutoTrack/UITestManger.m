@@ -18,8 +18,8 @@
     static UITestManger *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-          sharedInstance = [[UITestManger alloc] init];
-      });
+        sharedInstance = [[UITestManger alloc] init];
+    });
     return sharedInstance;
 }
 -(instancetype)init{
@@ -35,40 +35,30 @@
     return self;
 }
 -(void)reset{
-          self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-           NSLog(@"lastCount == %ld",self.lastCount);
-           self.trackCount = 1;//lunch
-           self.autoTrackViewScreenCount = 2; //ViewController (close)
-           self.self.autoTrackClickCount = 0;
+    self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"lastCount == %ld",self.lastCount);
+    self.trackCount = 1;//lunch
+    self.autoTrackViewScreenCount = 1; //UITabBarController (open)
+    self.self.autoTrackClickCount = 0;
 }
 -(void)addTrackCount{
     if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch){
-    self.trackCount++;
-    NSLog(@"add == %ld",self.trackCount);
+        self.trackCount++;
+        NSLog(@"add == %ld",self.trackCount);
     }
 }
 - (void)addAutoTrackViewScreenCount{
     if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen){
-    self.autoTrackViewScreenCount ++;
-    NSLog(@"add == %ld",self.autoTrackViewScreenCount);
+        self.autoTrackViewScreenCount ++;
+        NSLog(@"add == %ld",self.autoTrackViewScreenCount);
     }
 }
 - (void)addAutoTrackClickCount{
-     if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick){
-    self.autoTrackClickCount++;
-    NSLog(@"add == %ld",self.autoTrackClickCount);
-     }
-
-}
--(NSArray *)getEndResult{
-    NSMutableArray *result = [NSMutableArray new];
-    NSInteger addCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick){
+        self.autoTrackClickCount++;
+        NSLog(@"add == %ld",self.autoTrackClickCount);
+    }
     
-    NSInteger trueCount = self.lastCount+self.trackCount+self.autoTrackClickCount+self.autoTrackViewScreenCount;
-//    if (addCount == trueCount) {
-        [result addObject:@"All Right"];
-//    }
-    NSLog(@"addCount == %ld trueCount == %ld",(long)addCount,(long)trueCount);
-    return result;
 }
+
 @end

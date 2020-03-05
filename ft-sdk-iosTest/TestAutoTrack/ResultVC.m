@@ -11,7 +11,6 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import "UITestManger.h"
-#import <FTMobileAgent/FTUploadTool.h>
 
 @interface ResultVC ()
 @property (nonatomic ,strong) FTMobileConfig *config;
@@ -24,74 +23,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = @"Result";
-    self.view.backgroundColor = [UIColor whiteColor];
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     self.config = appDelegate.config;
-    
-    [self setIsShowLiftBack];
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     [self createUI];
 }
-- (void)setIsShowLiftBack
-{
-    NSInteger VCCount = self.navigationController.viewControllers.count;
-    //下面判断的意义是 当VC所在的导航控制器中的VC个数大于1 或者 是present出来的VC时，才展示返回按钮，其他情况不展示
-    if (( VCCount > 1 || self.navigationController.presentingViewController != nil)) {
-        [self addNavigationItemWithImageNames:@[@"icon_back"] isLeft:YES target:self action:@selector(backBtnClicked) tags:nil];
-        
-    } else {
-        self.navigationItem.hidesBackButton = YES;
-        UIBarButtonItem * NULLBar=[[UIBarButtonItem alloc]initWithCustomView:[UIView new]];
-        self.navigationItem.leftBarButtonItem = NULLBar;
-    }
-}
-- (void)addNavigationItemWithImageNames:(NSArray *)imageNames isLeft:(BOOL)isLeft target:(id)target action:(SEL)action tags:(NSArray *)tags
-{
-    NSMutableArray * items = [[NSMutableArray alloc] init];
-    
-    NSInteger i = 0;
-    for (NSString * imageName in imageNames) {
-        UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
-        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateSelected];
-        btn.frame = CGRectMake(0, 0, 30, 30);
-        [btn addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-        
-        if (isLeft) {
-            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, -10, 0, 10)];
-        }else{
-            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, 10, 0, -10)];
-        }
-        
-        btn.tag = [tags[i++] integerValue];
-        UIBarButtonItem * item = [[UIBarButtonItem alloc] initWithCustomView:btn];
-        [items addObject:item];
-        
-    }
-    if (isLeft) {
-        self.navigationItem.leftBarButtonItems = items;
-    } else {
-        self.navigationItem.rightBarButtonItems = items;
-    }
-}
-- (void)backBtnClicked
-{
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
-    if (self.presentingViewController) {
-        [self dismissViewControllerAnimated:YES completion:nil];
-    }else{
-        [self.navigationController popViewControllerAnimated:YES];
-    }
-    
-}
 - (void)createUI{
-    
-    
-    
     UILabel *lable = [[UILabel alloc]initWithFrame:CGRectMake(10, 230, 350, 250)];
     lable.backgroundColor = [UIColor whiteColor];
     lable.textColor = [UIColor blackColor];
@@ -281,28 +220,7 @@
     return @[[NSNumber numberWithLong:time-(1000 * 60 * 3)],[NSNumber numberWithLong:time]];
 }
 
-- (BOOL)isAutoTrackVC{
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    if (!appDelegate.config.enableAutoTrack) {
-        return NO;
-    }
-    if (appDelegate.config.whiteVCList.count>0) {
-        [appDelegate.config.whiteVCList containsObject:@"ResultVC"];
-    }
-    if(appDelegate.config.blackVCList.count>0)
-        return ! [appDelegate.config.blackVCList containsObject:@"ResultVC"];;
-    return YES;
-}
-- (BOOL)isAutoTrackUI:(Class )view{
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
-    if (appDelegate.config.whiteViewClass.count>0) {
-        [appDelegate.config.whiteViewClass containsObject:view];
-    }
-    if(appDelegate.config.blackViewClass.count>0)
-        return ! [appDelegate.config.blackViewClass containsObject:view];;
-    return YES;
-}
+
 /*
  #pragma mark - Navigation
  

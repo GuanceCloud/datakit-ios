@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addAutoTrackViewScreenCount;
 - (void)addAutoTrackClickCount;
 - (void)addTrackCount;
-- (NSArray *)getEndResult;
 -(void)reset;
 @end
 
