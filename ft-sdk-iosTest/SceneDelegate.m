@@ -1,5 +1,5 @@
 #import "SceneDelegate.h"
-#import "RootViewController.h"
+#import "DemoViewController.h"
 #import "RootTabbarVC.h"
 @interface SceneDelegate ()
 
@@ -10,7 +10,7 @@
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
     UITabBarController *tab = [[UITabBarController alloc]init];
-    RootViewController *rootVC = [[RootViewController alloc] init];
+    DemoViewController *rootVC = [[DemoViewController alloc] init];
     rootVC.title = @"home";
    
     UINavigationController *rootNav = [[UINavigationController alloc] initWithRootViewController:rootVC];

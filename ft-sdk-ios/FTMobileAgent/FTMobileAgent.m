@@ -393,6 +393,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
     [defatluts removeObjectForKey:FT_SESSIONID];
     [defatluts synchronize];
+    ZYLog(@"User logout");
 }
 #pragma mark ========== 实时网速 ==========
 // 启动获取实时网络定时器

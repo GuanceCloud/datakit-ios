@@ -38,8 +38,11 @@
     [app launch];
     
    
-    [app.buttons[@"start"] tap];
     
+    XCUIElementQuery *tablesQuery = app.tables;
+    [tablesQuery.staticTexts[@"BindUser"] tap];
+    [tablesQuery.staticTexts[@"Test_autoTrack"] tap];
+        
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
     [segmentedControlsQuery.buttons[@"first"] tap];
     [segmentedControlsQuery.buttons[@"second"] tap];
@@ -50,17 +53,14 @@
     [steppersQuery.buttons[@"Decrement"] tap];
     
     XCUIApplication *app2 = app;
-    [app2/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [app2.buttons[@"lable"] tap];
     [[app.scrollViews childrenMatchingType:XCUIElementTypeImage].element tap];
     
-    XCUIElementQuery *tablesQuery = app2.tables;
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ pressForDuration:2];
-    [tablesQuery.staticTexts[@"Section: 0, Row: 1"] pressForDuration:2];
-    [app.navigationBars[@"testUI"].buttons[@"icon back"] tap];
+    XCUIElementQuery *tablesQuery2 = app2.tables;
+    [tablesQuery2.staticTexts[@"Section: 0, Row: 0"] pressForDuration:2];
+    [tablesQuery2.staticTexts[@"Section: 0, Row: 1"] pressForDuration:2];
+    [app2.buttons[@"result"] tap];
 
-    
-    [app.buttons[@"result logout"] tap];
-  
    
     [window pressForDuration:100];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];

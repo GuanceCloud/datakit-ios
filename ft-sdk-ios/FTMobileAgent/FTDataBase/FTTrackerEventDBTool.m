@@ -145,7 +145,7 @@ static FTTrackerEventDBTool *dbTool = nil;
         [self zy_inDatabase:^{
             NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '%@' , '%@' );",FT_DB_USERSESSION_TABLE_NAME,get_ft_sessionid,userdata];
            is=  [self.db executeUpdate:sqlStr];
-            ZYDebug(@"success == %ld",is);
+            ZYDebug(@"bind user success == %ld \n userName = %@\n Id = %@\n exts=%@",is,name,Id,exts);
         }];
         return is;
     }else{

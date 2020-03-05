@@ -1,25 +1,34 @@
 //
-//  SecondTabbarVC.m
+//  RootViewController.m
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2020/1/19.
+//  Created by 胡蕾蕾 on 2020/2/26.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import "RootTabbarVC.h"
-
-@interface RootTabbarVC ()
+#import "RootVController.h"
+#import "UITestManger.h"
+@interface RootVController ()
 
 @end
 
-@implementation RootTabbarVC
+@implementation RootVController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    // Do any additional setup after loading the view.
+        // Do any additional setup after loading the view.
 }
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
 
+}
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+
+}
 /*
 #pragma mark - Navigation
 
