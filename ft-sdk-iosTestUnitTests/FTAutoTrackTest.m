@@ -15,12 +15,15 @@
 #import <objc/runtime.h>
 #import <FTAutoTrack.h>
 #import <FTAutoTrack/FTAutoTrack.h>
-#import "TestAccount.h"
 @interface FTAutoTrackTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
 @property (nonatomic, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UITabBarController *tabBarController;
+@property (nonatomic, copy) NSString *akId;
+@property (nonatomic, copy) NSString *akSecret;
+@property (nonatomic, copy) NSString *url;
+
 @end
 
 @implementation FTAutoTrackTest
@@ -46,6 +49,10 @@
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
 }
 
@@ -75,11 +82,11 @@
   验证控制器白名单
 */
 - (void)testWhiteVCList{
-    TestAccount *test = [[TestAccount alloc]init];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteVCList = @[@"UITestVC"];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -92,11 +99,10 @@
   验证控制器黑名单
 */
 - (void)testBlackVCList{
-    TestAccount *test = [[TestAccount alloc]init];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
     config.blackVCList = @[@"UITestVC"];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -109,11 +115,11 @@
   验证UI白名单
 */
 - (void)testWhiteViewList{
-    TestAccount *test = [[TestAccount alloc]init];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:test.accessServerUrl akId:test.accessKeyID akSecret:test.accessKeySecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -125,11 +131,11 @@
   验证UI黑名单
 */
 - (void)testBlackViewList{
-    TestAccount *account = [[TestAccount alloc]init];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:account.accessServerUrl akId:account.accessKeyID akSecret:account.accessKeySecret enableRequestSigning:YES];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.blackViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];

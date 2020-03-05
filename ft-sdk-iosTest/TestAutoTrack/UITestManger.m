@@ -28,7 +28,7 @@
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
         self.autoTrackClickCount = 0;
-        self.autoTrackViewScreenCount = 2;
+        self.autoTrackViewScreenCount = 1;
         AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         self.config = appDelegate.config;
     }
@@ -42,7 +42,7 @@
            self.self.autoTrackClickCount = 0;
 }
 -(void)addTrackCount{
-    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppStart){
+    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch){
     self.trackCount++;
     NSLog(@"add == %ld",self.trackCount);
     }

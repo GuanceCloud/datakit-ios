@@ -9,7 +9,7 @@
 #import "UITestVC.h"
 #import "UITestManger.h"
 #import "AppDelegate.h"
-
+#import "ResultVC.h"
 @interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
 
 @end
@@ -18,13 +18,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([self isAutoTrackVC]) {
-        [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
     [self setIsShowLiftBack];
+}
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if ([self isAutoTrackVC]) {
+           [[UITestManger sharedManger] addAutoTrackViewScreenCount];
+       }
 }
 - (void)setIsShowLiftBack
 {
@@ -214,6 +217,7 @@
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
+
     NSLog(@"UIImageView被点击了");
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UIImageView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
@@ -235,11 +239,12 @@
     if ([self isAutoTrackVC] && [self isAutoTrackUI:UITableView.class]) {
     [[UITestManger sharedManger] addAutoTrackClickCount];
     }
+    
 }
--(void)dealloc{
-    if ([self isAutoTrackVC]){
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
     [[UITestManger sharedManger] addAutoTrackViewScreenCount];
-    }
+
 }
 - (BOOL)isAutoTrackUI:(Class )view{
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];

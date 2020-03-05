@@ -71,7 +71,7 @@
 - (void)testTrackMethod {
 
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"testTrack" values:@{@"event":@"testTrack"}];
     NSArray *all  = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     FTRecordModel *model =  [all lastObject];
     NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
@@ -134,7 +134,7 @@
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
     [NSThread sleepForTimeInterval:10.0];
 
-    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"testTrack" values:@{@"event":@"testTrack"}];
 
    [NSThread sleepForTimeInterval:2.0];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -155,8 +155,8 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindNewUser" Id:@"bindNewUserId" exts:nil];
 
-    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
-    [[FTMobileAgent sharedInstance] track:@"testTrack" values:@{@"event":@"testTrack"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"testTrack" values:@{@"event":@"testTrack"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"testTrack" values:@{@"event":@"testTrack"}];
 
     NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
     NSString *newUserData;

@@ -1,5 +1,5 @@
 //
-//  ZYUploadTool.m
+//  FTUploadTool.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/3.
@@ -17,12 +17,12 @@
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
+
 @interface FTUploadTool()
-@property (nonatomic, copy) NSString *tag;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
-
+@property (nonatomic, copy) NSString *tag;
 @end
 @implementation FTUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -56,8 +56,8 @@
                 break;
             }
          FTRecordModel *model = [updata lastObject];
-         BOOL scuess = [self apiRequestWithEventsAry:updata andError:nil];
-            if (!scuess) {//请求失败
+         BOOL success = [self apiRequestWithEventsAry:updata andError:nil];
+            if (!success) {//请求失败
                 ZYDebug(@"上传事件失败");
                 break;
             }
@@ -70,6 +70,10 @@
     @catch (NSException *exception) {
          ZYDebug(@"flushQueue exception %@",exception);
     }
+}
+-(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    BOOL success = [self apiRequestWithEventsAry:@[model] andError:nil];
+    callBackStatus?callBackStatus(success):nil;
 }
 - (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
     __block BOOL success =NO;
@@ -141,66 +145,82 @@
 
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
-    NSString *basicData = [self getBasicData];
+    
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
        __block NSString *event = @" ";
         NSDictionary *opdata = item[@"opdata"];
-        NSString *field;
-        __block NSString *appendTag = @"";
-        NSDictionary *tags;
-        
-        field = [opdata valueForKey:@"field"];
-        NSDictionary *values = opdata[@"values"];
-        [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
-            }];
-        event = event.length>1? [event substringToIndex:event.length-1]:event;
-        tags =opdata[@"tags"];
-        
-        [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
-            if ([key isEqualToString:@"cpn"]) {
-                if (obj) {
-                   appendTag = [appendTag stringByAppendingFormat:@"current_page_name=%@,",obj];
-                }
-            }else if ([key isEqualToString:@"rpn"]){
-                if (obj && ![obj isEqualToString:@"null"]) {
-                    if(obj.length>0){
-                    appendTag =[appendTag stringByAppendingFormat:@"root_page_name=%@,",obj];
-                    }
-                }
-            }else{
-                appendTag = [appendTag stringByAppendingFormat:@"%@=%@,",key,obj];
+        NSString *firstStr;
+        if ([opdata valueForKey:@"field"]) {
+            firstStr = [opdata valueForKey:@"field"];
+        }
+        if ([opdata valueForKey:@"product"]) {
+            firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
+            firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
+            firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
+            if ([[opdata allKeys] containsObject:@"parent"]) {
+                firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
             }
-        }];
+        }
+        
+        __block NSString *tagsStr = [self getTagStr:opdata];
         [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
             if ([obj isKindOfClass:NSString.class]) {
-                appendTag = [appendTag stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
             }
             if ([obj isKindOfClass:NSDictionary.class]) {
                 [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                    appendTag = [appendTag stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
                 }];
             }
         }];
-        appendTag =appendTag.length>1? [appendTag substringToIndex:appendTag.length-1]:appendTag;
-
-        if (idx==0) {
-                [requestDatas appendFormat:@"%@,%@",field,basicData];
-        }else{
-                [requestDatas appendFormat:@"\n%@,%@",field,basicData];
+        if ([[opdata allKeys] containsObject:@"values"]) {
+            NSDictionary *values = opdata[@"values"];
+                [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+                }];
+            event = event.length>1? [event substringToIndex:event.length-1]:event;
         }
-        appendTag = [appendTag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        [requestDatas appendString:appendTag];
-        [requestDatas appendString:event];
-        [requestDatas appendFormat:@" %ld",obj.tm*1000];
-    
+        if ([[opdata allKeys] containsObject:@"duration"]) {
+            event = [event stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
+        }
+       
+        tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
+        NSString *requestStr =firstStr;
+        requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+        requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+        requestStr = [requestStr stringByAppendingFormat:@"%@ %ld",event,obj.tm*1000];
+        if (idx==0) {
+                [requestDatas appendString:requestStr];
+        }else{
+                [requestDatas appendFormat:@"\n%@",requestStr];
+        }
     }];
 
     return requestDatas;
 }
-
+- (NSString *)getTagStr:(NSDictionary *)dict{
+    __block NSString *tagStr = [self getBasicData];
+    NSDictionary *tags =dict[@"tags"];
+    
+    [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
+        if ([key isEqualToString:@"cpn"]) {
+            if (obj) {
+               tagStr = [tagStr stringByAppendingFormat:@"current_page_name=%@,",obj];
+            }
+        }else if ([key isEqualToString:@"rpn"]){
+            if (obj && ![obj isEqualToString:@"null"]) {
+                if(obj.length>0){
+                tagStr =[tagStr stringByAppendingFormat:@"root_page_name=%@,",obj];
+                }
+            }
+        }else{
+            tagStr = [tagStr stringByAppendingFormat:@"%@=%@,",key,obj];
+        }
+    }];
+    return tagStr;
+}
 - (NSString *)getBasicData{
     if (_tag != nil) {
            return _tag;
@@ -244,8 +264,7 @@
         [tag appendFormat:@"camera_front_px=%@,",[FTBaseInfoHander ft_getFrontCameraPixel]];
         [tag appendFormat:@"camera_back_px=%@,",[FTBaseInfoHander ft_getBackCameraPixel]];
     }
-     _tag = [tag stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+     _tag = tag;
      return _tag;
 }
-
 @end
