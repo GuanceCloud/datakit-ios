@@ -12,8 +12,6 @@
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import "TestFlowTrackVC.h"
-#define kWidth [UIScreen mainScreen].bounds.size.width
-#define kHeight [UIScreen mainScreen].bounds.size.height
 
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -25,14 +23,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_flowTrack",@"Test_autoTrack"];
-    [self createUI];
-    self.view.backgroundColor = [UIColor whiteColor];
-
-    
+    [self createUI];    
 }
 -(void)createUI{
     
-    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, kWidth, 400)];
+    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, 400)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];

@@ -19,67 +19,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
-    [self setIsShowLiftBack];
-}
-- (void)setIsShowLiftBack
-{
-    NSInteger VCCount = self.navigationController.viewControllers.count;
-    //下面判断的意义是 当VC所在的导航控制器中的VC个数大于1 或者 是present出来的VC时，才展示返回按钮，其他情况不展示
-    if (( VCCount > 1 || self.navigationController.presentingViewController != nil)) {
-        [self addNavigationItemWithImageNames:@[@"icon_back"] isLeft:YES target:self action:@selector(backBtnClicked) tags:nil];
-        
-    } else {
-        self.navigationItem.hidesBackButton = YES;
-        UIBarButtonItem * NULLBar=[[UIBarButtonItem alloc]initWithCustomView:[UIView new]];
-        self.navigationItem.leftBarButtonItem = NULLBar;
-    }
-}
-- (void)addNavigationItemWithImageNames:(NSArray *)imageNames isLeft:(BOOL)isLeft target:(id)target action:(SEL)action tags:(NSArray *)tags
-{
-    NSMutableArray * items = [[NSMutableArray alloc] init];
-    //调整按钮位置
-    //    UIBarButtonItem* spaceItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    //    //将宽度设为负值
-    //    spaceItem.width= -5;
-    //    [items addObject:spaceItem];
-    NSInteger i = 0;
-    for (NSString * imageName in imageNames) {
-        UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
-        [btn setImage:[UIImage imageNamed:imageName] forState:UIControlStateSelected];
-        btn.frame = CGRectMake(0, 0, 30, 30);
-        [btn addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-        
-        if (isLeft) {
-            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, -10, 0, 10)];
-        }else{
-            [btn setContentEdgeInsets:UIEdgeInsetsMake(0, 10, 0, -10)];
-        }
-        
-        btn.tag = [tags[i++] integerValue];
-        UIBarButtonItem * item = [[UIBarButtonItem alloc] initWithCustomView:btn];
-        [items addObject:item];
-        
-    }
-    if (isLeft) {
-        self.navigationItem.leftBarButtonItems = items;
-    } else {
-        self.navigationItem.rightBarButtonItems = items;
-    }
-}
-- (void)backBtnClicked
-{
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
-    if (self.presentingViewController) {
-        [self dismissViewControllerAnimated:YES completion:nil];
-    }else{
-        [self.navigationController popViewControllerAnimated:YES];
-    }
-    
 }
 -(void)createUI{
     self.title = @"TestAutoTrack";
@@ -169,67 +109,56 @@
 
 - (void)firstAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    
 }
 
 - (void)secondAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 - (void)resultAction:(UIButton *)sender{
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIButton.class]) {
-           [[UITestManger sharedManger] addAutoTrackClickCount];
-       }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
     self.hidesBottomBarWhenPushed = YES;
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIStepper.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)switchAction:(UISwitch *)sender {
     NSLog(@"UISwitch on:%d", sender.isOn);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UISwitch.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)segmentedAction:(UISegmentedControl *)sender {
     NSLog(@"UISwitch on:%ld", sender.selectedSegmentIndex);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UISegmentedControl.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
     NSLog(@"%@被点击了", label.text);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UILabel.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
     
     NSLog(@"UIImageView被点击了");
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UIImageView.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    
 }
 #pragma mark -
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -244,33 +173,12 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"%@", indexPath);
-    if ([self isAutoTrackVC] && [self isAutoTrackUI:UITableView.class]) {
-        [[UITestManger sharedManger] addAutoTrackClickCount];
-    }
+    
+    [[UITestManger sharedManger] addAutoTrackClickCount];
+    
     
 }
-- (BOOL)isAutoTrackUI:(Class )view{
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
-    if (appDelegate.config.whiteViewClass.count>0) {
-        [appDelegate.config.whiteViewClass containsObject:view];
-    }
-    if(appDelegate.config.blackViewClass.count>0)
-        return ! [appDelegate.config.blackViewClass containsObject:view];;
-    return YES;
-}
-- (BOOL)isAutoTrackVC{
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    if (!appDelegate.config.enableAutoTrack) {
-        return NO;
-    }
-    if (appDelegate.config.whiteVCList.count>0) {
-        [appDelegate.config.whiteVCList containsObject:@"UITestVC"];
-    }
-    if(appDelegate.config.blackVCList.count>0)
-        return ! [appDelegate.config.blackVCList containsObject:@"UITestVC"];;
-    return YES;
-}
+
 /*
  #pragma mark - Navigation
  

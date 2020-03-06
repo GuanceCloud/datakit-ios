@@ -10,9 +10,7 @@
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl{
-   return  [self initWithMetricsUrl:metricsUrl akId:nil akSecret:nil enableRequestSigning:NO];
-}
+
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
      if (self = [super init]) {
          self.metricsUrl = metricsUrl;
@@ -29,6 +27,9 @@
          self.enableScreenFlow = NO;
         }
       return self;
+}
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl{
+    return [self initWithMetricsUrl:metricsUrl akId:nil akSecret:nil enableRequestSigning:NO];
 }
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
@@ -48,8 +49,7 @@
     options.enableScreenFlow = self.enableScreenFlow;
     return options;
 }
-
--(void)enableLog:(BOOL)enableLog{
+-(void)setEnableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);
 }
 -(void)enableTrackScreenFlow:(BOOL)enable{
