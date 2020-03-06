@@ -38,13 +38,13 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 2.2.在 Podfile 目录下执行 pod install 安装 SDK。
 
 ## 二、初始化 SDK
-###1.添加头文件
+### 1.添加头文件
 请将 `#import <FTMobileAgent/FTMobileAgent.h>
 ` 添加到 AppDelegate.m 引用头文件的位置。    
 
 
 
-###2.添加初始化代码
+### 2.添加初始化代码
   请将以下代码添加到 `-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions`
   eg:
   ```objective-c
@@ -58,7 +58,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
     [FTMobileAgent startWithConfigOptions:config];
   ```     
 
-###3.FTMobileConfig 配置
+### 3.FTMobileConfig 配置
 1. FTMobileConfig初始化方法    
   - 不需要进行签名配置    
     ```    
@@ -193,11 +193,11 @@ Release : FT_TRACK_GPUUSAGE=1
 
 ## 四、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
-###1.Launch (App 启动) 
+### 1.Launch (App 启动) 
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`
 触发：App 启动或从后台恢复时，触发 launch 事件。    
 
-###2.Click  (事件点击)
+### 2.Click  (事件点击)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`
 触发：控件被点击时，触发 Click 事件。
 Click 事件中包含以下属性：
@@ -205,7 +205,7 @@ Click 事件中包含以下属性：
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
-###3.ViewScreen (页面open、close)
+### 3.ViewScreen (页面open、close)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`
 触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 Open 事件。- viewDidDisappear: 被调用时，触发 Close 事件。
 Open 与 Close 事件中包含以下属性：
@@ -216,7 +216,7 @@ Open 与 Close 事件中包含以下属性：
 ## 五、主动埋点方法
  DF SDK 公开了4个埋点方法，用户通过这两个方法可以在需要的地方实现埋点，然后将数据上传到服务端。
 
-###1.方法一：
+### 1.方法一：
 
 ```objective-c
   /**
@@ -227,7 +227,7 @@ Open 与 Close 事件中包含以下属性：
 - (void)trackBackgroud:(NSString *)field  values:(NSDictionary *)values;
 ```
  
-###2.方法二：
+### 2.方法二：
 
 ```objective-c
 /**
@@ -240,7 +240,7 @@ Open 与 Close 事件中包含以下属性：
 - (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
 ```
 
-###3.方法三：
+### 3.方法三：
 
 ```
 /**
@@ -252,7 +252,7 @@ Open 与 Close 事件中包含以下属性：
 
 ```    
 
-###4.方法四：
+### 4.方法四：
 
 ```
 /**
@@ -265,7 +265,7 @@ Open 与 Close 事件中包含以下属性：
 
 ```
 
-###5.方法使用示例
+### 5.方法使用示例
 
 ```objective-c
  //等待上传
@@ -283,7 +283,7 @@ Open 与 Close 事件中包含以下属性：
 ## 六、用户的绑定与注销 
  FT SDK 提供了绑定用户和注销用户的方法，`needBindUser` 为 YES 时（默认为 YES），用户登录的状态下，才会进行数据的传输。如果不需要绑定用户，请设置 `needBindUser` 为 NO 。                
  
- ###1.用户绑定：
+ ### 1.用户绑定：
  
 ```
   /**
@@ -295,7 +295,7 @@ Open 与 Close 事件中包含以下属性：
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 ```
 
-###2.用户注销：
+### 2.用户注销：
 
 ```
 /**
@@ -304,7 +304,7 @@ Open 与 Close 事件中包含以下属性：
 - (void)logout;
 ```
 
-###3.方法使用示例
+### 3.方法使用示例
 
 ```
 //登录后 绑定用户信息
