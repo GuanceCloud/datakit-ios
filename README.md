@@ -62,11 +62,11 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 1. FTMobileConfig初始化方法    
   - 不需要进行签名配置    
     ```    
-    /** **
+     /** 
       * @method 指定初始化方法，设置 metricsUrl 配置  不需要进行请求签名
       * @param metricsUrl FT-GateWay metrics 写入地址
       * @return 配置对象
-    */
+     */
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl; 
          
     ```    
