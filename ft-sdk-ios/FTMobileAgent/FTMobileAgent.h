@@ -28,26 +28,26 @@ SDK 初始化方法
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 /**
- 主动埋点，追踪自定义事件。
+ 主动埋点，追踪自定义事件。 存储数据库，等待上传
  @param field      当前数据点所属的指标集
  @param values     自定义指标
 */
 - (void)trackBackgroud:(NSString *)field  values:(NSDictionary *)values;
 /**
- 主动埋点，追踪自定义事件。
+ 主动埋点，追踪自定义事件。 存储数据库，等待上传
  @param field      当前数据点所属的指标集
  @param tags       自定义标签
  @param values     自定义指标
  */
 - (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
 /**
- 主动埋点，追踪自定义事件。 --- 立即上传
+ 主动埋点，追踪自定义事件。  立即上传 回调上传结果
  @param field      当前数据点所属的指标集
  @param values     自定义指标
 */
 - (void)trackImmediate:(NSString *)field  values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
-主动埋点，追踪自定义事件。 --- 立即上传
+主动埋点，追踪自定义事件。  立即上传 回调上传结果
 @param field      当前数据点所属的指标集
 @param tags       自定义标签
 @param values     自定义指标
