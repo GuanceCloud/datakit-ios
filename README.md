@@ -104,16 +104,17 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
    2. 控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
    3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
 
-   - 控制器黑白名单设置 
+   - 控制器黑白名单设置     
+   
     ```
      /**
-       *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
+        *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
         * eg: @[@"HomeViewController"];  字符串类型
      */
      @property (nonatomic,strong) NSArray *whiteVCList; 
 		
      /**
-       *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
+        *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
      */
      @property (nonatomic,strong) NSArray *blackVCList;
 
