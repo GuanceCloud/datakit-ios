@@ -59,7 +59,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
   ```     
 
 ### 3.FTMobileConfig 配置
-1. FTMobileConfig初始化方法    
+3.1.FTMobileConfig初始化方法    
 
   - 不需要进行签名配置    
      
@@ -85,23 +85,24 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
       */
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
     ```
-2. 设置是否打印日志    
+	
+3.2.设置是否打印日志    
 
    在debug环境下，设置 FTMobileConfig 的 `enableLog` 属性。
    
    ```
     config.enableLog = YES; //打印日志
    ```
-3. 设置是否开启全埋点  
+3.3.设置是否开启全埋点  
   
    开启全埋点 设置 FTMobileConfig 的 `enableAutoTrack` 为 YES，在 `enableAutoTrack` 为 YES 的情况下，设置 `autoTrackEventType` 类型。
   
-4. 设置全埋点黑白名单
+3.4.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
-   1.只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
-   2.控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
-   3.只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
+   1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
+   2. 控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
+   3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
 
    - 控制器黑白名单设置 
     ```
@@ -135,7 +136,8 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
       */
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
     ```
-5. 采集数据配置
+	
+3.5.采集数据配置
     
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：
    
