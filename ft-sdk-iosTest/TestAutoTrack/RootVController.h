@@ -1,17 +1,16 @@
 //
-//  SecondTabbarVC.h
+//  RootVController.h
 //  ft-sdk-iosTest
 //
-//  Created by 胡蕾蕾 on 2020/1/19.
+//  Created by 胡蕾蕾 on 2020/3/4.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
-#import "RootVController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RootTabbarVC : RootVController
+@interface RootVController : UIViewController
 
 @end
 

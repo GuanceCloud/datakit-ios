@@ -1,6 +1,6 @@
 //
-//  UIView+ZY_currentController.h
-//  RuntimDemo
+//  UIView+FT_CurrentController.h
+//  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2019/11/29.
 //  Copyright © 2019 hll. All rights reserved.

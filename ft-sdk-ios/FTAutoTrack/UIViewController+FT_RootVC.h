@@ -1,6 +1,6 @@
 //
-//  UIViewController+ZYRootVC.h
-//  FTMobileAgent
+//  UIViewController+FT_RootVC.h
+//  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2019/12/2.
 //  Copyright © 2019 hll. All rights reserved.

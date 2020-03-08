@@ -39,8 +39,10 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
+    [config enableTrackScreenFlow:NO];
+    [config setTrackViewFlowProduct:@"iOSDemo"];
     self.config = config;
      long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];

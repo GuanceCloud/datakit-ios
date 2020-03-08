@@ -1,5 +1,5 @@
 //
-//  ZYConfig.m
+//  FTMobileConfig.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/6.
@@ -10,7 +10,8 @@
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
 @implementation FTMobileConfig
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(NSString *)akId akSecret:(NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
+
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
      if (self = [super init]) {
          self.metricsUrl = metricsUrl;
          self.akId = akId;
@@ -23,6 +24,7 @@
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
          self.needBindUser = YES;
+         self.enableScreenFlow = NO;
         }
       return self;
 }
@@ -44,9 +46,16 @@
     options.appName = self.appName;
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
+    options.enableScreenFlow = self.enableScreenFlow;
     return options;
 }
 -(void)setEnableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);
+}
+-(void)enableTrackScreenFlow:(BOOL)enable{
+    self.enableScreenFlow = enable;
+}
+-(void)setTrackViewFlowProduct:(NSString *)product{
+    self.product = product;
 }
 @end

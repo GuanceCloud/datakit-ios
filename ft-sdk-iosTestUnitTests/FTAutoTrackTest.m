@@ -86,7 +86,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteVCList = @[@"UITestVC"];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -102,7 +102,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.monitorInfoType = FTMonitorInfoTypeAll;
     config.blackVCList = @[@"UITestVC"];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -119,7 +119,7 @@
 
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.whiteViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -135,7 +135,7 @@
 
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppStart|FTAutoTrackEventTypeAppViewScreen;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
     config.blackViewClass = @[UITableView.class];
     config.monitorInfoType = FTMonitorInfoTypeAll;
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];

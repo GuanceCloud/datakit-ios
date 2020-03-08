@@ -1,6 +1,6 @@
 //
-//  ZYViewController_log.m
-//  RuntimDemo
+//  FTAutoTrack.m
+//  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
@@ -25,12 +25,16 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
-
+@property (nonatomic, assign) long preFlowTime;
+@property (nonatomic, copy)  NSString *flowId;
+@property (nonatomic, copy)  NSString *preOpenName;
 @end
 @implementation FTAutoTrack
 
 -(void)startWithConfig:(FTMobileConfig *)config{
     self.config = config;
+    self.preFlowTime = 0;
+    self.flowId = [[NSUUID UUID] UUIDString];
     [self setLogContent];
 }
 -(void)setLogContent{
@@ -38,7 +42,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         return;
     }
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppStart) {
+    if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch) {
         [notificationCenter addObserver:self
                                      selector:@selector(appDidFinishLaunchingWithOptions:)
                                             name:UIApplicationDidFinishLaunchingNotification
@@ -53,7 +57,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         [self logViewControllerLifeCycle];
     }
     
-  
 }
 - (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
     
@@ -65,21 +68,43 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 }
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
-       [UIViewController aspect_hookSelector:@selector(loadView) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+       [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
 
            [self track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil];
-           
+           [self flowOpenTrack:vc];
          } error:nil];
-     
-       SEL sel= NSSelectorFromString(@"dealloc");
-       [UIViewController aspect_hookSelector:sel withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+    
+       [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
 
            [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
        } error:nil];
-    
 }
+- (void)flowOpenTrack:(UIViewController *)vc{
+    if (!self.config.enableScreenFlow) {
+        return;
+    }
+   if ([vc isKindOfClass:UINavigationController.class]) {
+         return;
+    }
+     NSLog(@"vc:%@ open:%@ %d",vc,vc.parentViewController,[vc.parentViewController isKindOfClass:NSNull.class]);
+     if ([vc.parentViewController isKindOfClass:NSNull.class] ||[vc.parentViewController isKindOfClass:UINavigationController.class] ||[vc.parentViewController isKindOfClass:UITabBarController.class]) {
+         NSString *parent = self.preOpenName;
+         self.preOpenName = NSStringFromClass(vc.class);
+         long duration;
+         long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+         if (self.preFlowTime==0) {
+             duration = 0;
+         }else{
+             duration = (tm-self.preFlowTime)/1000;
+         }
+          self.preFlowTime = tm;
+         NSString *product = [NSString stringWithFormat:@"mobile_activity_%@",self.config.product];
+         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
+         }
+}
+
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
 
@@ -169,6 +194,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 vc = to;
             }
             [self track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
+
         }
           } error:NULL];
    
@@ -279,7 +305,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
         }
-        [[FTMobileAgent sharedInstance] track:field tags:tags values:value];
+        [[FTMobileAgent sharedInstance] trackBackgroud:field tags:tags values:value];
        
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);

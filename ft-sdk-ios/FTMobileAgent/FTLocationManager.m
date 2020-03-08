@@ -1,5 +1,5 @@
 //
-//  FTGPSLocationConfig.m
+//  FTLocationManager.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2020/1/8.
