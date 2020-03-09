@@ -12,6 +12,8 @@
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import "TestFlowTrackVC.h"
+#import "TestSubFlowTrack.h"
+#import "TestSubFlowTrack2.h"
 
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -22,8 +24,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_flowTrack",@"Test_autoTrack"];
-    [self createUI];    
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2"];
+    [self createUI];
 }
 -(void)createUI{
     
@@ -56,14 +58,24 @@
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestFlowTrackVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
-
+    
 }
 - (void)testAutoTrack{
-   
+    
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
-
+}
+- (void)testSubFlowTrack{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestSubFlowTrack new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+    
+}
+- (void)testSubFlowTrack2{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestSubFlowTrack2 new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
 }
 -(void)showResult:(NSString *)title{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -103,10 +115,14 @@
         case 5:
             [self testAutoTrack];
             break;
+        case 6:
+            [self testSubFlowTrack];
+        case 7:
+            [self testSubFlowTrack2];
         default:
             break;
     }
-       [[UITestManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 

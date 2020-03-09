@@ -28,6 +28,12 @@
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
 		4AAF2B47240FB17C00552B6D /* TestFlowTrackVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B46240FB17C00552B6D /* TestFlowTrackVC.m */; };
 		4AAF2B4E240FB19C00552B6D /* RootVController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B4D240FB19C00552B6D /* RootVController.m */; };
+		4AAF2B772415E5A400552B6D /* TestSubFlowTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B762415E5A400552B6D /* TestSubFlowTrack.m */; };
+		4AAF2B7E2416080800552B6D /* SubFlowTrack1.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B7D2416080800552B6D /* SubFlowTrack1.m */; };
+		4AAF2B812416081500552B6D /* SubFlowTrack2.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B802416081500552B6D /* SubFlowTrack2.m */; };
+		4AAF2B842416082200552B6D /* SubFlowTrack3.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B832416082200552B6D /* SubFlowTrack3.m */; };
+		4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B862416091200552B6D /* SubFlowTrackCell.m */; };
+		4AAF2B8A24163B6200552B6D /* TestSubFlowTrack2.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */; };
 		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
@@ -118,6 +124,18 @@
 		4AAF2B46240FB17C00552B6D /* TestFlowTrackVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestFlowTrackVC.m; sourceTree = "<group>"; };
 		4AAF2B4C240FB19C00552B6D /* RootVController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootVController.h; sourceTree = "<group>"; };
 		4AAF2B4D240FB19C00552B6D /* RootVController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootVController.m; sourceTree = "<group>"; };
+		4AAF2B752415E5A400552B6D /* TestSubFlowTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestSubFlowTrack.h; sourceTree = "<group>"; };
+		4AAF2B762415E5A400552B6D /* TestSubFlowTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSubFlowTrack.m; sourceTree = "<group>"; };
+		4AAF2B7C2416080800552B6D /* SubFlowTrack1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SubFlowTrack1.h; sourceTree = "<group>"; };
+		4AAF2B7D2416080800552B6D /* SubFlowTrack1.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SubFlowTrack1.m; sourceTree = "<group>"; };
+		4AAF2B7F2416081500552B6D /* SubFlowTrack2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SubFlowTrack2.h; sourceTree = "<group>"; };
+		4AAF2B802416081500552B6D /* SubFlowTrack2.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SubFlowTrack2.m; sourceTree = "<group>"; };
+		4AAF2B822416082200552B6D /* SubFlowTrack3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SubFlowTrack3.h; sourceTree = "<group>"; };
+		4AAF2B832416082200552B6D /* SubFlowTrack3.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SubFlowTrack3.m; sourceTree = "<group>"; };
+		4AAF2B852416091200552B6D /* SubFlowTrackCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SubFlowTrackCell.h; sourceTree = "<group>"; };
+		4AAF2B862416091200552B6D /* SubFlowTrackCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SubFlowTrackCell.m; sourceTree = "<group>"; };
+		4AAF2B8824163B6200552B6D /* TestSubFlowTrack2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestSubFlowTrack2.h; sourceTree = "<group>"; };
+		4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSubFlowTrack2.m; sourceTree = "<group>"; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
@@ -264,6 +282,18 @@
 				4AAF2B46240FB17C00552B6D /* TestFlowTrackVC.m */,
 				4AAF2B4C240FB19C00552B6D /* RootVController.h */,
 				4AAF2B4D240FB19C00552B6D /* RootVController.m */,
+				4AAF2B752415E5A400552B6D /* TestSubFlowTrack.h */,
+				4AAF2B762415E5A400552B6D /* TestSubFlowTrack.m */,
+				4AAF2B8824163B6200552B6D /* TestSubFlowTrack2.h */,
+				4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */,
+				4AAF2B7C2416080800552B6D /* SubFlowTrack1.h */,
+				4AAF2B7D2416080800552B6D /* SubFlowTrack1.m */,
+				4AAF2B7F2416081500552B6D /* SubFlowTrack2.h */,
+				4AAF2B802416081500552B6D /* SubFlowTrack2.m */,
+				4AAF2B822416082200552B6D /* SubFlowTrack3.h */,
+				4AAF2B832416082200552B6D /* SubFlowTrack3.m */,
+				4AAF2B852416091200552B6D /* SubFlowTrackCell.h */,
+				4AAF2B862416091200552B6D /* SubFlowTrackCell.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -566,10 +596,16 @@
 			files = (
 				4AAF2B47240FB17C00552B6D /* TestFlowTrackVC.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
+				4AAF2B842416082200552B6D /* SubFlowTrack3.m in Sources */,
+				4AAF2B7E2416080800552B6D /* SubFlowTrack1.m in Sources */,
+				4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.m in Sources */,
+				4AAF2B8A24163B6200552B6D /* TestSubFlowTrack2.m in Sources */,
 				4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */,
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
+				4AAF2B772415E5A400552B6D /* TestSubFlowTrack.m in Sources */,
+				4AAF2B812416081500552B6D /* SubFlowTrack2.m in Sources */,
 				4AAF2B4E240FB19C00552B6D /* RootVController.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
