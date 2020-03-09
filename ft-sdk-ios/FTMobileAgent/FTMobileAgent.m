@@ -320,6 +320,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
             }
            [opdata addEntriesFromDictionary:@{@"tags":tag}];
+           ZYLog(@"flowData = %@",opdata);
            NSDictionary *data =@{
                                @"opdata":opdata,
                                };
