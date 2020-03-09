@@ -47,7 +47,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 ### 2.添加初始化代码
   请将以下代码添加到 `-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions`
   eg:
-  ```objective-c
+  ```
      // SDK FTMobileConfig 设置
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"Your App metricsUrl" akId:@"Your App akId" akSecret: @"Your App akSecret" enableRequestSigning:YES];
     config.enableLog = YES;
@@ -59,48 +59,50 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
   ```     
 
 ### 3.FTMobileConfig 配置
-1. FTMobileConfig初始化方法    
+3.1.FTMobileConfig初始化方法    
+
   - 不需要进行签名配置    
+     
     ```    
-     /** 
-      * @method 指定初始化方法，设置 metricsUrl 配置  不需要进行请求签名
-      * @param metricsUrl FT-GateWay metrics 写入地址
-      * @return 配置对象
-     */
-      - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl; 
-         
+      /** 
+        * @method 指定初始化方法，设置 metricsUrl 配置  不需要进行请求签名
+        * @param metricsUrl FT-GateWay metrics 写入地址
+        * @return 配置对象
+      */
+      - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;  
     ```    
 	
   - 需要进行签名配置   
     
 	```
       /**
-      * @method 指定初始化方法，设置 metricsUrl
-      * @param metricsUrl FT-GateWay metrics 写入地址
-      * @param akId       access key ID
-      * @param akSecret   access key Secret
-      * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
-      * @return 配置对象
+        * @method 指定初始化方法，设置 metricsUrl
+        * @param metricsUrl FT-GateWay metrics 写入地址
+        * @param akId       access key ID
+        * @param akSecret   access key Secret
+        * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
+        * @return 配置对象
       */
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
     ```
-2. 设置是否打印日志    
+	
+3.2.设置是否打印日志    
 
    在debug环境下，设置 FTMobileConfig 的 `enableLog` 属性。
    
    ```
     config.enableLog = YES; //打印日志
    ```
-3. 设置是否开启全埋点  
+3.3.设置是否开启全埋点  
   
    开启全埋点 设置 FTMobileConfig 的 `enableAutoTrack` 为 YES，在 `enableAutoTrack` 为 YES 的情况下，设置 `autoTrackEventType` 类型。
   
-4. 设置全埋点黑白名单
+3.4.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
-   1.只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
-   2.控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
-   3.只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
+   1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
+   2. 控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
+   3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
 
    - 控制器黑白名单设置 
     ```
@@ -134,8 +136,9 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
       */
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
     ```
-5. 采集数据配置
-   
+	
+3.5.采集数据配置
+    
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：
    
   ```
@@ -172,6 +175,10 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 Build Settings > Apple LLVM 7.0 - Preprocessing > Processor Macros >
 Release : FT_TRACK_GPUUSAGE=1
  ```
+
+  
+
+
 
 ## 三、SDK 可配置参数
 | 字段 | 类型 |说明|是否必须|
@@ -218,7 +225,7 @@ Open 与 Close 事件中包含以下属性：
 
 ### 1.方法一：
 
-```objective-c
+```
   /**
 追踪自定义事件。 存储数据库，等待上传
  @param field      指标（必填）
@@ -229,7 +236,7 @@ Open 与 Close 事件中包含以下属性：
  
 ### 2.方法二：
 
-```objective-c
+```
 /**
  追踪自定义事件。 存储数据库，等待上传
  
@@ -267,13 +274,13 @@ Open 与 Close 事件中包含以下属性：
 
 ### 5.方法使用示例
 
-```objective-c
+```
  //等待上传
 [[FTMobileAgent sharedInstance] trackBackgroud:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
    
 ```    
 
-```objective-c
+```
  //立即上传
 [[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
    
@@ -281,7 +288,7 @@ Open 与 Close 事件中包含以下属性：
 
 
 ## 六、用户的绑定与注销 
- FT SDK 提供了绑定用户和注销用户的方法，`needBindUser` 为 YES 时（默认为 YES），用户登录的状态下，才会进行数据的传输。如果不需要绑定用户，请设置 `needBindUser` 为 NO 。                
+ FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 YES 时（默认为 YES），用户登录的状态下，才会进行数据的传输。如果不需要绑定用户，请设置 `needBindUser` 为 NO 。                
  
  ### 1.用户绑定：
  
