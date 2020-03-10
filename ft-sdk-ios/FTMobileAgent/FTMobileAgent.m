@@ -366,6 +366,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
               [tag setObject:network_type forKey:@"network_type"];
               [tag setObject:network_strength forKey:@"network_strength"];
               [tag setObject:self.netFlow.flow forKey:@"network_speed"];
+              [tag setObject:[NSNumber numberWithBool:[FTNetworkInfo getProxyStatus]] forKey:@"network_proxy"];
           }
           if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
               [tag setObject:[FTBaseInfoHander ft_getBatteryUse] forKey:@"battery_use"];
