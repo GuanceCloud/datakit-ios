@@ -18,8 +18,8 @@
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
-NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
-NSString * const FT_AUTO_TRACK_OP_CLOSE  = @"close";
+NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
+NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
 NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
@@ -71,14 +71,14 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
        [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
             UIViewController * vc = [info instance];
 
-           [self track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil];
+           [self track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
            [self flowOpenTrack:vc];
          } error:nil];
     
        [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
            UIViewController *tempVC = (UIViewController *)info.instance;
 
-           [self track:FT_AUTO_TRACK_OP_CLOSE withCpn:tempVC WithClickView:nil];
+           [self track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
        } error:nil];
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
