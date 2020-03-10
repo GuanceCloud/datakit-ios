@@ -229,10 +229,10 @@ enter 与 leave 事件中包含以下属性：
 ```
   /**
 追踪自定义事件。 存储数据库，等待上传
- @param field      指标（必填）
- @param values     指标值（必填）
+ @param measurement      指标（必填）
+ @param field            指标值（必填）
 */ 
-- (void)trackBackgroud:(NSString *)field  values:(NSDictionary *)values;
+- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field;
 ```
  
 ### 2.方法二：
@@ -241,11 +241,11 @@ enter 与 leave 事件中包含以下属性：
 /**
  追踪自定义事件。 存储数据库，等待上传
  
- @param field      指标（必填）
- @param tags       标签（选填）
- @param values     指标值（必填）
+ @param measurement      指标（必填）
+ @param tags             标签（选填）
+ @param field           指标值（必填）
  */
-- (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
+- (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 ```
 
 ### 3.方法三：
@@ -253,10 +253,10 @@ enter 与 leave 事件中包含以下属性：
 ```
 /**
  追踪自定义事件。  立即上传 回调上传结果
- @param field      当前数据点所属的指标集
- @param values     自定义指标
+ @param measurement      当前数据点所属的指标集
+ @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)field  values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;    
+- (void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;    
 
 ```    
 
@@ -265,11 +265,11 @@ enter 与 leave 事件中包含以下属性：
 ```
 /**
 追踪自定义事件。  立即上传 回调上传结果
-@param field      当前数据点所属的指标集
-@param tags       自定义标签
-@param values     自定义指标
+@param measurement      当前数据点所属的指标集
+@param tags             自定义标签
+@param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
 
 ```
 
@@ -277,13 +277,13 @@ enter 与 leave 事件中包含以下属性：
 
 ```
  //等待上传
-[[FTMobileAgent sharedInstance] trackBackgroud:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+[[FTMobileAgent sharedInstance] trackBackgroud:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} field:@{@"event":@"BtnClick"}];
    
 ```    
 
 ```
  //立即上传
-[[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+[[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} field:@{@"event":@"BtnClick"}];
    
 ```
 

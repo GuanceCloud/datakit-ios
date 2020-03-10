@@ -43,14 +43,14 @@ SDK 初始化方法
 /**
  主动埋点，追踪自定义事件。  立即上传 回调上传结果
  @param measurement     当前数据点所属的指标集
- @param field     自定义指标
+ @param field           自定义指标
 */
 - (void)trackImmediate:(NSString *)measurement  field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
-主动埋点，追踪自定义事件。  立即上传 回调上传结果
+主动埋点，追踪自定义事件。   立即上传 回调上传结果
 @param measurement      当前数据点所属的指标集
-@param tags       自定义标签
-@param field     自定义指标
+@param tags             自定义标签
+@param field            自定义指标
 */
 - (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
