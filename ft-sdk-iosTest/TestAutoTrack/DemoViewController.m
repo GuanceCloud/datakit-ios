@@ -44,10 +44,10 @@
     [[FTMobileAgent sharedInstance] logout];
 }
 - (void)testTrackBackgroud{
-    [[FTMobileAgent sharedInstance] trackBackgroud:@"trackTest" tags:nil values:@{@"event":@"test"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"trackTest" tags:nil field:@{@"event":@"test"}];
 }
 - (void)testTrackImmediate{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" values:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
+    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" field:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
         NSLog(@"success = %d",isSuccess);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self showResult:isSuccess?@"success":@"fail"];
@@ -117,8 +117,10 @@
             break;
         case 6:
             [self testSubFlowTrack];
+            break;
         case 7:
             [self testSubFlowTrack2];
+            break;
         default:
             break;
     }
