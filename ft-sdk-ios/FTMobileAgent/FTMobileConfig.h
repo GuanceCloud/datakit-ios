@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 /* SDK版本 */
-#define FT_SDK_VERSION @"1.0.0"
+#define FT_SDK_VERSION @"1.0.1"
 
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
