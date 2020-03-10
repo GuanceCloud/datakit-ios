@@ -104,7 +104,19 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          }
           self.preFlowTime = tm;
          NSString *product = [NSString stringWithFormat:@"mobile_activity_%@",self.config.product];
-         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
+        NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
+
+        NSMutableDictionary *opdata = [@{@"product":product,
+                                           @"traceId":self.flowId,
+                                           @"name":NSStringFromClass(vc.class),
+                                           @"duration":durationStr
+          } mutableCopy];
+          if (parent.length>0) {
+              [opdata setObject:parent forKey:@"parent"];
+          }
+         [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
+
+//         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
 //         }
 }
 
@@ -306,8 +318,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     }
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
-        NSDictionary *value = @{@"event":op};
-        NSString *field = @"mobile_tracker";
+        NSDictionary *field = @{@"event":op};
+        NSString *measurement = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags addEntriesFromDictionary:@{@"rpn":[UIViewController ft_getRootViewController]}];
             if ([cpn isKindOfClass:UIView.class]) {
@@ -319,7 +331,13 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
         }
-        [[FTMobileAgent sharedInstance] trackBackgroud:field tags:tags values:value];
+        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+                   @"measurement":measurement,
+                   @"field":field,
+                   @"tags":tags
+               }];
+        [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:op];
+//        [[FTMobileAgent sharedInstance] trackBackgroud:measurement tags:tags field:value];
        
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
