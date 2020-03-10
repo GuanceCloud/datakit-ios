@@ -104,16 +104,17 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
    2. 控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
    3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
 
-   - 控制器黑白名单设置 
+   - 控制器黑白名单设置     
+   
     ```
      /**
-       *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
+        *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
         * eg: @[@"HomeViewController"];  字符串类型
      */
      @property (nonatomic,strong) NSArray *whiteVCList; 
 		
      /**
-       *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
+        *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
      */
      @property (nonatomic,strong) NSArray *blackVCList;
 
@@ -212,10 +213,10 @@ Click 事件中包含以下属性：
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
-### 3.ViewScreen (页面open、close)
+### 3.ViewScreen (页面enter、leave)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`
-触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 Open 事件。- viewDidDisappear: 被调用时，触发 Close 事件。
-Open 与 Close 事件中包含以下属性：
+触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。
+enter 与 leave 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name)：当前页面
 
