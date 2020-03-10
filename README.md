@@ -213,10 +213,10 @@ Click 事件中包含以下属性：
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
-### 3.ViewScreen (页面open、close)
+### 3.ViewScreen (页面enter、leave)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`
-触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 Open 事件。- viewDidDisappear: 被调用时，触发 Close 事件。
-Open 与 Close 事件中包含以下属性：
+触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。
+enter 与 leave 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name)：当前页面
 
