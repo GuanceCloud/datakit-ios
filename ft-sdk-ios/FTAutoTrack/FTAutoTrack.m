@@ -111,9 +111,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         [UITableView aspect_hookSelector:@selector(setDelegate:)
                   withOptions:ZY_AspectPositionAfter
                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-
-                Class vcClass = [target class];
-                [vcClass aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
+                [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                  withOptions:ZY_AspectPositionBefore
                   usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
                     [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView];
@@ -125,9 +123,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-
-         Class vcClass = [target class];
-         [vcClass aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
+       
+         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
              [self track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
