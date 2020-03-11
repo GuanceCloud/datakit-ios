@@ -93,6 +93,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     if ([self isBlackListContainsViewController:vc]) {
         return;
     }
+         ZYLog(@"superview == %@",vc.view.superview) ;
          NSString *parent = self.preOpenName;
          self.preOpenName = NSStringFromClass(vc.class);
          long duration;

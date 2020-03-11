@@ -93,7 +93,7 @@
         [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
 
          //设置请求参数
-        [mutableRequest setValue:self.config.xDatakitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+    [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
