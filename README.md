@@ -92,12 +92,21 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
    
    ```
     config.enableLog = YES; //打印日志
-   ```
-3.3.设置是否开启全埋点  
+   ```    
+3.3.设置X-Datakit-UUID
+ ` X-Datakit-UUID SDK` 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，重新生成。
+ FTMobileConfig 配置中，开发者可以强制更改。更改方法：
+ 
+ ```
+   [config setXDataKitUUID:@"YOUR UUID"];
+  
+ ```
+  
+3.4.设置是否开启全埋点  
   
    开启全埋点 设置 FTMobileConfig 的 `enableAutoTrack` 为 YES，在 `enableAutoTrack` 为 YES 的情况下，设置 `autoTrackEventType` 类型。
   
-3.4.设置全埋点黑白名单
+3.5.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
    1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
@@ -138,7 +147,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
     ```
 	
-3.5.采集数据配置
+3.6.采集数据配置
     
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：
    
