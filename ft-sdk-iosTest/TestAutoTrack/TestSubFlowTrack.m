@@ -27,7 +27,10 @@
     SubFlowTrack1 *track1 = [SubFlowTrack1 new];
     SubFlowTrack2 *track2 = [SubFlowTrack2 new];
     SubFlowTrack3 *track3 = [SubFlowTrack3 new];
-    self.dataSource = @[track1,track2,track3];
+    SubFlowTrack1 *track4 = [SubFlowTrack1 new];
+    SubFlowTrack2 *track5 = [SubFlowTrack2 new];
+    SubFlowTrack3 *track6 = [SubFlowTrack3 new];
+    self.dataSource = @[track1,track2,track3,track4,track5,track6];
     [self.view addSubview:self.collectionView];
     [self.collectionView reloadData];
 }
@@ -77,12 +80,16 @@
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
     NSLog(@"subviews = %@", scrollView.subviews);
-   
+    NSLog(@"%@",NSStringFromCGPoint(scrollView.contentOffset)) ;
     if ([[self getCurrentViewController] isKindOfClass:UINavigationController.class]) {
         UINavigationController *nav =(UINavigationController*)[self getCurrentViewController];
-       NSLog(@"UINavigationController = %@",nav.visibleViewController);
+        NSLog(@"UINavigationController = %@",nav.visibleViewController);
+        if([nav.visibleViewController childViewControllers].count>0){
+        NSLog(@"UINavigationController = %@",[nav.visibleViewController childViewControllers]);
+        }
     }
 }
+
 - (UIViewController *)getCurrentViewController{
     UIResponder *next = [self nextResponder];
     do {if ([next isKindOfClass:[UIViewController class]]) {
