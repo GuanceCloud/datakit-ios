@@ -27,7 +27,7 @@
          self.enableAutoTrack = NO;
          self.needBindUser = YES;
          self.enableScreenFlow = NO;
-         self.xDatakitUUID = [self ft_defaultUUID];
+         self.XDataKitUUID = [self ft_defaultUUID];
         }
       return self;
 }
@@ -50,6 +50,7 @@
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
+    options.XDataKitUUID = self.XDataKitUUID;
     return options;
 }
 -(void)setEnableLog:(BOOL)enableLog{
@@ -61,10 +62,10 @@
 -(void)setTrackViewFlowProduct:(NSString *)product{
     self.product = product;
 }
--(void)setXDatakitUUID:(NSString *)xDatakitUUID{
-    if (xDatakitUUID.length>0) {
-        _xDatakitUUID = xDatakitUUID;
-        setUUID(xDatakitUUID);
+-(void)setXDataKitUUID:(NSString *)XDataKitUUID{
+    if (XDataKitUUID.length>0) {
+        _XDataKitUUID = XDataKitUUID;
+        setUUID(XDataKitUUID);
     }else{
         ZYLog(@"setXDatakitUUID fail");
     }

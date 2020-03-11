@@ -105,8 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*是否开启绑定用户数据*/
 @property (nonatomic, assign) BOOL needBindUser;
 
-/*设置追踪ID X-Datakit-UUID 如果用户不设置会自动配置 */
-@property (nonatomic, copy) NSString *xDatakitUUID;
+/*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
+@property (nonatomic, copy) NSString *XDataKitUUID;
 
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
