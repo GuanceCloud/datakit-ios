@@ -24,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2"];
     [self createUI];
 }
 -(void)createUI{
@@ -53,6 +53,27 @@
             [self showResult:isSuccess?@"success":@"fail"];
         });
     }];
+}
+- (void)testTrackImmediateList{
+    FTTrackBean *bean1 = [FTTrackBean new];
+    bean1.measurement = @"testImmediateList";
+    bean1.field =@{@"test":@"testImmediateList"};
+    NSDate *datenow = [NSDate date];
+    long time= (long)([datenow timeIntervalSince1970]*1000);
+    bean1.timeMillis =time;
+    FTTrackBean *bean2 = [FTTrackBean new];
+    bean2.measurement = @"testImmediateList2";
+    bean2.field =@{@"test":@"testImmediateList2"};
+    NSDate *datenow2 = [NSDate date];
+    long time2= (long)([datenow2 timeIntervalSince1970]*1000);
+    bean2.timeMillis =time2;
+    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(BOOL isSuccess) {
+        NSLog(@"success = %d",isSuccess);
+               dispatch_async(dispatch_get_main_queue(), ^{
+                   [self showResult:isSuccess?@"success":@"fail"];
+               });
+    }];
+    
 }
 - (void)testFlowTrack{
     self.hidesBottomBarWhenPushed = YES;
@@ -110,15 +131,18 @@
             [self testTrackImmediate];
             break;
         case 4:
-            [self testFlowTrack];
+            [self testTrackImmediateList];
             break;
         case 5:
-            [self testAutoTrack];
+            [self testFlowTrack];
             break;
         case 6:
-            [self testSubFlowTrack];
+            [self testAutoTrack];
             break;
         case 7:
+            [self testSubFlowTrack];
+            break;
+        case 8:
             [self testSubFlowTrack2];
             break;
         default:

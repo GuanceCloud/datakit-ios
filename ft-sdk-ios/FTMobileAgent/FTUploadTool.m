@@ -75,6 +75,10 @@
     BOOL success = [self apiRequestWithEventsAry:@[model] andError:nil];
     callBackStatus?callBackStatus(success):nil;
 }
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    BOOL success = [self apiRequestWithEventsAry:modelList andError:nil];
+    callBackStatus?callBackStatus(success):nil;
+}
 - (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
     __block BOOL success =NO;
     __block int  retry = 0;

@@ -20,6 +20,7 @@
 #import "FTNetMonitorFlow.h"
 #import "FTNetworkInfo.h"
 #import "FTGPUUsage.h"
+#import "FTTrackBean.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -277,6 +278,44 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @catch (NSException *exception) {
         ZYDebug(@"track measurement tags field exception %@",exception);
     }
+}
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    __block NSMutableArray *list = [NSMutableArray new];
+    [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.measurement.length>0 && obj.field.allKeys.count>0 &&  obj.timeMillis>1000000000000) {
+            FTRecordModel *model = [FTRecordModel new];
+            NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+                      @"measurement":obj.measurement,
+                      @"field":obj.field
+                  }];
+                  NSMutableDictionary *tag = [NSMutableDictionary new];
+                  if (obj.tags) {
+                      [tag addEntriesFromDictionary:obj.tags];
+                  }
+                  if ([self getMonitorInfoTag].allKeys.count>0) {
+                      [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+                  }
+                  [opdata addEntriesFromDictionary:@{@"tags":tag}];
+                  NSDictionary *data =@{
+                      @"op":@"cstm",
+                      @"opdata":opdata,
+                  };
+                  model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+            model.tm = obj.timeMillis*1000;
+            [list addObject:model];
+        }
+    }];
+    if (list.count>0) {
+        dispatch_async(self.immediateLabel, ^{
+                   [self.upTool trackImmediateList:list callBack:^(BOOL isSuccess) {
+                       callBackStatus? callBackStatus(isSuccess):nil;
+                   }];
+               });
+    }else{
+        ZYLog(@"传入的数据格式有误");
+         callBackStatus? callBackStatus(NO):nil;
+    }
+    
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
     [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil];

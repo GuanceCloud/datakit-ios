@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRecordModel : NSObject
 
 @property (nonatomic, assign) long _id;
-@property (nonatomic, assign) long tm;
+@property (nonatomic, assign) long long tm;
 @property (nonatomic, strong) NSString *sessionid;
 @property (nonatomic, strong) NSString *data;
 @property (nonatomic, strong) NSString *userdata;

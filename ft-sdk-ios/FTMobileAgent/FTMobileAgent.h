@@ -8,8 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
+#import "FTTrackBean.h"
 NS_ASSUME_NONNULL_BEGIN
-
+//@interface FTTrackBean : NSObject
+//@property (nonatomic, strong) NSString *measurement;
+//@property (nonatomic, strong) NSDictionary *tags;
+//@property (nonatomic, strong) NSDictionary *field;
+//@property (nonatomic, strong) NSString *timeMillis;
+//@end
 @interface FTMobileAgent : NSObject
 /**
  * @abstract
@@ -53,6 +59,11 @@ SDK 初始化方法
 @param field            自定义指标
 */
 - (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
+/**
+主动埋点，可多条上传。   立即上传 回调上传结果
+@param trackList     主动埋点数据数组
+*/
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
  上报流程图
  @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
