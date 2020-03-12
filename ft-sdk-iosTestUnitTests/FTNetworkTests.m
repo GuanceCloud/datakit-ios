@@ -28,11 +28,11 @@
            NSDictionary *data= @{
                @"op" : @"cstm",
                @"opdata" :@{
-                       @"field" :@"pushFile",
+                       @"measurement" :@"pushFile",
                        @"tags":@{
                                @"pushVC":@"Test4ViewController",
                    },
-               @"values":@{
+               @"field":@{
                           @"event" :@"Gesture",
                    },
                },
