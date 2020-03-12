@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 时间戳
  */
-+ (long)ft_getCurrentTimestamp;
++ (long long)ft_getCurrentTimestamp;
 /**
  *  @abstract
  *  FT access 签名算法
