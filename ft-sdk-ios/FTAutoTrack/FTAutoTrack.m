@@ -89,7 +89,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          return;
     }
      NSLog(@"vc:%@ open:%@ %d",vc,vc.parentViewController,[vc.parentViewController isKindOfClass:NSNull.class]);
-//     if ([vc.parentViewController isKindOfClass:NSNull.class] ||[vc.parentViewController isKindOfClass:UINavigationController.class] ||[vc.parentViewController isKindOfClass:UITabBarController.class]) {
+  
     if ([self isBlackListContainsViewController:vc]) {
         return;
     }
@@ -116,9 +116,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
               [opdata setObject:parent forKey:@"parent"];
           }
          [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
-
-//         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
-//         }
+    
 }
 
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
