@@ -238,7 +238,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 - (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
     //没有设置白名单  就考虑黑名单
     if (self.config.whiteVCList.count == 0) {
-        return ![self isBlackListContainsViewController:viewController]||![self isUserSetBlackListContainsViewController:viewController];
+        return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);
     }
     
     return [self isWhiteListContainsViewController:viewController];
