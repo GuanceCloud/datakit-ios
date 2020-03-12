@@ -9,6 +9,8 @@
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
+#define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
+#define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 @implementation FTMobileConfig
 
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
@@ -25,6 +27,7 @@
          self.enableAutoTrack = NO;
          self.needBindUser = YES;
          self.enableScreenFlow = NO;
+         self.XDataKitUUID = [self ft_defaultUUID];
         }
       return self;
 }
@@ -47,6 +50,7 @@
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
+    options.XDataKitUUID = self.XDataKitUUID;
     return options;
 }
 -(void)setEnableLog:(BOOL)enableLog{
@@ -57,5 +61,23 @@
 }
 -(void)setTrackViewFlowProduct:(NSString *)product{
     self.product = product;
+}
+-(void)setXDataKitUUID:(NSString *)XDataKitUUID{
+    if (XDataKitUUID.length>0) {
+        _XDataKitUUID = XDataKitUUID;
+        setUUID(XDataKitUUID);
+    }else{
+        ZYLog(@"setXDatakitUUID fail");
+    }
+}
+- (NSString *)ft_defaultUUID {
+    NSString *deviceId;
+    deviceId =getUUID;
+    if (!deviceId) {
+        deviceId = [[NSUUID UUID] UUIDString];
+        setUUID(deviceId);
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    return deviceId;
 }
 @end

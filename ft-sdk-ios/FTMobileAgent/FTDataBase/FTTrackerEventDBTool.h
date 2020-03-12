@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 *  @return 删除是否成功
 */
--(BOOL)deleteItemWithTm:(long )tm;
+-(BOOL)deleteItemWithTm:(long long)tm;
 /**
 *  @abstract
 *  获取数据库数据总数

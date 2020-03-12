@@ -12,6 +12,8 @@
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import "TestFlowTrackVC.h"
+#import "TestSubFlowTrack.h"
+#import "TestSubFlowTrack2.h"
 
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -22,8 +24,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_flowTrack",@"Test_autoTrack"];
-    [self createUI];    
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2"];
+    [self createUI];
 }
 -(void)createUI{
     
@@ -42,28 +44,59 @@
     [[FTMobileAgent sharedInstance] logout];
 }
 - (void)testTrackBackgroud{
-    [[FTMobileAgent sharedInstance] trackBackgroud:@"trackTest" tags:nil values:@{@"event":@"test"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"trackTest" tags:nil field:@{@"event":@"test"}];
 }
 - (void)testTrackImmediate{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" values:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
+    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" field:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
         NSLog(@"success = %d",isSuccess);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self showResult:isSuccess?@"success":@"fail"];
         });
     }];
 }
+- (void)testTrackImmediateList{
+    FTTrackBean *bean1 = [FTTrackBean new];
+    bean1.measurement = @"testImmediateList";
+    bean1.field =@{@"test":@"testImmediateList"};
+    NSDate *datenow = [NSDate date];
+    long time= (long)([datenow timeIntervalSince1970]*1000);
+    bean1.timeMillis =time;
+    FTTrackBean *bean2 = [FTTrackBean new];
+    bean2.measurement = @"testImmediateList2";
+    bean2.field =@{@"test":@"testImmediateList2"};
+    NSDate *datenow2 = [NSDate date];
+    long time2= (long)([datenow2 timeIntervalSince1970]*1000);
+    bean2.timeMillis =time2;
+    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(BOOL isSuccess) {
+        NSLog(@"success = %d",isSuccess);
+               dispatch_async(dispatch_get_main_queue(), ^{
+                   [self showResult:isSuccess?@"success":@"fail"];
+               });
+    }];
+    
+}
 - (void)testFlowTrack{
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestFlowTrackVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
-
+    
 }
 - (void)testAutoTrack{
-   
+    
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
-
+}
+- (void)testSubFlowTrack{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestSubFlowTrack new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+    
+}
+- (void)testSubFlowTrack2{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestSubFlowTrack2 new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
 }
 -(void)showResult:(NSString *)title{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -98,15 +131,24 @@
             [self testTrackImmediate];
             break;
         case 4:
-            [self testFlowTrack];
+            [self testTrackImmediateList];
             break;
         case 5:
+            [self testFlowTrack];
+            break;
+        case 6:
             [self testAutoTrack];
+            break;
+        case 7:
+            [self testSubFlowTrack];
+            break;
+        case 8:
+            [self testSubFlowTrack2];
             break;
         default:
             break;
     }
-       [[UITestManger sharedManger] addAutoTrackClickCount];
+    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 

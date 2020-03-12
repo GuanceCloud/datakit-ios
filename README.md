@@ -92,12 +92,21 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
    
    ```
     config.enableLog = YES; //打印日志
-   ```
-3.3.设置是否开启全埋点  
+   ```    
+3.3.设置X-Datakit-UUID
+ ` X-Datakit-UUID SDK` 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，重新生成。
+ FTMobileConfig 配置中，开发者可以强制更改。更改方法：
+ 
+ ```
+   [config setXDataKitUUID:@"YOUR UUID"];
+  
+ ```
+  
+3.4.设置是否开启全埋点  
   
    开启全埋点 设置 FTMobileConfig 的 `enableAutoTrack` 为 YES，在 `enableAutoTrack` 为 YES 的情况下，设置 `autoTrackEventType` 类型。
   
-3.4.设置全埋点黑白名单
+3.5.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
    1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
@@ -138,7 +147,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
     ```
 	
-3.5.采集数据配置
+3.6.采集数据配置
     
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：
    
@@ -229,10 +238,10 @@ enter 与 leave 事件中包含以下属性：
 ```
   /**
 追踪自定义事件。 存储数据库，等待上传
- @param field      指标（必填）
- @param values     指标值（必填）
+ @param measurement      指标（必填）
+ @param field            指标值（必填）
 */ 
-- (void)trackBackgroud:(NSString *)field  values:(NSDictionary *)values;
+- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field;
 ```
  
 ### 2.方法二：
@@ -241,11 +250,11 @@ enter 与 leave 事件中包含以下属性：
 /**
  追踪自定义事件。 存储数据库，等待上传
  
- @param field      指标（必填）
- @param tags       标签（选填）
- @param values     指标值（必填）
+ @param measurement      指标（必填）
+ @param tags             标签（选填）
+ @param field           指标值（必填）
  */
-- (void)trackBackgroud:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values;
+- (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 ```
 
 ### 3.方法三：
@@ -253,10 +262,10 @@ enter 与 leave 事件中包含以下属性：
 ```
 /**
  追踪自定义事件。  立即上传 回调上传结果
- @param field      当前数据点所属的指标集
- @param values     自定义指标
+ @param measurement      当前数据点所属的指标集
+ @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)field  values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;    
+- (void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;    
 
 ```    
 
@@ -265,11 +274,11 @@ enter 与 leave 事件中包含以下属性：
 ```
 /**
 追踪自定义事件。  立即上传 回调上传结果
-@param field      当前数据点所属的指标集
-@param tags       自定义标签
-@param values     自定义指标
+@param measurement      当前数据点所属的指标集
+@param tags             自定义标签
+@param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)field tags:(nullable NSDictionary*)tags values:(NSDictionary *)values callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
 
 ```
 
@@ -277,13 +286,13 @@ enter 与 leave 事件中包含以下属性：
 
 ```
  //等待上传
-[[FTMobileAgent sharedInstance] trackBackgroud:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+[[FTMobileAgent sharedInstance] trackBackgroud:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} field:@{@"event":@"BtnClick"}];
    
 ```    
 
 ```
  //立即上传
-[[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} values:@{@"event":@"BtnClick"}];
+[[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} field:@{@"event":@"BtnClick"}];
    
 ```
 

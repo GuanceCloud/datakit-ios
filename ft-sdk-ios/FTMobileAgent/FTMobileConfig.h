@@ -14,14 +14,14 @@
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
 /**
-* @enum
-* AutoTrack 抓取信息
-*
-* @constant
-*   FTAutoTrackEventTypeAppLaunch       - 项目启动
-*   FTAutoTrackEventTypeAppClick       - 点击事件
-*   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
-*/
+ * @enum
+ * AutoTrack 抓取信息
+ *
+ * @constant
+ *   FTAutoTrackEventTypeAppLaunch       - 项目启动
+ *   FTAutoTrackEventTypeAppClick       - 点击事件
+ *   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
+ */
 typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackTypeNone          = 0,
     FTAutoTrackEventTypeAppLaunch     = 1 << 0,
@@ -39,7 +39,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  eg:上海
-*/
+ */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
     FTMonitorInfoTypeBattery      = 1 << 1,
@@ -60,13 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param akSecret   access key Secret
  * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
  * @return 配置对象
-*/
+ */
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
 /**
  * @method 指定初始化方法，设置 metricsUrl 配置是否不需要进行请求签名
  * @param metricsUrl FT-GateWay metrics 写入地址
  * @return 配置对象
-*/
+ */
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
 
 /// 禁用 init 初始化
@@ -105,10 +105,13 @@ NS_ASSUME_NONNULL_BEGIN
 /*是否开启绑定用户数据*/
 @property (nonatomic, assign) BOOL needBindUser;
 
+/*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
+@property (nonatomic, copy) NSString *XDataKitUUID;
+
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
-* 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
-*/
+ * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
+ */
 @property (nonatomic) BOOL enableAutoTrack;
 /**
  * @property
@@ -127,29 +130,29 @@ NS_ASSUME_NONNULL_BEGIN
  *  抓取某一类型的 View
  *  与 黑名单  二选一使用  若都没有则为全抓取
  *  eg: @[UITableView.class];
-*/
+ */
 @property (nonatomic,strong) NSArray<Class> *whiteViewClass;
 /**
  * @abstract
  *  忽略某一类型的 View
  *  与 白名单  二选一使用  若都没有则为全抓取
-*/
+ */
 @property (nonatomic,strong) NSArray<Class> *blackViewClass;
 
 /**
  *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
  * eg: @[@"HomeViewController"];  字符串类型
-*/
+ */
 @property (nonatomic,strong) NSArray *whiteVCList;
 /**
  *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
-*/
+ */
 @property (nonatomic,strong) NSArray *blackVCList;
 #pragma mark ========== 上报流程图 ==========
 /**
  * @abstract
  *  设置是否抓取页面流程图
-*/
+ */
 - (void)enableTrackScreenFlow:(BOOL)enable;
 /**
  * @abstract

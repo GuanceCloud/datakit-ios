@@ -75,6 +75,10 @@
     BOOL success = [self apiRequestWithEventsAry:@[model] andError:nil];
     callBackStatus?callBackStatus(success):nil;
 }
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    BOOL success = [self apiRequestWithEventsAry:modelList andError:nil];
+    callBackStatus?callBackStatus(success):nil;
+}
 - (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
     __block BOOL success =NO;
     __block int  retry = 0;
@@ -93,7 +97,7 @@
         [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
 
          //设置请求参数
-        [mutableRequest setValue:[FTBaseInfoHander ft_defaultUUID] forHTTPHeaderField:@"X-Datakit-UUID"];
+    [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
         [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
         [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
         [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
@@ -141,65 +145,124 @@
 
     return success;
 }
-
-
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
-    
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
-       __block NSString *event = @" ";
-        NSDictionary *opdata = item[@"opdata"];
-        NSString *firstStr;
-        if ([opdata valueForKey:@"field"]) {
-            firstStr = [opdata valueForKey:@"field"];
-        }
-        if ([opdata valueForKey:@"product"]) {
-            firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
-            firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
-            firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
-            if ([[opdata allKeys] containsObject:@"parent"]) {
-                firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
+        
+        NSString *requestStr;
+        __block NSString *field = @" ";
+        if ([item.allKeys containsObject:@"op"]) {
+            NSString *op = [item valueForKey:@"op"];
+            NSDictionary *opdata = item[@"opdata"];
+            NSString *firstStr;
+            
+            if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
+                if ([opdata valueForKey:@"product"]) {
+                    firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
+                    firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
+                    firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
+                    if ([[opdata allKeys] containsObject:@"parent"]) {
+                        firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
+                    }
+                }
+                if ([[opdata allKeys] containsObject:@"duration"]) {
+                    field = [field stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
+                }
+            }else{
+                if ([opdata valueForKey:@"measurement"]) {
+                    firstStr = [opdata valueForKey:@"measurement"];
+                }
+                if ([[opdata allKeys] containsObject:@"field"]) {
+                    NSDictionary *fieldDict = opdata[@"field"];
+                    [fieldDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                        field = [field stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+                    }];
+                    field = field.length>1? [field substringToIndex:field.length-1]:field;
+                }
+                
             }
+            __block NSString *tagsStr = [self getTagStr:opdata];
+            [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                if ([obj isKindOfClass:NSString.class]) {
+                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+                }
+                if ([obj isKindOfClass:NSDictionary.class]) {
+                    [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
+                        tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+                    }];
+                }
+            }];
+            requestStr =firstStr;
+            tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
+            requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+            requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+            requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",field,obj.tm*1000];
+            
+        }else{
+            //遗留的旧数据 1.0.2之前
+            requestStr = [self oldItemStrWithItem:obj];
+        }
+        if (idx==0) {
+            [requestDatas appendString:requestStr];
+        }else{
+            [requestDatas appendFormat:@"\n%@",requestStr];
         }
         
-        __block NSString *tagsStr = [self getTagStr:opdata];
-        [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            if ([obj isKindOfClass:NSString.class]) {
-                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
-            }
-            if ([obj isKindOfClass:NSDictionary.class]) {
-                [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
-                }];
-            }
-        }];
-        if ([[opdata allKeys] containsObject:@"values"]) {
-            NSDictionary *values = opdata[@"values"];
-                [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
-                }];
-            event = event.length>1? [event substringToIndex:event.length-1]:event;
-        }
-        if ([[opdata allKeys] containsObject:@"duration"]) {
-            event = [event stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
-        }
-       
-        tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
-        NSString *requestStr =firstStr;
-        requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
-        requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        requestStr = [requestStr stringByAppendingFormat:@"%@ %ld",event,obj.tm*1000];
-        if (idx==0) {
-                [requestDatas appendString:requestStr];
-        }else{
-                [requestDatas appendFormat:@"\n%@",requestStr];
-        }
     }];
-
+    
     return requestDatas;
 }
+//1.0.2之前的数据
+- (NSString *)oldItemStrWithItem:(FTRecordModel *)model{
+    NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
+    NSDictionary *opdata = item[@"opdata"];
+    NSString *firstStr;
+    __block NSString *event = @" ";
+    
+    if ([opdata valueForKey:@"field"]) {
+        firstStr = [opdata valueForKey:@"field"];
+    }
+    if ([opdata valueForKey:@"product"]) {
+        firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
+        firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
+        firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
+        if ([[opdata allKeys] containsObject:@"parent"]) {
+            firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
+        }
+    }
+    __block NSString *tagsStr = [self getTagStr:opdata];
+    [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:NSString.class]) {
+            tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+        }
+        if ([obj isKindOfClass:NSDictionary.class]) {
+            [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
+                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+            }];
+        }
+    }];
+    if ([[opdata allKeys] containsObject:@"values"]) {
+        NSDictionary *values = opdata[@"values"];
+        [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+        }];
+        event = event.length>1? [event substringToIndex:event.length-1]:event;
+    }
+    if ([[opdata allKeys] containsObject:@"duration"]) {
+        event = [event stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
+    }
+    
+    tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
+    NSString *requestStr =firstStr;
+    requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+    requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+    requestStr = [requestStr stringByAppendingFormat:@"%@ %ld",event,model.tm*1000];
+    return requestStr;
+}
+
 - (NSString *)getTagStr:(NSDictionary *)dict{
     __block NSString *tagStr = [self getBasicData];
     NSDictionary *tags =dict[@"tags"];

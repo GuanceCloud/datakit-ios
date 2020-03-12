@@ -240,10 +240,10 @@ static FTTrackerEventDBTool *dbTool = nil;
     }];
      return count;
 }
--(BOOL)deleteItemWithTm:(long )tm
+-(BOOL)deleteItemWithTm:(long long)tm
 {   __block BOOL is;
     [self zy_inDatabase:^{
-     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,tm];
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %lld ;",FT_DB_TRACREVENT_TABLE_NAME,tm];
         is = [self.db executeUpdate:sqlStr];
     }];
     return is;

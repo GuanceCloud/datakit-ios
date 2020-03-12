@@ -38,6 +38,6 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'FTAutoTrack.framework'
 
 
-  s.dependency "FTMobileAgent", "~> 1.0.1-alpha.4"
+  s.dependency "FTMobileAgent", "~> 1.0.1-alpha.6"
 
 end

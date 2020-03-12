@@ -89,7 +89,11 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          return;
     }
      NSLog(@"vc:%@ open:%@ %d",vc,vc.parentViewController,[vc.parentViewController isKindOfClass:NSNull.class]);
-     if ([vc.parentViewController isKindOfClass:NSNull.class] ||[vc.parentViewController isKindOfClass:UINavigationController.class] ||[vc.parentViewController isKindOfClass:UITabBarController.class]) {
+  
+    if ([self isBlackListContainsViewController:vc]) {
+        return;
+    }
+         ZYLog(@"superview == %@",vc.view.superview) ;
          NSString *parent = self.preOpenName;
          self.preOpenName = NSStringFromClass(vc.class);
          long duration;
@@ -101,8 +105,18 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          }
           self.preFlowTime = tm;
          NSString *product = [NSString stringWithFormat:@"mobile_activity_%@",self.config.product];
-         [[FTMobileAgent sharedInstance] flowTrack:product traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent duration:duration];
-         }
+        NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
+
+        NSMutableDictionary *opdata = [@{@"product":product,
+                                           @"traceId":self.flowId,
+                                           @"name":NSStringFromClass(vc.class),
+                                           @"duration":durationStr
+          } mutableCopy];
+          if (parent.length>0) {
+              [opdata setObject:parent forKey:@"parent"];
+          }
+         [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
+    
 }
 
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
@@ -224,7 +238,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 - (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
     //没有设置白名单  就考虑黑名单
     if (self.config.whiteVCList.count == 0) {
-        return ![self isBlackListContainsViewController:viewController];
+        return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);
     }
     
     return [self isWhiteListContainsViewController:viewController];
@@ -248,7 +262,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     
 }
 - (BOOL)isBlackListContainsViewController:(UIViewController *)viewController {
-    static NSArray *blacklistedViewControllerClassNames = nil;
+    static NSSet * blacklistedClasses  = nil;
     static dispatch_once_t onceToken;
    
     dispatch_once(&onceToken, ^{
@@ -258,16 +272,14 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
        NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
        
         @try {
-            blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
+           NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
+            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
            
         } @catch(NSException *exception) {  // json加载和解析可能失败
             ZYDebug(@"error: %@",exception);
         }
     });
-    NSMutableArray *array = [[NSMutableArray alloc]initWithArray:self.config.blackVCList];
-    [array addObjectsFromArray:blacklistedViewControllerClassNames];
-    NSSet * blacklistedClasses = [NSSet setWithArray:array];
-
+   
     __block BOOL isContains = NO;
     [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *blackClassName = (NSString *)obj;
@@ -279,6 +291,19 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     }];
     return isContains;
 }
+- (BOOL)isUserSetBlackListContainsViewController:(UIViewController *)viewController {
+   NSSet * blacklistedClasses = [NSSet setWithArray:self.config.blackVCList];
+  __block BOOL isContains = NO;
+  [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+      NSString *blackClassName = (NSString *)obj;
+      Class blackClass = NSClassFromString(blackClassName);
+      if (blackClass && [viewController isKindOfClass:blackClass]) {
+          isContains = YES;
+          *stop = YES;
+      }
+  }];
+  return isContains;
+}
 #pragma mark ========== 写入数据库操作 ==========
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
     if (![self judgeWhiteAndBlackWithViewController:cpn]) {
@@ -289,8 +314,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     }
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
-        NSDictionary *value = @{@"event":op};
-        NSString *field = @"mobile_tracker";
+        NSDictionary *field = @{@"event":op};
+        NSString *measurement = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags addEntriesFromDictionary:@{@"rpn":[UIViewController ft_getRootViewController]}];
             if ([cpn isKindOfClass:UIView.class]) {
@@ -302,7 +327,13 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
             }
         }
-        [[FTMobileAgent sharedInstance] trackBackgroud:field tags:tags values:value];
+        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+                   @"measurement":measurement,
+                   @"field":field,
+                   @"tags":tags
+               }];
+        [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:op];
+//        [[FTMobileAgent sharedInstance] trackBackgroud:measurement tags:tags field:value];
        
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
