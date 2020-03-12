@@ -198,7 +198,7 @@
             tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
             requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
             requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-            requestStr = [requestStr stringByAppendingFormat:@"%@ %ld",field,obj.tm*1000];
+            requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",field,obj.tm*1000];
             
         }else{
             //遗留的旧数据 1.0.2之前
