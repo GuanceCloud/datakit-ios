@@ -88,7 +88,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
    if ([vc isKindOfClass:UINavigationController.class]) {
          return;
     }
-     NSLog(@"vc:%@ open:%@ %d",vc,vc.parentViewController,[vc.parentViewController isKindOfClass:NSNull.class]);
   
     if ([self isBlackListContainsViewController:vc]) {
         return;
@@ -137,7 +136,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
      [UICollectionView aspect_hookSelector:@selector(setDelegate:)
            withOptions:ZY_AspectPositionAfter
                            usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-       
+         if ([self isBlackListContainsViewController:target]) {
+             return ;
+         }
          [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
           withOptions:ZY_AspectPositionBefore
            usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {

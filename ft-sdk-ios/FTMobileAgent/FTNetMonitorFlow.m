@@ -22,7 +22,6 @@
     self.flow = @"0dB/s";
     self.lastBytes = [self getInterfaceBytes];
     self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
-    ZYDebug(@"currentloop = %@",[NSRunLoop currentRunLoop]);
     NSRunLoop *runloop = [NSRunLoop currentRunLoop];
     [runloop addTimer:self.timer forMode:NSDefaultRunLoopMode];
     [runloop run];
