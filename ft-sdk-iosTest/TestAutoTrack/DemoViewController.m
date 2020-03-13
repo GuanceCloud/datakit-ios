@@ -44,7 +44,7 @@
     [[FTMobileAgent sharedInstance] logout];
 }
 - (void)testTrackBackgroud{
-    [[FTMobileAgent sharedInstance] trackBackgroud:@"trackTest" tags:nil field:@{@"event":@"test"}];
+    [[FTMobileAgent sharedInstance] trackBackgroud:@"track Test" tags:nil field:@{@"event":@"tes,t"}];
 }
 - (void)testTrackImmediate{
     [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" field:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {

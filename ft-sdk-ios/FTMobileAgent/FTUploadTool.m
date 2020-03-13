@@ -160,11 +160,11 @@
             
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
-                    firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
-                    firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
-                    firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
+                    firstStr =[NSString stringWithFormat:@"$flow_%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"product"]]];
+                    firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"traceId"]]];
+                    firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"name"]]];
                     if ([[opdata allKeys] containsObject:@"parent"]) {
-                        firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
+                        firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"parent"]]];
                     }
                 }
                 if ([[opdata allKeys] containsObject:@"duration"]) {
@@ -177,7 +177,7 @@
                 if ([[opdata allKeys] containsObject:@"field"]) {
                     NSDictionary *fieldDict = opdata[@"field"];
                     [fieldDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                        field = [field stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+                        field = [field stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
                     }];
                     field = field.length>1? [field substringToIndex:field.length-1]:field;
                 }
@@ -186,11 +186,11 @@
             __block NSString *tagsStr = [self getTagStr:opdata];
             [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 if ([obj isKindOfClass:NSString.class]) {
-                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
                 }
                 if ([obj isKindOfClass:NSDictionary.class]) {
                     [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                        tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+                        tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key2],[self repleacingSpecialCharacters:obj2]];
                     }];
                 }
             }];
@@ -227,27 +227,27 @@
     }
     if ([opdata valueForKey:@"product"]) {
         firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
-        firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[opdata valueForKey:@"traceId"]];
-        firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[opdata valueForKey:@"name"]];
+        firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"traceId"]]];
+        firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"name"]]];
         if ([[opdata allKeys] containsObject:@"parent"]) {
-            firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[opdata valueForKey:@"parent"]];
+            firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"parent"]]];
         }
     }
     __block NSString *tagsStr = [self getTagStr:opdata];
     [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj isKindOfClass:NSString.class]) {
-            tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key,obj];
+            tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
         }
         if ([obj isKindOfClass:NSDictionary.class]) {
             [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",key2,obj2];
+                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key2],[self repleacingSpecialCharacters:obj2]];
             }];
         }
     }];
     if ([[opdata allKeys] containsObject:@"values"]) {
         NSDictionary *values = opdata[@"values"];
         [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            event = [event stringByAppendingFormat:@"%@=\"%@\",",key,obj];
+            event = [event stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
         }];
         event = event.length>1? [event substringToIndex:event.length-1]:event;
     }
@@ -262,7 +262,17 @@
     requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",event,model.tm*1000];
     return requestStr;
 }
-
+- (id )repleacingSpecialCharacters:(id )str{
+    if ([str isKindOfClass:NSString.class]) {
+      NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+      reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
+      reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\，"];
+      return reStr;
+    }else{
+        return str;
+    }
+   
+}
 - (NSString *)getTagStr:(NSDictionary *)dict{
     __block NSString *tagStr = [self getBasicData];
     NSDictionary *tags =dict[@"tags"];
@@ -279,7 +289,7 @@
                 }
             }
         }else{
-            tagStr = [tagStr stringByAppendingFormat:@"%@=%@,",key,obj];
+            tagStr = [tagStr stringByAppendingFormat:@"%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
         }
     }];
     return tagStr;

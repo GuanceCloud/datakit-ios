@@ -340,7 +340,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (field.allKeys.count>0) {
             [field enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
                 if (obj!=nil && ![obj isKindOfClass:NSNull.class]) {
-                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",key,obj];
+                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
                 }
             }];
         }
@@ -434,6 +434,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
     return tag;
+}
+- (NSString *)repleacingSpecialCharacters:(NSString *)str{
+    NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\ "];
+    reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\ "];
+    reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\ "];
+    return reStr;
 }
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     if (name.length == 0 || Id.length == 0) {
