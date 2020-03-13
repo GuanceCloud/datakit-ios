@@ -25,7 +25,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
 
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, assign) long preFlowTime;
+@property (nonatomic, assign) long long preFlowTime;
 @property (nonatomic, copy)  NSString *flowId;
 @property (nonatomic, copy)  NSString *preOpenName;
 @end
@@ -95,8 +95,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          ZYLog(@"superview == %@",vc.view.superview) ;
          NSString *parent = self.preOpenName;
          self.preOpenName = NSStringFromClass(vc.class);
-         long duration;
-         long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+         long long duration;
+         long long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
          if (self.preFlowTime==0) {
              duration = 0;
          }else{
@@ -104,7 +104,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
          }
           self.preFlowTime = tm;
          NSString *product = [NSString stringWithFormat:@"mobile_activity_%@",self.config.product];
-        NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
+    NSString *durationStr = [NSString stringWithFormat:@"%lld",duration];
 
         NSMutableDictionary *opdata = [@{@"product":product,
                                            @"traceId":self.flowId,
