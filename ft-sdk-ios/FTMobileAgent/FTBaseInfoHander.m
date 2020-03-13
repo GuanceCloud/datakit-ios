@@ -802,5 +802,9 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     }
     return nil;
 }
-
++(NSString *)removeFrontBackBlank:(NSString *)str{
+    NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSString *string = [str stringByTrimmingCharactersInSet:set];
+    return string;
+}
 @end
