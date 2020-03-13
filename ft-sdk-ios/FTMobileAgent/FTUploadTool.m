@@ -214,7 +214,7 @@
     
     return requestDatas;
 }
-//1.0.2之前的数据
+//1.0.0的数据
 - (NSString *)oldItemStrWithItem:(FTRecordModel *)model{
     NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
@@ -259,7 +259,7 @@
     NSString *requestStr =firstStr;
     requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
     requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    requestStr = [requestStr stringByAppendingFormat:@"%@ %ld",event,model.tm*1000];
+    requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",event,model.tm*1000];
     return requestStr;
 }
 
