@@ -307,6 +307,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
             }
             [list addObject:model];
+        }else{
+          ZYLog(@"传入的第 %d 个数据格式有误",idx);
         }
     }];
     if (list.count>0) {

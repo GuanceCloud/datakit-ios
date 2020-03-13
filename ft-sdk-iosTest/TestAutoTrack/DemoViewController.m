@@ -55,6 +55,7 @@
     }];
 }
 - (void)testTrackImmediateList{
+    //bean1 用户自己传时间  bean2 自动赋值
     FTTrackBean *bean1 = [FTTrackBean new];
     bean1.measurement = @"testImmediateList";
     bean1.field =@{@"test":@"testImmediateList"};
@@ -64,9 +65,7 @@
     FTTrackBean *bean2 = [FTTrackBean new];
     bean2.measurement = @"testImmediateList2";
     bean2.field =@{@"test":@"testImmediateList2"};
-    NSDate *datenow2 = [NSDate date];
-    long time2= (long)([datenow2 timeIntervalSince1970]*1000);
-    bean2.timeMillis =time2;
+
     [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(BOOL isSuccess) {
         NSLog(@"success = %d",isSuccess);
                dispatch_async(dispatch_get_main_queue(), ^{
