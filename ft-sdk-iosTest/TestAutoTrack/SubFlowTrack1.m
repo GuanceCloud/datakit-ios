@@ -7,7 +7,7 @@
 //
 
 #import "SubFlowTrack1.h"
-
+#import "UITestVC.h"
 @interface SubFlowTrack1 ()
 
 @end
@@ -18,8 +18,20 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor redColor];
     NSLog(@"parentViewController = %@",self.parentViewController);
-
+    [self createUI];
     // Do any additional setup after loading the view.
+}
+- (void)createUI{
+    UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(10, 100, 100, 44)];
+    [button setTitle:@"跳转" forState:UIControlStateNormal];
+    button.backgroundColor = [UIColor blueColor];
+    [button addTarget:self action:@selector(buttonClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
+}
+- (void)buttonClick{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[UITestVC new] animated:YES];
+    self.hidesBottomBarWhenPushed = YES;
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
