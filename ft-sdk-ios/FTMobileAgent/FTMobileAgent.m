@@ -282,7 +282,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus{
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.measurement.length>0 && obj.field.allKeys.count>0 &&  obj.timeMillis>1000000000000) {
+        if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
             FTRecordModel *model = [FTRecordModel new];
             NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
                 @"measurement":obj.measurement,
@@ -301,8 +301,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 @"opdata":opdata,
             };
             model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+            if(obj.timeMillis && obj.timeMillis>1000000000000){
             model.tm = obj.timeMillis*1000;
+            }else{
+            model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+            }
             [list addObject:model];
+        }else{
+          ZYLog(@"传入的第 %d 个数据格式有误",idx);
         }
     }];
     if (list.count>0) {
@@ -440,7 +446,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
     [defatluts removeObjectForKey:FT_SESSIONID];
     [defatluts synchronize];
-    ZYLog(@"User logout");
+    ZYDebug(@"User logout");
 }
 #pragma mark ========== 实时网速 ==========
 // 启动获取实时网络定时器

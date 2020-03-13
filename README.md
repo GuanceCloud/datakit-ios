@@ -282,7 +282,32 @@ enter 与 leave 事件中包含以下属性：
 
 ```
 
-### 5.方法使用示例
+### 5.方法五：（批量上传）
+
+```
+/**
+主动埋点，可多条上传。   立即上传 回调上传结果
+@param trackList     主动埋点数据数组
+*/
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus;
+
+```
+FTTrackBean的属性：
+
+```
+//当前数据点所属的指标集 (必须)
+@property (nonatomic, strong) NSString *measurement;
+//自定义标签 （可选）
+@property (nonatomic, strong) NSDictionary *tags;
+//自定义指标 (必须)
+@property (nonatomic, strong) NSDictionary *field;
+//需要为毫秒级13位时间戳 (可选)
+@property (nonatomic, assign) long long  timeMillis;
+
+```
+
+
+### 6.方法使用示例
 
 ```
  //等待上传

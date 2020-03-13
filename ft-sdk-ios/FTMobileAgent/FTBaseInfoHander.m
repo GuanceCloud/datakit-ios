@@ -564,7 +564,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return mutStr;
     
 }
-+ (long)ft_getCurrentTimestamp{
++ (long long)ft_getCurrentTimestamp{
     NSDate *datenow = [NSDate date];
     long time= (long)([datenow timeIntervalSince1970]*1000*1000);
     return  time;

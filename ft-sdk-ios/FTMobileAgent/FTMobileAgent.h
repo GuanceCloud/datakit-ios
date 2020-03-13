@@ -61,7 +61,7 @@ SDK 初始化方法
 - (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
 主动埋点，可多条上传。   立即上传 回调上传结果
-@param trackList     主动埋点数据数组
+@param trackList     主动埋点数据数组   如果FTTrackBean 中timeMillis 传入格式错误，会自动赋值当前时间
 */
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus;
 /**
