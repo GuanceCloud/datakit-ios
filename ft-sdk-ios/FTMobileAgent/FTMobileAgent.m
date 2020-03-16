@@ -337,14 +337,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
-        if (field.allKeys.count>0) {
-            [field enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-                if (obj!=nil && ![obj isKindOfClass:NSNull.class]) {
-                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",[self repleacingSpecialCharacters:keyStr],obj];
-                }
-            }];
-        }
         NSMutableDictionary *opdata = [@{@"product":product,
                                          @"traceId":traceId,
                                          @"name":name,
@@ -352,6 +344,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         } mutableCopy];
         if (parent.length>0) {
             [opdata setObject:parent forKey:@"parent"];
+        }
+        if (field.allKeys.count>0) {
+            [opdata setObject:field forKey:@"field"];
         }
         NSMutableDictionary *tag = [NSMutableDictionary new];
         if (tags) {
@@ -435,12 +430,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
     return tag;
-}
-- (NSString *)repleacingSpecialCharacters:(NSString *)str{
-    NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\ "];
-    reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\ "];
-    reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\ "];
-    return reStr;
 }
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     if (name.length == 0 || Id.length == 0) {
