@@ -36,11 +36,6 @@
 - (void)addNavigationItemWithImageNames:(NSArray *)imageNames isLeft:(BOOL)isLeft target:(id)target action:(SEL)action tags:(NSArray *)tags
 {
     NSMutableArray * items = [[NSMutableArray alloc] init];
-    //调整按钮位置
-    //    UIBarButtonItem* spaceItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    //    //将宽度设为负值
-    //    spaceItem.width= -5;
-    //    [items addObject:spaceItem];
     NSInteger i = 0;
     for (NSString * imageName in imageNames) {
         UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];

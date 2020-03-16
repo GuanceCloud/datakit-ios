@@ -216,7 +216,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
     @try {
-        if (measurement == nil || [measurement length] == 0 || field == nil || [field allKeys].count == 0) {
+        if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
         }
@@ -246,7 +246,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(BOOL))callBackStatus{
     @try {
-        if (measurement == nil || [measurement length] == 0 || field == nil || [field allKeys].count == 0) {
+        if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
         }
@@ -329,7 +329,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
     @try {
-        if (product == nil || [product length] == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
+        if (product == nil || [FTBaseInfoHander removeFrontBackBlank:product].length == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
         }
@@ -337,13 +337,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
-        if (field.allKeys.count>0) {
-            [field enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                if (obj!=nil && ![obj isKindOfClass:NSNull.class]) {
-                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",key,obj];
-                }
-            }];
-        }
         NSMutableDictionary *opdata = [@{@"product":product,
                                          @"traceId":traceId,
                                          @"name":name,
@@ -351,6 +344,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         } mutableCopy];
         if (parent.length>0) {
             [opdata setObject:parent forKey:@"parent"];
+        }
+        if (field.allKeys.count>0) {
+            [opdata setObject:field forKey:@"field"];
         }
         NSMutableDictionary *tag = [NSMutableDictionary new];
         if (tags) {

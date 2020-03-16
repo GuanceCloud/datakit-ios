@@ -57,8 +57,7 @@
     long time= (long)([datenow timeIntervalSince1970]*1000);
     long duration = time-self.preTime;
     self.preTime = time;
-    [[FTMobileAgent sharedInstance] flowTrack:@"track_flow" traceId:self.traceId name:@"流程图节点2" parent:@"流程图节点1" duration:duration];
-    
+    [[FTMobileAgent sharedInstance] flowTrack:@"track_flow" traceId:self.traceId name:@"流程图节点2" parent:@"流程图节点1" tags:nil duration:duration field:@{@"event":@"flow"}];    
 }
 - (void)btnClick3{
     NSDate *datenow = [NSDate date];
