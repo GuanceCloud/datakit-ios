@@ -339,8 +339,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
         if (field.allKeys.count>0) {
             [field enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
                 if (obj!=nil && ![obj isKindOfClass:NSNull.class]) {
-                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
+                    durationStr =[durationStr stringByAppendingFormat:@",%@=\"%@\"",[self repleacingSpecialCharacters:keyStr],obj];
                 }
             }];
         }
