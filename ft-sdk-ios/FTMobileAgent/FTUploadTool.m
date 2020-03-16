@@ -177,7 +177,8 @@
                 if ([[opdata allKeys] containsObject:@"field"]) {
                     NSDictionary *fieldDict = opdata[@"field"];
                     [fieldDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                        field = [field stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
+                        NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+                        field = [field stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:keyStr],obj];
                     }];
                     field = field.length>1? [field substringToIndex:field.length-1]:field;
                 }
@@ -247,7 +248,8 @@
     if ([[opdata allKeys] containsObject:@"values"]) {
         NSDictionary *values = opdata[@"values"];
         [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            event = [event stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
+             NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+            event = [event stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:keyStr],obj];
         }];
         event = event.length>1? [event substringToIndex:event.length-1]:event;
     }
