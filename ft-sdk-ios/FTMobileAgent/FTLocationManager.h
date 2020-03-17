@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLocationManager : NSObject
-@property (nonatomic, copy) void(^updateLocationBlock)(NSString *location, NSError *error);
+@property (nonatomic, copy) void(^updateLocationBlock)(NSString *province, NSString *city, NSError *error);
 - (void)startUpdatingLocation;
 @end
 

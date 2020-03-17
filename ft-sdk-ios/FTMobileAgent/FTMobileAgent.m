@@ -34,7 +34,8 @@
 @property (nonatomic, strong) FTLocationManager *locationManger;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @property (nonatomic, strong) FTLocationManager *manger;
-@property (nonatomic, copy)  NSString *location;
+@property (nonatomic, copy)  NSString *province;
+@property (nonatomic, copy)  NSString *city;
 @property (nonatomic, assign) int preFlowTime;
 @end
 @implementation FTMobileAgent
@@ -93,8 +94,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
-            self.manger.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
-                weakSelf.location = location;
+            self.manger.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+              weakSelf.city = city;
+              weakSelf.province = province;
             };
             [self.manger startUpdatingLocation];
             
@@ -216,6 +218,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
     @try {
+        NSParameterAssert(measurement);
+        NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
@@ -246,6 +250,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(BOOL))callBackStatus{
     @try {
+        NSParameterAssert(measurement);
+        NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
@@ -280,6 +286,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    NSParameterAssert(trackList);
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
@@ -329,7 +336,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
     @try {
-        if (product == nil || [FTBaseInfoHander removeFrontBackBlank:product].length == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
+        NSParameterAssert(product);
+        NSParameterAssert(traceId);
+        NSParameterAssert(name);
+        NSParameterAssert(duration);
+        if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
         }
@@ -424,18 +435,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [tag setObject:usage forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        if (self.location && self.location.length>0) {
-            [tag setObject:self.location forKey:@"location_city"];
-            
+        if (self.city && self.city.length>0 ) {
+            [tag setObject:self.city forKey:@"city"];
+        }
+        if (self.province && self.province.length>0) {
+            [tag setObject:self.province forKey:@"province"];
         }
     }
     return tag;
 }
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    if (name.length == 0 || Id.length == 0) {
-        ZYDebug(@"绑定用户失败！！！ 用户名和用户Id 不能为空");
-        return;
-    }
+    NSParameterAssert(name);
+    NSParameterAssert(Id);
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
 }
 - (void)logout{

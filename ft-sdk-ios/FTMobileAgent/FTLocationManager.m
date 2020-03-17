@@ -57,7 +57,7 @@
     ZYDebug(@"%@",placemark.name);
 
     //获取城市
-
+    NSString *province = placemark.administrativeArea;
     NSString *city = placemark.locality;
 
     if (!city) {
@@ -76,7 +76,7 @@
 
     }
         if (self.isUpdatingLocation&&self.updateLocationBlock) {
-            self.updateLocationBlock(city, error);
+            self.updateLocationBlock(province,city, error);
         }
         self.isUpdatingLocation = NO;
     }
