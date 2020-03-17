@@ -218,6 +218,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
     @try {
+        NSParameterAssert(measurement);
+        NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
@@ -248,6 +250,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(BOOL))callBackStatus{
     @try {
+        NSParameterAssert(measurement);
+        NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             return;
@@ -282,6 +286,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+    NSParameterAssert(trackList);
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
@@ -331,7 +336,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
     @try {
-        if (product == nil || [FTBaseInfoHander removeFrontBackBlank:product].length == 0 || traceId == nil || [traceId length] == 0||name ==nil||[name length]==0) {
+        NSParameterAssert(product);
+        NSParameterAssert(traceId);
+        NSParameterAssert(name);
+        NSParameterAssert(duration);
+        if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
         }
@@ -436,10 +445,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return tag;
 }
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    if (name.length == 0 || Id.length == 0) {
-        ZYDebug(@"绑定用户失败！！！ 用户名和用户Id 不能为空");
-        return;
-    }
+    NSParameterAssert(name);
+    NSParameterAssert(Id);
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
 }
 - (void)logout{
