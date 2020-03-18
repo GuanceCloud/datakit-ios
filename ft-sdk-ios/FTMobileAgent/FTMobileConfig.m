@@ -22,7 +22,11 @@
          self.akId = akId;
          self.akSecret = akSecret;
          self.enableRequestSigning = enableRequestSigning;
-         self.sdkVersion = FT_SDK_VERSION;
+         self.sdkAgentVersion = FT_SDK_AGENT_VERSION;
+         Class track =  NSClassFromString(@"FTAutoTrack");
+         if (track && self.enableAutoTrack) {
+             self.sdkTrackVersion = FT_SDK_TRACK_VERSION;
+         }
          self.appVersion = FT_APP_VERSION;
          self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
          self.enableLog = NO;
@@ -46,8 +50,9 @@
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;
 
-    options.sdkVersion = self.sdkVersion;
-    options.appVersion = self.sdkVersion;
+    options.sdkAgentVersion = self.sdkAgentVersion;
+    options.sdkTrackVersion = self.sdkTrackVersion;
+    options.appVersion = self.appVersion;
     
     options.appName = self.appName;
     options.enableLog = self.enableLog;

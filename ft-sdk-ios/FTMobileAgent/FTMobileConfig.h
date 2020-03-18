@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 /* SDK版本 */
-#define FT_SDK_VERSION @"1.0.1"
+#define FT_SDK_AGENT_VERSION @"1.0.1-alpha.8"
+#define FT_SDK_TRACK_VERSION @"1.0.1-alpha.6"
 
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
@@ -76,8 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
 /* SDK版本 */
-@property (nonatomic, copy) NSString *sdkVersion;
-
+@property (nonatomic, copy) NSString *sdkAgentVersion;
+/* SDK版本 */
+@property (nonatomic, copy) NSString *sdkTrackVersion;
 /* 应用版本(默认:info.plist中CFBundleShortVersionString对应的值)*/
 @property (nonatomic, copy) NSString *appVersion;
 
