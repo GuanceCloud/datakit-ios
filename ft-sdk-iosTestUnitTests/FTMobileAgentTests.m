@@ -89,9 +89,8 @@
 - (void)testLocation{
     
     FTLocationManager *location = [[FTLocationManager alloc]init];
-    location.updateLocationBlock = ^(NSString * _Nonnull location, NSError * _Nonnull error) {
-        XCTAssertTrue(location.length>0);
-
+    location.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+        XCTAssertTrue(province.length>0||city.length>0);
     };
 }
 /**
@@ -107,7 +106,7 @@
            [NSThread sleepForTimeInterval:1.0f];
              tag= [tool performSelector:@selector(getBasicData)];
     if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        XCTAssertTrue([tag rangeOfString:@"location_city"].location != NSNotFound);
+        XCTAssertTrue([tag rangeOfString:@"city"].location != NSNotFound);
     }
     if(self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll){
          XCTAssertTrue([tag rangeOfString:@"camera_front_px"].location != NSNotFound);
