@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUploadTool : NSObject
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 -(void)upload;
--(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(BOOL isSuccess))callBackStatus;
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(BOOL isSuccess))callBackStatus;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(NSInteger statusCode, id responseObject))callBack;
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(NSInteger statusCode, id responseObject))callBack;
 
 @end
 

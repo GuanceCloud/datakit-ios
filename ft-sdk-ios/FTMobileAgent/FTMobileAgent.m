@@ -243,18 +243,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track measurement tags field exception %@",exception);
     }
 }
--(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(BOOL))callBackStatus{
-    [self trackImmediate:measurement tags:nil field:field callBack:^(BOOL isSuccess) {
-        callBackStatus? callBackStatus(isSuccess):nil;
+-(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
+    [self trackImmediate:measurement tags:nil field:field callBack:^(NSInteger statusCode, id responseObject) {
+        callBackStatus? callBackStatus(statusCode,responseObject):nil;
     }];
 }
-- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(BOOL))callBackStatus{
+- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
     @try {
         NSParameterAssert(measurement);
         NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
-            return;
+            callBackStatus?callBackStatus(100,nil):nil;
         }
         FTRecordModel *model = [FTRecordModel new];
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
@@ -276,8 +276,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         ZYDebug(@"trackImmediateData == %@",data);
         dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediate:model callBack:^(BOOL isSuccess) {
-                callBackStatus? callBackStatus(isSuccess):nil;
+            [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, id responseObject) {
+                callBackStatus? callBackStatus(statusCode,responseObject):nil;
             }];
         });
     }
@@ -285,7 +285,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track measurement tags field exception %@",exception);
     }
 }
-- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus{
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
     NSParameterAssert(trackList);
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -320,13 +320,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }];
     if (list.count>0) {
         dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediateList:list callBack:^(BOOL isSuccess) {
-                callBackStatus? callBackStatus(isSuccess):nil;
+            [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, id responseObject) {
+                callBackStatus? callBackStatus(statusCode,responseObject):nil;
             }];
         });
     }else{
         ZYLog(@"传入的数据格式有误");
-        callBackStatus? callBackStatus(NO):nil;
+        callBackStatus?callBackStatus(100,nil):nil;
     }
     
 }

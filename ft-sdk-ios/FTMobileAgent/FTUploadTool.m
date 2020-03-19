@@ -18,11 +18,65 @@
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 
+#pragma mark -
+
+@interface FTQueryStringPair : NSObject
+@property (readwrite, nonatomic, strong) id field;
+@property (readwrite, nonatomic, strong) id value;
+
+- (instancetype)initWithField:(id)field value:(id)value;
+
+- (NSString *)URLEncodedTagsStringValue;
+- (NSString *)URLEncodedFiledStringValue;
+@end
+@implementation FTQueryStringPair
+- (instancetype)initWithField:(id)field value:(id)value {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    self.field = field;
+    self.value = value;
+    
+    return self;
+}
+- (NSString *)URLEncodedTagsStringValue{
+    if (!self.value || [self.value isEqual:[NSNull null]]) {
+        return [NSString stringWithFormat:@"%@=null", [self repleacingSpecialCharacters:self.field]];
+    } else {
+        return [NSString stringWithFormat:@"%@=%@", [self repleacingSpecialCharacters:self.field], [self repleacingSpecialCharacters:self.value]];
+    }
+}
+- (NSString *)URLEncodedFiledStringValue{
+    if (!self.value || [self.value isEqual:[NSNull null]]) {
+        return [NSString stringWithFormat:@"%@=null", [self repleacingSpecialCharacters:self.field]];
+    } else if([self.field isEqualToString:@"$duration"]){
+        return [NSString stringWithFormat:@"%@=%@", [self repleacingSpecialCharacters:self.field], self.value];
+    }else{
+        return [NSString stringWithFormat:@"%@=\"%@\"", [self repleacingSpecialCharacters:self.field], self.value];
+    }
+}
+- (id )repleacingSpecialCharacters:(id )str{
+    if ([str isKindOfClass:NSString.class]) {
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\，"];
+        reStr = [str stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+        return reStr;
+    }else{
+        return str;
+    }
+    
+}
+@end
+
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
-@property (nonatomic, copy) NSString *tag;
+@property (nonatomic, copy) NSString *basicTagStr;
+@property (nonatomic, strong) NSDictionary *basicTags;
 @end
 @implementation FTUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -55,7 +109,18 @@
                 break;
             }
             FTRecordModel *model = [updata lastObject];
-            BOOL success = [self apiRequestWithEventsAry:updata andError:nil];
+            __block BOOL success;
+            dispatch_group_t group = dispatch_group_create();
+            dispatch_group_enter(group);
+            [self apiRequestWithEventsAry:updata callBack:^(NSInteger statusCode, id responseObject) {
+                if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
+                    success = YES;
+                }else{
+                    success = NO;
+                }
+                dispatch_group_leave(group);
+            }];
+            dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
             if (!success) {//请求失败
                 ZYDebug(@"上传事件失败");
                 break;
@@ -70,18 +135,18 @@
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(BOOL isSuccess))callBackStatus{
-    BOOL success = [self apiRequestWithEventsAry:@[model] andError:nil];
-    callBackStatus?callBackStatus(success):nil;
-}
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(BOOL isSuccess))callBackStatus{
-    BOOL success = [self apiRequestWithEventsAry:modelList andError:nil];
-    callBackStatus?callBackStatus(success):nil;
-}
-- (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
-    __block BOOL success =NO;
-    __block int  retry = 0;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+    [self apiRequestWithEventsAry:@[model] callBack:^(NSInteger statusCode, id responseObject) {
+        callBack?callBack(statusCode,responseObject):nil;
+    }];
     
+}
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+    [self apiRequestWithEventsAry:modelList callBack:^(NSInteger statusCode, id responseObject) {
+        callBack?callBack(statusCode,responseObject):nil;
+    }];
+}
+- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, id responseObject))callBack {
     NSString *requestData = [self getRequestDataWithEventArray:events];
     
     NSString *date =[FTBaseInfoHander ft_currentGMT];
@@ -113,37 +178,30 @@
     
     //设置请求session
     NSURLSession *session = [NSURLSession sharedSession];
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
     
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSInteger statusCode = [httpResponse statusCode];
+        NSMutableDictionary *responseObject;
         if (error) {
             ZYDebug(@"response error = %@",error);
-            retry++;
         }else{
             NSError *errors;
-            NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+            responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
             if (errors){
                 ZYDebug(@"response error = %@",error);
-                retry++;
             }else {
-                if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
-                    success = YES;
-                }else{
-                    success = NO;
-                }
                 ZYDebug(@"responseObject = %@",responseObject);
             }
+            
         }
-        dispatch_group_leave(group);
+        callBack? callBack(statusCode,responseObject):nil ;
         
     }];
     //开始请求
     [dataTask resume];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
     
-    return success;
 }
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
@@ -265,17 +323,17 @@
 }
 - (id )repleacingSpecialCharacters:(id )str{
     if ([str isKindOfClass:NSString.class]) {
-      NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-      reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
-      reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\，"];
-      return reStr;
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\，"];
+        return reStr;
     }else{
         return str;
     }
-   
+    
 }
 - (NSString *)getTagStr:(NSDictionary *)dict{
-    __block NSString *tagStr = [self getBasicData];
+    __block NSString *tagStr = self.basicTagStr;
     NSDictionary *tags =dict[@"tags"];
     
     [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
@@ -295,50 +353,81 @@
     }];
     return tagStr;
 }
-- (NSString *)getBasicData{
-    if (_tag != nil) {
-        return _tag;
+- (NSDictionary *)basicTags{
+    if (!_basicTags) {
+        NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
+        NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
+        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+        CFShow((__bridge CFTypeRef)(infoDictionary));
+        NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
+        NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+        
+        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+        NSString *version = [UIDevice currentDevice].systemVersion;
+        NSMutableDictionary *tag = @{@"device_uuid":uuid,
+                                     @"application_identifier":identifier,
+                                     @"application_name":app_Name,
+                                     @"os":@"iOS",
+                                     @"os_version":version,
+                                     @"device_band":@"APPLE",
+                                     @"locale":preferredLanguage,
+                                     @"device_model":deviceInfo[FTBaseInfoHanderDeviceType],
+                                     @"display":[FTBaseInfoHander ft_resolution],
+                                     @"carrier":[FTBaseInfoHander ft_getTelephonyInfo],
+                                     
+        }.mutableCopy;
+        if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
+        }
+        if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:[NSNumber numberWithLongLong:[FTBaseInfoHander ft_getTotalMemorySize]] forKey:@"memory_total"];
+        }
+        if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:@"cpu_hz"];
+        }
+        if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
+        }
+        if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
+            [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
+        }
+        _basicTags = tag;
     }
-    NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-    NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    CFShow((__bridge CFTypeRef)(infoDictionary));
-    NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
-    NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
     
-    NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-    NSString *version = [UIDevice currentDevice].systemVersion;
-    NSMutableString *tag = [NSMutableString string];
+    return _basicTags;
+}
+- (NSString *)basicTagStr{
+    if (!_basicTagStr) {
+        NSString *tagStr = FTQueryStringFromParameters(self.basicTags);
+        _basicTagStr = tagStr;
+    }
     
-    [tag appendFormat:@"device_uuid=%@,",uuid];
-    [tag appendFormat:@"application_identifier=%@,",identifier];
-    [tag appendFormat:@"application_name=%@,",app_Name];
-    [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
-    [tag appendString:@"os=iOS,"];
-    [tag appendFormat:@"os_version=%@,",version];
-    [tag appendString:@"device_band=APPLE,"];
-    [tag appendFormat:@"locale=%@,",preferredLanguage];
-    [tag appendFormat:@"device_model=%@,",deviceInfo[FTBaseInfoHanderDeviceType]];
-    [tag appendFormat:@"display=%@,",[FTBaseInfoHander ft_resolution]];
-    [tag appendFormat:@"carrier=%@,",[FTBaseInfoHander ft_getTelephonyInfo]];
-    if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"battery_total=%@,",deviceInfo[FTBaseInfoHanderBatteryTotal]];
+    return _basicTagStr;
+}
+NSString * FTQueryStringFromParameters(NSDictionary *parameters) {
+    NSMutableArray *mutablePairs = [NSMutableArray array];
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromDict(parameters)) {
+        [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
     }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"memory_total=%lld,",[FTBaseInfoHander ft_getTotalMemorySize]];
+    
+    return [mutablePairs componentsJoinedByString:@","];
+}
+NSString * FTTagQueryStringFromParameters(NSDictionary *parameters) {
+    NSMutableArray *mutablePairs = [NSMutableArray array];
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromDict(parameters)) {
+        [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
     }
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"cpu_no=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUType]];
-        [tag appendFormat:@"cpu_hz=%@,",deviceInfo[FTBaseInfoHanderDeviceCPUClock]];
-    }
-    if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        [tag appendFormat:@"gpu_model=%@,",deviceInfo[FTBaseInfoHanderDeviceGPUType]];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag appendFormat:@"camera_front_px=%@,",[FTBaseInfoHander ft_getFrontCameraPixel]];
-        [tag appendFormat:@"camera_back_px=%@,",[FTBaseInfoHander ft_getBackCameraPixel]];
-    }
-    _tag = tag;
-    return _tag;
+    return [mutablePairs componentsJoinedByString:@","];
+}
+NSArray * FTQueryStringPairsFromDict(NSDictionary *param) {
+    NSMutableArray *mutableQueryStringComponents = [NSMutableArray array];
+    
+    [param enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:key value:obj]];
+    }];
+    
+    return mutableQueryStringComponents;
 }
 @end

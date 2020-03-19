@@ -47,10 +47,10 @@
     [[FTMobileAgent sharedInstance] trackBackgroud:@"track Test" tags:nil field:@{@"ev ,ent":@"te s,t"}];
 }
 - (void)testTrackImmediate{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" field:@{@"test":@"testImmediate"} callBack:^(BOOL isSuccess) {
-        NSLog(@"success = %d",isSuccess);
+    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediate" field:@{@"test":@"testImmediate"} callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
+        NSLog(@"statusCode = %ld",(long)statusCode);
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:isSuccess?@"success":@"fail"];
+            [self showResult:statusCode==200?@"success":@"fail"];
         });
     }];
 }
@@ -65,12 +65,12 @@
     FTTrackBean *bean2 = [FTTrackBean new];
     bean2.measurement = @"testImmediateList2";
     bean2.field =@{@"test":@"testImmediateList2"};
-
-    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(BOOL isSuccess) {
-        NSLog(@"success = %d",isSuccess);
-               dispatch_async(dispatch_get_main_queue(), ^{
-                   [self showResult:isSuccess?@"success":@"fail"];
-               });
+    
+    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
+        NSLog(@"statusCode = %ld",(long)statusCode);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self showResult:statusCode==200?@"success":@"fail"];
+        });
     }];
     
 }
