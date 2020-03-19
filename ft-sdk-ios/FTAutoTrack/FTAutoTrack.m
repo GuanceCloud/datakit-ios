@@ -318,11 +318,11 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
         NSDictionary *field = @{@"event":op};
         NSString *measurement = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
-            [tags addEntriesFromDictionary:@{@"rpn":[UIViewController ft_getRootViewController]}];
+            [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {
-              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
+              [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
             }else if ([cpn isKindOfClass:UIViewController.class]){
-              [tags addEntriesFromDictionary:@{@"cpn":NSStringFromClass([cpn class])}];
+              [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn class])}];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];

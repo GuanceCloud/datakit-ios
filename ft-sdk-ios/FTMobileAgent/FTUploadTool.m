@@ -25,7 +25,7 @@
 @property (readwrite, nonatomic, strong) id value;
 
 - (instancetype)initWithField:(id)field value:(id)value;
-
+- (instancetype)initWithUserField:(id)field value:(id)value;
 - (NSString *)URLEncodedTagsStringValue;
 - (NSString *)URLEncodedFiledStringValue;
 @end
@@ -38,7 +38,23 @@
     
     self.field = field;
     self.value = value;
+    //旧数据处理 1.0.1-alpha9之前
+    if ([field isEqualToString:@"cpn"]) {
+        self.value = @"current_page_name";
+    }
+    if ([field isEqualToString:@"rpn"]) {
+        self.value = @"root_page_name";
+    }
+    return self;
+}
+- (instancetype)initWithUserField:(id)field value:(id)value{
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
     
+    self.field = [NSString stringWithFormat:@"ud_%@",field];
+    self.value = value;
     return self;
 }
 - (NSString *)URLEncodedTagsStringValue{
@@ -234,28 +250,13 @@
                 }
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
-                NSDictionary *fieldDict = opdata[@"field"];
-                [fieldDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                    NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-                    field = [field stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:keyStr],obj];
-                }];
+                field=field.length>0?[field stringByAppendingFormat:@",%@",FTFiledQueryStringFromParameters(opdata[@"field"])]:FTFiledQueryStringFromParameters(opdata[@"field"]);
             }
-            field = field.length>1? [field substringToIndex:field.length-1]:field;
-            __block NSString *tagsStr = [self getTagStr:opdata];
-            [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                if ([obj isKindOfClass:NSString.class]) {
-                    tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
-                }
-                if ([obj isKindOfClass:NSDictionary.class]) {
-                    [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                        tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key2],[self repleacingSpecialCharacters:obj2]];
-                    }];
-                }
-            }];
+            NSString *tagsStr  = FTTagQueryStringFromParameters(opdata[@"tags"]);
+            NSString *userStr =userData.allKeys.count>0?  userStr=FTUserQueryStringFromParameters(userData):nil;
+            
             requestStr =firstStr;
-            tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
-            requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
-            requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
+            requestStr = [requestStr stringByAppendingFormat:@",%@,%@",tagsStr,self.basicTagStr];
             requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",field,obj.tm*1000];
             
         }else{
@@ -278,7 +279,7 @@
     NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
     NSDictionary *opdata = item[@"opdata"];
     NSString *firstStr;
-    __block NSString *event = @" ";
+    __block NSString *event = @"";
     
     if ([opdata valueForKey:@"field"]) {
         firstStr = [opdata valueForKey:@"field"];
@@ -291,34 +292,20 @@
             firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[self repleacingSpecialCharacters:[opdata valueForKey:@"parent"]]];
         }
     }
-    __block NSString *tagsStr = [self getTagStr:opdata];
-    [userData enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:NSString.class]) {
-            tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
-        }
-        if ([obj isKindOfClass:NSDictionary.class]) {
-            [obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key2, id  _Nonnull obj2, BOOL * _Nonnull stop) {
-                tagsStr = [tagsStr stringByAppendingFormat:@"ud_%@=%@,",[self repleacingSpecialCharacters:key2],[self repleacingSpecialCharacters:obj2]];
-            }];
-        }
-    }];
-    if ([[opdata allKeys] containsObject:@"values"]) {
-        NSDictionary *values = opdata[@"values"];
-        [values enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            NSString *keyStr = [key stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-            event = [event stringByAppendingFormat:@"%@=\"%@\",",[self repleacingSpecialCharacters:keyStr],obj];
-        }];
-        event = event.length>1? [event substringToIndex:event.length-1]:event;
-    }
+    NSString *tagsStr  = FTTagQueryStringFromParameters(opdata[@"tags"]);
+    NSString *userStr =userData.allKeys.count>0?  userStr=FTUserQueryStringFromParameters(userData):nil;
+    
     if ([[opdata allKeys] containsObject:@"duration"]) {
         event = [event stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
     }
-    
-    tagsStr =tagsStr.length>1? [tagsStr substringToIndex:tagsStr.length-1]:tagsStr;
+    if ([[opdata allKeys] containsObject:@"values"]) {
+        
+        event =event.length==0? FTFiledQueryStringFromParameters(opdata[@"values"]):[event stringByAppendingFormat:@",%@",FTFiledQueryStringFromParameters(opdata[@"values"])];
+    }
+    tagsStr = userStr.length>0?[tagsStr stringByAppendingFormat:@",%@,%@",self.basicTagStr,userStr]:[tagsStr stringByAppendingFormat:@",%@",self.basicTagStr];
     NSString *requestStr =firstStr;
     requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
-    requestStr = [requestStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-    requestStr = [requestStr stringByAppendingFormat:@"%@ %lld",event,model.tm*1000];
+    requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",event,model.tm*1000];
     return requestStr;
 }
 - (id )repleacingSpecialCharacters:(id )str{
@@ -331,27 +318,6 @@
         return str;
     }
     
-}
-- (NSString *)getTagStr:(NSDictionary *)dict{
-    __block NSString *tagStr = self.basicTagStr;
-    NSDictionary *tags =dict[@"tags"];
-    
-    [tags enumerateKeysAndObjectsUsingBlock:^(NSString  *key, NSString *obj, BOOL * _Nonnull stop) {
-        if ([key isEqualToString:@"cpn"]) {
-            if (obj) {
-                tagStr = [tagStr stringByAppendingFormat:@"current_page_name=%@,",obj];
-            }
-        }else if ([key isEqualToString:@"rpn"]){
-            if (obj && ![obj isEqualToString:@"null"]) {
-                if(obj.length>0){
-                    tagStr =[tagStr stringByAppendingFormat:@"root_page_name=%@,",obj];
-                }
-            }
-        }else{
-            tagStr = [tagStr stringByAppendingFormat:@"%@=%@,",[self repleacingSpecialCharacters:key],[self repleacingSpecialCharacters:obj]];
-        }
-    }];
-    return tagStr;
 }
 - (NSDictionary *)basicTags{
     if (!_basicTags) {
@@ -400,34 +366,62 @@
 }
 - (NSString *)basicTagStr{
     if (!_basicTagStr) {
-        NSString *tagStr = FTQueryStringFromParameters(self.basicTags);
+        NSString *tagStr = FTTagQueryStringFromParameters(self.basicTags);
         _basicTagStr = tagStr;
     }
-    
     return _basicTagStr;
 }
-NSString * FTQueryStringFromParameters(NSDictionary *parameters) {
+NSString * FTTagQueryStringFromParameters(NSDictionary *parameters) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
-    for (FTQueryStringPair *pair in FTQueryStringPairsFromDict(parameters)) {
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters)) {
         [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
     }
     
     return [mutablePairs componentsJoinedByString:@","];
 }
-NSString * FTTagQueryStringFromParameters(NSDictionary *parameters) {
+NSString * FTFiledQueryStringFromParameters(NSDictionary *parameters) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
-    for (FTQueryStringPair *pair in FTQueryStringPairsFromDict(parameters)) {
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters)) {
         [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
     }
     return [mutablePairs componentsJoinedByString:@","];
 }
-NSArray * FTQueryStringPairsFromDict(NSDictionary *param) {
+NSString * FTUserQueryStringFromParameters(NSDictionary *parameters) {
+    NSMutableArray *mutablePairs = [NSMutableArray array];
+    for (FTQueryStringPair *pair in FTUserQueryStringPairsFromKeyAndValue(nil,parameters)) {
+        [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
+    }
+    return [mutablePairs componentsJoinedByString:@","];
+}
+NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value) {
     NSMutableArray *mutableQueryStringComponents = [NSMutableArray array];
-    
-    [param enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:key value:obj]];
-    }];
-    
+    if ([value isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *dictionary = value;
+        for (id nestedKey in dictionary.allKeys) {
+            id nestedValue = dictionary[nestedKey];
+            if (nestedValue) {
+                [mutableQueryStringComponents addObjectsFromArray:FTQueryStringPairsFromKeyAndValue( nestedKey, nestedValue)];
+            }
+        }
+    }else{
+        [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:key value:value]];
+        
+    }
+    return mutableQueryStringComponents;
+}
+NSArray * FTUserQueryStringPairsFromKeyAndValue(NSString *key, id value) {
+    NSMutableArray *mutableQueryStringComponents = [NSMutableArray array];
+    if ([value isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *dictionary = value;
+        for (id nestedKey in dictionary.allKeys) {
+            id nestedValue = dictionary[nestedKey];
+            if (nestedValue) {
+                [mutableQueryStringComponents addObjectsFromArray:FTQueryStringPairsFromKeyAndValue( nestedKey, nestedValue)];
+            }
+        }
+    }else{
+        [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithUserField:key value:value]];
+    }
     return mutableQueryStringComponents;
 }
 @end
