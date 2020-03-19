@@ -485,5 +485,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
-
+- (void)resetInstance{
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end

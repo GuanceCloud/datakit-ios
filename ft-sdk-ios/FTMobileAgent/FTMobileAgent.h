@@ -96,6 +96,10 @@ SDK 初始化方法
  注销当前用户
 */
 - (void)logout;
+/**
+ 清空
+ */
+- (void)resetInstance;
 @end
 
 NS_ASSUME_NONNULL_END
