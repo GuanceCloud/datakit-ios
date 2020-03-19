@@ -313,7 +313,10 @@
     [tag appendFormat:@"device_uuid=%@,",uuid];
     [tag appendFormat:@"application_identifier=%@,",identifier];
     [tag appendFormat:@"application_name=%@,",app_Name];
-    [tag appendFormat:@"sdk_version=%@,",self.config.sdkVersion];
+    [tag appendFormat:@"agent=%@,",self.config.sdkAgentVersion];
+    if (self.config.sdkTrackVersion.length>0) {
+        [tag appendFormat:@"autoTrack=%@,",self.config.sdkTrackVersion];
+    }
     [tag appendString:@"os=iOS,"];
     [tag appendFormat:@"os_version=%@,",version];
     [tag appendString:@"device_band=APPLE,"];

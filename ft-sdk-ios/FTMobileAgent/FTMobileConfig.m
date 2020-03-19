@@ -11,6 +11,9 @@
 #import "ZYLog.h"
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
+#define FTAPP_DNAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
+#define FTAPP_NAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"]
+
 @implementation FTMobileConfig
 
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
@@ -19,9 +22,13 @@
          self.akId = akId;
          self.akSecret = akSecret;
          self.enableRequestSigning = enableRequestSigning;
-         self.sdkVersion = FT_SDK_VERSION;
+         self.sdkAgentVersion = FT_SDK_AGENT_VERSION;
+         Class track =  NSClassFromString(@"FTAutoTrack");
+         if (track && self.enableAutoTrack) {
+             self.sdkTrackVersion = FT_SDK_TRACK_VERSION;
+         }
          self.appVersion = FT_APP_VERSION;
-         self.appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+         self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
          self.enableLog = NO;
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
@@ -43,8 +50,9 @@
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;
 
-    options.sdkVersion = self.sdkVersion;
-    options.appVersion = self.sdkVersion;
+    options.sdkAgentVersion = self.sdkAgentVersion;
+    options.sdkTrackVersion = self.sdkTrackVersion;
+    options.appVersion = self.appVersion;
     
     options.appName = self.appName;
     options.enableLog = self.enableLog;
