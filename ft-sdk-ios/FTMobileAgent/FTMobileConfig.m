@@ -23,10 +23,6 @@
          self.akSecret = akSecret;
          self.enableRequestSigning = enableRequestSigning;
          self.sdkAgentVersion = FT_SDK_AGENT_VERSION;
-         Class track =  NSClassFromString(@"FTAutoTrack");
-         if (track && self.enableAutoTrack) {
-             self.sdkTrackVersion = FT_SDK_TRACK_VERSION;
-         }
          self.appVersion = FT_APP_VERSION;
          self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
          self.enableLog = NO;
@@ -60,6 +56,13 @@
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
     return options;
+}
+-(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
+    _enableAutoTrack = enableAutoTrack;
+    Class track =  NSClassFromString(@"FTAutoTrack");
+    if (track && enableAutoTrack) {
+        self.sdkTrackVersion = FT_SDK_TRACK_VERSION;
+    }
 }
 -(void)setEnableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);
