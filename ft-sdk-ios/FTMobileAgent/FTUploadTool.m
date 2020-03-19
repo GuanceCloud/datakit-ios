@@ -55,7 +55,18 @@
                 break;
             }
             FTRecordModel *model = [updata lastObject];
-            BOOL success = [self apiRequestWithEventsAry:updata andError:nil];
+            __block BOOL success;
+            dispatch_group_t group = dispatch_group_create();
+            dispatch_group_enter(group);
+            [self apiRequestWithEventsAry:updata callBack:^(NSInteger statusCode, id responseObject) {
+                if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
+                    success = YES;
+                }else{
+                    success = NO;
+                }
+                dispatch_group_leave(group);
+            }];
+            dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
             if (!success) {//请求失败
                 ZYDebug(@"上传事件失败");
                 break;
@@ -70,18 +81,19 @@
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(BOOL isSuccess))callBackStatus{
-    BOOL success = [self apiRequestWithEventsAry:@[model] andError:nil];
-    callBackStatus?callBackStatus(success):nil;
-}
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(BOOL isSuccess))callBackStatus{
-    BOOL success = [self apiRequestWithEventsAry:modelList andError:nil];
-    callBackStatus?callBackStatus(success):nil;
-}
-- (BOOL)apiRequestWithEventsAry:(NSArray *)events andError:(NSError *)error {
-    __block BOOL success =NO;
-    __block int  retry = 0;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+    [self apiRequestWithEventsAry:@[model] callBack:^(NSInteger statusCode, id responseObject) {
+        callBack?callBack(statusCode,responseObject):nil;
+    }];
     
+}
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+    [self apiRequestWithEventsAry:modelList callBack:^(NSInteger statusCode, id responseObject) {
+        callBack?callBack(statusCode,responseObject):nil;
+    }];
+}
+
+- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, id responseObject))callBack {
     NSString *requestData = [self getRequestDataWithEventArray:events];
     
     NSString *date =[FTBaseInfoHander ft_currentGMT];
@@ -105,7 +117,7 @@
     ZYDebug(@"requestData = %@",requestData);
     
     if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
+        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData date:date]];
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
     request = [mutableRequest copy];        //拷贝回去
@@ -113,37 +125,29 @@
     
     //设置请求session
     NSURLSession *session = [NSURLSession sharedSession];
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
     
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSInteger statusCode = [httpResponse statusCode];
+        NSMutableDictionary *responseObject;
         if (error) {
             ZYDebug(@"response error = %@",error);
-            retry++;
         }else{
             NSError *errors;
-            NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+            responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
             if (errors){
                 ZYDebug(@"response error = %@",error);
-                retry++;
             }else {
-                if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
-                    success = YES;
-                }else{
-                    success = NO;
-                }
                 ZYDebug(@"responseObject = %@",responseObject);
             }
+            
         }
-        dispatch_group_leave(group);
+        callBack? callBack(statusCode,responseObject):nil ;
         
     }];
     //开始请求
     [dataTask resume];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    
-    return success;
 }
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
