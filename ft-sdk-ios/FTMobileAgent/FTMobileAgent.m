@@ -31,7 +31,6 @@
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, strong) FTLocationManager *locationManger;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @property (nonatomic, strong) FTLocationManager *manger;
 @property (nonatomic, copy)  NSString *province;
@@ -99,7 +98,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 weakSelf.province = province;
             };
             [self.manger startUpdatingLocation];
-            
         }
         [self setupAppNetworkListeners];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
@@ -372,7 +370,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSParameterAssert(product);
         NSParameterAssert(traceId);
         NSParameterAssert(name);
-        NSParameterAssert(duration);
         if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
@@ -381,17 +378,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
-        NSMutableDictionary *opdata = [@{@"product":product,
-                                         @"traceId":traceId,
-                                         @"name":name,
-                                         @"duration":durationStr
+        NSMutableDictionary *fieldDict = @{@"$duration":durationStr}.mutableCopy;
+        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$flow_%@",product],
+                                         @"$traceId":traceId,
+                                         @"$name":name,
         } mutableCopy];
         if (parent.length>0) {
-            [opdata setObject:parent forKey:@"parent"];
+            [opdata setObject:parent forKey:@"$parent"];
         }
         if (field.allKeys.count>0) {
-            [opdata setObject:field forKey:@"field"];
+            [fieldDict addEntriesFromDictionary:field];
         }
+        [opdata addEntriesFromDictionary:@{@"field":fieldDict}];
         NSMutableDictionary *tag = [NSMutableDictionary new];
         if (tags) {
             [tag addEntriesFromDictionary:tags];

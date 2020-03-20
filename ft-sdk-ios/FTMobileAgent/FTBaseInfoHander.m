@@ -807,4 +807,15 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     NSString *string = [str stringByTrimmingCharactersInSet:set];
     return string;
 }
++ (id)repleacingSpecialCharacters:(id )str{
+    if ([str isKindOfClass:NSString.class]) {
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
+        reStr =[reStr stringByReplacingOccurrencesOfString:@"，" withString:@"\\，"];
+        return reStr;
+    }else{
+        return str;
+    }
+    
+}
 @end
