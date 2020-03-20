@@ -37,6 +37,7 @@
 @property (nonatomic, copy)  NSString *province;
 @property (nonatomic, copy)  NSString *city;
 @property (nonatomic, assign) int preFlowTime;
+@property (readwrite, nonatomic, strong) NSLock *lock;
 @end
 @implementation FTMobileAgent
 
@@ -94,8 +95,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
             self.manger.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
-              weakSelf.city = city;
-              weakSelf.province = province;
+                weakSelf.city = city;
+                weakSelf.province = province;
             };
             [self.manger startUpdatingLocation];
             
@@ -342,13 +343,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             };
             model.data =[FTBaseInfoHander ft_convertToJsonData:data];
             if(obj.timeMillis && obj.timeMillis>1000000000000){
-            model.tm = obj.timeMillis*1000;
+                model.tm = obj.timeMillis*1000;
             }else{
-            model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+                model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
             }
             [list addObject:model];
         }else{
-          ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYLog(@"传入的第 %d 个数据格式有误",idx);
         }
     }];
     if (list.count>0) {
@@ -504,9 +505,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_netFlow) {
         return;
     }
-    dispatch_async(self.timerQueue, ^{
         [self.netFlow stopMonitor];
-    });
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{
