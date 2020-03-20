@@ -37,12 +37,13 @@
 @property (nonatomic, copy)  NSString *province;
 @property (nonatomic, copy)  NSString *city;
 @property (nonatomic, assign) int preFlowTime;
+@property (readwrite, nonatomic, strong) NSLock *lock;
 @end
 @implementation FTMobileAgent
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
-
+static char FTAutoTrack;
 static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
     if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
         @autoreleasepool {
@@ -68,7 +69,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
-    
 }
 // 单例
 + (instancetype)sharedInstance {
@@ -95,8 +95,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
             self.manger.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
-              weakSelf.city = city;
-              weakSelf.province = province;
+                weakSelf.city = city;
+                weakSelf.province = province;
             };
             [self.manger startUpdatingLocation];
             
@@ -128,6 +128,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     IMP imp = [autoTrack methodForSelector:startMethod];
                     void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
                     func(autoTrack,startMethod,self.config);
+                    objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
                 }
             }
         }
@@ -136,7 +137,39 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return self;
 }
-
+-(void)resetConfig:(FTMobileConfig *)config{
+    id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
+    if (autotrack) {
+        Class track =  NSClassFromString(@"FTAutoTrack");
+        SEL resetMethod = NSSelectorFromString(@"resetConfig:");
+        unsigned int methCount = 0;
+        Method *meths = class_copyMethodList(track, &methCount);
+        BOOL ishas = NO;
+        for(int i = 0; i < methCount; i++) {
+            Method meth = meths[i];
+            SEL sel = method_getName(meth);
+            const char *name = sel_getName(sel);
+            NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
+            if ([str isEqualToString:@"resetConfig:"]) {
+                ishas = YES;
+                break;
+            }
+        }
+        free(meths);
+        if (ishas) {
+            IMP imp = [autotrack methodForSelector:resetMethod];
+            void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
+            func(autotrack,resetMethod,config);
+        }
+    }
+    self.config = config;
+    self.upTool.config = config;
+    if (!(self.config.monitorInfoType & FTMonitorInfoTypeAll) && !(self.config.monitorInfoType &FTMonitorInfoTypeNetwork)) {
+        [self stopFlushTimer];
+    }else{
+        [self startFlushTimer];
+    }
+}
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
     BOOL reachabilityOk = NO;
@@ -254,7 +287,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
-            callBackStatus?callBackStatus(100,nil):nil;
+            callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
         FTRecordModel *model = [FTRecordModel new];
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
@@ -309,13 +342,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             };
             model.data =[FTBaseInfoHander ft_convertToJsonData:data];
             if(obj.timeMillis && obj.timeMillis>1000000000000){
-            model.tm = obj.timeMillis*1000;
+                model.tm = obj.timeMillis*1000;
             }else{
-            model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+                model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
             }
             [list addObject:model];
         }else{
-          ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYLog(@"传入的第 %d 个数据格式有误",idx);
         }
     }];
     if (list.count>0) {
@@ -326,7 +359,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         });
     }else{
         ZYLog(@"传入的数据格式有误");
-        callBackStatus?callBackStatus(100,nil):nil;
+        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
     }
     
 }
@@ -471,9 +504,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_netFlow) {
         return;
     }
-    dispatch_async(self.timerQueue, ^{
         [self.netFlow stopMonitor];
-    });
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{
@@ -484,5 +515,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
-
+- (void)resetInstance{
+    [self.netFlow stopMonitor];
+    objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_removeAssociatedObjects(self);
+    self.netFlow = nil;
+    self.upTool = nil;
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end

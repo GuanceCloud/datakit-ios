@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
 #import "FTTrackBean.h"
+#define InvalidParamsException 102
 NS_ASSUME_NONNULL_BEGIN
 //@interface FTTrackBean : NSObject
 //@property (nonatomic, strong) NSString *measurement;
@@ -34,6 +35,12 @@ SDK 初始化方法
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 /**
+SDK 重新配置config方法
+
+@param config           配置参数
+*/
+- (void)resetConfig:(FTMobileConfig *)config;
+/**
  主动埋点，追踪自定义事件。 存储数据库，等待上传
  @param measurement      当前数据点所属的指标集
  @param field     自定义指标
@@ -51,7 +58,7 @@ SDK 初始化方法
  @param measurement     当前数据点所属的指标集
  @param field           自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement  field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
 /**
 主动埋点，追踪自定义事件。   立即上传 回调上传结果
 @param measurement      当前数据点所属的指标集
@@ -95,6 +102,10 @@ SDK 初始化方法
  注销当前用户
 */
 - (void)logout;
+/**
+ 清空
+ */
+- (void)resetInstance;
 @end
 
 NS_ASSUME_NONNULL_END

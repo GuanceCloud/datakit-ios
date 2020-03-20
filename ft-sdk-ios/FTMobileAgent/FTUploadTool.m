@@ -89,7 +89,6 @@
 
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, copy) NSString *basicTagStr;
 @property (nonatomic, strong) NSDictionary *basicTags;
@@ -186,7 +185,7 @@
     ZYDebug(@"requestData = %@",requestData);
     
     if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithAkSecret:self.config.akSecret datetime:date data:requestData]];
+        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData date:date]];
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
     request = [mutableRequest copy];        //拷贝回去

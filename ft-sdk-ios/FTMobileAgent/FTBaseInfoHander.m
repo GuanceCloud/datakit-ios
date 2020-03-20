@@ -578,17 +578,17 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
     return string;
 }
-+(NSString*)ft_getSSOSignWithAkSecret:(NSString *)akSecret datetime:(NSString *)datetime data:(NSString *)data
++(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data date:(NSString *)date
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     
-    [signString appendString:@"POST"];
+    [signString appendString:request.HTTPMethod];
     [signString appendString:@"\n"];
     [signString appendString:[self ft_md5EncryptStr:data]];
     [signString appendString:@"\n"];
-    [signString appendString:@"text/plain"];
+    [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
-    [signString appendString:[NSString stringWithFormat:@"%@",datetime]];
+    [signString appendString:date];
     const char *secretStr = [akSecret UTF8String];
     const char * signStr = [signString UTF8String];
     
