@@ -42,7 +42,7 @@
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
-
+static char FTAutoTrack;
 static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
     if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
         @autoreleasepool {
@@ -128,6 +128,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     IMP imp = [autoTrack methodForSelector:startMethod];
                     void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
                     func(autoTrack,startMethod,self.config);
+                    objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
                 }
             }
         }
@@ -136,7 +137,39 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return self;
 }
-
+-(void)resetConfig:(FTMobileConfig *)config{
+    id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
+    if (autotrack) {
+        Class track =  NSClassFromString(@"FTAutoTrack");
+        SEL resetMethod = NSSelectorFromString(@"resetConfig:");
+        unsigned int methCount = 0;
+        Method *meths = class_copyMethodList(track, &methCount);
+        BOOL ishas = NO;
+        for(int i = 0; i < methCount; i++) {
+            Method meth = meths[i];
+            SEL sel = method_getName(meth);
+            const char *name = sel_getName(sel);
+            NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
+            if ([str isEqualToString:@"resetConfig:"]) {
+                ishas = YES;
+                break;
+            }
+        }
+        free(meths);
+        if (ishas) {
+            IMP imp = [autotrack methodForSelector:resetMethod];
+            void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
+            func(autotrack,resetMethod,config);
+        }
+    }
+    self.config = config;
+    self.upTool.config = config;
+    if (!(self.config.monitorInfoType & FTMonitorInfoTypeAll) && !(self.config.monitorInfoType &FTMonitorInfoTypeNetwork)) {
+        [self stopFlushTimer];
+    }else{
+        [self startFlushTimer];
+    }
+}
 #pragma mark ========== 网络与App的生命周期 ==========
 - (void)setupAppNetworkListeners{
     BOOL reachabilityOk = NO;
@@ -486,6 +519,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     });
 }
 - (void)resetInstance{
+    [self.netFlow stopMonitor];
+    objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_removeAssociatedObjects(self);
+    self.netFlow = nil;
+    self.upTool = nil;
     onceToken = 0;
     sharedInstance =nil;
 }

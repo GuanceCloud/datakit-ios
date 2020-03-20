@@ -20,7 +20,6 @@
 
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, copy) NSString *tag;
 @end

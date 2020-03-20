@@ -35,6 +35,12 @@ SDK 初始化方法
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 /**
+SDK 重新配置config方法
+
+@param config           配置参数
+*/
+- (void)resetConfig:(FTMobileConfig *)config;
+/**
  主动埋点，追踪自定义事件。 存储数据库，等待上传
  @param measurement      当前数据点所属的指标集
  @param field     自定义指标
@@ -59,7 +65,7 @@ SDK 初始化方法
 @param tags             自定义标签
 @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
 /**
 主动埋点，可多条上传。   立即上传 回调上传结果
 @param trackList     主动埋点数据数组   如果FTTrackBean 中timeMillis 传入格式错误，会自动赋值当前时间

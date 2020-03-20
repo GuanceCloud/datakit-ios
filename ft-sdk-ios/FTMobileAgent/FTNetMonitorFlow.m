@@ -21,16 +21,17 @@
 -(void)startMonitor{
     self.flow = @"0dB/s";
     self.lastBytes = [self getInterfaceBytes];
-    self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
+    _timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
     NSRunLoop *runloop = [NSRunLoop currentRunLoop];
-    [runloop addTimer:self.timer forMode:NSDefaultRunLoopMode];
+    [runloop addTimer:_timer forMode:NSDefaultRunLoopMode];
     [runloop run];
 }
 -(void)stopMonitor{
-    if (self.timer) {
-        [self.timer invalidate];
+    if (_timer) {
+        [_timer setFireDate:[NSDate distantFuture]];
+        [_timer invalidate];
     }
-    self.timer = nil;
+    _timer = nil;
 }
 - (void)refreshFlow{
     long long int rate = 0;
