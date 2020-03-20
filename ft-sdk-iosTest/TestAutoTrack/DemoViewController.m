@@ -24,12 +24,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig"];
     [self createUI];
 }
 -(void)createUI{
     
-    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, 400)];
+    _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
     [self.view addSubview:_mtableView];
@@ -103,7 +103,18 @@
     [alert addAction:commit];
     [self presentViewController:alert animated:YES completion:nil];
 }
-
+- (void)testResetConfig{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    // 新的config 关闭了autoTrack  将无全埋点日志
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
+    config.enableLog = YES;
+    config.enableAutoTrack = NO;
+    [config enableTrackScreenFlow:NO];
+    [[FTMobileAgent sharedInstance] resetConfig:config];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -143,6 +154,9 @@
             break;
         case 8:
             [self testSubFlowTrack2];
+            break;
+        case 9:
+            [self testResetConfig];
             break;
         default:
             break;
