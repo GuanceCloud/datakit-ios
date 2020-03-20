@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 /* SDK版本 */
-#define FT_SDK_AGENT_VERSION @"1.0.1-alpha.9"
+#define FT_SDK_AGENT_VERSION @"1.0.1-alpha.10"
 #define FT_SDK_TRACK_VERSION @"1.0.1-alpha.7"
 
 /* 默认应用版本 */
