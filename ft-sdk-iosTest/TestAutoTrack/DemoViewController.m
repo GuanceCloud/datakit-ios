@@ -113,7 +113,7 @@
     config.enableLog = YES;
     config.enableAutoTrack = NO;
     [config enableTrackScreenFlow:NO];
-    [[FTMobileAgent sharedInstance] resetConfig:config];
+    [FTMobileAgent startWithConfigOptions:config];
 }
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{

@@ -66,6 +66,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (configOptions.enableScreenFlow) {
         NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
     }
+    if (sharedInstance) {
+        [[FTMobileAgent sharedInstance] resetConfig:configOptions];
+    }
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
