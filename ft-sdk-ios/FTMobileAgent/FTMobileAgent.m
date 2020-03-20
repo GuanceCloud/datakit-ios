@@ -373,7 +373,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSParameterAssert(product);
         NSParameterAssert(traceId);
         NSParameterAssert(name);
-        NSParameterAssert(duration);
         if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
