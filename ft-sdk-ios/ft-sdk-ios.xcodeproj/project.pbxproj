@@ -70,6 +70,8 @@
 		4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884285239E5768001B44C3 /* ZY_FMDatabase.h */; };
 		4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884286239E5768001B44C3 /* ZY_FMDB.h */; };
 		4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */; };
+		4AACF8FF2428C4500079BD2F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4A88425E239E5754001B44C3 /* Info.plist */; };
+		4AACF9002428C4610079BD2F /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4A852FCE23A2408600B40B5D /* Info.plist */; };
 		4AAF0E7B23BAF26D00817C52 /* FTAutoTrack.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4A85314D23ACC01200B40B5D /* FTAutoTrack.bundle */; };
 		4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB783C723C5B802001FC994 /* FTLocationManager.h */; };
 		4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783C823C5B802001FC994 /* FTLocationManager.m */; };
@@ -372,6 +374,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AACF9002428C4610079BD2F /* Info.plist in Resources */,
 				4AAF0E7B23BAF26D00817C52 /* FTAutoTrack.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -380,6 +383,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AACF8FF2428C4500079BD2F /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
