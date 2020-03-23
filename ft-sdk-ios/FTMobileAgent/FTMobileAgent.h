@@ -10,6 +10,7 @@
 #import "FTMobileConfig.h"
 #import "FTTrackBean.h"
 #define InvalidParamsException 102
+#define NetWorkException      101
 NS_ASSUME_NONNULL_BEGIN
 //@interface FTTrackBean : NSObject
 //@property (nonatomic, strong) NSString *measurement;

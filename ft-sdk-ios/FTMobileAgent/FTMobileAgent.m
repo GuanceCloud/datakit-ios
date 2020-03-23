@@ -282,7 +282,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
     [self trackImmediate:measurement tags:nil field:field callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
         callBackStatus? callBackStatus(statusCode,responseObject):nil;
-
+        
     }];
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
@@ -312,11 +312,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         };
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         ZYDebug(@"trackImmediateData == %@",data);
-        dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                callBackStatus? callBackStatus(statusCode,[NSString stringWithUTF8String:[response bytes]]):nil;
-            }];
-        });
+        if ([self.net isEqualToString:@"-1"]) {
+            callBackStatus? callBackStatus(NetWorkException,nil):nil;
+        }else{
+            dispatch_async(self.immediateLabel, ^{
+                [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                }];
+            });
+        }
     }
     @catch (NSException *exception) {
         ZYDebug(@"track measurement tags field exception %@",exception);
@@ -356,11 +360,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }];
     if (list.count>0) {
-        dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
-            }];
-        });
+        if ([self.net isEqualToString:@"-1"]) {
+            callBackStatus? callBackStatus(NetWorkException,nil):nil;
+        }else{
+            dispatch_async(self.immediateLabel, ^{
+                [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                }];
+            });
+        }
     }else{
         ZYLog(@"传入的数据格式有误");
         callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
@@ -507,7 +515,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_netFlow) {
         return;
     }
-        [self.netFlow stopMonitor];
+    [self.netFlow stopMonitor];
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{

@@ -138,9 +138,13 @@
     
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error) {
+            callBack? callBack(error.code,nil):nil ;
+        }else{
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSInteger statusCode = [httpResponse statusCode];
         callBack? callBack(statusCode,data):nil ;
+        }
     }];
     //开始请求
     [dataTask resume];
