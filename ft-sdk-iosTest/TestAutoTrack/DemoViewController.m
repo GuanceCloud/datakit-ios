@@ -67,7 +67,7 @@
     bean2.field =@{@"test":@"testImmediateList2"};
     
     [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
+        NSLog(@"responseObject = %@",responseObject);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self showResult:statusCode==200?@"success":@"fail"];
         });

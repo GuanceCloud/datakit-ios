@@ -313,8 +313,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         ZYDebug(@"trackImmediateData == %@",data);
         dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, id responseObject) {
-                callBackStatus? callBackStatus(statusCode,responseObject):nil;
+            [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                callBackStatus? callBackStatus(statusCode,[NSString stringWithUTF8String:[response bytes]]):nil;
             }];
         });
     }
@@ -357,8 +357,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }];
     if (list.count>0) {
         dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, id responseObject) {
-                callBackStatus? callBackStatus(statusCode,responseObject):nil;
+            [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
             }];
         });
     }else{
@@ -522,6 +522,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self.netFlow stopMonitor];
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.netFlow = nil;
     self.upTool = nil;
     onceToken = 0;
