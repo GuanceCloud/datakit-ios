@@ -9,6 +9,9 @@
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
+
+#define FT_SDK_TRACK_VERSION  @"1.0.1-alpha.13"
+#define FT_SDK_AGENT_VERSION  @"1.0.1-alpha.7"
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 #define FTAPP_DNAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
