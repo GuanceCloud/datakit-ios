@@ -218,9 +218,9 @@ Release : FT_TRACK_GPUUSAGE=1
 ```
 typedef enum FTError : NSInteger {
   NetWorkException = 101,          //网络问题
-  InvalidParamsException = 102,  //参数问题
-  FileIOException = 103,             //文件 IO 问题
-  UnkownException = 104,          //未知问题
+  InvalidParamsException = 102,    //参数问题
+  FileIOException = 103,           //文件 IO 问题
+  UnkownException = 104,           //未知问题
 } FTError;
 
 ```
@@ -229,20 +229,25 @@ typedef enum FTError : NSInteger {
 ## 四、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
 ### 1.Launch (App 启动) 
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
+
 触发：App 启动或从后台恢复时，触发 launch 事件。    
 
 ### 2.Click  (事件点击)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`
-触发：控件被点击时，触发 Click 事件。
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`    
+
+触发：控件被点击时，触发 Click 事件。    
+
 Click 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
 ### 3.ViewScreen (页面enter、leave)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`
-触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
+
+触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。    
+
 enter 与 leave 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name)：当前页面
