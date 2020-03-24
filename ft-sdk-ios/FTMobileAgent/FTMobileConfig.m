@@ -9,9 +9,8 @@
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
 #import "ZYLog.h"
+#import "FTMobileAgentVersion.h"
 
-#define FT_SDK_TRACK_VERSION  @"1.0.1-alpha.14"
-#define FT_SDK_AGENT_VERSION  @"1.0.1-alpha.7"
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 #define FTAPP_DNAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
@@ -25,7 +24,7 @@
          self.akId = akId;
          self.akSecret = akSecret;
          self.enableRequestSigning = enableRequestSigning;
-         self.sdkAgentVersion = FT_SDK_AGENT_VERSION;
+         self.sdkAgentVersion = SDK_VERSION;
          self.appVersion = FT_APP_VERSION;
          self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
          self.enableLog = NO;
@@ -62,10 +61,6 @@
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
     _enableAutoTrack = enableAutoTrack;
-    Class track =  NSClassFromString(@"FTAutoTrack");
-    if (track && enableAutoTrack) {
-        self.sdkTrackVersion = FT_SDK_TRACK_VERSION;
-    }
 }
 -(void)setEnableLog:(BOOL)enableLog{
      SETISDEBUG(enableLog);

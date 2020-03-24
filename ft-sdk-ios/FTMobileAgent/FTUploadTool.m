@@ -91,19 +91,19 @@
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, NSData * _Nonnull))callBack{
+-(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
     [self apiRequestWithEventsAry:@[model] callBack:^(NSInteger statusCode, id responseObject) {
         callBack?callBack(statusCode,responseObject):nil;
     }];
     
 }
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, NSData * _Nonnull))callBack{
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
     [self apiRequestWithEventsAry:modelList callBack:^(NSInteger statusCode, id responseObject) {
         callBack?callBack(statusCode,responseObject):nil;
     }];
 }
 
-- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, NSData *response))callBack {
+- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, NSData * _Nullable response))callBack {
     NSString *requestData = [self getRequestDataWithEventArray:events];
     
     NSString *date =[FTBaseInfoHander ft_currentGMT];

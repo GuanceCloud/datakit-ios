@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTAutoTrack : NSObject
 
 -(void)startWithConfig:(FTMobileConfig *)config;
--(void)resetConfig:(FTMobileConfig *)config;
 @end
 
 NS_ASSUME_NONNULL_END
