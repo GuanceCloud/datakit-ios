@@ -187,10 +187,14 @@ Release : FT_TRACK_GPUUSAGE=1
  ```
 
   
+3.7.设置是否需要视图跳转流程图
+ `@property (nonatomic, assign) BOOL enableScreenFlow;` 
+ 设置全埋点 `enableAutoTrack =  YES;` , 设置 `enableScreenFlow = YES;`  ，将自动抓取试图跳转流程图。
 
 
+## 三、SDK 的一些参数
+1.FTMobileConfig  可配置参数：
 
-## 三、SDK 可配置参数
 | 字段 | 类型 |说明|是否必须|
 |:--------:|:--------:|:--------:|:--------:|
 |  enableRequestSigning      |  BOOL      |配置是否需要进行请求签名  |是|
@@ -206,8 +210,22 @@ Release : FT_TRACK_GPUUSAGE=1
 |blackVCList|NSArray|控制器黑名单|否|
 |monitorInfoType|NS_OPTIONS|采集数据|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否（默认YES）|
+|enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
+|product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
 
+2.错误码
 
+```
+typedef enum FTError : NSInteger {
+  NetWorkException = 101,          //网络问题
+  InvalidParamsException = 102,  //参数问题
+  FileIOException = 103,             //文件 IO 问题
+  UnkownException = 104,          //未知问题
+} FTError;
+
+```
+
+  
 ## 四、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
 ### 1.Launch (App 启动) 
@@ -265,7 +283,7 @@ enter 与 leave 事件中包含以下属性：
  @param measurement      当前数据点所属的指标集
  @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;    
+- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 
 ```    
 
@@ -278,7 +296,7 @@ enter 与 leave 事件中包含以下属性：
 @param tags             自定义标签
 @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 
 ```
 
@@ -289,7 +307,7 @@ enter 与 leave 事件中包含以下属性：
 主动埋点，可多条上传。   立即上传 回调上传结果
 @param trackList     主动埋点数据数组
 */
-- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 
 ```
 FTTrackBean的属性：
