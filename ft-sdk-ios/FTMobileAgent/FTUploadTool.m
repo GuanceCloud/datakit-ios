@@ -202,9 +202,9 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         if (error) {
             callBack? callBack(error.code,nil):nil ;
         }else{
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSInteger statusCode = [httpResponse statusCode];
-        callBack? callBack(statusCode,data):nil ;
+            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+            NSInteger statusCode = [httpResponse statusCode];
+            callBack? callBack(statusCode,data):nil ;
         }
     }];
     //开始请求
@@ -314,6 +314,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                                      @"device_model":deviceInfo[FTBaseInfoHanderDeviceType],
                                      @"display":[FTBaseInfoHander ft_resolution],
                                      @"carrier":[FTBaseInfoHander ft_getTelephonyInfo],
+                                     @"agent":self.config.sdkAgentVersion,
                                      
         }.mutableCopy;
         if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {

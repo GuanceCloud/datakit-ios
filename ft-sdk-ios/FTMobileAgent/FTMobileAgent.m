@@ -433,6 +433,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (NSDictionary *)getMonitorInfoTag{
     NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
+    if (self.config.enableAutoTrack) {
+        [tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"];
+    }
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [tag setObject:[NSString stringWithFormat:@"%ld",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
     }
