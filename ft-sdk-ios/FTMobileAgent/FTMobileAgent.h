@@ -10,13 +10,9 @@
 #import "FTMobileConfig.h"
 #import "FTTrackBean.h"
 #define InvalidParamsException 102
+#define NetWorkException      101
 NS_ASSUME_NONNULL_BEGIN
-//@interface FTTrackBean : NSObject
-//@property (nonatomic, strong) NSString *measurement;
-//@property (nonatomic, strong) NSDictionary *tags;
-//@property (nonatomic, strong) NSDictionary *field;
-//@property (nonatomic, strong) NSString *timeMillis;
-//@end
+
 @interface FTMobileAgent : NSObject
 /**
  * @abstract
@@ -58,19 +54,19 @@ SDK 重新配置config方法
  @param measurement     当前数据点所属的指标集
  @param field           自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 /**
 主动埋点，追踪自定义事件。   立即上传 回调上传结果
 @param measurement      当前数据点所属的指标集
 @param tags             自定义标签
 @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 /**
 主动埋点，可多条上传。   立即上传 回调上传结果
 @param trackList     主动埋点数据数组   如果FTTrackBean 中timeMillis 传入格式错误，会自动赋值当前时间
 */
-- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus;
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 /**
  上报流程图
  @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写

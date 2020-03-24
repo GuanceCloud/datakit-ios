@@ -18,6 +18,7 @@
 #import <objc/runtime.h>
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
+#import "FTAutoTrackVersion.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
@@ -37,10 +38,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     self.config = config;
     self.preFlowTime = 0;
     self.flowId = [[NSUUID UUID] UUIDString];
+    config.sdkTrackVersion = SDK_VERSION;
     [self setLogContent];
-}
--(void)resetConfig:(FTMobileConfig *)config{
-    self.config = config;
 }
 -(void)setLogContent{
     if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {

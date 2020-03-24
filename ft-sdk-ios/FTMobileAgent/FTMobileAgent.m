@@ -65,6 +65,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (configOptions.enableScreenFlow) {
         NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
     }
+    if (sharedInstance) {
+        [[FTMobileAgent sharedInstance] resetConfig:configOptions];
+    }
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
@@ -102,44 +105,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self setupAppNetworkListeners];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
-            NSString *invokeMethod = @"startWithConfig:";
-            Class track =  NSClassFromString(@"FTAutoTrack");
-            if (track) {
-                id  autoTrack = [[NSClassFromString(@"FTAutoTrack") alloc]init];
-                
-                SEL startMethod = NSSelectorFromString(invokeMethod);
-                unsigned int methCount = 0;
-                Method *meths = class_copyMethodList(track, &methCount);
-                BOOL ishas = NO;
-                for(int i = 0; i < methCount; i++) {
-                    Method meth = meths[i];
-                    SEL sel = method_getName(meth);
-                    const char *name = sel_getName(sel);
-                    NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-                    if ([str isEqualToString:invokeMethod]) {
-                        ishas = YES;
-                        break;
-                    }
-                }
-                free(meths);
-                if (ishas) {
-                    IMP imp = [autoTrack methodForSelector:startMethod];
-                    void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
-                    func(autoTrack,startMethod,self.config);
-                    objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-                }
-            }
+            [self startAutoTrack];
         }
         self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
         
     }
     return self;
 }
--(void)resetConfig:(FTMobileConfig *)config{
-    id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
-    if (autotrack) {
-        Class track =  NSClassFromString(@"FTAutoTrack");
-        SEL resetMethod = NSSelectorFromString(@"resetConfig:");
+-(void)startAutoTrack{
+    NSString *invokeMethod = @"startWithConfig:";
+    Class track =  NSClassFromString(@"FTAutoTrack");
+    if (track) {
+        id  autoTrack = [[NSClassFromString(@"FTAutoTrack") alloc]init];
+        
+        SEL startMethod = NSSelectorFromString(invokeMethod);
         unsigned int methCount = 0;
         Method *meths = class_copyMethodList(track, &methCount);
         BOOL ishas = NO;
@@ -148,19 +127,28 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             SEL sel = method_getName(meth);
             const char *name = sel_getName(sel);
             NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-            if ([str isEqualToString:@"resetConfig:"]) {
+            if ([str isEqualToString:invokeMethod]) {
                 ishas = YES;
                 break;
             }
         }
         free(meths);
         if (ishas) {
-            IMP imp = [autotrack methodForSelector:resetMethod];
+            IMP imp = [autoTrack methodForSelector:startMethod];
             void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
-            func(autotrack,resetMethod,config);
+            func(autoTrack,startMethod,self.config);
+            objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         }
     }
+}
+-(void)resetConfig:(FTMobileConfig *)config{
+    id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
     self.config = config;
+    if (!autotrack) {
+        if (self.config.enableAutoTrack) {
+            [self startAutoTrack];
+        }
+    }
     self.upTool.config = config;
     if (!(self.config.monitorInfoType & FTMonitorInfoTypeAll) && !(self.config.monitorInfoType &FTMonitorInfoTypeNetwork)) {
         [self stopFlushTimer];
@@ -274,12 +262,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"track measurement tags field exception %@",exception);
     }
 }
--(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
-    [self trackImmediate:measurement tags:nil field:field callBack:^(NSInteger statusCode, id responseObject) {
+
+-(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id _Nullable responseObject))callBackStatus{
+    [self trackImmediate:measurement tags:nil field:field callBack:^(NSInteger statusCode, id _Nullable responseObject) {
         callBackStatus? callBackStatus(statusCode,responseObject):nil;
     }];
 }
-- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
+- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(nonnull void (^)(NSInteger, id _Nullable))callBackStatus{
     @try {
         NSParameterAssert(measurement);
         NSParameterAssert(field);
@@ -306,17 +295,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         };
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         ZYDebug(@"trackImmediateData == %@",data);
-        dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, id responseObject) {
-                callBackStatus? callBackStatus(statusCode,responseObject):nil;
-            }];
-        });
+        if ([self.net isEqualToString:@"-1"]) {
+            callBackStatus? callBackStatus(NetWorkException,nil):nil;
+        }else{
+            dispatch_async(self.immediateLabel, ^{
+                [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                }];
+            });
+        }
     }
     @catch (NSException *exception) {
         ZYDebug(@"track measurement tags field exception %@",exception);
     }
 }
-- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, id responseObject))callBackStatus{
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
     NSParameterAssert(trackList);
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -350,11 +343,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }];
     if (list.count>0) {
-        dispatch_async(self.immediateLabel, ^{
-            [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, id responseObject) {
-                callBackStatus? callBackStatus(statusCode,responseObject):nil;
-            }];
-        });
+        if ([self.net isEqualToString:@"-1"]) {
+            callBackStatus? callBackStatus(NetWorkException,nil):nil;
+        }else{
+            dispatch_async(self.immediateLabel, ^{
+                [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                }];
+            });
+        }
     }else{
         ZYLog(@"传入的数据格式有误");
         callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
@@ -502,7 +499,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_netFlow) {
         return;
     }
-        [self.netFlow stopMonitor];
+    [self.netFlow stopMonitor];
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{
@@ -517,6 +514,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self.netFlow stopMonitor];
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.netFlow = nil;
     self.upTool = nil;
     onceToken = 0;

@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTMobileConfig *config;
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 -(void)upload;
--(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(NSInteger statusCode, id responseObject))callBack;
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(NSInteger statusCode, id responseObject))callBack;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(NSInteger statusCode, NSData *response))callBack;
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(NSInteger statusCode, NSData *response))callBack;
 
 @end
 

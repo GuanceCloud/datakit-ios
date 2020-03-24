@@ -115,14 +115,25 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 break;
             }
             FTRecordModel *model = [updata lastObject];
-            __block BOOL success;
+            __block BOOL success = NO;
             dispatch_group_t group = dispatch_group_create();
             dispatch_group_enter(group);
-            [self apiRequestWithEventsAry:updata callBack:^(NSInteger statusCode, id responseObject) {
-                if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
-                    success = YES;
-                }else{
-                    success = NO;
+            [self apiRequestWithEventsAry:updata callBack:^(NSInteger statusCode, NSData *response) {
+                if (statusCode ==200) {
+                    NSMutableDictionary *responseObject;
+                    
+                    NSError *errors;
+                    responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
+                    if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
+                        success = YES;
+                    }else{
+                        if (errors){
+                            ZYDebug(@"response error = %@",errors);
+                        }else {
+                            ZYDebug(@"responseObject = %@",responseObject);
+                        }
+                        success = NO;
+                    }
                 }
                 dispatch_group_leave(group);
             }];
@@ -141,18 +152,19 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+-(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
     [self apiRequestWithEventsAry:@[model] callBack:^(NSInteger statusCode, id responseObject) {
         callBack?callBack(statusCode,responseObject):nil;
     }];
     
 }
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, id _Nonnull))callBack{
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
     [self apiRequestWithEventsAry:modelList callBack:^(NSInteger statusCode, id responseObject) {
         callBack?callBack(statusCode,responseObject):nil;
     }];
 }
-- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, id responseObject))callBack {
+
+- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, NSData * _Nullable response))callBack {
     NSString *requestData = [self getRequestDataWithEventArray:events];
     
     NSString *date =[FTBaseInfoHander ft_currentGMT];
@@ -187,23 +199,13 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error) {
+            callBack? callBack(error.code,nil):nil ;
+        }else{
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSInteger statusCode = [httpResponse statusCode];
-        NSMutableDictionary *responseObject;
-        if (error) {
-            ZYDebug(@"response error = %@",error);
-        }else{
-            NSError *errors;
-            responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
-            if (errors){
-                ZYDebug(@"response error = %@",error);
-            }else {
-                ZYDebug(@"responseObject = %@",responseObject);
-            }
-            
+        callBack? callBack(statusCode,data):nil ;
         }
-        callBack? callBack(statusCode,responseObject):nil ;
-        
     }];
     //开始请求
     [dataTask resume];

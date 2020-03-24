@@ -8,14 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-/* SDK版本 */
-#define FT_SDK_TRACK_PATH    [[NSBundle mainBundle] pathForResource:@"FTAutoTrack" ofType:@"framework"]
-#define FT_SDK_AGENT_PATH    [[NSBundle mainBundle] pathForResource:@"FTMobileAgent" ofType:@"framework"]
 
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
-#define FT_SDK_TRACK_VERSION  [[[NSBundle bundleWithPath:FT_SDK_TRACK_PATH] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
-#define FT_SDK_AGENT_VERSION  [[[NSBundle bundleWithPath:FT_SDK_AGENT_PATH] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
+
 
 /**
  * @enum
