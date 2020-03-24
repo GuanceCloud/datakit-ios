@@ -11,7 +11,7 @@ upperFirstLetter(){
 
 FT_PROD_TYPE=$(echo "$FT_PUSH_TAG" | sed -e 's/_.*//g'| sed -e 's/refs\/tags\///g')
 # shellcheck disable=SC2001
-VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*_//g')
+VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*_//g' | sed -e 's/~.*//g' )
 
 #echo "version:$VERSION"
 #echo "type:$FT_PROD_TYPE"
@@ -37,6 +37,9 @@ zip -q -r "$ZIP_PATH" "$FRAMEWORK_PATH"
 
 ~/ossutilmac64 cp "$ZIP_PATH" oss://zhuyun-static-files-production/ft-sdk-package/ios/"$PRODUCT_NAME"/
 
+cd ../"$PRODUCT_NAME"
+
+sed  -i -e 's/=.*/=@"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
 
 # 回到项目根目录
 cd ..&&cd ..
