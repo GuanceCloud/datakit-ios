@@ -268,7 +268,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         callBackStatus? callBackStatus(statusCode,responseObject):nil;
     }];
 }
-- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(nonnull void (^)(NSInteger, id _Nullable))callBackStatus{
+- (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger, id _Nullable))callBackStatus{
     @try {
         NSParameterAssert(measurement);
         NSParameterAssert(field);
