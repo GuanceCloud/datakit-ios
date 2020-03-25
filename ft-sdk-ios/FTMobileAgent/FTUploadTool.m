@@ -227,11 +227,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             NSString *firstStr;
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
-                    firstStr =[FTBaseInfoHander repleacingSpecialCharacters:[opdata valueForKey:@"product"]];
+                    firstStr =[opdata valueForKey:@"product"];
                 }
             }else{
                 if ([opdata valueForKey:@"measurement"]) {
-                    firstStr = [FTBaseInfoHander repleacingSpecialCharacters:[opdata valueForKey:@"measurement"]];
+                    firstStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
                 }
             }
             if ([[opdata allKeys] containsObject:@"field"]) {

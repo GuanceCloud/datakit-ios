@@ -275,6 +275,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+            return;
         }
         FTRecordModel *model = [FTRecordModel new];
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
