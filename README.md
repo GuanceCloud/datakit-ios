@@ -192,7 +192,7 @@ Release : FT_TRACK_GPUUSAGE=1
  设置全埋点 `enableAutoTrack =  YES;` , 设置 `enableScreenFlow = YES;`  ，将自动抓取试图跳转流程图。
 
 
-## 三、SDK 的一些参数
+## 三、SDK 的一些参数与错误码
 1.FTMobileConfig  可配置参数：
 
 | 字段 | 类型 |说明|是否必须|
