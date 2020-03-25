@@ -35,6 +35,7 @@
 @property (nonatomic, strong) FTLocationManager *manger;
 @property (nonatomic, copy)  NSString *province;
 @property (nonatomic, copy)  NSString *city;
+@property (nonatomic, copy)  NSString *country;
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
 @end
@@ -96,9 +97,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
-            self.manger.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+            self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
                 weakSelf.city = city;
                 weakSelf.province = province;
+                weakSelf.country = country;
             };
             [self.manger startUpdatingLocation];
         }
@@ -472,6 +474,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         if (self.province && self.province.length>0) {
             [tag setObject:self.province forKey:@"province"];
+        }
+        if (self.country && self.country.length>0) {
+            [tag setObject:self.country forKey:@"country"];
         }
     }
     return tag;
