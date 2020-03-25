@@ -191,7 +191,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData date:date]];
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
-    request = [mutableRequest copy];       
+    request = [mutableRequest copy];
     //设置请求session
     NSURLSession *session = [NSURLSession sharedSession];
     
@@ -235,11 +235,10 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 }
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
-                field=field.length>0?[field stringByAppendingFormat:@",%@",FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField)]:FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
+                field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
             }
             NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
             NSString *userStr =userData.allKeys.count>0?  FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
-            
             requestStr =firstStr;
             requestStr = userStr.length>0?[requestStr stringByAppendingFormat:@",%@,%@,%@",tagsStr,self.basicTagStr,userStr]:[requestStr stringByAppendingFormat:@",%@,%@",tagsStr,self.basicTagStr];
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
