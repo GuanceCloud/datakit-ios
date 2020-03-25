@@ -187,10 +187,14 @@ Release : FT_TRACK_GPUUSAGE=1
  ```
 
   
+3.7.设置是否需要视图跳转流程图
+ `@property (nonatomic, assign) BOOL enableScreenFlow;` 
+ 设置全埋点 `enableAutoTrack =  YES;` , 设置 `enableScreenFlow = YES;`  ，将自动抓取试图跳转流程图。
 
 
+## 三、SDK 的一些参数与错误码
+1.FTMobileConfig  可配置参数：
 
-## 三、SDK 可配置参数
 | 字段 | 类型 |说明|是否必须|
 |:--------:|:--------:|:--------:|:--------:|
 |  enableRequestSigning      |  BOOL      |配置是否需要进行请求签名  |是|
@@ -206,25 +210,44 @@ Release : FT_TRACK_GPUUSAGE=1
 |blackVCList|NSArray|控制器黑名单|否|
 |monitorInfoType|NS_OPTIONS|采集数据|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否（默认YES）|
+|enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
+|product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
 
+2.错误码
 
+```
+typedef enum FTError : NSInteger {
+  NetWorkException = 101,          //网络问题
+  InvalidParamsException = 102,    //参数问题
+  FileIOException = 103,           //文件 IO 问题
+  UnkownException = 104,           //未知问题
+} FTError;
+
+```
+
+  
 ## 四、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
 ### 1.Launch (App 启动) 
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
+
 触发：App 启动或从后台恢复时，触发 launch 事件。    
 
 ### 2.Click  (事件点击)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`
-触发：控件被点击时，触发 Click 事件。
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`    
+
+触发：控件被点击时，触发 Click 事件。    
+
 Click 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
 ### 3.ViewScreen (页面enter、leave)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`
-触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。
+设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
+
+触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。    
+
 enter 与 leave 事件中包含以下属性：
 - rpn(root_page_name) : 当前页面的根部页面
 - cpn(current_page_name)：当前页面
@@ -265,7 +288,7 @@ enter 与 leave 事件中包含以下属性：
  @param measurement      当前数据点所属的指标集
  @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;    
+- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 
 ```    
 
@@ -278,7 +301,7 @@ enter 与 leave 事件中包含以下属性：
 @param tags             自定义标签
 @param field            自定义指标
 */
-- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 
 ```
 
@@ -289,7 +312,7 @@ enter 与 leave 事件中包含以下属性：
 主动埋点，可多条上传。   立即上传 回调上传结果
 @param trackList     主动埋点数据数组
 */
-- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(BOOL isSuccess))callBackStatus;
+- (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 
 ```
 FTTrackBean的属性：

@@ -11,7 +11,12 @@
 
 /* 默认应用版本 */
 #define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
-
+typedef enum FTError : NSInteger {
+  NetWorkException = 101,        //网络问题
+  InvalidParamsException = 102,  //参数问题
+  FileIOException = 103,         //文件 IO 问题
+  UnkownException = 104,         //未知问题
+} FTError;
 
 /**
  * @enum
