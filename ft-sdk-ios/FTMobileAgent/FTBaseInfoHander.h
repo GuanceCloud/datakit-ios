@@ -95,6 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_getBackCameraPixel;
 +(NSString *)removeFrontBackBlank:(NSString *)str;
 + (id)repleacingSpecialCharacters:(id )str;
++ (id)repleacingSpecialCharactersMeasurement:(id )str;
 @end
 
 NS_ASSUME_NONNULL_END

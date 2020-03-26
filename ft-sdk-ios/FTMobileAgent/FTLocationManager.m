@@ -59,7 +59,7 @@
     //获取城市
     NSString *province = placemark.administrativeArea;
     NSString *city = placemark.locality;
-
+    NSString *country = placemark.country;
     if (!city) {
 
     //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
@@ -76,7 +76,7 @@
 
     }
         if (self.isUpdatingLocation&&self.updateLocationBlock) {
-            self.updateLocationBlock(province,city, error);
+            self.updateLocationBlock(country,province,city, error);
         }
         self.isUpdatingLocation = NO;
     }
