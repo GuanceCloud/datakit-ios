@@ -26,7 +26,6 @@
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
-@property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, strong) dispatch_queue_t immediateLabel;
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
@@ -85,8 +84,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
-        NSString *timerLabel = [NSString stringWithFormat:@"io.zytimer.%p", self];
-        self.timerQueue = dispatch_queue_create([timerLabel UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
         self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
         if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
@@ -151,7 +148,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     self.upTool.config = config;
     if (!(self.config.monitorInfoType & FTMonitorInfoTypeAll) && !(self.config.monitorInfoType &FTMonitorInfoTypeNetwork)) {
-        [self stopFlushTimer];
+        [self.netFlow stopMonitor];
     }else{
         [self startFlushTimer];
     }
@@ -491,9 +488,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)startFlushTimer {
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [self stopFlushTimer];
-        dispatch_async(self.timerQueue, ^{
-            [self.netFlow startMonitor];
-        });
+        [self.netFlow startMonitor];
     }
 }
 

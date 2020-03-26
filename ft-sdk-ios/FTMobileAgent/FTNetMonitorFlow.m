@@ -21,12 +21,18 @@
 
 -(void)startMonitor{
     self.flow = @"0dB/s";
-    self.thread1 = [NSThread currentThread];
-    self.lastBytes = [self getInterfaceBytes];
-    _timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
-    NSRunLoop *runloop = [NSRunLoop currentRunLoop];
-    [runloop addTimer:_timer forMode:NSDefaultRunLoopMode];
-    [runloop run];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf){
+            strongSelf.thread1 = [NSThread currentThread];
+            strongSelf.lastBytes = [self getInterfaceBytes];
+            strongSelf.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
+            NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+            [runloop addTimer:strongSelf.timer forMode:NSDefaultRunLoopMode];
+            [runloop run];
+        }
+    });
 }
 -(void)stopMonitor{
     if (_timer && self.thread1) {
