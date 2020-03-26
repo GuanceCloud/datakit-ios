@@ -89,7 +89,7 @@
 - (void)testLocation{
     
     FTLocationManager *location = [[FTLocationManager alloc]init];
-    location.updateLocationBlock = ^(NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+    location.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
         XCTAssertTrue(province.length>0||city.length>0);
     };
 }

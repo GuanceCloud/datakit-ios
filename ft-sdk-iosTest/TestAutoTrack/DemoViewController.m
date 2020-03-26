@@ -47,7 +47,7 @@
     [[FTMobileAgent sharedInstance] trackBackgroud:@"track ,Test" tags:nil field:@{@"ev，ent":@"te s，t"}];
 }
 - (void)testTrackImmediate{
-    [[FTMobileAgent sharedInstance] trackImmediate:@" " field:@{@"test":@"testImmediate"} callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
+    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediateList" field:@{@"test":@"testImmediate"} callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
         NSLog(@"statusCode = %ld",(long)statusCode);
         dispatch_async(dispatch_get_main_queue(), ^{
             [self showResult:statusCode==200?@"success":@"fail"];
