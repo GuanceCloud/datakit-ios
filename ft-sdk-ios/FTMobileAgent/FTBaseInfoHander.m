@@ -533,8 +533,12 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 #pragma clang diagnostic pop
         
     }
+    if(carrier ==nil){
+        return @"N/A";
+    }else{
     NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
     return mCarrier;
+    }
 }
 + (NSString *)ft_resolution {
     CGRect rect = [[UIScreen mainScreen] bounds];

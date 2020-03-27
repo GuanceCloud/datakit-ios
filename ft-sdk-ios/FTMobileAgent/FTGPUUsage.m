@@ -204,7 +204,7 @@ GPU_UTILI_KEY(TextureCount, textureCount)
 
     return  [NSString stringWithFormat:@"%2zd%%", [_utilizationInfo[GPUDeviceUtilizationKey] integerValue]];
 #endif
-    return @"null";
+    return @"N/A";
 }
 
 @end
