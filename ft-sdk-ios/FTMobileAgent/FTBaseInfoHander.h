@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  获取设备总内存
  */
-+ (long long)ft_getTotalMemorySize;
++ (NSString *)ft_getTotalMemorySize;
 /**
  *  @abstract
  *  获取当前内存使用率

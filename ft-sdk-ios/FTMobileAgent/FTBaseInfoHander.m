@@ -767,8 +767,8 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return [NSString stringWithFormat:@"%.2f%%",(total-availableMemory)/total*1.00*100];
 }
 //总内存
-+(long long)ft_getTotalMemorySize{
-    return [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
++(NSString *)ft_getTotalMemorySize{
+    return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
     
 }
 + (NSString *)ft_getFrontCameraPixel{

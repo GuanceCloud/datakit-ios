@@ -318,7 +318,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
         }
         if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[NSNumber numberWithLongLong:[FTBaseInfoHander ft_getTotalMemorySize]] forKey:@"memory_total"];
+            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
         }
         if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
