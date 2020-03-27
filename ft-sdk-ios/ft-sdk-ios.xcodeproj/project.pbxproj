@@ -75,6 +75,8 @@
 		4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783C823C5B802001FC994 /* FTLocationManager.m */; };
 		4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */; };
 		4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */; };
+		4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */; };
+		4AE81C5C242DC616004D8496 /* FTAutoTrackVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AACF9082429B9120079BD2F /* FTAutoTrackVersion.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -270,6 +272,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AE81C5C242DC616004D8496 /* FTAutoTrackVersion.h in Headers */,
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */,
@@ -278,6 +281,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
+				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
 				4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */,
 				4A88429B239E5768001B44C3 /* FTTrackerEventDBTool.h in Headers */,
