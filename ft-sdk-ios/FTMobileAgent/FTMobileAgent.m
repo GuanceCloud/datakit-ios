@@ -277,23 +277,31 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         FTRecordModel *model = [FTRecordModel new];
-        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            @"measurement":measurement,
-            @"field":field
-        }];
         NSMutableDictionary *tag = [NSMutableDictionary new];
+        NSMutableDictionary *fieldDict = [field mutableCopy];
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        if ([self getMonitorInfoTag].allKeys.count>0) {
-            [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+        NSDictionary *addDict = [self getMonitorInfoTag];
+        if ([addDict objectForKey:@"tag"]) {
+            [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
         }
-        [opdata addEntriesFromDictionary:@{@"tags":tag}];
+        if ([addDict objectForKey:@"field"]) {
+            [fieldDict addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+        }
+        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+            @"measurement":measurement,
+            @"field":fieldDict,
+            @"tags":tag,
+        }];
+        
         NSDictionary *data =@{
             @"op":@"cstm",
             @"opdata":opdata,
         };
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+        
+        model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
         ZYDebug(@"trackImmediateData == %@",data);
         if ([self.net isEqualToString:@"-1"]) {
             callBackStatus? callBackStatus(NetWorkException,nil):nil;
@@ -315,18 +323,24 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
             FTRecordModel *model = [FTRecordModel new];
-            NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-                @"measurement":obj.measurement,
-                @"field":obj.field
-            }];
             NSMutableDictionary *tag = [NSMutableDictionary new];
+            NSMutableDictionary *field = [obj.field mutableCopy];
             if (obj.tags) {
                 [tag addEntriesFromDictionary:obj.tags];
             }
-            if ([self getMonitorInfoTag].allKeys.count>0) {
-                [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+            NSDictionary *addDict = [self getMonitorInfoTag];
+            if ([addDict objectForKey:@"tag"]) {
+                [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
             }
-            [opdata addEntriesFromDictionary:@{@"tags":tag}];
+            if ([addDict objectForKey:@"field"]) {
+                [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+            }
+            NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
+                @"measurement":obj.measurement,
+                @"field":field,
+                @"tags":tag,
+            }];
+            
             NSDictionary *data =@{
                 @"op":@"cstm",
                 @"opdata":opdata,
@@ -403,13 +417,24 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *opdata = [dict mutableCopy];
     NSMutableDictionary *tag = [NSMutableDictionary new];
+    NSMutableDictionary *field = [NSMutableDictionary new];
     if ([opdata.allKeys containsObject:@"tags"]) {
         [tag addEntriesFromDictionary:opdata[@"tags"]];
     }
-    if ([self getMonitorInfoTag].allKeys.count>0) {
-        [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
+    [field addEntriesFromDictionary:opdata[@"field"]];
+    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
+
+    NSDictionary *addDict = [self getMonitorInfoTag];
+    
+    if ([addDict objectForKey:@"tag"]) {
+        [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+    }
+    if ([addDict objectForKey:@"field"]) {
+        [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
     }
     [opdata setValue:tag forKey:@"tags"];
+    [opdata setValue:field forKey:@"field"];
+     }
     NSDictionary *data =@{@"op":op,
                           @"opdata":opdata,
     };
@@ -433,37 +458,44 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (NSDictionary *)getMonitorInfoTag{
     NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
+    
     if (self.config.enableAutoTrack) {
         [tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"];
     }
     if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag setObject:[NSString stringWithFormat:@"%ld",[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
+        [field setObject:[NSNumber numberWithLong:[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag setObject:[FTBaseInfoHander ft_usedMemory] forKey:@"memory_use"];
+        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_usedMemory]] forKey:@"memory_use"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        __block NSString *network_type,*network_strength;
+        __block NSNumber *network_strength;
+        __block NSString *network_type;
         if ([NSThread isMainThread]) { // do something in main thread } else { // do something in other
             network_type =[FTNetworkInfo getNetworkType];
-            network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
+            network_strength =[NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
         }else{
             dispatch_sync(dispatch_get_main_queue(), ^{
                 network_type =[FTNetworkInfo getNetworkType];
-                network_strength = [NSString stringWithFormat:@"%d",[FTNetworkInfo getNetSignalStrength]];
+                network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
             });
         }
         [tag setObject:network_type forKey:@"network_type"];
-        [tag setObject:network_strength forKey:@"network_strength"];
-        [tag setObject:self.netFlow.flow forKey:@"network_speed"];
-        [tag setObject:[NSNumber numberWithBool:[FTNetworkInfo getProxyStatus]] forKey:@"network_proxy"];
+        [field setObject:network_strength forKey:@"network_strength"];
+        [field setObject:[NSNumber numberWithLongLong:self.netFlow.flow] forKey:@"network_speed"];
+        if ([FTNetworkInfo getProxyHost]) {
+            [tag setObject:[FTNetworkInfo getProxyHost] forKey:@"network_proxy"];
+        }else{
+            [tag setObject:@"N/A" forKey:@"network_proxy"];
+        }
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag setObject:[FTBaseInfoHander ft_getBatteryUse] forKey:@"battery_use"];
+        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_getBatteryUse]] forKey:@"battery_use"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        NSString *usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
-        [tag setObject:usage forKey:@"gpu_rate"];
+        double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
+        [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         if (self.city && self.city.length>0 ) {
@@ -476,7 +508,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tag setObject:self.country forKey:@"country"];
         }
     }
-    return tag;
+    return @{@"field":field,@"tag":tag};
 }
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     NSParameterAssert(name);

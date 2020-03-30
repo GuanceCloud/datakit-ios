@@ -199,12 +199,12 @@ GPU_UTILI_KEY(TextureCount, textureCount)
     return dictionary;
 }
 
-- (NSString *)fetchCurrentGpuUsage{
+- (double)fetchCurrentGpuUsage{
 #ifdef FT_TRACK_GPUUSAGE
 
-    return  [NSString stringWithFormat:@"%2zd%%", [_utilizationInfo[GPUDeviceUtilizationKey] integerValue]];
+    return   [_utilizationInfo[GPUDeviceUtilizationKey] double];
 #endif
-    return @"N/A";
+    return 0;
 }
 
 @end

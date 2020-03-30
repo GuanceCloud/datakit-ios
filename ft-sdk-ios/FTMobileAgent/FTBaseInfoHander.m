@@ -728,10 +728,14 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 }
 #pragma mark ========== 电池 ==========
 //电池电量
-+(NSString *)ft_getBatteryUse{
++(double)ft_getBatteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
-    return [NSString stringWithFormat:@"%.f%%",(1-deviceLevel)*100];
+    if (deviceLevel == -1) {
+        return 0;
+    }else{
+    return deviceLevel*100;
+    }
 }
 
 #pragma mark ========== 内存 ==========
@@ -752,7 +756,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
 }
 //当前任务所占用的内存
-+ (NSString *)ft_usedMemory
++ (double)ft_usedMemory
 {
     vm_statistics_data_t vmStats;
     mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
@@ -762,13 +766,13 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
                                                &infoCount);
     
     if (kernReturn != KERN_SUCCESS) {
-        return @"0";
+        return 0;
     }
     
     double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
     double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
-    
-    return [NSString stringWithFormat:@"%.2f%%",(total-availableMemory)/total*1.00*100];
+    double numFloat =(total-availableMemory)/total;
+    return floor(numFloat*10000) / 100;
 }
 //总内存
 +(NSString *)ft_getTotalMemorySize{

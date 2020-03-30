@@ -73,7 +73,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     } else if([self.field isEqualToString:@"$duration"]){
         return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }else{
+        if([self.value isKindOfClass:NSString.class]){
         return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        }else{
+        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        }
     }
 }
 @end
@@ -224,6 +228,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             [tagDict removeObjectForKey:@"field"];
             [tagDict removeObjectForKey:@"measurement"];
             [tagDict removeObjectForKey:@"product"];
+            NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
+
             NSString *firstStr;
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
@@ -233,14 +239,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 if ([opdata valueForKey:@"measurement"]) {
                     firstStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
                 }
+                tagsStr = [tagsStr stringByAppendingFormat:@",%@",self.basicTagStr];
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
                 field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
             }
-            NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
             NSString *userStr =userData.allKeys.count>0?  FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
             requestStr =firstStr;
-            requestStr = userStr.length>0?[requestStr stringByAppendingFormat:@",%@,%@,%@",tagsStr,self.basicTagStr,userStr]:[requestStr stringByAppendingFormat:@",%@,%@",tagsStr,self.basicTagStr];
+            requestStr = userStr.length>0?[requestStr stringByAppendingFormat:@",%@,%@",tagsStr,userStr]:[requestStr stringByAppendingFormat:@",%@",tagsStr];
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
             
         }else{

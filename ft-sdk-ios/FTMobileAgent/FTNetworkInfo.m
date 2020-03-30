@@ -265,17 +265,11 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
     
     return signalStrength;
 }
-+ (BOOL)getProxyStatus {
++ (NSString *)getProxyHost {
     NSDictionary *proxySettings =  (__bridge NSDictionary *)(CFNetworkCopySystemProxySettings());
     NSArray *proxies = (__bridge NSArray *)(CFNetworkCopyProxiesForURL((__bridge CFURLRef _Nonnull)([NSURL URLWithString:@"http://www.baidu.com"]), (__bridge CFDictionaryRef _Nonnull)(proxySettings)));
     NSDictionary *settings = [proxies objectAtIndex:0];
-    
-    if ([[settings objectForKey:(NSString *)kCFProxyTypeKey] isEqualToString:@"kCFProxyTypeNone"]){
-        //没有设置代理
-        return NO;
-    }else{
-        //设置代理了
-        return YES;
-    }
+    NSString *host= [settings objectForKey:(NSString *)kCFProxyHostNameKey];
+    return host;
 }
 @end

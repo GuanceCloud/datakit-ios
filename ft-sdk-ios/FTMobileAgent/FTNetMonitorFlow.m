@@ -13,14 +13,14 @@
 #import "ZYLog.h"
 @interface FTNetMonitorFlow ()
 @property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, assign) long long int lastBytes;
+@property (nonatomic, assign) long long  lastBytes;
 @property (nonatomic, strong) NSThread *thread1;
 
 @end
 @implementation FTNetMonitorFlow
 
 -(void)startMonitor{
-    self.flow = @"0dB/s";
+    self.flow = 0;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -55,7 +55,7 @@
         rate = currentBytes -self.lastBytes;
     }
     self.lastBytes = currentBytes;
-    self.flow  = [self formatNetWork:rate];
+    self.flow  = rate;
 }
 - (long long) getInterfaceBytes {
     struct ifaddrs *ifa_list = 0, *ifa;

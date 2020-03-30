@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  获取当前电池电量使用率
  */
-+ (NSString *)ft_getBatteryUse;
++ (double)ft_getBatteryUse;
 /**
  *  @abstract
  *  获取设备总内存
@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  获取当前内存使用率
  */
-+ (NSString *)ft_usedMemory;
++ (double)ft_usedMemory;
 /**
  *  @abstract
  *  获取前置摄像头像素

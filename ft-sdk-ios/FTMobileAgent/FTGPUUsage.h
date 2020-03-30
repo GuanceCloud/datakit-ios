@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTGPUUsage : NSObject
-- (NSString *)fetchCurrentGpuUsage;
+- (double)fetchCurrentGpuUsage;
 @end
 
 NS_ASSUME_NONNULL_END
