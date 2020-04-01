@@ -39,7 +39,7 @@ zip -q -r "$ZIP_PATH" "$FRAMEWORK_PATH"
 
 cd ../"$PRODUCT_NAME"
 
-sed  -i -e 's/=.*/=@"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
+sed  -i -e 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
 
 # 回到项目根目录
 cd ..&&cd ..
