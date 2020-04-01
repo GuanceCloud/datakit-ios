@@ -25,6 +25,10 @@ fi
 
 SCHEME_MERGE_NAME=$(upperFirstLetter "$FT_PROD_TYPE")
 
+cd ../"$PRODUCT_NAME"
+
+sed  -i -e 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
+
 xcodebuild -project ft-sdk-ios/ft-sdk-ios.xcodeproj -sdk  iphoneos -scheme BuildFramwork"$SCHEME_MERGE_NAME" -configuration "Release"
 
 #进入打包目录
@@ -36,10 +40,6 @@ FRAMEWORK_PATH="$PRODUCT_NAME.framework"
 zip -q -r "$ZIP_PATH" "$FRAMEWORK_PATH"
 
 ~/ossutilmac64 cp "$ZIP_PATH" oss://zhuyun-static-files-production/ft-sdk-package/ios/"$PRODUCT_NAME"/
-
-cd ../"$PRODUCT_NAME"
-
-sed  -i -e 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
 
 # 回到项目根目录
 cd ..&&cd ..
