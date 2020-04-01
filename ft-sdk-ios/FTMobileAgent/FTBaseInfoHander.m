@@ -582,7 +582,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
     return string;
 }
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data date:(NSString *)date
++(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     
@@ -592,7 +592,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     [signString appendString:@"\n"];
     [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
-    [signString appendString:date];
+    [signString appendString:[request valueForHTTPHeaderField:@"Date"]];
     const char *secretStr = [akSecret UTF8String];
     const char * signStr = [signString UTF8String];
     
@@ -772,7 +772,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
     double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
     double numFloat =(total-availableMemory)/total;
-    return floor(numFloat*10000) / 100;
+    return numFloat*100;
 }
 //总内存
 +(NSString *)ft_getTotalMemorySize{

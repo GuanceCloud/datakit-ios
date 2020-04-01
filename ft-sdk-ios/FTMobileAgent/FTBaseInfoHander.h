@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 签名后字符串
  */
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data date:(NSString *)date;
++(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data;
 /**
  *  @abstract
  *  获取GMT格式的时间
@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取后置摄像头像素
  */
 + (NSString *)ft_getBackCameraPixel;
-+(NSString *)removeFrontBackBlank:(NSString *)str;
++ (NSString *)removeFrontBackBlank:(NSString *)str;
 + (id)repleacingSpecialCharacters:(id )str;
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
 @end

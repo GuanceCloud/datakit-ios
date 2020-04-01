@@ -388,8 +388,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (![self verifyProductStr:product]) {
             return;
         }
-        __block NSString *durationStr = [NSString stringWithFormat:@"%ld",duration];
-        NSMutableDictionary *fieldDict = @{@"$duration":durationStr}.mutableCopy;
+        NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
         NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$flow_%@",product],
                                          @"$traceId":traceId,
                                          @"$name":name,
@@ -446,7 +445,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (BOOL)verifyProductStr:(NSString *)product{
     BOOL result= NO;
     @try {
-        NSString *regex = @"^[A-Za-z0-9_\\-]{0,35}+$";//$flow_
+        NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";//$flow_
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
         // 字符串判断，然后BOOL值
         result = [predicate evaluateWithObject:product];

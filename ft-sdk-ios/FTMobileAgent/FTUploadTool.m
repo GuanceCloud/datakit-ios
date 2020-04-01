@@ -70,14 +70,16 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
-    } else if([self.field isEqualToString:@"$duration"]){
-        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }else{
         if([self.value isKindOfClass:NSString.class]){
         return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
-        }else{
-        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        }else if([self.value isKindOfClass:NSNumber.class]){
+            NSNumber *number = self.value;
+            if (number.intValue <number.floatValue || number.intValue<number.doubleValue) {
+                return [NSString stringWithFormat:@"%@=%.2f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
+            }
         }
+            return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }
 }
 @end
@@ -192,7 +194,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     ZYDebug(@"requestData = %@",requestData);
     
     if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData date:date]];
+        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData]];
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
     request = [mutableRequest copy];

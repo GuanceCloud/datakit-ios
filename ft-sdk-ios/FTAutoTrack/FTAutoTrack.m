@@ -114,7 +114,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     NSMutableDictionary *opdata = [@{@"product":product,
                                      @"$traceId":self.flowId,
                                      @"$name":NSStringFromClass(vc.class),
-                                     @"field":@{@"$duration":durationStr},
+                                     @"field":@{@"$duration":[NSNumber numberWithLongLong:duration]},
     } mutableCopy];
     if (parent.length>0) {
         [opdata setObject:parent forKey:@"$parent"];
