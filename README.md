@@ -24,8 +24,8 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
   
 **含全埋点的下载链接：**    
 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/VERSION.zip   
-**无全埋点的下载链接：**
-	 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/VERSION.zip    
+**无全埋点的下载链接：**    
+https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/VERSION.zip    
 	 
 1.2.将 SDK 源代码导入 App 项目，并选中 Copy items if needed 。
 
