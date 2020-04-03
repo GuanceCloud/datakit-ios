@@ -223,7 +223,7 @@ Release : FT_TRACK_GPUUSAGE=1
 #### 3.7.设置是否需要视图跳转流程图
 
  前提：设置全埋点 `enableAutoTrack =  YES;`     
- 设置 `enableScreenFlow = YES;`  ，将自动抓取视图跳转流程图。[具体流程图相关](#七、流程图)。
+ 设置 `enableScreenFlow = YES;`  ，将自动抓取视图跳转流程图。[具体流程图相关](#七流程图)。
 
 
 ## 三、SDK 的一些参数与错误码
@@ -237,12 +237,12 @@ Release : FT_TRACK_GPUUSAGE=1
 |akSecret|NSString|access key Secret|enableRequestSigning 为 true 时，必须要填|
 |enableLog|BOOL|设置是否允许打印日志|否（默认NO）|
 |enableAutoTrack|BOOL|设置是否开启全埋点|否（默认NO）|
-|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](#3.4.设置是否开启全埋点  )|否（默认FTAutoTrackTypeNone）|
+|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](34设置是否开启全埋点)|否（默认FTAutoTrackTypeNone）|
 |whiteViewClass|NSArray|UI控件白名单|否|
 |blackViewClass|NSArray|UI控件黑名单|否|
 |whiteVCList|NSArray|控制器白名单|否|
 |blackVCList|NSArray|控制器黑名单|否|
-|monitorInfoType|NS_OPTIONS|[采集数据](#3.6.采集数据配置)|否|
+|monitorInfoType|NS_OPTIONS|[采集数据](#36采集数据配置)|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否（默认YES）|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
@@ -427,7 +427,7 @@ FTTrackBean的属性：
 ### 2.主动埋点上报流程图
  DF SDK 公开了2个方法，用户通过这两个方法可以在需要的地方实现流程图埋点，然后将数据上传到服务端。
  
-####2.1.方法一
+#### 2.1.方法一
 
 ```objective-c
  /**
@@ -442,7 +442,7 @@ FTTrackBean的属性：
 
 ```
 
-####2.2.方法二
+#### 2.2.方法二
 
 ```objective-c
 /**
@@ -459,7 +459,7 @@ FTTrackBean的属性：
 
 ```
 
-####2.3.使用示例
+#### 2.3.使用示例
 
 节点一：
 ```objective-c
