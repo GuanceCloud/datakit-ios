@@ -75,7 +75,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
   ```     
 
 ### 3.FTMobileConfig 配置
-####3.1.FTMobileConfig初始化方法    
+#### 3.1.FTMobileConfig初始化方法    
 
   - 不需要进行签名配置    
      
@@ -102,14 +102,14 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
     ```
 	
-####3.2.设置是否打印日志    
+#### 3.2.设置是否打印日志    
 
    在 debug 环境下，设置 FTMobileConfig 的 `enableLog` 属性。
    
    ```objective-c
     config.enableLog = YES; //打印日志
    ```    
-####3.3.设置X-Datakit-UUID
+#### 3.3.设置X-Datakit-UUID
  ` X-Datakit-UUID ` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  FTMobileConfig 配置中，开发者可以强制更改。更改方法：
  
@@ -118,7 +118,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
   
  ```
   
-####3.4.设置是否开启全埋点  
+#### 3.4.设置是否开启全埋点  
   
    开启全埋点，设置 FTMobileConfig 的 `enableAutoTrack` 为 YES。
    在 `enableAutoTrack` 为 YES 的情况下，进行 `autoTrackEventType` 类型设置。
@@ -140,7 +140,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 };
 ```
   
-####3.5.设置全埋点黑白名单
+#### 3.5.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
    1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
@@ -180,7 +180,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
    ```
 	
-####3.6.采集数据配置
+#### 3.6.采集数据配置
     
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：
    
@@ -220,14 +220,14 @@ Release : FT_TRACK_GPUUSAGE=1
  ```
 
   
-####3.7.设置是否需要视图跳转流程图
+#### 3.7.设置是否需要视图跳转流程图
 
  前提：设置全埋点 `enableAutoTrack =  YES;`     
  设置 `enableScreenFlow = YES;`  ，将自动抓取视图跳转流程图。[具体流程图相关](#七、流程图)。
 
 
 ## 三、SDK 的一些参数与错误码
-###1.FTMobileConfig  可配置参数：
+### 1.FTMobileConfig  可配置参数：
 
 | 字段 | 类型 |说明|是否必须|
 |:--------:|:--------:|:--------:|:--------:|
@@ -247,7 +247,7 @@ Release : FT_TRACK_GPUUSAGE=1
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
 
-###2.错误码
+### 2.错误码
 
 ```objective-c
 typedef enum FTError : NSInteger {
@@ -475,7 +475,7 @@ FTTrackBean的属性：
 
 
 ## 八、常见问题
-###1.关于查询指标 IMEI
+### 1.关于查询指标 IMEI
 - IMEI
    因为隐私问题，苹果用户在 iOS5 以后禁用代码直接获取 IMEI 的值。所以 iOS sdk 中不支持获取 IMEI。
    
