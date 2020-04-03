@@ -22,7 +22,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 1.1.下载SDK。    
   配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 **VERSION**。
   
-**含全埋点的下载链接：**
+**含全埋点的下载链接：**    
 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/VERSION.zip   
 **无全埋点的下载链接：**
 	 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/VERSION.zip    
@@ -104,13 +104,13 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 	
 3.2.设置是否打印日志    
 
-   在debug环境下，设置 FTMobileConfig 的 `enableLog` 属性。
+   在 debug 环境下，设置 FTMobileConfig 的 `enableLog` 属性。
    
    ```objective-c
     config.enableLog = YES; //打印日志
    ```    
 3.3.设置X-Datakit-UUID
- ` X-Datakit-UUID SDK` 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，重新生成。
+ ` X-Datakit-UUID ` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  FTMobileConfig 配置中，开发者可以强制更改。更改方法：
  
  ```objective-c
@@ -120,7 +120,25 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
   
 3.4.设置是否开启全埋点  
   
-   开启全埋点 设置 FTMobileConfig 的 `enableAutoTrack` 为 YES，在 `enableAutoTrack` 为 YES 的情况下，设置 `autoTrackEventType` 类型。
+   开启全埋点，设置 FTMobileConfig 的 `enableAutoTrack` 为 YES。
+   在 `enableAutoTrack` 为 YES 的情况下，进行 `autoTrackEventType` 类型设置。
+   ```objective-c
+/**
+ * @enum
+ * AutoTrack 抓取信息
+ *
+ * @constant
+ *   FTAutoTrackEventTypeAppLaunch       - 项目启动
+ *   FTAutoTrackEventTypeAppClick        - 点击事件
+ *   FTAutoTrackEventTypeAppViewScreen   - 页面的生命周期 open/close
+ */
+typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
+    FTAutoTrackTypeNone          = 0,
+    FTAutoTrackEventTypeAppLaunch     = 1 << 0,
+    FTAutoTrackEventTypeAppClick      = 1 << 1,
+    FTAutoTrackEventTypeAppViewScreen = 1 << 2,
+};
+```
   
 3.5.设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
