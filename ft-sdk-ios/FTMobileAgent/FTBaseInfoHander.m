@@ -533,8 +533,12 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 #pragma clang diagnostic pop
         
     }
+    if(carrier ==nil){
+        return @"N/A";
+    }else{
     NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
     return mCarrier;
+    }
 }
 + (NSString *)ft_resolution {
     CGRect rect = [[UIScreen mainScreen] bounds];
@@ -578,7 +582,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
     return string;
 }
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data date:(NSString *)date
++(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     
@@ -588,7 +592,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     [signString appendString:@"\n"];
     [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
-    [signString appendString:date];
+    [signString appendString:[request valueForHTTPHeaderField:@"Date"]];
     const char *secretStr = [akSecret UTF8String];
     const char * signStr = [signString UTF8String];
     
@@ -724,10 +728,14 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 }
 #pragma mark ========== 电池 ==========
 //电池电量
-+(NSString *)ft_getBatteryUse{
++(double)ft_getBatteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
-    return [NSString stringWithFormat:@"%.f%%",(1-deviceLevel)*100];
+    if (deviceLevel == -1) {
+        return 0;
+    }else{
+    return deviceLevel*100;
+    }
 }
 
 #pragma mark ========== 内存 ==========
@@ -748,7 +756,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
 }
 //当前任务所占用的内存
-+ (NSString *)ft_usedMemory
++ (double)ft_usedMemory
 {
     vm_statistics_data_t vmStats;
     mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
@@ -758,17 +766,17 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
                                                &infoCount);
     
     if (kernReturn != KERN_SUCCESS) {
-        return @"0";
+        return 0;
     }
     
     double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
     double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
-    
-    return [NSString stringWithFormat:@"%.2f%%",(total-availableMemory)/total*1.00*100];
+    double numFloat =(total-availableMemory)/total;
+    return numFloat*100;
 }
 //总内存
-+(long long)ft_getTotalMemorySize{
-    return [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
++(NSString *)ft_getTotalMemorySize{
+    return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
     
 }
 + (NSString *)ft_getFrontCameraPixel{

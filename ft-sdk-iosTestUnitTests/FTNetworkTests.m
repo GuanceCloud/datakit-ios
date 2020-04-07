@@ -42,14 +42,15 @@
            model.data =[FTBaseInfoHander ft_convertToJsonData:data];
            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
            
-           NSDictionary *data2 = @{
-               @"cpn":@"Test4ViewController",
-               @"op": @"click",
-               @"opdata":@{
-                       @"vtp": @"UIWindow[7]/UITransitionView[6]/UIDropShadowView[5]/UILayoutContainerView[4]/UINavigationTransitionView[3]/UIViewControllerWrapperView[2]/UIView[1]/UITableView[0]",
-               },
-               @"rpn":@"UINavigationController",
-           };
+           NSDictionary *data2= @{
+                @"op" : @"cstm",
+                @"opdata" :@{
+                        @"measurement" :@"pushFile",
+                        @"field":@{
+                                @"event" :@"cstmGesture",
+                           },
+                       },
+                   } ;
            FTRecordModel *model2 = [FTRecordModel new];
            model2.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
            model2.data =[FTBaseInfoHander ft_convertToJsonData:data2];
@@ -67,7 +68,6 @@
     if (akId && akSecret && url) {
      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
       config.enableLog = YES;
-      config.enableAutoTrack = YES;
       self.upTool = [[FTUploadTool alloc]initWithConfig:config];
     }
 }

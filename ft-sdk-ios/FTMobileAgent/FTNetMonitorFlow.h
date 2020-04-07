@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetMonitorFlow : NSObject
-@property (nonatomic, copy) NSString *flow;
+@property (nonatomic, assign) long long flow;
 //开始检测
 
 - (void)startMonitor;

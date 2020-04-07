@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTNetworkInfo : NSObject
 + (NSString *)getNetworkType;
 + (int)getNetSignalStrength;
-+ (BOOL)getProxyStatus;
++ (NSString *)getProxyHost;
 @end
 
 NS_ASSUME_NONNULL_END

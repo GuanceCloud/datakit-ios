@@ -78,7 +78,8 @@
     FTRecordModel *model =  [all lastObject];
     NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = item[@"opdata"];
-    XCTAssertTrue([op[@"measurement"] isEqualToString:@"testTrack"] && [op[@"field"] isEqual:@{@"event":@"testTrack"}]);
+    NSDictionary *field = op[@"field"];
+    XCTAssertTrue([op[@"measurement"] isEqualToString:@"testTrack"] && [[field valueForKey:@"event"] isEqualToString:@"testTrack"]);
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-count==1);
 

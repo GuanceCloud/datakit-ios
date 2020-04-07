@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 签名后字符串
  */
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data date:(NSString *)date;
++(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data;
 /**
  *  @abstract
  *  获取GMT格式的时间
@@ -72,17 +72,17 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  获取当前电池电量使用率
  */
-+ (NSString *)ft_getBatteryUse;
++ (double)ft_getBatteryUse;
 /**
  *  @abstract
  *  获取设备总内存
  */
-+ (long long)ft_getTotalMemorySize;
++ (NSString *)ft_getTotalMemorySize;
 /**
  *  @abstract
  *  获取当前内存使用率
  */
-+ (NSString *)ft_usedMemory;
++ (double)ft_usedMemory;
 /**
  *  @abstract
  *  获取前置摄像头像素
@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取后置摄像头像素
  */
 + (NSString *)ft_getBackCameraPixel;
-+(NSString *)removeFrontBackBlank:(NSString *)str;
++ (NSString *)removeFrontBackBlank:(NSString *)str;
 + (id)repleacingSpecialCharacters:(id )str;
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
 @end

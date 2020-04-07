@@ -62,18 +62,24 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=null", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
+        return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
     } else {
         return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], [FTBaseInfoHander repleacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=null", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
-    } else if([self.field isEqualToString:@"$duration"]){
-        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
     }else{
+        if([self.value isKindOfClass:NSString.class]){
         return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        }else if([self.value isKindOfClass:NSNumber.class]){
+            NSNumber *number = self.value;
+            if (number.intValue <number.floatValue || number.intValue<number.doubleValue) {
+                return [NSString stringWithFormat:@"%@=%.2f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
+            }
+        }
+            return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }
 }
 @end
@@ -188,7 +194,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     ZYDebug(@"requestData = %@",requestData);
     
     if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData date:date]];
+        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData]];
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
     request = [mutableRequest copy];
@@ -224,6 +230,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             [tagDict removeObjectForKey:@"field"];
             [tagDict removeObjectForKey:@"measurement"];
             [tagDict removeObjectForKey:@"product"];
+            NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
+
             NSString *firstStr;
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
@@ -233,14 +241,19 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 if ([opdata valueForKey:@"measurement"]) {
                     firstStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
                 }
+                tagsStr = [tagsStr stringByAppendingFormat:@",%@",self.basicTagStr];
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
                 field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
             }
-            NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
             NSString *userStr =userData.allKeys.count>0?  FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
             requestStr =firstStr;
-            requestStr = userStr.length>0?[requestStr stringByAppendingFormat:@",%@,%@,%@",tagsStr,self.basicTagStr,userStr]:[requestStr stringByAppendingFormat:@",%@,%@",tagsStr,self.basicTagStr];
+            if (tagsStr.length>0) {
+            requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+            }
+            if (userStr.length>0) {
+            requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
+            }
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
             
         }else{
@@ -296,14 +309,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
         CFShow((__bridge CFTypeRef)(infoDictionary));
-        NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
         NSMutableDictionary *tag = @{@"device_uuid":uuid,
                                      @"application_identifier":identifier,
-                                     @"application_name":app_Name,
+                                     @"application_name":self.config.appName,
                                      @"os":@"iOS",
                                      @"os_version":version,
                                      @"device_band":@"APPLE",
@@ -318,7 +329,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
         }
         if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[NSNumber numberWithLongLong:[FTBaseInfoHander ft_getTotalMemorySize]] forKey:@"memory_total"];
+            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
         }
         if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
