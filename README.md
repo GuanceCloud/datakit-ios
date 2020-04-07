@@ -244,7 +244,7 @@ Release : FT_TRACK_GPUUSAGE=1
 |whiteVCList|NSArray|控制器白名单|否|
 |blackVCList|NSArray|控制器黑名单|否|
 |monitorInfoType|NS_OPTIONS|[采集数据](#36采集数据配置)|否|
-|needBindUser|BOOL|是否开启绑定用户数据|否（默认YES）|
+|needBindUser|BOOL|是否开启绑定用户数据|否(默认不开启)|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
 
@@ -381,7 +381,7 @@ FTTrackBean的属性：
 
 
 ## 六、用户的绑定与注销 
- FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 YES 时（默认为 YES），用户登录的状态下，才会进行数据的传输。如果不需要绑定用户，请设置 `needBindUser` 为 NO 。                
+ FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 YES 时（默认为 NO），用户登录的状态下，才会进行数据的传输。如果不需要绑定用户，请设置 `needBindUser` 为 NO 。                
  
  ### 1.用户绑定：
  
