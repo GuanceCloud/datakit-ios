@@ -30,7 +30,7 @@
          self.enableLog = NO;
          self.autoTrackEventType = FTAutoTrackTypeNone;
          self.enableAutoTrack = NO;
-         self.needBindUser = YES;
+         self.needBindUser = NO;
          self.enableScreenFlow = NO;
          self.XDataKitUUID = [self ft_defaultUUID];
         }
