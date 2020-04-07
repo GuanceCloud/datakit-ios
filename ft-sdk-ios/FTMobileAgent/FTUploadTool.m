@@ -248,7 +248,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             }
             NSString *userStr =userData.allKeys.count>0?  FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
             requestStr =firstStr;
-            requestStr = userStr.length>0?[requestStr stringByAppendingFormat:@",%@,%@",tagsStr,userStr]:[requestStr stringByAppendingFormat:@",%@",tagsStr];
+            if (tagsStr.length>0) {
+            requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+            }
+            if (userStr.length>0) {
+            requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
+            }
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
             
         }else{
@@ -304,14 +309,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
         CFShow((__bridge CFTypeRef)(infoDictionary));
-        NSString *app_Name = [infoDictionary objectForKey:@"CFBundleDisplayName"];
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
         NSMutableDictionary *tag = @{@"device_uuid":uuid,
                                      @"application_identifier":identifier,
-                                     @"application_name":app_Name,
+                                     @"application_name":self.config.appName,
                                      @"os":@"iOS",
                                      @"os_version":version,
                                      @"device_band":@"APPLE",
