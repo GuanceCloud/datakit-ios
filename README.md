@@ -34,7 +34,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 
 1. 配置 Podfile 文件。    
     
-   ```objective-c
+  ```objective-c
    target 'yourProjectName' do
 
    # Pods for your project
@@ -44,7 +44,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
    pod 'FTMobileAgent'
    
    end
-   ```    
+  ```    
 2. 在 Podfile 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
@@ -57,7 +57,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 ### 2. 添加初始化代码
   示例：
   
-  ```objective-c
+```objective-c
  #import <FTMobileAgent/FTMobileAgent.h>
 -(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions{
      // SDK FTMobileConfig 设置
@@ -70,7 +70,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
     [FTMobileAgent startWithConfigOptions:config];
     return YES;
 }
-  ```     
+```     
 
 ## 三、FTMobileConfig 配置
 ### 1. FTMobileConfig初始化方法    
@@ -98,7 +98,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
         * @return 配置对象
       */
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
-    ```
+   ```
 	
 ### 2.设置是否打印日志    
 
@@ -243,7 +243,7 @@ typedef enum FTError : NSInteger {
   NetWorkException = 101,            //网络问题
   InvalidParamsException = 102,      //参数问题
   FileIOException = 103,             //文件 IO 问题
-  UnkownException = 104,             //未知问题
+  UnknownException = 104,            //未知问题
 } FTError;
 
 ```
@@ -252,28 +252,31 @@ typedef enum FTError : NSInteger {
 ## 五、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
 ### 1. Launch (App 启动) 
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
-
-触发：App 启动或从后台恢复时，触发 launch 事件。    
+* 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
+* 触发：  **App** 启动或从后台恢复时，触发 `launch `事件。    
 
 ### 2. Click  (事件点击)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`    
+* 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`    
 
-触发：控件被点击时，触发 Click 事件。    
+* 触发： 控件被点击时，触发 **Click** 事件。    
 
-Click 事件中包含以下属性：
-- rpn(root_page_name) : 当前页面的根部页面
-- cpn(current_page_name) ：当前页面
-- vtp ：操作页面树状路径
+* **Click** 事件中包含以下属性：    
+    
+      *  rpn(root_page_name)：当前页面的根部页面
+      *  cpn(current_page_name)：当前页面
+      *  vtp ：操作页面树状路径
 
 ### 3. ViewScreen (页面enter、leave)
-设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
+* 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
 
-触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。    
+* 触发：    
+       *   当 UIViewController 的 `- viewDidAppear:` 被调用时，触发 **enter** 事件。
+       *   当 UIViewController 的 `- viewDidDisappear:` 被调用时，触发 **leave** 事件。    
 
-enter 与 leave 事件中包含以下属性：
-- rpn(root_page_name) : 当前页面的根部页面
-- cpn(current_page_name)：当前页面
+* **enter** 与 **leave** 事件中包含以下属性：
+    
+    *  rpn(root_page_name)：当前页面的根部页面
+    *  cpn(current_page_name)：当前页面
 
 
 ## 六、主动埋点方法
@@ -369,7 +372,7 @@ enter 与 leave 事件中包含以下属性：
 
 
 ## 七、用户的绑定与注销 
- FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 YES 时（默认为 NO），用户登录的状态下，才会进行数据的传输。   
+ FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 `YES`时（默认为 `NO`），用户登录的状态下，才会进行数据的传输。   
  
 ### 1. 用户绑定：
  
@@ -406,7 +409,7 @@ enter 与 leave 事件中包含以下属性：
 
 ## 八、流程图
 ### 1. 全埋点上报流程图
-抓取App一个生命周期内的页面 Open 事件，可绘制出用户使用App时的页面跳转流程图，并显示出在页面的停留时间。
+抓取  **App** 一个生命周期内的页面 **Open** 事件，可绘制出用户使用 **App** 时的页面跳转流程图，并显示出在页面的停留时间。
  设置方法：
 ```objective-c
  FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"Your App metricsUrl" akId:@"Your App akId" akSecret: @"Your App akSecret" enableRequestSigning:YES];
