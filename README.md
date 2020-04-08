@@ -208,7 +208,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  }; 
       
  ```    	
-  **注意：[关于GPU使用率获取](#2关于-gpu-使用率)**   
+  **注意：[关于GPU使用率获取](#2-关于-gpu-使用率)**   
  
 ### 7. 设置是否需要视图跳转流程图
 
@@ -227,12 +227,12 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 |akSecret|NSString|access key Secret|enableRequestSigning 为 true 时，必须要填|
 |enableLog|BOOL|设置是否允许打印日志|否（默认NO）|
 |enableAutoTrack|BOOL|设置是否开启全埋点|否（默认NO）|
-|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](#4设置是否开启全埋点)|否（默认FTAutoTrackTypeNone）|
+|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](#4-设置是否开启全埋点)|否（默认FTAutoTrackTypeNone）|
 |whiteViewClass|NSArray|UI控件白名单|否|
 |blackViewClass|NSArray|UI控件黑名单|否|
 |whiteVCList|NSArray|控制器白名单|否|
 |blackVCList|NSArray|控制器黑名单|否|
-|monitorInfoType|NS_OPTIONS|[采集数据](#6采集数据配置)|否|
+|monitorInfoType|NS_OPTIONS|[采集数据](#6-采集数据配置)|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否(默认不开启)|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
