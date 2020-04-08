@@ -18,7 +18,7 @@ Dataflux-SDK-iOS-Demo 链接: https://github.com/CloudCare/dataflux-sdk-ios-demo
 
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
-### 1.直接下载下来安装
+### 1. 直接下载下来安装
 1. 下载SDK。    
   配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 **VERSION**。  
 **含全埋点的下载链接：**    
@@ -30,7 +30,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 3.  添加依赖库：项目设置 "Build Phase" -> "Link Binary With Libraries" 添加：`UIKit` 、 `Foundation` 、`libz.tbd`。
  
    
-### 2.通过 CocoaPods 导入
+### 2. 通过 CocoaPods 导入
 
 1. 配置 Podfile 文件。    
     
@@ -49,13 +49,13 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 1. 在 Podfile 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
-### 1.添加头文件
+### 1. 添加头文件
 请将 `#import <FTMobileAgent/FTMobileAgent.h>
 ` 添加到 AppDelegate.m 引用头文件的位置。    
 
 
 
-### 2.添加初始化代码
+### 2. 添加初始化代码
   示例：
   
   ```objective-c
@@ -74,7 +74,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
   ```     
 
 ## 三、FTMobileConfig 配置
-### 1.FTMobileConfig初始化方法    
+### 1. FTMobileConfig初始化方法    
 
   - 不需要进行签名配置    
      
@@ -108,7 +108,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
    ```objective-c
     config.enableLog = YES; //打印日志
    ```    
-### 3.设置X-Datakit-UUID
+### 3. 设置X-Datakit-UUID
  ` X-Datakit-UUID ` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  FTMobileConfig 配置中，开发者可以强制更改。更改方法：
  
@@ -116,7 +116,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
    [config setXDataKitUUID:@"YOUR UUID"];
  ```
   
-### 4.设置是否开启全埋点  
+### 4. 设置是否开启全埋点  
   
    开启全埋点，设置 FTMobileConfig 的 `enableAutoTrack` 为 YES。
    在 `enableAutoTrack` 为 YES 的情况下，进行 `autoTrackEventType` 类型设置。    
@@ -139,7 +139,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 };
 ```
   
-### 5.设置全埋点黑白名单
+### 5. 设置全埋点黑白名单
    黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
    eg:
    1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
@@ -179,7 +179,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
      @property (nonatomic,strong) NSArray<Class> *blackViewClass;
    ```
 	
-### 6.采集数据配置
+### 6. 采集数据配置
     
    配置 FTMobileConfig 的`FTMonitorInfoType` 属性。可采集的类型如下：    
    
@@ -208,16 +208,16 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  }; 
       
  ```    	
-  **注意：[关于GPU使用率获取](#2关于-GPU-使用率)**   
+  **注意：[关于GPU使用率获取](#2关于-gpu-使用率)**   
  
-### 7.设置是否需要视图跳转流程图
+### 7. 设置是否需要视图跳转流程图
 
  前提：设置全埋点 `enableAutoTrack =  YES;`。        
  设置 `enableScreenFlow = YES;` 时 ，将自动抓取视图跳转流程图。[具体流程图相关](#八流程图)。
 
 
 ## 四、参数与错误码
-### 1.FTMobileConfig  可配置参数：
+### 1. FTMobileConfig  可配置参数：
 
 | 字段 | 类型 |说明|是否必须|
 |:--------:|:--------:|:--------:|:--------:|
@@ -227,7 +227,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 |akSecret|NSString|access key Secret|enableRequestSigning 为 true 时，必须要填|
 |enableLog|BOOL|设置是否允许打印日志|否（默认NO）|
 |enableAutoTrack|BOOL|设置是否开启全埋点|否（默认NO）|
-|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](4设置是否开启全埋点)|否（默认FTAutoTrackTypeNone）|
+|autoTrackEventType|NS_OPTIONS|[全埋点抓取事件枚举](#4设置是否开启全埋点)|否（默认FTAutoTrackTypeNone）|
 |whiteViewClass|NSArray|UI控件白名单|否|
 |blackViewClass|NSArray|UI控件黑名单|否|
 |whiteVCList|NSArray|控制器白名单|否|
@@ -237,7 +237,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
 
-### 2.错误码
+### 2. 错误码
 
 ```objective-c
 typedef enum FTError : NSInteger {
@@ -252,12 +252,12 @@ typedef enum FTError : NSInteger {
   
 ## 五、全埋点
   全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
-### 1.Launch (App 启动) 
+### 1. Launch (App 启动) 
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
 
 触发：App 启动或从后台恢复时，触发 launch 事件。    
 
-### 2.Click  (事件点击)
+### 2. Click  (事件点击)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppClick;`    
 
 触发：控件被点击时，触发 Click 事件。    
@@ -267,7 +267,7 @@ Click 事件中包含以下属性：
 - cpn(current_page_name) ：当前页面
 - vtp ：操作页面树状路径
 
-### 3.ViewScreen (页面enter、leave)
+### 3. ViewScreen (页面enter、leave)
 设置：设置 `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
 
 触发：当 UIViewController 的 - viewDidAppear: 被调用时，触发 enter 事件。- viewDidDisappear: 被调用时，触发 leave 事件。    
@@ -280,7 +280,7 @@ enter 与 leave 事件中包含以下属性：
 ## 六、主动埋点方法
  DF SDK 公开了4个埋点方法，用户通过这两个方法可以在需要的地方实现埋点，然后将数据上传到服务端。
 
-### 1.方法一：
+### 1. 方法一：
 
 ```objective-c
   /**
@@ -291,7 +291,7 @@ enter 与 leave 事件中包含以下属性：
 - (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field;
 ```
  
-### 2.方法二：
+### 2. 方法二：
 
 ```objective-c
 /**
@@ -304,7 +304,7 @@ enter 与 leave 事件中包含以下属性：
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 ```
 
-### 3.方法三：
+### 3. 方法三：
 
 ```objective-c
 /**
@@ -316,7 +316,7 @@ enter 与 leave 事件中包含以下属性：
 
 ```    
 
-### 4.方法四：
+### 4. 方法四：
 
 ```objective-c
 /**
@@ -329,7 +329,7 @@ enter 与 leave 事件中包含以下属性：
 
 ```
 
-### 5.方法五：（批量上传）
+### 5. 方法五：（批量上传）
 
 ```objective-c
 /**
@@ -354,7 +354,7 @@ enter 与 leave 事件中包含以下属性：
 ```
 
 
-### 6.方法使用示例
+### 6. 方法使用示例
 
 ```objective-c
  //等待上传
@@ -372,7 +372,7 @@ enter 与 leave 事件中包含以下属性：
 ## 七、用户的绑定与注销 
  FT SDK 提供了绑定用户和注销用户的方法，FTMobileConfig 属性`needBindUser` 为 YES 时（默认为 NO），用户登录的状态下，才会进行数据的传输。   
  
- ### 1.用户绑定：
+### 1. 用户绑定：
  
 ```objective-c
   /**
@@ -384,7 +384,7 @@ enter 与 leave 事件中包含以下属性：
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 ```
 
-### 2.用户注销：
+### 2. 用户注销：
 
 ```objective-c
 /**
@@ -393,7 +393,7 @@ enter 与 leave 事件中包含以下属性：
 - (void)logout;
 ```
 
-### 3.方法使用示例
+### 3. 方法使用示例
 
 ```objective-c
 //登录后 绑定用户信息
@@ -406,7 +406,7 @@ enter 与 leave 事件中包含以下属性：
 ```
 
 ## 八、流程图
-### 1.全埋点上报流程图
+### 1. 全埋点上报流程图
 抓取App一个生命周期内的页面 Open 事件，可绘制出用户使用App时的页面跳转流程图，并显示出在页面的停留时间。
  设置方法：
 ```objective-c
@@ -414,7 +414,7 @@ enter 与 leave 事件中包含以下属性：
  [config enableTrackScreenFlow:YES];//设置开启全埋点上报流程图
  [config setTrackViewFlowProduct:@"iOSDemo"];//设置上报流程行为指标集名
 ```
-### 2.主动埋点上报流程图
+### 2. 主动埋点上报流程图
  DF SDK 公开了2个方法，用户通过这两个方法可以在需要的地方实现流程图埋点，然后将数据上传到服务端。
  
 1. 方法一
@@ -463,10 +463,10 @@ enter 与 leave 事件中包含以下属性：
 
 
 ## 九、常见问题
-### 1.关于查询指标 IMEI
+### 1. 关于查询指标 IMEI
    因为隐私问题，苹果用户在 iOS5 以后禁用代码直接获取 IMEI 的值。所以 iOS sdk 中不支持获取 IMEI。
    
-### 2.关于 GPU 使用率
+### 2. 关于 GPU 使用率
  获取 GPU 使用率，需要使用到 `IOKit.framework ` 私有库，**可能会影响 AppStore 上架**。如果需要此功能，需要在你的应用安装 `IOKit.framework ` 私有库。导入后，请在编译时加入 `FT_TRACK_GPUUSAGE` 标志，SDK将会为你获取GPU使用率。    
      
   XCode设置方法 :      
