@@ -109,7 +109,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
     }
     self.preFlowTime = tm;
     NSString *product = [NSString stringWithFormat:@"$flow_mobile_activity_%@",self.config.product];
-    NSString *durationStr = [NSString stringWithFormat:@"%lld",duration];
     
     NSMutableDictionary *opdata = [@{@"product":product,
                                      @"$traceId":self.flowId,
