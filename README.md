@@ -34,7 +34,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 
 1. 配置 Podfile 文件。    
     
- ```objective-c
+  ```objective-c
     target 'yourProjectName' do
 
     # Pods for your project
@@ -44,9 +44,9 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
     pod 'FTMobileAgent'
 
     end
- ```
+  ```
 
-1. 在 Podfile 目录下执行 `pod install` 安装 SDK。
+2. 在 Podfile 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
 ### 1. 添加头文件
