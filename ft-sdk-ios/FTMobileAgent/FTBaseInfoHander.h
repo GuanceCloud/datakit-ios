@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)removeFrontBackBlank:(NSString *)str;
 + (id)repleacingSpecialCharacters:(id )str;
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
++ (BOOL)verifyProductStr:(NSString *)product;
 @end
 
 NS_ASSUME_NONNULL_END

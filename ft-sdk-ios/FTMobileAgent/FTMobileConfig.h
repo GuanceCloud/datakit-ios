@@ -23,7 +23,7 @@ typedef enum FTError : NSInteger {
  * AutoTrack 抓取信息
  *
  * @constant
- *   FTAutoTrackEventTypeAppLaunch       - 项目启动
+ *   FTAutoTrackEventTypeAppLaunch      - 项目启动
  *   FTAutoTrackEventTypeAppClick       - 点击事件
  *   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
  */

@@ -836,4 +836,18 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     }
     
 }
+// 验证指标集名称是否符合要求
++ (BOOL)verifyProductStr:(NSString *)product{
+    BOOL result= NO;
+    @try {
+        NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";//$flow_
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
+        // 字符串判断，然后BOOL值
+        result = [predicate evaluateWithObject:product];
+        ZYDebug(@"result : %@",result ? @"指标集命名正确" : @"验证失败");
+    }@catch (NSException *exception) {
+        ZYDebug(@"verifyProductStr %@",exception);
+    }
+    return result;
+}
 @end

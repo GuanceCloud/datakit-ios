@@ -64,6 +64,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
     if (configOptions.enableScreenFlow) {
         NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
+        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"$flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写");
     }
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
@@ -385,11 +386,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
         }
-        if (![self verifyProductStr:product]) {
+        NSString *productStr = [NSString stringWithFormat:@"$flow_%@",product];
+        if (![FTBaseInfoHander verifyProductStr:productStr]) {
             return;
         }
         NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$flow_%@",product],
+        NSMutableDictionary *opdata = [@{@"product":productStr,
                                          @"$traceId":traceId,
                                          @"$name":name,
         } mutableCopy];
@@ -441,20 +443,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
-// 验证指标集名称是否符合要求
-- (BOOL)verifyProductStr:(NSString *)product{
-    BOOL result= NO;
-    @try {
-        NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";//$flow_
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
-        // 字符串判断，然后BOOL值
-        result = [predicate evaluateWithObject:product];
-        ZYDebug(@"result : %@",result ? @"指标集命名正确" : @"验证失败");
-    }@catch (NSException *exception) {
-        ZYDebug(@"verifyProductStr %@",exception);
-    }
-    return result;
-}
+
 - (NSDictionary *)getMonitorInfoTag{
     NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
