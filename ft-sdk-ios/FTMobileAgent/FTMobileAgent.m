@@ -395,7 +395,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$%@",product],
+        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$%@",productStr],
                                          @"$traceId":traceId,
                                          @"$name":name,
         } mutableCopy];
