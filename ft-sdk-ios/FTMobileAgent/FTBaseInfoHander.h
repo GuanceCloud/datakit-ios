@@ -93,9 +93,25 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取后置摄像头像素
  */
 + (NSString *)ft_getBackCameraPixel;
+/**
+ *  @abstract
+ *  清除字符串前后的空格
+ */
 + (NSString *)removeFrontBackBlank:(NSString *)str;
+/**
+ *  @abstract
+ *  tags key、value 替换特殊字符 ',' '=' ' '
+*/
 + (id)repleacingSpecialCharacters:(id )str;
+/**
+ *  @abstract
+ *  Measurement 替换特殊字符 ' ' ','
+*/
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
+/**
+ *  @abstract
+ *  校验 product 是否符合 只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
+*/
 + (BOOL)verifyProductStr:(NSString *)product;
 @end
 
