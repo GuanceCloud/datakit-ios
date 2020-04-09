@@ -139,11 +139,12 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 ```
   
 ### 5. 设置全埋点黑白名单
-   黑白名单优先级： 白名单 -> 黑名单    ，控制器 -> UI控件
-   eg:
-   1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
-   2. 控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
-   3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
+   黑白名单优先级： 白名单 -> 黑名单，控制器 -> UI控件    
+   eg:    
+   
+1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
+2.  控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
+3. 只有 UIButton 在 UI控件白名单，那么其余 UI 控件的点击事件都不抓取。
 
    - 控制器黑白名单设置     
    
@@ -262,21 +263,21 @@ typedef enum FTError : NSInteger {
 
 * **Click** 事件中包含以下属性：    
     
-      *  rpn(root_page_name)：当前页面的根部页面
-      *  cpn(current_page_name)：当前页面
-      *  vtp ：操作页面树状路径
+      +  rpn(root_page_name)：当前页面的根部页面
+      +  cpn(current_page_name)：当前页面
+      +  vtp ：操作页面树状路径
 
 ### 3. ViewScreen (页面enter、leave)
 * 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
 
 * 触发：    
-       *   当 UIViewController 的 `- viewDidAppear:` 被调用时，触发 **enter** 事件。
-       *   当 UIViewController 的 `- viewDidDisappear:` 被调用时，触发 **leave** 事件。    
+     +  当 UIViewController 的 `- viewDidAppear:` 被调用时，触发 **enter** 事件。
+     +  当 UIViewController 的 `- viewDidDisappear:` 被调用时，触发 **leave** 事件。    
 
 * **enter** 与 **leave** 事件中包含以下属性：
     
-    *  rpn(root_page_name)：当前页面的根部页面
-    *  cpn(current_page_name)：当前页面
+    +  rpn(root_page_name)：当前页面的根部页面
+    +  cpn(current_page_name)：当前页面
 
 
 ## 六、主动埋点方法
