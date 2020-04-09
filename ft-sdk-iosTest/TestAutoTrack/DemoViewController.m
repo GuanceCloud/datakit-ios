@@ -38,7 +38,7 @@
 }
 
 - (void)testBindUser{
-    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:nil];
+    [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:@{@"platform": @"ios"}];
 }
 - (void)testUserLogout{
     [[FTMobileAgent sharedInstance] logout];
