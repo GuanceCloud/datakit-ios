@@ -159,7 +159,7 @@ static FTTrackerEventDBTool *dbTool = nil;
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%ld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%lld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
           success=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"success == %d",success);
        }];
@@ -182,12 +182,12 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
 
-    return [self getDatasWithFormat:sql];
+    return [self getDatasWithFormat:sql bindUser:NO];
 
 }
 -(NSArray *)getFirstTenDataWithUser{
     NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
-    NSArray *session =[self getDatasWithFormat:sessionidSql];
+    NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
 
     return session;
    
@@ -195,32 +195,26 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(NSArray *)getFirstTenData{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME];
 
-    return [self getDatasWithFormat:sql];
+    return [self getDatasWithFormat:sql bindUser:NO];
 }
--(NSArray *)getDatasWithFormat:(NSString *)format{
- if([self isOpenDatabese:self.db]) {
-     __block  NSMutableArray *array = [NSMutableArray new];
-  [self zy_inDatabase:^{
-      //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
-      ZY_FMResultSet*set = [self.db executeQuery:format];
-      while(set.next) {
-
-      //创建对象赋值
-
-      FTRecordModel* item = [[FTRecordModel alloc]init];
-
-      item._id= [[set stringForColumn:@"_id"]intValue];
-
-      item.tm = [set longForColumn:@"tm"];
-
-      item.data= [set stringForColumn:@"data"];
-      
-      item.userdata = [set stringForColumn:@"userdata"];
-      
-      [array addObject:item];
-
-      }
-      }];
+-(NSArray *)getDatasWithFormat:(NSString *)format bindUser:(BOOL)bindUser{
+    if([self isOpenDatabese:self.db]) {
+        __block  NSMutableArray *array = [NSMutableArray new];
+        [self zy_inDatabase:^{
+            //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
+            ZY_FMResultSet*set = [self.db executeQuery:format];
+            while(set.next) {
+                //创建对象赋值
+                FTRecordModel* item = [[FTRecordModel alloc]init];
+                item._id= [[set stringForColumn:@"_id"]intValue];
+                item.tm = [set longForColumn:@"tm"];
+                item.data= [set stringForColumn:@"data"];
+                if (bindUser) {
+                    item.userdata = [set stringForColumn:@"userdata"];
+                }
+                [array addObject:item];
+            }
+        }];
         return array;
     }else{
         return nil;
