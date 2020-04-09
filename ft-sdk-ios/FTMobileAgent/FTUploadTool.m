@@ -226,7 +226,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         if ([item.allKeys containsObject:@"op"]) {
             NSString *op = [item valueForKey:@"op"];
             NSDictionary *opdata =item[@"opdata"];
-            NSMutableDictionary *tagDict = opdata[@"tags"];
+            //不直接opdata[@"tags"]是为了流程图中tag获取
+            NSMutableDictionary *tagDict = opdata.mutableCopy;
+            [tagDict removeObjectForKey:@"field"];
+            [tagDict removeObjectForKey:@"measurement"];
+            [tagDict removeObjectForKey:@"product"];
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
                     requestStr =[opdata valueForKey:@"product"];
