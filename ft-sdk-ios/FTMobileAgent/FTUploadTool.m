@@ -72,14 +72,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
     }else{
         if([self.value isKindOfClass:NSString.class]){
-        return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+            return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
         }else if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
             if (number.intValue <number.floatValue || number.intValue<number.doubleValue) {
                 return [NSString stringWithFormat:@"%@=%.2f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
             }
         }
-            return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }
 }
 @end
@@ -226,33 +226,31 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         if ([item.allKeys containsObject:@"op"]) {
             NSString *op = [item valueForKey:@"op"];
             NSDictionary *opdata =item[@"opdata"];
-            NSMutableDictionary *tagDict = opdata.mutableCopy;
-            [tagDict removeObjectForKey:@"field"];
-            [tagDict removeObjectForKey:@"measurement"];
-            [tagDict removeObjectForKey:@"product"];
-            NSString *tagsStr  = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
-
-            NSString *firstStr;
+            NSMutableDictionary *tagDict = opdata[@"tags"];
             if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
                 if ([opdata valueForKey:@"product"]) {
-                    firstStr =[opdata valueForKey:@"product"];
+                    requestStr =[opdata valueForKey:@"product"];
                 }
             }else{
                 if ([opdata valueForKey:@"measurement"]) {
-                    firstStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
+                    requestStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
                 }
-                tagsStr = [tagsStr stringByAppendingFormat:@",%@",self.basicTagStr];
+                [tagDict addEntriesFromDictionary:self.basicTags];
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
                 field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
             }
-            NSString *userStr =userData.allKeys.count>0?  FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
-            requestStr =firstStr;
+            NSString *userStr;
+            if (userData.allKeys.count>0) {
+                userStr =  FTQueryStringFromParameters(userData,FTParameterTypeUser);
+            }
+            NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
+            
             if (tagsStr.length>0) {
-            requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
+                requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
             }
             if (userStr.length>0) {
-            requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
+                requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
             }
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
             
