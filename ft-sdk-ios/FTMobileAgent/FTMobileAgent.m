@@ -64,7 +64,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
     if (configOptions.enableScreenFlow) {
         NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
-        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"$flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写");
+        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写");
     }
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
@@ -390,12 +390,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
             return;
         }
-        NSString *productStr = [NSString stringWithFormat:@"$flow_%@",product];
+        NSString *productStr = [NSString stringWithFormat:@"flow_%@",product];
         if (![FTBaseInfoHander verifyProductStr:productStr]) {
             return;
         }
         NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *opdata = [@{@"product":productStr,
+        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$%@",product],
                                          @"$traceId":traceId,
                                          @"$name":name,
         } mutableCopy];
