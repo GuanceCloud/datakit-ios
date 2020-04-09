@@ -93,6 +93,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self startFlushTimer];
         }
         if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+            self.country = @"N/A";
+            self.city = @"N/A";
+            self.province = @"N/A";
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
             self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
@@ -251,9 +254,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        if ([self getMonitorInfoTag].allKeys.count>0) {
-            [tag addEntriesFromDictionary:[self getMonitorInfoTag]];
-        }
+
         [opdata addEntriesFromDictionary:@{@"tags":tag}];
         [self insertDBWithOpdata:opdata op:@"cstm"];
         
@@ -486,15 +487,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        if (self.city && self.city.length>0 ) {
             [tag setObject:self.city forKey:@"city"];
-        }
-        if (self.province && self.province.length>0) {
             [tag setObject:self.province forKey:@"province"];
-        }
-        if (self.country && self.country.length>0) {
             [tag setObject:self.country forKey:@"country"];
-        }
     }
     return @{@"field":field,@"tag":tag};
 }
