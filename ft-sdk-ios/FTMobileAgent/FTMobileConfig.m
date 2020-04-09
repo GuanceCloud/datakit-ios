@@ -25,7 +25,6 @@
          self.akSecret = akSecret;
          self.enableRequestSigning = enableRequestSigning;
          self.sdkAgentVersion = SDK_VERSION;
-         self.appVersion = FT_APP_VERSION;
          self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
          self.enableLog = NO;
          self.autoTrackEventType = FTAutoTrackTypeNone;
@@ -50,7 +49,6 @@
 
     options.sdkAgentVersion = self.sdkAgentVersion;
     options.sdkTrackVersion = self.sdkTrackVersion;
-    options.appVersion = self.appVersion;
     
     options.appName = self.appName;
     options.enableLog = self.enableLog;

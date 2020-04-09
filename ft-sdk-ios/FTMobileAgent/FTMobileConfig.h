@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-/* 默认应用版本 */
-#define FT_APP_VERSION [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
+
 typedef enum FTError : NSInteger {
   NetWorkException = 101,        //网络问题
   InvalidParamsException = 102,  //参数问题
@@ -84,8 +83,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sdkAgentVersion;
 /* SDK版本 */
 @property (nonatomic, copy) NSString *sdkTrackVersion;
-/* 应用版本(默认:info.plist中CFBundleShortVersionString对应的值)*/
-@property (nonatomic, copy) NSString *appVersion;
 
 /*应用名称（默认：info.plist中的CFBundleDisplayName）*/
 @property (nonatomic ,copy) NSString *appName;

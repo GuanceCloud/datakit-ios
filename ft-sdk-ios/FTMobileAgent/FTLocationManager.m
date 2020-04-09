@@ -60,10 +60,11 @@
     NSString *province = placemark.administrativeArea;
     NSString *city = placemark.locality;
     NSString *country = placemark.country;
-    if (!city) {
-
+    if (!province){
+    //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，或province为空 则可知为直辖市）
+     province =placemark.locality;
+    }else if (!city) {
     //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
-
     city = placemark.administrativeArea;
 
     }else if (error == nil && [array count] == 0){
@@ -97,7 +98,6 @@
             NSLog(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
             break;
         case kCLAuthorizationStatusNotDetermined:
-            
             break;
         case kCLAuthorizationStatusRestricted:
             

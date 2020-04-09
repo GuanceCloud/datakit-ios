@@ -101,10 +101,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
                 if(error){
                     ZYDebug(@"Get Location error %@",error);
-                }
+                }else{
                 weakSelf.city = city;
                 weakSelf.province = province;
                 weakSelf.country = country;
+                }
             };
             [self.manger startUpdatingLocation];
         }

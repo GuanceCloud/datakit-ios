@@ -24,7 +24,7 @@
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
-NSString * const FT_AUTO_TRACK_OP_LAUNCH  = @"launch";
+NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
