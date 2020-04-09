@@ -99,6 +99,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.manger = [[FTLocationManager alloc]init];
             __weak typeof(self) weakSelf = self;
             self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+                if(error){
+                    ZYDebug(@"Get Location error %@",error);
+                }
                 weakSelf.city = city;
                 weakSelf.province = province;
                 weakSelf.country = country;
@@ -254,7 +257,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-
+        
         [opdata addEntriesFromDictionary:@{@"tags":tag}];
         [self insertDBWithOpdata:opdata op:@"cstm"];
         
@@ -425,18 +428,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     [field addEntriesFromDictionary:opdata[@"field"]];
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
-
-    NSDictionary *addDict = [self getMonitorInfoTag];
-    
-    if ([addDict objectForKey:@"tag"]) {
-        [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+        
+        NSDictionary *addDict = [self getMonitorInfoTag];
+        
+        if ([addDict objectForKey:@"tag"]) {
+            [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+        }
+        if ([addDict objectForKey:@"field"]) {
+            [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+        }
+        [opdata setValue:tag forKey:@"tags"];
+        [opdata setValue:field forKey:@"field"];
     }
-    if ([addDict objectForKey:@"field"]) {
-        [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
-    }
-    [opdata setValue:tag forKey:@"tags"];
-    [opdata setValue:field forKey:@"field"];
-     }
     NSDictionary *data =@{@"op":op,
                           @"opdata":opdata,
     };
@@ -487,9 +490,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:self.city forKey:@"city"];
-            [tag setObject:self.province forKey:@"province"];
-            [tag setObject:self.country forKey:@"country"];
+            [tag setValue:self.province forKey:@"province"];
+            [tag setValue:self.city forKey:@"city"];
+            [tag setValue:self.country forKey:@"country"];
     }
     return @{@"field":field,@"tag":tag};
 }
