@@ -19,11 +19,10 @@
    你可以使用下面方法进行导入：
 ### 1. 直接下载下来安装
 1. 下载 SDK 。    
-  配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 **VERSION**。  
- + **含全埋点的下载链接：**    
-https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/_VERSION_.zip     
-           
- + **无全埋点的下载链接：**    
+  配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 **VERSION**。    
+   + **含全埋点的下载链接：**    
+https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/_VERSION_.zip                
+   + **无全埋点的下载链接：**    
 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/_VERSION_.zip    
 	 
 2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。
