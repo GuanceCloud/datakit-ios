@@ -173,7 +173,7 @@
                 if (!errors){
                     NSDictionary *content= [responseObject valueForKey:@"content"];
                     NSArray *data = [content valueForKey:@"data"];
-                    NSArray *series = [[data firstObject] valueForKey:@"series"];
+                    NSArray *series = [[data firstObject] valueForKey:@"Series"];
                     if (![series isKindOfClass:[NSNull class]] && ![series isEqual:[NSNull null]]) {
                         NSArray *values = [[series firstObject] valueForKey:@"values"];
                         
