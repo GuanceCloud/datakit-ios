@@ -37,6 +37,7 @@
 @property (nonatomic, copy)  NSString *country;
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) NSDictionary *monitorTagDict;
 @end
 @implementation FTMobileAgent
 
@@ -51,8 +52,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
 }
-
-
+#pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 lunch 事件）。");
     if (configOptions.enableRequestSigning) {
@@ -171,82 +171,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self startLocationMonitor];
     }
 }
-#pragma mark ========== 网络与App的生命周期 ==========
-- (void)setupAppNetworkListeners{
-    BOOL reachabilityOk = NO;
-    if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
-        SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
-        if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
-            if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.serialQueue)) {
-                reachabilityOk = YES;
-            } else {
-                SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-            }
-        }
-    }
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
-    // 应用生命周期通知
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillTerminate:)
-                               name:UIApplicationWillTerminateNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillResignActive:)
-                               name:UIApplicationWillResignActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidBecomeActive:)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidEnterBackground:)
-                               name:UIApplicationDidEnterBackgroundNotification
-                             object:nil];
-    
-    
-}
-- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
-    if (flags & kSCNetworkReachabilityFlagsReachable) {
-        if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
-            self.net = @"0";//2G/3G/4G
-            [self uploadFlush];
-        } else {
-            self.net = @"4";//WIFI
-            [self uploadFlush];
-        }
-    } else {
-        self.net = @"-1";//未知
-    }
-    ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
-}
-
-- (void)applicationWillTerminate:(NSNotification *)notification {
-    ZYDebug(@"applicationWillTerminate ");
-    
-}
-- (void)applicationWillResignActive:(NSNotification *)notification {
-    @try {
-        self.isForeground = NO;
-    }
-    @catch (NSException *exception) {
-        ZYDebug(@"applicationWillResignActive exception %@",exception);
-    }
-    
-}
-- (void)applicationDidBecomeActive:(NSNotification *)notification {
-    @try {
-        self.isForeground = YES;
-        [self uploadFlush];
-        [self startFlushTimer];
-    }
-    @catch (NSException *exception) {
-        ZYDebug(@"applicationDidBecomeActive exception %@",exception);
-    }
-}
-- (void)applicationDidEnterBackground:(NSNotification *)notification {
-    ZYDebug(@"applicationDidEnterBackground ");
-}
+#pragma mark ========== publick method ==========
 - (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field{
     [self trackBackgroud:measurement tags:nil field:field];
 }
@@ -416,7 +341,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        NSDictionary *opdata = @{@"measurement":[NSString stringWithFormat:@"$%@",product],
+        NSDictionary *opdata = @{@"measurement":[NSString stringWithFormat:@"$%@",productStr],
                                  @"tags":tag,
                                  @"field":fieldDict,
         };
@@ -428,6 +353,30 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     
 }
+
+- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
+    NSParameterAssert(name);
+    NSParameterAssert(Id);
+    [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+}
+- (void)logout{
+    NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
+    [defatluts removeObjectForKey:FT_SESSIONID];
+    [defatluts synchronize];
+    ZYDebug(@"User logout");
+}
+- (void)resetInstance{
+    [self.netFlow stopMonitor];
+    objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_removeAssociatedObjects(self);
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    self.netFlow = nil;
+    self.upTool = nil;
+    onceToken = 0;
+    sharedInstance =nil;
+}
+#pragma mark ========== private method==========
+#pragma mark --------- 数据拼接 存储数据库 ----------
 //处理 监控项 动态获取的tag和field 的添加
 - (void)insertDBWithOpdata:(NSDictionary *)dict op:(NSString *)op{
     FTRecordModel *model = [FTRecordModel new];
@@ -459,9 +408,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
-
 - (NSDictionary *)getMonitorInfoTag{
-    NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
     // 动态数值类型 作为 field 类型
     if (self.config.enableAutoTrack) {
@@ -508,18 +456,109 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return @{@"field":field,@"tag":tag};
 }
-- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    NSParameterAssert(name);
-    NSParameterAssert(Id);
-    [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+-(NSDictionary *)monitorTagDict{
+    if (!_monitorTagDict) {
+        NSMutableDictionary *tag = [NSMutableDictionary new];
+        NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
+
+        if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
+        }
+        if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
+        }
+        if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:@"cpu_hz"];
+        }
+        if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
+        }
+        if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
+            [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
+        }
+        _monitorTagDict = tag;
+    }
+    return _monitorTagDict;
 }
-- (void)logout{
-    NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
-    [defatluts removeObjectForKey:FT_SESSIONID];
-    [defatluts synchronize];
-    ZYDebug(@"User logout");
+#pragma mark --------- 网络与App的生命周期 ---------
+- (void)setupAppNetworkListeners{
+    BOOL reachabilityOk = NO;
+    if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
+        SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
+        if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
+            if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.serialQueue)) {
+                reachabilityOk = YES;
+            } else {
+                SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+            }
+        }
+    }
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // 应用生命周期通知
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillTerminate:)
+                               name:UIApplicationWillTerminateNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActive:)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActive:)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackground:)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
+    
+    
 }
-#pragma mark ========== 实时网速 ==========
+- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
+    if (flags & kSCNetworkReachabilityFlagsReachable) {
+        if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
+            self.net = @"0";//2G/3G/4G
+            [self uploadFlush];
+        } else {
+            self.net = @"4";//WIFI
+            [self uploadFlush];
+        }
+    } else {
+        self.net = @"-1";//未知
+    }
+    ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification {
+    ZYDebug(@"applicationWillTerminate ");
+    
+}
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    @try {
+        self.isForeground = NO;
+    }
+    @catch (NSException *exception) {
+        ZYDebug(@"applicationWillResignActive exception %@",exception);
+    }
+    
+}
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    @try {
+        self.isForeground = YES;
+        [self uploadFlush];
+        [self startFlushTimer];
+    }
+    @catch (NSException *exception) {
+        ZYDebug(@"applicationDidBecomeActive exception %@",exception);
+    }
+}
+- (void)applicationDidEnterBackground:(NSNotification *)notification {
+    ZYDebug(@"applicationDidEnterBackground ");
+}
+#pragma mark --------- 实时网速 ----------
 // 启动获取实时网络定时器
 - (void)startFlushTimer {
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
@@ -527,7 +566,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self.netFlow startMonitor];
     }
 }
-
 // 关闭获取实时网络定时器
 - (void)stopFlushTimer {
     if (!_netFlow) {
@@ -535,7 +573,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     [self.netFlow stopMonitor];
 }
-#pragma mark - 上报策略
+#pragma mark --------- 上报策略 ----------
 - (void)uploadFlush{
     
     dispatch_async(self.serialQueue, ^{
@@ -544,14 +582,5 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
-- (void)resetInstance{
-    [self.netFlow stopMonitor];
-    objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    objc_removeAssociatedObjects(self);
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.netFlow = nil;
-    self.upTool = nil;
-    onceToken = 0;
-    sharedInstance =nil;
-}
+
 @end

@@ -87,7 +87,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) dispatch_queue_t timerQueue;
-@property (nonatomic, copy) NSString *basicTagStr;
 @property (nonatomic, strong) NSDictionary *basicTags;
 @end
 @implementation FTUploadTool
@@ -220,80 +219,36 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
-        NSString *requestStr;
         NSString *field = @"";
-        if ([item.allKeys containsObject:@"op"]) {
-            NSString *op = [item valueForKey:@"op"];
-            NSDictionary *opdata =item[@"opdata"];
-            NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
-            NSMutableDictionary *tagDict = opdata[@"tags"];
-            //流程图 不需要 设备信息相关的tag
-            if (!([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"])) {
-                  [tagDict addEntriesFromDictionary:self.basicTags];
-            }
-            if ([[opdata allKeys] containsObject:@"field"]) {
-                field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
-            }
-            if (userData.allKeys.count>0) {
-                NSDictionary *userDict =  FTQueryPairsFromUserDict(userData);
-                [tagDict addEntriesFromDictionary:userDict];
-            }
-            NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
-          
-            requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm*1000]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm*1000];
-            ZYDebug(@"-------%d-------",idx);
-            ZYDebug(@"%@",@{@"measurement":measurement,
-                            @"tags":tagDict,
-                            @"field":opdata[@"field"],
-                            @"time":[NSNumber numberWithLongLong:obj.tm*1000],
-                          });
-        }else{
-            //遗留的旧数据 1.0.1之前
-            requestStr = [self oldItemStrWithItem:obj];
+        NSDictionary *opdata =item[@"opdata"];
+        NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[@"tags"]];
+        
+        [tagDict addEntriesFromDictionary:self.basicTags];
+     
+        if ([[opdata allKeys] containsObject:@"field"]) {
+            field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
         }
+        if (userData.allKeys.count>0) {
+            NSDictionary *userDict =  FTQueryPairsFromUserDict(userData);
+            [tagDict addEntriesFromDictionary:userDict];
+        }
+        NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
+        
+        NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm*1000]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm*1000];
         if (idx==0) {
             [requestDatas appendString:requestStr];
         }else{
             [requestDatas appendFormat:@"\n%@",requestStr];
         }
-        
+        ZYDebug(@"-------%d-------",idx);
+        ZYDebug(@"%@",@{@"measurement":measurement,
+                        @"tags":tagDict,
+                        @"field":opdata[@"field"],
+                        @"time":[NSNumber numberWithLongLong:obj.tm*1000],
+                      });
     }];
     return requestDatas;
-}
-//1.0.0的数据
-- (NSString *)oldItemStrWithItem:(FTRecordModel *)model{
-    NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
-    NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
-    NSDictionary *opdata = item[@"opdata"];
-    NSString *firstStr;
-    __block NSString *event = @"";
-    
-    if ([opdata valueForKey:@"field"]) {
-        firstStr = [opdata valueForKey:@"field"];
-    }
-    if ([opdata valueForKey:@"product"]) {
-        firstStr =[NSString stringWithFormat:@"$flow_%@",[opdata valueForKey:@"product"]];
-        firstStr= [firstStr stringByAppendingFormat:@",$traceId=%@",[FTBaseInfoHander repleacingSpecialCharacters:[opdata valueForKey:@"traceId"]]];
-        firstStr= [firstStr stringByAppendingFormat:@",$name=%@",[FTBaseInfoHander repleacingSpecialCharacters:[opdata valueForKey:@"name"]]];
-        if ([[opdata allKeys] containsObject:@"parent"]) {
-            firstStr= [firstStr stringByAppendingFormat:@",$parent=%@",[FTBaseInfoHander repleacingSpecialCharacters:[opdata valueForKey:@"parent"]]];
-        }
-    }
-    NSString *tagsStr  = FTQueryStringFromParameters(opdata[@"tags"],FTParameterTypetTag);
-    NSString *userStr =userData.allKeys.count>0?  userStr=FTQueryStringFromParameters(userData,FTParameterTypeUser):nil;
-    
-    if ([[opdata allKeys] containsObject:@"duration"]) {
-        event = [event stringByAppendingFormat:@"$duration=%@",[opdata valueForKey:@"duration"]];
-    }
-    if ([[opdata allKeys] containsObject:@"values"]) {
-        
-        event =event.length==0? FTQueryStringFromParameters(opdata[@"values"],FTParameterTypeField):[event stringByAppendingFormat:@",%@",FTQueryStringFromParameters(opdata[@"values"],FTParameterTypeField)];
-    }
-    tagsStr = userStr.length>0?[tagsStr stringByAppendingFormat:@",%@,%@",self.basicTagStr,userStr]:[tagsStr stringByAppendingFormat:@",%@",self.basicTagStr];
-    NSString *requestStr =firstStr;
-    requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
-    requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",event,model.tm*1000];
-    return requestStr;
 }
 - (NSDictionary *)basicTags{
     if (!_basicTags) {
@@ -304,7 +259,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
-        NSMutableDictionary *tag = @{@"device_uuid":uuid,
+        NSDictionary *tag = @{@"device_uuid":uuid,
                                      @"application_identifier":identifier,
                                      @"application_name":self.config.appName,
                                      @"os":@"iOS",
@@ -316,35 +271,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                                      @"carrier":[FTBaseInfoHander ft_getTelephonyInfo],
                                      @"agent":self.config.sdkAgentVersion,
                                      
-        }.mutableCopy;
-        if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
-        }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
-        }
-        if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:@"cpu_hz"];
-        }
-        if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
-        }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
-            [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
-        }
+        };
         _basicTags = tag;
     }
     return _basicTags;
 }
-- (NSString *)basicTagStr{
-    if (!_basicTagStr) {
-        NSString *tagStr = FTQueryStringFromParameters(self.basicTags,FTParameterTypetTag);
-        _basicTagStr = tagStr;
-    }
-    return _basicTagStr;
-}
+
 NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
     for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,type)) {
@@ -376,6 +308,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
     }
     return mutableQueryStringComponents;
 }
+//循环遍历userData字典  key 添加 ud_  去除嵌套字典
 NSDictionary * FTQueryPairsFromUserDict(NSDictionary *parameters) {
     NSMutableDictionary *mutableUserDictgComponents = [NSMutableDictionary new];
     for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,FTParameterTypeUser)) {
