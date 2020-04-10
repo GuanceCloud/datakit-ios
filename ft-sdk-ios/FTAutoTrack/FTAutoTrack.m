@@ -93,7 +93,6 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     if ([vc isKindOfClass:UINavigationController.class]) {
         return;
     }
-    
     if ([self isBlackListContainsViewController:vc]) {
         return;
     }
@@ -312,6 +311,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 }
 #pragma mark ========== 写入数据库操作 ==========
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
+    //添加判断允许的全埋点类型  以防重置 config 带来的影响
     if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
         return;
     }
@@ -350,8 +350,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
             @"field":field,
             @"tags":tags
         }];
+        //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:op];
-        //        [[FTMobileAgent sharedInstance] trackBackgroud:measurement tags:tags field:value];
         
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
