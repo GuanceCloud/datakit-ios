@@ -220,7 +220,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
-        
         NSString *requestStr;
         NSString *field = @"";
         if ([item.allKeys containsObject:@"op"]) {
@@ -228,25 +227,20 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             NSDictionary *opdata =item[@"opdata"];
             NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
             NSMutableDictionary *tagDict = opdata[@"tags"];
+            //流程图 不需要 设备信息相关的tag
             if (!([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"])) {
                   [tagDict addEntriesFromDictionary:self.basicTags];
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
                 field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
             }
-            NSString *userStr;
             if (userData.allKeys.count>0) {
-                userStr =  FTQueryStringFromParameters(userData,FTParameterTypeUser);
+                NSDictionary *userDict =  FTQueryPairsFromUserDict(userData);
+                [tagDict addEntriesFromDictionary:userDict];
             }
             NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
-            requestStr = measurement;
-            if (tagsStr.length>0) {
-                requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
-            }
-            if (userStr.length>0) {
-                requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
-            }
-            requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
+          
+            requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm*1000]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm*1000];
             ZYDebug(@"-------%d-------",idx);
             ZYDebug(@"%@",@{@"measurement":measurement,
                             @"tags":tagDict,
@@ -381,5 +375,12 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         }
     }
     return mutableQueryStringComponents;
+}
+NSDictionary * FTQueryPairsFromUserDict(NSDictionary *parameters) {
+    NSMutableDictionary *mutableUserDictgComponents = [NSMutableDictionary new];
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,FTParameterTypeUser)) {
+        [mutableUserDictgComponents setValue:pair.value forKey:pair.field];
+    }
+    return mutableUserDictgComponents;
 }
 @end
