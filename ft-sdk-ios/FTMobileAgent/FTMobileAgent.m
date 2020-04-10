@@ -93,21 +93,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self startFlushTimer];
         }
         if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-            self.country = @"N/A";
-            self.city = @"N/A";
-            self.province = @"N/A";
-            self.manger = [[FTLocationManager alloc]init];
-            __weak typeof(self) weakSelf = self;
-            self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
-                if(error){
-                    ZYDebug(@"Get Location error %@",error);
-                }else{
-                weakSelf.city = city;
-                weakSelf.province = province;
-                weakSelf.country = country;
-                }
-            };
-            [self.manger startUpdatingLocation];
+            [self startLocationMonitor];
         }
         [self setupAppNetworkListeners];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
@@ -118,6 +104,25 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         
     }
     return self;
+}
+-(void)startLocationMonitor{
+    if (!_manger) {
+        self.country = @"N/A";
+        self.city = @"N/A";
+        self.province = @"N/A";
+        self.manger = [[FTLocationManager alloc]init];
+        __weak typeof(self) weakSelf = self;
+        self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+            if(error){
+                ZYDebug(@"Get Location error %@",error);
+            }else{
+                weakSelf.city = city;
+                weakSelf.province = province;
+                weakSelf.country = country;
+            }
+        };
+        [self.manger startUpdatingLocation];
+    }
 }
 -(void)startAutoTrack{
     NSString *invokeMethod = @"startWithConfig:";
@@ -161,6 +166,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self.netFlow stopMonitor];
     }else{
         [self startFlushTimer];
+    }
+    if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+        [self startLocationMonitor];
     }
 }
 #pragma mark ========== 网络与App的生命周期 ==========
@@ -420,6 +428,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     
 }
+//处理 监控项 动态获取的tag和field 的添加
 - (void)insertDBWithOpdata:(NSDictionary *)dict op:(NSString *)op{
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *opdata = [dict mutableCopy];
@@ -429,6 +438,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [tag addEntriesFromDictionary:opdata[@"tags"]];
     }
     [field addEntriesFromDictionary:opdata[@"field"]];
+    // 流程图不添加 监控项 和 设备信息
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
         
         NSDictionary *addDict = [self getMonitorInfoTag];
@@ -453,7 +463,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (NSDictionary *)getMonitorInfoTag{
     NSMutableDictionary *tag = [[NSMutableDictionary alloc]init];
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
-    
+    // 动态数值类型 作为 field 类型
     if (self.config.enableAutoTrack) {
         [tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"];
     }
