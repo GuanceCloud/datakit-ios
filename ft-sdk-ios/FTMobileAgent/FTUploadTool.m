@@ -226,20 +226,10 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         if ([item.allKeys containsObject:@"op"]) {
             NSString *op = [item valueForKey:@"op"];
             NSDictionary *opdata =item[@"opdata"];
-            //不直接opdata[@"tags"]是为了流程图中tag获取
-            NSMutableDictionary *tagDict = opdata.mutableCopy;
-            [tagDict removeObjectForKey:@"field"];
-            [tagDict removeObjectForKey:@"measurement"];
-            [tagDict removeObjectForKey:@"product"];
-            if ([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"]) {
-                if ([opdata valueForKey:@"product"]) {
-                    requestStr =[opdata valueForKey:@"product"];
-                }
-            }else{
-                if ([opdata valueForKey:@"measurement"]) {
-                    requestStr = [FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
-                }
-                [tagDict addEntriesFromDictionary:self.basicTags];
+            NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
+            NSMutableDictionary *tagDict = opdata[@"tags"];
+            if (!([op isEqualToString:@"view"] || [op isEqualToString:@"flowcstm"])) {
+                  [tagDict addEntriesFromDictionary:self.basicTags];
             }
             if ([[opdata allKeys] containsObject:@"field"]) {
                 field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
@@ -249,7 +239,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 userStr =  FTQueryStringFromParameters(userData,FTParameterTypeUser);
             }
             NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
-            
+            requestStr = measurement;
             if (tagsStr.length>0) {
                 requestStr = [requestStr stringByAppendingFormat:@",%@",tagsStr];
             }
@@ -257,7 +247,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 requestStr = [requestStr stringByAppendingFormat:@",%@",userStr];
             }
             requestStr = [requestStr stringByAppendingFormat:@" %@ %lld",field,obj.tm*1000];
-            
+            ZYDebug(@"-------%d-------",idx);
+            ZYDebug(@"%@",@{@"measurement":measurement,
+                            @"tags":tagDict,
+                            @"field":opdata[@"field"],
+                            @"time":[NSNumber numberWithLongLong:obj.tm*1000],
+                          });
         }else{
             //遗留的旧数据 1.0.1之前
             requestStr = [self oldItemStrWithItem:obj];
@@ -267,6 +262,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         }else{
             [requestDatas appendFormat:@"\n%@",requestStr];
         }
+        
     }];
     return requestDatas;
 }

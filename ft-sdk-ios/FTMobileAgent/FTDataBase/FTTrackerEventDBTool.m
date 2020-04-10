@@ -145,7 +145,7 @@ static FTTrackerEventDBTool *dbTool = nil;
         [self zy_inDatabase:^{
             NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '%@' , '%@' );",FT_DB_USERSESSION_TABLE_NAME,get_ft_sessionid,userdata];
            is=  [self.db executeUpdate:sqlStr];
-            ZYDebug(@"bind user success == %ld \n userName = %@\n Id = %@\n exts=%@",is,name,Id,exts);
+            ZYDebug(@"bind user success == %ld \n userData = %@",is,userdata);
         }];
         return is;
     }else{
@@ -161,7 +161,7 @@ static FTTrackerEventDBTool *dbTool = nil;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%lld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
           success=  [self.db executeUpdate:sqlStr];
-           ZYDebug(@"success == %d",success);
+           ZYDebug(@"data storage success == %d",success);
        }];
    }
     if (self.lastSentDate) {

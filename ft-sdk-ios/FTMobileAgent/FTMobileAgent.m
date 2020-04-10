@@ -396,22 +396,23 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *opdata = [@{@"product":[NSString stringWithFormat:@"$%@",product],
-                                         @"$traceId":traceId,
-                                         @"$name":name,
-        } mutableCopy];
+        NSMutableDictionary *tag =@{@"$traceId":traceId,
+                                    @"$name":name,
+        }.mutableCopy;
         if (parent.length>0) {
-            [opdata setObject:parent forKey:@"$parent"];
+            [tag setObject:parent forKey:@"$parent"];
         }
         if (field.allKeys.count>0) {
             [fieldDict addEntriesFromDictionary:field];
         }
-        [opdata addEntriesFromDictionary:@{@"field":fieldDict}];
-        NSMutableDictionary *tag = [NSMutableDictionary new];
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        [opdata addEntriesFromDictionary:@{@"tags":tag}];
+        NSDictionary *opdata = @{@"measurement":[NSString stringWithFormat:@"$%@",product],
+                                 @"tags":tag,
+                                 @"field":fieldDict,
+        };
+
         [self insertDBWithOpdata:opdata op:@"flowcstm"];
         
     } @catch (NSException *exception) {
@@ -444,7 +445,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *data =@{@"op":op,
                           @"opdata":opdata,
     };
-    ZYDebug(@"data == %@",data);
+    ZYDebug(@"insert DB data == %@",data);
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }

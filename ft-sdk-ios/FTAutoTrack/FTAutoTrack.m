@@ -109,15 +109,15 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     }
     self.preFlowTime = tm;
     NSString *product = [NSString stringWithFormat:@"$flow_mobile_activity_%@",self.config.product];
-    
-    NSMutableDictionary *opdata = [@{@"product":product,
-                                     @"$traceId":self.flowId,
-                                     @"$name":NSStringFromClass(vc.class),
-                                     @"field":@{@"$duration":[NSNumber numberWithLongLong:duration]},
-    } mutableCopy];
+    NSMutableDictionary *tags = @{@"$traceId":self.flowId,
+                                  @"$name":NSStringFromClass(vc.class)}.mutableCopy;
     if (parent.length>0) {
-        [opdata setObject:parent forKey:@"$parent"];
+        [tags setObject:parent forKey:@"$parent"];
     }
+    NSDictionary *opdata = @{@"measurement":product,
+                                  @"tags":tags,
+                                  @"field":@{@"$duration":[NSNumber numberWithLongLong:duration]},
+       };
     [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
     
 }
