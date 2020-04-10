@@ -13,7 +13,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIView (FT_CurrentController)
+/**
+ *  获取当前控制器
+*/
 -(UIViewController *)ft_getCurrentViewController;
+/**
+ *  获取当前控件的视图树
+*/
 -(NSString *)ft_getParentsView;
 @end
 

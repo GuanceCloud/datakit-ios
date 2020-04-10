@@ -39,16 +39,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self) {
         return nil;
     }
-    
     self.field = field;
     self.value = value;
-    //旧数据处理 1.0.1-alpha9之前
-    if ([field isEqualToString:@"cpn"]) {
-        self.value = @"current_page_name";
-    }
-    if ([field isEqualToString:@"rpn"]) {
-        self.value = @"root_page_name";
-    }
     return self;
 }
 - (instancetype)initWithUserField:(id)field value:(id)value{

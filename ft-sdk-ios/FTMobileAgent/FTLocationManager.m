@@ -82,6 +82,7 @@
         self.isUpdatingLocation = NO;
     }
     }];
+    //暂时设置为APP一个生命周期内只需要获取一次
     [manager stopUpdatingLocation];
 }
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status

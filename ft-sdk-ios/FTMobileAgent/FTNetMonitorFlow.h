@@ -12,12 +12,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetMonitorFlow : NSObject
 @property (nonatomic, assign) long long flow;
-//开始检测
-
+/**
+ * 开始监控
+*/
 - (void)startMonitor;
 
-//停止检测
-
+/**
+ * 停止监控
+*/
 - (void)stopMonitor;
 @end
 

@@ -27,6 +27,7 @@ NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
 NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
 
 @implementation FTBaseInfoHander : NSObject
+#pragma mark ========== 设备信息 ==========
 + (NSDictionary *)ft_getDeviceInfo{
     struct utsname systemInfo;
     uname(&systemInfo);
@@ -545,6 +546,38 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     CGFloat scale = [[UIScreen mainScreen] scale];
     return [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
 }
++ (NSString *)ft_getFrontCameraPixel{
+    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionFront];
+    NSArray* availFormat=captureDevice.formats;
+    AVCaptureDeviceFormat *format = [availFormat lastObject];
+    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
+    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
+}
++ (NSString *)ft_getBackCameraPixel{
+    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionBack];
+    NSArray* availFormat=captureDevice.formats;
+    AVCaptureDeviceFormat *format = [availFormat lastObject];
+    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
+    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
+}
+
++ (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition) position
+{
+    NSArray *devices;
+    if (@available(iOS 10.0, *)) {
+        AVCaptureDeviceDiscoverySession *devicesIOS10 = [AVCaptureDeviceDiscoverySession  discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
+        devices  = devicesIOS10.devices;
+    } else {
+        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];    }
+    
+    for (AVCaptureDevice *device in devices) {
+        if ([device position] == position) {
+            return device;
+        }
+    }
+    return nil;
+}
+#pragma mark ========== 字符串转字典 字典转字符串 ==========
 +(NSString *)ft_convertToJsonData:(NSDictionary *)dict
 {
     NSError *error;
@@ -556,24 +589,50 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
         jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
     NSMutableString *mutStr = [NSMutableString stringWithString:jsonString];
-    
-//    NSRange range = {0,jsonString.length};
-    
-    //去掉字符串中的空格
-//    [mutStr replaceOccurrencesOfString:@" " withString:@"" options:NSLiteralSearch range:range];
-//    NSRange range2 = {0,mutStr.length};
-//    //去掉字符串中的换行符
-//    [mutStr replaceOccurrencesOfString:@"\n" withString:@"" options:NSLiteralSearch range:range2];
-    
     return mutStr;
     
 }
++ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString
+{
+    if (jsonString == nil) {
+        return nil;
+    }
+    
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    if(err)
+    {
+        ZYDebug(@"json解析失败：%@",err);
+        return nil;
+    }
+    return dic;
+}
+#pragma mark ========== 时间相关 ==========
 + (long long)ft_getCurrentTimestamp{
     NSDate *datenow = [NSDate date];
     long time= (long)([datenow timeIntervalSince1970]*1000*1000);
     return  time;
 }
-
++ (NSString *)ft_currentGMT {
+    
+    NSDate *date = [NSDate date];
+    
+    NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
+    
+    [NSTimeZone setDefaultTimeZone:tzGMT];
+    
+    NSDateFormatter *iosDateFormater=[[NSDateFormatter alloc]init];
+    
+    iosDateFormater.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
+    
+    iosDateFormater.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
+    
+    return [iosDateFormater stringFromDate:date];
+}
+#pragma mark ========== 请求加密 ==========
 + (NSString *)ft_md5EncryptStr:(NSString *)str {
     const char *input = [str UTF8String];//UTF8转码
     unsigned char result[CC_MD5_DIGEST_LENGTH];
@@ -601,41 +660,6 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
 }
-+ (NSString *)ft_currentGMT {
-    
-    NSDate *date = [NSDate date];
-    
-    NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
-    
-    [NSTimeZone setDefaultTimeZone:tzGMT];
-    
-    NSDateFormatter *iosDateFormater=[[NSDateFormatter alloc]init];
-    
-    iosDateFormater.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
-    
-    iosDateFormater.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
-    
-    return [iosDateFormater stringFromDate:date];
-}
-+ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString
-{
-    if (jsonString == nil) {
-        return nil;
-    }
-    
-    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *err;
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
-                                                        options:NSJSONReadingMutableContainers
-                                                          error:&err];
-    if(err)
-    {
-        ZYDebug(@"json解析失败：%@",err);
-        return nil;
-    }
-    return dic;
-}
-// UUID
 
 #pragma mark ========== cpu ==========
 + (long )ft_cpuUsage{
@@ -779,37 +803,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
     
 }
-+ (NSString *)ft_getFrontCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionFront];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-+ (NSString *)ft_getBackCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionBack];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-
-+ (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition) position
-{
-    NSArray *devices;
-    if (@available(iOS 10.0, *)) {
-        AVCaptureDeviceDiscoverySession *devicesIOS10 = [AVCaptureDeviceDiscoverySession  discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
-        devices  = devicesIOS10.devices;
-    } else {
-        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];    }
-    
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == position) {
-            return device;
-        }
-    }
-    return nil;
-}
+#pragma mark ========== 字符串处理  前后空格移除、特殊字符转换、校验合法 ==========
 +(NSString *)removeFrontBackBlank:(NSString *)str{
     NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
     NSString *string = [str stringByTrimmingCharactersInSet:set];
