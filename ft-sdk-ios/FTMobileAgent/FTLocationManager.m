@@ -14,6 +14,16 @@
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @end
+@implementation FTLocationInfo
+-(instancetype)init{
+    if(self = [super init]){
+        self.city = @"N/A";
+        self.country = @"N/A";
+        self.province = @"N/A";
+    }
+    return self;
+}
+@end
 @implementation FTLocationManager
 static FTLocationManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -28,9 +38,7 @@ static dispatch_once_t onceToken;
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        self.country = @"N/A";
-        self.city = @"N/A";
-        self.province = @"N/A";
+        self.location = [[FTLocationInfo alloc]init];
     }
     return self;
 }
@@ -55,7 +63,8 @@ static dispatch_once_t onceToken;
 -(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations{
     CLLocation *currentLocation = [locations lastObject];
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
-
+    CLLocationCoordinate2D coordinate = currentLocation.coordinate;
+    self.location.coordinate =coordinate;
     [geocoder reverseGeocodeLocation:currentLocation completionHandler:^(NSArray *array, NSError *error){
 
     if (array.count > 0){
@@ -65,7 +74,7 @@ static dispatch_once_t onceToken;
     //将获得的所有信息显示到label上
 
     ZYDebug(@"%@",placemark.name);
-
+    
     //获取城市
     NSString *province = placemark.administrativeArea;
     NSString *city = placemark.locality;
@@ -87,14 +96,14 @@ static dispatch_once_t onceToken;
     ZYDebug(@"An error occurred = %@", error);
 
     }else{
-        self.country = country;
-        self.city = city;
-        self.province = province;
+        self.location.country = country;
+        self.location.city = city;
+        self.location.province = province;
         //暂时设置为APP一个生命周期内只需要获取一次
         [manager stopUpdatingLocation];
     }
         if (self.isUpdatingLocation&&self.updateLocationBlock) {
-            self.updateLocationBlock(country,province,city, error);
+            self.updateLocationBlock(self.location, error);
         }
         self.isUpdatingLocation = NO;
     }
@@ -113,7 +122,7 @@ static dispatch_once_t onceToken;
                                                  code:104
                                              userInfo:userInfo];
             if (self.updateLocationBlock) {
-                self.updateLocationBlock(self.country,self.province,self.city, error);
+                self.updateLocationBlock(self.location, error);
             }
         }
             break;

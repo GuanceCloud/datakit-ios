@@ -50,7 +50,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 + (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
     [[FTLocationManager sharedInstance] startUpdatingLocation];
-    [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+    [FTLocationManager sharedInstance].updateLocationBlock = ^(FTLocationInfo * _Nonnull locInfo, NSError * _Nullable error) {
         if (error) {
             NSString *message =[FTBaseInfoHander ft_convertToJsonData:error.userInfo];
             if(error.code == 104){
@@ -116,7 +116,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return self;
 }
 -(void)startLocationMonitor{
-    if ([[FTLocationManager sharedInstance].country isEqualToString:@"N/A"]) {
+    if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
         [[FTLocationManager sharedInstance] startUpdatingLocation];
     }
 }
@@ -448,9 +448,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag setValue:[FTLocationManager sharedInstance].province forKey:@"province"];
-        [tag setValue:[FTLocationManager sharedInstance].city forKey:@"city"];
-        [tag setValue:[FTLocationManager sharedInstance].country forKey:@"country"];
+        [tag setValue:[FTLocationManager sharedInstance].location.province forKey:@"province"];
+        [tag setValue:[FTLocationManager sharedInstance].location.city forKey:@"city"];
+        [tag setValue:[FTLocationManager sharedInstance].location.country forKey:@"country"];
     }
     return @{@"field":field,@"tag":tag};
 }
