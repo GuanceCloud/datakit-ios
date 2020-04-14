@@ -49,10 +49,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 + (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
+   
+    if ([[FTLocationManager sharedInstance].country isEqualToString:@"N/A"]) {
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
         if (error) {
-            NSString *message =[FTBaseInfoHander ft_convertToJsonData:error.userInfo];
+            NSString *message =error.domain;
             if(error.code == 104){
                 message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
             }
@@ -61,6 +63,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBack?callBack(0,nil):nil;
         }
     };
+    }else{
+        callBack?callBack(0,nil):nil;
+    }
 }
 #pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
@@ -244,7 +249,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }else{
             dispatch_async(self.immediateLabel, ^{
                 [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                    });
                 }];
             });
         }
@@ -298,7 +305,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }else{
             dispatch_async(self.immediateLabel, ^{
                 [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                    callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+                    });
                 }];
             });
         }
