@@ -36,9 +36,6 @@
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     if (akId && akSecret && url) {
-        [FTMobileAgent  startLocation:^(NSInteger errorCode, id  _Nullable errorMessage) {
-            NSLog(@"errorCode = %ld,errorMessage = %@",(long)errorCode,errorMessage);
-        }];
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
         config.enableLog = YES;
         config.enableAutoTrack = YES;

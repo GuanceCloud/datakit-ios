@@ -24,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation"];
     [self createUI];
 }
 -(void)createUI{
@@ -36,7 +36,15 @@
     
     [_mtableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
 }
-
+- (void)testStartLocation{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [FTMobileAgent startLocation:^(NSInteger errorCode, NSString * _Nullable errorMessage) {
+        
+            [self showResult:[NSString stringWithFormat:@"errorCode = %ld,errorMessage=%@",(long)errorCode,errorMessage]];
+        }];
+    });
+    
+}
 - (void)testBindUser{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"test8" Id:@"1111111" exts:@{@"platform": @"ios"}];
 }
@@ -158,6 +166,8 @@
         case 9:
             [self testResetConfig];
             break;
+        case 10:
+            [self testStartLocation];
         default:
             break;
     }
