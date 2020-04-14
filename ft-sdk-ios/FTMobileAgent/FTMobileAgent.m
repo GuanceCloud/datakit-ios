@@ -52,7 +52,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
         if (error) {
-            callBack?callBack(UnknownException,[FTBaseInfoHander ft_convertToJsonData:error.userInfo]):nil;
+            NSString *errorMessage =[FTBaseInfoHander ft_convertToJsonData:error.userInfo];
+            if(error.code == 104){
+                errorMessage = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
+            }
+            callBack?callBack(UnknownException,errorMessage):nil;
         }else{
             callBack?callBack(0,nil):nil;
         }
