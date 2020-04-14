@@ -13,14 +13,24 @@
 #import "ZYLog.h"
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;
-@property (nonatomic, assign) BOOL isUpdatingLocation;
 @end
 @implementation FTLocationManager
+static FTLocationManager *sharedInstance = nil;
+static dispatch_once_t onceToken;
++ (instancetype)sharedInstance {
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
+}
 - (instancetype)init {
     if (self = [super init]) {
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        self.country = @"N/A";
+        self.city = @"N/A";
+        self.province = @"N/A";
     }
     return self;
 }
@@ -71,10 +81,17 @@
 
     ZYDebug(@"No results were returned.");
 
-    }else if (error != nil){
+    }
+    if (error != nil){
     
     ZYDebug(@"An error occurred = %@", error);
 
+    }else{
+        self.country = country;
+        self.city = city;
+        self.province = province;
+        //暂时设置为APP一个生命周期内只需要获取一次
+        [manager stopUpdatingLocation];
     }
         if (self.isUpdatingLocation&&self.updateLocationBlock) {
             self.updateLocationBlock(country,province,city, error);
@@ -82,8 +99,7 @@
         self.isUpdatingLocation = NO;
     }
     }];
-    //暂时设置为APP一个生命周期内只需要获取一次
-    [manager stopUpdatingLocation];
+    
 }
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
 {
