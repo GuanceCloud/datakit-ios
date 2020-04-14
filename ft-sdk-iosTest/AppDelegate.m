@@ -36,20 +36,23 @@
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     if (akId && akSecret && url) {
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
-    config.enableLog = YES;
-    config.enableAutoTrack = YES;
-    config.needBindUser = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-    config.monitorInfoType = FTMonitorInfoTypeAll;
-    [config enableTrackScreenFlow:YES];
-    [config setTrackViewFlowProduct:@"iOSDemo"];
-    self.config = config;
-     long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
-    [UITestManger sharedManger];
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] logout];
+        [FTMobileAgent  startLocationMonitorCallBack:^(NSInteger errorCode, id  _Nullable errorMessage) {
+            NSLog(@"errorCode = %ld,errorMessage = %@",(long)errorCode,errorMessage);
+        }];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
+        config.enableLog = YES;
+        config.enableAutoTrack = YES;
+        config.needBindUser = YES;
+        config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
+        config.monitorInfoType = FTMonitorInfoTypeAll;
+        [config enableTrackScreenFlow:NO];
+        [config setTrackViewFlowProduct:@"iOSDemo"];
+        self.config = config;
+        long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+        [UITestManger sharedManger];
+        [FTMobileAgent startWithConfigOptions:config];
+        [[FTMobileAgent sharedInstance] logout];
     }
     return YES;
 }
