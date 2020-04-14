@@ -761,7 +761,10 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     return deviceLevel*100;
     }
 }
-
+//电池是否在充电
++ (BOOL)ft_batteryIsCharing{
+    return [UIDevice currentDevice].batteryState == UIDeviceBatteryStateCharging;
+}
 #pragma mark ========== 内存 ==========
 //当前设备可用内存
 + (double)ft_availableMemory
