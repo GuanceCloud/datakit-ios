@@ -48,15 +48,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
 }
-+ (void)startLocation:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack{
++ (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
         if (error) {
-            NSString *errorMessage =[FTBaseInfoHander ft_convertToJsonData:error.userInfo];
+            NSString *message =[FTBaseInfoHander ft_convertToJsonData:error.userInfo];
             if(error.code == 104){
-                errorMessage = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
+                message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
             }
-            callBack?callBack(UnknownException,errorMessage):nil;
+            callBack?callBack(UnknownException,message):nil;
         }else{
             callBack?callBack(0,nil):nil;
         }

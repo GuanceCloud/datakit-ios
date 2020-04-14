@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 仅用于启动位置信息状态获取
 */
-+ (void)startLocation:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack;
++ (void)startLocation:(nullable void (^)(NSInteger errorCode, NSString * _Nullable errorMessage))callBack;
 /**
  * @abstract
  * 返回之前所初始化好的单例
