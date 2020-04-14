@@ -10,6 +10,7 @@
 @class FTMobileConfig;
 @class FTRecordModel;
 NS_ASSUME_NONNULL_BEGIN
+typedef void(^FTURLTaskCompletionHandler)(NSInteger  statusCode, NSData * _Nullable response);
 
 @interface FTUploadTool : NSObject
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -21,11 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *立即上传 单条数据
 */
--(void)trackImmediate:(FTRecordModel *)model callBack:(void (^)(NSInteger statusCode, NSData *response))callBack;
+-(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack;
 /**
  *立即上传 多条数据
 */
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(void (^)(NSInteger statusCode, NSData *response))callBack;
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack;
 
 @end
 

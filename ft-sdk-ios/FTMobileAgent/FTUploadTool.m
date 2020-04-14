@@ -22,7 +22,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeField     = 2 ,
     FTParameterTypeUser      = 3 ,
 };
-#pragma mark -
+
+#pragma mark ========== 参数处理 ==========
 
 @interface FTQueryStringPair : NSObject
 @property (readwrite, nonatomic, strong) id field;
@@ -149,19 +150,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
-    [self apiRequestWithEventsAry:@[model] callBack:^(NSInteger statusCode, id responseObject) {
-        callBack?callBack(statusCode,responseObject):nil;
-    }];
-    
+-(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
+    [self apiRequestWithEventsAry:@[model] callBack:callBack];
 }
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(nonnull void (^)(NSInteger, NSData * _Nullable))callBack{
-    [self apiRequestWithEventsAry:modelList callBack:^(NSInteger statusCode, id responseObject) {
-        callBack?callBack(statusCode,responseObject):nil;
-    }];
+-(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
+    [self apiRequestWithEventsAry:modelList callBack:callBack];
 }
 
-- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(nonnull void (^)(NSInteger statusCode, NSData * _Nullable response))callBack {
+- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
     NSString *requestData = [self getRequestDataWithEventArray:events];
     
     NSString *date =[FTBaseInfoHander ft_currentGMT];
