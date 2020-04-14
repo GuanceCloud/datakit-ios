@@ -55,49 +55,52 @@ static dispatch_once_t onceToken;
 -(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations{
     CLLocation *currentLocation = [locations lastObject];
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
-
-    [geocoder reverseGeocodeLocation:currentLocation completionHandler:^(NSArray *array, NSError *error){
-
-    if (array.count > 0){
-
-    CLPlacemark *placemark = [array objectAtIndex:0];
-
-    //将获得的所有信息显示到label上
-
-    ZYDebug(@"%@",placemark.name);
-
-    //获取城市
-    NSString *province = placemark.administrativeArea;
-    NSString *city = placemark.locality;
-    NSString *country = placemark.country;
-    if (!province){
-    //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，或province为空 则可知为直辖市）
-     province =placemark.locality;
-    }else if (!city) {
-    //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
-    city = placemark.administrativeArea;
-
-    }else if (error == nil && [array count] == 0){
-
-    ZYDebug(@"No results were returned.");
-
-    }
-    if (error != nil){
     
-    ZYDebug(@"An error occurred = %@", error);
-
-    }else{
-        self.country = country;
-        self.city = city;
-        self.province = province;
-        //暂时设置为APP一个生命周期内只需要获取一次
-        [manager stopUpdatingLocation];
-    }
-        if (self.isUpdatingLocation&&self.updateLocationBlock) {
-            self.updateLocationBlock(country,province,city, error);
+    [geocoder reverseGeocodeLocation:currentLocation completionHandler:^(NSArray *array, NSError *error){
+        if (error) {
+            self.isUpdatingLocation = NO;
+            if (self.updateLocationBlock) {
+                self.updateLocationBlock(self.country,self.province,self.city, error);
+            }
+            return;
         }
-        self.isUpdatingLocation = NO;
-    }
+        if (array.count > 0){
+            CLPlacemark *placemark = [array objectAtIndex:0];
+            //将获得的所有信息显示到label上
+            ZYDebug(@"%@",placemark.name);
+            //获取城市
+            NSString *province = placemark.administrativeArea;
+            NSString *city = placemark.locality;
+            NSString *country = placemark.country;
+            if (!province){
+                //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，或province为空 则可知为直辖市）
+                province =placemark.locality;
+            }else if (!city) {
+                //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
+                city = placemark.administrativeArea;
+            }
+            self.country = country;
+            self.city = city;
+            self.province = province;
+            //暂时设置为APP一个生命周期内只需要获取一次
+            [manager stopUpdatingLocation];
+            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+                self.updateLocationBlock(country,province,city, error);
+            }
+            self.isUpdatingLocation = NO;
+        }else if (error == nil && [array count] == 0){
+            NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"No results were returned."};
+            NSError *error = [NSError errorWithDomain:domain
+                                                 code:104
+                                             userInfo:userInfo];
+            ZYDebug(@"No results were returned.");
+            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+                self.updateLocationBlock(self.country,self.province,self.city, error);
+            }
+            self.isUpdatingLocation = NO;
+        }
+
     }];
     
 }
