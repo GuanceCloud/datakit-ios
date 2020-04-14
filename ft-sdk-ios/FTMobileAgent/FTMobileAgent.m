@@ -31,10 +31,6 @@
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
-@property (nonatomic, strong) FTLocationManager *manger;
-@property (nonatomic, copy)  NSString *province;
-@property (nonatomic, copy)  NSString *city;
-@property (nonatomic, copy)  NSString *country;
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
@@ -51,6 +47,16 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [zy reachabilityChanged:flags];
         }
     }
+}
++ (void)startLocationMonitorCallBack:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack{
+    [[FTLocationManager sharedInstance] startUpdatingLocation];
+    [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
+        if (error) {
+            callBack?callBack(UnknownException,[FTBaseInfoHander ft_convertToJsonData:error.userInfo]):nil;
+        }else{
+            callBack?callBack(0,nil):nil;
+        }
+    };
 }
 #pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
@@ -106,22 +112,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return self;
 }
 -(void)startLocationMonitor{
-    if (!_manger) {
-        self.country = @"N/A";
-        self.city = @"N/A";
-        self.province = @"N/A";
-        self.manger = [[FTLocationManager alloc]init];
-        __weak typeof(self) weakSelf = self;
-        self.manger.updateLocationBlock = ^(NSString * _Nonnull country,NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
-            if(error){
-                ZYDebug(@"Get Location error %@",error);
-            }else{
-                weakSelf.city = city;
-                weakSelf.province = province;
-                weakSelf.country = country;
-            }
-        };
-        [self.manger startUpdatingLocation];
+    if ([[FTLocationManager sharedInstance].country isEqualToString:@"N/A"]) {
+        [[FTLocationManager sharedInstance] startUpdatingLocation];
     }
 }
 -(void)startAutoTrack{
@@ -154,6 +146,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)resetConfig:(FTMobileConfig *)config{
+    config.sdkTrackVersion = self.config.sdkTrackVersion;
     id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
     self.config = config;
     if (!autotrack) {
@@ -367,6 +360,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)resetInstance{
     [self.netFlow stopMonitor];
+    self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -450,9 +444,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setValue:self.province forKey:@"province"];
-            [tag setValue:self.city forKey:@"city"];
-            [tag setValue:self.country forKey:@"country"];
+        [tag setValue:[FTLocationManager sharedInstance].province forKey:@"province"];
+        [tag setValue:[FTLocationManager sharedInstance].city forKey:@"city"];
+        [tag setValue:[FTLocationManager sharedInstance].country forKey:@"country"];
     }
     return @{@"field":field,@"tag":tag};
 }

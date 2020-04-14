@@ -13,6 +13,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
+#pragma mark ========== init instance ==========
+/**
+ * 仅用于启动位置信息获取
+*/
++ (void)startLocationMonitorCallBack:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack;
 /**
  * @abstract
  * 返回之前所初始化好的单例
@@ -29,74 +34,69 @@ NS_ASSUME_NONNULL_BEGIN
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 /**
- * SDK 重新配置config方法
- * @param config           配置参数
-*/
-- (void)resetConfig:(FTMobileConfig *)config;
-/**
- 主动埋点，追踪自定义事件。 存储数据库，等待上传
- @param measurement      当前数据点所属的指标集
- @param field     自定义指标
+ * 主动埋点，追踪自定义事件。 存储数据库，等待上传
+ * @param measurement      当前数据点所属的指标集
+ * @param field     自定义指标
 */
 - (void)trackBackgroud:(NSString *)measurement  field:(NSDictionary *)field;
 /**
- 主动埋点，追踪自定义事件。有tags  存储数据库，等待上传
- @param measurement      当前数据点所属的指标集
- @param tags       自定义标签
- @param field     自定义指标
+ * 主动埋点，追踪自定义事件。有tags  存储数据库，等待上传
+ * @param measurement      当前数据点所属的指标集
+ * @param tags       自定义标签
+ * @param field     自定义指标
  */
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 /**
- 主动埋点，追踪自定义事件。有tags  立即上传 回调上传结果
- @param measurement     当前数据点所属的指标集
- @param field           自定义指标
+ * 主动埋点，追踪自定义事件。有tags  立即上传 回调上传结果
+ * @param measurement     当前数据点所属的指标集
+ * @param field           自定义指标
 */
 - (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(nullable void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 /**
-主动埋点，追踪自定义事件。   立即上传 回调上传结果
-@param measurement      当前数据点所属的指标集
-@param tags             自定义标签
-@param field            自定义指标
+ * 主动埋点，追踪自定义事件。   立即上传 回调上传结果
+ * @param measurement      当前数据点所属的指标集
+ * @param tags             自定义标签
+ * @param field            自定义指标
 */
 - (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(nullable void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 /**
-主动埋点，可多条上传。   立即上传 回调上传结果
-@param trackList     主动埋点数据数组   如果FTTrackBean 中timeMillis 传入格式错误，会自动赋值当前时间
+ * 主动埋点，可多条上传。   立即上传 回调上传结果
+ * @param trackList     主动埋点数据数组   如果FTTrackBean 中timeMillis 传入格式错误，会自动赋值当前时间
 */
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 /**
- 上报流程图 有tags
- @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- @param traceId   标示一个流程单的唯一 ID
- @param name      流程节点名称
- @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- @param tags      自定义标签
- @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
- @param field     自定义指标
+ * 上报流程图 有tags
+ * @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
+ * @param traceId   标示一个流程单的唯一 ID
+ * @param name      流程节点名称
+ * @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
+ * @param tags      自定义标签
+ * @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
+ * @param field     自定义指标
 */
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field;
 /**
- 上报流程图 无tags
- @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- @param traceId   标示一个流程单的唯一 ID
- @param name      流程节点名称
- @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
+ * 上报流程图 无tags
+ * @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
+ * @param traceId   标示一个流程单的唯一 ID
+ * @param name      流程节点名称
+ * @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
+ * @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
 */
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
 /**
- 绑定用户信息
- @param name      用户名
- @param Id        用户Id
- @param exts      用户其他信息
+ * 绑定用户信息
+ * @param name      用户名
+ * @param Id        用户Id
+ * @param exts      用户其他信息
 */
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 /**
- 注销当前用户
+ * 注销当前用户
 */
 - (void)logout;
 /**
- 清空
+ * 清空SDK
  */
 - (void)resetInstance;
 @end
