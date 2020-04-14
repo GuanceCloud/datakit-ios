@@ -106,9 +106,9 @@ static dispatch_once_t onceToken;
     switch (status)
     {
         case kCLAuthorizationStatusDenied:{                  // 拒绝授权
-            NSLog(@"授权失败：用户拒绝授权或未开启定位服务");
+            ZYDebug(@"授权失败：用户拒绝授权或未开启定位服务");
             NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
-            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"位置权限未开启"};
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"用户拒绝授权或未开启定位服务"};
             NSError *error = [NSError errorWithDomain:domain
                                                  code:104
                                              userInfo:userInfo];
@@ -118,10 +118,10 @@ static dispatch_once_t onceToken;
         }
             break;
         case kCLAuthorizationStatusAuthorizedWhenInUse:     // 在使用期间使用定位
-            NSLog(@"授权成功：用户允许应用“使用期间”使用定位服务");
+            ZYDebug(@"授权成功：用户允许应用“使用期间”使用定位服务");
             break;
         case kCLAuthorizationStatusAuthorizedAlways:
-            NSLog(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
+            ZYDebug(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
             break;
         case kCLAuthorizationStatusNotDetermined:
             break;
