@@ -48,7 +48,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
 }
-+ (void)startLocationMonitorCallBack:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack{
++ (void)startLocation:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack{
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     [FTLocationManager sharedInstance].updateLocationBlock = ^(NSString * _Nonnull country, NSString * _Nonnull province, NSString * _Nonnull city, NSError * _Nonnull error) {
         if (error) {

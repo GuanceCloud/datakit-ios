@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileAgent : NSObject
 #pragma mark ========== init instance ==========
 /**
- * 仅用于启动位置信息获取
+ * 仅用于启动位置信息状态获取
 */
-+ (void)startLocationMonitorCallBack:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack;
++ (void)startLocation:(nullable void (^)(NSInteger errorCode,_Nullable id errorMessage))callBack;
 /**
  * @abstract
  * 返回之前所初始化好的单例
