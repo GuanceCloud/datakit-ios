@@ -1,3 +1,8 @@
+# 1.0.1-alpha.21
+1.trackImmediate与trackImmediateList方法主线程回调
+2.CLLocationManagerDelegate回调逻辑处理
+---
+
 # 1.0.1-alpha.20
 1.数据存储结构优化，网络上传模块优化
 2.日志打印优化，全埋点优化
