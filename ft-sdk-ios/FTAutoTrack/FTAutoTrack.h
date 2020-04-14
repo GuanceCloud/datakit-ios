@@ -13,9 +13,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTAutoTrack : NSObject
 /**
  * 启动全埋点
- * 建议：在 设置好全埋点是否开启 全埋点类型后 不要更改全埋点设置
  */
 -(void)startWithConfig:(FTMobileConfig *)config;
+/**
+ * 移除全埋点
+*/
+-(void)remove;
 @end
 
 NS_ASSUME_NONNULL_END

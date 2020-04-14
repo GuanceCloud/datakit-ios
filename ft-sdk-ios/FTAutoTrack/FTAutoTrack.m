@@ -31,14 +31,25 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 @property (nonatomic, assign) long long preFlowTime;
 @property (nonatomic, copy)  NSString *flowId;
 @property (nonatomic, copy)  NSString *preOpenName;
+@property (nonatomic, strong) NSMutableArray *aspectTokenAry;
 @end
 @implementation FTAutoTrack
-
+-(instancetype)init{
+  self = [super init];
+  if (!self) {
+       self.preFlowTime = 0;
+       self.flowId = [[NSUUID UUID] UUIDString];
+  }
+  return self;
+}
 -(void)startWithConfig:(FTMobileConfig *)config{
-    self.config = config;
-    self.preFlowTime = 0;
-    self.flowId = [[NSUUID UUID] UUIDString];
     config.sdkTrackVersion = SDK_VERSION;
+    self.config = config;
+}
+-(void)setConfig:(FTMobileConfig *)config{
+    [self remove];
+    self.aspectTokenAry = @[].mutableCopy;
+    _config = config;
     [self setLogContent];
 }
 -(void)setLogContent{
@@ -67,24 +78,22 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
     
 }
-- (void)appWillTerminateNotification:(NSNotification *)notification{
-    
-}
+
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
     WeakSelf
-    [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+   id<ZY_AspectToken> lifeOpen = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        
         [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
         [weakSelf flowOpenTrack:vc];
     } error:nil];
-    
-    [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+   id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController *tempVC = (UIViewController *)info.instance;
         
         [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
+    [self.aspectTokenAry addObjectsFromArray:@[lifeOpen,lifeClose]];
+
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
     if (!self.config.enableScreenFlow) {
@@ -124,7 +133,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
     WeakSelf
-    [UITableView aspect_hookSelector:@selector(setDelegate:)
+   id<ZY_AspectToken> tableToken =[UITableView aspect_hookSelector:@selector(setDelegate:)
                          withOptions:ZY_AspectPositionAfter
                           usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
@@ -135,8 +144,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         
     }error:nil];
     
-    
-    [UICollectionView aspect_hookSelector:@selector(setDelegate:)
+    [self.aspectTokenAry addObject:tableToken];
+   id<ZY_AspectToken> collectionToken =[UICollectionView aspect_hookSelector:@selector(setDelegate:)
                               withOptions:ZY_AspectPositionAfter
                                usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
         if ([weakSelf isBlackListContainsViewController:target]) {
@@ -149,15 +158,15 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         } error:NULL];
         
     }error:nil];
-    
+    [self.aspectTokenAry addObject:collectionToken];
     
 }
 
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{
     WeakSelf
-    //待处理：仅可以实现
-    [UIGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
+    
+   id<ZY_AspectToken> gesToken =  [UIGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
                                  withOptions:ZY_AspectPositionAfter
                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
         if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
@@ -175,8 +184,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
             
         }
     } error:NULL];
-    
-    [UIGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+    [self.aspectTokenAry addObject:gesToken];
+   id<ZY_AspectToken> gesToken2 =[UIGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
                                  withOptions:ZY_AspectPositionAfter
                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
         if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
@@ -195,8 +204,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
             
         }
     } error:NULL];
-    
-    [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
+    [self.aspectTokenAry addObject:gesToken2];
+
+   id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
         if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
             NSString *className = NSStringFromClass([to class]);
             if ([to isKindOfClass:[UITabBar class]] ) {
@@ -213,7 +223,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
             
         }
     } error:NULL];
-    
+    [self.aspectTokenAry addObject:clickToken];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
     
@@ -309,6 +319,12 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     }];
     return isContains;
 }
+-(void)remove{
+    [self.aspectTokenAry enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        id<ZY_AspectToken> token = obj;
+        [token remove];
+    }];
+}
 #pragma mark ========== 写入数据库操作 ==========
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
     //添加判断允许的全埋点类型  以防重置 config 带来的影响
@@ -356,5 +372,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
     }
+}
+-(void)dealloc{
+    [self remove];
 }
 @end
