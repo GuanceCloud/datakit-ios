@@ -142,4 +142,9 @@ static dispatch_once_t onceToken;
             break;
     }
 }
+- (void)resetInstance{
+    self.locationManager = nil;
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end

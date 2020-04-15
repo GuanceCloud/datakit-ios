@@ -373,6 +373,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)resetInstance{
     [self.netFlow stopMonitor];
+    [[FTLocationManager sharedInstance] resetInstance];
     self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
