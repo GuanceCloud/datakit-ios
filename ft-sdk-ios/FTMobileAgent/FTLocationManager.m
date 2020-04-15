@@ -66,47 +66,50 @@ static dispatch_once_t onceToken;
     CLLocationCoordinate2D coordinate = currentLocation.coordinate;
     self.location.coordinate =coordinate;
     [geocoder reverseGeocodeLocation:currentLocation completionHandler:^(NSArray *array, NSError *error){
-
-    if (array.count > 0){
-
-    CLPlacemark *placemark = [array objectAtIndex:0];
-
-    //将获得的所有信息显示到label上
-
-    ZYDebug(@"%@",placemark.name);
-    
-    //获取城市
-    NSString *province = placemark.administrativeArea;
-    NSString *city = placemark.locality;
-    NSString *country = placemark.country;
-    if (!province){
-    //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，或province为空 则可知为直辖市）
-     province =placemark.locality;
-    }else if (!city) {
-    //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
-    city = placemark.administrativeArea;
-
-    }else if (error == nil && [array count] == 0){
-
-    ZYDebug(@"No results were returned.");
-
-    }
-    if (error != nil){
-    
-    ZYDebug(@"An error occurred = %@", error);
-
-    }else{
-        self.location.country = country;
-        self.location.city = city;
-        self.location.province = province;
-        //暂时设置为APP一个生命周期内只需要获取一次
-        [manager stopUpdatingLocation];
-    }
-        if (self.isUpdatingLocation&&self.updateLocationBlock) {
-            self.updateLocationBlock(self.location, error);
+        if (error) {
+            self.isUpdatingLocation = NO;
+            if (self.updateLocationBlock) {
+                self.updateLocationBlock(self.location, error);
+            }
+            return;
         }
-        self.isUpdatingLocation = NO;
-    }
+        if (array.count > 0){
+            CLPlacemark *placemark = [array objectAtIndex:0];
+            //将获得的所有信息显示到label上
+            ZYDebug(@"%@",placemark.name);
+            //获取城市
+            NSString *province = placemark.administrativeArea;
+            NSString *city = placemark.locality;
+            NSString *country = placemark.country;
+            if (!province){
+                //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，或province为空 则可知为直辖市）
+                province =placemark.locality;
+            }else if (!city) {
+                //四大直辖市的城市信息无法通过locality获得，只能通过获取省份的方法来获得（如果city为空，则可知为直辖市）
+                city = placemark.administrativeArea;
+            }
+            self.location.country = country;
+            self.location.city = city;
+            self.location.province = province;
+            //暂时设置为APP一个生命周期内只需要获取一次
+            [manager stopUpdatingLocation];
+            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+                self.updateLocationBlock(self.location, error);
+            }
+            self.isUpdatingLocation = NO;
+        }else if (error == nil && [array count] == 0){
+            NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"No results were returned."};
+            NSError *error = [NSError errorWithDomain:domain
+                                                 code:104
+                                             userInfo:userInfo];
+            ZYDebug(@"No results were returned.");
+            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+                self.updateLocationBlock(self.location, error);
+            }
+            self.isUpdatingLocation = NO;
+        }
+
     }];
     
 }
@@ -115,9 +118,9 @@ static dispatch_once_t onceToken;
     switch (status)
     {
         case kCLAuthorizationStatusDenied:{                  // 拒绝授权
-            NSLog(@"授权失败：用户拒绝授权或未开启定位服务");
+            ZYDebug(@"授权失败：用户拒绝授权或未开启定位服务");
             NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
-            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"位置权限未开启"};
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"用户拒绝授权或未开启定位服务"};
             NSError *error = [NSError errorWithDomain:domain
                                                  code:104
                                              userInfo:userInfo];
@@ -127,10 +130,10 @@ static dispatch_once_t onceToken;
         }
             break;
         case kCLAuthorizationStatusAuthorizedWhenInUse:     // 在使用期间使用定位
-            NSLog(@"授权成功：用户允许应用“使用期间”使用定位服务");
+            ZYDebug(@"授权成功：用户允许应用“使用期间”使用定位服务");
             break;
         case kCLAuthorizationStatusAuthorizedAlways:
-            NSLog(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
+            ZYDebug(@"授权成功：用户允许应用“始终”使用定位服务");    // 始终使用定位服务
             break;
         case kCLAuthorizationStatusNotDetermined:
             break;
