@@ -59,11 +59,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
             }
             callBack?callBack(UnknownException,message):nil;
+            ZYDebug(@"Location Error : %@",error);
         }else{
+            ZYDebug(@"Location Success");
             callBack?callBack(0,nil):nil;
         }
     };
     }else{
+        ZYDebug(@"Location Success");
         callBack?callBack(0,nil):nil;
     }
 }
