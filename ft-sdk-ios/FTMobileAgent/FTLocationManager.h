@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTLocationManager : NSObject
 @property (nonatomic, assign) BOOL isUpdatingLocation;
 @property (nonatomic, strong) FTLocationInfo *location;
-
 @property (nonatomic, copy) void(^updateLocationBlock)(FTLocationInfo *locInfo, NSError * _Nullable error);
 + (instancetype)sharedInstance;
 

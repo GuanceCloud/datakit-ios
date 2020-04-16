@@ -172,6 +172,21 @@ NS_ASSUME_NONNULL_BEGIN
 */
 @property (nonatomic, copy) NSString *product;
 
+#pragma mark ========== Monitor 相关设置==========
+/**
+ * @property
+ *
+ * @abstract
+ * 两次数据发送的最小时间间隔，单位毫秒
+ *
+ * @discussion
+ * 默认值为 10 * 1000 毫秒
+ * 上传判断条件：
+ * 1. 是否 WIFI/3G/4G 网络
+ * 2. 与上次发送的时间间隔是否大于 flushInterval
+ * 如果满足这两个条件之一，则向服务器发送一次数据；如果都不满足，则把数据加入到队列中，等待下次检查时把整个队列的内容一并发送。
+*/
+@property (nonatomic) NSInteger flushInterval;
 @end
 
 NS_ASSUME_NONNULL_END

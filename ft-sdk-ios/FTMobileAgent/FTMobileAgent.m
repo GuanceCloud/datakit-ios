@@ -21,6 +21,7 @@
 #import "FTNetworkInfo.h"
 #import "FTGPUUsage.h"
 #import "FTTrackBean.h"
+#import "FTMonitorManager.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -34,6 +35,8 @@
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
+@property (nonatomic, strong) NSTimer *timer;
+
 @end
 @implementation FTMobileAgent
 
@@ -99,6 +102,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (config) {
             self.config = config;
         }
+        FTMonitorManager *monitor = [FTMonitorManager new];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
@@ -590,5 +594,34 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
+#pragma mark ========== 监控 上传策略 ==========
+- (void)startMonitorFlushTimer {
+    if ((self.timer && [self.timer isValid])) {
+        return;
+    }
+    ZYDebug(@"starting monitor flush timer.");
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.config.flushInterval > 0) {
+            double interval = self.config.flushInterval > 100 ? (double)self.config.flushInterval / 1000.0 : 0.1f;
+            self.timer = [NSTimer scheduledTimerWithTimeInterval:interval
+                                                          target:self
+                                                        selector:@selector(flush)
+                                                        userInfo:nil
+                                                         repeats:YES];
+            [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
+        }
+    });
+}
 
+- (void)stopMonitorFlushTimer {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.timer) {
+            [self.timer invalidate];
+        }
+        self.timer = nil;
+    });
+}
+- (void)flush{
+    
+}
 @end
