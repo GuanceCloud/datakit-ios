@@ -26,7 +26,7 @@
     return self;
 }
 - (void)startMonitor{
-   NSLog(@"getDNSServers = %@",[self getDNSServers]);
+
 }
 //系统开机时间获取
 - (double)getLaunchSystemTime{
@@ -40,18 +40,6 @@
 - (NSString *)userDeviceName{
     NSString * userPhoneName = [[UIDevice currentDevice] name];
     return userPhoneName;
-}
-- (NSString *)wifiSSID {
-    
-    NSString *ssid = nil;
-//    NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
-//    for (NSString *ifnam in ifs) {
-//        NSDictionary *info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
-//        if (info[@"SSID"]) {
-//            ssid = info[@"SSID"];
-//        }
-//    }
-    return ssid;
 }
 //- (NSDictionary *)getDNSInfo {
 //    NSMutableDictionary *dnsDict = [NSMutableDictionary new];
@@ -68,21 +56,7 @@
 //    free(res);
 //    return dnsDict;
 //}
-- (NSString *)getDNSServers{
-    NSMutableString *addresses = [[NSMutableString alloc]initWithString:@"DNS Addresses \n"];
-    res_state res = malloc(sizeof(struct __res_state));
-//    int result = res_ninit(res);
-//    if ( result == 0 ){
-        for ( int i = 0; i < res->nscount; i++ ){
-            NSString *s = [NSString stringWithUTF8String : inet_ntoa(res->nsaddr_list[i].sin_addr)];
-            [addresses appendFormat:@"%@\n",s];
-        }
-//    }else{
-//        [addresses appendString:@" res_init result != 0"];
-//    }
-    return addresses;
-}
-
+#pragma mark ========== 蓝牙 ==========
 - (void)bluteeh{
     NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
     self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
@@ -120,34 +94,30 @@
     }
     
 }
-#pragma 获取设备当前连接的WIFI的SSID
-- (NSString *) getCurrentWifi
-{
-   NSString * wifiName = @"";
+#pragma mark ========== WIFI的SSID 与 IP ==========
+/**
+ * iOS 13 之后需要定位开启 才能获取到信息
+ */
+// 获取设备当前连接的WIFI的SSID
+- (NSString *) getCurrentWifi{
+    NSString * wifiName = @"";
     CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
     
     if (!wifiInterfaces) {
         wifiName = @"";
     }
-    
     NSArray *interfaces = (__bridge NSArray *)wifiInterfaces;
-    
     for (NSString *interfaceName in interfaces) {
-        
         CFDictionaryRef dictRef = CNCopyCurrentNetworkInfo((__bridge CFStringRef)(interfaceName));
         if (dictRef) {
-            
             NSDictionary *networkInfo = (__bridge NSDictionary *)dictRef;
             wifiName = [networkInfo objectForKey:(__bridge NSString *)kCNNetworkInfoKeySSID];
             CFRelease(dictRef);
         }
     }
-    
-    //CFRelease(wifiInterfaces);
     return wifiName;
-    
 }
-#pragma mark - 获取当前Wi-Fi的IP
+// - 获取当前Wi-Fi的IP
 - (NSString *)getIPAddress {
     NSString *address = @"error";
     struct ifaddrs *interfaces = NULL;
