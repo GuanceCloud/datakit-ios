@@ -177,10 +177,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 #pragma mark ========== publick method ==========
-- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field{
-    [self trackBackgroud:measurement tags:nil field:field];
+- (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
+    [self trackBackground:measurement tags:nil field:field];
 }
-- (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
+- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
     @try {
         NSParameterAssert(measurement);
         NSParameterAssert(field);
