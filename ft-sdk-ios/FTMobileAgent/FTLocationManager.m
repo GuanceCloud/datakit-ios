@@ -8,9 +8,8 @@
 
 #import "FTLocationManager.h"
 #import <CoreLocation/CoreLocation.h>
-
-
 #import "ZYLog.h"
+
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @end
@@ -52,10 +51,7 @@ static dispatch_once_t onceToken;
         if (@available(iOS 8.0, *)) {
             [self.locationManager requestWhenInUseAuthorization];
         }
-        if (_isUpdatingLocation == NO) {
             [self.locationManager startUpdatingLocation];
-            _isUpdatingLocation = YES;
-        }
     }@catch (NSException *e) {
         ZYDebug(@"%@ error: %@", self, e);
     }
@@ -67,7 +63,6 @@ static dispatch_once_t onceToken;
     self.location.coordinate =coordinate;
     [geocoder reverseGeocodeLocation:currentLocation completionHandler:^(NSArray *array, NSError *error){
         if (error) {
-            self.isUpdatingLocation = NO;
             if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
@@ -93,10 +88,9 @@ static dispatch_once_t onceToken;
             self.location.province = province;
             //暂时设置为APP一个生命周期内只需要获取一次
             [manager stopUpdatingLocation];
-            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+            if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
-            self.isUpdatingLocation = NO;
         }else if (error == nil && [array count] == 0){
             NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"No results were returned."};
@@ -104,10 +98,9 @@ static dispatch_once_t onceToken;
                                                  code:104
                                              userInfo:userInfo];
             ZYDebug(@"No results were returned.");
-            if (self.isUpdatingLocation&&self.updateLocationBlock) {
+            if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
-            self.isUpdatingLocation = NO;
         }
 
     }];
