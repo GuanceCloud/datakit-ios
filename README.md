@@ -137,49 +137,9 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
 ```
+有关全埋点详细设置：[全埋点](#五全埋点)
   
-### 5. 设置全埋点黑白名单
-   黑白名单优先级： 白名单 -> 黑名单，控制器 -> UI控件    
-   eg:    
-   
-1. 只有控制器 A 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
-2.  控制器 A 在 黑名单 ，那么控制器 A 上所有全埋点事件都不抓取。
-3. 只有 UIButton 在 UI 控件白名单，那么其余 UI 控件的点击事件都不抓取。
-
-   - 控制器黑白名单设置     
-   
-   ```objective-c
-     /**
-        *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
-        * eg: @[@"HomeViewController"];  字符串类型
-     */
-     @property (nonatomic,strong) NSArray *whiteVCList; 
-		
-     /**
-        *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
-     */
-     @property (nonatomic,strong) NSArray *blackVCList;
-   ```
-   - UI控件黑白名单设置
-    
-   ```objective-c
-     /**
-        * @abstract
-        *  抓取某一类型的 View
-        *  与 黑名单  二选一使用  若都没有则为全抓取
-        *  eg: @[UITableView.class];
-     */
-     @property (nonatomic,strong) NSArray<Class> *whiteViewClass;   
-	 
-     /**
-        * @abstract
-        *  忽略某一类型的 View
-        *  与 白名单  二选一使用  若都没有则为全抓取
-      */
-     @property (nonatomic,strong) NSArray<Class> *blackViewClass;
-   ```
-	
-### 6. 采集数据配置
+### 5. 采集数据配置
     
    配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
    
@@ -210,7 +170,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  ```    	
   **注意：[关于GPU使用率获取](#2-关于-gpu-使用率)**   
  
-### 7. 设置是否需要视图跳转流程图
+### 6. 设置是否需要视图跳转流程图
 
  前提：设置全埋点 `enableAutoTrack =  YES;`。        
  设置 `enableScreenFlow = YES;` 时 ，将自动抓取视图跳转流程图。[具体流程图相关](#八流程图)。
@@ -271,13 +231,54 @@ typedef enum FTError : NSInteger {
 * 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
 
 * 触发：    
-     +  当 UIViewController 的 `- viewDidAppear:` 被调用时，触发 **enter** 事件。
-     +  当 UIViewController 的 `- viewDidDisappear:` 被调用时，触发 **leave** 事件。    
+     +  当 `UIViewController` 的 `- viewDidAppear:` 被调用时，触发 **enter** 事件。
+     +  当 `UIViewController` 的 `- viewDidDisappear:` 被调用时，触发 **leave** 事件。    
 
 * **enter** 与 **leave** 事件中包含以下属性：
     
-    +  rpn(root_page_name)：当前页面的根部页面
-    +  cpn(current_page_name)：当前页面
+    +  `root_page_name`：当前页面的根部页面
+    +  `current_page_name`：当前页面
+    
+### 4. 设置全埋点黑白名单
+   黑白名单判断顺序： 白名单 -> 黑名单，控制器 -> UI控件    
+   eg:    
+   
+1. 只有控制器 **A** 在 白名单 ，那么其余所有控制器无论是否在黑名单，全埋点事件都不抓取。
+2. 控制器 **A** 在 黑名单 ，那么控制器 **A** 上所有全埋点事件都不抓取。
+3. 只有 `UIButton`在 UI 控件白名单，那么其余 UI 控件的点击事件都不抓取。
+4.  判断完 白名单 还会继续判断 黑名单 ，所以如果控制器 **A**  既在白名单又在黑名单，则控制器 **A** 全埋点事件都不抓取。
+
+   + 控制器黑白名单设置     
+   
+   ```objective-c
+     /**
+        *  抓取界面（实例对象数组）  白名单 
+        * eg: @[@"HomeViewController"];  字符串类型
+     */
+     @property (nonatomic,strong) NSArray *whiteVCList; 
+		
+     /**
+        *  抓取界面（实例对象数组）  黑名单  
+      */
+     @property (nonatomic,strong) NSArray *blackVCList;
+   ```
+   + UI控件黑白名单设置
+    
+   ```objective-c
+     /**
+        * @abstract
+        *  抓取某一类型的 View
+        *  eg: @[UITableView.class];
+     */
+     @property (nonatomic,strong) NSArray<Class> *whiteViewClass;   
+	 
+     /**
+        * @abstract
+        *  忽略某一类型的 View
+      */
+     @property (nonatomic,strong) NSArray<Class> *blackViewClass;
+   ```
+	
 
 
 ## 六、主动埋点方法
