@@ -137,7 +137,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
 ```
-有关全埋点详细设置：[全埋点](#五全埋点)
+全埋点详细设置：[全埋点](#五全埋点)
   
 ### 5. 采集数据配置
     
@@ -223,9 +223,9 @@ typedef enum FTError : NSInteger {
 
 * **Click** 事件中包含以下属性：    
     
-      +  rpn(root_page_name)：当前页面的根部页面
-      +  cpn(current_page_name)：当前页面
-      +  vtp ：操作页面树状路径
+      +  `root_page_name`：当前页面的根部页面
+      +  `current_page_name`：当前页面
+      +  `vtp`：操作页面树状路径
 
 ### 3. ViewScreen (页面enter、leave)
 * 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppViewScreen;`    
