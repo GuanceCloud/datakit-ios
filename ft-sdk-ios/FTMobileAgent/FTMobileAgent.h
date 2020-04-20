@@ -99,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
  * 清空SDK
  */
 - (void)resetInstance;
+
+- (void)setMonitorEnable:(BOOL)enable;
 @end
 
 NS_ASSUME_NONNULL_END

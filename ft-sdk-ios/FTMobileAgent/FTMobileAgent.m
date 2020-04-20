@@ -18,8 +18,6 @@
 #import <objc/runtime.h>
 #import "FTLocationManager.h"
 #import "FTNetMonitorFlow.h"
-#import "FTNetworkInfo.h"
-#import "FTGPUUsage.h"
 #import "FTTrackBean.h"
 #import "FTMonitorManager.h"
 @interface FTMobileAgent ()
@@ -31,12 +29,11 @@
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, strong) FTNetMonitorFlow *netFlow;
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) NSTimer *timer;
-
+@property (nonatomic, strong) FTMonitorManager *monitorManger;
 @end
 @implementation FTMobileAgent
 
@@ -52,7 +49,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 + (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
-   
     if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     [FTLocationManager sharedInstance].updateLocationBlock = ^(FTLocationInfo * _Nonnull locInfo, NSError * _Nullable error) {
@@ -102,60 +98,30 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (config) {
             self.config = config;
         }
-        FTMonitorManager *monitor = [FTMonitorManager new];
+        self.monitorManger = [[FTMonitorManager alloc]initWithConfig:self.config];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
         self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
-        if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            self.netFlow = [FTNetMonitorFlow new];
-            [self startFlushTimer];
-        }
-        if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-            [self startLocationMonitor];
-        }
         [self setupAppNetworkListeners];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
             [self startAutoTrack];
         }
         self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
-        
     }
     return self;
-}
--(void)startLocationMonitor{
-    if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
-        [[FTLocationManager sharedInstance] startUpdatingLocation];
-    }
 }
 -(void)startAutoTrack{
     NSString *invokeMethod = @"startWithConfig:";
     Class track =  NSClassFromString(@"FTAutoTrack");
     if (track) {
         id  autoTrack = [[NSClassFromString(@"FTAutoTrack") alloc]init];
-        
         SEL startMethod = NSSelectorFromString(invokeMethod);
-        unsigned int methCount = 0;
-        Method *meths = class_copyMethodList(track, &methCount);
-        BOOL ishas = NO;
-        for(int i = 0; i < methCount; i++) {
-            Method meth = meths[i];
-            SEL sel = method_getName(meth);
-            const char *name = sel_getName(sel);
-            NSString *str=[NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-            if ([str isEqualToString:invokeMethod]) {
-                ishas = YES;
-                break;
-            }
-        }
-        free(meths);
-        if (ishas) {
-            IMP imp = [autoTrack methodForSelector:startMethod];
-            void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
-            func(autoTrack,startMethod,self.config);
-            objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        }
+        IMP imp = [autoTrack methodForSelector:startMethod];
+        void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
+        func(autoTrack,startMethod,self.config);
+        objc_setAssociatedObject(self, &FTAutoTrack, autoTrack, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 }
 -(void)resetConfig:(FTMobileConfig *)config{
@@ -168,14 +134,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
     self.upTool.config = config;
-    if (!(self.config.monitorInfoType & FTMonitorInfoTypeAll) && !(self.config.monitorInfoType &FTMonitorInfoTypeNetwork)) {
-        [self.netFlow stopMonitor];
-    }else{
-        [self startFlushTimer];
-    }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        [self startLocationMonitor];
-    }
 }
 #pragma mark ========== publick method ==========
 - (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field{
@@ -227,7 +185,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        NSDictionary *addDict = [self getMonitorInfoTag];
+        NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
         if ([addDict objectForKey:@"tag"]) {
             [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
         }
@@ -275,22 +233,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (obj.tags) {
                 [tag addEntriesFromDictionary:obj.tags];
             }
-            NSDictionary *addDict = [self getMonitorInfoTag];
+            NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
             if ([addDict objectForKey:@"tag"]) {
                 [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
             }
             if ([addDict objectForKey:@"field"]) {
                 [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
             }
-            NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-                @"measurement":obj.measurement,
-                @"field":field,
-                @"tags":tag,
-            }];
-            
             NSDictionary *data =@{
                 @"op":@"cstm",
-                @"opdata":opdata,
+                @"opdata":@{@"measurement":obj.measurement,
+                            @"field":field,
+                            @"tags":tag,
+                },
             };
             model.data =[FTBaseInfoHander ft_convertToJsonData:data];
             if(obj.timeMillis && obj.timeMillis>1000000000000){
@@ -361,7 +316,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     } @catch (NSException *exception) {
         ZYDebug(@"flowTrack product traceId name exception %@",exception);
     }
-    
 }
 
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
@@ -376,13 +330,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"User logout");
 }
 - (void)resetInstance{
-    [self.netFlow stopMonitor];
+    [self stopMonitorFlushTimer];
+    self.monitorManger = nil;
     [[FTLocationManager sharedInstance] resetInstance];
     self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.netFlow = nil;
     self.upTool = nil;
     onceToken = 0;
     sharedInstance =nil;
@@ -402,7 +356,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     // 流程图不添加 监控项 和 设备信息
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
         
-        NSDictionary *addDict = [self getMonitorInfoTag];
+        NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
         
         if ([addDict objectForKey:@"tag"]) {
             [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
@@ -420,80 +374,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
-- (NSDictionary *)getMonitorInfoTag{
-    NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
-    NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
-    // 动态数值类型 作为 field 类型
-    if (self.config.enableAutoTrack) {
-        [tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"];
-    }
-    if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithLong:[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_usedMemory]] forKey:@"memory_use"];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        __block NSNumber *network_strength;
-        __block NSString *network_type;
-        if ([NSThread isMainThread]) { // do something in main thread } else { // do something in other
-            network_type =[FTNetworkInfo getNetworkType];
-            network_strength =[NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
-        }else{
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                network_type =[FTNetworkInfo getNetworkType];
-                network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
-            });
-        }
-        [tag setObject:network_type forKey:@"network_type"];
-        [field setObject:network_strength forKey:@"network_strength"];
-        [field setObject:[NSNumber numberWithLongLong:self.netFlow.flow] forKey:@"network_speed"];
-        if ([FTNetworkInfo getProxyHost]) {
-            [tag setObject:[FTNetworkInfo getProxyHost] forKey:@"network_proxy"];
-        }else{
-            [tag setObject:@"N/A" forKey:@"network_proxy"];
-        }
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_getBatteryUse]] forKey:@"battery_use"];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-        double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
-        [field setObject:[NSNumber numberWithDouble:usage] forKey:@"gpu_rate"];
-    }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [tag setValue:[FTLocationManager sharedInstance].location.province forKey:@"province"];
-        [tag setValue:[FTLocationManager sharedInstance].location.city forKey:@"city"];
-        [tag setValue:[FTLocationManager sharedInstance].location.country forKey:@"country"];
-    }
-    return @{@"field":field,@"tag":tag};
-}
--(NSDictionary *)monitorTagDict{
-    if (!_monitorTagDict) {
-        NSMutableDictionary *tag = [NSMutableDictionary new];
-        NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
 
-        if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
-        }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
-        }
-        if (self.config.monitorInfoType &FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:@"cpu_hz"];
-        }
-        if(self.config.monitorInfoType &FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
-            [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
-        }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
-            [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
-        }
-        _monitorTagDict = tag;
-    }
-    return _monitorTagDict;
-}
 #pragma mark --------- 网络与App的生命周期 ---------
 - (void)setupAppNetworkListeners{
     BOOL reachabilityOk = NO;
@@ -527,7 +408,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
     
-    
 }
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
     if (flags & kSCNetworkReachabilityFlagsReachable) {
@@ -546,7 +426,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
     ZYDebug(@"applicationWillTerminate ");
-    
 }
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
@@ -555,13 +434,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @catch (NSException *exception) {
         ZYDebug(@"applicationWillResignActive exception %@",exception);
     }
-    
 }
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
         [self uploadFlush];
-        [self startFlushTimer];
+        [self startMonitorFlushTimer];
     }
     @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
@@ -570,21 +448,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
     ZYDebug(@"applicationDidEnterBackground ");
 }
-#pragma mark --------- 实时网速 ----------
-// 启动获取实时网络定时器
-- (void)startFlushTimer {
-    if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [self stopFlushTimer];
-        [self.netFlow startMonitor];
-    }
-}
-// 关闭获取实时网络定时器
-- (void)stopFlushTimer {
-    if (!_netFlow) {
-        return;
-    }
-    [self.netFlow stopMonitor];
-}
+
 #pragma mark --------- 上报策略 ----------
 - (void)uploadFlush{
     
@@ -622,6 +486,16 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     });
 }
 - (void)flush{
-    
+    if ([self.net isEqualToString:@"-1"]) {
+        return;
+    }
+    [self.monitorManger flush];
+}
+- (void)setMonitorEnable:(BOOL)enable{
+    if (enable) {
+        [self startMonitorFlushTimer];
+    }else{
+        [self stopMonitorFlushTimer];
+    }
 }
 @end
