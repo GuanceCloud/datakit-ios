@@ -226,9 +226,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     [self.aspectTokenAry addObject:clickToken];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
-    
-    if (self.config.whiteViewClass.count>0) {
-        return  [self isViewTypeWhite:view];
+    if (self.config.whiteViewClass.count>0 && [self isViewTypeWhite:view] == NO) {
+        return  NO;
     }
     if(self.config.blackViewClass.count>0)   return ![self isViewTypeIgnored:view];
     
@@ -252,11 +251,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 }
 - (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
     //没有设置白名单  就考虑黑名单
-    if (self.config.whiteVCList.count == 0) {
-        return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);
+    if (self.config.whiteVCList.count > 0 && [self isWhiteListContainsViewController:viewController] == NO) {
+       return NO;
     }
-    
-    return [self isWhiteListContainsViewController:viewController];
+    return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);;
 }
 - (BOOL)isWhiteListContainsViewController:(UIViewController *)viewController{
     NSSet *whitelistedClasses = [NSSet setWithArray:self.config.whiteVCList];
