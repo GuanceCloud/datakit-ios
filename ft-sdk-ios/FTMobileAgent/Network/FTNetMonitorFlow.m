@@ -11,16 +11,21 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #import "ZYLog.h"
+typedef struct {
+    long long iBytes;
+    long long oBytes;
+} FTNetFlowBytes;
 @interface FTNetMonitorFlow ()
 @property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, assign) long long  lastBytes;
+@property (nonatomic, assign) FTNetFlowBytes lastBytes;
 @property (nonatomic, strong) NSThread *thread1;
 
 @end
 @implementation FTNetMonitorFlow
 
 -(void)startMonitor{
-    self.flow = 0;
+    self.iflow = 0;
+    self.oflow = 0;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -47,20 +52,25 @@
     _timer = nil;
 }
 - (void)refreshFlow{
-    long long int rate = 0;
-    long long int currentBytes = [self getInterfaceBytes];
-    
-    if(self.lastBytes) {
+    long long int irate = 0;
+    long long int orate = 0;
+    FTNetFlowBytes currentBytes = [self getInterfaceBytes];
+    if(self.lastBytes.iBytes) {
         //用上当前的下行总流量减去上一秒的下行流量达到下行速录
-        rate = currentBytes -self.lastBytes;
+        irate  = currentBytes.iBytes -self.lastBytes.iBytes;
+        orate = currentBytes.oBytes -self.lastBytes.oBytes;
     }
     self.lastBytes = currentBytes;
-    self.flow  = rate;
+    self.iflow  = irate;
+    self.oflow = orate;
 }
-- (long long) getInterfaceBytes {
+- (FTNetFlowBytes) getInterfaceBytes {
+    FTNetFlowBytes flowByte;
+    flowByte.iBytes = 0;
+    flowByte.oBytes = 0;
     struct ifaddrs *ifa_list = 0, *ifa;
     if (getifaddrs(&ifa_list) == -1) {
-        return 0;
+        return flowByte;
     }
     uint32_t iBytes = 0;
     uint32_t oBytes = 0;
@@ -75,23 +85,45 @@
         if (strncmp(ifa->ifa_name, "lo", 2)){
             struct if_data *if_data = (struct if_data *)ifa->ifa_data;
             iBytes += if_data->ifi_ibytes;
-            
             oBytes += if_data->ifi_obytes;
         }
     }
     freeifaddrs(ifa_list);
-    return iBytes + oBytes;
+    flowByte.iBytes = iBytes;
+    flowByte.oBytes = oBytes;
+    return flowByte;
+}
+-(long long)getGprsWifiFlowIOBytes{
+    struct ifaddrs *ifa_list = 0, *ifa;
+    if (getifaddrs(&ifa_list) == -1) {
+        return 0;
+    }
+    uint64_t iBytes = 0;
+    uint64_t oBytes = 0;
+    for (ifa = ifa_list; ifa; ifa = ifa->ifa_next) {
+        if (AF_LINK != ifa->ifa_addr->sa_family)
+            continue;
+        if (!(ifa->ifa_flags & IFF_UP) && !(ifa->ifa_flags & IFF_RUNNING))
+            continue;
+        if (ifa->ifa_data == 0)
+            continue;
+        //Wifi
+        if (strncmp(ifa->ifa_name, "lo", 2)) {
+            struct if_data *if_data = (struct if_data *)ifa->ifa_data;
+            iBytes += if_data->ifi_ibytes;
+            oBytes += if_data->ifi_obytes;
+        }
+        //移动
+        if (!strcmp(ifa->ifa_name, "pdp_ip0")){
+            struct if_data *if_data = (struct if_data *)ifa->ifa_data;
+            iBytes += if_data->ifi_ibytes;
+            oBytes += if_data->ifi_obytes;
+        }
+    }
+    freeifaddrs(ifa_list);
+    uint64_t bytes = 0;
+    bytes = iBytes + oBytes;
+    return bytes;
 }
 
-- (NSString *)formatNetWork:(long long int)rate {
-    if (rate <1024) {
-        return [NSString stringWithFormat:@"%lldB/s", rate];
-    } else if (rate >=1024&& rate <1024*1024) {
-        return [NSString stringWithFormat:@"%.1fKB/s", (double)rate /1024];
-    } else if (rate >=1024*1024&& rate <1024*1024*1024) {
-        return [NSString stringWithFormat:@"%.2fMB/s", (double)rate / (1024*1024)];
-    } else {
-        return @"10Kb/s";
-    };
-}
 @end
