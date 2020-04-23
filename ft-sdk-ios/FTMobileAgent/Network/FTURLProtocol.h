@@ -10,10 +10,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol FTHTTPProtocolDelegate;
 @interface FTURLProtocol : NSURLProtocol
+
 + (void)startMonitor;
 
 + (void)stopMonitor;
-@end
++ (void)setDelegate:(id<FTHTTPProtocolDelegate>)newValue;
 
++ (id<FTHTTPProtocolDelegate>)delegate;
+
+@end
+@protocol FTHTTPProtocolDelegate <NSObject>
+@optional
+- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
+- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didCompleteWithError:(NSError *)error;
+@end
 NS_ASSUME_NONNULL_END

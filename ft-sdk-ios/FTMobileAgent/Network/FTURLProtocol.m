@@ -8,7 +8,7 @@
 
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-
+#import "ZYLog.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -17,6 +17,8 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 
 @end
 @implementation FTURLProtocol
+static id<FTHTTPProtocolDelegate> sDelegate;
+
 // 开始监听
 + (void)startMonitor {
     FTSessionConfiguration *sessionConfiguration = [FTSessionConfiguration defaultConfiguration];
@@ -32,6 +34,20 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     [NSURLProtocol unregisterClass:[FTURLProtocol class]];
     if ([sessionConfiguration isExchanged]) {
         [sessionConfiguration unload];
+    }
+}
++ (id<FTHTTPProtocolDelegate>)delegate
+{
+    id<FTHTTPProtocolDelegate> result;
+
+    @synchronized (self) {
+        result = sDelegate;
+    }
+    return result;
+}
++ (void)setDelegate:(id<FTHTTPProtocolDelegate>)newValue{
+    @synchronized (self) {
+        sDelegate = newValue;
     }
 }
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
@@ -65,7 +81,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 - (void)startLoading
 {
     
-    NSLog(@"***监听接口：%@", self.request.URL.absoluteString);
+    ZYLog(@"***监听接口：%@", self.request.URL.absoluteString);
     
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
     //标示该request已经处理过了，防止无限循环
@@ -99,7 +115,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     // 打印返回数据
     NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     if (dataStr) {
-        NSLog(@"***截取数据***: %@", dataStr);
+        ZYLog(@"***截取数据***: %@", dataStr);
     }
     [self.client URLProtocol:self didLoadData:data];
 }
@@ -111,17 +127,19 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
+    id<FTHTTPProtocolDelegate> strongeDelegate;
+       strongeDelegate = [[self class] delegate];
+       if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocol:didCompleteWithError:)]) {
+            [strongeDelegate ftHTTPProtocol:self didCompleteWithError:error];
+       }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-//    metrics.transactionMetrics
-    NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
-    NSTimeInterval dnsTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate];
-    NSTimeInterval tcpTime = [taskMes.secureConnectionStartDate timeIntervalSinceDate:taskMes.connectStartDate];
-    NSTimeInterval requestTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate];
-    NSTimeInterval totalTime = metrics.taskInterval.duration;
+    id<FTHTTPProtocolDelegate> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocol:didFinishCollectingMetrics:)]) {
+         [strongeDelegate ftHTTPProtocol:self didFinishCollectingMetrics:metrics];
+    }
 
-
-   
 }
 
 @end
