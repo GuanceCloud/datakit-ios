@@ -70,7 +70,6 @@ static dispatch_once_t onceToken;
         }
         if (array.count > 0){
             CLPlacemark *placemark = [array objectAtIndex:0];
-            //将获得的所有信息显示到label上
             ZYDebug(@"%@",placemark.name);
             //获取城市
             NSString *province = placemark.administrativeArea;
@@ -105,6 +104,9 @@ static dispatch_once_t onceToken;
 
     }];
     
+}
+- (BOOL)gpsServicesEnabled{
+    return [CLLocationManager locationServicesEnabled];
 }
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
 {
