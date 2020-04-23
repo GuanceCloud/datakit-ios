@@ -17,6 +17,8 @@
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
+NSString * const FTTaskMetricsNotification = @"FTTaskMetricsNotification";
+NSString * const FTTaskCompleteStatesNotification = @"FTTaskCompleteStatesNotification";
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
@@ -77,10 +79,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 @end
 
-@interface FTUploadTool()
+@interface FTUploadTool()<NSURLSessionTaskDelegate>
 @property (nonatomic, assign) BOOL isUploading;
-@property (nonatomic, strong) dispatch_queue_t timerQueue;
 @property (nonatomic, strong) NSDictionary *basicTags;
+@property (nonatomic, strong) NSURLSession *session;
+
 @end
 @implementation FTUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -185,11 +188,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
     }
     request = [mutableRequest copy];
-    //设置请求session
-    NSURLSession *session = [NSURLSession sharedSession];
-    
     //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             callBack? callBack(error.code,nil):nil ;
         }else{
@@ -202,6 +202,18 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [dataTask resume];
     
 }
+-(NSURLSession *)session{
+    if(!_session){
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue currentQueue]];
+    }
+    return _session;
+}
+//结束请求
+- (void)stopLoading {
+    [self.session invalidateAndCancel];
+    self.session = nil;
+}
+
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -238,6 +250,10 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }];
     return requestDatas;
 }
+- (NSDictionary *)getLastNetInfo{
+    NSDictionary *net;
+    return net;
+}
 - (NSDictionary *)basicTags{
     if (!_basicTags) {
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
@@ -264,7 +280,16 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }
     return _basicTags;
 }
-
+#pragma mark ========== NSURLSessionTaskDelegate ==========
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
+    [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskMetricsNotification object:@{@"metrics":metrics}];
+}
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
+    BOOL success = error?NO:YES;
+   
+        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":[NSNumber numberWithBool:success]}];
+    
+}
 NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
     for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,type)) {

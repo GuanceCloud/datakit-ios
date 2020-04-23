@@ -7,8 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 @class FTMobileConfig;
 @class FTRecordModel;
+
+extern NSString * const FTTaskMetricsNotification;
+extern NSString * const FTTaskCompleteStatesNotification;
+
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTURLTaskCompletionHandler)(NSInteger  statusCode, NSData * _Nullable response);
 
@@ -27,7 +32,7 @@ typedef void(^FTURLTaskCompletionHandler)(NSInteger  statusCode, NSData * _Nulla
  *立即上传 多条数据
 */
 -(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack;
-
+- (void)stopLoading;
 @end
 
 NS_ASSUME_NONNULL_END
