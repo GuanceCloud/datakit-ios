@@ -465,7 +465,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     ZYDebug(@"starting monitor flush timer.");
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.config.flushInterval > 0) {
+        if (self.config.flushInterval > 0 && self.config.enableMonitorFlush) {
             double interval = self.config.flushInterval > 100 ? (double)self.config.flushInterval / 1000.0 : 0.1f;
             self.timer = [NSTimer scheduledTimerWithTimeInterval:interval
                                                           target:self

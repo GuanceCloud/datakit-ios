@@ -42,7 +42,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeCpu      - GPU型号、占用率
  *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
- *   FTMonitorInfoTypeLocation - 位置信息  eg:上海
+ *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
  */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
@@ -53,6 +53,9 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeNetwork      = 1 << 5,
     FTMonitorInfoTypeCamera       = 1 << 6,
     FTMonitorInfoTypeLocation     = 1 << 7,
+    FTMonitorInfoTypeSystem       = 1 << 8,
+    FTMonitorInfoTypeMotion       = 1 << 9,
+    FTMonitorInfoTypeBluetooth    = 1 << 10,
 };
 NS_ASSUME_NONNULL_BEGIN
 
@@ -173,6 +176,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *product;
 
 #pragma mark ========== Monitor 相关设置==========
+/**
+ * @property
+ *
+ * @abstract
+ * 是否开启监控项定时上传 默认NO
+*/
+@property (nonatomic, assign) BOOL enableMonitorFlush;
+
 /**
  * @property
  *

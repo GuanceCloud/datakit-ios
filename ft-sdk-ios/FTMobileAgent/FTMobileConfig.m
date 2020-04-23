@@ -33,6 +33,7 @@
          self.enableScreenFlow = NO;
          self.XDataKitUUID = [self ft_defaultUUID];
          self.flushInterval = 10 * 1000;
+         self.enableMonitorFlush = NO;
         }
       return self;
 }
@@ -57,7 +58,7 @@
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
     options.flushInterval = self.flushInterval;
-
+    options.enableMonitorFlush = self.enableMonitorFlush;
     return options;
 }
 - (void)setFlushInterval:(NSInteger)flushInterval {
