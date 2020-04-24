@@ -190,13 +190,16 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     request = [mutableRequest copy];
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        BOOL success= NO;
         if (error) {
             callBack? callBack(error.code,nil):nil ;
         }else{
+            success = YES;
             NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
             NSInteger statusCode = [httpResponse statusCode];
             callBack? callBack(statusCode,data):nil ;
         }
+        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":[NSNumber numberWithBool:success]}];
     }];
     //开始请求
     [dataTask resume];
@@ -284,12 +287,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskMetricsNotification object:@{@"metrics":metrics}];
 }
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    BOOL success = error?NO:YES;
-   
-        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":[NSNumber numberWithBool:success]}];
-    
-}
+
 NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
     for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,type)) {
