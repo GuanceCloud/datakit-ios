@@ -43,6 +43,9 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
+ *   FTMonitorInfoTypeSystem   - 开机时间、设备名
+ *   FTMonitorInfoTypeSensor   - 屏幕亮度
+ *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
  */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
@@ -54,7 +57,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeCamera       = 1 << 6,
     FTMonitorInfoTypeLocation     = 1 << 7,
     FTMonitorInfoTypeSystem       = 1 << 8,
-    FTMonitorInfoTypeMotion       = 1 << 9,
+    FTMonitorInfoTypeSensor       = 1 << 9,
     FTMonitorInfoTypeBluetooth    = 1 << 10,
 };
 NS_ASSUME_NONNULL_BEGIN
