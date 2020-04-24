@@ -9,17 +9,8 @@
 #import "FTMonitorManager.h"
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreBluetooth/CoreBluetooth.h>
-#include <arpa/inet.h>
-#include <resolv.h>
-#include <dns.h>
-#import <ifaddrs.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <sys/socket.h>
-#include <net/if.h>
 #import <SystemConfiguration/CaptiveNetwork.h>
 #import "FTLocationManager.h"
-#import "ZYLog.h"
 #import "FTBaseInfoHander.h"
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
@@ -29,15 +20,33 @@
 #import "FTMobileAgent.h"
 #import<CoreMotion/CoreMotion.h> //陀螺仪
 #import "FTURLProtocol.h"
+#import "FTMonitorManager+MoniorUtils.h"
+#import "ZYLog.h"
+#import "FTUploadTool.h"
+#define WeakSelf __weak typeof(self) weakSelf = self;
 
-@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate>
+@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate,FTHTTPProtocolDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray *devicesListArray;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
-@property (nonatomic, strong) CMMotionManager *motionManager;//陀螺仪
+@property (nonatomic, strong) CMMotionManager *motionManager;
 @property (nonatomic, assign) CMAcceleration acceleration;
+@property (nonatomic, assign) NSInteger errorNet;
+@property (nonatomic, assign) NSInteger successNet;
+@property (nonatomic, strong) FTTaskMetrics *metrics;
+@end
+@implementation FTTaskMetrics
+-(instancetype)init{
+    if(self = [super init]){
+        self.tcpTime = 0;
+        self.dnsTime = 0;
+        self.responseTime = 0;
+    }
+    return self;
+}
+
 @end
 @implementation FTMonitorManager
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -45,6 +54,7 @@
     if (self) {
         self.devicesListArray = [NSMutableArray new];
         self.config = config;
+        self.metrics = [FTTaskMetrics new];
         [self startMonitor];
     }
     return self;
@@ -69,6 +79,35 @@
     }
     return _netFlow;
 }
+- (void)startMonitor{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskMetrics:) name:FTTaskMetricsNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskStates:) name:FTTaskCompleteStatesNotification object:nil];
+    ;
+}
+-(void)dealTaskMetrics:(NSNotification *)notification{
+    NSDictionary * infoDic = [notification object];
+    if ([[infoDic allKeys]containsObject:@"metrics"]) {
+        if (@available(iOS 10.0, *)) {
+            NSURLSessionTaskMetrics *metrics = infoDic[@"metrics"];
+            NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
+            NSString *urlStr = [taskMes.request.URL absoluteString];
+            self.metrics.dnsTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
+            self.metrics.tcpTime = [taskMes.secureConnectionStartDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
+            self.metrics.responseTime = [taskMes.requestStartDate timeIntervalSinceDate:taskMes.responseStartDate]*1000;
+            ZYDebug(@"url = %@\nmetrics = %@",urlStr,self.metrics);
+        }
+    }
+}
+-(void)dealTaskStates:(NSNotification *)notification{
+    NSDictionary * infoDic = [notification object];
+    if ([[infoDic allKeys]containsObject:@"success"]) {
+        if (infoDic[@"success"]) {
+            self.successNet++;
+        }else{
+            self.errorNet++;
+        }
+    }
+}
 //陀螺仪暂停
 - (void)stopUpdate{
     if([self.motionManager isAccelerometerActive] == YES){
@@ -86,7 +125,7 @@
     }
 }
 -(void)flush{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"ios_device_monitor" field:[self getWifiAndIPAddress] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+    [[FTMobileAgent sharedInstance] trackImmediate:@"ios_device_monitor" field:[FTMonitorManager getWifiAndIPAddress] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
         
     }];
 }
@@ -96,9 +135,7 @@
     }
     return _motionManager;
 }
--(CGFloat)screenBrightness{
-    return [UIScreen mainScreen].brightness;
-}
+
 -(NSDictionary *)monitorTagDict{
     if (!_monitorTagDict) {
         NSMutableDictionary *tag = [NSMutableDictionary new];
@@ -120,6 +157,10 @@
         if (self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
             [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
+        }
+        if (self.config.monitorInfoType & FTMonitorInfoTypeSystem || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+            [tag setValue:[FTMonitorManager userDeviceName] forKey:@"device_name"];
+            [tag setValue:[FTMonitorManager getLaunchSystemTime] forKey:@"device_open_time"];
         }
         _monitorTagDict = tag;
     }
@@ -154,7 +195,13 @@
         [field setObject:network_strength forKey:@"network_strength"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.iflow] forKey:@"network_in_rate"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.oflow] forKey:@"network_out_rate"];
-        
+        [network_type isEqualToString:@"WIFI"]?[field addEntriesFromDictionary:[FTMonitorManager getWifiAndIPAddress]]:nil;
+        [field setObject:[NSNumber numberWithDouble:self.metrics.dnsTime] forKey:@"network_dns_time"];
+        [field setObject:[NSNumber numberWithDouble:self.metrics.tcpTime] forKey:@"network_tcp_time"];
+        [field setObject:[NSNumber numberWithDouble:self.metrics.responseTime] forKey:@"network_response_time"];
+        if (self.successNet+self.errorNet != 0) {
+            [field setObject:[NSNumber numberWithDouble:self.errorNet/((self.successNet+self.errorNet)*1.0)] forKey:@"network_error_rate"];
+        }
         if ([FTNetworkInfo getProxyHost]) {
             [tag setObject:[FTNetworkInfo getProxyHost] forKey:@"network_proxy"];
         }else{
@@ -163,7 +210,7 @@
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_getBatteryUse]] forKey:@"battery_use"];
-        [field setObject:[NSNumber numberWithBool:[FTBaseInfoHander ft_batteryIsCharing]] forKey:@"battery_charing"];
+        [tag setObject:[NSNumber numberWithBool:[FTBaseInfoHander ft_batteryIsCharing]] forKey:@"battery_charing"];
     }
     if (self.config.monitorInfoType & FTMonitorInfoTypeGpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
         double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
@@ -175,12 +222,11 @@
         [tag setValue:[FTLocationManager sharedInstance].location.country forKey:@"country"];
         [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:@"latitude"];
         [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:@"longitude"];
+        [tag setValue:[NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]] forKey:@"gps_open"];
         
     }
-    if([self.motionManager isAccelerometerAvailable] == YES){
-//        [field setValue:[NSNumber numberWithDouble:self.acceleration.x] forKey:@"acceleration_x"];
-//        [field setValue:[NSNumber numberWithDouble:self.acceleration.y] forKey:@"acceleration_y"];
-//        [field setValue:[NSNumber numberWithDouble:self.acceleration.z] forKey:@"acceleration_z"];
+    if (self.config.monitorInfoType & FTMonitorInfoTypeMotion || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+        [field setValue:[NSNumber numberWithFloat:[FTMonitorManager screenBrightness]] forKey:@"screen_brightness"];
     }
     
     return @{@"field":field,@"tag":tag};
@@ -199,40 +245,6 @@
         return;
     }
     [self.netFlow stopMonitor];
-}
-- (void)startMonitor{
- 
-    [FTURLProtocol startMonitor];
-}
-#pragma mark ========== 开机时间/自定义手机名称 ==========
-//系统开机时间获取
-- (long)getLaunchSystemTime{
-    NSTimeInterval timer = [NSProcessInfo processInfo].systemUptime;
-    NSDate *currentDate = [NSDate new];
-    NSDate *startTime = [currentDate dateByAddingTimeInterval:(-timer)];
-    NSTimeInterval convertStartTimeToSecond = [startTime timeIntervalSince1970];
-    return convertStartTimeToSecond;
-}
-//用户自定义的手机名称
-- (NSString *)userDeviceName{
-    NSString * userPhoneName = [[UIDevice currentDevice] name];
-    return userPhoneName;
-}
-#pragma mark ==========  dns ==========
-- (NSDictionary *)getDNSInfo{
-    NSMutableDictionary *dnsDict = [NSMutableDictionary new];
-    res_state res = malloc(sizeof(struct __res_state));
-    int result = res_ninit(res);
-    if (result == 0) {
-        for (int i=0;i<res->nscount;i++) {
-            NSString *s = [NSString stringWithUTF8String:inet_ntoa(res->nsaddr_list[i].sin_addr)];
-            [dnsDict setValue:s forKey:[NSString stringWithFormat:@"dns%d",i+1]];
-        }
-    }
-    res_nclose(res);
-    res_ndestroy(res);
-    free(res);
-    return dnsDict;
 }
 #pragma mark ========== 蓝牙 ==========
 - (void)bluteeh{
@@ -288,67 +300,6 @@
     // RSSI 是设备信号强度
     // advertisementData 设备广告标识
     // 一般把新扫描到的设备添加到一个数组中，并更新列表
-}
-#pragma mark ========== WIFI的SSID 与 IP ==========
-/**
- * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
- * iOS 13 之后需要定位开启 才能获取到信息
- */
-- (NSDictionary *)getWifiAndIPAddress{
-    if (@available(iOS 13.0, *)) {
-        if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-            return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
-        }else if ([CLLocationManager authorizationStatus] ==kCLAuthorizationStatusDenied) {
-            ZYDebug(@"用户拒绝授权或未开启定位服务");
-        }
-        return nil;
-    }else{
-        return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
-    }
-}
-// 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
-- (NSString *)getCurrentWifiSSID{
-    NSString * wifiName = @"Not Found";
-    CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
-    if (!wifiInterfaces) {
-        wifiName = @"N/A";
-    }
-    NSArray *interfaces = (__bridge NSArray *)wifiInterfaces;
-    for (NSString *interfaceName in interfaces) {
-        CFDictionaryRef dictRef = CNCopyCurrentNetworkInfo((__bridge CFStringRef)(interfaceName));
-        if (dictRef) {
-            NSDictionary *networkInfo = (__bridge NSDictionary *)dictRef;
-            wifiName = [networkInfo objectForKey:(__bridge NSString *)kCNNetworkInfoKeySSID];
-            CFRelease(dictRef);
-        }
-    }
-    return wifiName;
-}
-// - 获取当前Wi-Fi的IP
-- (NSString *)getIPAddress {
-    NSString *address = @"error";
-    struct ifaddrs *interfaces = NULL;
-    struct ifaddrs *temp_addr = NULL;
-    int success = 0;
-    // retrieve the current interfaces - returns 0 on success
-    success = getifaddrs(&interfaces);
-    if (success == 0) {
-        // Loop through linked list of interfaces
-        temp_addr = interfaces;
-        while(temp_addr != NULL) {
-            if(temp_addr->ifa_addr->sa_family == AF_INET) {
-                // Check if interface is en0 which is the wifi connection on the iPhone
-                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
-                    // Get NSString from C String
-                    address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
-                }
-            }
-            temp_addr = temp_addr->ifa_next;
-        }
-    }
-    // Free memory
-    freeifaddrs(interfaces);
-    return address;
 }
 -(void)dealloc{
     [self stopFlushTimer];
