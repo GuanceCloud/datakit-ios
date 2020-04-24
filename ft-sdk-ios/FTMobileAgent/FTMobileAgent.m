@@ -206,17 +206,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         
         model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
         ZYDebug(@"trackImmediateData == %@",data);
-        if ([self.net isEqualToString:@"-1"]) {
-            callBackStatus? callBackStatus(NetWorkException,nil):nil;
-        }else{
-            dispatch_async(self.immediateLabel, ^{
-                [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
-                    });
-                }];
-            });
-        }
+        [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
         ZYDebug(@"track measurement tags field exception %@",exception);
@@ -259,22 +249,25 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }];
     if (list.count>0) {
-        if ([self.net isEqualToString:@"-1"]) {
-            callBackStatus? callBackStatus(NetWorkException,nil):nil;
-        }else{
-            dispatch_async(self.immediateLabel, ^{
-                [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        callBackStatus? callBackStatus(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
-                    });
-                }];
-            });
-        }
+        [self trackUpload:list callBack:callBackStatus];
     }else{
         ZYLog(@"传入的数据格式有误");
         callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
     }
     
+}
+-(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
+    if ([self.net isEqualToString:@"-1"]) {
+        callBack? callBack(NetWorkException,nil):nil;
+    }else{
+    dispatch_async(self.immediateLabel, ^{
+        [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                callBack? callBack(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+            });
+        }];
+    });
+    }
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
     [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil];

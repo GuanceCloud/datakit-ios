@@ -46,7 +46,6 @@
     }
     return self;
 }
-
 @end
 @implementation FTMonitorManager
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
@@ -79,10 +78,32 @@
     }
     return _netFlow;
 }
+-(void)flush{
+    NSDictionary *addDict = [self getMonitorTagFiledDict];
+    FTRecordModel *model = [FTRecordModel new];
+    NSMutableDictionary *opdata = @{
+        @"measurement":@"ios_device_monitor"}.mutableCopy;
+    if ([addDict objectForKey:@"tag"]) {
+        [opdata setValue:[addDict objectForKey:@"tag"] forKey:@"tags"];
+    }
+    if ([addDict objectForKey:@"field"]) {
+        [opdata setValue:[addDict objectForKey:@"field"] forKey:@"field"];
+    }
+    NSDictionary *data =@{
+        @"op":@"monitor",
+        @"opdata":opdata,
+    };
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+    void (^UploadResultBlock)(NSInteger,id) = ^(NSInteger statusCode,id responseObject){
+        ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
+    };
+    [[FTMobileAgent sharedInstance] performSelector:@selector(trackUpload:callBack:) withObject:@[model] withObject:UploadResultBlock];
+}
+#pragma mark ========== 网络请求相关时间 ==========
 - (void)startMonitor{
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskMetrics:) name:FTTaskMetricsNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskStates:) name:FTTaskCompleteStatesNotification object:nil];
-    ;
 }
 -(void)dealTaskMetrics:(NSNotification *)notification{
     NSDictionary * infoDic = [notification object];
@@ -90,11 +111,9 @@
         if (@available(iOS 10.0, *)) {
             NSURLSessionTaskMetrics *metrics = infoDic[@"metrics"];
             NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
-            NSString *urlStr = [taskMes.request.URL absoluteString];
             self.metrics.dnsTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
             self.metrics.tcpTime = [taskMes.secureConnectionStartDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
-            self.metrics.responseTime = [taskMes.requestStartDate timeIntervalSinceDate:taskMes.responseStartDate]*1000;
-            ZYDebug(@"url = %@\nmetrics = %@",urlStr,self.metrics);
+            self.metrics.responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
         }
     }
 }
@@ -108,39 +127,10 @@
         }
     }
 }
-//陀螺仪暂停
-- (void)stopUpdate{
-    if([self.motionManager isAccelerometerActive] == YES){
-        [self.motionManager stopAccelerometerUpdates];
-    }
-}
-- (void)startUpdateAccelerometerResult{//陀螺仪开始
-    if([self.motionManager isAccelerometerAvailable] == YES){
-        [self.motionManager setAccelerometerUpdateInterval:(double)self.config.flushInterval / 1000.0];
-        [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error){
-            if (!error) {
-                self.acceleration = accelerometerData.acceleration;
-            }
-        }];
-    }
-}
--(void)flush{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"ios_device_monitor" field:[FTMonitorManager getWifiAndIPAddress] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        
-    }];
-}
--(CMMotionManager*)motionManager {
-    if (_motionManager == nil) {
-        _motionManager= [[CMMotionManager alloc]init];
-    }
-    return _motionManager;
-}
-
 -(NSDictionary *)monitorTagDict{
     if (!_monitorTagDict) {
         NSMutableDictionary *tag = [NSMutableDictionary new];
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-        
         if (self.config.monitorInfoType &FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
         }
@@ -223,12 +213,10 @@
         [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:@"latitude"];
         [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:@"longitude"];
         [tag setValue:[NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]] forKey:@"gps_open"];
-        
     }
-    if (self.config.monitorInfoType & FTMonitorInfoTypeMotion || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
+    if (self.config.monitorInfoType & FTMonitorInfoTypeSensor || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [field setValue:[NSNumber numberWithFloat:[FTMonitorManager screenBrightness]] forKey:@"screen_brightness"];
     }
-    
     return @{@"field":field,@"tag":tag};
 }
 #pragma mark --------- 实时网速 ----------
@@ -284,7 +272,6 @@
         default: { }
             break;
     }
-    
 }
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *, id> *)advertisementData RSSI:(NSNumber *)RSSI {
     if (peripheral.name.length == 0) {
@@ -292,7 +279,7 @@
     }
     if(![self.devicesListArray containsObject:peripheral] && peripheral.name>0)
         [self.devicesListArray addObject:peripheral];
-    
+
     NSLog(@"%@", peripheral.identifier);
     NSLog(@"%@", RSSI);
     ZYDebug(@"扫描到一个设备设备：%@",peripheral.name);
@@ -300,6 +287,29 @@
     // RSSI 是设备信号强度
     // advertisementData 设备广告标识
     // 一般把新扫描到的设备添加到一个数组中，并更新列表
+}
+#pragma mark ========== CMMotionManager ==========
+-(CMMotionManager*)motionManager {
+    if (_motionManager == nil) {
+        _motionManager= [[CMMotionManager alloc]init];
+    }
+    return _motionManager;
+}
+//陀螺仪暂停
+- (void)stopUpdate{
+    if([self.motionManager isAccelerometerActive] == YES){
+        [self.motionManager stopAccelerometerUpdates];
+    }
+}
+- (void)startUpdateAccelerometerResult{//陀螺仪开始
+    if([self.motionManager isAccelerometerAvailable] == YES){
+        [self.motionManager setAccelerometerUpdateInterval:(double)self.config.flushInterval / 1000.0];
+        [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error){
+            if (!error) {
+                self.acceleration = accelerometerData.acceleration;
+            }
+        }];
+    }
 }
 -(void)dealloc{
     [self stopFlushTimer];
