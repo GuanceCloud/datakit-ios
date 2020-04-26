@@ -18,6 +18,7 @@
 #include <ifaddrs.h>
 #include <sys/socket.h>
 #include <net/if.h>
+#import <AVFoundation/AVFoundation.h>
 @implementation FTMonitorManager (MoniorUtils)
 #pragma mark ========== 开机时间/自定义手机名称 ==========
 //系统开机时间获取
@@ -115,5 +116,18 @@
 }
 + (CGFloat)screenBrightness{
     return [UIScreen mainScreen].brightness;
+}
++ (float)getTorchLevel{
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    if([device hasTorch] ) {
+        return device.torchLevel;
+    }
+    return 0;
+}
++(BOOL)getProximityState{
+    if ([UIDevice currentDevice].proximityMonitoringEnabled == NO) {
+        [UIDevice currentDevice].proximityMonitoringEnabled = YES;
+    }
+    return [UIDevice currentDevice].proximityState;
 }
 @end

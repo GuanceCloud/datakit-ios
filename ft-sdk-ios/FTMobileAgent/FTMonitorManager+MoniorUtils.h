@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)getCurrentWifiSSID;
 + (NSString *)getIPAddress;
 + (CGFloat)screenBrightness;
++ (float)getTorchLevel;
++ (BOOL)getProximityState;
 @end
 
 NS_ASSUME_NONNULL_END
