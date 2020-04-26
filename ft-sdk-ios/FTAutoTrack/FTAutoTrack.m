@@ -347,7 +347,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
         NSDictionary *field = @{@"event":op};
-        NSString *measurement = @"mobile_tracker";
+        NSString *measurement =[NSString stringWithFormat:@"mobile_tracker_%@",self.config.product];
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {
