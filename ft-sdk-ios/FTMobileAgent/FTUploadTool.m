@@ -135,6 +135,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                         }
                         success = NO;
                     }
+                }else{
+                    ZYDebug(@"response = %@",response);
                 }
                 dispatch_group_leave(group);
             }];
