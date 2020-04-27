@@ -7,7 +7,6 @@
 //
 
 #import "FTCMMotionManager.h"
-#import "FTPedometerData.h"
 #import <CoreMotion/CoreMotion.h>
 @interface FTCMMotionManager()
 @property (nonatomic, strong) CMPedometer *pedometer;
@@ -68,17 +67,7 @@
                      withHandler:^(CMPedometerData *_Nullable pedometerData,
                                    NSError *_Nullable error) {
                        dispatch_async(dispatch_get_main_queue(), ^{
-                         FTPedometerData *customPedometerData =
-                             [[FTPedometerData alloc] init];
-                         customPedometerData.numberOfSteps =
-                             pedometerData.numberOfSteps;
-                         customPedometerData.distance = pedometerData.distance;
-                         customPedometerData.floorsAscended =
-                             pedometerData.floorsAscended;
-                         customPedometerData.floorsDescended =
-                             pedometerData.floorsDescended;
-
-                         handler(customPedometerData, error);
+                         handler(pedometerData.numberOfSteps, error);
                        });
                      }];
 
@@ -98,23 +87,10 @@
       startPedometerUpdatesFromDate:fromDate
                         withHandler:^(CMPedometerData *_Nullable pedometerData,
                                       NSError *_Nullable error) {
-                          dispatch_async(dispatch_get_main_queue(), ^{
-                            FTPedometerData *customPedometerData =
-                                [[FTPedometerData alloc] init];
-                            customPedometerData.numberOfSteps =
-                                pedometerData.numberOfSteps;
-                            customPedometerData.distance =
-                                pedometerData.distance;
-                            customPedometerData.floorsAscended =
-                                pedometerData.floorsAscended;
-                            customPedometerData.floorsDescended =
-                                pedometerData.floorsDescended;
-                            handler(customPedometerData, error);
-                          });
+                            handler(pedometerData.numberOfSteps, error);
                         }];
 }
 - (NSDictionary *)getMotionDatas{
-    
     NSMutableDictionary *field = [NSMutableDictionary new];
     if([self.motionManager isGyroAvailable]){
         [field addEntriesFromDictionary:@{@"rotation_x":[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.x],
@@ -131,9 +107,13 @@
                                           @"magnetic_y":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.y],
                                           @"magnetic_z":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.z]}];
     }
-    [self startPedometerUpdatesTodayWithHandler:^(FTPedometerData * _Nonnull pedometerData, NSError * _Nonnull error) {
-        [field addEntriesFromDictionary:@{@"steps":pedometerData.numberOfSteps}];
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    [self startPedometerUpdatesTodayWithHandler:^(NSNumber * _Nonnull steps, NSError * _Nonnull error) {
+        [field addEntriesFromDictionary:@{@"steps":steps}];
+          dispatch_group_leave(group);
     }];
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
     return field;
 }
 /**

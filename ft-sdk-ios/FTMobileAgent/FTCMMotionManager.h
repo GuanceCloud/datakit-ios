@@ -9,9 +9,8 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTPedometerData;
 @interface FTCMMotionManager : NSObject
-typedef void (^FTPedometerHandler)(FTPedometerData *pedometerData,
+typedef void (^FTPedometerHandler)(NSNumber *steps,
 NSError *error);
 + (FTCMMotionManager *)shared;
 /**
