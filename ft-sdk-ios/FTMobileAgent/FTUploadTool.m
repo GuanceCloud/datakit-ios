@@ -70,7 +70,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
         }else if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            if (number.intValue <number.floatValue || number.intValue<number.doubleValue) {
+            if (abs(number.intValue) <fabsf(number.floatValue) || abs(number.intValue)<fabs(number.doubleValue)) {
                 return [NSString stringWithFormat:@"%@=%.2f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
             }
         }

@@ -11,8 +11,8 @@
 @class FTMobileConfig;
 @class FTRecordModel;
 
-extern NSString * const FTTaskMetricsNotification;
-extern NSString * const FTTaskCompleteStatesNotification;
+extern NSString * _Nonnull const FTTaskMetricsNotification;
+extern NSString * _Nonnull const FTTaskCompleteStatesNotification;
 
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTURLTaskCompletionHandler)(NSInteger  statusCode, NSData * _Nullable response);
