@@ -18,12 +18,11 @@
 #import "FTGPUUsage.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent.h"
-#import<CoreMotion/CoreMotion.h> //陀螺仪
 #import "FTURLProtocol.h"
 #import "FTMonitorManager+MoniorUtils.h"
 #import "ZYLog.h"
 #import "FTUploadTool.h"
-#import "FTCMMotionManager.h"
+#import <CoreMotion/CoreMotion.h>
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate,FTHTTPProtocolDelegate>
@@ -32,10 +31,11 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
-@property (nonatomic, assign) CMAcceleration acceleration;
 @property (nonatomic, assign) NSInteger errorNet;
 @property (nonatomic, assign) NSInteger successNet;
 @property (nonatomic, strong) FTTaskMetrics *metrics;
+@property (nonatomic, strong) CMPedometer *pedometer;
+@property (nonatomic, strong) CMMotionManager *motionManager;
 @end
 @implementation FTTaskMetrics
 -(instancetype)init{
@@ -62,6 +62,7 @@
         self.config = config;
         self.metrics = [FTTaskMetrics new];
         [self bluteeh];
+        [self startNetMonitor];
     }
     return self;
 }
@@ -78,16 +79,13 @@
         }
     }
     if (_config.monitorInfoType & FTMonitorInfoTypeSensor || _config.monitorInfoType & FTMonitorInfoTypeAll) {
-        [[FTCMMotionManager shared] startMotionUpdate];
+        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
+            self.pedometer = [[CMPedometer alloc] init];
+        }
+        [self startMotionUpdate];
     }else{
-        [[FTCMMotionManager shared] stopMotionUpdates];
+        [self stopMotionUpdates];
     }
-}
--(FTNetMonitorFlow *)netFlow{
-    if (!_netFlow) {
-        _netFlow = [FTNetMonitorFlow new];
-    }
-    return _netFlow;
 }
 -(void)flush{
     NSDictionary *addDict = [self getMonitorTagFiledDict];
@@ -110,6 +108,112 @@
         ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
     };
     [[FTMobileAgent sharedInstance] performSelector:@selector(trackUpload:callBack:) withObject:@[model] withObject:UploadResultBlock];
+}
+#pragma mark ========== 传感器数据获取 ==========
+-(CMMotionManager *)motionManager{
+    if (!_motionManager) {
+        _motionManager = [[CMMotionManager alloc]init];
+    }
+    return _motionManager;
+}
+- (void)startMotionUpdate{
+    if([self.motionManager isGyroAvailable] && ![self.motionManager isGyroActive]){
+        [self.motionManager startGyroUpdates];
+    }
+    if ([self.motionManager isAccelerometerAvailable] && ![self.motionManager isAccelerometerActive]) {
+        [self.motionManager startAccelerometerUpdates];
+    }
+    if ([self.motionManager isMagnetometerAvailable] && ![self.motionManager isMagnetometerActive]) {
+        [self.motionManager startMagnetometerUpdates];
+    }
+}
+/**
+ *  查询某时间段的运动数据
+ *
+ *  @param start   开始时间
+ *  @param end     结束时间
+ *  @param handler 查询结果
+ */
+- (void)queryPedometerDataFromDate:(NSDate *)start
+                            toDate:(NSDate *)end
+                       withHandler:(FTPedometerHandler)handler {
+
+  [_pedometer
+      queryPedometerDataFromDate:start
+                          toDate:end
+                     withHandler:^(CMPedometerData *_Nullable pedometerData,
+                                   NSError *_Nullable error) {
+                       dispatch_async(dispatch_get_main_queue(), ^{
+                         handler(pedometerData.numberOfSteps, error);
+                       });
+                     }];
+
+}
+/**
+ *  监听今天（从零点开始）的行走数据
+ *
+ *  @param handler 查询结果、变化就更新
+ */
+- (void)startPedometerUpdatesTodayWithHandler:(FTPedometerHandler)handler{
+  NSDate *toDate = [NSDate date];
+  NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+  [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+  NSDate *fromDate =
+      [dateFormatter dateFromString:[dateFormatter stringFromDate:toDate]];
+  [_pedometer
+      startPedometerUpdatesFromDate:fromDate
+                        withHandler:^(CMPedometerData *_Nullable pedometerData,
+                                      NSError *_Nullable error) {
+                            handler(pedometerData.numberOfSteps, error);
+                        }];
+}
+- (NSDictionary *)getMotionDatas{
+    NSMutableDictionary *field = [NSMutableDictionary new];
+    if([self.motionManager isGyroAvailable]){
+        [field addEntriesFromDictionary:@{@"rotation_x":[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.x],
+                                          @"rotation_y":[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.y],
+                                          @"rotation_z":[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.z]}];
+    }
+    if ([self.motionManager isAccelerometerAvailable] ) {
+        [field addEntriesFromDictionary:@{@"acceleration_x":[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.x],
+                                          @"acceleration_y":[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.y],
+                                          @"acceleration_z":[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.z]}];
+    }
+    if ([self.motionManager isMagnetometerAvailable]) {
+        [field addEntriesFromDictionary:@{@"magnetic_x":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.x],
+                                          @"magnetic_y":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.y],
+                                          @"magnetic_z":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.z]}];
+    }
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    [self startPedometerUpdatesTodayWithHandler:^(NSNumber * _Nonnull steps, NSError * _Nonnull error) {
+        [field addEntriesFromDictionary:@{@"steps":steps}];
+          dispatch_group_leave(group);
+    }];
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    return field;
+}
+-(BOOL)getProximityState{
+    if ([UIDevice currentDevice].proximityMonitoringEnabled == NO){
+        [UIDevice currentDevice].proximityMonitoringEnabled = YES;
+    }
+    return [UIDevice currentDevice].proximityState;
+}
+/**
+ *  停止监听运动数据
+ */
+- (void)stopMotionUpdates {
+    [_pedometer stopPedometerUpdates];
+    if([_motionManager isGyroActive]){
+        [_motionManager stopGyroUpdates];
+    }
+    if ([_motionManager isAccelerometerActive]) {
+        [_motionManager stopAccelerometerUpdates];
+    }
+    if ([_motionManager isMagnetometerActive]) {
+        [_motionManager stopMagnetometerUpdates];
+    }
+    [UIDevice currentDevice].proximityMonitoringEnabled = NO;
 }
 #pragma mark ========== 网络请求相关时间 ==========
 - (void)startNetMonitor{
@@ -138,6 +242,7 @@
         }
     }
 }
+#pragma mark ========== tag\field 数据拼接 ==========
 -(NSDictionary *)monitorTagDict{
     if (!_monitorTagDict) {
         NSMutableDictionary *tag = [NSMutableDictionary new];
@@ -228,12 +333,17 @@
     if (self.config.monitorInfoType & FTMonitorInfoTypeSensor || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
         [field setValue:[NSNumber numberWithFloat:[FTMonitorManager screenBrightness]] forKey:@"screen_brightness"];
         [field setValue:[NSNumber numberWithBool:[FTMonitorManager getProximityState]] forKey:@"proximity"];
-        [field setValue:[NSNumber numberWithFloat:[FTMonitorManager getTorchLevel]] forKey:@"torch"];
-        [field addEntriesFromDictionary:[[FTCMMotionManager shared] getMotionDatas]];
+        [field addEntriesFromDictionary:[self getMotionDatas]];
         }
     return @{@"field":field,@"tag":tag};
 }
 #pragma mark --------- 实时网速 ----------
+-(FTNetMonitorFlow *)netFlow{
+    if (!_netFlow) {
+        _netFlow = [FTNetMonitorFlow new];
+    }
+    return _netFlow;
+}
 // 启动获取实时网络定时器
 - (void)startFlushTimer {
     if (self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll) {
@@ -304,6 +414,7 @@
 }
 -(void)dealloc{
     [self stopFlushTimer];
+    [self stopMotionUpdates];
     self.netFlow = nil;
 }
 @end

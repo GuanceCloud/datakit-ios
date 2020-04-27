@@ -34,8 +34,6 @@
 /* Begin PBXBuildFile section */
 		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
-		4A2D57E424557C8F00478547 /* FTCMMotionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57E224557C8F00478547 /* FTCMMotionManager.h */; };
-		4A2D57E524557C8F00478547 /* FTCMMotionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57E324557C8F00478547 /* FTCMMotionManager.m */; };
 		4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
 		4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E75323CDA69C0077531B /* FTNetworkInfo.m */; };
 		4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
@@ -92,8 +90,6 @@
 /* Begin PBXFileReference section */
 		4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManager.m; sourceTree = "<group>"; };
-		4A2D57E224557C8F00478547 /* FTCMMotionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTCMMotionManager.h; sourceTree = "<group>"; };
-		4A2D57E324557C8F00478547 /* FTCMMotionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTCMMotionManager.m; sourceTree = "<group>"; };
 		4A31E75223CDA69C0077531B /* FTNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfo.h; sourceTree = "<group>"; };
 		4A31E75323CDA69C0077531B /* FTNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfo.m; sourceTree = "<group>"; };
 		4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGPUUsage.h; sourceTree = "<group>"; };
@@ -226,8 +222,6 @@
 				4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */,
 				4AECBCF4244FEACC0023DEF7 /* FTMonitorManager+MoniorUtils.h */,
 				4AECBCF5244FEACC0023DEF7 /* FTMonitorManager+MoniorUtils.m */,
-				4A2D57E224557C8F00478547 /* FTCMMotionManager.h */,
-				4A2D57E324557C8F00478547 /* FTCMMotionManager.m */,
 				4A884277239E5768001B44C3 /* FTUploadTool.h */,
 				4A88426C239E5768001B44C3 /* FTUploadTool.m */,
 				4A88426D239E5768001B44C3 /* FTRecordModel.h */,
@@ -331,7 +325,6 @@
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A852FAC23A221DF00B40B5D /* ZYLog.h in Headers */,
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
-				4A2D57E424557C8F00478547 /* FTCMMotionManager.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
 				4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */,
@@ -495,7 +488,6 @@
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
-				4A2D57E524557C8F00478547 /* FTCMMotionManager.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
 				4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */,
 				4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */,

@@ -72,7 +72,7 @@
 }
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
 + (NSString *)getCurrentWifiSSID{
-    NSString * wifiName = @"Not Found";
+    NSString * wifiName = @"N/A";
     CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
     if (!wifiInterfaces) {
         wifiName = @"N/A";
