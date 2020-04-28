@@ -32,8 +32,6 @@
 @property (nonatomic, assign) int preFlowTime;
 @property (readwrite, nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
-@property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, strong) FTMonitorManager *monitorManger;
 @end
 @implementation FTMobileAgent
 
@@ -100,7 +98,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (config) {
             self.config = config;
         }
-        self.monitorManger = [[FTMonitorManager alloc]initWithConfig:self.config];
+        [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
@@ -135,6 +133,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self startAutoTrack];
         }
     }
+    [[FTMonitorManager sharedInstance] setMonitorType:config.monitorInfoType];
     self.upTool.config = config;
 }
 #pragma mark ========== publick method ==========
@@ -187,7 +186,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
+        NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:@"tag"]) {
             [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
         }
@@ -225,7 +224,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (obj.tags) {
                 [tag addEntriesFromDictionary:obj.tags];
             }
-            NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
+            NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
             if ([addDict objectForKey:@"tag"]) {
                 [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
             }
@@ -325,8 +324,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"User logout");
 }
 - (void)resetInstance{
-    [self stopMonitorFlushTimer];
-    self.monitorManger = nil;
+    [[FTMonitorManager sharedInstance] resetInstance];
     [[FTLocationManager sharedInstance] resetInstance];
     self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -351,7 +349,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     // 流程图不添加 监控项 和 设备信息
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
         
-        NSDictionary *addDict = [self.monitorManger getMonitorTagFiledDict];
+        NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         
         if ([addDict objectForKey:@"tag"]) {
             [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
@@ -434,7 +432,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         self.isForeground = YES;
         [self uploadFlush];
-        [self startMonitorFlushTimer];
     }
     @catch (NSException *exception) {
         ZYDebug(@"applicationDidBecomeActive exception %@",exception);
@@ -452,45 +449,5 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self.upTool upload];
         }
     });
-}
-#pragma mark ========== 监控 上传策略 ==========
-- (void)startMonitorFlushTimer {
-    if ((self.timer && [self.timer isValid])) {
-        return;
-    }
-    ZYDebug(@"starting monitor flush timer.");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.config.flushInterval > 0 && self.config.enableMonitorFlush) {
-            double interval = self.config.flushInterval > 100 ? (double)self.config.flushInterval / 1000.0 : 0.1f;
-            self.timer = [NSTimer scheduledTimerWithTimeInterval:interval
-                                                          target:self
-                                                        selector:@selector(flush)
-                                                        userInfo:nil
-                                                         repeats:YES];
-            [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-        }
-    });
-}
-
-- (void)stopMonitorFlushTimer {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (self.timer) {
-            [self.timer invalidate];
-        }
-        self.timer = nil;
-    });
-}
-- (void)flush{
-    if ([self.net isEqualToString:@"-1"]) {
-        return;
-    }
-    [self.monitorManger flush];
-}
-- (void)setMonitorEnable:(BOOL)enable{
-    if (enable) {
-        [self startMonitorFlushTimer];
-    }else{
-        [self stopMonitorFlushTimer];
-    }
 }
 @end

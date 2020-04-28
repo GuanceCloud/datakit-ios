@@ -32,8 +32,6 @@
          self.needBindUser = NO;
          self.enableScreenFlow = NO;
          self.XDataKitUUID = [self ft_defaultUUID];
-         self.flushInterval = 10 * 1000;
-         self.enableMonitorFlush = NO;
         }
       return self;
 }
@@ -57,13 +55,8 @@
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
-    options.flushInterval = self.flushInterval;
-    options.enableMonitorFlush = self.enableMonitorFlush;
     options.product = self.product;
     return options;
-}
-- (void)setFlushInterval:(NSInteger)flushInterval {
-    _flushInterval = flushInterval >= 5000 ? flushInterval : 5000;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
     _enableAutoTrack = enableAutoTrack;

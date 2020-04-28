@@ -8,19 +8,37 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 
-
-@class FTMobileConfig;
-
 @interface FTMonitorManager : NSObject
--(instancetype)initWithConfig:(FTMobileConfig *)config;
--(void)flush;
+/**
+ * 获取 FTMonitorManager 单例
+ * @return 返回的单例
+*/
++ (instancetype)sharedInstance;
+/**
+ * 设置 监控类型 可不设置直接获取 FTMobileAgent.config
+*/
+-(void)setMonitorType:(FTMonitorInfoType)type;
+/**
+ * 设置 监控上传周期
+*/
+-(void)setFlushInterval:(NSInteger)interval;
+/**
+ * 开启监控同步
+*/
+-(void)startFlush;
+/**
+ * 关闭监控同步
+*/
+-(void)stopFlush;
+/**
+ * 获取监控项的tag、field
+*/
 -(NSDictionary *)getMonitorTagFiledDict;
+
+- (void)resetInstance;
 @end
-@interface FTTaskMetrics : NSObject
-@property (nonatomic, assign) NSTimeInterval tcpTime;
-@property (nonatomic, assign) NSTimeInterval dnsTime;
-@property (nonatomic, assign) NSTimeInterval responseTime;
-@end
+
 NS_ASSUME_NONNULL_END
