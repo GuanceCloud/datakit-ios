@@ -24,7 +24,8 @@
 #import "FTUploadTool.h"
 #import <CoreMotion/CoreMotion.h>
 #define WeakSelf __weak typeof(self) weakSelf = self;
-
+typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
+NSError *error);
 @interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate,FTHTTPProtocolDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray *devicesListArray;
@@ -301,7 +302,7 @@
         [field setObject:network_strength forKey:@"network_strength"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.iflow] forKey:@"network_in_rate"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.oflow] forKey:@"network_out_rate"];
-        [network_type isEqualToString:@"WIFI"]?[field addEntriesFromDictionary:[FTMonitorManager getWifiAndIPAddress]]:nil;
+        [network_type isEqualToString:@"WIFI"]?[field addEntriesFromDictionary:[FTMonitorManager getWifiAccessAndIPAddress]]:nil;
         [field setObject:[NSNumber numberWithDouble:self.metrics.dnsTime] forKey:@"network_dns_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.tcpTime] forKey:@"network_tcp_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.responseTime] forKey:@"network_response_time"];
