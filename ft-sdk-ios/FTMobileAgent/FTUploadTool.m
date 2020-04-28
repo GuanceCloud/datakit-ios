@@ -268,7 +268,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
-        NSDictionary *tag = @{@"device_uuid":uuid,
+        NSMutableDictionary *tag = @{@"device_uuid":uuid,
                                      @"application_identifier":identifier,
                                      @"application_name":self.config.appName,
                                      @"os":@"iOS",
@@ -280,7 +280,9 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                                      @"carrier":[FTBaseInfoHander ft_getTelephonyInfo],
                                      @"agent":self.config.sdkAgentVersion,
                                      
-        };
+        }.mutableCopy;
+        self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"]:nil;
+         ;
         _basicTags = tag;
     }
     return _basicTags;
