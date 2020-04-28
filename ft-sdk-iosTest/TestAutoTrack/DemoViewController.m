@@ -52,7 +52,7 @@
     [[FTMobileAgent sharedInstance] logout];
 }
 - (void)testTrackBackgroud{
-    [[FTMobileAgent sharedInstance] trackBackgroud:@"track ,Test" tags:nil field:@{@"ev，ent":@"te s，t"}];
+    [[FTMobileAgent sharedInstance] trackBackground:@"track ,Test" tags:nil field:@{@"ev，ent":@"te s，t"}];
 }
 - (void)testTrackImmediate{
     [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediateList" field:@{@"test":@"testImmediate"} callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {

@@ -59,6 +59,7 @@
     options.XDataKitUUID = self.XDataKitUUID;
     options.flushInterval = self.flushInterval;
     options.enableMonitorFlush = self.enableMonitorFlush;
+    options.product = self.product;
     return options;
 }
 - (void)setFlushInterval:(NSInteger)flushInterval {

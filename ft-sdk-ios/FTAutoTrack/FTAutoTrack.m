@@ -116,7 +116,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         duration = (tm-self.preFlowTime)/1000;
     }
     self.preFlowTime = tm;
-    NSString *product = [NSString stringWithFormat:@"$flow_mobile_activity_%@",self.config.product];
+    NSString *product =self.config.product.length>0? [NSString stringWithFormat:@"$flow_mobile_activity_%@",self.config.product]:@"$flow_mobile_activity";
     NSMutableDictionary *tags = @{@"$traceId":self.flowId,
                                   @"$name":NSStringFromClass(vc.class)}.mutableCopy;
     if (parent.length>0) {
@@ -226,9 +226,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     [self.aspectTokenAry addObject:clickToken];
 }
 - (BOOL)isAutoTrackUI:(Class )view{
-    
-    if (self.config.whiteViewClass.count>0) {
-        return  [self isViewTypeWhite:view];
+    if (self.config.whiteViewClass.count>0 && [self isViewTypeWhite:view] == NO) {
+        return  NO;
     }
     if(self.config.blackViewClass.count>0)   return ![self isViewTypeIgnored:view];
     
@@ -252,11 +251,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 }
 - (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
     //没有设置白名单  就考虑黑名单
-    if (self.config.whiteVCList.count == 0) {
-        return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);
+    if (self.config.whiteVCList.count > 0 && [self isWhiteListContainsViewController:viewController] == NO) {
+       return NO;
     }
-    
-    return [self isWhiteListContainsViewController:viewController];
+    return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);;
 }
 - (BOOL)isWhiteListContainsViewController:(UIViewController *)viewController{
     NSSet *whitelistedClasses = [NSSet setWithArray:self.config.whiteVCList];
@@ -349,7 +347,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
         NSDictionary *field = @{@"event":op};
-        NSString *measurement = @"mobile_tracker";
+        NSString *measurement =self.config.product.length>0?[NSString stringWithFormat:@"mobile_tracker_%@",self.config.product]:@"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {

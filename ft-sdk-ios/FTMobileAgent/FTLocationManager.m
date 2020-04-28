@@ -66,6 +66,7 @@ static dispatch_once_t onceToken;
             if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
+            [manager stopUpdatingLocation];
             return;
         }
         if (array.count > 0){
@@ -91,6 +92,7 @@ static dispatch_once_t onceToken;
                 self.updateLocationBlock(self.location, error);
             }
         }else if (error == nil && [array count] == 0){
+            [manager stopUpdatingLocation];
             NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"No results were returned."};
             NSError *error = [NSError errorWithDomain:domain

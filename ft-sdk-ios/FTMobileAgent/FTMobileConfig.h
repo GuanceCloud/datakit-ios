@@ -85,6 +85,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
+/**
+ * @abstract
+ * 上报行为指标集名称 。（可选）
+ * 命名只能包含英文字母、数字、中划线和下划线，区分大小写
+*/
+@property (nonatomic, copy) NSString *product;
 /* SDK版本 */
 @property (nonatomic, copy) NSString *sdkAgentVersion;
 /* SDK版本 */
@@ -171,12 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
-/**
- * @abstract
- * 上报流程行为指标集名称 设置 enableScreenFlow = YES; 时 product 不能为空。
- * 命名只能包含英文字母、数字、中划线和下划线，区分大小写
-*/
-@property (nonatomic, copy) NSString *product;
+
 
 #pragma mark ========== Monitor 相关设置==========
 /**

@@ -58,11 +58,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
             }
             callBack?callBack(UnknownException,message):nil;
+            ZYDebug(@"Location Error : %@",error);
         }else{
+            ZYDebug(@"Location Success");
             callBack?callBack(0,nil):nil;
         }
     };
     }else{
+        ZYDebug(@"Location Success");
         callBack?callBack(0,nil):nil;
     }
 }
@@ -76,9 +79,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSAssert((NSClassFromString(@"FTAutoTrack")), @"开启自动采集需导入FTAutoTrackSDK");
     }
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
-    if (configOptions.enableScreenFlow) {
-        NSAssert((configOptions.product.length!=0 ), @"请设置上报流程行为指标集名称 product");
-        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写");
+    if (configOptions.product.length>0) {
+        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 20 个字符，区分大小写");
     }
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
@@ -136,10 +138,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     self.upTool.config = config;
 }
 #pragma mark ========== publick method ==========
-- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field{
-    [self trackBackgroud:measurement tags:nil field:field];
+- (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
+    [self trackBackground:measurement tags:nil field:field];
 }
-- (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
+- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
     @try {
         NSParameterAssert(measurement);
         NSParameterAssert(field);

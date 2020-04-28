@@ -38,14 +38,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param measurement      当前数据点所属的指标集
  * @param field     自定义指标
 */
-- (void)trackBackgroud:(NSString *)measurement  field:(NSDictionary *)field;
+- (void)trackBackground:(NSString *)measurement  field:(NSDictionary *)field;
 /**
  * 主动埋点，追踪自定义事件。有tags  存储数据库，等待上传
  * @param measurement      当前数据点所属的指标集
  * @param tags       自定义标签
  * @param field     自定义指标
  */
-- (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
+- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 /**
  * 主动埋点，追踪自定义事件。有tags  立即上传 回调上传结果
  * @param measurement     当前数据点所属的指标集
