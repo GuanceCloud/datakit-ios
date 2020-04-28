@@ -11,15 +11,33 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMonitorManager (MoniorUtils)
+/**
+ * 获取开机时间
+ */
 + (NSString *)getLaunchSystemTime;
-
+/**
+ * 获取设备自定义名称
+ */
 + (NSString *)userDeviceName;
+/**
+ * 获取网络dns
+ */
 + (NSDictionary *)getDNSInfo;
-+ (NSDictionary *)getWifiAndIPAddress;
+/**
+ * 获取WiFi的 Access 与 IPAddress
+ * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
+ * iOS 13 之后需要定位开启 才能获取到信息
+ */
++ (NSDictionary *)getWifiAccessAndIPAddress;
 + (NSString *)getCurrentWifiSSID;
 + (NSString *)getIPAddress;
+/**
+ * 获取设备屏幕亮度
+ */
 + (CGFloat)screenBrightness;
-+ (float)getTorchLevel;
+/**
+ * 检测是否有物品靠近
+ */
 + (BOOL)getProximityState;
 @end
 

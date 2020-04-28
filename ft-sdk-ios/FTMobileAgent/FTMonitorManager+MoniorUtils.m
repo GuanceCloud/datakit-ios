@@ -57,7 +57,7 @@
  * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
  * iOS 13 之后需要定位开启 才能获取到信息
  */
-+ (NSDictionary *)getWifiAndIPAddress{
++ (NSDictionary *)getWifiAccessAndIPAddress{
     if (@available(iOS 13.0, *)) {
         if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
             return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
@@ -116,13 +116,6 @@
 }
 + (CGFloat)screenBrightness{
     return [UIScreen mainScreen].brightness;
-}
-+ (float)getTorchLevel{
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if([device hasTorch] ) {
-        return device.torchLevel;
-    }
-    return 0;
 }
 +(BOOL)getProximityState{
     if ([UIDevice currentDevice].proximityMonitoringEnabled == NO) {
