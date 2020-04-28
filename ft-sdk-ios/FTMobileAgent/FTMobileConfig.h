@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark ========== 基本设置 ==========
 /**
  * @abstract
- * 上报行为指标集名称 设置 enableAutoTrack = YES; 时 product 不能为空。
+ * 上报行为指标集名称 。（可选）
  * 命名只能包含英文字母、数字、中划线和下划线，区分大小写
 */
 @property (nonatomic, copy) NSString *product;
