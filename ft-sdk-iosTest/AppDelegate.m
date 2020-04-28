@@ -10,6 +10,7 @@
 #import "UITestManger.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
+#import <FTMobileAgent/FTMonitorManager.h>
 @interface AppDelegate ()
 
 @end
@@ -43,7 +44,6 @@
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         [config enableTrackScreenFlow:NO];
-        config.enableMonitorFlush = YES;
         [config setTrackViewFlowProduct:@"iOSDemo"];
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
@@ -51,6 +51,7 @@
         [UITestManger sharedManger];
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] logout];
+        [[FTMonitorManager sharedInstance] startFlush];
     }
     return YES;
 }
