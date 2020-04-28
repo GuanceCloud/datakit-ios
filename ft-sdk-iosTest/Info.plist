@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>允许使用相机</string>
 	<key>NSMotionUsageDescription</key>
 	<string>允许获取传感器数据</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
