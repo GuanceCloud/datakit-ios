@@ -47,6 +47,10 @@ NSError *error);
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, assign) float lightValue;
+@property (nonatomic, strong) CADisplayLink *link;
+@property (nonatomic, assign) NSTimeInterval lastTime;
+@property (nonatomic, assign) NSUInteger count;
+@property (nonatomic, assign) int fps;
 @end
 
 @implementation FTTaskMetrics
@@ -74,7 +78,7 @@ static dispatch_once_t onceToken;
         self.devicesListArray = [NSMutableArray new];
         self.metrics = [FTTaskMetrics new];
         _flushInterval = 10;
-        [self bluteeh];
+//        [self bluteeh];
         [self startNetMonitor];
     }
     return self;
@@ -111,44 +115,9 @@ static dispatch_once_t onceToken;
            [self.session stopRunning];
        }
        [self startMotionUpdate];
+       _link = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+       [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
 }
-- (void)lightSensitive{
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    
-    // 2.创建输入流
-    AVCaptureDeviceInput *input = [[AVCaptureDeviceInput alloc]initWithDevice:device error:nil];
-    
-    // 3.创建设备输出流
-    AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
-    [output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-    
-    // AVCaptureSession属性
-    self.session = [[AVCaptureSession alloc]init];
-    // 设置为高质量采集率
-    [self.session setSessionPreset:AVCaptureSessionPresetLow];
-    // 添加会话输入和输出
-    if ([self.session canAddInput:input]) {
-        [self.session addInput:input];
-    }
-    if ([self.session canAddOutput:output]) {
-        [self.session addOutput:output];
-    }
-    
-    // 9.启动会话
-    [self.session startRunning];
-}
-#pragma mark- AVCaptureVideoDataOutputSampleBufferDelegate的方法
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-
-  CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
-  NSDictionary *metadata = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)metadataDict];
-  CFRelease(metadataDict);
-  NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
-  float brightnessValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
-
-    self.lightValue = brightnessValue;
-}
-
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
 }
@@ -201,7 +170,58 @@ static dispatch_once_t onceToken;
     };
     [[FTMobileAgent sharedInstance] performSelector:@selector(trackUpload:callBack:) withObject:@[model] withObject:UploadResultBlock];
 }
+#pragma mark ========== FPS ==========
+- (void)tick:(CADisplayLink *)link {
+    if (_lastTime == 0) {
+        _lastTime = link.timestamp;
+        return;
+    }
+    _count++;
+    NSTimeInterval delta = link.timestamp - _lastTime;
+    if (delta < 1) return;
+    _lastTime = link.timestamp;
+    float fps = _count / delta;
+    _count = 0;
+    _fps = (int)round(fps);
+}
+
 #pragma mark ========== 传感器数据获取 ==========
+- (void)lightSensitive{
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    
+    // 2.创建输入流
+    AVCaptureDeviceInput *input = [[AVCaptureDeviceInput alloc]initWithDevice:device error:nil];
+    
+    // 3.创建设备输出流
+    AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
+    [output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
+    
+    // AVCaptureSession属性
+    self.session = [[AVCaptureSession alloc]init];
+    // 设置为高质量采集率
+    [self.session setSessionPreset:AVCaptureSessionPresetLow];
+    // 添加会话输入和输出
+    if ([self.session canAddInput:input]) {
+        [self.session addInput:input];
+    }
+    if ([self.session canAddOutput:output]) {
+        [self.session addOutput:output];
+    }
+    
+    // 9.启动会话
+    [self.session startRunning];
+}
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+
+  CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
+  NSDictionary *metadata = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)metadataDict];
+  CFRelease(metadataDict);
+  NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
+  float brightnessValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
+
+    self.lightValue = brightnessValue;
+}
+
 -(CMMotionManager *)motionManager{
     if (!_motionManager) {
         _motionManager = [[CMMotionManager alloc]init];
@@ -294,6 +314,7 @@ static dispatch_once_t onceToken;
     if (_monitorType & FTMonitorInfoTypeSensorLight ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
         [field addEntriesFromDictionary:@{@"light":[NSNumber numberWithFloat:self.lightValue]}];
     }
+    [field setValue:[NSNumber numberWithInt:_fps] forKey:@"FPS"];
     return field;
 }
 -(BOOL)getProximityState{
@@ -460,45 +481,45 @@ static dispatch_once_t onceToken;
     }
     [self.netFlow stopMonitor];
 }
-#pragma mark ========== 蓝牙 ==========
-- (void)bluteeh{
-    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
-    self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
-}
-- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-    NSString *strMessage = nil;
-    switch (central.state) {
-        case CBManagerStatePoweredOn: {
-            ZYDebug(@"蓝牙开启且可用");
-            //周边外设扫描
-            [self.centralManager scanForPeripheralsWithServices:nil options:nil];
-            return;
-        }
-            break;
-        case CBManagerStateUnknown: {
-            strMessage = @"手机没有识别到蓝牙，请检查手机。";
-        }
-            break;
-        case CBManagerStateResetting: {
-            strMessage = @"手机蓝牙已断开连接，重置中...";
-        }
-            break;
-        case CBManagerStateUnsupported: {
-            strMessage = @"手机不支持蓝牙功能，请更换手机。";
-        }
-            break;
-        case CBManagerStatePoweredOff: {
-            strMessage = @"手机蓝牙功能关闭，请前往设置打开蓝牙及控制中心打开蓝牙。";
-        }
-            break;
-        case CBManagerStateUnauthorized: {
-            strMessage = @"手机蓝牙功能没有权限，请前往设置。";
-        }
-            break;
-        default: { }
-            break;
-    }
-}
+//#pragma mark ========== 蓝牙 ==========
+//- (void)bluteeh{
+//    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
+//    self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
+//}
+//- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
+//    NSString *strMessage = nil;
+//    switch (central.state) {
+//        case CBManagerStatePoweredOn: {
+//            ZYDebug(@"蓝牙开启且可用");
+//            //周边外设扫描
+//            [self.centralManager scanForPeripheralsWithServices:nil options:nil];
+//            return;
+//        }
+//            break;
+//        case CBManagerStateUnknown: {
+//            strMessage = @"手机没有识别到蓝牙，请检查手机。";
+//        }
+//            break;
+//        case CBManagerStateResetting: {
+//            strMessage = @"手机蓝牙已断开连接，重置中...";
+//        }
+//            break;
+//        case CBManagerStateUnsupported: {
+//            strMessage = @"手机不支持蓝牙功能，请更换手机。";
+//        }
+//            break;
+//        case CBManagerStatePoweredOff: {
+//            strMessage = @"手机蓝牙功能关闭，请前往设置打开蓝牙及控制中心打开蓝牙。";
+//        }
+//            break;
+//        case CBManagerStateUnauthorized: {
+//            strMessage = @"手机蓝牙功能没有权限，请前往设置。";
+//        }
+//            break;
+//        default: { }
+//            break;
+//    }
+//}
 //- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *, id> *)advertisementData RSSI:(NSNumber *)RSSI {
 //    if (peripheral.name.length == 0) {
 //        return;
