@@ -318,6 +318,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSParameterAssert(Id);
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
 }
+-(void)setMonitorFlushInterval:(NSInteger)interval{
+    _config.flushInterval = interval;
+    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
+}
 -(void)startMonitorFlush{
     [[FTMonitorManager sharedInstance] startFlush];
 }

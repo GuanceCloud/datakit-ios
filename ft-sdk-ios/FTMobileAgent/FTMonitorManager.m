@@ -130,6 +130,10 @@ static dispatch_once_t onceToken;
 }
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
+    if(_timer){
+        [self stopFlush];
+        [self startFlush];
+    }
 }
 -(void)startFlush{
     if ((self.timer && [self.timer isValid])) {
@@ -148,12 +152,10 @@ static dispatch_once_t onceToken;
     });
 }
 -(void)stopFlush{
-    dispatch_async(dispatch_get_main_queue(), ^{
-          if (self.timer) {
-              [self.timer invalidate];
-          }
-          self.timer = nil;
-      });
+    if (self.timer) {
+        [self.timer invalidate];
+    }
+    self.timer = nil;
 }
 -(void)flush{
     NSDictionary *addDict = [self getMonitorTagFiledDict];

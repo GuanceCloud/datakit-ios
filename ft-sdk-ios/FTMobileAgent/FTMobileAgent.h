@@ -93,6 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
 */
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
 /**
+ * 设置 监控上传周期
+*/
+-(void)setMonitorFlushInterval:(NSInteger)interval;
+/**
  * 开启监控同步
 */
 -(void)startMonitorFlush;
