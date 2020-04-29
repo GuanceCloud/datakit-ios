@@ -105,6 +105,7 @@ static dispatch_once_t onceToken;
        if (_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll) {
            if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
                self.pedometer = [[CMPedometer alloc] init];
+               [self startPedometerUpdatesTodayWithHandler:nil];
            }
            [self lightSensitive];
        }else if(_monitorType & FTMonitorInfoTypeSensorStep){
@@ -317,10 +318,10 @@ static dispatch_once_t onceToken;
     }
     if(_pedometer && (_monitorType & FTMonitorInfoTypeSensorStep ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll)){
     [self startPedometerUpdatesTodayWithHandler:nil];
-    [field addEntriesFromDictionary:@{@"steps":self.steps}];
+    [field setValue:self.steps forKey:@"steps"];
     }
     if (_monitorType & FTMonitorInfoTypeSensorLight ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
-        [field addEntriesFromDictionary:@{@"light":[NSNumber numberWithFloat:self.lightValue]}];
+        [field setValue:[NSNumber numberWithFloat:self.lightValue] forKey:@"light"];
     }
     if (_monitorType & FTMonitorInfoTypeSensorTorch ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
       [field setValue:[NSNumber numberWithFloat:[FTMoniorUtils getTorchLevel]] forKey:@"torch"];
