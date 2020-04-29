@@ -44,14 +44,15 @@
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         [config enableTrackScreenFlow:NO];
-        [config setTrackViewFlowProduct:@"iOSDemo"];
+        [config setProduct:@"iOSDemo"];
+        config.flushInterval = 15;
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
         [UITestManger sharedManger];
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] logout];
-        [[FTMonitorManager sharedInstance] startFlush];
+        [[FTMobileAgent sharedInstance] startMonitorFlush];
     }
     return YES;
 }
