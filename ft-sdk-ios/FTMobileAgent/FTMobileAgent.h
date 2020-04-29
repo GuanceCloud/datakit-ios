@@ -11,6 +11,7 @@
 #import "FTTrackBean.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@class CBUUID;
 
 @interface FTMobileAgent : NSObject
 #pragma mark ========== init instance ==========
@@ -91,6 +92,16 @@ NS_ASSUME_NONNULL_BEGIN
  * @param exts      用户其他信息
 */
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(nullable NSDictionary *)exts;
+/**
+ * 开启监控同步
+*/
+-(void)startMonitorFlush;
+/**
+ * 在监控项设置抓取蓝牙后使用
+ * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过的设备使用NSUserDefault保存起来
+ * 用于采集已连接设备相关信息
+*/
+-(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs;
 /**
  * 注销当前用户
 */

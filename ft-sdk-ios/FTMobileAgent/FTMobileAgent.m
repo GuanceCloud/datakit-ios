@@ -99,6 +99,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.config = config;
         }
         [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
+        [[FTMonitorManager sharedInstance] setFlushInterval:self.config.flushInterval];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
@@ -316,6 +317,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSParameterAssert(name);
     NSParameterAssert(Id);
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+}
+-(void)startMonitorFlush{
+    [[FTMonitorManager sharedInstance] startFlush];
+}
+-(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs{
+    [[FTMonitorManager sharedInstance] setConnectBluetoothCBUUID:serviceUUIDs];
 }
 - (void)logout{
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];

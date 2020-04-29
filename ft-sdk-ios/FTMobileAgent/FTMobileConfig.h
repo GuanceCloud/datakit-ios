@@ -44,6 +44,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
  *   FTMonitorInfoTypeSystem   - 开机时间、设备名
+ *   FTMonitorInfoTypeFPS      - 每秒传输帧数
  *   FTMonitorInfoTypeSensor   - 屏幕亮度、当天步数、距离传感器、陀螺仪三轴旋转角速度、三轴线性加速度、三轴地磁强度
  *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
  *   FTMonitorInfoTypeSensorBrightness - 屏幕亮度
@@ -52,6 +53,8 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeSensorRotation   - 陀螺仪三轴旋转角速度
  *   FTMonitorInfoTypeSensorAcceleration - 三轴线性加速度
  *   FTMonitorInfoTypeSensorMagnetic   - 三轴地磁强度
+ *   FTMonitorInfoTypeSensorLight      -  环境光感参数
+
  */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
@@ -72,6 +75,9 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeSensorAcceleration = 1 << 15,
     FTMonitorInfoTypeSensorMagnetic     = 1 << 16,
     FTMonitorInfoTypeSensorLight        = 1 << 17,
+    FTMonitorInfoTypeSensorTorch        = 1 << 18,
+    FTMonitorInfoTypeFPS                = 1 << 19,
+
 
 };
 NS_ASSUME_NONNULL_BEGIN
@@ -191,6 +197,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
+/**
+ * @property
+ *
+ * @abstract
+ * 两次监控上传数据发送的时间间隔，单位秒
+ *
+ * @discussion
+ * 默认值为 10 秒
+*/
+@property (nonatomic) NSInteger flushInterval;
 @end
 
 NS_ASSUME_NONNULL_END

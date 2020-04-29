@@ -32,7 +32,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
 		4A2D57EF2458141300478547 /* FTMoniorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57ED2458141300478547 /* FTMoniorUtils.h */; };
 		4A2D57F02458141300478547 /* FTMoniorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMoniorUtils.m */; };
@@ -306,13 +306,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
-				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMoniorUtils.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				4AECBCED244EE8450023DEF7 /* FTURLProtocol.h in Headers */,
+				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
