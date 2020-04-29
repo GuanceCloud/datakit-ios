@@ -501,7 +501,8 @@ typedef enum FTError : NSInteger {
   
  1.  方法 
        
- ```objective-c   
+ ```objective-c 
+//FTMobileConfig  
  /**
   * @property
   *
@@ -514,11 +515,26 @@ typedef enum FTError : NSInteger {
 @property (nonatomic) NSInteger flushInterval;   
  ``` 
    
+ ```objective-c  
+// FTMobileAgent  
+/**
+ * 设置 监控上传周期
+ */
+-(void)setMonitorFlushInterval:(NSInteger)interval;
+ ```    
  2. 使用示例：
    
  ```objective-c   
- 
+  //FTMobileConfig  
+  
   config.flushInterval = 15;
+ ``` 
+ 
+ ```objective-c   
+ //FTMobileAgent
+ 
+ [[FTMobileAgent sharedInstance] setMonitorFlushInterval:10];
+
  ``` 
 
 ###  2. 启动上传    
@@ -529,11 +545,12 @@ typedef enum FTError : NSInteger {
  * 开启监控同步
  */
 -(void)startMonitorFlush;
- ```       
-
+ ```     
+       
+ 
  2. 使用示例：
  
- ```
+ ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
   
  ```      
@@ -552,7 +569,23 @@ typedef enum FTError : NSInteger {
  * 当 `FTMonitorInfoType` 中的 `FTMonitorInfoTypeSensor` 包含（`FTMonitorInfoTypeSensorStep`   、`FTMonitorInfoTypeSensorProximity`   、`FTMonitorInfoTypeSensorRotation`、`FTMonitorInfoTypeSensorAcceleration`   、`FTMonitorInfoTypeSensorMagnetic` 、`FTMonitorInfoTypeSensorLight`、`FTMonitorInfoTypeSensorTorch` ）设置这一项会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。
  *  `FTMonitorInfoTypeSensorLight`   利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
  *  `FTMonitorInfoTypeSensorTorch`  获取应用内设置的手电筒亮度级别。
-         
+ *   `FTMonitorInfoTypeBluetooth` 获取应用已匹配过的外设信息，需要开发者在第一次匹配时,保存起来,比如用 **NSUserDefaults**。  
+  使用以下方法将信息传给 SDK 。 
+ 
+ ```objective-c
+ /**
+ * 在监控项设置抓取蓝牙后使用
+ * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过的设备使用NSUserDefault保存起来
+ * 用于采集已连接设备相关信息
+*/
+-(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs;
+```  
+使用示例:
+
+ ```objective-c
+ [[FTMobileAgent sharedInstance] setConnectBluetoothCBUUID:@[[CBUUID UUIDWithString:serviceUUID0],[CBUUID UUIDWithString:characteristicUUID4],[CBUUID UUIDWithString:characteristicHeartUUID0]]];
+ 
+ ```     
  
 ## 十、常见问题
 ### 1. 关于查询指标 IMEI
