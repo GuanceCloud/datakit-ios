@@ -9,6 +9,7 @@
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
+#import <ft_sdk_iosTest-Swift.h>
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import "TestFlowTrackVC.h"
@@ -64,6 +65,8 @@
 }
 - (void)testTrackImmediateList{
     //bean1 用户自己传时间  bean2 自动赋值
+    [[[MethodTest alloc] init] ftStartLocation];
+    return;
     FTTrackBean *bean1 = [FTTrackBean new];
     bean1.measurement = @"testImmediateList";
     bean1.field =@{@"test":@"testImmediateList"};
