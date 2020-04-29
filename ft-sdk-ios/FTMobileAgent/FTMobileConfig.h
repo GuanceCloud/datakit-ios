@@ -189,12 +189,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  设置是否抓取页面流程图
  */
 - (void)enableTrackScreenFlow:(BOOL)enable;
-/**
- * @abstract
- *  设置上报流程行为指标集名
- */
-- (void)setTrackViewFlowProduct:(NSString *)product;
-
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
 /**

@@ -69,9 +69,6 @@
 -(void)enableTrackScreenFlow:(BOOL)enable{
     self.enableScreenFlow = enable;
 }
--(void)setTrackViewFlowProduct:(NSString *)product{
-    self.product = product;
-}
 -(void)setXDataKitUUID:(NSString *)XDataKitUUID{
     if (XDataKitUUID.length>0) {
         _XDataKitUUID = XDataKitUUID;
