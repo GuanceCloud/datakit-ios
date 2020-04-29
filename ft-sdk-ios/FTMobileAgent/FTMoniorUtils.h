@@ -39,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 检测是否有物品靠近
  */
 + (BOOL)getProximityState;
+/**
+ * 获取APP内调用闪光灯亮度Level
+ */
++ (float)getTorchLevel;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -123,4 +123,8 @@
     }
     return [UIDevice currentDevice].proximityState;
 }
++ (float)getTorchLevel{
+   AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+      return device.torchLevel;
+}
 @end
