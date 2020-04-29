@@ -200,6 +200,9 @@ static dispatch_once_t onceToken;
 
 #pragma mark ========== 传感器数据获取 ==========
 - (void)lightSensitive{
+    if (_session|| [_session isRunning]) {
+        return;
+    }
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     
     // 2.创建输入流
@@ -207,7 +210,12 @@ static dispatch_once_t onceToken;
     
     // 3.创建设备输出流
     AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
-    [output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
+    if (input == nil || output == nil) {
+        ZYLog(@"模拟器无法获取环境光感参数");
+        return;
+    }
+    dispatch_queue_t  bufferQueue = dispatch_queue_create([@"ft_buffer_light" UTF8String], DISPATCH_QUEUE_SERIAL);
+    [output setSampleBufferDelegate:self queue:bufferQueue];
     
     // AVCaptureSession属性
     self.session = [[AVCaptureSession alloc]init];
