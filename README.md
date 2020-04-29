@@ -144,7 +144,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
    配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
    
  ```objective-c
-   /**
+  /**
  * @enum  TAG 中的设备信息
  *
  * @constant
@@ -156,7 +156,6 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
  *   FTMonitorInfoTypeSystem   - 开机时间、设备名
- *   FTMonitorInfoTypeFPS      - 每秒传输帧数
  *   FTMonitorInfoTypeSensor   - 屏幕亮度、当天步数、距离传感器、陀螺仪三轴旋转角速度、三轴线性加速度、三轴地磁强度
  *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
  *   FTMonitorInfoTypeSensorBrightness - 屏幕亮度
@@ -166,7 +165,9 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeSensorAcceleration - 三轴线性加速度
  *   FTMonitorInfoTypeSensorMagnetic   - 三轴地磁强度
  *   FTMonitorInfoTypeSensorLight      - 环境光感参数
-   */
+ *   FTMonitorInfoTypeSensorTorch      - 手电筒亮度
+ *   FTMonitorInfoTypeFPS              - 每秒传输帧数
+ */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
     FTMonitorInfoTypeBattery      = 1 << 1,
@@ -177,17 +178,18 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeCamera       = 1 << 6,
     FTMonitorInfoTypeLocation     = 1 << 7,
     FTMonitorInfoTypeSystem       = 1 << 8,
-    FTMonitorInfoTypeFPS          = 1 << 9,
-    FTMonitorInfoTypeSensor       = 1 << 10,
-    FTMonitorInfoTypeBluetooth    = 1 << 11,
-    FTMonitorInfoTypeSensorBrightness   = 1 << 12,
-    FTMonitorInfoTypeSensorStep         = 1 << 13,
-    FTMonitorInfoTypeSensorProximity    = 1 << 14,
-    FTMonitorInfoTypeSensorRotation     = 1 << 15,
-    FTMonitorInfoTypeSensorAcceleration = 1 << 16,
-    FTMonitorInfoTypeSensorMagnetic     = 1 << 17,
-    FTMonitorInfoTypeSensorLight        = 1 << 18,
-}; 
+    FTMonitorInfoTypeSensor       = 1 << 9,
+    FTMonitorInfoTypeBluetooth    = 1 << 10,
+    FTMonitorInfoTypeSensorBrightness   = 1 << 11,
+    FTMonitorInfoTypeSensorStep         = 1 << 12,
+    FTMonitorInfoTypeSensorProximity    = 1 << 13,
+    FTMonitorInfoTypeSensorRotation     = 1 << 14,
+    FTMonitorInfoTypeSensorAcceleration = 1 << 15,
+    FTMonitorInfoTypeSensorMagnetic     = 1 << 16,
+    FTMonitorInfoTypeSensorLight        = 1 << 17,
+    FTMonitorInfoTypeSensorTorch        = 1 << 18,
+    FTMonitorInfoTypeFPS                = 1 << 19,
+};
       
  ```    	
   **注意：**    
@@ -219,7 +221,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |blackViewClass|NSArray|UI控件黑名单|否|
 |whiteVCList|NSArray|控制器白名单|否|
 |blackVCList|NSArray|控制器黑名单|否|
-|monitorInfoType|NS_OPTIONS|[采集数据](#6-采集数据配置)|否|
+|monitorInfoType|NS_OPTIONS|[采集数据](#5-采集数据配置)|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否(默认不开启)|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
 |product|NSString|上报指标集名称|否|
@@ -445,7 +447,6 @@ typedef enum FTError : NSInteger {
 ```objective-c
  FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"Your App metricsUrl" akId:@"Your App akId" akSecret: @"Your App akSecret" enableRequestSigning:YES];
  [config enableTrackScreenFlow:YES];//设置开启全埋点上报流程图
- [config setTrackViewFlowProduct:@"iOSDemo"];//设置上报流程行为指标集名
 ```
 ### 2. 主动埋点上报流程图
  DF SDK 公开了 2 个方法，用户通过这两个方法可以在需要的地方实现流程图埋点，然后将数据上传到服务端。
@@ -549,8 +550,8 @@ typedef enum FTError : NSInteger {
 
  * 当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 全部监控项抓取。
  * 当 `FTMonitorInfoType` 中的 `FTMonitorInfoTypeSensor` 包含（`FTMonitorInfoTypeSensorStep`   、`FTMonitorInfoTypeSensorProximity`   、`FTMonitorInfoTypeSensorRotation`、`FTMonitorInfoTypeSensorAcceleration`   、`FTMonitorInfoTypeSensorMagnetic` 、`FTMonitorInfoTypeSensorLight`、`FTMonitorInfoTypeSensorTorch` ）设置这一项会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。
- *  `FTMonitorInfoTypeSensorLight`   利用摄像头获取环境光感参数, 会启动AVCaptureSession，按需使用。
- *  `FTMonitorInfoTypeSensorTorch` 获取的手电亮度，实际上是应用内设置的闪光灯亮度。
+ *  `FTMonitorInfoTypeSensorLight`   利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
+ *  `FTMonitorInfoTypeSensorTorch`  获取应用内设置的手电筒亮度级别。
          
  
 ## 十、常见问题
