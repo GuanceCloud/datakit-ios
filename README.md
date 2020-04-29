@@ -145,31 +145,58 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
    
  ```objective-c
    /**
-    * @enum  TAG 中的设备信息
-    *
-    * @constant
-    *   FTMonitorInfoTypeBattery  - 电池总量、使用量
-    *   FTMonitorInfoTypeMemory   - 内存总量、使用率
-    *   FTMonitorInfoTypeCpu      - CPU型号、占用率
-    *   FTMonitorInfoTypeCpu      - GPU型号、占用率
-    *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
-    *   FTMonitorInfoTypeCamera   - 前置/后置 像素
-    *   FTMonitorInfoTypeLocation - 位置信息  eg:上海
+ * @enum  TAG 中的设备信息
+ *
+ * @constant
+ *   FTMonitorInfoTypeBattery  - 电池总量、使用量
+ *   FTMonitorInfoTypeMemory   - 内存总量、使用率
+ *   FTMonitorInfoTypeCpu      - CPU型号、占用率
+ *   FTMonitorInfoTypeCpu      - GPU型号、占用率
+ *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
+ *   FTMonitorInfoTypeCamera   - 前置/后置 像素
+ *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
+ *   FTMonitorInfoTypeSystem   - 开机时间、设备名
+ *   FTMonitorInfoTypeFPS      - 每秒传输帧数
+ *   FTMonitorInfoTypeSensor   - 屏幕亮度、当天步数、距离传感器、陀螺仪三轴旋转角速度、三轴线性加速度、三轴地磁强度
+ *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
+ *   FTMonitorInfoTypeSensorBrightness - 屏幕亮度
+ *   FTMonitorInfoTypeSensorStep       - 当天步数
+ *   FTMonitorInfoTypeSensorProximity  - 距离传感器
+ *   FTMonitorInfoTypeSensorRotation   - 陀螺仪三轴旋转角速度
+ *   FTMonitorInfoTypeSensorAcceleration - 三轴线性加速度
+ *   FTMonitorInfoTypeSensorMagnetic   - 三轴地磁强度
+ *   FTMonitorInfoTypeSensorLight      - 环境光感参数
    */
- typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
-     FTMonitorInfoTypeAll         = 1 << 0,
-     FTMonitorInfoTypeBattery     = 1 << 1,
-     FTMonitorInfoTypeMemory      = 1 << 2,
-     FTMonitorInfoTypeCpu         = 1 << 3,
-     FTMonitorInfoTypeGpu         = 1 << 4,
-     FTMonitorInfoTypeNetwork     = 1 << 5,
-     FTMonitorInfoTypeCamera      = 1 << 6,
-     FTMonitorInfoTypeLocation    = 1 << 7,
- }; 
+typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
+    FTMonitorInfoTypeAll          = 1 << 0,
+    FTMonitorInfoTypeBattery      = 1 << 1,
+    FTMonitorInfoTypeMemory       = 1 << 2,
+    FTMonitorInfoTypeCpu          = 1 << 3,
+    FTMonitorInfoTypeGpu          = 1 << 4,
+    FTMonitorInfoTypeNetwork      = 1 << 5,
+    FTMonitorInfoTypeCamera       = 1 << 6,
+    FTMonitorInfoTypeLocation     = 1 << 7,
+    FTMonitorInfoTypeSystem       = 1 << 8,
+    FTMonitorInfoTypeFPS          = 1 << 9,
+    FTMonitorInfoTypeSensor       = 1 << 10,
+    FTMonitorInfoTypeBluetooth    = 1 << 11,
+    FTMonitorInfoTypeSensorBrightness   = 1 << 12,
+    FTMonitorInfoTypeSensorStep         = 1 << 13,
+    FTMonitorInfoTypeSensorProximity    = 1 << 14,
+    FTMonitorInfoTypeSensorRotation     = 1 << 15,
+    FTMonitorInfoTypeSensorAcceleration = 1 << 16,
+    FTMonitorInfoTypeSensorMagnetic     = 1 << 17,
+    FTMonitorInfoTypeSensorLight        = 1 << 18,
+}; 
       
  ```    	
-  **注意：[关于GPU使用率获取](#2-关于-gpu-使用率)**   
- 
+  **注意：**    
+  
+   1. [关于GPU使用率获取](#2-关于-gpu-使用率)   
+   2. [关于监控数据周期上报](#九监控数据周期上报)
+    
+
+  
 ### 6. 设置是否需要视图跳转流程图
 
  前提：设置全埋点 `enableAutoTrack =  YES;`。        
@@ -195,7 +222,8 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
 |monitorInfoType|NS_OPTIONS|[采集数据](#6-采集数据配置)|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否(默认不开启)|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
-|product|NSString|上报流程行为指标集名称|在设置enableScreenFlow为YES时必填|
+|product|NSString|上报指标集名称|否|
+|flushInterval|NSInteger|监控数据周期上报时间间隔|否（默认10s）|
 
 ### 2. 错误码
 
@@ -464,10 +492,68 @@ typedef enum FTError : NSInteger {
  //节点二：
  [[FTMobileAgent sharedInstance] flowTrack:@"oa" traceId:@"fid_1" name:@"直属领导审批" parent:@"提交申请" tags:@{@"申请人":@"张三",@"审批人":@"李四"} duration:1800000];
 
+ ```    
+ 
+## 九、监控数据周期上报 
+### 1.监控周期设置 
+  在 `FTMobileConfig` 中设置 `flushInterval `。
+  
+ 1.  方法 
+       
+ ```objective-c   
+ /**
+  * @property
+  *
+  * @abstract
+  * 两次数据发送的时间间隔，单位秒
+  *
+  * @discussion
+  * 默认值为 10 秒
+ */
+@property (nonatomic) NSInteger flushInterval;   
+ ``` 
+   
+ 2. 使用示例：
+   
+ ```objective-c   
+ 
+  config.flushInterval = 15;
+ ``` 
+
+###  2. 启动上传    
+ 1.  方法    
+
+ ```objective-c    
+/**
+ * 开启监控同步
+ */
+-(void)startMonitorFlush;
+ ```       
+
+ 2. 使用示例：
+ 
  ```
+  [[FTMobileAgent sharedInstance] startMonitorFlush];
+  
+ ```      
+ 
+### 3.有关监控项注意事项    
+ * 权限使用    
+    
+| 监控类型| 使用权限 |
+|:--------:|:--------:|
+|  FTMonitorInfoTypeLocation  |Privacy - Location Always Usage Description、Privacy - Location When In Use Usage Description、Privacy - Location Usage Description （按需求选择一个或读多个）|
+| FTMonitorInfoTypeSensor、FTMonitorInfoTypeSensorStep、FTMonitorInfoTypeSensorProximity、FTMonitorInfoTypeSensorRotation、FTMonitorInfoTypeSensorAcceleration、FTMonitorInfoTypeSensorMagnetic   |  Privacy - Motion Usage Description|
+|FTMonitorInfoTypeSensorLight|Privacy - Camera Usage Description|
+|FTMonitorInfoTypeBluetooth|Privacy - Bluetooth Always Usage Description|
 
-
-## 九、常见问题
+ * 当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 全部监控项抓取。
+ * 当 `FTMonitorInfoType` 中的 `FTMonitorInfoTypeSensor` 包含（`FTMonitorInfoTypeSensorStep`   、`FTMonitorInfoTypeSensorProximity`   、`FTMonitorInfoTypeSensorRotation`、`FTMonitorInfoTypeSensorAcceleration`   、`FTMonitorInfoTypeSensorMagnetic` 、`FTMonitorInfoTypeSensorLight`、`FTMonitorInfoTypeSensorTorch` ）设置这一项会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。
+ *  `FTMonitorInfoTypeSensorLight`   利用摄像头获取环境光感参数, 会启动AVCaptureSession，按需使用。
+ *  `FTMonitorInfoTypeSensorTorch` 获取的手电亮度，实际上是应用内设置的闪光灯亮度。
+         
+ 
+## 十、常见问题
 ### 1. 关于查询指标 IMEI
    因为隐私问题，苹果用户在 iOS5 以后禁用代码直接获取 **IMEI** 的值。所以 iOS SDK 中不支持获取 **IMEI**。
    
