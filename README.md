@@ -26,7 +26,7 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/_VERSION_.zip    
 	 
 2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。
-3.  添加依赖库：项目设置 `Build Phase` -> `Link Binary With Libraries` 添加：`UIKit` 、 `Foundation` 、`libz.tbd`。
+3.  添加依赖库：项目设置 `Build Phase` -> `Link Binary With Libraries` 添加：`UIKit` 、 `Foundation` 、`libz.tbd`，如果监控项开启且抓取网络数据，则需要添加 `libresolv.9.tbd`。
  
    
 ### 2. 通过 CocoaPods 导入
