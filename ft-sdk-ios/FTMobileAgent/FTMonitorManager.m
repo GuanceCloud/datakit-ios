@@ -24,6 +24,8 @@
 #import <CoreMotion/CoreMotion.h>
 #import "FTMoniorUtils.h"
 #import <AVFoundation/AVFoundation.h>
+#import "ZYAspects.h"
+
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
@@ -43,6 +45,7 @@ NSError *error);
 @property (nonatomic, strong) FTTaskMetrics *metrics;
 @property (nonatomic, strong) CMPedometer *pedometer;
 @property (nonatomic, strong) CMMotionManager *motionManager;
+@property (nonatomic, strong) NSNumber *steps;
 @property (nonatomic, assign) NSInteger flushInterval;
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) AVCaptureSession *session;
@@ -51,6 +54,8 @@ NSError *error);
 @property (nonatomic, assign) NSTimeInterval lastTime;
 @property (nonatomic, assign) NSUInteger count;
 @property (nonatomic, assign) int fps;
+@property (nonatomic, strong) NSDictionary *blDict;
+@property (nonatomic, assign) BOOL isBlueOn;
 @end
 
 @implementation FTTaskMetrics
@@ -78,7 +83,6 @@ static dispatch_once_t onceToken;
         self.devicesListArray = [NSMutableArray new];
         self.metrics = [FTTaskMetrics new];
         _flushInterval = 10;
-//        [self bluteeh];
         [self startNetMonitor];
     }
     return self;
@@ -106,6 +110,7 @@ static dispatch_once_t onceToken;
        }else if(_monitorType & FTMonitorInfoTypeSensorStep){
            if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
                self.pedometer = [[CMPedometer alloc] init];
+               [self startPedometerUpdatesTodayWithHandler:nil];
            }
            [self startMotionUpdate];
        }else if (_monitorType & FTMonitorInfoTypeSensorLight){
@@ -115,8 +120,13 @@ static dispatch_once_t onceToken;
            [self.session stopRunning];
        }
        [self startMotionUpdate];
-       _link = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
-       [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeFPS) {
+        _link = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+        [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    }
+    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeBluetooth) {
+        [self bluteeh];
+    }
 }
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
@@ -282,7 +292,8 @@ static dispatch_once_t onceToken;
       startPedometerUpdatesFromDate:fromDate
                         withHandler:^(CMPedometerData *_Nullable pedometerData,
                                       NSError *_Nullable error) {
-                            handler(pedometerData.numberOfSteps, error);
+      self.steps = pedometerData.numberOfSteps;
+      handler? handler(pedometerData.numberOfSteps, error):nil;
                         }];
 }
 - (NSDictionary *)getMotionDatas{
@@ -303,25 +314,16 @@ static dispatch_once_t onceToken;
                                           @"magnetic_z":[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.z]}];
     }
     if(_pedometer && (_monitorType & FTMonitorInfoTypeSensorStep ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll)){
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    [self startPedometerUpdatesTodayWithHandler:^(NSNumber * _Nonnull steps, NSError * _Nonnull error) {
-        [field addEntriesFromDictionary:@{@"steps":steps}];
-          dispatch_group_leave(group);
-    }];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    [self startPedometerUpdatesTodayWithHandler:nil];
+    [field addEntriesFromDictionary:@{@"steps":self.steps}];
     }
     if (_monitorType & FTMonitorInfoTypeSensorLight ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
         [field addEntriesFromDictionary:@{@"light":[NSNumber numberWithFloat:self.lightValue]}];
     }
-    [field setValue:[NSNumber numberWithInt:_fps] forKey:@"FPS"];
-    return field;
-}
--(BOOL)getProximityState{
-    if ([UIDevice currentDevice].proximityMonitoringEnabled == NO){
-        [UIDevice currentDevice].proximityMonitoringEnabled = YES;
+    if (_monitorType & FTMonitorInfoTypeSensorTorch ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
+      [field setValue:[NSNumber numberWithFloat:[FTMoniorUtils getTorchLevel]] forKey:@"torch"];
     }
-    return [UIDevice currentDevice].proximityState;
+    return field;
 }
 /**
  *  停止监听运动数据
@@ -456,6 +458,14 @@ static dispatch_once_t onceToken;
     if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorProximity) {
         [field setValue:[NSNumber numberWithBool:[FTMoniorUtils getProximityState]] forKey:@"proximity"];
     }
+    if (self.monitorType & FTMonitorInfoTypeFPS || self.monitorType &FTMonitorInfoTypeAll) {
+        [field setValue:[NSNumber numberWithInt:_fps] forKey:@"fps"];
+    }
+    if (self.monitorType & FTMonitorInfoTypeBluetooth || self.monitorType & FTMonitorInfoTypeAll) {
+        [field addEntriesFromDictionary:_blDict];
+        [field setValue:[NSNumber numberWithBool:self.isBlueOn] forKey:@"bt_open"];
+        
+    }
     [field addEntriesFromDictionary:[self getMotionDatas]];
 
     return @{@"field":field,@"tag":tag};
@@ -482,59 +492,23 @@ static dispatch_once_t onceToken;
     [self.netFlow stopMonitor];
 }
 //#pragma mark ========== 蓝牙 ==========
-//- (void)bluteeh{
-//    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
-//    self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
-//}
-//- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-//    NSString *strMessage = nil;
-//    switch (central.state) {
-//        case CBManagerStatePoweredOn: {
-//            ZYDebug(@"蓝牙开启且可用");
-//            //周边外设扫描
-//            [self.centralManager scanForPeripheralsWithServices:nil options:nil];
-//            return;
-//        }
-//            break;
-//        case CBManagerStateUnknown: {
-//            strMessage = @"手机没有识别到蓝牙，请检查手机。";
-//        }
-//            break;
-//        case CBManagerStateResetting: {
-//            strMessage = @"手机蓝牙已断开连接，重置中...";
-//        }
-//            break;
-//        case CBManagerStateUnsupported: {
-//            strMessage = @"手机不支持蓝牙功能，请更换手机。";
-//        }
-//            break;
-//        case CBManagerStatePoweredOff: {
-//            strMessage = @"手机蓝牙功能关闭，请前往设置打开蓝牙及控制中心打开蓝牙。";
-//        }
-//            break;
-//        case CBManagerStateUnauthorized: {
-//            strMessage = @"手机蓝牙功能没有权限，请前往设置。";
-//        }
-//            break;
-//        default: { }
-//            break;
-//    }
-//}
-//- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *, id> *)advertisementData RSSI:(NSNumber *)RSSI {
-//    if (peripheral.name.length == 0) {
-//        return;
-//    }
-//    if(![self.devicesListArray containsObject:peripheral] && peripheral.name>0)
-//        [self.devicesListArray addObject:peripheral];
-//
-//    NSLog(@"%@", peripheral.identifier);
-//    NSLog(@"%@", RSSI);
-//    ZYDebug(@"扫描到一个设备设备：%@",peripheral.name);
-//    ZYDebug(@"advertisementData: %@",advertisementData);
-//    // RSSI 是设备信号强度
-//    // advertisementData 设备广告标识
-//    // 一般把新扫描到的设备添加到一个数组中，并更新列表
-//}
+-(void)setConnectBluetoothCBUUID:(NSArray<CBUUID *> *)serviceUUIDs{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [serviceUUIDs enumerateObjectsUsingBlock:^(CBUUID *obj, NSUInteger idx, BOOL *stop) {
+        [dict setValue:[obj UUIDString] forKey:[NSString stringWithFormat:@"bt_device_%lu",(unsigned long)idx]];
+    }];
+    _blDict = dict;
+}
+- (void)bluteeh{
+    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
+    self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
+}
+- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
+    if (@available(iOS 10.0, *)) {
+        self.isBlueOn = (central.state ==CBManagerStatePoweredOn);
+    } 
+}
+
 - (void)resetInstance{
     onceToken = 0;
     sharedInstance =nil;
