@@ -44,7 +44,6 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
  *   FTMonitorInfoTypeSystem   - 开机时间、设备名
- *   FTMonitorInfoTypeFPS      - 每秒传输帧数
  *   FTMonitorInfoTypeSensor   - 屏幕亮度、当天步数、距离传感器、陀螺仪三轴旋转角速度、三轴线性加速度、三轴地磁强度
  *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
  *   FTMonitorInfoTypeSensorBrightness - 屏幕亮度
@@ -53,8 +52,9 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeSensorRotation   - 陀螺仪三轴旋转角速度
  *   FTMonitorInfoTypeSensorAcceleration - 三轴线性加速度
  *   FTMonitorInfoTypeSensorMagnetic   - 三轴地磁强度
- *   FTMonitorInfoTypeSensorLight      -  环境光感参数
-
+ *   FTMonitorInfoTypeSensorLight      - 环境光感参数
+ *   FTMonitorInfoTypeSensorTorch      - 手电筒亮度级别0-1
+ *   FTMonitorInfoTypeFPS              - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 1 << 0,
@@ -77,8 +77,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeSensorLight        = 1 << 17,
     FTMonitorInfoTypeSensorTorch        = 1 << 18,
     FTMonitorInfoTypeFPS                = 1 << 19,
-
-
 };
 NS_ASSUME_NONNULL_BEGIN
 
