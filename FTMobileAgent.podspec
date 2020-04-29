@@ -36,7 +36,7 @@ THE SOFTWARE.
 
   # s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent_1.0.0-alpha.9.zip" }
   s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/$JENKINS_DYNAMIC_VERSION.zip" }
-  s.library = "resolve.9"
+  s.library = "resolv.9"
   s.vendored_frameworks = 'FTMobileAgent.framework'
   # s.dependency "JSONKit", "~> 1.4"
 
