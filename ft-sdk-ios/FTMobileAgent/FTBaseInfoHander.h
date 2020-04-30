@@ -118,6 +118,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  校验 product 是否符合 只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
 */
 + (BOOL)verifyProductStr:(NSString *)product;
+/**
+ *  @abstract
+ *  MD5
+*/
++ (NSString *)ft_md5EncryptStr:(NSString *)string;
 @end
 
 NS_ASSUME_NONNULL_END

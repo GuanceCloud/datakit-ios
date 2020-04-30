@@ -36,7 +36,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 @implementation FTAutoTrack
 -(instancetype)init{
   self = [super init];
-  if (!self) {
+  if (self) {
        self.preFlowTime = 0;
        self.flowId = [[NSUUID UUID] UUIDString];
   }
@@ -120,7 +120,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     NSMutableDictionary *tags = @{@"$traceId":self.flowId,
                                   @"$name":NSStringFromClass(vc.class)}.mutableCopy;
     if (parent.length>0) {
-        [tags setObject:parent forKey:@"$parent"];
+        [tags setValue:parent forKey:@"$parent"];
     }
     NSDictionary *opdata = @{@"measurement":product,
                                   @"tags":tags,
@@ -346,17 +346,19 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     }
     @try {
         NSMutableDictionary *tags = [NSMutableDictionary new];
-        NSDictionary *field = @{@"event":op};
+        NSMutableDictionary *field = @{@"event_id":[FTBaseInfoHander ft_md5EncryptStr:op],
+                                       @"event":op
+        }.mutableCopy;
         NSString *measurement =self.config.product.length>0?[NSString stringWithFormat:@"mobile_tracker_%@",self.config.product]:@"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {
-              [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
+                [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
             }else if ([cpn isKindOfClass:UIViewController.class]){
-              [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn class])}];
+                [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn class])}];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                [tags addEntriesFromDictionary:@{@"vtp":[view ft_getParentsView]}];
+                [field setValue:[view ft_getParentsView] forKey:@"vtp"];
             }
         }
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{

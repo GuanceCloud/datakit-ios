@@ -632,8 +632,18 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     
     return [iosDateFormater stringFromDate:date];
 }
++ (NSString *)ft_md5EncryptStr:(NSString *)string{
+    const char *cStr = [string UTF8String];
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(cStr, (CC_LONG)strlen(cStr), digest);
+    NSMutableString *result = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+        [result appendFormat:@"%02X", digest[i]];
+    }
+    return result;
+}
 #pragma mark ========== 请求加密 ==========
-+ (NSString *)ft_md5EncryptStr:(NSString *)str {
++ (NSString *)ft_md5base64EncryptStr:(NSString *)str {
     const char *input = [str UTF8String];//UTF8转码
     unsigned char result[CC_MD5_DIGEST_LENGTH];
     CC_MD5(input, (CC_LONG)strlen(input), result);
@@ -647,7 +657,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     
     [signString appendString:request.HTTPMethod];
     [signString appendString:@"\n"];
-    [signString appendString:[self ft_md5EncryptStr:data]];
+    [signString appendString:[self ft_md5base64EncryptStr:data]];
     [signString appendString:@"\n"];
     [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
