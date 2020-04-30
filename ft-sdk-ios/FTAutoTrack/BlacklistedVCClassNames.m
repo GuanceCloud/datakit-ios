@@ -75,6 +75,9 @@
       @"UIWebRotatingAlertController",
       @"UIEditUserWordController",
       @"UISplitViewController",
+      @"UISystemInputAssistantViewController",
+      @"UISystemKeyboardDockController",
+      @"UIPredictionViewController",
      ];
      return blackList;
 }
