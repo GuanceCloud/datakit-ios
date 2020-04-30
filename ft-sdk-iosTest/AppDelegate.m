@@ -52,7 +52,6 @@
         [UITestManger sharedManger];
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] logout];
-        [[FTMobileAgent sharedInstance] startMonitorFlush];
     }
     return YES;
 }

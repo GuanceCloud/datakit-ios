@@ -9,7 +9,6 @@
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <ft_sdk_iosTest-Swift.h>
 #import "UITestManger.h"
 #import "AppDelegate.h"
 #import "TestFlowTrackVC.h"
@@ -25,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush"];
     [self createUI];
 }
 -(void)createUI{
@@ -65,8 +64,6 @@
 }
 - (void)testTrackImmediateList{
     //bean1 用户自己传时间  bean2 自动赋值
-    [[[MethodTest alloc] init] ftStartLocation];
-    return;
     FTTrackBean *bean1 = [FTTrackBean new];
     bean1.measurement = @"testImmediateList";
     bean1.field =@{@"test":@"testImmediateList"};
@@ -126,6 +123,9 @@
     [config enableTrackScreenFlow:NO];
     [FTMobileAgent startWithConfigOptions:config];
 }
+- (void)testStartMonitorFlush{
+    [[FTMobileAgent sharedInstance] startMonitorFlush];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -171,6 +171,9 @@
             break;
         case 10:
             [self testStartLocation];
+            break;
+        case 11:
+            [self testStartMonitorFlush];
         default:
             break;
     }
