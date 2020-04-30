@@ -19,6 +19,7 @@
 #import "FTMobileConfig.h"
 #import "FTMobileAgent.h"
 #import "FTAutoTrackVersion.h"
+#import "BlacklistedVCClassNames.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
@@ -279,13 +280,8 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
-        NSString *strPath = [[NSBundle mainBundle] pathForResource:@"FTAutoTrack" ofType:@"framework"];
-        NSString *bundlePath = [[NSBundle bundleWithPath:strPath] pathForResource:@"FTAutoTrack" ofType:@"bundle"];
-        NSString *jsonPath = [[NSBundle bundleWithPath:bundlePath] pathForResource:@"ft_autotrack_viewcontroller_blacklist" ofType:@"json"];
-        NSData *jsonData = [NSData dataWithContentsOfFile:jsonPath];
-        
         @try {
-            NSArray *blacklistedViewControllerClassNames = [NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingAllowFragments  error:nil];
+            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
             blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
             
         } @catch(NSException *exception) {  // json加载和解析可能失败
