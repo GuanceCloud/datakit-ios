@@ -202,7 +202,7 @@ GPU_UTILI_KEY(TextureCount, textureCount)
 - (double)fetchCurrentGpuUsage{
 #ifdef FT_TRACK_GPUUSAGE
 
-    return   [_utilizationInfo[GPUDeviceUtilizationKey] double];
+    return   [_utilizationInfo[GPUDeviceUtilizationKey] doubleValue];
 #endif
     return 0;
 }

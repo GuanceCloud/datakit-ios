@@ -1,6 +1,6 @@
 # 需要在目标机器上安装 oss util mac 版本，并且配置 akid 和 aksecret
 
-FT_PUSH_TAG="refs/tags/agent_1.0.0-alpha.7"
+#FT_PUSH_TAG="refs/tags/agent_1.0.2-alpha.5"
 POD_PRODUCT_PATH="ft-sdk-ios/Pod_Products/"
 
 upperFirstLetter(){
