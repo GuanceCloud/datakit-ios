@@ -49,18 +49,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 + (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
     if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
     [[FTLocationManager sharedInstance] startUpdatingLocation];
+    __block BOOL isUpdate = NO;
     [FTLocationManager sharedInstance].updateLocationBlock = ^(FTLocationInfo * _Nonnull locInfo, NSError * _Nullable error) {
         if (error) {
             NSString *message =error.domain;
             if(error.code == 104){
                 message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
             }
-            callBack?callBack(UnknownException,message):nil;
+            (callBack&&isUpdate==NO)?callBack(UnknownException,message):nil;
             ZYDebug(@"Location Error : %@",error);
         }else{
             ZYDebug(@"Location Success");
-            callBack?callBack(0,nil):nil;
+            (callBack&&isUpdate==NO)?callBack(0,nil):nil;
         }
+        isUpdate = YES;
     };
     }else{
         ZYDebug(@"Location Success");
