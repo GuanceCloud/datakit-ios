@@ -556,23 +556,43 @@ typedef enum FTError : NSInteger {
  ```      
  
 ### 3.有关监控项注意事项    
- * 权限使用    
+#### 1.权限使用    
     
 | 监控类型| 使用权限 |
 |:--------:|:--------:|
-|  FTMonitorInfoTypeLocation  |Privacy - Location Always Usage Description、Privacy - Location When In Use Usage Description、Privacy - Location Usage Description （按需求选择一个或读多个）|
+|  FTMonitorInfoTypeLocation、FTMonitorInfoTypeNetwork  |Privacy - Location Always Usage Description、Privacy - Location When In Use Usage Description、Privacy - Location Usage Description （按需求选择一个或多个）|
 | FTMonitorInfoTypeSensor、FTMonitorInfoTypeSensorStep、FTMonitorInfoTypeSensorProximity、FTMonitorInfoTypeSensorRotation、FTMonitorInfoTypeSensorAcceleration、FTMonitorInfoTypeSensorMagnetic   |  Privacy - Motion Usage Description|
 |FTMonitorInfoTypeSensorLight|Privacy - Camera Usage Description|
 |FTMonitorInfoTypeBluetooth|Privacy - Bluetooth Always Usage Description|
+#### 2.FTMonitorInfoTypeAll
 
- * 当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 全部监控项抓取。
- * 当 `FTMonitorInfoType` 中的 `FTMonitorInfoTypeSensor` 包含（`FTMonitorInfoTypeSensorStep`   、`FTMonitorInfoTypeSensorProximity`   、`FTMonitorInfoTypeSensorRotation`、`FTMonitorInfoTypeSensorAcceleration`   、`FTMonitorInfoTypeSensorMagnetic` 、`FTMonitorInfoTypeSensorLight`、`FTMonitorInfoTypeSensorTorch` ）设置这一项会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。
- *  `FTMonitorInfoTypeSensorLight`   利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
- *  `FTMonitorInfoTypeSensorTorch`  获取应用内设置的手电筒亮度级别。
- *   `FTMonitorInfoTypeBluetooth` 获取应用已匹配过的外设信息，需要开发者在第一次匹配时,保存起来,比如用 **NSUserDefaults**。  
+  当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 全部监控项抓取。   
+  
+  
+#### 3. FTMonitorInfoTypeSensor
+| FTMonitorInfoTypeSensor 包含| 注释 |
+|:--------:|:--------:|
+|  FTMonitorInfoTypeSensorStep | 当天步数|
+| FTMonitorInfoTypeSensorProximity  |  距离传感器|
+| FTMonitorInfoTypeSensorRotation |陀螺仪三轴旋转角速度|
+| FTMonitorInfoTypeSensorAcceleration |三轴线性加速度|
+| FTMonitorInfoTypeSensorMagnetic |三轴地磁强度|
+| FTMonitorInfoTypeSensorLight |环境光感参数|
+| FTMonitorInfoTypeSensorTorch | 获取应用内设置的手电筒亮度级别|
+
+ 设置 `FTMonitorInfoTypeSensor` 会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
+ 
+`FTMonitorInfoTypeSensorLight`  是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
+
+#### 4. FTMonitorInfoTypeNetwork 
+   **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation' ` 才能获取 还需要配置证书， **iOS 13** 之后需要定位开启 才能获取到信息。
+  
+#### 5. FTMonitorInfoTypeBluetooth 
+
+  `FTMonitorInfoTypeBluetooth` 获取应用已匹配过的外设信息，需要开发者在第一次匹配时,保存起来,比如用 **NSUserDefaults**。  
   使用以下方法将信息传给 SDK 。 
  
- ```objective-c
+```objective-c
  /**
  * 在监控项设置抓取蓝牙后使用
  * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过的设备使用NSUserDefault保存起来
@@ -582,10 +602,10 @@ typedef enum FTError : NSInteger {
 ```  
 使用示例:
 
- ```objective-c
+```objective-c
  [[FTMobileAgent sharedInstance] setConnectBluetoothCBUUID:@[[CBUUID UUIDWithString:serviceUUID0],[CBUUID UUIDWithString:characteristicUUID4],[CBUUID UUIDWithString:characteristicHeartUUID0]]];
  
- ```     
+```     
  
 ## 十、常见问题
 ### 1. 关于查询指标 IMEI
