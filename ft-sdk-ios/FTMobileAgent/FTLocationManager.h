@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 - (void)startUpdatingLocation;
+- (void)stopUpdatingLocation;
 - (BOOL)gpsServicesEnabled;
 - (void)resetInstance;
 @end
