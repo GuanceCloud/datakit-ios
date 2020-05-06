@@ -438,6 +438,7 @@ static dispatch_once_t onceToken;
         [field setObject:[NSNumber numberWithDouble:self.metrics.dnsTime] forKey:@"network_dns_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.tcpTime] forKey:@"network_tcp_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.responseTime] forKey:@"network_response_time"];
+        [field addEntriesFromDictionary:[FTMoniorUtils getDNSInfo]];
         if (self.successNet+self.errorNet != 0) {
             [field setObject:[NSNumber numberWithDouble:self.errorNet/((self.successNet+self.errorNet)*1.0)] forKey:@"network_error_rate"];
         }
@@ -459,8 +460,8 @@ static dispatch_once_t onceToken;
         [tag setValue:[FTLocationManager sharedInstance].location.province forKey:@"province"];
         [tag setValue:[FTLocationManager sharedInstance].location.city forKey:@"city"];
         [tag setValue:[FTLocationManager sharedInstance].location.country forKey:@"country"];
-        [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:@"latitude"];
-        [tag setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:@"longitude"];
+        [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:@"latitude"];
+        [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:@"longitude"];
         [tag setValue:[NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]] forKey:@"gps_open"];
     }
     if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorBrightness) {

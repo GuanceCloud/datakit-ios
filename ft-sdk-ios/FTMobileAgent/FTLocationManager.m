@@ -36,6 +36,7 @@ static dispatch_once_t onceToken;
     if (self = [super init]) {
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
+        self.locationManager.distanceFilter = 200.0;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
         self.location = [[FTLocationInfo alloc]init];
     }
@@ -66,7 +67,6 @@ static dispatch_once_t onceToken;
             if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
-            [manager stopUpdatingLocation];
             return;
         }
         if (array.count > 0){
@@ -87,12 +87,10 @@ static dispatch_once_t onceToken;
             self.location.city = city;
             self.location.province = province;
             //暂时设置为APP一个生命周期内只需要获取一次
-            [manager stopUpdatingLocation];
             if (self.updateLocationBlock) {
                 self.updateLocationBlock(self.location, error);
             }
         }else if (error == nil && [array count] == 0){
-            [manager stopUpdatingLocation];
             NSString *domain = @"com.ft.mobile.sdk.FTMobileAgent";
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey:@"No results were returned."};
             NSError *error = [NSError errorWithDomain:domain
@@ -106,6 +104,9 @@ static dispatch_once_t onceToken;
 
     }];
     
+}
+- (void)stopUpdatingLocation{
+    [self.locationManager stopUpdatingLocation];
 }
 - (BOOL)gpsServicesEnabled{
     return [CLLocationManager locationServicesEnabled];

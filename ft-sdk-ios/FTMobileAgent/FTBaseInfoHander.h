@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)verifyProductStr:(NSString *)product;
 /**
  *  @abstract
- *  MD5
+ *  MD5 32位 大写
 */
 + (NSString *)ft_md5EncryptStr:(NSString *)string;
 @end
