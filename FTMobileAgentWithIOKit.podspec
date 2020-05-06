@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
 
-  s.name         = "FTMobileAgent"
+  s.name         = "FTMobileAgentWithIOKit"
   #s.version      = "1.0.0-alpha.9"
-  s.version      = "1.0.0-alpha.7"
+  s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "驻云 DataFlux FT Mobile SDK，FT GateWay 数据传输"
-  s.description  = "驻云 DataFlux FT Mobile SDK，将通过 SDK 将写入数据 传输至 FT GateWay。"
+  s.description  = "驻云 DataFlux FT Mobile SDK,包含 IOKit 版本，将通过 SDK 将写入数据 传输至 FT GateWay。"
   s.homepage     = "https://www.dataflux.cn/"
 
   s.license      = { type: 'MIT', text: <<-LICENSE
@@ -35,9 +35,9 @@ THE SOFTWARE.
   # s.tvos.deployment_target = "9.0"
 
   # s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent_1.0.0-alpha.9.zip" }
-  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/1.0.0-alpha.7.zip" }
+  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgentWithIOKit/$JENKINS_DYNAMIC_VERSION.zip" }
   s.library = "resolv.9"
-  s.vendored_frameworks = 'FTMobileAgent.framework'
+  s.vendored_frameworks = 'FTMobileAgentWithIOKit.framework'
   # s.dependency "JSONKit", "~> 1.4"
 
 end
