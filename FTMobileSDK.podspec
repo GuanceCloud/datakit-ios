@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "FTMobileSDK"
-  s.version      = "1.0.2"
+  s.version      = "1.0.2-alpha.6"
 #   s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "驻云 DataFlux FT Mobile SDK 无埋点"
   s.description  = "驻云 DataFlux FT Mobile SDK 无埋点 iOS 版本，配合 FTMobileAgent 将无埋点数据传输至 FT GateWay。"
