@@ -6,42 +6,6 @@
 	objectVersion = 50;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		CA3063CD23A2553F000BE230 /* BuildFramworkAgent */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgent" */;
-			buildPhases = (
-				CA3063D123A25545000BE230 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = BuildFramworkAgent;
-			productName = BuildFramwork;
-		};
-		CAA8F0712462C8D500F29BF8 /* BuildFramworkAgentWithIOKit */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = CAA8F0732462C8D500F29BF8 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgentWithIOKit" */;
-			buildPhases = (
-				CAA8F0722462C8D500F29BF8 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = BuildFramworkAgentWithIOKit;
-			productName = BuildFramwork;
-		};
-		CACC4E2723A75AFB006BA378 /* BuildFramworkTrack */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = CACC4E2923A75AFB006BA378 /* Build configuration list for PBXAggregateTarget "BuildFramworkTrack" */;
-			buildPhases = (
-				CACC4E2823A75AFB006BA378 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = BuildFramworkTrack;
-			productName = BuildFramwork;
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
@@ -97,50 +61,6 @@
 		4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */; };
 		4AECBCF1244EEB100023DEF7 /* FTSessionConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */; };
 		4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */; };
-		CAA8F03E2462C82B00F29BF8 /* FTMobileAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884272239E5768001B44C3 /* FTMobileAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CAA8F03F2462C82B00F29BF8 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CAA8F0402462C82B00F29BF8 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CAA8F0412462C82B00F29BF8 /* ZY_FMDatabasePool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884280239E5768001B44C3 /* ZY_FMDatabasePool.h */; };
-		CAA8F0422462C82B00F29BF8 /* FTMoniorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57ED2458141300478547 /* FTMoniorUtils.h */; };
-		CAA8F0432462C82B00F29BF8 /* FTRecordModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426D239E5768001B44C3 /* FTRecordModel.h */; };
-		CAA8F0442462C82B00F29BF8 /* FTURLProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AECBCEB244EE8450023DEF7 /* FTURLProtocol.h */; };
-		CAA8F0452462C82B00F29BF8 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
-		CAA8F0462462C82B00F29BF8 /* FTLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB783C723C5B802001FC994 /* FTLocationManager.h */; };
-		CAA8F0472462C82B00F29BF8 /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
-		CAA8F0482462C82B00F29BF8 /* FTBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHander.h */; };
-		CAA8F0492462C82B00F29BF8 /* FTMobileAgentVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */; };
-		CAA8F04A2462C82B00F29BF8 /* ZY_FMResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884283239E5768001B44C3 /* ZY_FMResultSet.h */; };
-		CAA8F04B2462C82B00F29BF8 /* FTNetMonitorFlow.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB7841023C73277001FC994 /* FTNetMonitorFlow.h */; };
-		CAA8F04C2462C82B00F29BF8 /* FTSessionConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */; };
-		CAA8F04D2462C82B00F29BF8 /* FTTrackerEventDBTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88427A239E5768001B44C3 /* FTTrackerEventDBTool.h */; };
-		CAA8F04E2462C82B00F29BF8 /* ZY_FMDatabaseQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884282239E5768001B44C3 /* ZY_FMDatabaseQueue.h */; };
-		CAA8F04F2462C82B00F29BF8 /* ZY_FMDatabaseAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884281239E5768001B44C3 /* ZY_FMDatabaseAdditions.h */; };
-		CAA8F0502462C82B00F29BF8 /* ZYLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FAB23A221DE00B40B5D /* ZYLog.h */; };
-		CAA8F0512462C82B00F29BF8 /* FTUploadTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884277239E5768001B44C3 /* FTUploadTool.h */; };
-		CAA8F0522462C82B00F29BF8 /* ZY_FMDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884286239E5768001B44C3 /* ZY_FMDB.h */; };
-		CAA8F0532462C82B00F29BF8 /* ZY_FMDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884285239E5768001B44C3 /* ZY_FMDatabase.h */; };
-		CAA8F0542462C82B00F29BF8 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
-		CAA8F0562462C82B00F29BF8 /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E75323CDA69C0077531B /* FTNetworkInfo.m */; };
-		CAA8F0572462C82B00F29BF8 /* FTRecordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884275239E5768001B44C3 /* FTRecordModel.m */; };
-		CAA8F0582462C82B00F29BF8 /* ZY_FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884284239E5768001B44C3 /* ZY_FMDatabasePool.m */; };
-		CAA8F0592462C82B00F29BF8 /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */; };
-		CAA8F05A2462C82B00F29BF8 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
-		CAA8F05B2462C82B00F29BF8 /* FTURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */; };
-		CAA8F05C2462C82B00F29BF8 /* FTLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB783C823C5B802001FC994 /* FTLocationManager.m */; };
-		CAA8F05D2462C82B00F29BF8 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
-		CAA8F05E2462C82B00F29BF8 /* ZY_FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427E239E5768001B44C3 /* ZY_FMDatabaseQueue.m */; };
-		CAA8F05F2462C82B00F29BF8 /* FTBaseInfoHander.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426F239E5768001B44C3 /* FTBaseInfoHander.m */; };
-		CAA8F0602462C82B00F29BF8 /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884276239E5768001B44C3 /* FTMobileConfig.m */; };
-		CAA8F0612462C82B00F29BF8 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
-		CAA8F0622462C82B00F29BF8 /* ZY_FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427F239E5768001B44C3 /* ZY_FMDatabase.m */; };
-		CAA8F0632462C82B00F29BF8 /* ZY_FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427D239E5768001B44C3 /* ZY_FMResultSet.m */; };
-		CAA8F0642462C82B00F29BF8 /* FTTrackerEventDBTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88427B239E5768001B44C3 /* FTTrackerEventDBTool.m */; };
-		CAA8F0652462C82B00F29BF8 /* FTMoniorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMoniorUtils.m */; };
-		CAA8F0662462C82B00F29BF8 /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */; };
-		CAA8F0672462C82B00F29BF8 /* FTTrackBean.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6F891E2419E97700E05C36 /* FTTrackBean.m */; };
-		CAA8F0682462C82B00F29BF8 /* FTUploadTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426C239E5768001B44C3 /* FTUploadTool.m */; };
-		CAA8F0692462C82B00F29BF8 /* FTNetMonitorFlow.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB7840F23C73277001FC994 /* FTNetMonitorFlow.m */; };
-		CAA8F0782462D4C800F29BF8 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAA8F0762462D49A00F29BF8 /* IOKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -202,7 +122,6 @@
 		4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTURLProtocol.m; sourceTree = "<group>"; };
 		4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionConfiguration.h; sourceTree = "<group>"; };
 		4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionConfiguration.m; sourceTree = "<group>"; };
-		CAA8F06F2462C82B00F29BF8 /* FTMobileAgentWithIOKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileAgentWithIOKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAA8F0702462C82B00F29BF8 /* FTMobileAgentWithIOKit.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = FTMobileAgentWithIOKit.plist; path = "/Users/Brandon/Documents/workplace/working/StudioPlace/ft-sdk-ios/ft-sdk-ios/FTMobileAgentWithIOKit.plist"; sourceTree = "<absolute>"; };
 		CAA8F0762462D49A00F29BF8 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/IOKit.framework; sourceTree = DEVELOPER_DIR; };
 		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
@@ -220,14 +139,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CAA8F06A2462C82B00F29BF8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CAA8F0782462D4C800F29BF8 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,7 +188,6 @@
 			children = (
 				4A88425A239E5754001B44C3 /* FTMobileAgent.framework */,
 				4A852FCB23A2408600B40B5D /* FTAutoTrack.framework */,
-				CAA8F06F2462C82B00F29BF8 /* FTMobileAgentWithIOKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -404,36 +314,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CAA8F03D2462C82B00F29BF8 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CAA8F03E2462C82B00F29BF8 /* FTMobileAgent.h in Headers */,
-				CAA8F03F2462C82B00F29BF8 /* FTMobileConfig.h in Headers */,
-				CAA8F0402462C82B00F29BF8 /* FTTrackBean.h in Headers */,
-				CAA8F0412462C82B00F29BF8 /* ZY_FMDatabasePool.h in Headers */,
-				CAA8F0422462C82B00F29BF8 /* FTMoniorUtils.h in Headers */,
-				CAA8F0432462C82B00F29BF8 /* FTRecordModel.h in Headers */,
-				CAA8F0442462C82B00F29BF8 /* FTURLProtocol.h in Headers */,
-				CAA8F0452462C82B00F29BF8 /* FTMonitorManager.h in Headers */,
-				CAA8F0462462C82B00F29BF8 /* FTLocationManager.h in Headers */,
-				CAA8F0472462C82B00F29BF8 /* FTNetworkInfo.h in Headers */,
-				CAA8F0482462C82B00F29BF8 /* FTBaseInfoHander.h in Headers */,
-				CAA8F0492462C82B00F29BF8 /* FTMobileAgentVersion.h in Headers */,
-				CAA8F04A2462C82B00F29BF8 /* ZY_FMResultSet.h in Headers */,
-				CAA8F04B2462C82B00F29BF8 /* FTNetMonitorFlow.h in Headers */,
-				CAA8F04C2462C82B00F29BF8 /* FTSessionConfiguration.h in Headers */,
-				CAA8F04D2462C82B00F29BF8 /* FTTrackerEventDBTool.h in Headers */,
-				CAA8F04E2462C82B00F29BF8 /* ZY_FMDatabaseQueue.h in Headers */,
-				CAA8F04F2462C82B00F29BF8 /* ZY_FMDatabaseAdditions.h in Headers */,
-				CAA8F0502462C82B00F29BF8 /* ZYLog.h in Headers */,
-				CAA8F0512462C82B00F29BF8 /* FTUploadTool.h in Headers */,
-				CAA8F0522462C82B00F29BF8 /* ZY_FMDB.h in Headers */,
-				CAA8F0532462C82B00F29BF8 /* ZY_FMDatabase.h in Headers */,
-				CAA8F0542462C82B00F29BF8 /* FTGPUUsage.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -473,24 +353,6 @@
 			productReference = 4A88425A239E5754001B44C3 /* FTMobileAgent.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		CAA8F03C2462C82B00F29BF8 /* FTMobileAgentWithIOKit */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CAA8F06C2462C82B00F29BF8 /* Build configuration list for PBXNativeTarget "FTMobileAgentWithIOKit" */;
-			buildPhases = (
-				CAA8F03D2462C82B00F29BF8 /* Headers */,
-				CAA8F0552462C82B00F29BF8 /* Sources */,
-				CAA8F06A2462C82B00F29BF8 /* Frameworks */,
-				CAA8F06B2462C82B00F29BF8 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = FTMobileAgentWithIOKit;
-			productName = "ft-sdk-ios";
-			productReference = CAA8F06F2462C82B00F29BF8 /* FTMobileAgentWithIOKit.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -505,9 +367,6 @@
 					};
 					4A884259239E5754001B44C3 = {
 						CreatedOnToolsVersion = 11.1;
-					};
-					CA3063CD23A2553F000BE230 = {
-						CreatedOnToolsVersion = 11.2;
 					};
 				};
 			};
@@ -526,10 +385,6 @@
 			targets = (
 				4A884259239E5754001B44C3 /* FTMobileAgent */,
 				4A852FCA23A2408600B40B5D /* FTAutoTrack */,
-				CAA8F03C2462C82B00F29BF8 /* FTMobileAgentWithIOKit */,
-				CA3063CD23A2553F000BE230 /* BuildFramworkAgent */,
-				CAA8F0712462C8D500F29BF8 /* BuildFramworkAgentWithIOKit */,
-				CACC4E2723A75AFB006BA378 /* BuildFramworkTrack */,
 			);
 		};
 /* End PBXProject section */
@@ -549,68 +404,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CAA8F06B2462C82B00F29BF8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		CA3063D123A25545000BE230 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh FTMobileAgent\n";
-		};
-		CAA8F0722462C8D500F29BF8 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh FTMobileAgentWithIOKit\n";
-		};
-		CACC4E2823A75AFB006BA378 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n${SRCROOT}/BuildFramwork.sh FTAutoTrack\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4A852FC723A2408600B40B5D /* Sources */ = {
@@ -649,33 +443,6 @@
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CAA8F0552462C82B00F29BF8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CAA8F0562462C82B00F29BF8 /* FTNetworkInfo.m in Sources */,
-				CAA8F0572462C82B00F29BF8 /* FTRecordModel.m in Sources */,
-				CAA8F0582462C82B00F29BF8 /* ZY_FMDatabasePool.m in Sources */,
-				CAA8F0592462C82B00F29BF8 /* ZY_FMDatabaseAdditions.m in Sources */,
-				CAA8F05A2462C82B00F29BF8 /* FTMonitorManager.m in Sources */,
-				CAA8F05B2462C82B00F29BF8 /* FTURLProtocol.m in Sources */,
-				CAA8F05C2462C82B00F29BF8 /* FTLocationManager.m in Sources */,
-				CAA8F05D2462C82B00F29BF8 /* FTGPUUsage.m in Sources */,
-				CAA8F05E2462C82B00F29BF8 /* ZY_FMDatabaseQueue.m in Sources */,
-				CAA8F05F2462C82B00F29BF8 /* FTBaseInfoHander.m in Sources */,
-				CAA8F0602462C82B00F29BF8 /* FTMobileConfig.m in Sources */,
-				CAA8F0612462C82B00F29BF8 /* FTMobileAgent.m in Sources */,
-				CAA8F0622462C82B00F29BF8 /* ZY_FMDatabase.m in Sources */,
-				CAA8F0632462C82B00F29BF8 /* ZY_FMResultSet.m in Sources */,
-				CAA8F0642462C82B00F29BF8 /* FTTrackerEventDBTool.m in Sources */,
-				CAA8F0652462C82B00F29BF8 /* FTMoniorUtils.m in Sources */,
-				CAA8F0662462C82B00F29BF8 /* FTSessionConfiguration.m in Sources */,
-				CAA8F0672462C82B00F29BF8 /* FTTrackBean.m in Sources */,
-				CAA8F0682462C82B00F29BF8 /* FTUploadTool.m in Sources */,
-				CAA8F0692462C82B00F29BF8 /* FTNetMonitorFlow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -900,120 +667,6 @@
 			};
 			name = Release;
 		};
-		CA3063CF23A2553F000BE230 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		CA3063D023A2553F000BE230 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		CAA8F06D2462C82B00F29BF8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 8.0;
-				DYLIB_CURRENT_VERSION = 1.0.0;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../FTAutoTrack\"";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"FT_TRACK_GPUUSAGE=1",
-				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../FTAutoTrack\"";
-				INFOPLIST_FILE = FTMobileAgentWithIOKit.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		CAA8F06E2462C82B00F29BF8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 8.0;
-				DYLIB_CURRENT_VERSION = 1.0.0;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../FTAutoTrack\"";
-				GCC_PREPROCESSOR_DEFINITIONS = "FT_TRACK_GPUUSAGE=1";
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../FTAutoTrack\"";
-				INFOPLIST_FILE = FTMobileAgentWithIOKit.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		CAA8F0742462C8D500F29BF8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-					"FT_TRACK_GPUUSAGE=1",
-				);
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		CAA8F0752462C8D500F29BF8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = "FT_TRACK_GPUUSAGE=1";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		CACC4E2A23A75AFB006BA378 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		CACC4E2B23A75AFB006BA378 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1040,42 +693,6 @@
 			buildConfigurations = (
 				4A884263239E5754001B44C3 /* Debug */,
 				4A884264239E5754001B44C3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CA3063CE23A2553F000BE230 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgent" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CA3063CF23A2553F000BE230 /* Debug */,
-				CA3063D023A2553F000BE230 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CAA8F06C2462C82B00F29BF8 /* Build configuration list for PBXNativeTarget "FTMobileAgentWithIOKit" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CAA8F06D2462C82B00F29BF8 /* Debug */,
-				CAA8F06E2462C82B00F29BF8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CAA8F0732462C8D500F29BF8 /* Build configuration list for PBXAggregateTarget "BuildFramworkAgentWithIOKit" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CAA8F0742462C8D500F29BF8 /* Debug */,
-				CAA8F0752462C8D500F29BF8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CACC4E2923A75AFB006BA378 /* Build configuration list for PBXAggregateTarget "BuildFramworkTrack" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CACC4E2A23A75AFB006BA378 /* Debug */,
-				CACC4E2B23A75AFB006BA378 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
