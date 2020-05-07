@@ -19,7 +19,7 @@ git push github --tags
 #echo "version:$VERSION"
 #echo "type:$FT_PROD_TYPE"
 
-VERSION=$FT_PUSH_TAG
+VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*\///g' | sed -e 's/~.*//g' )
 
 replaceVersion "FTAutoTrack"
 replaceVersion "FTMobileAgent"
