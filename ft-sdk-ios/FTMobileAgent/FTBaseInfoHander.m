@@ -515,7 +515,7 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     };
     
 }
-+(NSString *)ft_getTelephonyInfo     
++(NSString *)ft_getTelephonyInfo
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier;
@@ -545,37 +545,6 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     CGRect rect = [[UIScreen mainScreen] bounds];
     CGFloat scale = [[UIScreen mainScreen] scale];
     return [[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
-}
-+ (NSString *)ft_getFrontCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionFront];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-+ (NSString *)ft_getBackCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionBack];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-
-+ (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition) position
-{
-    NSArray *devices;
-    if (@available(iOS 10.0, *)) {
-        AVCaptureDeviceDiscoverySession *devicesIOS10 = [AVCaptureDeviceDiscoverySession  discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
-        devices  = devicesIOS10.devices;
-    } else {
-        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];    }
-    
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == position) {
-            return device;
-        }
-    }
-    return nil;
 }
 #pragma mark ========== 字符串转字典 字典转字符串 ==========
 +(NSString *)ft_convertToJsonData:(NSDictionary *)dict
@@ -669,152 +638,6 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
     CCHmac(kCCHmacAlgSHA1, secretStr, strlen(secretStr), signStr, strlen(signStr), cHMAC);
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
-}
-
-#pragma mark ========== cpu ==========
-+ (long )ft_cpuUsage{
-    kern_return_t kr;
-    task_info_data_t tinfo;
-    mach_msg_type_number_t task_info_count;
-    
-    task_info_count = TASK_INFO_MAX;
-    kr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
-    if (kr != KERN_SUCCESS) {
-        return -1;
-    }
-    
-    task_basic_info_t      basic_info;
-    thread_array_t         thread_list;
-    mach_msg_type_number_t thread_count;
-    
-    thread_info_data_t     thinfo;
-    mach_msg_type_number_t thread_info_count;
-    
-    thread_basic_info_t basic_info_th;
-    uint32_t stat_thread = 0; // Mach threads
-    
-    basic_info = (task_basic_info_t)tinfo;
-    
-    // get threads in the task
-    kr = task_threads(mach_task_self(), &thread_list, &thread_count);
-    if (kr != KERN_SUCCESS) {
-        return -1;
-    }
-    if (thread_count > 0)
-        stat_thread += thread_count;
-    
-    long tot_sec = 0;
-    long tot_usec = 0;
-    float tot_cpu = 0;
-    int j;
-    
-    for (j = 0; j < (int)thread_count; j++)
-    {
-        thread_info_count = THREAD_INFO_MAX;
-        kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
-                         (thread_info_t)thinfo, &thread_info_count);
-        if (kr != KERN_SUCCESS) {
-            return -1;
-        }
-        
-        basic_info_th = (thread_basic_info_t)thinfo;
-        
-        if (!(basic_info_th->flags & TH_FLAGS_IDLE)) {
-            tot_sec = tot_sec + basic_info_th->user_time.seconds + basic_info_th->system_time.seconds;
-            tot_usec = tot_usec + basic_info_th->user_time.microseconds + basic_info_th->system_time.microseconds;
-            tot_cpu = tot_cpu + basic_info_th->cpu_usage / (float)TH_USAGE_SCALE * 100.0;
-        }
-        
-    } // for each thread
-    
-    kr = vm_deallocate(mach_task_self(), (vm_offset_t)thread_list, thread_count * sizeof(thread_t));
-    assert(kr == KERN_SUCCESS);
-    
-    return tot_cpu;
-}
-+ (NSString *)ft_getCPUType{
-    host_basic_info_data_t hostInfo;
-    mach_msg_type_number_t infoCount;
-    
-    infoCount = HOST_BASIC_INFO_COUNT;
-    host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t)&hostInfo, &infoCount);
-    
-    switch (hostInfo.cpu_type) {
-        case CPU_TYPE_ARM:
-            return @"CPU_TYPE_ARM";
-            break;
-            
-        case CPU_TYPE_ARM64:
-            return @"CPU_TYPE_ARM64";
-            break;
-            
-        case CPU_TYPE_X86:
-            return @"CPU_TYPE_X86";
-            break;
-            
-        case CPU_TYPE_X86_64:
-            return @"CPU_TYPE_X86_64";
-            break;
-        default:
-            break;
-    }
-    return @"";
-}
-#pragma mark ========== 电池 ==========
-//电池电量
-+(double)ft_getBatteryUse{
-    [UIDevice currentDevice].batteryMonitoringEnabled = YES;
-    double deviceLevel = [UIDevice currentDevice].batteryLevel;
-    if (deviceLevel == -1) {
-        return 0;
-    }else{
-    return deviceLevel*100;
-    }
-}
-//电池是否在充电
-+ (BOOL)ft_batteryIsCharing{
-    return [UIDevice currentDevice].batteryState == UIDeviceBatteryStateCharging;
-}
-#pragma mark ========== 内存 ==========
-//当前设备可用内存
-+ (double)ft_availableMemory
-{
-    vm_statistics_data_t vmStats;
-    mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
-    kern_return_t kernReturn = host_statistics(mach_host_self(),
-                                               HOST_VM_INFO,
-                                               (host_info_t)&vmStats,
-                                               &infoCount);
-    
-    if (kernReturn != KERN_SUCCESS) {
-        return NSNotFound;
-    }
-    
-    return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
-}
-//当前任务所占用的内存
-+ (double)ft_usedMemory
-{
-    vm_statistics_data_t vmStats;
-    mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
-    kern_return_t kernReturn = host_statistics(mach_host_self(),
-                                               HOST_VM_INFO,
-                                               (host_info_t)&vmStats,
-                                               &infoCount);
-    
-    if (kernReturn != KERN_SUCCESS) {
-        return 0;
-    }
-    
-    double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
-    double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
-    double numFloat =(total-availableMemory)/total;
-    return numFloat*100;
-}
-//总内存
-+(NSString *)ft_getTotalMemorySize{
-    return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
-    
 }
 #pragma mark ========== 字符串处理  前后空格移除、特殊字符转换、校验合法 ==========
 +(NSString *)removeFrontBackBlank:(NSString *)str{
