@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
-  s.name         = "FTAutoTrack"
-  # s.version      = "1.0.0-alpha.2"
+  s.name         = "FTMobileSDK"
+#   s.version      = "1.0.2-alpha.8"
   s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "驻云 DataFlux FT Mobile SDK 无埋点"
   s.description  = "驻云 DataFlux FT Mobile SDK 无埋点 iOS 版本，配合 FTMobileAgent 将无埋点数据传输至 FT GateWay。"
@@ -33,11 +33,16 @@ Pod::Spec.new do |s|
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
-  # s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack_1.0.0-alpha.2.zip" }
-  s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/$JENKINS_DYNAMIC_VERSION.zip" }
-  s.vendored_frameworks = 'FTAutoTrack.framework'
+#   s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/.zip" }
+   s.source       = { :git => "https://github.com/CloudCare/dataflux-sdk-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
+   s.subspec  'FTMobileAgent' do | agent |
+       agent.source_files = 'ft-sdk-ios/FTMobileAgent/**/*'
+       agent.library = "resolv.9"
+   end
 
-
-  s.dependency "FTMobileAgent", "~> 1.0.2-alpha.5"
+   s.subspec  'FTAutoTrack' do | autotrack |
+       autotrack.source_files = 'ft-sdk-ios/FTAutoTrack/**/*'
+       autotrack.dependency  "FTMobileSDK/FTMobileAgent"
+   end
 
 end

@@ -24,7 +24,6 @@
 #import <CoreMotion/CoreMotion.h>
 #import "FTMoniorUtils.h"
 #import <AVFoundation/AVFoundation.h>
-#import "ZYAspects.h"
 
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
