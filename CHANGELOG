@@ -1,3 +1,9 @@
+# 1.0.2-alpha.11
+1.product移除
+2.event_id由field改为tag
+3.一些tag的名称调整
+---
+
 # 1.0.2-alpha.5
 1.latitude、longitude 由tag改为filed
 2.设置location更新距离为200米
