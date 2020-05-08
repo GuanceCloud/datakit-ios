@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  电池是否充电中
  */
-+ (BOOL)ft_batteryIsCharing;
++ (NSString *)ft_batteryStatus;
 /**
  *  @abstract
  *  获取设备总内存

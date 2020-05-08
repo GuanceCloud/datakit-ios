@@ -141,8 +141,21 @@
     }
 }
 //电池是否在充电
-+ (BOOL)ft_batteryIsCharing{
-    return [UIDevice currentDevice].batteryState == UIDeviceBatteryStateCharging;
++ (NSString *)ft_batteryStatus{
+    switch ([UIDevice currentDevice].batteryState) {
+        case UIDeviceBatteryStateUnknown:
+            return @"unknown";
+            break;
+        case UIDeviceBatteryStateUnplugged:
+            return @"unplugged";
+            break;
+        case UIDeviceBatteryStateCharging:
+            return @"charging";
+            break;
+        case UIDeviceBatteryStateFull:
+            return @"full";
+            break;
+    }
 }
 #pragma mark ========== 内存 ==========
 //当前设备可用内存
