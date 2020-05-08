@@ -160,8 +160,7 @@ static dispatch_once_t onceToken;
 -(void)flush{
     NSDictionary *addDict = [self getMonitorTagFiledDict];
     FTRecordModel *model = [FTRecordModel new];
-    FTMobileConfig *config = [[FTMobileAgent sharedInstance] valueForKey:@"config"];
-    NSString *measurement = config.product.length>0? [NSString stringWithFormat:@"mobile_monitor_%@",config.product]:@"mobile_monitor";
+    NSString *measurement = @"mobile_monitor";
 
     NSMutableDictionary *opdata = @{
         @"measurement":measurement}.mutableCopy;
@@ -402,7 +401,6 @@ static dispatch_once_t onceToken;
         }
         if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
             [tag setValue:[FTMoniorUtils userDeviceName] forKey:@"device_name"];
-            [tag setValue:[FTMoniorUtils getLaunchSystemTime] forKey:@"device_open_time"];
         }
         _monitorTagDict = tag;
     }
@@ -411,6 +409,9 @@ static dispatch_once_t onceToken;
 -(NSDictionary *)getMonitorTagFiledDict{
     NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
+    if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
+    [field setValue:[FTMoniorUtils getLaunchSystemTime] forKey:@"device_open_time"];
+    }
     if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
         [field setObject:[NSNumber numberWithLong:[FTMoniorUtils ft_cpuUsage]] forKey:@"cpu_use"];
     }
@@ -449,7 +450,7 @@ static dispatch_once_t onceToken;
     }
     if (self.monitorType & FTMonitorInfoTypeBattery || self.monitorType & FTMonitorInfoTypeAll) {
         [field setObject:[NSNumber numberWithDouble:[FTMoniorUtils ft_getBatteryUse]] forKey:@"battery_use"];
-        [tag setObject:[NSNumber numberWithBool:[FTMoniorUtils ft_batteryIsCharing]] forKey:@"battery_charing"];
+        [tag setObject:[FTMoniorUtils ft_batteryStatus] forKey:@"battery_status"];
     }
     if (self.monitorType & FTMonitorInfoTypeGpu || self.monitorType & FTMonitorInfoTypeAll){
         double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];

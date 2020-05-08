@@ -56,7 +56,6 @@
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
-    options.product = self.product;
     options.flushInterval = self.flushInterval;
     return options;
 }

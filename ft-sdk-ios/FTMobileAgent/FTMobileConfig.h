@@ -103,12 +103,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
-/**
- * @abstract
- * 上报行为指标集名称 。（可选）
- * 命名只能包含英文字母、数字、中划线和下划线，区分大小写
-*/
-@property (nonatomic, copy) NSString *product;
 /* SDK版本 */
 @property (nonatomic, copy) NSString *sdkAgentVersion;
 /* SDK版本 */

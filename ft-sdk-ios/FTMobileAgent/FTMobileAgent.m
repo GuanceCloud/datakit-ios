@@ -79,9 +79,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSAssert((NSClassFromString(@"FTAutoTrack")), @"开启自动采集需导入FTAutoTrackSDK");
     }
     NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
-    if (configOptions.product.length>0) {
-        NSAssert(([FTBaseInfoHander verifyProductStr:[NSString stringWithFormat:@"flow_mobile_activity_%@",configOptions.product]]), @"product命名只能包含英文字母、数字、中划线和下划线，最长 20 个字符，区分大小写");
-    }
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
     }
