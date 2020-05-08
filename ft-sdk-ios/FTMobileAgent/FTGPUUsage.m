@@ -7,7 +7,6 @@
 //
 
 #import "FTGPUUsage.h"
-#ifdef FT_TRACK_GPUUSAGE
 #include <stdint.h>
 #include <mach/mach.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -125,7 +124,6 @@ GPU_UTILI_KEY(ContextGLCount, contextGLCount)
 GPU_UTILI_KEY(RenderCount, CommandBufferRenderCount)
 GPU_UTILI_KEY(RecoveryCount, recoveryCount)
 GPU_UTILI_KEY(TextureCount, textureCount)
-#endif
 
 @implementation FTGPUUsage{
     NSDictionary        * _utilizationInfo;
@@ -140,7 +138,7 @@ GPU_UTILI_KEY(TextureCount, textureCount)
 - (NSDictionary *)utilizeDictionary
 {
     NSDictionary *dictionary = nil;
-#ifdef FT_TRACK_GPUUSAGE
+#if FT_TRACK_GPUUSAGE
 
     io_iterator_t iterator;
 #if TARGET_IPHONE_SIMULATOR
@@ -200,7 +198,7 @@ GPU_UTILI_KEY(TextureCount, textureCount)
 }
 
 - (double)fetchCurrentGpuUsage{
-#ifdef FT_TRACK_GPUUSAGE
+#if FT_TRACK_GPUUSAGE
 
     return   [_utilizationInfo[GPUDeviceUtilizationKey] doubleValue];
 #endif
