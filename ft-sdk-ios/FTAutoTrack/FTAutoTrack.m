@@ -117,7 +117,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         duration = (tm-self.preFlowTime)/1000;
     }
     self.preFlowTime = tm;
-    NSString *product =self.config.product.length>0? [NSString stringWithFormat:@"$flow_mobile_activity_%@",self.config.product]:@"$flow_mobile_activity";
+    NSString *product =@"$flow_mobile_activity";
     NSMutableDictionary *tags = @{@"$traceId":self.flowId,
                                   @"$name":NSStringFromClass(vc.class)}.mutableCopy;
     if (parent.length>0) {
@@ -341,11 +341,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         return ;
     }
     @try {
-        NSMutableDictionary *tags = [NSMutableDictionary new];
-        NSMutableDictionary *field = @{@"event_id":[FTBaseInfoHander ft_md5EncryptStr:op],
-                                       @"event":op
+        NSMutableDictionary *tags = @{@"event_id":[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
+        NSMutableDictionary *field = @{@"event":op
         }.mutableCopy;
-        NSString *measurement =self.config.product.length>0?[NSString stringWithFormat:@"mobile_tracker_%@",self.config.product]:@"mobile_tracker";
+        NSString *measurement = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {
