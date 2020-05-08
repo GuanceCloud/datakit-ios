@@ -327,6 +327,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)startMonitorFlush{
     [[FTMonitorManager sharedInstance] startFlush];
 }
+-(void)stopMonitorFlush{
+    [[FTMonitorManager sharedInstance] stopFlush];
+}
 -(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs{
     [[FTMonitorManager sharedInstance] setConnectBluetoothCBUUID:serviceUUIDs];
 }
