@@ -13,8 +13,8 @@ replaceVersion(){
   cd ../..
 }
 
-#git config remote.github.url >&- || git remote add github git@github.com:CloudCare/dataflux-sdk-ios.git
-#git push github --tags
+git config remote.github.url >&- || git remote add github git@github.com:CloudCare/dataflux-sdk-ios.git
+git push github --tags
 
 #echo "version:$VERSION"
 #echo "type:$FT_PROD_TYPE"
