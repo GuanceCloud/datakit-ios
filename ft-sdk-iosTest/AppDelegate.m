@@ -44,7 +44,6 @@
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         [config enableTrackScreenFlow:NO];
-        [config setProduct:@"iOSDemo"];
         config.flushInterval = 15;
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
