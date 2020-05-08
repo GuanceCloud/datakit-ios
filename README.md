@@ -566,7 +566,7 @@ typedef enum FTError : NSInteger {
 |FTMonitorInfoTypeBluetooth|Privacy - Bluetooth Always Usage Description|
 #### 2.FTMonitorInfoTypeAll
 
-  当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 全部监控项抓取。   
+  当 `FTMonitorInfoType` 设置为 `FTMonitorInfoTypeAll` 时，全部监控项会被抓取。   
   
   
 #### 3. FTMonitorInfoTypeSensor
@@ -585,7 +585,7 @@ typedef enum FTError : NSInteger {
 `FTMonitorInfoTypeSensorLight`  是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
 
 #### 4. FTMonitorInfoTypeNetwork 
-   **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation' ` 才能获取 还需要配置证书， **iOS 13** 之后需要定位开启 才能获取到信息。
+   **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
   
 #### 5. FTMonitorInfoTypeBluetooth 
 

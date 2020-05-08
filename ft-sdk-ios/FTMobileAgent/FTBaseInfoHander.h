@@ -62,42 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 转换后字典
  */
 + (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString;
-
-/**
- *  @abstract
- *  获取当前设备CPU使用率
- */
-+ (long )ft_cpuUsage;
-/**
- *  @abstract
- *  获取当前电池电量使用率
- */
-+ (double)ft_getBatteryUse;
-/**
- *  @abstract
- *  电池是否充电中
- */
-+ (BOOL)ft_batteryIsCharing;
-/**
- *  @abstract
- *  获取设备总内存
- */
-+ (NSString *)ft_getTotalMemorySize;
-/**
- *  @abstract
- *  获取当前内存使用率
- */
-+ (double)ft_usedMemory;
-/**
- *  @abstract
- *  获取前置摄像头像素
- */
-+ (NSString *)ft_getFrontCameraPixel;
-/**
- *  @abstract
- *  获取后置摄像头像素
- */
-+ (NSString *)ft_getBackCameraPixel;
 /**
  *  @abstract
  *  清除字符串前后的空格

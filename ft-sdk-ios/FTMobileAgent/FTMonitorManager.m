@@ -387,7 +387,7 @@ static dispatch_once_t onceToken;
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:@"battery_total"];
         }
         if (self.monitorType & FTMonitorInfoTypeMemory || self.monitorType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getTotalMemorySize] forKey:@"memory_total"];
+            [tag setObject:[FTMoniorUtils ft_getTotalMemorySize] forKey:@"memory_total"];
         }
         if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:@"cpu_no"];
@@ -397,8 +397,8 @@ static dispatch_once_t onceToken;
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:@"gpu_model"];
         }
         if (self.monitorType & FTMonitorInfoTypeCamera || self.monitorType & FTMonitorInfoTypeAll) {
-            [tag setObject:[FTBaseInfoHander ft_getFrontCameraPixel] forKey:@"camera_front_px"];
-            [tag setObject:[FTBaseInfoHander ft_getBackCameraPixel] forKey:@"camera_back_px"];
+            [tag setObject:[FTMoniorUtils ft_getFrontCameraPixel] forKey:@"camera_front_px"];
+            [tag setObject:[FTMoniorUtils ft_getBackCameraPixel] forKey:@"camera_back_px"];
         }
         if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
             [tag setValue:[FTMoniorUtils userDeviceName] forKey:@"device_name"];
@@ -412,10 +412,10 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
     if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithLong:[FTBaseInfoHander ft_cpuUsage]] forKey:@"cpu_use"];
+        [field setObject:[NSNumber numberWithLong:[FTMoniorUtils ft_cpuUsage]] forKey:@"cpu_use"];
     }
     if (self.monitorType & FTMonitorInfoTypeMemory || self.monitorType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_usedMemory]] forKey:@"memory_use"];
+        [field setObject:[NSNumber numberWithDouble:[FTMoniorUtils ft_usedMemory]] forKey:@"memory_use"];
     }
     if (self.monitorType & FTMonitorInfoTypeNetwork || self.monitorType & FTMonitorInfoTypeAll) {
         __block NSNumber *network_strength;
@@ -448,8 +448,8 @@ static dispatch_once_t onceToken;
         }
     }
     if (self.monitorType & FTMonitorInfoTypeBattery || self.monitorType & FTMonitorInfoTypeAll) {
-        [field setObject:[NSNumber numberWithDouble:[FTBaseInfoHander ft_getBatteryUse]] forKey:@"battery_use"];
-        [tag setObject:[NSNumber numberWithBool:[FTBaseInfoHander ft_batteryIsCharing]] forKey:@"battery_charing"];
+        [field setObject:[NSNumber numberWithDouble:[FTMoniorUtils ft_getBatteryUse]] forKey:@"battery_use"];
+        [tag setObject:[NSNumber numberWithBool:[FTMoniorUtils ft_batteryIsCharing]] forKey:@"battery_charing"];
     }
     if (self.monitorType & FTMonitorInfoTypeGpu || self.monitorType & FTMonitorInfoTypeAll){
         double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];

@@ -24,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush"];
     [self createUI];
 }
 -(void)createUI{
@@ -126,6 +126,9 @@
 - (void)testStartMonitorFlush{
     [[FTMobileAgent sharedInstance] startMonitorFlush];
 }
+- (void)testStopMonitorFlush{
+    [[FTMobileAgent sharedInstance] stopMonitorFlush];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -174,6 +177,10 @@
             break;
         case 11:
             [self testStartMonitorFlush];
+            break;
+        case 12:
+            [self testStopMonitorFlush];
+            break;
         default:
             break;
     }
