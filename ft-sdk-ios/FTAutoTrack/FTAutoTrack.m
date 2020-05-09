@@ -125,7 +125,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     }
     NSDictionary *opdata = @{@"measurement":product,
                                   @"tags":tags,
-                                  @"field":@{@"$duration":[NSNumber numberWithLongLong:duration]},
+                                  @"field":@{@"$duration":[NSString stringWithFormat:@"%lldi",duration]},
        };
     [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
     
@@ -210,7 +210,10 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
    id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
         if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
             NSString *className = NSStringFromClass([to class]);
-            if ([to isKindOfClass:[UITabBar class]] || (![to isKindOfClass:UIView.class]&&![to isKindOfClass:UIViewController.class])) {
+            if ([to isKindOfClass:[UITabBar class]]) {
+                return;
+            }
+            if (![to isKindOfClass:UIViewController.class]&&![to isKindOfClass:UIView.class]) {
                 return;
             }
             UIViewController *vc;

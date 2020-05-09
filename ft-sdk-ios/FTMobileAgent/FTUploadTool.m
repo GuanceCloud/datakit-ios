@@ -28,7 +28,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 #pragma mark ========== 参数处理 ==========
 
 @interface FTQueryStringPair : NSObject
-@property (readwrite, nonatomic, strong) id field;
+@property (readwrite, nonatomic, strong) NSString *field;
 @property (readwrite, nonatomic, strong) id value;
 
 - (instancetype)initWithField:(id)field value:(id)value;
@@ -66,6 +66,9 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
     }else{
+        if ([self.field isEqualToString:@"$duration"]) {
+            return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];;
+        }
         if([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
         }else if([self.value isKindOfClass:NSNumber.class]){
