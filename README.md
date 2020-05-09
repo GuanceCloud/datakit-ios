@@ -2,18 +2,11 @@
 # Dataflux-SDK-iOS
 [Dataflux-SDK-iOS-Demo](https://github.com/CloudCare/dataflux-sdk-ios-demo)   
 
-**FTMobileAgent**
+**FTMobileSDK**
 
 ![Cocoapods platforms](https://img.shields.io/cocoapods/p/FTMobileAgent)
-![Cocoapods](https://img.shields.io/cocoapods/v/FTMobileAgent)
-![Cocoapods](https://img.shields.io/cocoapods/l/FTMobileAgent)
-
-**FTAutoTrack**
-
-![Cocoapods platforms](https://img.shields.io/cocoapods/p/FTAutoTrack)
-![Cocoapods](https://img.shields.io/cocoapods/v/FTAutoTrack)
-![Cocoapods](https://img.shields.io/cocoapods/l/FTAutoTrack)
-
+![Cocoapods](https://img.shields.io/cocoapods/v/FTMobileSDK)
+![Cocoapods](https://img.shields.io/cocoapods/l/FTMobileSDK)
 
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
@@ -496,35 +489,16 @@ typedef enum FTError : NSInteger {
   在 `FTMobileConfig` 中设置 `flushInterval `。
   
  1.  方法 
-       
- ```objective-c 
-//FTMobileConfig  
- /**
-  * @property
-  *
-  * @abstract
-  * 两次数据发送的时间间隔，单位秒
-  *
-  * @discussion
-  * 默认值为 10 秒
- */
-@property (nonatomic) NSInteger flushInterval;   
- ``` 
-   
+          
  ```objective-c  
 // FTMobileAgent  
 /**
- * 设置 监控上传周期
+ * 设置 监控上传周期 默认为 10 秒
  */
 -(void)setMonitorFlushInterval:(NSInteger)interval;
  ```    
  2. 使用示例：
    
- ```objective-c   
-  //FTMobileConfig  
-  
-  config.flushInterval = 15;
- ``` 
  
  ```objective-c   
  //FTMobileAgent
@@ -543,13 +517,25 @@ typedef enum FTError : NSInteger {
 -(void)startMonitorFlush;
  ```     
        
- 
+ ```objective-c    
+/**
+ * 开启监控同步，并设置上传时间间隔，监控类型
+ * @param interval    上传周期
+ * @param type        监控类型 设置后会更改config中 monitorType的设置
+*/
+-(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
+ ```  
  2. 使用示例：
  
  ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
   
  ```     
+ 
+  ```objective-c   
+  [[FTMobileAgent sharedInstance] startMonitorFlushWithInterval:10 monitorType:FTMonitorInfoTypeAll];
+  
+ ```  
       
 ### 3.关闭上传 
  1.  方法    
