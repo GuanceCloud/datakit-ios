@@ -101,6 +101,12 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(void)startMonitorFlush;
 /**
+ * 开启监控同步，并设置上传时间间隔，监控类型
+ * @param interval    上传周期
+ * @param type        监控类型 设置后会更改config中 monitorType的设置
+*/
+-(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
+/**
  * 关闭监控同步
 */
 -(void)stopMonitorFlush;

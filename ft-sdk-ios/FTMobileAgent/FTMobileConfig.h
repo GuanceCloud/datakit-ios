@@ -183,16 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)enableTrackScreenFlow:(BOOL)enable;
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
-/**
- * @property
- *
- * @abstract
- * 两次监控上传数据发送的时间间隔，单位秒
- *
- * @discussion
- * 默认值为 10 秒
-*/
-@property (nonatomic) NSInteger flushInterval;
+
 @end
 
 NS_ASSUME_NONNULL_END

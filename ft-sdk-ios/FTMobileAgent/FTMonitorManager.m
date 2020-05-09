@@ -121,8 +121,10 @@ static dispatch_once_t onceToken;
        }
        [self startMotionUpdate];
     if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeFPS) {
-        _link = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
-        [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+        if (!_link) {
+            _link = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+            [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+        }
     }
     if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
@@ -512,8 +514,10 @@ static dispatch_once_t onceToken;
     _blDict = dict;
 }
 - (void)bluteeh{
-    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
-    self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
+    if (!_centralManager) {
+        NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
+        self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
+    }
 }
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {

@@ -32,7 +32,6 @@
          self.needBindUser = NO;
          self.enableScreenFlow = NO;
          self.XDataKitUUID = [self ft_defaultUUID];
-         self.flushInterval = 10;
         }
       return self;
 }
@@ -56,7 +55,6 @@
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
-    options.flushInterval = self.flushInterval;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

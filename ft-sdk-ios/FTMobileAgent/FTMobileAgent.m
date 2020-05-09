@@ -98,7 +98,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.config = config;
         }
         [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
-        [[FTMonitorManager sharedInstance] setFlushInterval:self.config.flushInterval];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
         NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
@@ -318,10 +317,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
 }
 -(void)setMonitorFlushInterval:(NSInteger)interval{
-    _config.flushInterval = interval;
     [[FTMonitorManager sharedInstance] setFlushInterval:interval];
 }
 -(void)startMonitorFlush{
+    [[FTMonitorManager sharedInstance] startFlush];
+}
+-(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type{
+    _config.monitorInfoType = type;
+    [[FTMonitorManager sharedInstance] setMonitorType:type];
+    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
     [[FTMonitorManager sharedInstance] startFlush];
 }
 -(void)stopMonitorFlush{
