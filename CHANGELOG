@@ -1,3 +1,9 @@
+# 1.0.2-alpha.12
+1.监控项周期上传方法添加设置监控项类型方法
+2.autotrack抓取点击事件过滤方法修改
+
+---
+
 # 1.0.2-alpha.11
 1.product移除
 2.event_id由field改为tag
