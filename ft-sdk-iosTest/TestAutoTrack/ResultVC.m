@@ -201,7 +201,7 @@
                             }],
                                                    @"time":[self getTime],
                             },
-                                       @"measurements":@[@"mobile_tracker_iOSDemo"],
+                                       @"measurements":@[@"mobile_tracker"],
                                        @"tz":@"Asia/Shanghai",
                                        @"orderBy":@[@{@"name":@"time",
                                                       @"method":@"desc"}],

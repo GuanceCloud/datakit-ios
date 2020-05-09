@@ -42,9 +42,7 @@
         config.enableAutoTrack = YES;
         config.needBindUser = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-        config.monitorInfoType = FTMonitorInfoTypeAll;
         [config enableTrackScreenFlow:NO];
-        config.flushInterval = 15;
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];

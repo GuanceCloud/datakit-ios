@@ -124,7 +124,7 @@
     [FTMobileAgent startWithConfigOptions:config];
 }
 - (void)testStartMonitorFlush{
-    [[FTMobileAgent sharedInstance] startMonitorFlush];
+    [[FTMobileAgent sharedInstance] startMonitorFlushWithInterval:10 monitorType:FTMonitorInfoTypeAll];
 }
 - (void)testStopMonitorFlush{
     [[FTMobileAgent sharedInstance] stopMonitorFlush];
