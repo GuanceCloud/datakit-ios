@@ -18,14 +18,10 @@
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
 ### 1. 直接下载下来安装
-1. 下载 SDK 。    
-  配置下载链接：将想获取的 SDK 版本的版本号替换下载链接中的 **VERSION**。    
-   + **含全埋点的下载链接：**    
-https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/_VERSION_.zip                
-   + **无全埋点的下载链接：**    
-https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTMobileAgent/_VERSION_.zip    
-	 
-2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。
+1. 从 [GitHub]() 获取 SDK 的源代码。	 
+2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。    
+      -  需要全埋点功能：直接将 **FTMobileSDK** 整个文件夹导入项目。
+      -  不需要全埋点功能：只导入 **FTMobileAgent** 即可。
 3.  添加依赖库：项目设置 `Build Phase` -> `Link Binary With Libraries` 添加：`UIKit` 、 `Foundation` 、`libz.tbd`，如果监控项开启且抓取网络数据，则需要添加 `libresolv.9.tbd`。
  
    
@@ -38,10 +34,11 @@ https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-packa
 
    # Pods for your project
    //如果需要全埋点功能
-   pod 'FTAutoTrack'
+    pod 'FTMobileSDK'    
+    
    //不需要全埋点功能
-   pod 'FTMobileAgent'
-   
+    pod 'FTMobileSDK/FTMobileAgent'
+    
    end
   ```     
      
@@ -224,7 +221,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |monitorInfoType|NS_OPTIONS|[采集数据](#5-采集数据配置)|否|
 |needBindUser|BOOL|是否开启绑定用户数据|否(默认不开启)|
 |enableScreenFlow|BOOL|设置是否需要视图跳转流程图|否（默认NO）|
-|product|NSString|上报指标集名称|否|
 |flushInterval|NSInteger|监控数据周期上报时间间隔|否（默认10s）|
 
 ### 2. 错误码
@@ -553,9 +549,27 @@ typedef enum FTError : NSInteger {
  ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
   
- ```      
+ ```     
+      
+### 3.关闭上传 
+ 1.  方法    
+
+ ```objective-c    
+/**
+ * 开启监控同步
+ */
+-(void)stopMonitorFlush;
+ ```     
+       
  
-### 3.有关监控项注意事项    
+ 2. 使用示例：
+ 
+ ```objective-c   
+  [[FTMobileAgent sharedInstance] stopMonitorFlush];
+  
+ ```      
+
+### 4.有关监控项注意事项    
 #### 1.权限使用    
     
 | 监控类型| 使用权限 |
@@ -614,9 +628,19 @@ typedef enum FTError : NSInteger {
 ### 2. 关于 GPU 使用率
  获取 **GPU 使用率** ，需要使用到 `IOKit.framework ` 私有库，**可能会影响 AppStore 上架**。如果需要此功能，需要在你的应用安装 `IOKit.framework ` 私有库。导入后，请在编译时加入 `FT_TRACK_GPUUSAGE` 标志，SDK 将会为你获取 **GPU 使用率**。    
      
-  XCode 设置方法 :      
+  XCode podfile 设置方法 :      
   
   ```objective-c
-Build Settings > Apple LLVM 7.0 - Preprocessing > Processor Macros >
-Release : FT_TRACK_GPUUSAGE=1
+ pod 'FTMobileSDK' 
+ post_install do |installer_representation|
+           installer_representation.pods_project.targets.each do |target|
+               if target.name == 'FTMobileSDK'
+                   target.build_configurations.each do |config|
+                           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)','FT_TRACK_GPUUSAGE=1']
+                           puts "===================>target build configure #{config.build_settings}"
+                   end
+               end
+           end
+       end
+
   ```
