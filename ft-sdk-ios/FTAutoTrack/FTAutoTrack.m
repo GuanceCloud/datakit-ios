@@ -137,8 +137,11 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
    id<ZY_AspectToken> tableToken =[UITableView aspect_hookSelector:@selector(setDelegate:)
                          withOptions:ZY_AspectPositionAfter
                           usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
+       if ([weakSelf isBlackListContainsViewController:target]) {
+                  return ;
+              }
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
-                        withOptions:ZY_AspectPositionBefore
+                        withOptions:ZY_AspectPositionAfter
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
             [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView];
         } error:NULL];
@@ -151,9 +154,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
                                usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
         if ([weakSelf isBlackListContainsViewController:target]) {
             return ;
-        }
+        }  
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
-                        withOptions:ZY_AspectPositionBefore
+                        withOptions:ZY_AspectPositionAfter
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
             [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
         } error:NULL];
@@ -207,7 +210,7 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
     } error:NULL];
     [self.aspectTokenAry addObject:gesToken2];
 
-   id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
+   id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
         if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
             NSString *className = NSStringFromClass([to class]);
             if ([to isKindOfClass:[UITabBar class]]) {

@@ -78,6 +78,7 @@
       @"UISystemInputAssistantViewController",
       @"UISystemKeyboardDockController",
       @"UIPredictionViewController",
+      @"TUICandidateGrid",
      ];
      return blackList;
 }
