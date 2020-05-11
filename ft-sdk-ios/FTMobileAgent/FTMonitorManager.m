@@ -24,7 +24,6 @@
 #import <CoreMotion/CoreMotion.h>
 #import "FTMoniorUtils.h"
 #import <AVFoundation/AVFoundation.h>
-
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
@@ -54,7 +53,7 @@ NSError *error);
 @property (nonatomic, assign) NSUInteger count;
 @property (nonatomic, assign) int fps;
 @property (nonatomic, strong) NSDictionary *blDict;
-@property (nonatomic, assign) BOOL isBlueOn;
+@property (nonatomic, copy) NSString *isBlueOn;
 @end
 
 @implementation FTTaskMetrics
@@ -88,6 +87,7 @@ static dispatch_once_t onceToken;
 }
 -(void)setMonitorType:(FTMonitorInfoType)type{
     _monitorType = type;
+    _monitorTagDict = [self getMonitorTagDicts];
     if (type == 0) {
         [self stopFlush];
     }
@@ -331,9 +331,7 @@ static dispatch_once_t onceToken;
     if (_monitorType & FTMonitorInfoTypeSensorLight ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
         [field setValue:[NSNumber numberWithFloat:self.lightValue] forKey:@"light"];
     }
-    if (_monitorType & FTMonitorInfoTypeSensorTorch ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
-      [field setValue:[NSNumber numberWithFloat:[FTMoniorUtils getTorchLevel]] forKey:@"torch"];
-    }
+
     return field;
 }
 /**
@@ -380,8 +378,7 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== tag\field 数据拼接 ==========
--(NSDictionary *)monitorTagDict{
-    if (!_monitorTagDict) {
+-(NSDictionary *)getMonitorTagDicts{
         NSMutableDictionary *tag = [NSMutableDictionary new];
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
         if (self.monitorType &FTMonitorInfoTypeBattery || self.monitorType & FTMonitorInfoTypeAll) {
@@ -404,15 +401,13 @@ static dispatch_once_t onceToken;
         if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
             [tag setValue:[FTMoniorUtils userDeviceName] forKey:@"device_name"];
         }
-        _monitorTagDict = tag;
-    }
-    return _monitorTagDict;
+    return tag;
 }
 -(NSDictionary *)getMonitorTagFiledDict{
     NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
     if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
-    [field setValue:[FTMoniorUtils getLaunchSystemTime] forKey:@"device_open_time"];
+        [field setValue:[FTMoniorUtils getLaunchSystemTime] forKey:@"device_open_time"];
     }
     if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
         [field setObject:[NSNumber numberWithLong:[FTMoniorUtils ft_cpuUsage]] forKey:@"cpu_use"];
@@ -432,17 +427,21 @@ static dispatch_once_t onceToken;
                 network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
             });
         }
+        NSString *roam = [FTMoniorUtils getRoamingStates] == NO?@"false":@"true";
+        [tag setObject:roam forKey:@"roam"];
         [tag setObject:network_type forKey:@"network_type"];
         [field setObject:network_strength forKey:@"network_strength"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.iflow] forKey:@"network_in_rate"];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.oflow] forKey:@"network_out_rate"];
-        [network_type isEqualToString:@"WIFI"]?[field addEntriesFromDictionary:[FTMoniorUtils getWifiAccessAndIPAddress]]:nil;
+        [field addEntriesFromDictionary:[FTMoniorUtils getWifiAccessAndIPAddress]];
         [field setObject:[NSNumber numberWithDouble:self.metrics.dnsTime] forKey:@"network_dns_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.tcpTime] forKey:@"network_tcp_time"];
         [field setObject:[NSNumber numberWithDouble:self.metrics.responseTime] forKey:@"network_response_time"];
         [field addEntriesFromDictionary:[FTMoniorUtils getDNSInfo]];
         if (self.successNet+self.errorNet != 0) {
             [field setObject:[NSNumber numberWithDouble:self.errorNet/((self.successNet+self.errorNet)*1.0)] forKey:@"network_error_rate"];
+        }else{
+            [field setObject:@0 forKey:@"network_error_rate"];
         }
         if ([FTNetworkInfo getProxyHost]) {
             [tag setObject:[FTNetworkInfo getProxyHost] forKey:@"network_proxy"];
@@ -464,24 +463,30 @@ static dispatch_once_t onceToken;
         [tag setValue:[FTLocationManager sharedInstance].location.country forKey:@"country"];
         [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:@"latitude"];
         [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:@"longitude"];
-        [tag setValue:[NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]] forKey:@"gps_open"];
+        NSString *gpsOpen = [[FTLocationManager sharedInstance] gpsServicesEnabled]==0?@"false":@"true";
+        [tag setValue:gpsOpen forKey:@"gps_open"];
     }
     if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorBrightness) {
         [field setValue:[NSNumber numberWithFloat:[FTMoniorUtils screenBrightness]] forKey:@"screen_brightness"];
-        }
+    }
     if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorProximity) {
-        [field setValue:[NSNumber numberWithBool:[FTMoniorUtils getProximityState]] forKey:@"proximity"];
+//       NSString *proximity =[FTMoniorUtils getProximityState] == NO?@"false":@"true";
+        [field setValue:[NSNumber numberWithBool:[FTMoniorUtils getProximityState]]  forKey:@"proximity"];
     }
     if (self.monitorType & FTMonitorInfoTypeFPS || self.monitorType &FTMonitorInfoTypeAll) {
         [field setValue:[NSNumber numberWithInt:_fps] forKey:@"fps"];
     }
     if (self.monitorType & FTMonitorInfoTypeBluetooth || self.monitorType & FTMonitorInfoTypeAll) {
         [field addEntriesFromDictionary:_blDict];
-        [field setValue:[NSNumber numberWithBool:self.isBlueOn] forKey:@"bt_open"];
+        [tag setValue:self.isBlueOn forKey:@"bt_open"];
         
     }
+    if (self.monitorType & FTMonitorInfoTypeSensorTorch ||self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll){
+        NSString *torch =[FTMoniorUtils getTorchLevel] == 0?@"false":@"true";
+        [tag setValue:torch forKey:@"torch"];
+    }
     [field addEntriesFromDictionary:[self getMotionDatas]];
-
+    
     return @{@"field":field,@"tag":tag};
 }
 #pragma mark --------- 实时网速 ----------
@@ -521,7 +526,7 @@ static dispatch_once_t onceToken;
 }
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {
-        self.isBlueOn = (central.state ==CBManagerStatePoweredOn);
+        self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? @"true":@"false";
     } 
 }
 
