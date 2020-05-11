@@ -149,9 +149,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
    id<ZY_AspectToken> collectionToken =[UICollectionView aspect_hookSelector:@selector(setDelegate:)
                               withOptions:ZY_AspectPositionAfter
                                usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-        if ([weakSelf isBlackListContainsViewController:target]) {
-            return ;
-        }
+       if([NSStringFromClass([target class]) isEqualToString:@"TUICandidateGrid"]){
+           return;
+       }
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
