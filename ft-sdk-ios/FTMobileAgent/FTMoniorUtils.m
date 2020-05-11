@@ -65,7 +65,7 @@
             return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
         }else if ([CLLocationManager authorizationStatus] ==kCLAuthorizationStatusDenied) {
             ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{@"wifi_ip": [self getIPAddress]};
+            return @{@"wifi_ip": [self getIPAddress],@"wifi_ssid":@"N/A"};
         }
         return nil;
     }else{
@@ -92,7 +92,7 @@
 }
 // - 获取当前Wi-Fi的IP
 + (NSString *)getIPAddress{
-    NSString *address = @"error";
+    NSString *address = @"N/A";
     struct ifaddrs *interfaces = NULL;
     struct ifaddrs *temp_addr = NULL;
     int success = 0;
@@ -318,5 +318,16 @@
         }
     }
     return nil;
+}
++(BOOL)getRoamingStates{
+    NSBundle *b = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/AppStoreDaemon.framework"];
+    BOOL state = NO;
+    if ([b load]) {
+      Class ASDCellularIdentity = NSClassFromString(@"ASDCellularIdentity");
+        id  asiden = [[ASDCellularIdentity alloc]init];
+        id is = [asiden valueForKey:@"roaming"];
+        state = [is boolValue];
+    }
+    return state;
 }
 @end
