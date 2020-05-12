@@ -259,6 +259,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
     if ([self.net isEqualToString:@"-1"]) {
         callBack? callBack(NetWorkException,nil):nil;
+        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":@NO}];
     }else{
     dispatch_async(self.immediateLabel, ^{
         [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {

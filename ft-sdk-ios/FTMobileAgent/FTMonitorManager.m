@@ -361,7 +361,7 @@ static dispatch_once_t onceToken;
         if (@available(iOS 10.0, *)) {
             NSURLSessionTaskMetrics *metrics = infoDic[@"metrics"];
             NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
-            self.metrics.dnsTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
+            self.metrics.dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
             self.metrics.tcpTime = [taskMes.secureConnectionStartDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
             self.metrics.responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
         }
@@ -370,7 +370,7 @@ static dispatch_once_t onceToken;
 -(void)dealTaskStates:(NSNotification *)notification{
     NSDictionary * infoDic = [notification object];
     if ([[infoDic allKeys]containsObject:@"success"]) {
-        if (infoDic[@"success"]) {
+        if ([infoDic[@"success"] isEqual:@YES]) {
             self.successNet++;
         }else{
             self.errorNet++;
