@@ -20,18 +20,18 @@
 
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
      if (self = [super init]) {
-         self.metricsUrl = metricsUrl;
-         self.akId = akId;
-         self.akSecret = akSecret;
-         self.enableRequestSigning = enableRequestSigning;
-         self.sdkAgentVersion = SDK_VERSION;
-         self.appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
-         self.enableLog = NO;
-         self.autoTrackEventType = FTAutoTrackTypeNone;
-         self.enableAutoTrack = NO;
-         self.needBindUser = NO;
-         self.enableScreenFlow = NO;
-         self.XDataKitUUID = [self ft_defaultUUID];
+         _metricsUrl = metricsUrl;
+         _akId = akId;
+         _akSecret = akSecret;
+         _enableRequestSigning = enableRequestSigning;
+         _sdkAgentVersion = SDK_VERSION;
+         _appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
+         _enableLog = NO;
+         _autoTrackEventType = FTAutoTrackTypeNone;
+         _enableAutoTrack = NO;
+         _needBindUser = NO;
+         _enableScreenFlow = NO;
+         _XDataKitUUID = [self ft_defaultUUID];
         }
       return self;
 }
@@ -64,7 +64,7 @@
      SETISDEBUG(enableLog);
 }
 -(void)enableTrackScreenFlow:(BOOL)enable{
-    self.enableScreenFlow = enable;
+    _enableScreenFlow = enable;
 }
 -(void)setXDataKitUUID:(NSString *)XDataKitUUID{
     if (XDataKitUUID.length>0) {
