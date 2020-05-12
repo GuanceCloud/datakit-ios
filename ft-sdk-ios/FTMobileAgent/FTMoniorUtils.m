@@ -319,11 +319,11 @@
     }
     return nil;
 }
-+(BOOL)getRoamingStates{
++ (BOOL)getRoamingStates{
     NSBundle *b = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/AppStoreDaemon.framework"];
     BOOL state = NO;
     if ([b load]) {
-      Class ASDCellularIdentity = NSClassFromString(@"ASDCellularIdentity");
+        Class ASDCellularIdentity = NSClassFromString(@"ASDCellularIdentity");
         id  asiden = [[ASDCellularIdentity alloc]init];
         id is = [asiden valueForKey:@"roaming"];
         state = [is boolValue];

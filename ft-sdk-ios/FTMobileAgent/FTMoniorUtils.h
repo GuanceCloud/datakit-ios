@@ -78,7 +78,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取后置摄像头像素
  */
 + (NSString *)ft_getBackCameraPixel;
-+(BOOL)getRoamingStates;
+/**
+ *  @abstract
+ *  获取蜂窝移动 数据漫游是否开启
+ */
++ (BOOL)getRoamingStates;
 @end
 
 NS_ASSUME_NONNULL_END
