@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTMoniorUtils : NSObject
+@interface FTMonitorUtils : NSObject
 /**
  * 获取开机时间
  */

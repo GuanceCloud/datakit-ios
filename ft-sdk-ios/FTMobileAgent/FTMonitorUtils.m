@@ -6,7 +6,7 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import "FTMoniorUtils.h"
+#import "FTMonitorUtils.h"
 #import <SystemConfiguration/CaptiveNetwork.h>
 #import <CoreLocation/CLLocationManager.h>
 #import "ZYLog.h"
@@ -21,7 +21,9 @@
 #import <mach/mach.h>
 #import <assert.h>
 #import <AVFoundation/AVFoundation.h>
-@implementation FTMoniorUtils
+#import "FTConstants.h"
+
+@implementation FTMonitorUtils
 #pragma mark ========== 开机时间/自定义手机名称 ==========
 //系统开机时间获取
 + (NSString *)getLaunchSystemTime{
@@ -62,14 +64,13 @@
 + (NSDictionary *)getWifiAccessAndIPAddress{
     if (@available(iOS 13.0, *)) {
         if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-            return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
-        }else if ([CLLocationManager authorizationStatus] ==kCLAuthorizationStatusDenied) {
+            return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
+        }else{
             ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{@"wifi_ip": [self getIPAddress],@"wifi_ssid":@"N/A"};
+            return @{FT_MONITOR_WITF_IP: [self getIPAddress],FT_MONITOR_WITF_SSID:@"N/A"};
         }
-        return nil;
     }else{
-        return @{@"wifi_ssid": [self getCurrentWifiSSID],@"wifi_ip": [self getIPAddress]};
+        return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
     }
 }
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
