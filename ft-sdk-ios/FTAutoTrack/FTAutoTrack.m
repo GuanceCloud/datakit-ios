@@ -20,12 +20,9 @@
 #import "FTMobileAgent.h"
 #import "FTAutoTrackVersion.h"
 #import "BlacklistedVCClassNames.h"
-#define WeakSelf __weak typeof(self) weakSelf = self;
+#import "FTConstants.h"
 
-NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
-NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
-NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
-NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
+#define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -117,15 +114,14 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
         duration = (tm-self.preFlowTime)/1000;
     }
     self.preFlowTime = tm;
-    NSString *product =@"$flow_mobile_activity";
-    NSMutableDictionary *tags = @{@"$traceId":self.flowId,
-                                  @"$name":NSStringFromClass(vc.class)}.mutableCopy;
+    NSMutableDictionary *tags = @{FT_FLOW_TRACEID:self.flowId,
+                                  FT_FLOW_NAME:NSStringFromClass(vc.class)}.mutableCopy;
     if (parent.length>0) {
-        [tags setValue:parent forKey:@"$parent"];
+        [tags setValue:parent forKey:FT_FLOW_PARENT];
     }
-    NSDictionary *opdata = @{@"measurement":product,
-                                  @"tags":tags,
-                                  @"field":@{@"$duration":[NSString stringWithFormat:@"%lldi",duration]},
+    NSDictionary *opdata = @{FT_AGENT_MEASUREMENT:FT_FLOW_CHART_PRODUCT,
+                                  FT_AGENT_TAGS:tags,
+                                  FT_AGENT_FIELD:@{FT_FLOW_DURATION:[NSString stringWithFormat:@"%lldi",duration]},
        };
     [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
     
@@ -356,13 +352,15 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
                 [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn class])}];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                [field setValue:[view ft_getParentsView] forKey:@"vtp"];
+                NSString *vtp =[view ft_getParentsView];
+                [field setValue:vtp forKey:@"vtp"];
+                [tags setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:@"vtp_id"];
             }
         }
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            @"measurement":measurement,
-            @"field":field,
-            @"tags":tags
+            FT_AGENT_MEASUREMENT:measurement,
+            FT_AGENT_FIELD:field,
+            FT_AGENT_TAGS:tags
         }];
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:op];
