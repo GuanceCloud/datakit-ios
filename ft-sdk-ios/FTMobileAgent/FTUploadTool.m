@@ -17,6 +17,8 @@
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
+#import "FTConstants.h"
+
 NSString * const FTTaskMetricsNotification = @"FTTaskMetricsNotification";
 NSString * const FTTaskCompleteStatesNotification = @"FTTaskCompleteStatesNotification";
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
@@ -66,7 +68,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=N/A", [FTBaseInfoHander repleacingSpecialCharacters:self.field]];
     }else{
-        if ([self.field isEqualToString:@"$duration"]) {
+        if ([self.field isEqualToString:FT_FLOW_DURATION]) {
             return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];;
         }
         if([self.value isKindOfClass:NSString.class]){
@@ -231,14 +233,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
         NSString *field = @"";
-        NSDictionary *opdata =item[@"opdata"];
-        NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[@"tags"]];
+        NSDictionary *opdata =item[FT_AGENT_OPDATA];
+        NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_AGENT_MEASUREMENT]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[FT_AGENT_TAGS]];
         
         [tagDict addEntriesFromDictionary:self.basicTags];
      
-        if ([[opdata allKeys] containsObject:@"field"]) {
-            field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
+        if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
+            field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);
         }
         if (userData.allKeys.count>0) {
             NSDictionary *userDict =  FTQueryPairsFromUserDict(userData);
@@ -253,9 +255,9 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             [requestDatas appendFormat:@"\n%@",requestStr];
         }
         ZYDebug(@"-------%d-------",idx);
-        ZYDebug(@"%@",@{@"measurement":measurement,
-                        @"tags":tagDict,
-                        @"field":opdata[@"field"],
+        ZYDebug(@"%@",@{FT_AGENT_MEASUREMENT:measurement,
+                        FT_AGENT_TAGS:tagDict,
+                        FT_AGENT_FIELD:opdata[FT_AGENT_FIELD],
                         @"time":[NSNumber numberWithLongLong:obj.tm*1000],
                       });
     }];
@@ -274,20 +276,20 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
-        NSMutableDictionary *tag = @{@"device_uuid":uuid,
-                                     @"application_identifier":identifier,
-                                     @"application_name":self.config.appName,
-                                     @"os":@"iOS",
-                                     @"os_version":version,
-                                     @"device_band":@"APPLE",
-                                     @"locale":preferredLanguage,
-                                     @"device_model":deviceInfo[FTBaseInfoHanderDeviceType],
-                                     @"display":[FTBaseInfoHander ft_resolution],
-                                     @"carrier":[FTBaseInfoHander ft_getTelephonyInfo],
-                                     @"agent":self.config.sdkAgentVersion,
+        NSMutableDictionary *tag = @{FT_COMMON_PROPERTY_DEVICE_UUID:uuid,
+                                     FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:identifier,
+                                     FT_COMMON_PROPERTY_APPLICATION_NAME:self.config.appName,
+                                     FT_COMMON_PROPERTY_OS:@"iOS",
+                                     FT_COMMON_PROPERTY_OS_VERSION:version,
+                                     FT_COMMON_PROPERTY_DEVICE_BAND:@"APPLE",
+                                     FT_COMMON_PROPERTY_LOCALE:preferredLanguage,
+                                     FT_COMMON_PROPERTY_DEVICE_MODEL:deviceInfo[FTBaseInfoHanderDeviceType],
+                                     FT_COMMON_PROPERTY_DISPLAY:[FTBaseInfoHander ft_resolution],
+                                     FT_COMMON_PROPERTY_CARRIER:[FTBaseInfoHander ft_getTelephonyInfo],
+                                     FT_COMMON_PROPERTY_AGENT:self.config.sdkAgentVersion,
                                      
         }.mutableCopy;
-        self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:@"autoTrack"]:nil;
+        self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;
          ;
         _basicTags = tag;
     }

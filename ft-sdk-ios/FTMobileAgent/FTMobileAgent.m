@@ -20,6 +20,8 @@
 #import "FTNetMonitorFlow.h"
 #import "FTTrackBean.h"
 #import "FTMonitorManager.h"
+#import "FTConstants.h"
+
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -148,15 +150,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            @"measurement":measurement,
-            @"field":field
+            FT_AGENT_MEASUREMENT:measurement,
+            FT_AGENT_FIELD:field
         }];
         NSMutableDictionary *tag = [NSMutableDictionary new];
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
         
-        [opdata addEntriesFromDictionary:@{@"tags":tag}];
+        [opdata addEntriesFromDictionary:@{FT_AGENT_TAGS:tag}];
         [self insertDBWithOpdata:opdata op:@"cstm"];
         
     }
@@ -186,21 +188,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tag addEntriesFromDictionary:tags];
         }
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-        if ([addDict objectForKey:@"tag"]) {
-            [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+        if ([addDict objectForKey:FT_AGENT_TAGS]) {
+            [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
         }
-        if ([addDict objectForKey:@"field"]) {
-            [fieldDict addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+        if ([addDict objectForKey:FT_AGENT_FIELD]) {
+            [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
         }
         NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            @"measurement":measurement,
-            @"field":fieldDict,
-            @"tags":tag,
+            FT_AGENT_MEASUREMENT:measurement,
+            FT_AGENT_FIELD:fieldDict,
+            FT_AGENT_TAGS:tag,
         }];
         
         NSDictionary *data =@{
-            @"op":@"cstm",
-            @"opdata":opdata,
+            FT_AGENT_OP:@"cstm",
+            FT_AGENT_OPDATA:opdata,
         };
         model.data =[FTBaseInfoHander ft_convertToJsonData:data];
         
@@ -224,17 +226,17 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 [tag addEntriesFromDictionary:obj.tags];
             }
             NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-            if ([addDict objectForKey:@"tag"]) {
-                [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+            if ([addDict objectForKey:FT_AGENT_TAGS]) {
+                [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
             }
-            if ([addDict objectForKey:@"field"]) {
-                [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+            if ([addDict objectForKey:FT_AGENT_FIELD]) {
+                [field addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
             }
             NSDictionary *data =@{
-                @"op":@"cstm",
-                @"opdata":@{@"measurement":obj.measurement,
-                            @"field":field,
-                            @"tags":tag,
+                FT_AGENT_OP:@"cstm",
+                FT_AGENT_OPDATA:@{FT_AGENT_MEASUREMENT:obj.measurement,
+                            FT_AGENT_FIELD:field,
+                            FT_AGENT_TAGS:tag,
                 },
             };
             model.data =[FTBaseInfoHander ft_convertToJsonData:data];
@@ -287,12 +289,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (![FTBaseInfoHander verifyProductStr:productStr]) {
             return;
         }
-        NSMutableDictionary *fieldDict = @{@"$duration":[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *tag =@{@"$traceId":traceId,
-                                    @"$name":name,
+        NSMutableDictionary *fieldDict = @{FT_FLOW_DURATION:[NSNumber numberWithLong:duration]}.mutableCopy;
+        NSMutableDictionary *tag =@{FT_FLOW_TRACEID:traceId,
+                                    FT_FLOW_NAME:name,
         }.mutableCopy;
         if (parent.length>0) {
-            [tag setObject:parent forKey:@"$parent"];
+            [tag setObject:parent forKey:FT_FLOW_PARENT];
         }
         if (field.allKeys.count>0) {
             [fieldDict addEntriesFromDictionary:field];
@@ -300,9 +302,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tag addEntriesFromDictionary:tags];
         }
-        NSDictionary *opdata = @{@"measurement":[NSString stringWithFormat:@"$%@",productStr],
-                                 @"tags":tag,
-                                 @"field":fieldDict,
+        NSDictionary *opdata = @{FT_AGENT_MEASUREMENT:[NSString stringWithFormat:@"$%@",productStr],
+                                 FT_AGENT_TAGS:tag,
+                                 FT_AGENT_FIELD:fieldDict,
         };
 
         [self insertDBWithOpdata:opdata op:@"flowcstm"];
@@ -360,26 +362,26 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *opdata = [dict mutableCopy];
     NSMutableDictionary *tag = [NSMutableDictionary new];
     NSMutableDictionary *field = [NSMutableDictionary new];
-    if ([opdata.allKeys containsObject:@"tags"]) {
-        [tag addEntriesFromDictionary:opdata[@"tags"]];
+    if ([opdata.allKeys containsObject:FT_AGENT_TAGS]) {
+        [tag addEntriesFromDictionary:opdata[FT_AGENT_TAGS]];
     }
-    [field addEntriesFromDictionary:opdata[@"field"]];
+    [field addEntriesFromDictionary:opdata[FT_AGENT_FIELD]];
     // 流程图不添加 监控项 和 设备信息
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
         
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         
-        if ([addDict objectForKey:@"tag"]) {
-            [tag addEntriesFromDictionary:[addDict objectForKey:@"tag"]];
+        if ([addDict objectForKey:FT_AGENT_TAGS]) {
+            [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
         }
-        if ([addDict objectForKey:@"field"]) {
-            [field addEntriesFromDictionary:[addDict objectForKey:@"field"]];
+        if ([addDict objectForKey:FT_AGENT_FIELD]) {
+            [field addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
         }
-        [opdata setValue:tag forKey:@"tags"];
-        [opdata setValue:field forKey:@"field"];
+        [opdata setValue:tag forKey:FT_AGENT_TAGS];
+        [opdata setValue:field forKey:FT_AGENT_FIELD];
     }
-    NSDictionary *data =@{@"op":op,
-                          @"opdata":opdata,
+    NSDictionary *data =@{FT_AGENT_OP:op,
+                          FT_AGENT_OPDATA:opdata,
     };
     ZYDebug(@"insert DB data == %@",data);
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
