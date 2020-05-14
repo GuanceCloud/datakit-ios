@@ -51,7 +51,9 @@
     [_secondButton setTitle:@"SelectedSecondButton" forState:UIControlStateSelected];
     [_secondButton addTarget:self action:@selector(secondAction:) forControlEvents:UIControlEventTouchUpInside];
     [_scrollView addSubview:_secondButton];
-    
+    UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(x+200, y, 100, 44)];
+    text.backgroundColor = [UIColor grayColor];
+    [_scrollView addSubview:text];
     y = CGRectGetMaxY(_secondButton.frame) + 16;
     _stepper = [[UIStepper alloc] initWithFrame:CGRectMake(x, y, 80, 40)];
     [_stepper addTarget:self action:@selector(stepperAction:) forControlEvents:UIControlEventValueChanged];
@@ -88,10 +90,12 @@
     
     _scrollView.contentSize = CGSizeMake(0, CGRectGetMaxY(_imageView.frame) + 16);
     
-    UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap1Action:)];
+    UITapGestureRecognizer *tap1 = [UITapGestureRecognizer new];
+    [tap1 addTarget:self action:@selector(tap1Action:)];
     [_label addGestureRecognizer:tap1];
     
-    UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap2Action:)];
+    UILongPressGestureRecognizer *tap2 = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(tap2Action:)];
+    
     [_imageView addGestureRecognizer:tap2];
     
     [self setupTableView];
