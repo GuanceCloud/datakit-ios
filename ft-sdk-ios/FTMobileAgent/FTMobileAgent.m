@@ -21,7 +21,7 @@
 #import "FTTrackBean.h"
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
-
+#import "FTMobileAgent+Private.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -139,38 +139,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark ========== publick method ==========
 - (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
-    [self trackBackground:measurement tags:nil field:field];
+    [self trackBackground:measurement tags:nil field:field withTrackType:FTTrackTypeCode];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
-    @try {
-        NSParameterAssert(measurement);
-        NSParameterAssert(field);
-        if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
-            ZYDebug(@"文件名 事件名不能为空");
-            return;
-        }
-        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            FT_AGENT_MEASUREMENT:measurement,
-            FT_AGENT_FIELD:field
-        }];
-        NSMutableDictionary *tag = [NSMutableDictionary new];
-        if (tags) {
-            [tag addEntriesFromDictionary:tags];
-        }
-        
-        [opdata addEntriesFromDictionary:@{FT_AGENT_TAGS:tag}];
-        [self insertDBWithOpdata:opdata op:@"cstm"];
-        
-    }
-    @catch (NSException *exception) {
-        ZYDebug(@"track measurement tags field exception %@",exception);
-    }
+     [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
 }
 
 -(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id _Nullable responseObject))callBackStatus{
-    [self trackImmediate:measurement tags:nil field:field callBack:^(NSInteger statusCode, id _Nullable responseObject) {
-        callBackStatus? callBackStatus(statusCode,responseObject):nil;
-    }];
+    [self trackImmediate:measurement tags:nil field:field callBack:callBackStatus];
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger, id _Nullable))callBackStatus{
     @try {
@@ -181,33 +157,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
             return;
         }
-        FTRecordModel *model = [FTRecordModel new];
-        NSMutableDictionary *tag = [NSMutableDictionary new];
-        NSMutableDictionary *fieldDict = [field mutableCopy];
-        if (tags) {
-            [tag addEntriesFromDictionary:tags];
-        }
-        NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-        if ([addDict objectForKey:FT_AGENT_TAGS]) {
-            [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
-        }
-        if ([addDict objectForKey:FT_AGENT_FIELD]) {
-            [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
-        }
-        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            FT_AGENT_MEASUREMENT:measurement,
-            FT_AGENT_FIELD:fieldDict,
-            FT_AGENT_TAGS:tag,
-        }];
-        
-        NSDictionary *data =@{
-            FT_AGENT_OP:@"cstm",
-            FT_AGENT_OPDATA:opdata,
-        };
-        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-        
-        model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
-        ZYDebug(@"trackImmediateData == %@",data);
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:@"cstm"];;
         [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
@@ -219,31 +169,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
-            FTRecordModel *model = [FTRecordModel new];
-            NSMutableDictionary *tag = [NSMutableDictionary new];
-            NSMutableDictionary *field = [obj.field mutableCopy];
-            if (obj.tags) {
-                [tag addEntriesFromDictionary:obj.tags];
-            }
-            NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-            if ([addDict objectForKey:FT_AGENT_TAGS]) {
-                [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
-            }
-            if ([addDict objectForKey:FT_AGENT_FIELD]) {
-                [field addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
-            }
-            NSDictionary *data =@{
-                FT_AGENT_OP:@"cstm",
-                FT_AGENT_OPDATA:@{FT_AGENT_MEASUREMENT:obj.measurement,
-                            FT_AGENT_FIELD:field,
-                            FT_AGENT_TAGS:tag,
-                },
-            };
-            model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+            FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm"];
             if(obj.timeMillis && obj.timeMillis>1000000000000){
                 model.tm = obj.timeMillis*1000;
-            }else{
-                model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
             }
             [list addObject:model];
         }else{
@@ -273,69 +201,16 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
-    [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil];
+    [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeCode];
 }
 
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
-    @try {
-        NSParameterAssert(product);
-        NSParameterAssert(traceId);
-        NSParameterAssert(name);
-        if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
-            ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
-            return;
-        }
-        NSString *productStr = [NSString stringWithFormat:@"flow_%@",product];
-        if (![FTBaseInfoHander verifyProductStr:productStr]) {
-            return;
-        }
-        NSMutableDictionary *fieldDict = @{FT_FLOW_DURATION:[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *tag =@{FT_FLOW_TRACEID:traceId,
-                                    FT_FLOW_NAME:name,
-        }.mutableCopy;
-        if (parent.length>0) {
-            [tag setObject:parent forKey:FT_FLOW_PARENT];
-        }
-        if (field.allKeys.count>0) {
-            [fieldDict addEntriesFromDictionary:field];
-        }
-        if (tags) {
-            [tag addEntriesFromDictionary:tags];
-        }
-        NSDictionary *opdata = @{FT_AGENT_MEASUREMENT:[NSString stringWithFormat:@"$%@",productStr],
-                                 FT_AGENT_TAGS:tag,
-                                 FT_AGENT_FIELD:fieldDict,
-        };
-
-        [self insertDBWithOpdata:opdata op:@"flowcstm"];
-        
-    } @catch (NSException *exception) {
-        ZYDebug(@"flowTrack product traceId name exception %@",exception);
-    }
+    [self flowTrack:product traceId:traceId name:name parent:parent tags:tags duration:duration field:field withTrackType:FTTrackTypeCode];
 }
-
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     NSParameterAssert(name);
     NSParameterAssert(Id);
     [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
-}
--(void)setMonitorFlushInterval:(NSInteger)interval{
-    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
-}
--(void)startMonitorFlush{
-    [[FTMonitorManager sharedInstance] startFlush];
-}
--(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type{
-    _config.monitorInfoType = type;
-    [[FTMonitorManager sharedInstance] setMonitorType:type];
-    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
-    [[FTMonitorManager sharedInstance] startFlush];
-}
--(void)stopMonitorFlush{
-    [[FTMonitorManager sharedInstance] stopFlush];
-}
--(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs{
-    [[FTMonitorManager sharedInstance] setConnectBluetoothCBUUID:serviceUUIDs];
 }
 - (void)logout{
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
@@ -354,40 +229,116 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     onceToken = 0;
     sharedInstance =nil;
 }
+#pragma mark ========== 调用监控项管理方法 ==========
+-(void)setMonitorFlushInterval:(NSInteger)interval{
+    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
+}
+-(void)startMonitorFlush{
+    [[FTMonitorManager sharedInstance] startFlush];
+}
+-(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type{
+    _config.monitorInfoType = type;
+    [[FTMonitorManager sharedInstance] setMonitorType:type];
+    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
+    [[FTMonitorManager sharedInstance] startFlush];
+}
+-(void)stopMonitorFlush{
+    [[FTMonitorManager sharedInstance] stopFlush];
+}
+-(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs{
+    [[FTMonitorManager sharedInstance] setConnectBluetoothCBUUID:serviceUUIDs];
+}
+
 #pragma mark ========== private method==========
 #pragma mark --------- 数据拼接 存储数据库 ----------
-//处理 监控项 动态获取的tag和field 的添加
-- (void)insertDBWithOpdata:(NSDictionary *)dict op:(NSString *)op{
-    FTRecordModel *model = [FTRecordModel new];
-    NSMutableDictionary *opdata = [dict mutableCopy];
-    NSMutableDictionary *tag = [NSMutableDictionary new];
-    NSMutableDictionary *field = [NSMutableDictionary new];
-    if ([opdata.allKeys containsObject:FT_AGENT_TAGS]) {
-        [tag addEntriesFromDictionary:opdata[FT_AGENT_TAGS]];
+- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
+    
+   @try {
+          NSParameterAssert(measurement);
+          NSParameterAssert(field);
+          if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
+              ZYDebug(@"文件名 事件名不能为空");
+              return;
+          }
+       NSString *op;
+       if (trackType == FTTrackTypeCode) {
+           op = @"cstm";
+       }else{
+           op = [field valueForKey:@"event"];
+       }
+       FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op];
+       [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+      }
+      @catch (NSException *exception) {
+          ZYDebug(@"track measurement tags field exception %@",exception);
+      }
+}
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field withTrackType:(FTTrackType)trackType{
+    @try {
+        NSString *op,*productStr;
+        if(trackType == FTTrackTypeCode){
+            NSParameterAssert(product);
+            NSParameterAssert(traceId);
+            NSParameterAssert(name);
+            if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
+                ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
+                return;
+            }
+            productStr = [NSString stringWithFormat:@"flow_%@",product];
+            if (![FTBaseInfoHander verifyProductStr:productStr]) {
+                return;
+            }
+            op = @"flowcstm";
+        }else{
+            productStr = product;
+            op = @"view";
+        }
+        NSMutableDictionary *fieldDict = @{FT_FLOW_DURATION:[NSNumber numberWithLong:duration]}.mutableCopy;
+        NSMutableDictionary *tagsDict =@{FT_FLOW_TRACEID:traceId,
+                                         FT_FLOW_NAME:name,
+        }.mutableCopy;
+        
+        [tagsDict setValue:parent forKey:FT_FLOW_PARENT];
+        if (field.allKeys.count>0) {
+            [fieldDict addEntriesFromDictionary:field];
+        }
+        if (tags) {
+            [tagsDict addEntriesFromDictionary:tags];
+        }
+        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"$%@",product] tags:tagsDict field:fieldDict op:op];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    } @catch (NSException *exception) {
+        ZYDebug(@"flowTrack product traceId name exception %@",exception);
     }
-    [field addEntriesFromDictionary:opdata[FT_AGENT_FIELD]];
-    // 流程图不添加 监控项 和 设备信息
+}
+- (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op{
+    FTRecordModel *model = [FTRecordModel new];
+    NSMutableDictionary *fieldDict = field.mutableCopy;
+    NSMutableDictionary *tagsDict = [NSMutableDictionary new];
+    if (tags) {
+        [tagsDict addEntriesFromDictionary:tags];
+    }
     if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
-        
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-        
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
-            [tag addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
+            [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
         }
         if ([addDict objectForKey:FT_AGENT_FIELD]) {
-            [field addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
+            [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
         }
-        [opdata setValue:tag forKey:FT_AGENT_TAGS];
-        [opdata setValue:field forKey:FT_AGENT_FIELD];
     }
+    NSMutableDictionary *opdata = @{
+        FT_AGENT_MEASUREMENT:measurement,
+        FT_AGENT_FIELD:fieldDict,
+    }.mutableCopy;
+    [opdata setValue:tagsDict forKey:FT_AGENT_TAGS];
     NSDictionary *data =@{FT_AGENT_OP:op,
                           FT_AGENT_OPDATA:opdata,
     };
-    ZYDebug(@"insert DB data == %@",data);
+    ZYDebug(@"datas == %@",data);
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    return model;
 }
-
 #pragma mark --------- 网络与App的生命周期 ---------
 - (void)setupAppNetworkListeners{
     BOOL reachabilityOk = NO;
@@ -463,7 +414,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #pragma mark --------- 上报策略 ----------
 - (void)uploadFlush{
-    
     dispatch_async(self.serialQueue, ^{
         if (![self.net isEqualToString:@"-1"]) {
             [self.upTool upload];

@@ -21,7 +21,7 @@
 #import "FTAutoTrackVersion.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTConstants.h"
-
+#import "FTMobileAgent+Private.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()
@@ -33,12 +33,12 @@
 @end
 @implementation FTAutoTrack
 -(instancetype)init{
-  self = [super init];
-  if (self) {
-       self.preFlowTime = 0;
-       self.flowId = [[NSUUID UUID] UUIDString];
-  }
-  return self;
+    self = [super init];
+    if (self) {
+        self.preFlowTime = 0;
+        self.flowId = [[NSUUID UUID] UUIDString];
+    }
+    return self;
 }
 -(void)startWithConfig:(FTMobileConfig *)config{
     config.sdkTrackVersion = SDK_VERSION;
@@ -80,18 +80,18 @@
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
     WeakSelf
-   id<ZY_AspectToken> lifeOpen = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+    id<ZY_AspectToken> lifeOpen = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
         [weakSelf flowOpenTrack:vc];
     } error:nil];
-   id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+    id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController *tempVC = (UIViewController *)info.instance;
         
         [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
     [self.aspectTokenAry addObjectsFromArray:@[lifeOpen,lifeClose]];
-
+    
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
     if (!self.config.enableScreenFlow) {
@@ -114,25 +114,15 @@
         duration = (tm-self.preFlowTime)/1000;
     }
     self.preFlowTime = tm;
-    NSMutableDictionary *tags = @{FT_FLOW_TRACEID:self.flowId,
-                                  FT_FLOW_NAME:NSStringFromClass(vc.class)}.mutableCopy;
-    if (parent.length>0) {
-        [tags setValue:parent forKey:FT_FLOW_PARENT];
-    }
-    NSDictionary *opdata = @{FT_AGENT_MEASUREMENT:FT_FLOW_CHART_PRODUCT,
-                                  FT_AGENT_TAGS:tags,
-                                  FT_AGENT_FIELD:@{FT_FLOW_DURATION:[NSString stringWithFormat:@"%lldi",duration]},
-       };
-    [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:@"view"];
-    
+    [[FTMobileAgent sharedInstance] flowTrack:FT_FLOW_CHART_PRODUCT traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeAuto];
 }
 
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
     WeakSelf
-   id<ZY_AspectToken> tableToken =[UITableView aspect_hookSelector:@selector(setDelegate:)
-                         withOptions:ZY_AspectPositionAfter
-                          usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
+    id<ZY_AspectToken> tableToken =[UITableView aspect_hookSelector:@selector(setDelegate:)
+                                                        withOptions:ZY_AspectPositionAfter
+                                                         usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
@@ -142,12 +132,12 @@
     }error:nil];
     
     [self.aspectTokenAry addObject:tableToken];
-   id<ZY_AspectToken> collectionToken =[UICollectionView aspect_hookSelector:@selector(setDelegate:)
-                              withOptions:ZY_AspectPositionAfter
-                               usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
-       if([NSStringFromClass([target class]) isEqualToString:@"TUICandidateGrid"]){
-           return;
-       }
+    id<ZY_AspectToken> collectionToken =[UICollectionView aspect_hookSelector:@selector(setDelegate:)
+                                                                  withOptions:ZY_AspectPositionAfter
+                                                                   usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
+        if([NSStringFromClass([target class]) isEqualToString:@"TUICandidateGrid"]){
+            return;
+        }
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
@@ -202,11 +192,12 @@
         }
     } error:NULL];
     [self.aspectTokenAry addObject:gesToken2];
-
-   id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
-        if ([from isKindOfClass:UIView.class] || [to isKindOfClass:UITabBarController.class]) {
+    
+    id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
+        if ([from isKindOfClass:UIView.class]) {
             NSString *className = NSStringFromClass([to class]);
-            if ([to isKindOfClass:[UITabBar class]]) {
+            //因为UITabBar点击会调用 _buttonDown：\ _buttonUp:\_sendAction:withEvent: 三个方法，会产生重复数据 所以只抓取UITabBar 的_buttonDown：方法 来记录一次UITabBar点击
+            if ([to isKindOfClass:[UITabBar class]] && ![NSStringFromSelector(action) isEqualToString:@"_buttonDown:"]) {
                 return;
             }
             if (![to isKindOfClass:UIViewController.class]&&![to isKindOfClass:UIView.class]) {
@@ -252,7 +243,7 @@
 - (BOOL)judgeWhiteAndBlackWithViewController:(UIViewController *)viewController{
     //没有设置白名单  就考虑黑名单
     if (self.config.whiteVCList.count > 0 && [self isWhiteListContainsViewController:viewController] == NO) {
-       return NO;
+        return NO;
     }
     return !([self isBlackListContainsViewController:viewController]||[self isUserSetBlackListContainsViewController:viewController]);;
 }
@@ -343,7 +334,6 @@
         NSMutableDictionary *tags = @{@"event_id":[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
         NSMutableDictionary *field = @{@"event":op
         }.mutableCopy;
-        NSString *measurement = @"mobile_tracker";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
             if ([cpn isKindOfClass:UIView.class]) {
@@ -357,14 +347,8 @@
                 [tags setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:@"vtp_id"];
             }
         }
-        NSMutableDictionary *opdata =  [NSMutableDictionary dictionaryWithDictionary:@{
-            FT_AGENT_MEASUREMENT:measurement,
-            FT_AGENT_FIELD:field,
-            FT_AGENT_TAGS:tags
-        }];
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
-        [[FTMobileAgent sharedInstance] performSelector:@selector(insertDBWithOpdata:op:) withObject:opdata withObject:op];
-        
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
     }

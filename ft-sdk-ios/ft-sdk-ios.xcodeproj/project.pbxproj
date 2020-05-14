@@ -11,6 +11,7 @@
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
 		4A297BDA246BBF340028645B /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BD8246BBF340028645B /* FTConstants.h */; };
 		4A297BDB246BBF340028645B /* FTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A297BD9246BBF340028645B /* FTConstants.m */; };
+		4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */; };
 		4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57ED2458141300478547 /* FTMonitorUtils.h */; };
 		4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMonitorUtils.m */; };
 		4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
@@ -70,6 +71,7 @@
 		4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManager.m; sourceTree = "<group>"; };
 		4A297BD8246BBF340028645B /* FTConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTConstants.h; sourceTree = "<group>"; };
 		4A297BD9246BBF340028645B /* FTConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTConstants.m; sourceTree = "<group>"; };
+		4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Private.h"; sourceTree = "<group>"; };
 		4A2D57ED2458141300478547 /* FTMonitorUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorUtils.h; sourceTree = "<group>"; };
 		4A2D57EE2458141300478547 /* FTMonitorUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorUtils.m; sourceTree = "<group>"; };
 		4A31E75223CDA69C0077531B /* FTNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfo.h; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 			children = (
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
+				4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */,
 				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
 				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
 				4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */,
@@ -301,6 +304,7 @@
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
+				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
 				4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */,
 				4AECBCF1244EEB100023DEF7 /* FTSessionConfiguration.h in Headers */,
