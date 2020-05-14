@@ -343,8 +343,8 @@
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 NSString *vtp =[view ft_getParentsView];
-                [field setValue:vtp forKey:@"vtp"];
-                [tags setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:@"vtp_id"];
+                [tags setValue:vtp forKey:@"vtp"];
+                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:@"vtp_id"];
             }
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
