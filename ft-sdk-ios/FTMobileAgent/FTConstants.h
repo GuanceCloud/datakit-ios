@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-
+#pragma mark ========== agent ==========
 extern NSString * const FT_AGENT_MEASUREMENT;
 extern NSString * const FT_AGENT_FIELD;
 extern NSString * const FT_AGENT_TAGS;
@@ -22,11 +22,12 @@ extern NSString * const FT_FLOW_TRACEID;
 extern NSString * const FT_FLOW_NAME;
 extern NSString * const FT_FLOW_PARENT;
 
-#pragma mark ========== event ==========
+#pragma mark ========== autotrack  ==========
 extern NSString * const FT_AUTO_TRACK_OP_ENTER;
 extern NSString * const FT_AUTO_TRACK_OP_LEAVE;
 extern NSString * const FT_AUTO_TRACK_OP_CLICK;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
+extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 
 #pragma mark ========== common property ==========
 extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;
@@ -42,7 +43,7 @@ extern NSString * const FT_COMMON_PROPERTY_CARRIER;
 extern NSString * const FT_COMMON_PROPERTY_AGENT;
 extern NSString * const FT_COMMON_PROPERTY_AUTOTRACK;
 
-
+#pragma mark ========== monitor  ==========
 extern NSString * const FT_MONITOR_BATTERY_TOTAL;
 extern NSString * const FT_MONITOR_BATTERY_USE;
 extern NSString * const FT_MONITOR_BATTERY_STATUS;
@@ -102,6 +103,10 @@ extern NSString * const FT_MONITOR_FPS;
 extern NSString * const FT_MONITOR_BT_OPEN;
 extern NSString * const FT_MONITOR_TORCH;
 
-
-
+#pragma mark ========== device info ==========
+extern NSString *  const FTBaseInfoHanderDeviceType;
+extern NSString *  const FTBaseInfoHanderDeviceCPUType;
+extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
+extern NSString *  const FTBaseInfoHanderBatteryTotal;
+extern NSString *  const FTBaseInfoHanderDeviceGPUType;
 

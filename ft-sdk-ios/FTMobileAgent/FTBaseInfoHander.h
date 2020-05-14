@@ -7,11 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-extern NSString * _Nullable const FTBaseInfoHanderDeviceType;
-extern NSString * _Nullable const FTBaseInfoHanderDeviceCPUType;
-extern NSString * _Nullable const FTBaseInfoHanderDeviceCPUClock;
-extern NSString * _Nullable const FTBaseInfoHanderBatteryTotal;
-extern NSString * _Nullable const FTBaseInfoHanderDeviceGPUType;
+
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -18,13 +18,7 @@
 #import <assert.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <AVFoundation/AVFoundation.h>
-
-
-NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
-NSString *const FTBaseInfoHanderDeviceCPUType = @"FTBaseInfoHanderDeviceCPUType";
-NSString *const FTBaseInfoHanderDeviceCPUClock = @"FTBaseInfoHanderDeviceCPUClock";
-NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
-NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
+#import "FTConstants.h"
 
 @implementation FTBaseInfoHander : NSObject
 #pragma mark ========== 设备信息 ==========

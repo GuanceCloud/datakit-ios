@@ -23,6 +23,7 @@ NSString * const FT_FLOW_PARENT  = @"$parent";
 
 
 #pragma mark ========== AUTOTRACK_OP ==========
+NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
@@ -112,5 +113,10 @@ NSString * const FT_MONITOR_TORCH  = @"torch";
 
 
 
+NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
+NSString *const FTBaseInfoHanderDeviceCPUType = @"FTBaseInfoHanderDeviceCPUType";
+NSString *const FTBaseInfoHanderDeviceCPUClock = @"FTBaseInfoHanderDeviceCPUClock";
+NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
+NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
 
 
