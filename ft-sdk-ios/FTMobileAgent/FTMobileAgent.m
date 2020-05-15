@@ -356,10 +356,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
     // 应用生命周期通知
     [notificationCenter addObserver:self
-                           selector:@selector(applicationWillTerminate:)
-                               name:UIApplicationWillTerminateNotification
-                             object:nil];
-    [notificationCenter addObserver:self
                            selector:@selector(applicationWillResignActive:)
                                name:UIApplicationWillResignActiveNotification
                              object:nil];
@@ -388,9 +384,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
 }
 
-- (void)applicationWillTerminate:(NSNotification *)notification {
-    ZYDebug(@"applicationWillTerminate ");
-}
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         self.isForeground = NO;
