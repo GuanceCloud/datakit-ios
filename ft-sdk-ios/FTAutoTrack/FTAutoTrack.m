@@ -215,7 +215,25 @@
     } error:NULL];
     
     id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
-        if ([from isKindOfClass:UIView.class]) {
+        //UITextField、UITextView点击
+        if ([from isKindOfClass:NSClassFromString(@"UITextMultiTapRecognizer")]) {
+            UIGestureRecognizer *ges = from;
+            if (ges.state != UIGestureRecognizerStateEnded) {
+                return;
+            }
+            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:[ges.view ft_getCurrentViewController] WithClickView:ges.view];
+            return;
+        }else if([from isKindOfClass:NSClassFromString(@"_UIButtonBarButton")]){
+            //UIBarButtonItem 点击
+            UIView *view = from;
+            UIViewController *vc =[view ft_getCurrentViewController];
+            if ([vc isKindOfClass:UINavigationController.class]) {
+                UINavigationController *nav =(UINavigationController *)vc;
+                vc = [nav.viewControllers firstObject];
+            }
+            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:view];
+            return;
+        }else if ([from isKindOfClass:UIView.class]) {
             NSString *className = NSStringFromClass([to class]);
             //因为UITabBar点击会调用 _buttonDown：\ _buttonUp:\_sendAction:withEvent: 三个方法，会产生重复数据 所以只抓取UITabBar 的_buttonDown：方法 来记录一次UITabBar点击
             if ([to isKindOfClass:[UITabBar class]] && ![NSStringFromSelector(action) isEqualToString:@"_buttonDown:"]) {
