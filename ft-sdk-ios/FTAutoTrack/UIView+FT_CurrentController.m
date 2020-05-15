@@ -23,17 +23,23 @@
 -(NSString *)ft_getParentsView{
     NSMutableString *str = [NSMutableString new];
     [str appendString:NSStringFromClass([self class])];
-    [str appendString:@"[0]"];
     UIView *currentView = self;
-    NSInteger index = 0;
-    
+    UIView *parentView = [currentView superview];
+    __block NSInteger index = 0;
+    [parentView.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if([obj isEqual:currentView]){
+        index = idx;
+        *stop = YES;
+        }
+    }];
+    [str appendFormat:@"[%ld]",(long)index];
+
     while (![currentView isKindOfClass:[UIWindow class]]) {
-        index++;
         currentView = [currentView superview];
         if (!currentView) {
             break;
         }
-        [str insertString:[NSString stringWithFormat:@"%@[%ld]/",NSStringFromClass([currentView class]),(long)index] atIndex:0];
+        [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass([currentView class])] atIndex:0];
     }
     return str;
 }
