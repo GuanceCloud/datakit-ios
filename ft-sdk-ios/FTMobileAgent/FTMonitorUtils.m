@@ -17,6 +17,7 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 #include <sys/socket.h>
+#import <sys/sysctl.h>
 #include <net/if.h>
 #import <mach/mach.h>
 #import <assert.h>
@@ -26,14 +27,15 @@
 @implementation FTMonitorUtils
 #pragma mark ========== 开机时间/自定义手机名称 ==========
 //系统开机时间获取
-+ (NSString *)getLaunchSystemTime{
-    NSTimeInterval timer = [NSProcessInfo processInfo].systemUptime;
-    NSDate *currentDate = [NSDate new];
-    NSDate *startTime = [currentDate dateByAddingTimeInterval:(-timer)];
-    NSDateFormatter *formatter = [[NSDateFormatter alloc]init];
-    [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-    NSString *dateStr = [formatter stringFromDate:startTime];
-    return dateStr;
++(NSString *)getLaunchSystemTime{
+    struct timeval t;
+    size_t len=sizeof(struct timeval);
+    if(sysctlbyname("kern.boottime",&t,&len,0,0)!=0)
+        return @"N/A";
+    time_t timeInterval = (time_t)(t.tv_sec+t.tv_usec/USEC_PER_SEC);
+    struct tm *time = localtime(&timeInterval);
+    NSString *timeStr = [NSString stringWithFormat:@"%d-%02d-%02d %02d:%02d:%02d",time->tm_year + 1900,time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min, time->tm_sec];
+    return timeStr;
 }
 //用户自定义的手机名称
 + (NSString *)userDeviceName{
