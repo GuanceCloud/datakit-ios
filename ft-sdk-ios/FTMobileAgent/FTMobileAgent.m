@@ -49,7 +49,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 + (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
-    if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
+    if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
     [[FTLocationManager sharedInstance] startUpdatingLocation];
     __block BOOL isUpdate = NO;
     [FTLocationManager sharedInstance].updateLocationBlock = ^(FTLocationInfo * _Nonnull locInfo, NSError * _Nullable error) {

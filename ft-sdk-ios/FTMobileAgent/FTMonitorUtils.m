@@ -31,7 +31,7 @@
     struct timeval t;
     size_t len=sizeof(struct timeval);
     if(sysctlbyname("kern.boottime",&t,&len,0,0)!=0)
-        return @"N/A";
+        return FT_NULL_VALUE;
     time_t timeInterval = (time_t)(t.tv_sec+t.tv_usec/USEC_PER_SEC);
     struct tm *time = localtime(&timeInterval);
     NSString *timeStr = [NSString stringWithFormat:@"%d-%02d-%02d %02d:%02d:%02d",time->tm_year + 1900,time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min, time->tm_sec];
@@ -69,7 +69,7 @@
             return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
         }else{
             ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{FT_MONITOR_WITF_IP: [self getIPAddress],FT_MONITOR_WITF_SSID:@"N/A"};
+            return @{FT_MONITOR_WITF_IP: [self getIPAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
         }
     }else{
         return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
@@ -77,10 +77,10 @@
 }
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
 + (NSString *)getCurrentWifiSSID{
-    NSString * wifiName = @"N/A";
+    NSString * wifiName = FT_NULL_VALUE;
     CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
     if (!wifiInterfaces) {
-        wifiName = @"N/A";
+        wifiName = FT_NULL_VALUE;
     }
     NSArray *interfaces = (__bridge NSArray *)wifiInterfaces;
     for (NSString *interfaceName in interfaces) {
@@ -95,7 +95,7 @@
 }
 // - 获取当前Wi-Fi的IP
 + (NSString *)getIPAddress{
-    NSString *address = @"N/A";
+    NSString *address = FT_NULL_VALUE;
     struct ifaddrs *interfaces = NULL;
     struct ifaddrs *temp_addr = NULL;
     int success = 0;

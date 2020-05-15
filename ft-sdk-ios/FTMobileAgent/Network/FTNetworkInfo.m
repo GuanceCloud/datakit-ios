@@ -7,7 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import "FTNetworkInfo.h"
-
+#import "FTConstants.h"
 #define kDevice_Is_iPhoneX \
 ({BOOL isPhoneX = NO;\
 if (@available(iOS 11.0, *)) {\
@@ -49,7 +49,7 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
                     switch (type.integerValue) {
                         case 0:
 //                            无sim卡
-                            network = @"N/A";
+                            network = FT_NULL_VALUE;
                             break;
                         case 1:
                             network = @"1G";
@@ -91,14 +91,14 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
 
                         if (([[cellularEntry valueForKey:@"_enabled"] boolValue]|[[secondaryCellularEntry valueForKey:@"_enabled"] boolValue]) == NO) {
 //                            无卡情况
-                            network = @"N/A";
+                            network = FT_NULL_VALUE;
                         }else {
 //                            判断卡1还是卡2
                             BOOL isCardOne = [[cellularEntry valueForKey:@"_enabled"] boolValue];
                             int networkType = isCardOne ? [[cellularEntry valueForKey:@"type"] intValue] : [[secondaryCellularEntry valueForKey:@"type"] intValue];
                             switch (networkType) {
                                     case 0://无服务
-                                    network = [NSString stringWithFormat:@"%@-%@", isCardOne ? @"Card 1" : @"Card 2", @"N/A"];
+                                    network = [NSString stringWithFormat:@"%@-%@", isCardOne ? @"Card 1" : @"Card 2", FT_NULL_VALUE];
                                     break;
                                     case 3:
                                     network = [NSString stringWithFormat:@"%@-%@", isCardOne ? @"Card 1" : @"Card 2", @"2G/E"];
@@ -137,7 +137,7 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
                         int networkType = [[subview valueForKeyPath:@"dataNetworkType"] intValue];
                         switch (networkType) {
                             case 0:
-                                network = @"N/A";
+                                network = FT_NULL_VALUE;
                                 break;
                             case 1:
                                 network = @"2G";
@@ -160,7 +160,7 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
     }
 
     if ([network isEqualToString:@""]) {
-        network = @"N/A";
+        network = FT_NULL_VALUE;
     }
     
     return network;
@@ -184,13 +184,13 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
 #pragma clang diagnostic pop
             if (statusBar) {
                 id currentData = [[statusBar valueForKeyPath:@"_statusBar"] valueForKeyPath:@"currentData"];
-                if([[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]){
+                if([[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]){
                     id wifiEntry = [currentData valueForKeyPath:@"wifiEntry"];
                     if ([wifiEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataIntegerEntry")]) {
                         signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
                     }
                 }
-                if (![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                if (![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                      id cellularEntry  = [currentData valueForKeyPath:@"cellularEntry"];
                   if ([cellularEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataCellularEntry")]) {
                          //                    层级：_UIStatusBarDataNetworkEntry、_UIStatusBarDataIntegerEntry、_UIStatusBarDataEntry
@@ -211,13 +211,13 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
                 if (subviews.count == 0) {
 //                    iOS 12
                     id currentData = [statusBarView valueForKeyPath:@"currentData"];
-                   if([[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]){
+                   if([[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]){
                         id wifiEntry = [currentData valueForKeyPath:@"wifiEntry"];
                         if ([wifiEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataIntegerEntry")]) {
                             signalStrength = [[wifiEntry valueForKey:@"displayValue"] intValue];
                         }
                     }
-                    if (![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                    if (![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                          id cellularEntry  = [currentData valueForKeyPath:@"cellularEntry"];
                       if ([cellularEntry isKindOfClass:NSClassFromString(@"_UIStatusBarDataCellularEntry")]) {
                              //                    层级：_UIStatusBarDataNetworkEntry、_UIStatusBarDataIntegerEntry、_UIStatusBarDataEntry
@@ -228,11 +228,11 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
 
                 }else {
                     for (id subview in subviews) {
-                        if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]] && [[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                        if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]] && [[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                             signalStrength = [[subview valueForKey:@"_wifiStrengthBars"] intValue];
                             break;
                         }
-                        if ([subview isKindOfClass:[NSClassFromString(@"UIStatusBarSignalStrengthItemView") class]] && ![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                        if ([subview isKindOfClass:[NSClassFromString(@"UIStatusBarSignalStrengthItemView") class]] && ![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                             signalStrength = [[subview valueForKey:@"_signalStrengthRaw"] intValue];
                             break;
                         }
@@ -246,12 +246,12 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
                 NSString *dataNetworkItemView = nil;
                        
                 for (id subview in subviews) {
-                    if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]] && [[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                    if([subview isKindOfClass:[NSClassFromString(@"UIStatusBarDataNetworkItemView") class]] && [[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                         dataNetworkItemView = subview;
                         signalStrength = [[dataNetworkItemView valueForKey:@"_wifiStrengthBars"] intValue];
                         break;
                     }
-                    if ([subview isKindOfClass:[NSClassFromString(@"UIStatusBarSignalStrengthItemView") class]] && ![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:@"N/A"]) {
+                    if ([subview isKindOfClass:[NSClassFromString(@"UIStatusBarSignalStrengthItemView") class]] && ![[self getNetworkType] isEqualToString:@"WIFI"] && ![[self getNetworkType] isEqualToString:FT_NULL_VALUE]) {
                         dataNetworkItemView = subview;
                         signalStrength = [[dataNetworkItemView valueForKey:@"_signalStrengthRaw"] intValue];
                         break;
@@ -271,7 +271,7 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
     NSDictionary *settings = [proxies objectAtIndex:0];
     NSString *host= [settings objectForKey:(NSString *)kCFProxyHostNameKey];
     if (!host) {
-        return @"N/A";
+        return FT_NULL_VALUE;
     }
     return host;
 }

@@ -14,6 +14,7 @@ NSString * const FT_AGENT_TAGS  = @"tags";
 NSString * const FT_AGENT_OPDATA  = @"opdata";
 NSString * const FT_AGENT_OP  = @"op";
 
+NSString * const FT_NULL_VALUE  = @"N/A";
 
 NSString * const FT_FLOW_CHART_PRODUCT  = @"$flow_mobile_activity";
 NSString * const FT_FLOW_DURATION  = @"$duration";

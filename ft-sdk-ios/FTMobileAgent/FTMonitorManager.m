@@ -100,7 +100,7 @@ static dispatch_once_t onceToken;
            [self startFlushTimer];
        }
        if(_monitorType & FTMonitorInfoTypeLocation ||_monitorType & FTMonitorInfoTypeAll){
-           if ([[FTLocationManager sharedInstance].location.country isEqualToString:@"N/A"]) {
+           if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
                [[FTLocationManager sharedInstance] startUpdatingLocation];
            }
        }
@@ -453,7 +453,7 @@ static dispatch_once_t onceToken;
         if([network_type isEqualToString:@"WIFI"]){
             [field addEntriesFromDictionary:[FTMonitorUtils getWifiAccessAndIPAddress]];
         }else{
-            [field addEntriesFromDictionary:@{FT_MONITOR_WITF_SSID:@"N/A",FT_MONITOR_WITF_IP:@"N/A"}];
+            [field addEntriesFromDictionary:@{FT_MONITOR_WITF_SSID:FT_NULL_VALUE,FT_MONITOR_WITF_IP:FT_NULL_VALUE}];
         }
         [field setObject:network_strength forKey:FT_MONITOR_NETWORK_STRENGTH];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.iflow] forKey:FT_MONITOR_NETWORK_IN_RATE];

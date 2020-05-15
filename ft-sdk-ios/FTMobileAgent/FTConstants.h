@@ -14,7 +14,7 @@ extern NSString * const FT_AGENT_FIELD;
 extern NSString * const FT_AGENT_TAGS;
 extern NSString * const FT_AGENT_OPDATA;
 extern NSString * const FT_AGENT_OP;
-
+extern NSString * const FT_NULL_VALUE;
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
 extern NSString * const FT_FLOW_DURATION;

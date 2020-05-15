@@ -529,7 +529,7 @@
         
     }
     if(carrier ==nil){
-        return @"N/A";
+        return FT_NULL_VALUE;
     }else{
     NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
     return mCarrier;

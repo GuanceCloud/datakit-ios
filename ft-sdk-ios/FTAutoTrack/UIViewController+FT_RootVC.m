@@ -7,6 +7,7 @@
 //
 
 #import "UIViewController+FT_RootVC.h"
+#import "FTConstants.h"
 @implementation UIViewController (FT_RootVC)
 + (NSString *)ft_getRootViewController{
     UIWindow* window = nil;
@@ -30,7 +31,7 @@
     
     if( [name isKindOfClass:NSNull.class]
        ||name==nil){
-        return @"N/A";
+        return FT_NULL_VALUE;
     }else{
         return  name;
     }

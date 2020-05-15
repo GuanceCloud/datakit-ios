@@ -9,16 +9,16 @@
 #import "FTLocationManager.h"
 #import <CoreLocation/CoreLocation.h>
 #import "ZYLog.h"
-
+#import "FTConstants.h"
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;
 @end
 @implementation FTLocationInfo
 -(instancetype)init{
     if(self = [super init]){
-        self.city = @"N/A";
-        self.country = @"N/A";
-        self.province = @"N/A";
+        self.city = FT_NULL_VALUE;
+        self.country = FT_NULL_VALUE;
+        self.province = FT_NULL_VALUE;
     }
     return self;
 }
