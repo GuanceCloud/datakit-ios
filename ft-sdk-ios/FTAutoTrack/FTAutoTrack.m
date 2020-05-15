@@ -153,17 +153,18 @@
 - (void)logTargetAction{
     WeakSelf
     
-   id<ZY_AspectToken> gesToken =  [UIGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
-                                 withOptions:ZY_AspectPositionAfter
-                                  usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
+    id<ZY_AspectToken> gesToken =  [UITapGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
+                                                                   withOptions:ZY_AspectPositionAfter
+                                                                    usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
         if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
-            UIGestureRecognizer *ges = aspectInfo.instance;
-            
-            ges.accessibilityHint = NSStringFromSelector(action);
+            UITapGestureRecognizer *ges = aspectInfo.instance;
             
             if ([target isKindOfClass:[UIViewController class]]) {
                 Class vcClass = [target class];
                 [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                    if (ges.state != UIGestureRecognizerStateEnded) {
+                        return;
+                    }
                     [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
                     
                 } error:nil];
@@ -172,18 +173,28 @@
         }
     } error:NULL];
     [self.aspectTokenAry addObject:gesToken];
-   id<ZY_AspectToken> gesToken2 =[UIGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
-                                 withOptions:ZY_AspectPositionAfter
-                                  usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
-        if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
-            UIGestureRecognizer *ges = aspectInfo.instance;
-            
-            ges.accessibilityHint = NSStringFromSelector(action);
-            
+    
+    [UITapGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+                                    withOptions:ZY_AspectPositionAfter
+                                     usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
+        if ([aspectInfo.instance isKindOfClass:[UITapGestureRecognizer class]]) {
+            UITapGestureRecognizer *ges = aspectInfo.instance;
+            [ges removeTarget:target action:action];
+            [ges addTarget:target action:action];
+        }
+    } error:NULL];
+    
+    id<ZY_AspectToken> gesToken2 =[UILongPressGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
+                                                                        withOptions:ZY_AspectPositionAfter
+                                                                         usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
+        if ([aspectInfo.instance isKindOfClass:[UILongPressGestureRecognizer class]]) {
+            UILongPressGestureRecognizer *ges = aspectInfo.instance;
             if ([target isKindOfClass:[UIViewController class]]) {
                 Class vcClass = [target class];
-                
                 [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                    if (ges.state != UIGestureRecognizerStateEnded) {
+                        return;
+                    }
                     [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
                     
                 } error:nil];
@@ -192,6 +203,16 @@
         }
     } error:NULL];
     [self.aspectTokenAry addObject:gesToken2];
+    
+    [UILongPressGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+                                          withOptions:ZY_AspectPositionAfter
+                                           usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
+        if ([aspectInfo.instance isKindOfClass:[UILongPressGestureRecognizer class]]) {
+            UILongPressGestureRecognizer *ges = aspectInfo.instance;
+            [ges removeTarget:target action:action];
+            [ges addTarget:target action:action];
+        }
+    } error:NULL];
     
     id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
         if ([from isKindOfClass:UIView.class]) {
