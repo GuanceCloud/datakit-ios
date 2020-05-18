@@ -206,7 +206,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             NSInteger statusCode = [httpResponse statusCode];
             callBack? callBack(statusCode,data):nil ;
         }
-        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":[NSNumber numberWithBool:success]}];
     }];
     //开始请求
     [dataTask resume];
@@ -216,8 +215,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if(!_session){
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         config.timeoutIntervalForRequest = 30.0;
-        _session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
-        
+        _session = [NSURLSession sessionWithConfiguration:config];
     }
     return _session;
 }
@@ -294,10 +292,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         _basicTags = tag;
     }
     return _basicTags;
-}
-#pragma mark ========== NSURLSessionTaskDelegate ==========
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-    [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskMetricsNotification object:@{@"metrics":metrics}];
 }
 
 NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {

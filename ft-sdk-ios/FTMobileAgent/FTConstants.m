@@ -84,6 +84,10 @@ NSString * const FT_MONITOR_NETWORK_OUT_RATE  = @"network_out_rate";
 NSString * const FT_MONITOR_NETWORK_DNS_TIME  = @"network_dns_time";
 NSString * const FT_MONITOR_NETWORK_TCP_TIME  = @"network_tcp_time";
 NSString * const FT_MONITOR_NETWORK_RESPONSE_TIME  = @"network_response_time";
+
+NSString * const FT_MONITOR_FT_NETWORK_DNS_TIME  = @"_network_dns_time";
+NSString * const FT_MONITOR_FT_NETWORK_TCP_TIME  = @"_network_tcp_time";
+NSString * const FT_MONITOR_FT_NETWORK_RESPONSE_TIME  = @"_network_response_time";
 NSString * const FT_MONITOR_NETWORK_ERROR_RATE  = @"network_error_rate";
 NSString * const FT_MONITOR_NETWORK_PROXY  = @"network_proxy";
 

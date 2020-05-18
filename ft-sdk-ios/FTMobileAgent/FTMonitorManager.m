@@ -25,24 +25,17 @@
 #import "FTMonitorUtils.h"
 #import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
-
+#import "FTURLProtocol.h"
+#import "FTMobileAgent+Private.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
-@interface FTTaskMetrics : NSObject
-@property (nonatomic, assign) NSTimeInterval tcpTime;
-@property (nonatomic, assign) NSTimeInterval dnsTime;
-@property (nonatomic, assign) NSTimeInterval responseTime;
-@end
-@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray *devicesListArray;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
-@property (nonatomic, assign) NSInteger errorNet;
-@property (nonatomic, assign) NSInteger successNet;
-@property (nonatomic, strong) FTTaskMetrics *metrics;
 @property (nonatomic, strong) CMPedometer *pedometer;
 @property (nonatomic, strong) CMMotionManager *motionManager;
 @property (nonatomic, strong) NSNumber *steps;
@@ -54,21 +47,14 @@ NSError *error);
 @property (nonatomic, copy) NSString *isBlueOn;
 @end
 
-@implementation FTTaskMetrics
--(instancetype)init{
-    if(self = [super init]){
-        self.tcpTime = 0;
-        self.dnsTime = 0;
-        self.responseTime = 0;
-    }
-    return self;
-}
-@end
 @implementation FTMonitorManager{
     CADisplayLink *_displayLink;
     NSTimeInterval _lastTime;
     NSUInteger _count;
     float _fps;
+    NSDictionary *_lastNetTaskMetrics;
+    NSUInteger _errorNet;
+    NSUInteger _successNet;
 }
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -82,9 +68,10 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         self.devicesListArray = [NSMutableArray new];
-        self.metrics = [FTTaskMetrics new];
         _flushInterval = 10;
-        [self startNetMonitor];
+        _lastNetTaskMetrics = nil;
+        _errorNet = 0;
+        _successNet = 0;
     }
     return self;
 }
@@ -95,34 +82,37 @@ static dispatch_once_t onceToken;
         [self stopFlush];
     }
     if (!(_monitorType & FTMonitorInfoTypeAll) && !(_monitorType &FTMonitorInfoTypeNetwork)) {
-           [self.netFlow stopMonitor];
-       }else{
-           [self startFlushTimer];
-       }
-       if(_monitorType & FTMonitorInfoTypeLocation ||_monitorType & FTMonitorInfoTypeAll){
-           if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
-               [[FTLocationManager sharedInstance] startUpdatingLocation];
-           }
-       }
-       if (_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll) {
-           if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
-               self.pedometer = [[CMPedometer alloc] init];
-               [self startPedometerUpdatesTodayWithHandler:nil];
-           }
-           [self lightSensitive];
-       }else if(_monitorType & FTMonitorInfoTypeSensorStep){
-           if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
-               self.pedometer = [[CMPedometer alloc] init];
-               [self startPedometerUpdatesTodayWithHandler:nil];
-           }
-           [self startMotionUpdate];
-       }else if (_monitorType & FTMonitorInfoTypeSensorLight){
-           [self lightSensitive];
-       }else{
-           [self stopMotionUpdates];
-           [self.session stopRunning];
-       }
-       [self startMotionUpdate];
+        [self.netFlow stopMonitor];
+        [FTURLProtocol stopMonitor];
+    }else{
+        [FTURLProtocol startMonitor];
+        [FTURLProtocol setDelegate:self];
+        [self startFlushTimer];
+    }
+    if(_monitorType & FTMonitorInfoTypeLocation ||_monitorType & FTMonitorInfoTypeAll){
+        if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
+            [[FTLocationManager sharedInstance] startUpdatingLocation];
+        }
+    }
+    if (_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll) {
+        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
+            self.pedometer = [[CMPedometer alloc] init];
+            [self startPedometerUpdatesTodayWithHandler:nil];
+        }
+        [self lightSensitive];
+    }else if(_monitorType & FTMonitorInfoTypeSensorStep){
+        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
+            self.pedometer = [[CMPedometer alloc] init];
+            [self startPedometerUpdatesTodayWithHandler:nil];
+        }
+        [self startMotionUpdate];
+    }else if (_monitorType & FTMonitorInfoTypeSensorLight){
+        [self lightSensitive];
+    }else{
+        [self stopMotionUpdates];
+        [self.session stopRunning];
+    }
+    [self startMotionUpdate];
     if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeFPS) {
         if (!_displayLink) {
             _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
@@ -139,7 +129,7 @@ static dispatch_once_t onceToken;
         }
     }else{
         if (_displayLink) {
-           [_displayLink setPaused:YES];
+            [_displayLink setPaused:YES];
             _displayLink = nil;
         }
     }
@@ -370,33 +360,6 @@ static dispatch_once_t onceToken;
     }
     [UIDevice currentDevice].proximityMonitoringEnabled = NO;
 }
-#pragma mark ========== 网络请求相关时间 ==========
-- (void)startNetMonitor{
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskMetrics:) name:FTTaskMetricsNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dealTaskStates:) name:FTTaskCompleteStatesNotification object:nil];
-}
--(void)dealTaskMetrics:(NSNotification *)notification{
-    NSDictionary * infoDic = [notification object];
-    if ([[infoDic allKeys]containsObject:@"metrics"]) {
-        if (@available(iOS 10.0, *)) {
-            NSURLSessionTaskMetrics *metrics = infoDic[@"metrics"];
-            NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
-            self.metrics.dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
-            self.metrics.tcpTime = [taskMes.secureConnectionStartDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
-            self.metrics.responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
-        }
-    }
-}
--(void)dealTaskStates:(NSNotification *)notification{
-    NSDictionary * infoDic = [notification object];
-    if ([[infoDic allKeys]containsObject:@"success"]) {
-        if ([infoDic[@"success"] isEqual:@YES]) {
-            self.successNet++;
-        }else{
-            self.errorNet++;
-        }
-    }
-}
 #pragma mark ========== tag\field 数据拼接 ==========
 -(NSDictionary *)getMonitorTagDicts{
         NSMutableDictionary *tag = [NSMutableDictionary new];
@@ -458,13 +421,11 @@ static dispatch_once_t onceToken;
         [field setObject:network_strength forKey:FT_MONITOR_NETWORK_STRENGTH];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.iflow] forKey:FT_MONITOR_NETWORK_IN_RATE];
         [field setObject:[NSNumber numberWithLongLong:self.netFlow.oflow] forKey:FT_MONITOR_NETWORK_OUT_RATE];
-        [field setObject:[NSNumber numberWithDouble:self.metrics.dnsTime] forKey:FT_MONITOR_NETWORK_DNS_TIME];
-        [field setObject:[NSNumber numberWithDouble:self.metrics.tcpTime] forKey:FT_MONITOR_NETWORK_TCP_TIME];
-        [field setObject:[NSNumber numberWithDouble:self.metrics.responseTime] forKey:FT_MONITOR_NETWORK_RESPONSE_TIME];
+        [field addEntriesFromDictionary:_lastNetTaskMetrics];
         [field addEntriesFromDictionary:[FTMonitorUtils getDNSInfo]];
         NSNumber *errorRate = @0;
-        if (self.successNet+self.errorNet != 0) {
-            errorRate =[NSNumber numberWithDouble:self.errorNet/((self.successNet+self.errorNet)*1.0)];
+        if (_successNet+_errorNet != 0) {
+            errorRate =[NSNumber numberWithDouble:_errorNet/((_successNet+_errorNet)*1.0)];
         }
         [field setObject:errorRate forKey:FT_MONITOR_NETWORK_ERROR_RATE];
         [tag setObject:[FTNetworkInfo getProxyHost] forKey:FT_MONITOR_NETWORK_PROXY];
@@ -548,7 +509,37 @@ static dispatch_once_t onceToken;
         self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? @"true":@"false";
     } 
 }
-
+#pragma mark ========== 网络请求相关时间/错误率 ==========
+- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
+    if (@available(iOS 10.0, *)) {
+        NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
+        NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
+        NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
+        NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
+        if([taskMes.request.URL.absoluteString isEqualToString:[FTMobileAgent sharedInstance].config.metricsUrl]){
+            @synchronized(_lastNetTaskMetrics) {
+                _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
+                                        FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
+                                        FT_MONITOR_FT_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime]
+                };
+            }
+        }else{
+            @synchronized(_lastNetTaskMetrics) {
+                _lastNetTaskMetrics = @{FT_MONITOR_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
+                                        FT_MONITOR_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
+                                        FT_MONITOR_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime]
+                };
+            }
+        }
+    }
+}
+- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didCompleteWithError:(NSError *)error{
+    if (error) {
+        _errorNet++;
+    }else{
+        _successNet++;
+    }
+}
 - (void)resetInstance{
     onceToken = 0;
     sharedInstance =nil;

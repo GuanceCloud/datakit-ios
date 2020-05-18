@@ -189,7 +189,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
     if ([self.net isEqualToString:@"-1"]) {
         callBack? callBack(NetWorkException,nil):nil;
-        [[NSNotificationCenter defaultCenter] postNotificationName:FTTaskCompleteStatesNotification object:@{@"success":@NO}];
     }else{
     dispatch_async(self.immediateLabel, ^{
         [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
@@ -373,11 +372,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (flags & kSCNetworkReachabilityFlagsReachable) {
         if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
             self.net = @"0";//2G/3G/4G
-            [self uploadFlush];
         } else {
             self.net = @"4";//WIFI
-            [self uploadFlush];
         }
+         [self uploadFlush];
     } else {
         self.net = @"-1";//未知
     }

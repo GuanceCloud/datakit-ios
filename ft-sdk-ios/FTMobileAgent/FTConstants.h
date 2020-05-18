@@ -83,6 +83,9 @@ extern NSString * const FT_MONITOR_NETWORK_RESPONSE_TIME;
 extern NSString * const FT_MONITOR_NETWORK_ERROR_RATE;
 extern NSString * const FT_MONITOR_NETWORK_PROXY;
 
+extern NSString * const FT_MONITOR_FT_NETWORK_DNS_TIME;
+extern NSString * const FT_MONITOR_FT_NETWORK_TCP_TIME;
+extern NSString * const FT_MONITOR_FT_NETWORK_RESPONSE_TIME;
 
 extern NSString * const FT_MONITOR_ROTATION_X;
 extern NSString * const FT_MONITOR_ROTATION_Y;
