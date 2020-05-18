@@ -152,68 +152,43 @@
 #pragma mark ========== button,Gesture的点击事件 ==========
 - (void)logTargetAction{
     WeakSelf
-    
+    void (^aspectHookBlock)(id<ZY_AspectInfo> aspectInfo, id target, SEL action) = ^(id<ZY_AspectInfo> aspectInfo, id target, SEL action){
+             if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
+               UIGestureRecognizer *ges = aspectInfo.instance;
+               
+               if ([target isKindOfClass:[UIViewController class]]) {
+                   Class vcClass = [target class];
+                   [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+                       if (ges.state != UIGestureRecognizerStateEnded) {
+                           return;
+                       }
+                       [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
+                       
+                   } error:nil];
+               }
+               
+           }
+    };
     id<ZY_AspectToken> gesToken =  [UITapGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
                                                                    withOptions:ZY_AspectPositionAfter
-                                                                    usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
-        if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
-            UITapGestureRecognizer *ges = aspectInfo.instance;
-            
-            if ([target isKindOfClass:[UIViewController class]]) {
-                Class vcClass = [target class];
-                [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                    if (ges.state != UIGestureRecognizerStateEnded) {
-                        return;
-                    }
-                    [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
-                    
-                } error:nil];
-            }
-            
-        }
-    } error:NULL];
+                                                                    usingBlock:aspectHookBlock error:NULL];
     [self.aspectTokenAry addObject:gesToken];
     
-    [UITapGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+   id<ZY_AspectToken> gesToken3 = [UITapGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
                                     withOptions:ZY_AspectPositionAfter
-                                     usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
-        if ([aspectInfo.instance isKindOfClass:[UITapGestureRecognizer class]]) {
-            UITapGestureRecognizer *ges = aspectInfo.instance;
-            [ges removeTarget:target action:action];
-            [ges addTarget:target action:action];
-        }
-    } error:NULL];
-    
+                                     usingBlock:aspectHookBlock error:NULL];
+    [self.aspectTokenAry addObject:gesToken3];
+
     id<ZY_AspectToken> gesToken2 =[UILongPressGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
                                                                         withOptions:ZY_AspectPositionAfter
-                                                                         usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
-        if ([aspectInfo.instance isKindOfClass:[UILongPressGestureRecognizer class]]) {
-            UILongPressGestureRecognizer *ges = aspectInfo.instance;
-            if ([target isKindOfClass:[UIViewController class]]) {
-                Class vcClass = [target class];
-                [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-                    if (ges.state != UIGestureRecognizerStateEnded) {
-                        return;
-                    }
-                    [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
-                    
-                } error:nil];
-            }
-            
-        }
-    } error:NULL];
+                                                                         usingBlock:aspectHookBlock error:NULL];
     [self.aspectTokenAry addObject:gesToken2];
     
-    [UILongPressGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
+   id<ZY_AspectToken> gesToken4 = [UILongPressGestureRecognizer aspect_hookSelector:@selector(initWithTarget:action:)
                                           withOptions:ZY_AspectPositionAfter
-                                           usingBlock:^(id<ZY_AspectInfo> aspectInfo, id target, SEL action) {
-        if ([aspectInfo.instance isKindOfClass:[UILongPressGestureRecognizer class]]) {
-            UILongPressGestureRecognizer *ges = aspectInfo.instance;
-            [ges removeTarget:target action:action];
-            [ges addTarget:target action:action];
-        }
-    } error:NULL];
-    
+                                           usingBlock:aspectHookBlock error:NULL];
+    [self.aspectTokenAry addObject:gesToken4];
+
     id<ZY_AspectToken> clickToken = [UIApplication aspect_hookSelector:@selector(sendAction:to:from:forEvent:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo, SEL action,id to,id  from,UIEvent *event) {
         //UITextField、UITextView点击
         if ([from isKindOfClass:NSClassFromString(@"UITextMultiTapRecognizer")]) {
