@@ -41,6 +41,13 @@
         }
         [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass([currentView class])] atIndex:0];
     }
+    //让视图树唯一
+    UIViewController *vc = [self ft_getCurrentViewController];
+    if ([vc isKindOfClass:UINavigationController.class]) {
+        UINavigationController *nav =(UINavigationController *)vc;
+        vc = [nav.viewControllers firstObject];
+    }
+    [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass(vc.class)] atIndex:0];
     return str;
 }
 
