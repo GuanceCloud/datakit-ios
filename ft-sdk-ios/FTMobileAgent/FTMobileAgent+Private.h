@@ -25,13 +25,14 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 };
 
 @interface FTMobileAgent (Private)
+@property (nonatomic, strong,readonly) FTMobileConfig *config;
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */
-- (void)trackBackground:(NSString *_Nonnull)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *_Nonnull)field withTrackType:(FTTrackType)trackType;
+- (void)trackBackground:(NSString *)measurement tags:(NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType;
 /**
  * autotrack  全埋点页面流程图抓取 存储数据库
  */
-- (void)flowTrack:(NSString *_Nonnull)product traceId:(NSString *_Nonnull)traceId name:(NSString *_Nonnull)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field withTrackType:(FTTrackType)trackType;
+- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:( NSString *)parent tags:(NSDictionary *)tags duration:(long)duration field:(NSDictionary *)field withTrackType:(FTTrackType)trackType;
 @end
 #endif /* FTMobileAgent_Private_h */
