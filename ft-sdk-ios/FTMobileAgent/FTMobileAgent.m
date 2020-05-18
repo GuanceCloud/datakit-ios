@@ -134,6 +134,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self startAutoTrack];
         }
     }
+    else{
+        NSString *invokeMethod = @"startWithConfig:";
+        SEL startMethod = NSSelectorFromString(invokeMethod);
+        IMP imp = [autotrack methodForSelector:startMethod];
+        void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
+        func(autotrack,startMethod,self.config);
+    }
     [[FTMonitorManager sharedInstance] setMonitorType:config.monitorInfoType];
     self.upTool.config = config;
 }
@@ -142,7 +149,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self trackBackground:measurement tags:nil field:field withTrackType:FTTrackTypeCode];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
-     [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
+    [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
 }
 
 -(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id _Nullable responseObject))callBackStatus{
