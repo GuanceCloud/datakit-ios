@@ -31,7 +31,6 @@
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, assign) int preFlowTime;
 @end
 @implementation FTMobileAgent{
     NSDictionary *_pageDesc;
