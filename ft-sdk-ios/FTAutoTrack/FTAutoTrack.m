@@ -105,6 +105,13 @@
     }
     ZYLog(@"superview == %@",vc.view.superview) ;
     NSString *parent = self.preOpenName;
+    NSString *name =NSStringFromClass(vc.class);
+    if ([[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:name]) {
+        name =[[FTMobileAgent sharedInstance] getPageDescDict][name];
+    }
+    if ([[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:parent]) {
+        parent =[[FTMobileAgent sharedInstance] getPageDescDict][parent];
+    }
     self.preOpenName = NSStringFromClass(vc.class);
     long long duration;
     long long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
@@ -345,20 +352,28 @@
         return ;
     }
     @try {
-        NSMutableDictionary *tags = @{@"event_id":[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
-        NSMutableDictionary *field = @{@"event":op
+        NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
+        NSMutableDictionary *field = @{FT_AUTO_TRACK_EVENT:op
         }.mutableCopy;
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
-            [tags setObject:[UIViewController ft_getRootViewController] forKey:@"root_page_name"];
+            [tags setObject:[UIViewController ft_getRootViewController] forKey:FT_AUTO_TRACK_ROOT_PAGE_NAME];
+            NSString *current;
             if ([cpn isKindOfClass:UIView.class]) {
-                [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn ft_getCurrentViewController].class)}];
+                current = NSStringFromClass([cpn ft_getCurrentViewController].class);
             }else if ([cpn isKindOfClass:UIViewController.class]){
-                [tags addEntriesFromDictionary:@{@"current_page_name":NSStringFromClass([cpn class])}];
+                current = NSStringFromClass([cpn class]);
+            }
+            [tags setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
+            if (current && [[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:current]) {
+                [field setValue:[[FTMobileAgent sharedInstance] getPageDescDict][current] forKey:FT_AUTO_TRACK_PAGE_DESC];
             }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 NSString *vtp =[view ft_getParentsView];
-                [tags setValue:vtp forKey:@"vtp"];
-                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:@"vtp_id"];
+                [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
+                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
+                if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
+                    [field setValue:[[FTMobileAgent sharedInstance] getVtpDescDict][vtp] forKey:FT_AUTO_TRACK_VTP_DESC];
+                }
             }
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag

@@ -26,6 +26,10 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 
 @interface FTMobileAgent (Private)
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
+
+
+- (NSDictionary *)getPageDescDict;
+- (NSDictionary *)getVtpDescDict;
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */

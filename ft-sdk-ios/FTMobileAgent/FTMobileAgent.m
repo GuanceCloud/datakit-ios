@@ -32,10 +32,12 @@
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, assign) int preFlowTime;
-@property (readwrite, nonatomic, strong) NSLock *lock;
-@property (nonatomic, strong) NSDictionary *monitorTagDict;
 @end
-@implementation FTMobileAgent
+@implementation FTMobileAgent{
+    NSDictionary *_pageDesc;
+    NSDictionary *_vtpDesc;
+    BOOL _isDescEnable;
+}
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -235,6 +237,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     onceToken = 0;
     sharedInstance =nil;
 }
+/**
+ * 设置视图描述字典 key:视图ClassName  value:视图描述
+*/
+-(void)addPageDescDict:(NSDictionary <NSString*,id>*)dict{
+    _pageDesc = dict;
+}
+/**
+ * 设置视图树描述字典 key:视图树string  value:视图树描述
+*/
+-(void)addVtpDescDict:(NSDictionary <NSString*,id>*)dict{
+    _vtpDesc = dict;
+}
+-(void)isDescEnabled:(BOOL)enable{
+    _isDescEnable = enable;
+}
 #pragma mark ========== 调用监控项管理方法 ==========
 -(void)setMonitorFlushInterval:(NSInteger)interval{
     [[FTMonitorManager sharedInstance] setFlushInterval:interval];
@@ -290,10 +307,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
             }
-            productStr = [NSString stringWithFormat:@"flow_%@",product];
-            if (![FTBaseInfoHander verifyProductStr:productStr]) {
+            if (![FTBaseInfoHander verifyProductStr: [NSString stringWithFormat:@"flow_%@",product]]) {
                 return;
             }
+            productStr =[NSString stringWithFormat:@"$flow_%@",product];
             op = @"flowcstm";
         }else{
             productStr = product;
@@ -311,7 +328,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tagsDict addEntriesFromDictionary:tags];
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"$%@",product] tags:tagsDict field:fieldDict op:op];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op];
         [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     } @catch (NSException *exception) {
         ZYDebug(@"flowTrack product traceId name exception %@",exception);
@@ -344,6 +361,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"datas == %@",data);
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     return model;
+}
+- (NSDictionary *)getPageDescDict{
+    if (_isDescEnable) {
+        return _pageDesc;
+    }
+    return nil;
+}
+- (NSDictionary *)getVtpDescDict{
+    if (_isDescEnable) {
+        return _vtpDesc;
+    }
+    return nil;
 }
 #pragma mark --------- 网络与App的生命周期 ---------
 - (void)setupAppNetworkListeners{
