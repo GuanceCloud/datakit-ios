@@ -28,6 +28,14 @@ extern NSString * const FT_AUTO_TRACK_OP_LEAVE;
 extern NSString * const FT_AUTO_TRACK_OP_CLICK;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
+extern NSString * const FT_AUTO_TRACK_EVENT_ID;
+extern NSString * const FT_AUTO_TRACK_EVENT;
+extern NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME;
+extern NSString * const FT_AUTO_TRACK_CURRENT_PAGE_NAME;
+extern NSString * const FT_AUTO_TRACK_VTP;
+extern NSString * const FT_AUTO_TRACK_VTP_ID;
+extern NSString * const FT_AUTO_TRACK_VTP_DESC;
+extern NSString * const FT_AUTO_TRACK_PAGE_DESC;
 
 #pragma mark ========== common property ==========
 extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;

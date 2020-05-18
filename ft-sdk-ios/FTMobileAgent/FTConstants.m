@@ -23,12 +23,20 @@ NSString * const FT_FLOW_NAME  = @"$name";
 NSString * const FT_FLOW_PARENT  = @"$parent";
 
 
-#pragma mark ========== AUTOTRACK_OP ==========
+#pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
 NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
+NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
+NSString * const FT_AUTO_TRACK_EVENT = @"event";
+NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME = @"root_page_name";
+NSString * const FT_AUTO_TRACK_CURRENT_PAGE_NAME = @"current_page_name";
+NSString * const FT_AUTO_TRACK_VTP = @"vtp";
+NSString * const FT_AUTO_TRACK_VTP_ID = @"vtp_id";
+NSString * const FT_AUTO_TRACK_VTP_DESC = @"vtp_desc";
+NSString * const FT_AUTO_TRACK_PAGE_DESC = @"page_desc";
 
 #pragma mark ========== comon ==========
 NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
