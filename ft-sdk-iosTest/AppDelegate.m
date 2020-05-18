@@ -42,13 +42,20 @@
         config.enableAutoTrack = YES;
         config.needBindUser = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-        [config enableTrackScreenFlow:NO];
+        [config enableTrackScreenFlow:YES];
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
         [UITestManger sharedManger];
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] logout];
+        NSDictionary *dict = @{@"DemoViewController":@"首页",
+                               @"RootTabbarVC":@"底部导航",
+                               @"UITestVC":@"UI测试",
+                               @"ResultVC":@"测试结果",
+        };
+        [[FTMobileAgent sharedInstance] addPageDescDict:dict];
+        [[FTMobileAgent sharedInstance] isDescEnabled:YES];
     }
     return YES;
 }
