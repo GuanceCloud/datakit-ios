@@ -1,6 +1,7 @@
-# 1.0.2-alpha.18
+# 1.0.2-alpha.19
 1.vtp_desc、page_desc field字段添加
 2.添加addVtpDescDict、addPageDescDict方法
+3.引用头文件错误修改
 ---
 
 # 1.0.2-alpha.17
