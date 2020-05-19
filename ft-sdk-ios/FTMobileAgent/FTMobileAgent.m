@@ -21,7 +21,6 @@
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "UIView+FT_CurrentController.h"
 #import "FTLog.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
