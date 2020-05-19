@@ -12,7 +12,7 @@
 #import <CoreTelephony/CTCarrier.h>
 #import "FTBaseInfoHander.h"
 #import "FTTrackerEventDBTool.h"
-#import "ZYLog.h"
+#import "FTLog.h"
 #import "FTRecordModel.h"
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"

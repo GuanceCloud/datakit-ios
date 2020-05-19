@@ -8,7 +8,6 @@
 
 #import "FTMobileAgent.h"
 #import <UIKit/UIKit.h>
-#import "ZYLog.h"
 #import "FTTrackerEventDBTool.h"
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
@@ -22,6 +21,8 @@
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
+#import "UIView+FT_CurrentController.h"
+#import "FTLog.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -100,6 +101,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (config) {
             self.config = config;
         }
+        [FTLog enableLog:config.enableLog];
         [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -128,6 +130,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 -(void)resetConfig:(FTMobileConfig *)config{
     config.sdkTrackVersion = self.config.sdkTrackVersion;
+    [FTLog enableLog:config.enableLog];
     id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
     self.config = config;
     if (!autotrack) {
@@ -422,7 +425,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.isForeground = NO;
     }
     @catch (NSException *exception) {
-        ZYDebug(@"applicationWillResignActive exception %@",exception);
+        ZYLog(@"applicationWillResignActive exception %@",exception);
     }
 }
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
@@ -431,11 +434,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self uploadFlush];
     }
     @catch (NSException *exception) {
-        ZYDebug(@"applicationDidBecomeActive exception %@",exception);
+        ZYLog(@"applicationDidBecomeActive exception %@",exception);
     }
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
-    ZYDebug(@"applicationDidEnterBackground ");
+    ZYLog(@"applicationDidEnterBackground ");
 }
 
 #pragma mark --------- 上报策略 ----------

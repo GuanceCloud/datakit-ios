@@ -9,7 +9,7 @@
 #import "FTMonitorUtils.h"
 #import <SystemConfiguration/CaptiveNetwork.h>
 #import <CoreLocation/CLLocationManager.h>
-#import "ZYLog.h"
+#import "FTLog.h"
 #include <arpa/inet.h>
 #include <resolv.h>
 #include <dns.h>

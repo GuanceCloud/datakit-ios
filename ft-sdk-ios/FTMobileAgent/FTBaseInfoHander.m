@@ -13,7 +13,7 @@
 #import <CoreTelephony/CTCarrier.h>
 #import <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
-#import "ZYLog.h"
+#import "FTLog.h"
 #import <mach/mach.h>
 #import <assert.h>
 #import <SystemConfiguration/SystemConfiguration.h>

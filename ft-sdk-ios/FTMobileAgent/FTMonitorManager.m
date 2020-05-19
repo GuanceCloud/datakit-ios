@@ -19,7 +19,7 @@
 #import "FTRecordModel.h"
 #import "FTMobileAgent.h"
 #import "FTURLProtocol.h"
-#import "ZYLog.h"
+#import "FTLog.h"
 #import "FTUploadTool.h"
 #import <CoreMotion/CoreMotion.h>
 #import "FTMonitorUtils.h"

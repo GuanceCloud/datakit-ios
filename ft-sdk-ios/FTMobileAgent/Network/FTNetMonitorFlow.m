@@ -10,7 +10,7 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#import "ZYLog.h"
+#import "FTLog.h"
 typedef struct {
     long long iBytes;
     long long oBytes;

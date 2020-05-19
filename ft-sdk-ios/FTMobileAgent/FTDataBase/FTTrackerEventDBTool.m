@@ -9,7 +9,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "ZY_FMDB.h"
-#import "ZYLog.h"
+#import "FTLog.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;

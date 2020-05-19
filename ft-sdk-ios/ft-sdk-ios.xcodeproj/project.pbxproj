@@ -22,7 +22,6 @@
 		4A3E7DC8245AAD540004A499 /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */; };
 		4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6F891E2419E97700E05C36 /* FTTrackBean.m */; };
-		4A852FAC23A221DF00B40B5D /* ZYLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FAB23A221DE00B40B5D /* ZYLog.h */; };
 		4A852FDB23A240B400B40B5D /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A852FDC23A240B400B40B5D /* UIView+FT_CurrentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */; };
 		4A852FDD23A240B400B40B5D /* UIViewController+FT_RootVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */; };
@@ -64,6 +63,8 @@
 		4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */; };
 		4AECBCF1244EEB100023DEF7 /* FTSessionConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */; };
 		4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */; };
+		4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AED6B242473AFEC00E04AE2 /* FTLog.h */; };
+		4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AED6B252473AFEC00E04AE2 /* FTLog.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,7 +83,6 @@
 		4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlacklistedVCClassNames.m; sourceTree = "<group>"; };
 		4A6F891D2419E97700E05C36 /* FTTrackBean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTrackBean.h; sourceTree = "<group>"; };
 		4A6F891E2419E97700E05C36 /* FTTrackBean.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTrackBean.m; sourceTree = "<group>"; };
-		4A852FAB23A221DE00B40B5D /* ZYLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYLog.h; sourceTree = "<group>"; };
 		4A852FCB23A2408600B40B5D /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A852FD323A240B300B40B5D /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
 		4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FT_CurrentController.m"; sourceTree = "<group>"; };
@@ -126,6 +126,8 @@
 		4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTURLProtocol.m; sourceTree = "<group>"; };
 		4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionConfiguration.h; sourceTree = "<group>"; };
 		4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionConfiguration.m; sourceTree = "<group>"; };
+		4AED6B242473AFEC00E04AE2 /* FTLog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLog.h; sourceTree = "<group>"; };
+		4AED6B252473AFEC00E04AE2 /* FTLog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLog.m; sourceTree = "<group>"; };
 		CAA8F0762462D49A00F29BF8 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/IOKit.framework; sourceTree = DEVELOPER_DIR; };
 		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -220,7 +222,8 @@
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */,
 				4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */,
-				4A852FAB23A221DE00B40B5D /* ZYLog.h */,
+				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
+				4AED6B252473AFEC00E04AE2 /* FTLog.m */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
@@ -302,6 +305,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
+				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
@@ -311,7 +315,6 @@
 				4A88429B239E5768001B44C3 /* FTTrackerEventDBTool.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
-				4A852FAC23A221DF00B40B5D /* ZYLog.h in Headers */,
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
@@ -449,6 +452,7 @@
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
+				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

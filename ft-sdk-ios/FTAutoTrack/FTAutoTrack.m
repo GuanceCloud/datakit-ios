@@ -11,7 +11,7 @@
 #import "UIViewController+FT_RootVC.h"
 #import "ZYAspects.h"
 #import <UIKit/UIKit.h>
-#import "ZYLog.h"
+#import "FTLog.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
@@ -103,7 +103,6 @@
     if ([self isBlackListContainsViewController:vc]) {
         return;
     }
-    ZYLog(@"superview == %@",vc.view.superview) ;
     NSString *parent = self.preOpenName;
     NSString *name =NSStringFromClass(vc.class);
     if ([[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:name]) {
@@ -370,6 +369,7 @@
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 NSString *vtp =[view ft_getParentsView];
                 [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
+                ZYLog(@"VtpStr : %@",vtp);
                 [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
                 if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
                     [field setValue:[[FTMobileAgent sharedInstance] getVtpDescDict][vtp] forKey:FT_AUTO_TRACK_VTP_DESC];

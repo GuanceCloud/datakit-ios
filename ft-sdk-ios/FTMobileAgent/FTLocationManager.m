@@ -8,7 +8,7 @@
 
 #import "FTLocationManager.h"
 #import <CoreLocation/CoreLocation.h>
-#import "ZYLog.h"
+#import "FTLog.h"
 #import "FTConstants.h"
 @interface FTLocationManager () <CLLocationManagerDelegate>
 @property (nonatomic, strong) CLLocationManager *locationManager;

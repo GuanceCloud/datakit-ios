@@ -8,7 +8,7 @@
 
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
-#import "ZYLog.h"
+#import "FTLog.h"
 #import "FTMobileAgentVersion.h"
 
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
@@ -61,7 +61,7 @@
     _enableAutoTrack = enableAutoTrack;
 }
 -(void)setEnableLog:(BOOL)enableLog{
-     SETISDEBUG(enableLog);
+    _enableLog = enableLog;
 }
 -(void)enableTrackScreenFlow:(BOOL)enable{
     _enableScreenFlow = enable;

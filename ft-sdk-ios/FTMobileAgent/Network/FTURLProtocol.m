@@ -8,7 +8,7 @@
 
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-#import "ZYLog.h"
+#import "FTLog.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
