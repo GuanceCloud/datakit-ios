@@ -45,9 +45,10 @@
         [config enableTrackScreenFlow:YES];
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+       
+        [FTMobileAgent startWithConfigOptions:config];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
         [UITestManger sharedManger];
-        [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] logout];
         NSDictionary *dict = @{@"DemoViewController":@"首页",
                                @"RootTabbarVC":@"底部导航",
