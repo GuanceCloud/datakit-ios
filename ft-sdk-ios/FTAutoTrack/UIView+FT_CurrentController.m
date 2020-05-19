@@ -45,7 +45,7 @@
     UIViewController *vc = [self ft_getCurrentViewController];
     if ([vc isKindOfClass:UINavigationController.class]) {
         UINavigationController *nav =(UINavigationController *)vc;
-        vc = [nav.viewControllers firstObject];
+        vc = [nav.viewControllers lastObject];
     }
     [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass(vc.class)] atIndex:0];
     return str;
