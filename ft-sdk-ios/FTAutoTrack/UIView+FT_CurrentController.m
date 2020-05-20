@@ -47,7 +47,7 @@
         UINavigationController *nav =(UINavigationController *)vc;
         vc = [nav.viewControllers lastObject];
     }
-    [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass(vc.class)] atIndex:0];
+    vc?[str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass(vc.class)] atIndex:0]:nil;
     return str;
 }
 
