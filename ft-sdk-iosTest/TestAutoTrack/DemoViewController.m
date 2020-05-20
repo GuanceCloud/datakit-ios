@@ -37,7 +37,6 @@
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
-    _mtableView.viewVtpDescID = @"测试tableview";
     _mtableView.vtpAddIndexPath = YES;
     [self.view addSubview:_mtableView];
     

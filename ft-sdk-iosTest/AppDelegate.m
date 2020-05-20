@@ -39,6 +39,7 @@
     if (akId && akSecret && url) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
         config.enableLog = YES;
+        config.enableDescLog = YES;
         config.enableAutoTrack = YES;
         config.needBindUser = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
