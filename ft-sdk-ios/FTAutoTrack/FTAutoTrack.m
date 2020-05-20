@@ -132,14 +132,7 @@
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
-            if (tableView.vtpAddIndexPath) {
-                if (tableView.viewVtpDescID.length>0) {
-                    tableView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%ld]/row[%ld]",tableView.viewVtpDescID,(long)indexPath.section,(long)indexPath.row];
-                }else{
-                    tableView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%ld]/row[%@]",[tableView ft_getParentsView],(long)indexPath.section,@(indexPath.row).stringValue];
-                }
-            }
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView];
+            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView index:indexPath];
         } error:NULL];
         
     }error:nil];
@@ -154,14 +147,7 @@
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-            if (collectionView.vtpAddIndexPath) {
-                if (collectionView.viewVtpDescID.length>0) {
-                    collectionView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%@]/row[%@]",collectionView.viewVtpDescID,@(indexPath.section).stringValue,@(indexPath.row).stringValue];
-                }else{
-                    collectionView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%@]/row[%@]",[collectionView ft_getParentsView],@(indexPath.section).stringValue,@(indexPath.row).stringValue];
-            }
-            }
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
+            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView index:indexPath];
         } error:NULL];
         
     }error:nil];
@@ -344,6 +330,9 @@
 }
 #pragma mark ========== 写入数据库操作 ==========
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
+    [self track:op withCpn:cpn WithClickView:view index:nil];
+}
+-(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
     //添加判断允许的全埋点类型  以防重置 config 带来的影响
     if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
         return;
@@ -375,22 +364,32 @@
             }else if ([cpn isKindOfClass:UIViewController.class]){
                 current = NSStringFromClass([cpn class]);
             }
+            ZYDESCLog(@"current_page_name : %@",current);
+            NSString *pageDesc = FT_NULL_VALUE;
             [tags setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             if (current && [[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:current]) {
-                [field setValue:[[FTMobileAgent sharedInstance] getPageDescDict][current] forKey:FT_AUTO_TRACK_PAGE_DESC];
+                pageDesc =[[FTMobileAgent sharedInstance] getPageDescDict][current];
             }
+            [field setValue:[[FTMobileAgent sharedInstance] getPageDescDict][current] forKey:FT_AUTO_TRACK_PAGE_DESC];
+            ZYDESCLog(@"page_desc : %@",pageDesc);
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                NSString *vtp =[view ft_getParentsView];
-                [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
-                ZYLog(@"VtpStr : %@",vtp);
-                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
                 UIView *vtpView = view;
-                NSString *vtpDesc = FT_NULL_VALUE;
-                if(vtpView.viewVtpDescID.length>0){
-                    vtpDesc = vtpView.viewVtpDescID;
-                }else if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
-                    vtpDesc = [[FTMobileAgent sharedInstance] getVtpDescDict][vtp];
+                NSString *vtp =[view ft_getParentsView];
+                if(vtpView.vtpAddIndexPath&& indexPath){
+                    vtp= [vtp stringByAppendingFormat:@"/section[%@]/row[%@]",@(indexPath.section).stringValue,@(indexPath.row).stringValue];
                 }
+                ZYDESCLog(@"vtp : %@",vtp);
+                [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
+                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
+                NSString *vtpDesc = FT_NULL_VALUE;
+                if ([[FTMobileAgent sharedInstance] getPageVtpDescEnabled]) {
+                    if(vtpView.viewVtpDescID.length>0){
+                        vtpDesc = vtpView.viewVtpDescID;
+                    }else if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
+                        vtpDesc = [[FTMobileAgent sharedInstance] getVtpDescDict][vtp];
+                    }
+                }
+                ZYDESCLog(@"vtpDesc : %@",vtpDesc);
                 [field setValue:vtpDesc forKey:FT_AUTO_TRACK_VTP_DESC];
             }
         }

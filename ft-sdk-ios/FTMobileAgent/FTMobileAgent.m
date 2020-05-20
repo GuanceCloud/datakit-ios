@@ -37,7 +37,7 @@
     return objc_getAssociatedObject(self, @"FTViewVtpDescID");
 }
 -(BOOL)vtpAddIndexPath{
-    return objc_getAssociatedObject(self, @"FTVtpAddIndexPath");
+    return [objc_getAssociatedObject(self, @"FTVtpAddIndexPath") boolValue];
 }
 -(void)setViewVtpDescID:(NSString *)viewVtpDescID{
     objc_setAssociatedObject(self, @"FTViewVtpDescID", viewVtpDescID, OBJC_ASSOCIATION_COPY);
@@ -116,6 +116,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.config = config;
         }
         [FTLog enableLog:config.enableLog];
+        [FTLog enableDescLog:config.enableDescLog];
         [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
         NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
         self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -145,6 +146,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)resetConfig:(FTMobileConfig *)config{
     config.sdkTrackVersion = self.config.sdkTrackVersion;
     [FTLog enableLog:config.enableLog];
+    [FTLog enableDescLog:config.enableDescLog];
     id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
     self.config = config;
     if (!autotrack) {
@@ -398,6 +400,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return _pageDesc;
     }
     return nil;
+}
+-(BOOL)getPageVtpDescEnabled{
+    return _isPageVtpDescEnabled;
 }
 #pragma mark --------- 网络与App的生命周期 ---------
 - (void)setupAppNetworkListeners{
