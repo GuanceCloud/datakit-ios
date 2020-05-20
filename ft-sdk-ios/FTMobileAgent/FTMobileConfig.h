@@ -125,7 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*设置是否允许打印日志*/
 @property (nonatomic, assign) BOOL enableLog;
-
+/*设置是否允许打印描述日志*/
+@property (nonatomic, assign) BOOL enableDescLog;
 /*TAG 中的设备信息*/
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
 

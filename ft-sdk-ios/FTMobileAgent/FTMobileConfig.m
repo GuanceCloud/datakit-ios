@@ -32,6 +32,7 @@
          _needBindUser = NO;
          _enableScreenFlow = NO;
          _XDataKitUUID = [self ft_defaultUUID];
+         _enableDescLog = NO;
         }
       return self;
 }
@@ -55,6 +56,7 @@
     options.needBindUser = self.needBindUser;
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
+    options.enableDescLog = self.enableDescLog;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
@@ -62,6 +64,9 @@
 }
 -(void)setEnableLog:(BOOL)enableLog{
     _enableLog = enableLog;
+}
+-(void)setEnableDescLog:(BOOL)enableDescLog{
+    _enableDescLog = enableDescLog;
 }
 -(void)enableTrackScreenFlow:(BOOL)enable{
     _enableScreenFlow = enable;

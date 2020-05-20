@@ -9,6 +9,8 @@
 
 #import "FTLog.h"
 static BOOL _enableLog;
+static BOOL _enableDescLog;
+
 static dispatch_queue_t _loggingQueue;
 @implementation FTLog
 + (void)initialize {
@@ -30,10 +32,21 @@ static dispatch_queue_t _loggingQueue;
     });
     return enable;
 }
-
++ (BOOL)isDescLoggerEnabled {
+    __block BOOL enable = NO;
+    dispatch_sync(_loggingQueue, ^{
+        enable = _enableDescLog;
+    });
+    return enable;
+}
 + (void)enableLog:(BOOL)enableLog {
     dispatch_async(_loggingQueue, ^{
         _enableLog = enableLog;
+    });
+}
++ (void)enableDescLog:(BOOL)enableLog{
+    dispatch_async(_loggingQueue, ^{
+        _enableDescLog = enableLog;
     });
 }
 
@@ -43,10 +56,15 @@ static dispatch_queue_t _loggingQueue;
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... {
+    if (level == FTLogLevelDescInfo) {
+        if (![FTLog isDescLoggerEnabled]) {
+            return;
+        }
+    }else{
     if (![FTLog isLoggerEnabled]) {
         return;
     }
-    
+    }
     NSInteger systemVersion = UIDevice.currentDevice.systemVersion.integerValue;
     if (systemVersion == 10) {
         return;
@@ -89,6 +107,9 @@ static dispatch_queue_t _loggingQueue;
             break;
         case FTLogLevelError:
             desc = @"ERROR";
+            break;
+        case FTLogLevelDescInfo:
+            desc = @"DESCINFO";
             break;
         default:
             desc = @"UNKNOW";
