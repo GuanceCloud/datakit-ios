@@ -105,13 +105,13 @@
     }
     NSString *parent = self.preOpenName;
     NSString *name =NSStringFromClass(vc.class);
-    if ([[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:name]) {
-        name =[[FTMobileAgent sharedInstance] getPageDescDict][name];
+    self.preOpenName = name;
+    if ([[[FTMobileAgent sharedInstance] getFlowChartDescDict].allKeys containsObject:name]) {
+        name =[[FTMobileAgent sharedInstance] getFlowChartDescDict][name];
     }
-    if ([[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:parent]) {
-        parent =[[FTMobileAgent sharedInstance] getPageDescDict][parent];
+    if ([[[FTMobileAgent sharedInstance] getFlowChartDescDict].allKeys containsObject:parent]) {
+        parent =[[FTMobileAgent sharedInstance] getFlowChartDescDict][parent];
     }
-    self.preOpenName = NSStringFromClass(vc.class);
     long long duration;
     long long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
     if (self.preFlowTime==0) {
@@ -120,7 +120,7 @@
         duration = (tm-self.preFlowTime)/1000;
     }
     self.preFlowTime = tm;
-    [[FTMobileAgent sharedInstance] flowTrack:FT_FLOW_CHART_PRODUCT traceId:self.flowId name:NSStringFromClass(vc.class) parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeAuto];
+    [[FTMobileAgent sharedInstance] flowTrack:FT_FLOW_CHART_PRODUCT traceId:self.flowId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeAuto];
 }
 
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
@@ -132,6 +132,13 @@
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
+            if (tableView.vtpAddIndexPath) {
+                if (tableView.viewVtpDescID.length>0) {
+                    tableView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%ld]/row[%ld]",tableView.viewVtpDescID,(long)indexPath.section,(long)indexPath.row];
+                }else{
+                    tableView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%ld]/row[%@]",[tableView ft_getParentsView],(long)indexPath.section,@(indexPath.row).stringValue];
+                }
+            }
             [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView];
         } error:NULL];
         
@@ -147,6 +154,13 @@
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
+            if (collectionView.vtpAddIndexPath) {
+                if (collectionView.viewVtpDescID.length>0) {
+                    collectionView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%@]/row[%@]",collectionView.viewVtpDescID,@(indexPath.section).stringValue,@(indexPath.row).stringValue];
+                }else{
+                    collectionView.viewVtpDescID = [NSString stringWithFormat:@"%@/section[%@]/row[%@]",[collectionView ft_getParentsView],@(indexPath.section).stringValue,@(indexPath.row).stringValue];
+            }
+            }
             [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView];
         } error:NULL];
         
@@ -161,8 +175,7 @@
     void (^aspectHookBlock)(id<ZY_AspectInfo> aspectInfo, id target, SEL action) = ^(id<ZY_AspectInfo> aspectInfo, id target, SEL action){
              if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
                UIGestureRecognizer *ges = aspectInfo.instance;
-               
-               if ([target isKindOfClass:[UIViewController class]]) {
+               if ([target isKindOfClass:[UIViewController class]]||[target isKindOfClass:UIView.class]) {
                    Class vcClass = [target class];
                    [vcClass aspect_hookSelector:action withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
                        if (ges.state != UIGestureRecognizerStateEnded) {
@@ -371,9 +384,14 @@
                 [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
                 ZYLog(@"VtpStr : %@",vtp);
                 [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
-                if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
-                    [field setValue:[[FTMobileAgent sharedInstance] getVtpDescDict][vtp] forKey:FT_AUTO_TRACK_VTP_DESC];
+                UIView *vtpView = view;
+                NSString *vtpDesc = FT_NULL_VALUE;
+                if(vtpView.viewVtpDescID.length>0){
+                    vtpDesc = vtpView.viewVtpDescID;
+                }else if ([[[FTMobileAgent sharedInstance] getVtpDescDict].allKeys containsObject:vtp]) {
+                    vtpDesc = [[FTMobileAgent sharedInstance] getVtpDescDict][vtp];
                 }
+                [field setValue:vtpDesc forKey:FT_AUTO_TRACK_VTP_DESC];
             }
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag

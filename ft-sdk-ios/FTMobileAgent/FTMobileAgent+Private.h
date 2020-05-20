@@ -29,14 +29,19 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 
 /**
  * 获取添加的页面描述字典
- * 如果 设置 isDescEnabled 为NO return nil;
+ * 如果 设置 isPageVtpDescEnabled 为NO return nil;
  */
 - (NSDictionary *)getPageDescDict;
 /**
  * 获取添加的视图树描述字典
- * 如果 设置 isDescEnabled 为NO return nil;
+ * 如果 设置 isPageVtpDescEnabled 为NO return nil;
 */
 - (NSDictionary *)getVtpDescDict;
+/**
+ * 获取添加的页面描述字典 替换流程图
+ * 如果 设置 isFlowChartDescEnabled 为NO return nil;
+ */
+- (NSDictionary *)getFlowChartDescDict;
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */
