@@ -1,3 +1,9 @@
+# 1.0.2-alpha.20
+1.增加UIView分类，添加可设置是否在vtp拼接点击NSIndexPath的属性、添加描述Vtp属性
+2.添加开关判断是否替换添加描述
+
+---
+
 # 1.0.2-alpha.19
 1.vtp_desc、page_desc field字段添加
 2.添加addVtpDescDict、addPageDescDict方法
