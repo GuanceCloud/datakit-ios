@@ -26,7 +26,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_addPageDesc",@"Test_addVtpDesc"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -37,6 +37,8 @@
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
+    _mtableView.viewVtpDescID = @"测试tableview";
+    _mtableView.vtpAddIndexPath = YES;
     [self.view addSubview:_mtableView];
     
     [_mtableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
@@ -134,6 +136,25 @@
 - (void)testStopMonitorFlush{
     [[FTMobileAgent sharedInstance] stopMonitorFlush];
 }
+- (void)testAddPageDesc{
+    NSDictionary *dict = @{@"DemoViewController":@"首页",
+                                  @"RootTabbarVC":@"底部导航",
+                                  @"UITestVC":@"UI测试",
+                                  @"ResultVC":@"测试结果",
+           };
+    [[FTMobileAgent sharedInstance] addPageDescDict:dict];
+    [[FTMobileAgent sharedInstance] isFlowChartDescEnabled:YES];
+    [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
+}
+- (void)testAddVtpDesc{
+    NSDictionary *vtpdict = @{@"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[2]":@"second点击",
+                              @"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]":@"home点击",
+                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationBar/_UINavigationBarContentView/_UIButtonBarStackView/_UIButtonBarButton[0]":@"导航确认点击",
+    };
+    [[FTMobileAgent sharedInstance] addVtpDescDict:vtpdict];
+    [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
+    
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -185,6 +206,12 @@
             break;
         case 12:
             [self testStopMonitorFlush];
+            break;
+        case 13:
+            [self testAddPageDesc];
+            break;
+        case 14:
+            [self testAddVtpDesc];
             break;
         default:
             break;

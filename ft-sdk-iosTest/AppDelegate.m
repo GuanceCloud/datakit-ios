@@ -50,13 +50,6 @@
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
-        NSDictionary *dict = @{@"DemoViewController":@"首页",
-                               @"RootTabbarVC":@"底部导航",
-                               @"UITestVC":@"UI测试",
-                               @"ResultVC":@"测试结果",
-        };
-        [[FTMobileAgent sharedInstance] addPageDescDict:dict];
-        [[FTMobileAgent sharedInstance] isDescEnabled:YES];
     }
     return YES;
 }
