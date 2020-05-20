@@ -12,6 +12,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class CBUUID;
+@interface UIView (FTMobileSdk)
+/**
+ * 设置自定义的视图树描述
+ */
+@property (nonatomic, copy) NSString *viewVtpDescID;
+/**
+ * 适用于 TableView CollectionView
+ * 是否在视图树中拼接 点击的 NSIndexPath
+*/
+@property (nonatomic, assign) BOOL vtpAddIndexPath;
+
+@end
 
 @interface FTMobileAgent : NSObject
 #pragma mark ========== init instance ==========
@@ -130,7 +142,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 是否开启页面、视图树 描述
  */
--(void)isDescEnabled:(BOOL)enable;
+-(void)isPageVtpDescEnabled:(BOOL)enable;
+/**
+ * 是否开启流程图中页面 描述
+*/
+-(void)isFlowChartDescEnabled:(BOOL)enable;
 /**
  * 注销当前用户
 */

@@ -32,10 +32,25 @@
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
+@implementation UIView (FTMobileSdk)
+-(NSString *)viewVtpDescID{
+    return objc_getAssociatedObject(self, @"FTViewVtpDescID");
+}
+-(BOOL)vtpAddIndexPath{
+    return objc_getAssociatedObject(self, @"FTVtpAddIndexPath");
+}
+-(void)setViewVtpDescID:(NSString *)viewVtpDescID{
+    objc_setAssociatedObject(self, @"FTViewVtpDescID", viewVtpDescID, OBJC_ASSOCIATION_COPY);
+}
+-(void)setVtpAddIndexPath:(BOOL)vtpAddIndexPath{
+    objc_setAssociatedObject(self, @"FTVtpAddIndexPath", [NSNumber numberWithBool:vtpAddIndexPath], OBJC_ASSOCIATION_ASSIGN);
+}
+@end
 @implementation FTMobileAgent{
     NSDictionary *_pageDesc;
     NSDictionary *_vtpDesc;
-    BOOL _isDescEnable;
+    BOOL _isPageVtpDescEnabled;
+    BOOL _isFlowChartDescEnabled;
 }
 
 static FTMobileAgent *sharedInstance = nil;
@@ -250,8 +265,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)addVtpDescDict:(NSDictionary <NSString*,id>*)dict{
     _vtpDesc = dict;
 }
--(void)isDescEnabled:(BOOL)enable{
-    _isDescEnable = enable;
+-(void)isPageVtpDescEnabled:(BOOL)enable{
+    _isPageVtpDescEnabled = enable;
+}
+-(void)isFlowChartDescEnabled:(BOOL)enable{
+    _isFlowChartDescEnabled = enable;
 }
 #pragma mark ========== 调用监控项管理方法 ==========
 -(void)setMonitorFlushInterval:(NSInteger)interval{
@@ -364,14 +382,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return model;
 }
 - (NSDictionary *)getPageDescDict{
-    if (_isDescEnable) {
+    if (_isPageVtpDescEnabled) {
         return _pageDesc;
     }
     return nil;
 }
 - (NSDictionary *)getVtpDescDict{
-    if (_isDescEnable) {
+    if (_isPageVtpDescEnabled) {
         return _vtpDesc;
+    }
+    return nil;
+}
+- (NSDictionary *)getFlowChartDescDict{
+    if (_isFlowChartDescEnabled) {
+        return _pageDesc;
     }
     return nil;
 }
