@@ -1,3 +1,8 @@
+# 1.0.2-alpha.22
+1.流程图 duration 拼接i处理
+2.page_desc默认赋值N/A修改
+---
+
 # 1.0.2-alpha.21
 1.增加UIView分类，添加可设置是否在vtp拼接点击NSIndexPath的属性、添加描述Vtp属性
 2.添加开关判断是否替换添加描述
