@@ -42,6 +42,9 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * 如果 设置 isFlowChartDescEnabled 为NO return nil;
  */
 - (NSDictionary *)getFlowChartDescDict;
+/**
+ * 获取设置的  isPageVtpDescEnabled 状态
+ */
 -(BOOL)getPageVtpDescEnabled;
 /**
  * autotrack  全埋点事件抓取 存储数据库
