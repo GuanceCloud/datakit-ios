@@ -89,10 +89,9 @@
     */
     - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
   ```
-   ```
-	
+ 	
 ### 2.设置日志    
-1. enableLog 打印日志    
+ - enableLog 打印日志    
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableLog` 属性。
    
@@ -100,9 +99,10 @@
     config.enableLog = YES; //打印日志
    ```
 
-2. enableDescLog 打印描述日志   
+ - enableDescLog 打印描述日志   
 
-   在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableDescLog` 属性。辅助设置 **page_desc** 与 **vtp_desc** ,将打印 `vtp`、`current_page_name`、`vtp_desc`、`page_desc` 。
+   在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableDescLog` 属性。辅助设置 **page_desc** 与 **vtp_desc** ,将打印 `vtp`、`current_page_name`、`vtp_desc`、`page_desc` 。   
+   
 
     ```objective-c
     config.enableDescLog = YES; //打印描述日志
