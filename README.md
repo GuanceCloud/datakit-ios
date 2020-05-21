@@ -104,16 +104,15 @@
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableDescLog` 属性。辅助设置 **page_desc** 与 **vtp_desc** ,将打印 `vtp`、`current_page_name`、`vtp_desc`、`page_desc` 。   
    
 
-    ```objective-c
-    config.enableDescLog = YES; //打印描述日志
-    ```
-
-    ```objective-c
-    打印显示
-    [FTLog][DESCINFO]  -[FTAutoTrack track:withCpn:WithClickView:index:] [line 381]  vtp : UITestVC/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UIScrollView/UIButton[1]
-    [FTLog][DESCINFO]  -[FTAutoTrack track:withCpn:WithClickView:index:] [line 374]  page_desc : 首页    
+   ```objective-c
+   config.enableDescLog = YES; //打印描述日志
     
-    ```
+   //打印显示
+   [FTLog][DESCINFO]  -[FTAutoTrack track:withCpn:WithClickView:index:] [line 381]  vtp : UITestVC/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UIScrollView/UIButton[1]
+   [FTLog][DESCINFO]  -[FTAutoTrack track:withCpn:WithClickView:index:] [line 374]  page_desc : 首页    
+    
+   ```    
+    
 ### 3. 设置X-Datakit-UUID
  ` X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
