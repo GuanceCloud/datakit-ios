@@ -370,7 +370,7 @@
             if (current && [[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:current]) {
                 pageDesc =[[FTMobileAgent sharedInstance] getPageDescDict][current];
             }
-            [field setValue:[[FTMobileAgent sharedInstance] getPageDescDict][current] forKey:FT_AUTO_TRACK_PAGE_DESC];
+            [field setValue:pageDesc forKey:FT_AUTO_TRACK_PAGE_DESC];
             ZYDESCLog(@"page_desc : %@",pageDesc);
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 UIView *vtpView = view;
