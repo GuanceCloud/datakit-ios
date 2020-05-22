@@ -55,6 +55,7 @@ NSError *error);
     NSDictionary *_lastNetTaskMetrics;
     NSUInteger _errorNet;
     NSUInteger _successNet;
+    BOOL _proximityState;
 }
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -100,6 +101,7 @@ static dispatch_once_t onceToken;
             [self startPedometerUpdatesTodayWithHandler:nil];
         }
         [self lightSensitive];
+        [self startMonitorProximity];
     }else if(_monitorType & FTMonitorInfoTypeSensorStep){
         if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
             self.pedometer = [[CMPedometer alloc] init];
@@ -108,9 +110,13 @@ static dispatch_once_t onceToken;
         [self startMotionUpdate];
     }else if (_monitorType & FTMonitorInfoTypeSensorLight){
         [self lightSensitive];
+    }else if(_monitorType & FTMonitorInfoTypeSensorProximity){
+        [self startMonitorProximity];
     }else{
         [self stopMotionUpdates];
         [self.session stopRunning];
+        [self stopMonitorProximity];
+
     }
     [self startMotionUpdate];
     if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeFPS) {
@@ -248,13 +254,13 @@ static dispatch_once_t onceToken;
     [self.session startRunning];
 }
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-
-  CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
-  NSDictionary *metadata = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)metadataDict];
-  CFRelease(metadataDict);
-  NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
-  float brightnessValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
-
+    
+    CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
+    NSDictionary *metadata = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)metadataDict];
+    CFRelease(metadataDict);
+    NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
+    float brightnessValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
+    
     self.lightValue = brightnessValue;
 }
 
@@ -280,7 +286,27 @@ static dispatch_once_t onceToken;
         [self.motionManager startGyroUpdates];
     }
 }
+-(void)startMonitorProximity{
+    UIDevice *device = [UIDevice currentDevice];
+    if (device.proximityMonitoringEnabled == NO) {
+        device.proximityMonitoringEnabled = YES;
+        if (device.proximityMonitoringEnabled == YES) {
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(proximityChanged:)
+                                                         name:UIDeviceProximityStateDidChangeNotification
+                                                       object:device];
+        }
+    }
     
+}
+- (void)stopMonitorProximity{
+    [UIDevice currentDevice].proximityMonitoringEnabled = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceProximityStateDidChangeNotification object:nil];
+}
+- (void)proximityChanged:(NSNotification *)notification {
+    UIDevice *device = [notification object];
+    _proximityState = device.proximityState;
+}
 /**
  *  查询某时间段的运动数据
  *
@@ -456,7 +482,7 @@ static dispatch_once_t onceToken;
         [field setValue:[NSNumber numberWithFloat:[FTMonitorUtils screenBrightness]] forKey:FT_MONITOR_SCREEN_BRIGHTNESS];
     }
     if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorProximity) {
-        [field setValue:[NSNumber numberWithBool:[FTMonitorUtils getProximityState]]  forKey:FT_MONITOR_PROXIMITY];
+        [field setValue:[NSNumber numberWithBool:_proximityState]  forKey:FT_MONITOR_PROXIMITY];
     }
     if (self.monitorType & FTMonitorInfoTypeFPS || self.monitorType &FTMonitorInfoTypeAll) {
         [field setValue:[NSNumber numberWithInt:_fps] forKey:FT_MONITOR_FPS];
