@@ -22,10 +22,18 @@ typedef struct {
 
 @end
 @implementation FTNetMonitorFlow
-
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+         _iflow = 0;
+         _oflow = 0;
+    }
+    return self;
+}
 -(void)startMonitor{
-    self.iflow = 0;
-    self.oflow = 0;
+    if ((self.timer && [self.timer isValid])) {
+        return;
+    }
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         __strong __typeof(weakSelf) strongSelf = weakSelf;
@@ -65,9 +73,7 @@ typedef struct {
     self.oflow = orate;
 }
 - (FTNetFlowBytes) getInterfaceBytes {
-    FTNetFlowBytes flowByte;
-    flowByte.iBytes = 0;
-    flowByte.oBytes = 0;
+    FTNetFlowBytes flowByte = self.lastBytes;
     struct ifaddrs *ifa_list = 0, *ifa;
     if (getifaddrs(&ifa_list) == -1) {
         return flowByte;

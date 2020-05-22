@@ -167,6 +167,9 @@ static dispatch_once_t onceToken;
     self.timer = nil;
 }
 -(void)flush{
+    if (self.monitorType == 0) {
+        return;
+    }
     NSDictionary *addDict = [self getMonitorTagFiledDict];
     FTRecordModel *model = [FTRecordModel new];
 
@@ -204,9 +207,11 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationDidBecomeActiveNotification {
     [_displayLink setPaused:NO];
+    [_netFlow startMonitor];
 }
 - (void)applicationWillResignActiveNotification {
     [_displayLink setPaused:YES];
+    [_netFlow stopMonitor];
 }
 #pragma mark ========== 传感器数据获取 ==========
 - (void)lightSensitive{
