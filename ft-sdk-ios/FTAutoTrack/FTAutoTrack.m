@@ -112,12 +112,12 @@
     if ([[[FTMobileAgent sharedInstance] getFlowChartDescDict].allKeys containsObject:parent]) {
         parent =[[FTMobileAgent sharedInstance] getFlowChartDescDict][parent];
     }
-    long long duration;
+    long  duration;
     long long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
     if (self.preFlowTime==0) {
         duration = 0;
     }else{
-        duration = (tm-self.preFlowTime)/1000;
+        duration = (long)((tm-self.preFlowTime)/1000);
     }
     self.preFlowTime = tm;
     [[FTMobileAgent sharedInstance] flowTrack:FT_FLOW_CHART_PRODUCT traceId:self.flowId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeAuto];
@@ -159,7 +159,8 @@
 - (void)logTargetAction{
     WeakSelf
     void (^aspectHookBlock)(id<ZY_AspectInfo> aspectInfo, id target, SEL action) = ^(id<ZY_AspectInfo> aspectInfo, id target, SEL action){
-             if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]]) {
+        //忽略iOS13之后 系统为UITableView添加的 _handleKnobLongPressGesture：
+             if ([aspectInfo.instance isKindOfClass:[UIGestureRecognizer class]] && ![NSStringFromSelector(action) isEqualToString:@"_handleKnobLongPressGesture:"]) {
                UIGestureRecognizer *ges = aspectInfo.instance;
                if ([target isKindOfClass:[UIViewController class]]||[target isKindOfClass:UIView.class]) {
                    Class vcClass = [target class];

@@ -576,7 +576,7 @@
 #pragma mark ========== 时间相关 ==========
 + (long long)ft_getCurrentTimestamp{
     NSDate *datenow = [NSDate date];
-    long time= (long)([datenow timeIntervalSince1970]*1000*1000);
+    long long time= (long long)([datenow timeIntervalSince1970]*1000*1000);
     return  time;
 }
 + (NSString *)ft_currentGMT {
