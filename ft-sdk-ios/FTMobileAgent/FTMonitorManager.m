@@ -521,11 +521,11 @@ static dispatch_once_t onceToken;
     }
     [self.netFlow stopMonitor];
 }
-//#pragma mark ========== 蓝牙 ==========
+#pragma mark ========== 蓝牙 ==========
 -(void)setConnectBluetoothCBUUID:(NSArray<CBUUID *> *)serviceUUIDs{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [serviceUUIDs enumerateObjectsUsingBlock:^(CBUUID *obj, NSUInteger idx, BOOL *stop) {
-        [dict setValue:[obj UUIDString] forKey:[NSString stringWithFormat:@"bt_device_%lu",(unsigned long)idx]];
+        [dict setValue:[obj UUIDString] forKey:[NSString stringWithFormat:@"bt_device%lu",(unsigned long)idx+1]];
     }];
     _blDict = dict;
 }
@@ -538,7 +538,7 @@ static dispatch_once_t onceToken;
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {
         self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? @"true":@"false";
-    } 
+    }
 }
 #pragma mark ========== 网络请求相关时间/错误率 ==========
 - (void)ftHTTPProtocol:(FTURLProtocol *)protocol didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
