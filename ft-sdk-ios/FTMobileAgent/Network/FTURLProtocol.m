@@ -59,9 +59,10 @@ static id<FTHTTPProtocolDelegate> sDelegate;
         return NO;
     }
     
-    if ([scheme isEqual:@"http"]) {
-        return YES;
-    }
+     if ([scheme isEqualToString:@"http"] ||
+           [scheme isEqualToString:@"https"]) {
+           return YES;
+       }
     
     return NO;
 }
