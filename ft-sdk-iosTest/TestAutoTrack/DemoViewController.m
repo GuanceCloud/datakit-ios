@@ -14,7 +14,7 @@
 #import "TestFlowTrackVC.h"
 #import "TestSubFlowTrack.h"
 #import "TestSubFlowTrack2.h"
-
+#import <CoreBluetooth/CoreBluetooth.h>
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -26,7 +26,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_addPageDesc",@"Test_addVtpDesc"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"testConnectBluetoothCBUUID",@"Test_addPageDesc",@"Test_addVtpDesc"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -145,6 +145,9 @@
     [[FTMobileAgent sharedInstance] isFlowChartDescEnabled:YES];
     [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
 }
+- (void)testConnectBluetoothCBUUID{
+    [[FTMobileAgent sharedInstance] setConnectBluetoothCBUUID:@[[CBUUID UUIDWithString:@"6E61AEFD-4504-F4F3-840F-614F9E41E0FF"],[CBUUID UUIDWithString:@"99B576C8-5810-F160-5378-A26D4D1F2A19"],[CBUUID UUIDWithString:@"C5200486-9E8C-64CB-212C-A8C5CCA4EB2C"]]];
+}
 - (void)testAddVtpDesc{
     NSDictionary *vtpdict = @{@"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[2]":@"second点击",
                               @"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]":@"home点击",
@@ -223,9 +226,12 @@
             [self testStopMonitorFlush];
             break;
         case 13:
-            [self testAddPageDesc];
+            [self testConnectBluetoothCBUUID];
             break;
         case 14:
+            [self testAddPageDesc];
+            break;
+        case 15:
             [self testAddVtpDesc];
             break;
         default:
