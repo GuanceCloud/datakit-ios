@@ -19,8 +19,6 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 
-NSString * const FTTaskMetricsNotification = @"FTTaskMetricsNotification";
-NSString * const FTTaskCompleteStatesNotification = @"FTTaskCompleteStatesNotification";
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
