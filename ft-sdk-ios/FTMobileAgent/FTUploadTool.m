@@ -82,7 +82,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 @end
 
-@interface FTUploadTool()<NSURLSessionTaskDelegate>
+@interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDictionary *basicTags;
 @property (nonatomic, strong) NSURLSession *session;
@@ -258,10 +258,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                       });
     }];
     return requestDatas;
-}
-- (NSDictionary *)getLastNetInfo{
-    NSDictionary *net;
-    return net;
 }
 - (NSDictionary *)basicTags{
     if (!_basicTags) {
