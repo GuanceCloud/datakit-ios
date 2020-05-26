@@ -39,10 +39,11 @@ static dispatch_once_t onceToken;
         self.locationManager.distanceFilter = 200.0;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
         self.location = [[FTLocationInfo alloc]init];
+        self.isUpdatingLocation = NO;
     }
     return self;
 }
-- (void)startUpdatingLocation {
+- (void)startUpdatingLocation{
     @try {
         //判断当前设备定位服务是否打开
         if (![CLLocationManager locationServicesEnabled]) {
@@ -52,7 +53,10 @@ static dispatch_once_t onceToken;
         if (@available(iOS 8.0, *)) {
             [self.locationManager requestWhenInUseAuthorization];
         }
+        if (_isUpdatingLocation == NO) {
             [self.locationManager startUpdatingLocation];
+            _isUpdatingLocation = YES;
+        }
     }@catch (NSException *e) {
         ZYDebug(@"%@ error: %@", self, e);
     }
@@ -104,6 +108,15 @@ static dispatch_once_t onceToken;
 
     }];
     
+}
+- (void)locationManager:(CLLocationManager *)manager
+       didFailWithError:(NSError *)error {
+    @try {
+        if (self.updateLocationBlock) {
+            self.updateLocationBlock(self.location, error);
+        }
+    }@catch (NSException * e) {
+    }
 }
 - (void)stopUpdatingLocation{
     [self.locationManager stopUpdatingLocation];

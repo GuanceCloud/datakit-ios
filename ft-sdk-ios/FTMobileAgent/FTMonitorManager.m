@@ -76,73 +76,6 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
--(void)setMonitorType:(FTMonitorInfoType)type{
-    _monitorType = type;
-    _monitorTagDict = [self getMonitorTagDicts];
-    if (type == 0) {
-        [self stopFlush];
-    }
-    if (!(_monitorType & FTMonitorInfoTypeAll) && !(_monitorType &FTMonitorInfoTypeNetwork)) {
-        [self.netFlow stopMonitor];
-        [FTURLProtocol stopMonitor];
-    }else{
-        [FTURLProtocol startMonitor];
-        [FTURLProtocol setDelegate:self];
-        [self startFlushTimer];
-    }
-    if(_monitorType & FTMonitorInfoTypeLocation ||_monitorType & FTMonitorInfoTypeAll){
-        if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
-            [[FTLocationManager sharedInstance] startUpdatingLocation];
-        }
-    }
-    if (_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll) {
-        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
-            self.pedometer = [[CMPedometer alloc] init];
-            [self startPedometerUpdatesTodayWithHandler:nil];
-        }
-        [self lightSensitive];
-        [self startMonitorProximity];
-    }else if(_monitorType & FTMonitorInfoTypeSensorStep){
-        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
-            self.pedometer = [[CMPedometer alloc] init];
-            [self startPedometerUpdatesTodayWithHandler:nil];
-        }
-        [self startMotionUpdate];
-    }else if (_monitorType & FTMonitorInfoTypeSensorLight){
-        [self lightSensitive];
-    }else if(_monitorType & FTMonitorInfoTypeSensorProximity){
-        [self startMonitorProximity];
-    }else{
-        [self stopMotionUpdates];
-        [self.session stopRunning];
-        [self stopMonitorProximity];
-
-    }
-    [self startMotionUpdate];
-    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeFPS) {
-        if (!_displayLink) {
-            _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
-            [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-            [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(applicationDidBecomeActiveNotification)
-                                                         name: UIApplicationDidBecomeActiveNotification
-                                                       object: nil];
-            
-            [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(applicationWillResignActiveNotification)
-                                                         name: UIApplicationWillResignActiveNotification
-                                                       object: nil];
-        }
-    }else{
-        if (_displayLink) {
-            [_displayLink setPaused:YES];
-            _displayLink = nil;
-        }
-    }
-    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & FTMonitorInfoTypeBluetooth) {
-        [self bluteeh];
-    }
-}
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
     if(_timer){
@@ -198,6 +131,121 @@ static dispatch_once_t onceToken;
     };
     [[FTMobileAgent sharedInstance] performSelector:@selector(trackUpload:callBack:) withObject:@[model] withObject:UploadResultBlock];
 }
+-(void)setMonitorType:(FTMonitorInfoType)type{
+    _monitorType = type;
+    _monitorTagDict = [self getMonitorTagDicts];
+    if (type == 0) {
+        [self stopFlush];
+        [self stopMonitor];
+        return;
+    }
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
+        [FTURLProtocol startMonitor];
+        [FTURLProtocol setDelegate:self];
+        [self startFlushTimer];
+    }else{
+       [_netFlow stopMonitor];
+       [FTURLProtocol stopMonitor];
+    }
+    if([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]){
+        if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
+            [[FTLocationManager sharedInstance] startUpdatingLocation];
+        }
+    }else{
+        [[FTLocationManager sharedInstance] stopUpdatingLocation];
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorStep]) {
+        if ([CMPedometer isStepCountingAvailable] && !_pedometer) {
+            self.pedometer = [[CMPedometer alloc] init];
+            [self startPedometerUpdatesTodayWithHandler:nil];
+        }
+    }else{
+        _pedometer?[_pedometer stopPedometerUpdates]:nil;
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorLight]) {
+        [self lightSensitive];
+    }else{
+        [_session stopRunning];
+    }
+    
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorProximity]) {
+        [self startMonitorProximity];
+    }else{
+        [self stopMonitorProximity];
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorMagnetic]) {
+        if ([self.motionManager isMagnetometerAvailable] && ![self.motionManager isMagnetometerActive]) {
+            [self.motionManager startMagnetometerUpdates];
+        }
+    }else{
+        _motionManager.isMagnetometerActive? [_motionManager stopMagnetometerUpdates]:nil;
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorAcceleration]) {
+        if ([self.motionManager isAccelerometerAvailable] && ![self.motionManager isAccelerometerActive]) {
+            [self.motionManager startAccelerometerUpdates];
+        }
+    }else{
+        _motionManager.isAccelerometerActive? [_motionManager stopAccelerometerUpdates]:nil;
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorRotation]){
+        if([self.motionManager isGyroAvailable] && ![self.motionManager isGyroActive]){
+            [self.motionManager startGyroUpdates];
+        }
+    }else{
+        _motionManager.isGyroActive? [_motionManager stopGyroUpdates]:nil;
+    }
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeFPS]) {
+        if (!_displayLink) {
+            _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+            [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            [[NSNotificationCenter defaultCenter] addObserver: self
+                                                     selector: @selector(applicationDidBecomeActiveNotification)
+                                                         name: UIApplicationDidBecomeActiveNotification
+                                                       object: nil];
+            
+            [[NSNotificationCenter defaultCenter] addObserver: self
+                                                     selector: @selector(applicationWillResignActiveNotification)
+                                                         name: UIApplicationWillResignActiveNotification
+                                                       object: nil];
+        }
+    }else{
+        if (_displayLink) {
+            [_displayLink setPaused:YES];
+            _displayLink = nil;
+        }
+    }
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBluetooth]) {
+        [self bluteeh];
+    }
+}
+-(BOOL)isMonitorTypeAllow:(FTMonitorInfoType)type{
+    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & type){
+           return YES;
+       }
+       return NO;
+}
+-(BOOL)isMonitorMotionTypeAllow:(FTMonitorInfoType)type{
+    if (_monitorType & FTMonitorInfoTypeAll ||_monitorType & FTMonitorInfoTypeSensor || _monitorType &  type ){
+        return YES;
+    }
+    return NO;
+}
+-(void)stopMonitor{
+    if (_displayLink) {
+        [_displayLink setPaused:YES];
+        _displayLink = nil;
+    }
+    _motionManager.isGyroActive? [_motionManager stopGyroUpdates]:nil;
+    _motionManager.isAccelerometerActive? [_motionManager stopAccelerometerUpdates]:nil;
+    _motionManager.isMagnetometerActive? [_motionManager stopMagnetometerUpdates]:nil;
+    [self stopMonitorProximity];
+    [_netFlow stopMonitor];
+    [FTURLProtocol stopMonitor];
+    [[FTLocationManager sharedInstance] stopUpdatingLocation];
+    _pedometer?[_pedometer stopPedometerUpdates]:nil;
+    [_session stopRunning];
+    [self stopMonitorProximity];
+}
 #pragma mark ========== FPS ==========
 - (void)tick:(CADisplayLink *)link {
     if (_lastTime == 0) {
@@ -220,6 +268,7 @@ static dispatch_once_t onceToken;
     [_netFlow stopMonitor];
 }
 #pragma mark ========== 传感器数据获取 ==========
+#pragma mark -------环境光感-------
 - (void)lightSensitive{
     if (_session|| [_session isRunning]) {
         return;
@@ -263,29 +312,13 @@ static dispatch_once_t onceToken;
     
     self.lightValue = brightnessValue;
 }
-
 -(CMMotionManager *)motionManager{
     if (!_motionManager) {
         _motionManager = [[CMMotionManager alloc]init];
     }
     return _motionManager;
 }
-- (void)startMotionUpdate{
-    if (_monitorType & FTMonitorInfoTypeSensorMagnetic ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll  ) {
-        if ([self.motionManager isMagnetometerAvailable] && ![self.motionManager isMagnetometerActive]) {
-            [self.motionManager startMagnetometerUpdates];
-        }
-    }
-    if (_monitorType & FTMonitorInfoTypeSensorAcceleration ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll  ) {
-        if ([self.motionManager isAccelerometerAvailable] && ![self.motionManager isAccelerometerActive]) {
-         [self.motionManager startAccelerometerUpdates];
-    }
-    }
-     if (_monitorType & FTMonitorInfoTypeSensorRotation ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll  )
-       if([self.motionManager isGyroAvailable] && ![self.motionManager isGyroActive]){
-        [self.motionManager startGyroUpdates];
-    }
-}
+#pragma mark -------距离传感器-------
 -(void)startMonitorProximity{
     UIDevice *device = [UIDevice currentDevice];
     if (device.proximityMonitoringEnabled == NO) {
@@ -297,7 +330,6 @@ static dispatch_once_t onceToken;
                                                        object:device];
         }
     }
-    
 }
 - (void)stopMonitorProximity{
     [UIDevice currentDevice].proximityMonitoringEnabled = NO;
@@ -307,28 +339,7 @@ static dispatch_once_t onceToken;
     UIDevice *device = [notification object];
     _proximityState = device.proximityState;
 }
-/**
- *  查询某时间段的运动数据
- *
- *  @param start   开始时间
- *  @param end     结束时间
- *  @param handler 查询结果
- */
-- (void)queryPedometerDataFromDate:(NSDate *)start
-                            toDate:(NSDate *)end
-                       withHandler:(FTPedometerHandler)handler {
-
-  [_pedometer
-      queryPedometerDataFromDate:start
-                          toDate:end
-                     withHandler:^(CMPedometerData *_Nullable pedometerData,
-                                   NSError *_Nullable error) {
-                       dispatch_async(dispatch_get_main_queue(), ^{
-                         handler(pedometerData.numberOfSteps, error);
-                       });
-                     }];
-
-}
+#pragma mark -------当天步数-------
 /**
  *  监听今天（从零点开始）的行走数据
  *
@@ -340,79 +351,37 @@ static dispatch_once_t onceToken;
   [dateFormatter setDateFormat:@"yyyy-MM-dd"];
   NSDate *fromDate =
       [dateFormatter dateFromString:[dateFormatter stringFromDate:toDate]];
+  WeakSelf
   [_pedometer
       startPedometerUpdatesFromDate:fromDate
                         withHandler:^(CMPedometerData *_Nullable pedometerData,
                                       NSError *_Nullable error) {
-      self.steps = pedometerData.numberOfSteps;
+      weakSelf.steps = pedometerData.numberOfSteps;
       handler? handler(pedometerData.numberOfSteps, error):nil;
                         }];
-}
-- (NSDictionary *)getMotionDatas{
-    NSMutableDictionary *field = [NSMutableDictionary new];
-    if([self.motionManager isGyroAvailable] && (_monitorType & FTMonitorInfoTypeSensorRotation ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll)){
-        [field addEntriesFromDictionary:@{FT_MONITOR_ROTATION_X:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.x],
-                                          FT_MONITOR_ROTATION_Y:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.y],
-                                          FT_MONITOR_ROTATION_Z:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.z]}];
-    }
-    if ([self.motionManager isAccelerometerAvailable]&&(_monitorType & FTMonitorInfoTypeSensorAcceleration ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll) ) {
-        [field addEntriesFromDictionary:@{FT_MONITOR_ACCELERATION_X:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.x],
-                                          FT_MONITOR_ACCELERATION_Y:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.y],
-                                          FT_MONITOR_ACCELERATION_Z:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.z]}];
-    }
-    if ([self.motionManager isMagnetometerAvailable]&&(_monitorType & FTMonitorInfoTypeSensorMagnetic ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll)) {
-        [field addEntriesFromDictionary:@{FT_MONITOR_MAGNETIC_X:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.x],
-                                          FT_MONITOR_MAGNETIC_Y:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.y],
-                                          FT_MONITOR_MAGNETIC_Z:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.z]}];
-    }
-    if(_pedometer && (_monitorType & FTMonitorInfoTypeSensorStep ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll)){
-        [self startPedometerUpdatesTodayWithHandler:nil];
-        [field setValue:self.steps forKey:FT_MONITOR_STEPS];
-    }
-    if (_monitorType & FTMonitorInfoTypeSensorLight ||_monitorType & FTMonitorInfoTypeSensor || _monitorType & FTMonitorInfoTypeAll){
-        [field setValue:[NSNumber numberWithFloat:self.lightValue] forKey:FT_MONITOR_LIGHT];
-    }
-    
-    return field;
-}
-/**
- *  停止监听运动数据
- */
-- (void)stopMotionUpdates {
-    [_pedometer stopPedometerUpdates];
-    if([_motionManager isGyroActive]){
-        [_motionManager stopGyroUpdates];
-    }
-    if ([_motionManager isAccelerometerActive]) {
-        [_motionManager stopAccelerometerUpdates];
-    }
-    if ([_motionManager isMagnetometerActive]) {
-        [_motionManager stopMagnetometerUpdates];
-    }
-    [UIDevice currentDevice].proximityMonitoringEnabled = NO;
 }
 #pragma mark ========== tag\field 数据拼接 ==========
 -(NSDictionary *)getMonitorTagDicts{
         NSMutableDictionary *tag = [NSMutableDictionary new];
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-        if (self.monitorType &FTMonitorInfoTypeBattery || self.monitorType & FTMonitorInfoTypeAll) {
+        if ([self isMonitorTypeAllow:FTMonitorInfoTypeBattery]) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:FT_MONITOR_BATTERY_TOTAL];
         }
-        if (self.monitorType & FTMonitorInfoTypeMemory || self.monitorType & FTMonitorInfoTypeAll) {
+        if ([self isMonitorTypeAllow:FTMonitorInfoTypeMemory]) {
             [tag setObject:[FTMonitorUtils ft_getTotalMemorySize] forKey:FT_MONITOR_MEMORY_TOTAL];
         }
-        if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
+        if ([self isMonitorTypeAllow:FTMonitorInfoTypeCpu]) {
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:FT_MONITOR_CPU_NO];
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:FT_MONITOR_CPU_HZ];
         }
-        if(self.monitorType & FTMonitorInfoTypeGpu || self.monitorType & FTMonitorInfoTypeAll){
+        if([self isMonitorTypeAllow:FTMonitorInfoTypeGpu]){
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:FT_MONITOR_GPU_MODEL];
         }
-        if (self.monitorType & FTMonitorInfoTypeCamera || self.monitorType & FTMonitorInfoTypeAll) {
+        if ([self isMonitorTypeAllow:FTMonitorInfoTypeCamera]) {
             [tag setObject:[FTMonitorUtils ft_getFrontCameraPixel] forKey:FT_MONITOR_CAMERA_FRONT_PX];
             [tag setObject:[FTMonitorUtils ft_getBackCameraPixel] forKey:FT_MONITOR_CAMERA_BACK_PX];
         }
-        if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
+        if ([self isMonitorTypeAllow:FTMonitorInfoTypeSystem]) {
             [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
         }
     return tag;
@@ -420,19 +389,19 @@ static dispatch_once_t onceToken;
 -(NSDictionary *)getMonitorTagFiledDict{
     NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
-    if (self.monitorType & FTMonitorInfoTypeSystem || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeSystem]) {
         [field setValue:[FTMonitorUtils getLaunchSystemTime] forKey:FT_MONITOR_DEVICE_OPEN_TIME];
     }
-    if (self.monitorType &FTMonitorInfoTypeCpu || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeCpu]) {
         [field setObject:[NSNumber numberWithLong:[FTMonitorUtils ft_cpuUsage]] forKey:FT_MONITOR_CPU_USE];
     }
-    if (self.monitorType & FTMonitorInfoTypeMemory || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeMemory]) {
         [field setObject:[NSNumber numberWithDouble:[FTMonitorUtils ft_usedMemory]] forKey:FT_MONITOR_MEMORY_USE];
     }
-    if (self.monitorType & FTMonitorInfoTypeNetwork || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
         __block NSNumber *network_strength;
         __block NSString *network_type;
-        if ([NSThread isMainThread]) { // do something in main thread } else { // do something in other
+        if ([NSThread isMainThread]) {
             network_type =[FTNetworkInfo getNetworkType];
             network_strength =[NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
         }else{
@@ -461,15 +430,15 @@ static dispatch_once_t onceToken;
         [field setObject:errorRate forKey:FT_MONITOR_NETWORK_ERROR_RATE];
         [tag setObject:[FTNetworkInfo getProxyHost] forKey:FT_MONITOR_NETWORK_PROXY];
     }
-    if (self.monitorType & FTMonitorInfoTypeBattery || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBattery]) {
         [field setObject:[NSNumber numberWithDouble:[FTMonitorUtils ft_getBatteryUse]] forKey:FT_MONITOR_BATTERY_USE];
         [tag setObject:[FTMonitorUtils ft_batteryStatus] forKey:FT_MONITOR_BATTERY_STATUS];
     }
-    if (self.monitorType & FTMonitorInfoTypeGpu || self.monitorType & FTMonitorInfoTypeAll){
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeGpu]){
         double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
         [field setObject:[NSNumber numberWithDouble:usage] forKey:FT_MONITOR_GPU_RATE];
     }
-    if (self.monitorType & FTMonitorInfoTypeLocation || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]) {
         [tag setValue:[FTLocationManager sharedInstance].location.province forKey:FT_MONITOR_PROVINCE];
         [tag setValue:[FTLocationManager sharedInstance].location.city forKey:FT_MONITOR_CITY];
         [tag setValue:[FTLocationManager sharedInstance].location.country forKey:FT_MONITOR_COUNTRY];
@@ -478,26 +447,46 @@ static dispatch_once_t onceToken;
         NSString *gpsOpen = [[FTLocationManager sharedInstance] gpsServicesEnabled]==0?@"false":@"true";
         [tag setValue:gpsOpen forKey:FT_MONITOR_GPS_OPEN];
     }
-    if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorBrightness) {
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorBrightness]) {
         [field setValue:[NSNumber numberWithFloat:[FTMonitorUtils screenBrightness]] forKey:FT_MONITOR_SCREEN_BRIGHTNESS];
     }
-    if (self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll || self.monitorType & FTMonitorInfoTypeSensorProximity) {
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorProximity]) {
         [field setValue:[NSNumber numberWithBool:_proximityState]  forKey:FT_MONITOR_PROXIMITY];
     }
-    if (self.monitorType & FTMonitorInfoTypeFPS || self.monitorType &FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeFPS]) {
         [field setValue:[NSNumber numberWithInt:_fps] forKey:FT_MONITOR_FPS];
     }
-    if (self.monitorType & FTMonitorInfoTypeBluetooth || self.monitorType & FTMonitorInfoTypeAll) {
+    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBluetooth]) {
         [field addEntriesFromDictionary:_blDict];
         [tag setValue:self.isBlueOn forKey:FT_MONITOR_BT_OPEN];
         
     }
-    if (self.monitorType & FTMonitorInfoTypeSensorTorch ||self.monitorType & FTMonitorInfoTypeSensor || self.monitorType & FTMonitorInfoTypeAll){
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorTorch]){
         NSString *torch =[FTMonitorUtils getTorchLevel] == 0?@"false":@"true";
         [tag setValue:torch forKey:FT_MONITOR_TORCH];
     }
-    [field addEntriesFromDictionary:[self getMotionDatas]];
-    
+    if([self.motionManager isGyroAvailable] && ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorRotation])){
+        [field addEntriesFromDictionary:@{FT_MONITOR_ROTATION_X:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.x],
+                                          FT_MONITOR_ROTATION_Y:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.y],
+                                          FT_MONITOR_ROTATION_Z:[NSNumber numberWithDouble:self.motionManager.gyroData.rotationRate.z]}];
+    }
+    if ([self.motionManager isAccelerometerAvailable]&&([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorAcceleration]) ) {
+        [field addEntriesFromDictionary:@{FT_MONITOR_ACCELERATION_X:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.x],
+                                          FT_MONITOR_ACCELERATION_Y:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.y],
+                                          FT_MONITOR_ACCELERATION_Z:[NSNumber numberWithDouble:self.motionManager.accelerometerData.acceleration.z]}];
+    }
+    if ([self.motionManager isMagnetometerAvailable]&&([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorMagnetic])) {
+        [field addEntriesFromDictionary:@{FT_MONITOR_MAGNETIC_X:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.x],
+                                          FT_MONITOR_MAGNETIC_Y:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.y],
+                                          FT_MONITOR_MAGNETIC_Z:[NSNumber numberWithDouble:self.motionManager.magnetometerData.magneticField.z]}];
+    }
+    if(_pedometer && ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorStep])){
+        [self startPedometerUpdatesTodayWithHandler:nil];
+        [field setValue:self.steps forKey:FT_MONITOR_STEPS];
+    }
+    if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorLight]){
+        [field setValue:[NSNumber numberWithFloat:self.lightValue] forKey:FT_MONITOR_LIGHT];
+    }
     return @{FT_AGENT_FIELD:field,FT_AGENT_TAGS:tag};
 }
 #pragma mark --------- 实时网速 ----------
@@ -575,8 +564,7 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance =nil;
     [self stopFlushTimer];
-    [self stopMotionUpdates];
-    [_session stopRunning];
+    [self stopMonitor];
     self.netFlow = nil;
 }
 @end
