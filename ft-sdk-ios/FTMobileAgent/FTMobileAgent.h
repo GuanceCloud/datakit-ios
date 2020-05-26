@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)stopMonitorFlush;
 /**
  * 在监控项设置抓取蓝牙后使用
- * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过的设备使用NSUserDefault保存起来
+ * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过设备的identifier使用NSUserDefault保存起来
  * 用于采集已连接设备相关信息
 */
 -(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs;
