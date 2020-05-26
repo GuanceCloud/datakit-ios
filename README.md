@@ -596,9 +596,11 @@ typedef enum FTError : NSInteger {
 |    FTMonitorInfoTypeSensorLight     |     环境光感参数      |
 |    FTMonitorInfoTypeSensorTorch     | 获取应用内设置的手电筒亮度级别 |
 
- 设置 `FTMonitorInfoTypeSensor` 会一并抓取，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
+ - 设置 `FTMonitorInfoTypeSensor` 会一并抓取传感器数据，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
 
-`FTMonitorInfoTypeSensorLight`  是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
+ - `FTMonitorInfoTypeSensorLight`：是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
+ 
+ -  `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
 
 #### 4. FTMonitorInfoTypeNetwork 
    **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
