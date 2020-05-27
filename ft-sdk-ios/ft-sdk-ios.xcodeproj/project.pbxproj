@@ -20,16 +20,15 @@
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
 		4A3E7DC8245AAD540004A499 /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */; };
+		4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6F891E2419E97700E05C36 /* FTTrackBean.m */; };
-		4A852FDB23A240B400B40B5D /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A852FDC23A240B400B40B5D /* UIView+FT_CurrentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */; };
 		4A852FDD23A240B400B40B5D /* UIViewController+FT_RootVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */; };
 		4A852FDE23A240B400B40B5D /* UIView+FT_CurrentController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FD623A240B300B40B5D /* UIView+FT_CurrentController.h */; };
 		4A852FDF23A240B400B40B5D /* FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD723A240B300B40B5D /* FTAutoTrack.m */; };
 		4A852FE023A240B400B40B5D /* FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FD823A240B300B40B5D /* FTAutoTrack.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A852FE123A240B400B40B5D /* UIViewController+FT_RootVC.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FD923A240B400B40B5D /* UIViewController+FT_RootVC.h */; };
-		4A852FE223A240B400B40B5D /* ZYAspects.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A852FDA23A240B400B40B5D /* ZYAspects.h */; };
 		4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHander.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -167,8 +166,6 @@
 				4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */,
 				4A852FD923A240B400B40B5D /* UIViewController+FT_RootVC.h */,
 				4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */,
-				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
-				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */,
 				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 				4AACF9082429B9120079BD2F /* FTAutoTrackVersion.h */,
@@ -224,6 +221,8 @@
 				4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */,
 				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
 				4AED6B252473AFEC00E04AE2 /* FTLog.m */,
+				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
+				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
@@ -286,7 +285,6 @@
 				4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */,
 				4A852FE123A240B400B40B5D /* UIViewController+FT_RootVC.h in Headers */,
 				4A852FDE23A240B400B40B5D /* UIView+FT_CurrentController.h in Headers */,
-				4A852FE223A240B400B40B5D /* ZYAspects.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,7 +418,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A852FDF23A240B400B40B5D /* FTAutoTrack.m in Sources */,
-				4A852FDB23A240B400B40B5D /* ZYAspects.m in Sources */,
 				4A852FDD23A240B400B40B5D /* UIViewController+FT_RootVC.m in Sources */,
 				4A852FDC23A240B400B40B5D /* UIView+FT_CurrentController.m in Sources */,
 				4A3E7DC8245AAD540004A499 /* BlacklistedVCClassNames.m in Sources */,
@@ -447,6 +444,7 @@
 				4A297BDB246BBF340028645B /* FTConstants.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				4A88429C239E5768001B44C3 /* FTTrackerEventDBTool.m in Sources */,
+				4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */,
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
 				4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */,
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
