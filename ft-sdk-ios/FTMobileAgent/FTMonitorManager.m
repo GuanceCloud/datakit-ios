@@ -27,12 +27,13 @@
 #import "FTConstants.h"
 #import "FTURLProtocol.h"
 #import "FTMobileAgent+Private.h"
+#import "ZYAspects.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
 @interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
-@property (nonatomic, strong) NSMutableArray *devicesListArray;
+@property (nonatomic, strong) NSMutableArray<CBPeripheral *> *devicesListArray;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
@@ -457,7 +458,7 @@ static dispatch_once_t onceToken;
         [field setValue:[NSNumber numberWithInt:_fps] forKey:FT_MONITOR_FPS];
     }
     if ([self isMonitorTypeAllow:FTMonitorInfoTypeBluetooth]) {
-        [field addEntriesFromDictionary:_blDict];
+        [field addEntriesFromDictionary:[self getConnectBluetoothIdentifiers]];
         [tag setValue:self.isBlueOn forKey:FT_MONITOR_BT_OPEN];
         
     }
@@ -510,19 +511,38 @@ static dispatch_once_t onceToken;
     }
     [self.netFlow stopMonitor];
 }
-#pragma mark ========== 蓝牙 ==========
--(void)setConnectBluetoothCBUUID:(NSArray<CBUUID *> *)serviceUUIDs{
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    [serviceUUIDs enumerateObjectsUsingBlock:^(CBUUID *obj, NSUInteger idx, BOOL *stop) {
-        [dict setValue:[obj UUIDString] forKey:[NSString stringWithFormat:@"bt_device%lu",(unsigned long)idx+1]];
-    }];
-    _blDict = dict;
+-(NSDictionary *)getConnectBluetoothIdentifiers{
+    __block NSMutableDictionary *dict = [NSMutableDictionary new];
+    __block NSInteger count = 1;
+    if (self.devicesListArray.count>0) {
+        [self.devicesListArray enumerateObjectsUsingBlock:^(CBPeripheral * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (obj.state == CBPeripheralStateConnected) {
+                [dict setValue:[obj.identifier UUIDString] forKey:[NSString stringWithFormat:@"bt_device%lu",(unsigned long)count]];
+                count++;
+            }
+        }];
+    }
+    return dict;
 }
+#pragma mark ========== 蓝牙 ==========
 - (void)bluteeh{
     if (!_centralManager) {
         NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey:@NO};
         self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:options];
     }
+   WeakSelf
+    [CBCentralManager aspect_hookSelector:@selector(initWithDelegate:queue:options:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target){
+        
+        [target aspect_hookSelector:@selector(centralManager:didConnectPeripheral:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo,CBCentralManager *central,CBPeripheral *peripheral){
+            if(![weakSelf.devicesListArray containsObject:peripheral])
+            [weakSelf.devicesListArray addObject:peripheral];
+        } error:NULL];
+        [target aspect_hookSelector:@selector(centralManager:didDisconnectPeripheral:error:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> aspectInfo,CBCentralManager *central,CBPeripheral *peripheral){
+                   if([weakSelf.devicesListArray containsObject:peripheral])
+                   [weakSelf.devicesListArray removeObject:peripheral];
+               } error:NULL];
+    } error:NULL];
+    
 }
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {
