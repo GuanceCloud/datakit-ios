@@ -11,7 +11,6 @@
 #import "FTTrackBean.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class CBUUID;
 @interface UIView (FTMobileSdk)
 /**
  * 设置自定义的视图树描述
@@ -122,12 +121,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 关闭监控同步
 */
 -(void)stopMonitorFlush;
-/**
- * 在监控项设置抓取蓝牙后使用
- * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过设备的identifier使用NSUserDefault保存起来
- * 用于采集已连接设备相关信息
-*/
--(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs;
 /**
  * 设置视图描述字典 key:视图ClassName  value:视图描述
  * 替换 流程图的 name parent

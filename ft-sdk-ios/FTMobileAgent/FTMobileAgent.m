@@ -289,10 +289,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)stopMonitorFlush{
     [[FTMonitorManager sharedInstance] stopFlush];
 }
--(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs{
-    [[FTMonitorManager sharedInstance] setConnectBluetoothCBUUID:serviceUUIDs];
-}
-
 #pragma mark ========== private method==========
 #pragma mark --------- 数据拼接 存储数据库 ----------
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
