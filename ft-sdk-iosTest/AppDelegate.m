@@ -42,6 +42,7 @@
         config.enableDescLog = YES;
         config.enableAutoTrack = YES;
         config.needBindUser = YES;
+        config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [config enableTrackScreenFlow:YES];
         self.config = config;
