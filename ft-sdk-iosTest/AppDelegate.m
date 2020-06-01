@@ -44,7 +44,8 @@
         config.needBindUser = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-        [config enableTrackScreenFlow:YES];
+        [config setEnableScreenFlow:YES];
+        config.enableTrackAppCrash = YES;
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
        

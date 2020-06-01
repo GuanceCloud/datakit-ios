@@ -27,7 +27,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_Exception"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -127,7 +127,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = NO;
-    [config enableTrackScreenFlow:NO];
+    [config setEnableScreenFlow:NO];
     [FTMobileAgent startWithConfigOptions:config];
 }
 - (void)testStartMonitorFlush{
@@ -175,6 +175,10 @@
     [[FTMobileAgent sharedInstance] addVtpDescDict:vtpdict];
     [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
     
+}
+- (void)testException{
+    NSString *value = nil;
+    NSDictionary *dict = @{@"11":value};
 }
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -237,6 +241,8 @@
         case 15:
             [self testAddVtpDesc];
             break;
+            case 16:
+            [self testException];
         default:
             break;
     }

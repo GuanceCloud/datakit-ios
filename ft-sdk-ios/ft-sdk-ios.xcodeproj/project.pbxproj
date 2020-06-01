@@ -16,6 +16,8 @@
 		4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMonitorUtils.m */; };
 		4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
 		4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E75323CDA69C0077531B /* FTNetworkInfo.m */; };
+		4A37A9402484CAEA00E0381B /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */; };
+		4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */; };
 		4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
@@ -76,6 +78,8 @@
 		4A2D57EE2458141300478547 /* FTMonitorUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorUtils.m; sourceTree = "<group>"; };
 		4A31E75223CDA69C0077531B /* FTNetworkInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfo.h; sourceTree = "<group>"; };
 		4A31E75323CDA69C0077531B /* FTNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfo.m; sourceTree = "<group>"; };
+		4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
+		4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTUncaughtExceptionHandler.h; sourceTree = "<group>"; };
 		4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGPUUsage.h; sourceTree = "<group>"; };
 		4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGPUUsage.m; sourceTree = "<group>"; };
 		4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
@@ -217,6 +221,8 @@
 				4A88426F239E5768001B44C3 /* FTBaseInfoHander.m */,
 				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
+				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
+				4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */,
 				4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */,
 				4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */,
 				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
@@ -304,6 +310,7 @@
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
+				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
@@ -433,6 +440,7 @@
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
+				4A37A9402484CAEA00E0381B /* FTUncaughtExceptionHandler.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
 				4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */,
 				4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */,
