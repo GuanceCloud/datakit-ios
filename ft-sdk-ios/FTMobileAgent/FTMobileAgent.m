@@ -22,6 +22,7 @@
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
+#import "FTUncaughtExceptionHandler.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -126,6 +127,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
         if (self.config.enableAutoTrack) {
             [self startAutoTrack];
+        }
+        if (self.config.enableTrackAppCrash) {
+            [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
         }
         self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
     }
@@ -350,6 +354,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     } @catch (NSException *exception) {
         ZYDebug(@"flowTrack product traceId name exception %@",exception);
     }
+}
+- (void)netInterceptorWithopdata:(NSDictionary *)opdata{
+    NSString *op = @"netInterceptor";
+}
+- (void)exceptionWithopdata:(NSDictionary *)opdata{
+    NSString *op = @"exception";
+    
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op{
     FTRecordModel *model = [FTRecordModel new];

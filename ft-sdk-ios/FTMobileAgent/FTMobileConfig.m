@@ -33,6 +33,7 @@
          _enableScreenFlow = NO;
          _XDataKitUUID = [self ft_defaultUUID];
          _enableDescLog = NO;
+         _enableTrackAppCrash= NO;
         }
       return self;
 }
@@ -57,6 +58,7 @@
     options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableDescLog = self.enableDescLog;
+    options.enableTrackAppCrash = self.enableTrackAppCrash;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
@@ -68,8 +70,11 @@
 -(void)setEnableDescLog:(BOOL)enableDescLog{
     _enableDescLog = enableDescLog;
 }
--(void)enableTrackScreenFlow:(BOOL)enable{
-    _enableScreenFlow = enable;
+-(void)setEnableScreenFlow:(BOOL)enableScreenFlow{
+    _enableScreenFlow = enableScreenFlow;
+}
+-(void)setEnableTrackAppCrash:(BOOL)enableTrackAppCrash{
+    _enableTrackAppCrash = enableTrackAppCrash;
 }
 -(void)setXDataKitUUID:(NSString *)XDataKitUUID{
     if (XDataKitUUID.length>0) {

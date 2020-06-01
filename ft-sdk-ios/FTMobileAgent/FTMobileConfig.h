@@ -177,14 +177,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic,strong) NSArray *blackVCList;
 #pragma mark ========== 上报流程图 ==========
-/**
- * @abstract
- *  设置是否抓取页面流程图
- */
-- (void)enableTrackScreenFlow:(BOOL)enable;
+
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
 
+@property (nonatomic, assign) BOOL enableTrackAppCrash;
 @end
 
 NS_ASSUME_NONNULL_END
