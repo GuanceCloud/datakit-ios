@@ -553,9 +553,21 @@ static dispatch_once_t onceToken;
 - (void)ftHTTPProtocol:(FTURLProtocol *)protocol didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if (@available(iOS 10.0, *)) {
         NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)taskMes.response;
+        NSDictionary *dict = httpResponse.allHeaderFields;
+        NSString *str =[FTBaseInfoHander ft_convertToJsonData:dict];
+        NSString *url = [taskMes.request.URL absoluteString];
         NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
         NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
         NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
+        NSDictionary *opdata = @{FT_NETWORK_REQUEST_URL:url,
+                                 FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
+                                 FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
+                                 FT_MONITOR_FT_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime],
+                                 FT_NETWORK_REQUEST_CONTENT:@"",
+                                 FT_NETWORK_RESPONSE_CONTENT:@"",
+        };
+        [[FTMobileAgent sharedInstance] netInterceptorWithopdata:opdata];
         if([taskMes.request.URL.absoluteString isEqualToString:[FTMobileAgent sharedInstance].config.metricsUrl]){
             @synchronized(_lastNetTaskMetrics) {
                 _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],

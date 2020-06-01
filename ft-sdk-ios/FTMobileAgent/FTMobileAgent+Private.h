@@ -54,5 +54,14 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * autotrack  全埋点页面流程图抓取 存储数据库
  */
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:( NSString *)parent tags:(NSDictionary *)tags duration:(long)duration field:(NSDictionary *)field withTrackType:(FTTrackType)trackType;
+/**
+ * 网络日志抓取
+*/
+- (void)netInterceptorWithopdata:(NSDictionary *)opdata;
+/**
+ * 崩溃日志抓取
+*/
+- (void)exceptionWithopdata:(NSDictionary *)opdata;
+
 @end
 #endif /* FTMobileAgent_Private_h */
