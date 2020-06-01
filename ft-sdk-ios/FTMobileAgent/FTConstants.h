@@ -78,7 +78,7 @@ extern NSString * const FT_MONITOR_COUNTRY;
 extern NSString * const FT_MONITOR_LATITUDE;
 extern NSString * const FT_MONITOR_LONGITUDE;
 
-
+#pragma mark ------ NETWORK -------
 extern NSString * const FT_MONITOR_WITF_IP;
 extern NSString * const FT_MONITOR_WITF_SSID;
 extern NSString * const FT_MONITOR_NETWORK_TYPE;
@@ -94,6 +94,9 @@ extern NSString * const FT_MONITOR_NETWORK_PROXY;
 extern NSString * const FT_MONITOR_FT_NETWORK_DNS_TIME;
 extern NSString * const FT_MONITOR_FT_NETWORK_TCP_TIME;
 extern NSString * const FT_MONITOR_FT_NETWORK_RESPONSE_TIME;
+extern NSString * const FT_NETWORK_REQUEST_URL;
+extern NSString * const FT_NETWORK_REQUEST_CONTENT;
+extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
 
 extern NSString * const FT_MONITOR_ROTATION_X;
 extern NSString * const FT_MONITOR_ROTATION_Y;
