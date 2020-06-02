@@ -46,6 +46,7 @@
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [config setEnableScreenFlow:YES];
         config.enableTrackAppCrash = YES;
+        config.collectRate = 0.5;
         self.config = config;
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
        

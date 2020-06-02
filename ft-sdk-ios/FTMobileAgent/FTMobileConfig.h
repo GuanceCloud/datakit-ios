@@ -181,7 +181,12 @@ NS_ASSUME_NONNULL_BEGIN
 /*设置是否需要视图跳转流程图*/
 @property (nonatomic, assign) BOOL enableScreenFlow;
 
+/*设置是否需要采集崩溃日志*/
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
+/**
+ * 设置采样率 0-1 默认为 1
+ */
+@property (nonatomic, assign) float collectRate;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -277,6 +277,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(void)isFlowChartDescEnabled:(BOOL)enable{
     _isFlowChartDescEnabled = enable;
 }
+- (BOOL)isWriteDatabase{
+    BOOL is = YES;
+    float rate = self.config.collectRate;
+    if (rate<1&&rate>0) {
+        int x = arc4random() % 100;
+        is = x < (rate*100)? YES:NO;
+    }
+    return is;
+}
 #pragma mark ========== 调用监控项管理方法 ==========
 -(void)setMonitorFlushInterval:(NSInteger)interval{
     [[FTMonitorManager sharedInstance] setFlushInterval:interval];
@@ -298,6 +307,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
     
    @try {
+       if (![self isWriteDatabase]) {
+           return;
+       }
           NSParameterAssert(measurement);
           NSParameterAssert(field);
           if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {

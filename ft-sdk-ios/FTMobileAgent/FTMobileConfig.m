@@ -34,6 +34,7 @@
          _XDataKitUUID = [self ft_defaultUUID];
          _enableDescLog = NO;
          _enableTrackAppCrash= NO;
+         _collectRate = 1;
         }
       return self;
 }
@@ -59,6 +60,7 @@
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
+    options.collectRate = self.collectRate;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
