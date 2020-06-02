@@ -18,6 +18,10 @@
 		4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A31E75323CDA69C0077531B /* FTNetworkInfo.m */; };
 		4A37A9402484CAEA00E0381B /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */; };
 		4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */; };
+		4A37A94B2486006100E0381B /* NSURLRequest+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A9492486006100E0381B /* NSURLRequest+FTMonitor.h */; };
+		4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */; };
+		4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */; };
+		4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */; };
 		4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
@@ -80,6 +84,10 @@
 		4A31E75323CDA69C0077531B /* FTNetworkInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfo.m; sourceTree = "<group>"; };
 		4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTUncaughtExceptionHandler.h; sourceTree = "<group>"; };
+		4A37A9492486006100E0381B /* NSURLRequest+FTMonitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+FTMonitor.h"; sourceTree = "<group>"; };
+		4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+FTMonitor.m"; sourceTree = "<group>"; };
+		4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+FTMonitor.h"; sourceTree = "<group>"; };
+		4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+FTMonitor.m"; sourceTree = "<group>"; };
 		4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGPUUsage.h; sourceTree = "<group>"; };
 		4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGPUUsage.m; sourceTree = "<group>"; };
 		4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
@@ -275,6 +283,10 @@
 				4AECBCEC244EE8450023DEF7 /* FTURLProtocol.m */,
 				4AECBCEF244EEB100023DEF7 /* FTSessionConfiguration.h */,
 				4AECBCF0244EEB100023DEF7 /* FTSessionConfiguration.m */,
+				4A37A9492486006100E0381B /* NSURLRequest+FTMonitor.h */,
+				4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */,
+				4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */,
+				4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -309,6 +321,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
+				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
 				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
@@ -318,6 +331,7 @@
 				4AB7841223C73277001FC994 /* FTNetMonitorFlow.h in Headers */,
 				4AECBCF1244EEB100023DEF7 /* FTSessionConfiguration.h in Headers */,
 				4A88429B239E5768001B44C3 /* FTTrackerEventDBTool.h in Headers */,
+				4A37A94B2486006100E0381B /* NSURLRequest+FTMonitor.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
@@ -439,6 +453,7 @@
 				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
+				4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
 				4A37A9402484CAEA00E0381B /* FTUncaughtExceptionHandler.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
@@ -456,6 +471,7 @@
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
 				4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */,
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
+				4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
 				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
