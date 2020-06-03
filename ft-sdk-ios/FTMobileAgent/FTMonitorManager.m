@@ -34,6 +34,8 @@
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
+static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manager.lock";
+
 @interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray<CBPeripheral *> *devicesListArray;
@@ -49,6 +51,8 @@ NSError *error);
 @property (nonatomic, assign) float lightValue;
 @property (nonatomic, strong) NSDictionary *blDict;
 @property (nonatomic, copy) NSString *isBlueOn;
+@property (nonatomic, strong) NSMutableDictionary *mutableTaskDatasKeyedByTaskIdentifier;
+@property (readwrite, nonatomic, strong) NSLock *lock;
 @end
 
 @implementation FTMonitorManager{
@@ -77,6 +81,9 @@ static dispatch_once_t onceToken;
         _lastNetTaskMetrics = nil;
         _errorNet = 0;
         _successNet = 0;
+        self.mutableTaskDatasKeyedByTaskIdentifier = [[NSMutableDictionary alloc] init];
+        self.lock = [[NSLock alloc] init];
+        self.lock.name = FTUELSessionLockName;
     }
     return self;
 }
@@ -553,22 +560,13 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== 网络请求相关时间/错误率 ==========
-- (void)ftHTTPProtocolResponseData:(NSData *)data task:(nonnull NSURLSessionTask *)task  didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if (@available(iOS 10.0, *)) {
         NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
         NSString *url = [taskMes.request.URL absoluteString];
         NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
         NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
         NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
-        NSURLRequest *request = task.originalRequest;
-        NSDictionary *opdata = @{FT_NETWORK_REQUEST_URL:url,
-                                 FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
-                                 FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
-                                 FT_MONITOR_FT_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime],
-                                 FT_NETWORK_REQUEST_CONTENT:[request ft_getRequestContent],
-                                 FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
-        };
-        [[FTMobileAgent sharedInstance] netInterceptorWithopdata:opdata];
         if([taskMes.request.URL.absoluteString isEqualToString:[FTMobileAgent sharedInstance].config.metricsUrl]){
             @synchronized(_lastNetTaskMetrics) {
                 _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
@@ -584,14 +582,37 @@ static dispatch_once_t onceToken;
                 };
             }
         }
+        
+        NSData *data = nil;
+        [self.lock lock];
+        data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
+        [self.lock unlock];
+        NSDictionary *opdata = @{FT_NETWORK_REQUEST_URL:url,
+                                 FT_MONITOR_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
+                                 FT_MONITOR_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
+                                 FT_MONITOR_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime],
+                                 FT_NETWORK_REQUEST_CONTENT:[task.originalRequest ft_getRequestContent],
+                                 FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
+        };
+        [[FTMobileAgent sharedInstance] netInterceptorWithopdata:opdata];
     }
 }
-- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didCompleteWithError:(NSError *)error{
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     if (error) {
         _errorNet++;
     }else{
         _successNet++;
     }
+    [self.lock lock];
+    [self.mutableTaskDatasKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
+    [self.lock unlock];
+}
+- (void)ftHTTPProtocolWithDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    [self.lock lock];
+    if(data){
+        self.mutableTaskDatasKeyedByTaskIdentifier[@(dataTask.taskIdentifier)] = data;
+    }
+    [self.lock unlock];
 }
 - (void)resetInstance{
     onceToken = 0;

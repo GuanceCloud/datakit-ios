@@ -42,22 +42,25 @@ typedef CFHTTPMessageRef (*DMURLResponseGetHTTPResponse)(CFURLRef response);
 - (NSString *)ft_getResponseContentWithData:(NSData *)data{
     NSString *headerStr;
     if ([self isKindOfClass:[NSHTTPURLResponse class]]) {
-         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
-         NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
-         headerStr = [self ft_getStatusLineFromCF];
-         for (NSString *key in headerFields.allKeys) {
-             headerStr = [headerStr stringByAppendingString:key];
-             headerStr = [headerStr stringByAppendingString:@": "];
-             if ([headerFields objectForKey:key]) {
-                 headerStr = [headerStr stringByAppendingString:headerFields[key]];
-             }
-             headerStr = [headerStr stringByAppendingString:@"\n"];
-         }
-     }
-    NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-       if (dataStr) {
-           headerStr = [headerStr stringByAppendingFormat:@"\n%@",dataStr];
-       }
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+        NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
+        headerStr = [self ft_getStatusLineFromCF];
+        for (NSString *key in headerFields.allKeys) {
+            headerStr = [headerStr stringByAppendingString:key];
+            headerStr = [headerStr stringByAppendingString:@": "];
+            if ([headerFields objectForKey:key]) {
+                headerStr = [headerStr stringByAppendingString:headerFields[key]];
+            }
+            headerStr = [headerStr stringByAppendingString:@"\n"];
+        }
+    }
+    NSString *dataStr = nil;
+    if (data) {
+        dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    }
+    if (dataStr) {
+        headerStr = [headerStr stringByAppendingFormat:@"\n%@",dataStr];
+    }
     return headerStr;
 }
 @end

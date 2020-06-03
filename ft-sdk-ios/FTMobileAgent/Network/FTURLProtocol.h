@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol FTHTTPProtocolDelegate <NSObject>
 @optional
-- (void)ftHTTPProtocolResponseData:(NSData *)data task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
-- (void)ftHTTPProtocol:(FTURLProtocol *)protocol didCompleteWithError:(NSError *)error;
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
+- (void)ftHTTPProtocolWithDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data;
 @end
 NS_ASSUME_NONNULL_END
