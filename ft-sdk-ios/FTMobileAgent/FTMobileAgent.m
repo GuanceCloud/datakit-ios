@@ -278,9 +278,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     _isFlowChartDescEnabled = enable;
 }
 - (BOOL)isWriteDatabase{
-    BOOL is = YES;
     float rate = self.config.collectRate;
-    if (rate<1&&rate>0) {
+    if(rate<=0){
+        return NO;
+    }
+    BOOL is = YES;
+    if (rate<1) {
         int x = arc4random() % 100;
         is = x < (rate*100)? YES:NO;
     }
