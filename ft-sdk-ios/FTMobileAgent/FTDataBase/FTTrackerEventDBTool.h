@@ -41,15 +41,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 *  @return 获取的数据
 */
--(NSArray *)getFirstTenDataWithUser;
+-(NSArray *)getFirstTenBindUserData:(NSString *)op;
 /**
 *  @abstract
 *  从数据库前端，获取十条记录
 
 *  @return 获取的数据
 */
--(NSArray *)getFirstTenData;
+-(NSArray *)getFirstTenData:(NSString *)op;
+/**
+*  @abstract
+*  根据类型删除已上传的数据
+*  @param tm 删除在此时间之前的数据
 
+*  @return 删除是否成功
+*/
+-(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm;
 /**
 *  @abstract
 *  删除已上传的数据

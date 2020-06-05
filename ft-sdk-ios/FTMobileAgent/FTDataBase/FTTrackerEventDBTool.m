@@ -70,6 +70,7 @@ static FTTrackerEventDBTool *dbTool = nil;
                                    @"tm":@"INTEGER",
                                    @"data":@"TEXT",
                                    @"sessionid":@"TEXT",
+                                   @"op":@"TEXT",
         };
         if ([self isOpenDatabese:self.db]) {
                NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACREVENT_TABLE_NAME]];
@@ -159,7 +160,7 @@ static FTTrackerEventDBTool *dbTool = nil;
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid') VALUES (  '%lld' , '%@' ,'%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  '%lld' , '%@' ,'%@','%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid,item.op];
           success=  [self.db executeUpdate:sqlStr];
            ZYDebug(@"data storage success == %d",success);
        }];
@@ -185,15 +186,15 @@ static FTTrackerEventDBTool *dbTool = nil;
     return [self getDatasWithFormat:sql bindUser:NO];
 
 }
--(NSArray *)getFirstTenDataWithUser{
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME];
+-(NSArray *)getFirstTenBindUserData:(NSString *)op{
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,op];
     NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
 
     return session;
    
 }
--(NSArray *)getFirstTenData{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME];
+-(NSArray *)getFirstTenData:(NSString *)op{
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME,op];
 
     return [self getDatasWithFormat:sql bindUser:NO];
 }
@@ -209,6 +210,7 @@ static FTTrackerEventDBTool *dbTool = nil;
                 item._id= [[set stringForColumn:@"_id"]intValue];
                 item.tm = [set longForColumn:@"tm"];
                 item.data= [set stringForColumn:@"data"];
+                item.op = [set stringForColumn:@"op"];
                 if (bindUser) {
                     item.userdata = [set stringForColumn:@"userdata"];
                 }
@@ -234,6 +236,15 @@ static FTTrackerEventDBTool *dbTool = nil;
     }];
      return count;
 }
+-(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm{
+    __block BOOL is;
+       [self zy_inDatabase:^{
+           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACREVENT_TABLE_NAME,type,tm];
+           is = [self.db executeUpdate:sqlStr];
+       }];
+       return is;
+}
+
 -(BOOL)deleteItemWithTm:(long long)tm
 {   __block BOOL is;
     [self zy_inDatabase:^{
