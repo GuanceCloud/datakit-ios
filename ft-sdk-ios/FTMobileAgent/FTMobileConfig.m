@@ -18,9 +18,10 @@
 
 @implementation FTMobileConfig
 
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
      if (self = [super init]) {
          _metricsUrl = metricsUrl;
+         _datawayToken = token;
          _akId = akId;
          _akSecret = akSecret;
          _enableRequestSigning = enableRequestSigning;
@@ -38,13 +39,14 @@
         }
       return self;
 }
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl{
-    return [self initWithMetricsUrl:metricsUrl akId:nil akSecret:nil enableRequestSigning:NO];
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token{
+    return [self initWithMetricsUrl:metricsUrl datawayToken:token akId:nil akSecret:nil enableRequestSigning:NO];
 }
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
     options.metricsUrl = self.metricsUrl;
+    options.datawayToken = self.datawayToken;
     options.autoTrackEventType = self.autoTrackEventType;
     options.akId = self.akId;
     options.akSecret = self.akSecret;

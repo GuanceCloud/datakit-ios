@@ -89,13 +89,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
  * @return 配置对象
  */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
 /**
  * @method 指定初始化方法，设置 metricsUrl 配置是否不需要进行请求签名
  * @param metricsUrl FT-GateWay metrics 写入地址
  * @return 配置对象
  */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token;
 
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -114,9 +114,10 @@ NS_ASSUME_NONNULL_BEGIN
 /*FT-GateWay metrics 写入地址*/
 @property (nonatomic, copy) NSString *metricsUrl;
 
+@property (nonatomic, copy) NSString *datawayToken;
+
 /*配置是否需要进行请求签名*/
 @property (nonatomic, assign) BOOL enableRequestSigning;
-
 /*access key ID*/
 @property (nonatomic, copy) NSString *akId;
 
