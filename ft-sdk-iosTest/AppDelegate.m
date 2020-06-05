@@ -36,12 +36,13 @@
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     if (akId && akSecret && url) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
         config.enableLog = YES;
         config.enableDescLog = YES;
         config.enableAutoTrack = YES;
-        config.needBindUser = YES;
+        config.needBindUser = NO;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [config setEnableScreenFlow:YES];
@@ -51,7 +52,7 @@
         long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
        
         [FTMobileAgent startWithConfigOptions:config];
-        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+       
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
     }

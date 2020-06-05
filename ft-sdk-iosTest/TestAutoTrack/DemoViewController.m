@@ -123,8 +123,10 @@
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+
     // 新的config 关闭了autoTrack  将无全埋点日志
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = NO;
     [config setEnableScreenFlow:NO];
