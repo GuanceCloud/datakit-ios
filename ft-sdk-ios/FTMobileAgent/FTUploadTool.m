@@ -70,7 +70,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             return [NSString stringWithFormat:@"%@=%@i", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];;
         }
         if([self.value isKindOfClass:NSString.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+            return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], [FTBaseInfoHander repleacingSpecialCharactersField:self.value]];
         }else if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
             if (abs(number.intValue) <fabsf(number.floatValue) || abs(number.intValue)<fabs(number.doubleValue)) {
@@ -86,13 +86,16 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDictionary *basicTags;
 @property (nonatomic, strong) NSURLSession *session;
-
+/// 网络请求调用结束的 Block 所在的线程
+@property (nonatomic, strong) NSOperationQueue *operationQueue;
 @end
 @implementation FTUploadTool
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
     self = [super init];
     if (self) {
         self.config = config;
+        _operationQueue = [[NSOperationQueue alloc] init];
+        _operationQueue.maxConcurrentOperationCount = 1;
     }
     return self;
 }
@@ -105,15 +108,25 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }
 }
 - (void)flushQueue{
-    
     @try {
-        while ([[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+        [self flushWithType:FTNetworkingTypeObject];
+        [self flushWithType:FTNetworkingTypeLogging];
+        [self flushWithType:FTNetworkingTypeMetrics];
+        [self flushWithType:FTNetworkingTypeKeyevent];
+        self.isUploading = NO;
+    } @catch (NSException *exception) {
+        
+    }
+}
+-(void)flushWithType:(NSString *)type{
+    @try {
+        while ([[FTTrackerEventDBTool sharedManger] getFirstTenData:type]>0){
             ZYDebug(@"DB DATAS COUNT = %ld",[[FTTrackerEventDBTool sharedManger] getDatasCount]);
             NSArray *updata;
             if (self.config.needBindUser) {
-                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
+                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:type];
             }else{
-                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData];
+                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData:type];
             }
             if(updata.count == 0){
                 break;
@@ -122,7 +135,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             __block BOOL success = NO;
             dispatch_group_t group = dispatch_group_create();
             dispatch_group_enter(group);
-            [self apiRequestWithEventsAry:updata callBack:^(NSInteger statusCode, NSData *response) {
+            [self trackImmediateList:updata callBack:^(NSInteger statusCode, NSData *response) {
                 if (statusCode ==200) {
                     NSMutableDictionary *responseObject;
                     
@@ -148,72 +161,99 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                 ZYDebug(@"上传事件失败");
                 break;
             }
-            ZYDebug(@"上传事件成功");
-            BOOL delect = [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:model.tm];
-            ZYDebug(@"delect == %d",delect);
+            BOOL delect = [[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm];
+            ZYDebug(@"上传事件成功 从数据库删除已上传数据 == %d",delect);
         }
-        self.isUploading = NO;
     }
     @catch (NSException *exception) {
         ZYDebug(@"flushQueue exception %@",exception);
     }
 }
 -(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
-    [self apiRequestWithEventsAry:@[model] callBack:callBack];
+    [self trackImmediateList:@[model] callBack:callBack];
 }
 -(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
-    [self apiRequestWithEventsAry:modelList callBack:callBack];
+    FTRecordModel *model = [modelList firstObject];
+    NSString *api = nil;
+    if ([model.op isEqualToString:FTNetworkingTypeObject]) {
+        NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?%@",self.config.datawayToken]:@"";
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
+        [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
+        return;
+    }
+    if ([model.op isEqualToString:FTNetworkingTypeMetrics])
+    {   api = FT_NETWORKING_API_METRICS;
+    }
+    if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
+        api = FT_NETWORKING_API_LOGGING;
+    }
+    if ([model.op isEqualToString:FTNetworkingTypeKeyevent]) {
+        api = FT_NETWORKING_API_KEYEVENT;
+    }
+    NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?%@",self.config.datawayToken]:@"";
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
+    [self trackRequestWithURL:url eventsAry:modelList callBack:callBack];
 }
 
-- (void)apiRequestWithEventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
-    NSString *requestData = [self getRequestDataWithEventArray:events];
-    
-    NSString *date =[FTBaseInfoHander ft_currentGMT];
-    NSURL *url = [NSURL URLWithString:self.config.metricsUrl];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    //设置请求地址
-    //添加header
-    NSMutableURLRequest *mutableRequest = [request mutableCopy];    //拷贝request
-    mutableRequest.HTTPMethod = @"POST";
-    //添加header
-    [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
-    [mutableRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
-    [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
-    
-    //设置请求参数
-    [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
-    [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-    [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
-    [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
-    mutableRequest.HTTPBody = [requestData dataUsingEncoding:NSUTF8StringEncoding];
-    ZYDebug(@"requestData = %@",requestData);
-    
-    if (self.config.enableRequestSigning) {
-        NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:requestData]];
-        [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
-    }
-    request = [mutableRequest copy];
+- (void)trackRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
+    NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:events];
     //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        BOOL success= NO;
-        if (error) {
-            callBack? callBack(error.code,nil):nil ;
-        }else{
-            success = YES;
-            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-            NSInteger statusCode = [httpResponse statusCode];
-            callBack? callBack(statusCode,data):nil ;
-        }
-    }];
+    NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
-    
 }
+- (void)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
+    // 待处理 object 类型
+    NSURLRequest *request = [self writeObjectRequestWithURL:url datas:events];
+    //设置网络请求的返回接收器
+    NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
+    //开始请求
+    [dataTask resume];
+}
+-(NSURLRequest *)lineProtocolRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
+    NSString *requestData = [self getRequestDataWithEventArray:datas];
+    ZYLog(@"requestData = %@",requestData);
+    return  [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
+}
+-(NSURLRequest *)writeObjectRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
+    return  [self getRequestWithURL:url body:@"" contentType:@"application/json"];
+}
+-(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
+    NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
+     NSString *date =[FTBaseInfoHander ft_currentGMT];
+     mutableRequest.HTTPMethod = @"POST";
+     //添加header
+     [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+     [mutableRequest addValue:contentType forHTTPHeaderField:@"Content-Type"];
+     [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+     
+     //设置请求参数
+     [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+     [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
+     [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
+     mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
+     if (self.config.enableRequestSigning) {
+         NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:body]];
+         [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
+     }
+     return mutableRequest;
+}
+#pragma mark - request
+- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(FTURLTaskCompletionHandler)completionHandler {
+    return [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
+            return completionHandler(error.code, nil);
+        }
+        return completionHandler([(NSHTTPURLResponse *)response statusCode], data);
+    }];
+}
+
 -(NSURLSession *)session{
     if(!_session){
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         config.timeoutIntervalForRequest = 30.0;
-        _session = [NSURLSession sessionWithConfiguration:config];
+        _session = [NSURLSession sessionWithConfiguration:config delegate:nil delegateQueue:self.operationQueue];
     }
     return _session;
 }
@@ -232,9 +272,9 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
         NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_AGENT_MEASUREMENT]];
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[FT_AGENT_TAGS]];
-        
-        [tagDict addEntriesFromDictionary:self.basicTags];
-     
+        if (![obj.op isEqualToString:FTNetworkingTypeLogging] && ![obj.op isEqualToString:FTNetworkingTypeKeyevent]) {
+            [tagDict addEntriesFromDictionary:self.basicTags];
+        }
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
             field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);
         }
