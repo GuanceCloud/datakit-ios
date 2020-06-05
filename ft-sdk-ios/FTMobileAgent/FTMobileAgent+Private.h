@@ -61,7 +61,7 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 /**
  * 崩溃日志抓取
 */
-- (void)exceptionWithopdata:(NSDictionary *)opdata;
+- (void)exceptionWithopdata:(NSString *)content;
 
 @end
 #endif /* FTMobileAgent_Private_h */

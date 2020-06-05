@@ -133,8 +133,7 @@ void SignalHandler(int signal) {
                            @"reason":exception.reason,
                            @"userInfo":exception.userInfo
     };
-    NSDictionary *eTrace = @{@"eTrace":[FTBaseInfoHander ft_convertToJsonData:dict]};
-    [[FTMobileAgent sharedInstance] exceptionWithopdata:eTrace];
+    [[FTMobileAgent sharedInstance] exceptionWithopdata:[FTBaseInfoHander ft_convertToJsonData:dict]];
 }
 
 
