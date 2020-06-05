@@ -22,6 +22,7 @@
                [[NSUserDefaults standardUserDefaults] synchronize];
            }
         self.sessionid = sessionid;
+        self.op = @"";
     }
     return self;
 }

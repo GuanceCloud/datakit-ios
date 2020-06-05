@@ -122,6 +122,14 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(void)stopMonitorFlush;
 /**
+ * 开启网络请求监控
+ */
+-(void)startNetworkingMonitor;
+/**
+ * 关闭网络请求监控
+ */
+-(void)stopNetworkingMonitor;
+/**
  * 设置视图描述字典 key:视图ClassName  value:视图描述
  * 替换 流程图的 name parent
  * 增加 field:page_desc 描述 autoTrack 中的 current_page_name

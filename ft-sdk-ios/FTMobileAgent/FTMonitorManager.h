@@ -38,6 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(NSDictionary *)getMonitorTagFiledDict;
 
+-(void)startNetworkingMonitor;
+
+-(void)stopNetworkingMonitor;
+
 - (void)resetInstance;
 @end
 

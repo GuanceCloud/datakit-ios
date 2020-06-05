@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 //从数据库读取数据时拼接的用户信息
 @property (nonatomic, strong) NSString *userdata;
 
+@property (nonatomic, strong) NSString *op;
+
 @end
 
 NS_ASSUME_NONNULL_END

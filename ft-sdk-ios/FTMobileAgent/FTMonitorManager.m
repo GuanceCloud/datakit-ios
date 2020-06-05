@@ -64,6 +64,7 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
     NSUInteger _errorNet;
     NSUInteger _successNet;
     BOOL _proximityState;
+    BOOL _monitorNetworking;
 }
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -560,6 +561,12 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== 网络请求相关时间/错误率 ==========
+-(void)startNetworkingMonitor{
+    _monitorNetworking = YES;
+}
+-(void)stopNetworkingMonitor{
+    _monitorNetworking = NO;
+}
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if (@available(iOS 10.0, *)) {
         NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
@@ -587,11 +594,14 @@ static dispatch_once_t onceToken;
         [self.lock lock];
         data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
         [self.lock unlock];
+        if (!_monitorNetworking) {
+            return;
+        }
         NSDictionary *opdata = @{FT_NETWORK_REQUEST_URL:url,
                                  FT_MONITOR_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
-                                 FT_MONITOR_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
+                                 FT_NETWORK_CONNECT_TIME:[NSNumber numberWithDouble:tcpTime],
                                  FT_MONITOR_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime],
-                                 FT_NETWORK_REQUEST_CONTENT:[task.originalRequest ft_getRequestContent],
+                                 FT_NETWORK_DURATION_TIME:[NSNumber numberWithDouble:([taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000)],
                                  FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
         };
         [[FTMobileAgent sharedInstance] netInterceptorWithopdata:opdata];

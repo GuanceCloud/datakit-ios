@@ -188,7 +188,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
             return;
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:@"cstm"];;
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:@"cstm" netType:FTNetworkingTypeMetrics];
         [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
@@ -200,7 +200,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     __block NSMutableArray *list = [NSMutableArray new];
     [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
-            FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm"];
+            FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm" netType:FTNetworkingTypeMetrics];
             if(obj.timeMillis && obj.timeMillis>1000000000000){
                 model.tm = obj.timeMillis*1000;
             }
@@ -325,7 +325,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
        }else{
            op = [field valueForKey:@"event"];
        }
-       FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op];
+       FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
       }
       @catch (NSException *exception) {
@@ -364,7 +364,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tagsDict addEntriesFromDictionary:tags];
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics];
         [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     } @catch (NSException *exception) {
         ZYDebug(@"flowTrack product traceId name exception %@",exception);
@@ -373,18 +373,31 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)netInterceptorWithopdata:(NSDictionary *)opdata{
     NSString *op = @"netInterceptor";
 }
-- (void)exceptionWithopdata:(NSDictionary *)opdata{
+- (void)exceptionWithopdata:(NSString *)content {
     NSString *op = @"exception";
-    
+    NSDictionary *tag = @{@"__status":@"error",
+                          @"__class":@"tracing",
+                          @"__serviceName":@"dataflux sdk",
+    };
+    NSDictionary *filed = @{@"__content":content};
+   
+    FTRecordModel *model = [self getRecordModelWithMeasurement:@"ft_mobile_sdk_ios" tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
+    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
-- (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op{
+-(void)startNetworkingMonitor{
+    [[FTMonitorManager sharedInstance] startNetworkingMonitor];
+}
+-(void)stopNetworkingMonitor{
+    [[FTMonitorManager sharedInstance] stopNetworkingMonitor];
+}
+- (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *fieldDict = field.mutableCopy;
     NSMutableDictionary *tagsDict = [NSMutableDictionary new];
     if (tags) {
         [tagsDict addEntriesFromDictionary:tags];
     }
-    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]) {
+    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]&&![op isEqualToString:@"exception"]) {
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
             [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
@@ -402,6 +415,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                           FT_AGENT_OPDATA:opdata,
     };
     ZYDebug(@"datas == %@",data);
+    model.op = type;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     return model;
 }
@@ -481,7 +495,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
-        [self uploadFlush];
     }
     @catch (NSException *exception) {
         ZYLog(@"applicationDidBecomeActive exception %@",exception);
