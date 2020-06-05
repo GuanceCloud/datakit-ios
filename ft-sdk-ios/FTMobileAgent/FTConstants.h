@@ -97,6 +97,8 @@ extern NSString * const FT_MONITOR_FT_NETWORK_RESPONSE_TIME;
 extern NSString * const FT_NETWORK_REQUEST_URL;
 extern NSString * const FT_NETWORK_REQUEST_CONTENT;
 extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
+extern NSString * const FT_NETWORK_CONNECT_TIME;
+extern NSString * const FT_NETWORK_DURATION_TIME;
 
 extern NSString * const FT_MONITOR_ROTATION_X;
 extern NSString * const FT_MONITOR_ROTATION_Y;
@@ -123,4 +125,14 @@ extern NSString *  const FTBaseInfoHanderDeviceCPUType;
 extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
 extern NSString *  const FTBaseInfoHanderBatteryTotal;
 extern NSString *  const FTBaseInfoHanderDeviceGPUType;
+
+extern NSString *  const FTNetworkingTypeMetrics;
+extern NSString *  const FTNetworkingTypeObject;
+extern NSString *  const FTNetworkingTypeKeyevent;
+extern NSString *  const FTNetworkingTypeLogging;
+
+extern NSString *  const FT_NETWORKING_API_METRICS;
+extern NSString *  const FT_NETWORKING_API_OBJECT;
+extern NSString *  const FT_NETWORKING_API_KEYEVENT;
+extern NSString *  const FT_NETWORKING_API_LOGGING;
 
