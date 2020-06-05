@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 转换后字典
  */
 + (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString;
++ (id)repleacingSpecialCharactersField:(id )str;
 /**
  *  @abstract
  *  清除字符串前后的空格

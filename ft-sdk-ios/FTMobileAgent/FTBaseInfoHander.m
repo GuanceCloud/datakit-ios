@@ -650,6 +650,15 @@
     }
     
 }
++ (id)repleacingSpecialCharactersField:(id )str{
+    if ([str isKindOfClass:NSString.class]) {
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+        return reStr;
+    }else{
+        return str;
+    }
+    
+}
 + (id)repleacingSpecialCharactersMeasurement:(id )str{
     if ([str isKindOfClass:NSString.class]) {
         NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
