@@ -18,6 +18,7 @@
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
+#import "FTMonitorUtils.h"
 
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
@@ -203,6 +204,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [dataTask resume];
 }
 - (void)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
+    
     // 待处理 object 类型
     NSURLRequest *request = [self writeObjectRequestWithURL:url datas:events];
     //设置网络请求的返回接收器
@@ -216,7 +218,17 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     return  [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
 }
 -(NSURLRequest *)writeObjectRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
-    return  [self getRequestWithURL:url body:@"" contentType:@"application/json"];
+    NSMutableArray *list = [NSMutableArray new];
+    [datas enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
+        NSMutableDictionary *tag = [item valueForKey:@"__tags"];
+        [tag addEntriesFromDictionary:self.basicTags];
+        [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
+        [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
+        [item setValue:tag forKey:@"__tags"];
+        [list addObject:item];
+    }];
+    return  [self getRequestWithURL:url body:[self arrayToJSONString:list] contentType:@"application/json"];
 }
 -(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
@@ -226,7 +238,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
      [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
      [mutableRequest addValue:contentType forHTTPHeaderField:@"Content-Type"];
      [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
-     
+     [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
      //设置请求参数
      [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
@@ -239,6 +251,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
      }
      return mutableRequest;
 }
+
 #pragma mark - request
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(FTURLTaskCompletionHandler)completionHandler {
     return [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -298,6 +311,13 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
                       });
     }];
     return requestDatas;
+}
+- (NSString *)arrayToJSONString:(NSArray *)array {
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:NSJSONWritingPrettyPrinted error:&error];
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    ZYDebug(@"jsonArray = %@",jsonString);
+    return jsonString;
 }
 - (NSDictionary *)basicTags{
     if (!_basicTags) {

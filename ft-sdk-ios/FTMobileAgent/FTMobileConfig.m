@@ -19,24 +19,29 @@
 @implementation FTMobileConfig
 
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
-     if (self = [super init]) {
-         _metricsUrl = metricsUrl;
-         _datawayToken = token;
-         _akId = akId;
-         _akSecret = akSecret;
-         _enableRequestSigning = enableRequestSigning;
-         _sdkAgentVersion = SDK_VERSION;
-         _appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
-         _enableLog = NO;
-         _autoTrackEventType = FTAutoTrackTypeNone;
-         _enableAutoTrack = NO;
-         _needBindUser = NO;
-         _enableScreenFlow = NO;
-         _XDataKitUUID = [self ft_defaultUUID];
-         _enableDescLog = NO;
-         _enableTrackAppCrash= NO;
-         _collectRate = 1;
-        }
+    if (self = [super init]) {
+        _metricsUrl = metricsUrl;
+        _datawayToken = token;
+        _akId = akId;
+        _akSecret = akSecret;
+        _enableRequestSigning = enableRequestSigning;
+        _sdkAgentVersion = SDK_VERSION;
+        _appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
+        _enableLog = NO;
+        _autoTrackEventType = FTAutoTrackTypeNone;
+        _enableAutoTrack = NO;
+        _needBindUser = NO;
+        _enableScreenFlow = NO;
+        _XDataKitUUID = [self ft_defaultUUID];
+        _enableDescLog = NO;
+        _enableTrackAppCrash= NO;
+        _collectRate = 1;
+#ifdef DEBUG
+        _loggingEvn = @"dev";
+#else
+        _loggingEvn = @"release";
+#endif
+    }
       return self;
 }
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token{
@@ -63,6 +68,7 @@
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.collectRate = self.collectRate;
+    options.loggingEvn = self.loggingEvn;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

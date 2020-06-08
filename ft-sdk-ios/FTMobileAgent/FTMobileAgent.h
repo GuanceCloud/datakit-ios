@@ -96,6 +96,18 @@ NS_ASSUME_NONNULL_BEGIN
  * @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
 */
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
+
+-(void)loggingBackground:(FTLoggingBean *)logging;
+-(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+-(void)loggingImmediateList:(NSArray <FTLoggingBean *> *)loggingList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+-(void)reportObjectBackground:(NSString *)name tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr;
+-(void)reportObjectImmediate:(NSString *)name tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+
+-(void)reportObjecImmediatetList:(NSArray <FTObjectBean *> *)name callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+
+-(void)keyeventBackground:(FTKeyeventBean *)keyevent;
+-(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+-(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 /**
  * 绑定用户信息
  * @param name      用户名

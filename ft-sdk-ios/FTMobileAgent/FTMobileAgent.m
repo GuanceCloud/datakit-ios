@@ -237,6 +237,156 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
     [self flowTrack:product traceId:traceId name:name parent:parent tags:tags duration:duration field:field withTrackType:FTTrackTypeCode];
 }
+-(void)loggingBackground:(FTLoggingBean *)logging{
+    if (logging.measurement.length>0 && logging.content.length>0) {
+        NSMutableDictionary *tagDict = @{@"__class":@"tracing"}.mutableCopy;
+        [tagDict setValue:logging.status forKey:@"__status"];
+        [tagDict setValue:logging.serviceName forKey:@"__serviceName"];
+        [tagDict setValue:logging.env forKey:@"__env"];
+        [tagDict setValue:logging.parentID forKey:@"__parentID"];
+        [tagDict setValue:logging.operationName forKey:@"__operationName"];
+        [tagDict setValue:logging.spanID forKey:@"__spanID"];
+        [tagDict setValue:logging.traceID forKey:@"__traceID"];
+        [tagDict setValue:[NSNumber numberWithInt:logging.errorCode] forKey:@"__errorCode"];
+        [tagDict addEntriesFromDictionary:logging.tags];
+        NSMutableDictionary *fieldDict = @{@"__content":logging.content}.mutableCopy;
+        [fieldDict setValue:[NSNumber numberWithInt:logging.duration] forKey:@"__duration"];
+        [fieldDict addEntriesFromDictionary:logging.field];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:logging.measurement tags:tagDict field:fieldDict op:@"cstmLogging" netType:FTNetworkingTypeLogging];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+
+    }else{
+      ZYLog(@"传入的第数据格式有误");
+    }
+}
+-(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    [self loggingImmediateList:@[logging] callBack:callBackStatus];
+}
+-(void)loggingImmediateList:(NSArray <FTLoggingBean *> *)loggingList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    NSParameterAssert(loggingList);
+       __block NSMutableArray *list = [NSMutableArray new];
+       [loggingList enumerateObjectsUsingBlock:^(FTLoggingBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+           if (obj.measurement.length>0 && obj.content.length>0) {
+               NSMutableDictionary *tagDict = @{@"__class":@"tracing"}.mutableCopy;
+               [tagDict setValue:obj.status forKey:@"__status"];
+               [tagDict setValue:obj.serviceName forKey:@"__serviceName"];
+               [tagDict setValue:obj.env forKey:@"__env"];
+               [tagDict setValue:obj.parentID forKey:@"__parentID"];
+               [tagDict setValue:obj.operationName forKey:@"__operationName"];
+               [tagDict setValue:obj.spanID forKey:@"__spanID"];
+               [tagDict setValue:obj.traceID forKey:@"__traceID"];
+               [tagDict setValue:[NSNumber numberWithInt:obj.errorCode] forKey:@"__errorCode"];
+               [tagDict addEntriesFromDictionary:obj.tags];
+               NSMutableDictionary *fieldDict = @{@"__content":obj.content}.mutableCopy;
+               [fieldDict setValue:[NSNumber numberWithInt:obj.duration] forKey:@"__duration"];
+               [fieldDict addEntriesFromDictionary:obj.field];
+               FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:tagDict field:fieldDict op:@"cstmLogging" netType:FTNetworkingTypeLogging];
+               [list addObject:model];
+           }else{
+               ZYLog(@"传入的第 %d 个数据格式有误",idx);
+           }
+       }];
+       if (list.count>0) {
+           [self trackUpload:list callBack:callBackStatus];
+       }else{
+           ZYLog(@"传入的数据格式有误");
+           callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+       }
+}
+-(void)reportObjectBackground:(NSString *)name tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr{
+    NSParameterAssert(name);
+    NSParameterAssert(classStr);
+    NSMutableDictionary *tag = @{@"__class":classStr}.mutableCopy;
+    [tag addEntriesFromDictionary:tags];
+    NSDictionary *dict = @{@"__name":name,
+                           @"__tags":tag,
+    };
+    FTRecordModel *model = [FTRecordModel new];
+    model.op = FTNetworkingTypeObject;
+    model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+}
+-(void)reportObjectImmediate:(NSString *)name tags:(NSDictionary *)tags classStr:(NSString *)classStr callBack:(nullable void (^)(NSInteger, id _Nullable))callBackStatus{
+    NSParameterAssert(name);
+    NSParameterAssert(classStr);
+    FTObjectBean *bean = [FTObjectBean new];
+    bean.name = name;
+    bean.tags = tags;
+    bean.classStr = classStr;
+    [self reportObjectImmediateList:@[bean] callBack:callBackStatus];
+}
+-(void)reportObjectImmediateList:(NSArray<FTObjectBean *> *)objectList callBack:(void (^)(NSInteger, id _Nullable))callBackStatus{
+    NSParameterAssert(objectList);
+    __block NSMutableArray *list = [NSMutableArray new];
+    [objectList enumerateObjectsUsingBlock:^(FTObjectBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.name.length>0 && obj.classStr.length>0) {
+            NSMutableDictionary *tag = @{@"__class":obj.classStr}.mutableCopy;
+            [tag addEntriesFromDictionary:obj.tags];
+            NSDictionary *dict = @{@"__name":obj.name,
+                                   @"__tags":tag,
+            };
+            FTRecordModel *model = [FTRecordModel new];
+            model.op = FTNetworkingTypeObject;
+            model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+            [list addObject:model];
+        }else{
+            ZYLog(@"传入的第 %d 个数据格式有误",idx);
+        }
+    }];
+    if (list.count>0) {
+        [self trackUpload:list callBack:callBackStatus];
+    }else{
+        ZYLog(@"传入的数据格式有误");
+        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+    }
+}
+-(void)keyeventBackground:(FTKeyeventBean *)keyevent{
+    if (keyevent.title.length == 0) {
+        return;
+    }
+    FTRecordModel *model = [self getKeyeventModel:keyevent];
+    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+}
+-(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    [self keyeventImmediateList:@[keyevent] callBack:callBackStatus];
+}
+-(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    NSParameterAssert(keyeventList);
+    __block NSMutableArray *list = [NSMutableArray new];
+    [keyeventList enumerateObjectsUsingBlock:^(FTKeyeventBean * _Nonnull keyevent, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (keyevent.title.length>0) {
+            [list addObject:[self getKeyeventModel:keyevent]];
+        }else{
+            ZYLog(@"传入的第 %d 个数据格式有误",idx);
+        }
+    }];
+    if (list.count>0) {
+        [self trackUpload:list callBack:callBackStatus];
+    }else{
+        ZYLog(@"传入的数据格式有误");
+        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+    }
+}
+- (FTRecordModel *)getKeyeventModel:(FTKeyeventBean *)keyevent{
+    NSString *measurement = @"__keyevent";
+    NSMutableDictionary *tags = [NSMutableDictionary new];
+    [tags setValue:keyevent.eventId forKey:@"__eventId"];
+    [tags setValue:keyevent.source forKey:@"__source"];
+    [tags setValue:keyevent.status forKey:@"__status"];
+    [tags setValue:keyevent.ruleId forKey:@"__ruleId"];
+    [tags setValue:keyevent.ruleName forKey:@"__ruleName"];
+    [tags setValue:keyevent.type forKey:@"__type"];
+    [tags setValue:keyevent.actionType forKey:@"__actionType"];
+    [tags addEntriesFromDictionary:keyevent.tags];
+    
+    NSMutableDictionary *field = @{@"__title":keyevent.title};
+    [field setValue:keyevent.content forKey:@"__content"];
+    [field setValue:keyevent.suggestion forKey:@"__suggestion"];
+    [field setValue:[NSNumber numberWithInt:keyevent.duration] forKey:@"__duration"];
+    [field setValue:keyevent.dimensions forKey:@"__dimensions"];
+    
+    return  [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FTNetworkingTypeKeyevent netType:FTNetworkingTypeKeyevent];
+}
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     NSParameterAssert(name);
     NSParameterAssert(Id);
@@ -378,6 +528,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *tag = @{@"__status":@"error",
                           @"__class":@"tracing",
                           @"__serviceName":@"dataflux sdk",
+                          @"__evn":self.config.loggingEvn,
     };
     NSDictionary *filed = @{@"__content":content};
    
@@ -397,7 +548,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [tagsDict addEntriesFromDictionary:tags];
     }
-    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]&&![op isEqualToString:@"exception"]) {
+    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]&&![op isEqualToString:@"exception"] && ![type isEqualToString:FTNetworkingTypeLogging]) {
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
             [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
@@ -495,6 +646,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
+        [[FTMobileAgent sharedInstance] reportObjectImmediate:[[UIDevice currentDevice] identifierForVendor].UUIDString tags:nil classStr:@"Dataflux iOS SDK" callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+            ZYDebug(@"statusCode = %ld",(long)statusCode);
+        }];
     }
     @catch (NSException *exception) {
         ZYLog(@"applicationDidBecomeActive exception %@",exception);
