@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*设置是否需要采集崩溃日志*/
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /*崩溃日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义*/
-@property (nonatomic, copy) NSString *loggingEvn;
+@property (nonatomic, copy) NSString *loggingEnv;
 /**
  * 设置采样率 0-1 默认为 1
  */

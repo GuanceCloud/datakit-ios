@@ -37,9 +37,9 @@
         _enableTrackAppCrash= NO;
         _collectRate = 1;
 #ifdef DEBUG
-        _loggingEvn = @"dev";
+        _loggingEnv = @"dev";
 #else
-        _loggingEvn = @"release";
+        _loggingEnv = @"release";
 #endif
     }
       return self;
@@ -68,7 +68,7 @@
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.collectRate = self.collectRate;
-    options.loggingEvn = self.loggingEvn;
+    options.loggingEnv = self.loggingEnv;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

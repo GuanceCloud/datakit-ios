@@ -549,7 +549,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *tag = @{FT_KEY_STATUS:@"error",
                           FT_KEY_CLASS:@"tracing",
                           FT_KEY_SERVICENAME:@"dataflux sdk",
-                          FT_KEY_ENV:self.config.loggingEvn,
+                          FT_KEY_ENV:self.config.loggingEnv,
                           FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
     };
     NSDictionary *filed = @{FT_KEY_CONTENT:content};
