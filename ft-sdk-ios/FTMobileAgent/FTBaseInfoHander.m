@@ -19,7 +19,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
-
+#import "FTTrackBean.h"
 @implementation FTBaseInfoHander : NSObject
 #pragma mark ========== 设备信息 ==========
 + (NSDictionary *)ft_getDeviceInfo{
@@ -682,5 +682,26 @@
         ZYDebug(@"verifyProductStr %@",exception);
     }
     return result;
+}
++(NSString *)getFTstatueStr:(FTStatus)status{
+    NSString *str = nil;
+    switch (status) {
+        case FTStatusInfo:
+            str = @"info";
+            break;
+        case FTStatusWarning:
+            str = @"warning";
+            break;
+        case FTStatusError:
+            str = @"error";
+            break;
+        case FTStatusCritical:
+            str = @"critical";
+            break;
+        case FTStatusOk:
+            str = @"ok";
+            break;
+    }
+    return str;
 }
 @end

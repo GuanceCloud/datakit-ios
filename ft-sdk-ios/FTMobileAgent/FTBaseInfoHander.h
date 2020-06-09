@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-
+#import "FTTrackBean.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTBaseInfoHander : NSObject
@@ -84,6 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  MD5 32位 大写
 */
 + (NSString *)ft_md5EncryptStr:(NSString *)string;
+/**
+ *  @abstract
+ *  FTStatus 字符串转换
+*/
++(NSString *)getFTstatueStr:(FTStatus)status;
 @end
 
 NS_ASSUME_NONNULL_END
