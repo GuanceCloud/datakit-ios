@@ -668,8 +668,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
-        [[FTMobileAgent sharedInstance] objectImmediate:[[UIDevice currentDevice] identifierForVendor].UUIDString deviceUUID:nil tags:nil classStr:@"Dataflux iOS SDK" callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-            ZYDebug(@"statusCode = %ld",(long)statusCode);
+        NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+        NSDictionary *tag = @{FT_KEY_CLASS:@"Dataflux iOS SDK",
+                                     FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
+        };
+       NSDictionary *dict = @{FT_KEY_NAME:deviceUUID,
+                              FT_KEY_TAGS:tag,
+                              FT_AGENT_OP:FTNetworkingTypeObject
+       };
+       FTRecordModel *model = [FTRecordModel new];
+       model.op = FTNetworkingTypeObject;
+       model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+        [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+            ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
         }];
     }
     @catch (NSException *exception) {

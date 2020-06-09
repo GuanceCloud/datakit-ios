@@ -222,9 +222,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [datas enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
         NSMutableDictionary *tag = [item valueForKey:@"__tags"];
-        [tag addEntriesFromDictionary:self.basicTags];
-        [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
-        [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
+        if ([[item allKeys] containsObject:FT_AGENT_OP]) {
+            [tag addEntriesFromDictionary:self.basicTags];
+            [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
+            [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
+        }
         [item setValue:tag forKey:@"__tags"];
         [list addObject:item];
     }];
