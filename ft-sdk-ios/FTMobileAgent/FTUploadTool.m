@@ -67,7 +67,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
-        if ([self.field isEqualToString:FT_FLOW_DURATION]) {
+        if ([self.field isEqualToString:FT_KEY_DURATION]) {
             return [NSString stringWithFormat:@"%@=%@i", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];;
         }
         if([self.value isKindOfClass:NSString.class]){
