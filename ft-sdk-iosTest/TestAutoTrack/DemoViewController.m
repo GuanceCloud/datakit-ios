@@ -15,6 +15,8 @@
 #import "TestSubFlowTrack.h"
 #import "TestSubFlowTrack2.h"
 #import "TestBluetoothList.h"
+#import "TestCustomTrackVC.h"
+
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -27,7 +29,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_trackBackgroud",@"Test_trackImmediate",@"Test_trackImmediateList",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_Exception"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -58,37 +60,12 @@
 - (void)testUserLogout{
     [[FTMobileAgent sharedInstance] logout];
 }
-- (void)testTrackBackgroud{
-    [[FTMobileAgent sharedInstance] trackBackground:@"track ,Test" tags:nil field:@{@"ev，ent":@"te s，t"}];
+- (void)testCustomTrack{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestCustomTrackVC new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
 }
-- (void)testTrackImmediate{
-    [[FTMobileAgent sharedInstance] trackImmediate:@"testImmediateList" field:@{@"test":@"testImmediate"} callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-}
-- (void)testTrackImmediateList{
-    //bean1 用户自己传时间  bean2 自动赋值
-    FTTrackBean *bean1 = [FTTrackBean new];
-    bean1.measurement = @"testImmediateList";
-    bean1.field =@{@"test":@"testImmediateList"};
-    NSDate *datenow = [NSDate date];
-    long time= (long)([datenow timeIntervalSince1970]*1000);
-    bean1.timeMillis =time;
-    FTTrackBean *bean2 = [FTTrackBean new];
-    bean2.measurement = @"testImmediateList2";
-    bean2.field =@{@"test":@"testImmediateList2"};
-    
-    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean1,bean2] callBack:^(NSInteger statusCode, id  _Nonnull responseObject) {
-        NSLog(@"responseObject = %@",responseObject);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-    
-}
+
 - (void)testFlowTrack{
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestFlowTrackVC new] animated:YES];
@@ -178,7 +155,7 @@
     [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
     
 }
-- (void)testException{
+- (void)testCrashLog{
     NSString *value = nil;
     NSDictionary *dict = @{@"11":value};
 }
@@ -202,49 +179,43 @@
             [self testUserLogout];
             break;
         case 2:
-            [self testTrackBackgroud];
+            [self testCustomTrack];
             break;
         case 3:
-            [self testTrackImmediate];
-            break;
-        case 4:
-            [self testTrackImmediateList];
-            break;
-        case 5:
             [self testFlowTrack];
             break;
-        case 6:
+        case 4:
             [self testAutoTrack];
             break;
-        case 7:
+        case 5:
             [self testSubFlowTrack];
             break;
-        case 8:
+        case 6:
             [self testSubFlowTrack2];
             break;
-        case 9:
+        case 7:
             [self testResetConfig];
             break;
-        case 10:
+        case 8:
             [self testStartLocation];
             break;
-        case 11:
+        case 9:
             [self testStartMonitorFlush];
             break;
-        case 12:
+        case 10:
             [self testStopMonitorFlush];
             break;
-        case 13:
+        case 11:
             [self testConnectBluetooth];
             break;
-        case 14:
+        case 12:
             [self testAddPageDesc];
             break;
-        case 15:
+        case 13:
             [self testAddVtpDesc];
             break;
-            case 16:
-            [self testException];
+        case 14:
+            [self testCrashLog];
         default:
             break;
     }

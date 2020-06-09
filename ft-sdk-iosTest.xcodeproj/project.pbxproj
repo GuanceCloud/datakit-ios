@@ -37,6 +37,7 @@
 		4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B862416091200552B6D /* SubFlowTrackCell.m */; };
 		4AAF2B8A24163B6200552B6D /* TestSubFlowTrack2.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */; };
 		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4AE92782248F313B00F43875 /* TestCustomTrackVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AE92781248F313A00F43875 /* TestCustomTrackVC.m */; };
 		4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */; };
 		4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
 		4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E29864C858A9804D89DB94AD /* Pods_ft_sdk_iosTest.framework */; };
@@ -143,6 +144,8 @@
 		4AAF2B862416091200552B6D /* SubFlowTrackCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SubFlowTrackCell.m; sourceTree = "<group>"; };
 		4AAF2B8824163B6200552B6D /* TestSubFlowTrack2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestSubFlowTrack2.h; sourceTree = "<group>"; };
 		4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSubFlowTrack2.m; sourceTree = "<group>"; };
+		4AE92780248F313A00F43875 /* TestCustomTrackVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestCustomTrackVC.h; sourceTree = "<group>"; };
+		4AE92781248F313A00F43875 /* TestCustomTrackVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestCustomTrackVC.m; sourceTree = "<group>"; };
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -309,6 +312,8 @@
 				4AAF2B832416082200552B6D /* SubFlowTrack3.m */,
 				4AAF2B852416091200552B6D /* SubFlowTrackCell.h */,
 				4AAF2B862416091200552B6D /* SubFlowTrackCell.m */,
+				4AE92780248F313A00F43875 /* TestCustomTrackVC.h */,
+				4AE92781248F313A00F43875 /* TestCustomTrackVC.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -624,6 +629,7 @@
 				4AAF2B4E240FB19C00552B6D /* RootVController.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
+				4AE92782248F313B00F43875 /* TestCustomTrackVC.m in Sources */,
 				4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 			);
