@@ -281,7 +281,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [tagDict setValue:logging.spanID forKey:FT_KEY_SPANID];
     [tagDict setValue:logging.traceID forKey:FT_FLOW_TRACEID];
     [tagDict setValue:[NSNumber numberWithInt:logging.errorCode] forKey:FT_KEY_ERRORCODE];
-    [tagDict addEntriesFromDictionary:logging.tags];
+    [logging.tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+          if (![tagDict.allKeys containsObject:key]) {
+              [tagDict setValue:obj forKey:key];
+          }
+      }];
     NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
     if(logging.deviceUUID){
         uuid = logging.deviceUUID;
@@ -392,6 +396,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [tags setValue:keyevent.type forKey:FT_KEY_TYPE];
     [tags setValue:keyevent.actionType forKey:FT_KEY_ACTIONTYPE];
     [tags addEntriesFromDictionary:keyevent.tags];
+    [keyevent.tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        if (![tags.allKeys containsObject:key]) {
+            [tags setValue:obj forKey:key];
+        }
+    }];
     NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
     if(keyevent.deviceUUID){
         uuid = keyevent.deviceUUID;
