@@ -17,9 +17,9 @@ extern NSString * const FT_AGENT_OP;
 extern NSString * const FT_NULL_VALUE;
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
-extern NSString * const FT_FLOW_DURATION;
+extern NSString * const FT_KEY_DURATION;
 extern NSString * const FT_FLOW_TRACEID;
-extern NSString * const FT_FLOW_NAME;
+extern NSString * const FT_KEY_NAME;
 extern NSString * const FT_FLOW_PARENT;
 
 #pragma mark ========== autotrack  ==========
@@ -125,7 +125,7 @@ extern NSString *  const FTBaseInfoHanderDeviceCPUType;
 extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
 extern NSString *  const FTBaseInfoHanderBatteryTotal;
 extern NSString *  const FTBaseInfoHanderDeviceGPUType;
-
+#pragma mark ========== api ==========
 extern NSString *  const FTNetworkingTypeMetrics;
 extern NSString *  const FTNetworkingTypeObject;
 extern NSString *  const FTNetworkingTypeKeyevent;
@@ -135,4 +135,26 @@ extern NSString *  const FT_NETWORKING_API_METRICS;
 extern NSString *  const FT_NETWORKING_API_OBJECT;
 extern NSString *  const FT_NETWORKING_API_KEYEVENT;
 extern NSString *  const FT_NETWORKING_API_LOGGING;
+
+#pragma mark ========== object、keyevent ==========
+extern NSString *  const FT_KEYEVENT_MEASUREMENT;
+extern NSString *  const FT_KEY_EVENTID;;
+extern NSString *  const FT_KEY_SOURCE;
+extern NSString *  const FT_KEY_STATUS;
+extern NSString *  const FT_KEY_TAGS;
+extern NSString *  const FT_KEY_CLASS;
+extern NSString *  const FT_KEY_CONTENT;
+extern NSString *  const FT_KEY_SERVICENAME;
+extern NSString *  const FT_KEY_ENV;
+extern NSString *  const FT_KEY_PARENTID;
+extern NSString *  const FT_KEY_OPERATIONNAME;
+extern NSString *  const FT_KEY_SPANID;
+extern NSString *  const FT_KEY_ERRORCODE;
+extern NSString *  const FT_KEY_RULEID;
+extern NSString *  const FT_KEY_RULENAME;
+extern NSString *  const FT_KEY_TYPE;
+extern NSString *  const FT_KEY_ACTIONTYPE;
+extern NSString *  const FT_KEY_TITLE;
+extern NSString *  const FT_KEY_SUGGESTION;
+extern NSString *  const FT_KEY_DISMENSIONS;
 

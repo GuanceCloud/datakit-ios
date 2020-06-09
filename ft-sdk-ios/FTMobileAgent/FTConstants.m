@@ -16,11 +16,11 @@ NSString * const FT_AGENT_OP  = @"op";
 
 NSString * const FT_NULL_VALUE  = @"N/A";
 
-NSString * const FT_FLOW_CHART_PRODUCT  = @"$flow_mobile_activity";
-NSString * const FT_FLOW_DURATION  = @"$duration";
-NSString * const FT_FLOW_TRACEID  = @"$traceId";
-NSString * const FT_FLOW_NAME  = @"$name";
-NSString * const FT_FLOW_PARENT  = @"$parent";
+NSString * const FT_FLOW_CHART_PRODUCT  = @"__flow_mobile_activity";
+NSString * const FT_KEY_DURATION  = @"__duration";
+NSString * const FT_FLOW_TRACEID  = @"__traceId";
+NSString * const FT_KEY_NAME  = @"__name";
+NSString * const FT_FLOW_PARENT  = @"__parent";
 
 
 #pragma mark ========== AUTOTRACK  ==========
@@ -133,6 +133,7 @@ NSString *const FTBaseInfoHanderDeviceCPUClock = @"FTBaseInfoHanderDeviceCPUCloc
 NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
 NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
 
+#pragma mark ========== API ==========
 NSString *const FTNetworkingTypeMetrics = @"metrics";
 NSString *const FTNetworkingTypeObject = @"object";
 NSString *const FTNetworkingTypeKeyevent = @"keyevent";
@@ -142,4 +143,31 @@ NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metrics";
 NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
 NSString *const FT_NETWORKING_API_KEYEVENT = @"/v1/write/keyevent";
 NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
+
+#pragma mark ========== object、keyevent ==========
+NSString *const FT_KEYEVENT_MEASUREMENT = @"__keyevent";
+NSString *const FT_KEY_EVENTID = @"__eventId";
+NSString *const FT_KEY_SOURCE = @"__source";
+NSString *const FT_KEY_STATUS = @"__status";
+NSString *const FT_KEY_TAGS = @"__tags";
+NSString *const FT_KEY_CLASS = @"__class";
+NSString *const FT_KEY_CONTENT = @"__content";
+NSString *const FT_KEY_SERVICENAME = @"__serviceName";
+NSString *const FT_KEY_ENV = @"__env";
+NSString *const FT_KEY_PARENTID = @"__parentID";
+NSString *const FT_KEY_OPERATIONNAME = @"__operationName";
+NSString *const FT_KEY_SPANID = @"__spanID";
+NSString *const FT_KEY_ERRORCODE = @"__errorCode";
+NSString *const FT_KEY_RULEID = @"__ruleId";
+NSString *const FT_KEY_RULENAME = @"__ruleName";
+NSString *const FT_KEY_TYPE = @"__type";
+NSString *const FT_KEY_ACTIONTYPE = @"__actionType";
+NSString *const FT_KEY_TITLE = @"__title";
+NSString *const FT_KEY_SUGGESTION = @"__suggestion";
+NSString *const FT_KEY_DISMENSIONS = @"__dimensions";
+
+
+
+
+
 
