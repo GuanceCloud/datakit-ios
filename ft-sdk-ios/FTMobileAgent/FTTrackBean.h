@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 ///事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
 typedef NS_ENUM(NSInteger, FTStatus) {
-    FTStatusInfo         = 1,
+    FTStatusInfo         = 0,
     FTStatusWarning,
     FTStatusError,
     FTStatusCritical,
