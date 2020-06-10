@@ -210,7 +210,28 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  前提：设置全埋点 `enableAutoTrack =  YES;`。        
  设置 `enableScreenFlow = YES;` 时 ，将自动抓取视图跳转流程图。[具体流程图相关](#八流程图)。
 
+### 7. 设置采集率
+ 
+  ``` objective-c
+  /**
+ * 设置采样率 0-1 默认为 1
+ */
+@property (nonatomic, assign) float collectRate;
+  ```
+  
+### 8. 是否需要采集崩溃日志
+  ``` 
+  /**
+   *设置是否需要采集崩溃日志 默认为NO
+   */
+@property (nonatomic, assign) BOOL enableTrackAppCrash;
 
+ /**
+   * 崩溃日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义
+   */
+@property (nonatomic, copy) NSString *loggingEnv;
+  ```
+   
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
 
@@ -316,46 +337,32 @@ typedef enum FTError : NSInteger {
    ```
 
 
-## 六、主动埋点方法
- DF SDK 公开了 4 个埋点方法，用户通过这两个方法可以在需要的地方实现埋点，然后将数据上传到服务端。
+## 六、主动上报方法
+ DF SDK 公开了 4 类上报方法 。    
+ 
+1.  上报主动埋点
+2. 上报日志
+3. 上报对象数据
+4. 上报事件数据 
 
-### 1. 方法一：
-
-```objective-c
-  /**
-追踪自定义事件。 存储数据库，等待上传
- @param measurement      指标（必填）
- @param field            指标值（必填）
-*/ 
-- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field;
-```
-
-### 2. 方法二：
+### 1.上报主动埋点
+* background方法    
 
 ```objective-c
-/**
+
+ /**
  追踪自定义事件。 存储数据库，等待上传
  
  @param measurement      指标（必填）
  @param tags             标签（选填）
  @param field            指标值（必填）
  */
+- (void)trackBackgroud:(NSString *)measurement field:(NSDictionary *)field; 
+
 - (void)trackBackgroud:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field;
 ```
 
-### 3. 方法三：
-
-```objective-c
-/**
- 追踪自定义事件。  立即上传 回调上传结果
- @param measurement      当前数据点所属的指标集
- @param field            自定义指标
-*/
-- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
-
-```
-
-### 4. 方法四：
+* immediate 方法    
 
 ```objective-c
 /**
@@ -364,36 +371,30 @@ typedef enum FTError : NSInteger {
 @param tags             自定义标签
 @param field            自定义指标
 */
+- (void)trackImmediate:(NSString *)measurement  field:(nullable NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
+
 - (void)trackImmediate:(NSString *)measurement tags:(nullable NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode,_Nullable id responseObject))callBackStatus;
 
-```
-
-### 5. 方法五：（批量上传）
-
-```objective-c
 /**
 主动埋点，可多条上传。   立即上传 回调上传结果
 @param trackList     主动埋点数据数组
 */
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
-
-```
-**FTTrackBean** 的属性：
-
-```objective-c
-//当前数据点所属的指标集 (必须)
-@property (nonatomic, strong) NSString *measurement;
-//自定义标签 （可选）
-@property (nonatomic, strong) NSDictionary *tags;
-//自定义指标 (必须)
-@property (nonatomic, strong) NSDictionary *field;
-//需要为毫秒级13位时间戳 (可选)
-@property (nonatomic, assign) long long  timeMillis;
-
 ```
 
 
-### 6. 方法使用示例
+* **FTTrackBean** 的属性：
+ 
+
+| 属性名 | 类型 |必需|说明|
+|--------|--------|--------|--------|
+|    measurement    |   NSString     |   是     |  当前数据点所属的指标集      |
+|    tags    |  NSDictionary      |     否  |   自定义标签     |
+|    field    | NSDictionary       |   是    |  自定义指标      |
+|    timeMillis    | long long       |   否    |  需要为毫秒级13位时间戳      |
+
+
+ * 方法使用示例
 
 ```objective-c
  //等待上传
@@ -407,6 +408,192 @@ typedef enum FTError : NSInteger {
    
 ```
 
+### 2.上报日志
+* background方法 
+
+```
+-(void)loggingBackground:(FTLoggingBean *)logging;
+``` 
+
+* immediate 方法   
+
+```
+//单条
+-(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+//多条
+-(void)loggingImmediateList:(NSArray <FTLoggingBean *> *)loggingList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+
+```   
+
+*  **FTLoggingBean** 的属性    
+
+| 属性名 | 类型 |必需|说明|
+|--------|--------|--------|--------|
+|    measurement    |   NSString     |   是     |  指定当前日志的来源，比如如果来源于 Ngnix，可指定为 Nginx，同一应用产生的日志 应该一样      |
+|    content    |  NSString      |     是  |   日志内容，纯文本或 JSONString 都可以      |
+|    source    | NSString       |   否    |  日志来源，日志上报后，会自动将指定的指标集名作为该标签附加到该条日志上      |
+|    serviceName    |  NSString      |   否    |  日志所属业务或服务的名称，建议用户通过该标签指定产生该日志业务系统的名称     |
+|    env    |  NSString      |   否    |  日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义    |
+|    serviceName    |  NSString      |   否    |  日志所属业务或服务的名称，建议用户通过该标签指定产生该日志业务系统的名称     |
+|    status    |  FTStatus      |   否    |  日志等级，状态，info：提示，warning：警告，error：错误，critical：严重，ok：成功，默认：info     |
+|    parentID    |  NSString      |   否    |  用于链路日志，表示当前 span 的上一个 span的 ID   |
+|    operationName    |  NSString      |   否    |  用于链路日志，表示当前 span 操作名，也可理解为 span 名称    |
+|    spanID    |  NSString      |   否    |  用于链路日志，表示当前 span 的 ID    |
+|    traceID    |  NSString      |   否    |  用于链路日志，表示当前链路的 ID    |
+|    errorCode    |  int      |   否    |  用于链路日志，请求的响应代码，例如 200 表示请求成功     |
+|    tags    |  NSDictionary      |   否    |  自定义标签   |
+|    field    |  NSDictionary      |   否    |  自定义指标  （可选）   |
+|    deviceUUID    |  NSString      |   否    |  设备UUID    |
+|    duration    |  int      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
+    
+ * 方法使用示例
+ 
+```
+//等待上传
+ FTLoggingBean *logging = [FTLoggingBean new];
+    logging.measurement = @"Test";
+    logging.content = @"TestLoggingBackground";
+    [[FTMobileAgent sharedInstance] loggingBackground:logging];
+```       
+ 
+``` 
+//立即上传
+  FTLoggingBean *logging = [FTLoggingBean new];
+    logging.measurement = @"Test";
+    logging.content = @"TestLogging";
+    [[FTMobileAgent sharedInstance] loggingImmediate:logging callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+        NSLog(@"statusCode = %ld",(long)statusCode);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self showResult:statusCode==200?@"success":@"fail"];
+        });
+    }];
+```
+
+### 3.上报对象数据  
+* background方法 
+
+```
+/**
+上报对象。         数据库存储
+@param name      对象名称 当前对象的名称，同一个分类下，对象名称如果重复，会覆盖原有数据
+@param deviceUUID    设备UUID
+@param tags          自定义标签
+@param classStr              对象分类 当前对象的分类，分类值用户可自定义
+*/
+
+-(void)objectBackground:(NSString *)name deviceUUID:(nullable NSString *)deviceUUID tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr;
+``` 
+
+* immediate 方法   
+
+```
+//单条
+/**
+上报对象。         立即上传
+@param name      对象名称 当前对象的名称，同一个分类下，对象名称如果重复，会覆盖原有数据
+@param deviceUUID    设备UUID
+@param tags          自定义标签
+@param classStr              对象分类 当前对象的分类，分类值用户可自定义
+*/
+-(void)objectImmediate:(NSString *)name deviceUUID:(nullable NSString *)deviceUUID tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+//多条
+-(void)objectImmediateList:(NSArray <FTObjectBean *> *)name callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+
+```    
+
+*  **FTObjectBean** 的属性  
+ 
+| 属性名 | 类型 |必需|说明|
+|--------|--------|--------|--------|
+|    name    |   NSString     |   是     |  当前对象的名称，同一个分类下，对象名称如果重复，会覆盖原有数据      |
+|    classStr |  NSDictionary      |     是  |   当前对象的分类，分类值用户可自定义    |
+|    tags    | NSDictionary     |  否    |  当前对象的标签，key-value 对，其中存在保留标签  （可选）      |
+|    deviceUUID   | NSString       |   否    |  设备UUID  |
+
+
+* 方法使用示例   
+
+```
+[[FTMobileAgent sharedInstance] objectBackground:@"TestObjectBackground" deviceUUID:nil tags:nil classStr:@"ObjectBackground"];
+```
+```
+    FTObjectBean *object1 = [FTObjectBean new];
+    object1.name =@"TestObjectImmediateList";
+    object1.classStr = @"ObjectImmediateList1";
+    FTObjectBean *object2 = [FTObjectBean new];
+    object2.name =@"TestObjectImmediateList";
+    object2.classStr = @"ObjectImmediateList2";
+    [[FTMobileAgent sharedInstance] objectImmediateList:@[object1,object2] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+        NSLog(@"statusCode = %ld",(long)statusCode);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self showResult:statusCode==200?@"success":@"fail"];
+        });
+    }];
+
+```
+
+
+### 4.上报事件数据 
+
+* background方法 
+
+```
+-(void)keyeventBackground:(FTKeyeventBean *)keyevent;
+
+```   
+
+* immediate 方法    
+ 
+```
+-(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+-(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+```   
+   
+*  **FTKeyeventBean** 的属性    
+   
+   
+| 属性名 | 类型 |必需|说明|
+|--------|--------|--------|--------|
+|    title    |   NSString     |   是     |  关键事件标题     |
+|    eventId  |  NSString      |     否  |   相关事件，__eventID 需相同   |
+|    source    | NSString       |  否    |  事件的来源，保留值 datafluxTrigger 表示来自触发器    |
+|    status    | FTStatus       |   否    | 事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info |
+|    ruleId  |  NSString      |     否  |   触发器对应的触发规则id   |
+|    ruleName   | NSString   |  否    |  触发器对应的触发规则名|
+|    type    | NSString       |   否    | 保留值 noData 表示无数据告警|
+|    ruleId  |  NSString      |     否  |   触发器对应的触发规则id   |
+|    ruleName   | NSString   |  否    |  触发器对应的触发规则名|
+|    actionType    | NSString  |   否    | 触发动作 |
+|    tags   | NSDictionary   |  否    |  用户自定义的标签|
+|    content    | NSString       |   否    | 事件内容 支持 markdown 格式|
+|    suggestion  |  NSString   |   否  |   事件处理建议 支持 markdown 格式   |
+|    duration   | int   |  否    |  事件的持续时间 单位为微秒|
+|    dimensions    | NSString （JSONString ） |   否    | 触发维度 JSONString  例如：假设新建触发规则时设置的触发维度为 host,cpu，则该值为 ["host","cpu"] |
+|    deviceUUID  |  NSString   |   否  |   设备UUID   |
+
+ 
+* 方法使用示例   
+
+```
+ FTKeyeventBean *key = [FTKeyeventBean new];
+ key.title = @"testKeyeventBackground";
+ key.content = @"测试KeyeventBackground";
+ [[FTMobileAgent sharedInstance] keyeventBackground:key];
+ 
+``` 
+
+```
+  FTKeyeventBean *key = [FTKeyeventBean new];
+  key.title = @"testKeyeventImmediate";
+  key.content = @"测试KeyeventImmediate";
+  [[FTMobileAgent sharedInstance] keyeventImmediate:key callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+        NSLog(@"statusCode = %ld",(long)statusCode);
+               dispatch_async(dispatch_get_main_queue(), ^{
+                   [self showResult:statusCode==200?@"success":@"fail"];
+               });
+   }];
+ 
+```   
 
 ## 七、用户的绑定与注销 
  FT SDK 提供了绑定用户和注销用户的方法，`FTMobileConfig` 属性 `needBindUser = YES ;`（默认为 `NO`）时，用户登录绑定后，才会进行数据的传输。   
