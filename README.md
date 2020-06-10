@@ -220,7 +220,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
   ```
   
 ### 8. 是否需要采集崩溃日志
-  ``` 
+  ```objective-c 
   /**
    *设置是否需要采集崩溃日志 默认为NO
    */
@@ -411,13 +411,13 @@ typedef enum FTError : NSInteger {
 ### 2.上报日志
 * background方法 
 
-```
+```objective-c
 -(void)loggingBackground:(FTLoggingBean *)logging;
 ``` 
 
 * immediate 方法   
 
-```
+```objective-c
 //单条
 -(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 //多条
@@ -448,7 +448,7 @@ typedef enum FTError : NSInteger {
     
  * 方法使用示例
  
-```
+```objective-c
 //等待上传
  FTLoggingBean *logging = [FTLoggingBean new];
     logging.measurement = @"Test";
@@ -456,7 +456,7 @@ typedef enum FTError : NSInteger {
     [[FTMobileAgent sharedInstance] loggingBackground:logging];
 ```       
  
-``` 
+```objective-c 
 //立即上传
   FTLoggingBean *logging = [FTLoggingBean new];
     logging.measurement = @"Test";
@@ -472,7 +472,7 @@ typedef enum FTError : NSInteger {
 ### 3.上报对象数据  
 * background方法 
 
-```
+```objective-c
 /**
 上报对象。         数据库存储
 @param name      对象名称 当前对象的名称，同一个分类下，对象名称如果重复，会覆盖原有数据
@@ -486,7 +486,7 @@ typedef enum FTError : NSInteger {
 
 * immediate 方法   
 
-```
+```objective-c
 //单条
 /**
 上报对象。         立即上传
@@ -513,10 +513,10 @@ typedef enum FTError : NSInteger {
 
 * 方法使用示例   
 
-```
+```objective-c
 [[FTMobileAgent sharedInstance] objectBackground:@"TestObjectBackground" deviceUUID:nil tags:nil classStr:@"ObjectBackground"];
 ```
-```
+```objective-c
     FTObjectBean *object1 = [FTObjectBean new];
     object1.name =@"TestObjectImmediateList";
     object1.classStr = @"ObjectImmediateList1";
@@ -537,14 +537,14 @@ typedef enum FTError : NSInteger {
 
 * background方法 
 
-```
+```objective-c
 -(void)keyeventBackground:(FTKeyeventBean *)keyevent;
 
 ```   
 
 * immediate 方法    
  
-```
+```objective-c
 -(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 -(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 ```   
@@ -574,7 +574,7 @@ typedef enum FTError : NSInteger {
  
 * 方法使用示例   
 
-```
+```objective-c
  FTKeyeventBean *key = [FTKeyeventBean new];
  key.title = @"testKeyeventBackground";
  key.content = @"测试KeyeventBackground";
@@ -582,7 +582,7 @@ typedef enum FTError : NSInteger {
  
 ``` 
 
-```
+```objective-c
   FTKeyeventBean *key = [FTKeyeventBean new];
   key.title = @"testKeyeventImmediate";
   key.content = @"测试KeyeventImmediate";
