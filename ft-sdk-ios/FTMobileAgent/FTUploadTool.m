@@ -116,7 +116,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         [self flushWithType:FTNetworkingTypeKeyevent];
         self.isUploading = NO;
     } @catch (NSException *exception) {
-        
+        ZYDebug(@"执行上传操作失败 %@",exception);
     }
 }
 -(void)flushWithType:(NSString *)type{
@@ -204,33 +204,36 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [dataTask resume];
 }
 - (void)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLTaskCompletionHandler)callBack{
-    
+    NSMutableArray *list = [NSMutableArray new];
+      [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+          NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
+          NSMutableDictionary *tag = [item valueForKey:@"__tags"];
+          if ([[item allKeys] containsObject:FT_AGENT_OP]) {
+              [tag addEntriesFromDictionary:self.basicTags];
+              [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
+              [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
+          }
+          [item setValue:tag forKey:@"__tags"];
+          [list addObject:item];
+      }];
     // 待处理 object 类型
-    NSURLRequest *request = [self writeObjectRequestWithURL:url datas:events];
+    NSURLRequest *request = [self writeObjectRequestWithURL:url datas:list];
     //设置网络请求的返回接收器
     NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
 }
+// metrics、logging、keyevent
 -(NSURLRequest *)lineProtocolRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
     NSString *requestData = [self getRequestDataWithEventArray:datas];
     ZYLog(@"requestData = %@",requestData);
     return  [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
 }
+// object
 -(NSURLRequest *)writeObjectRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
-    NSMutableArray *list = [NSMutableArray new];
-    [datas enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
-        NSMutableDictionary *tag = [item valueForKey:@"__tags"];
-        if ([[item allKeys] containsObject:FT_AGENT_OP]) {
-            [tag addEntriesFromDictionary:self.basicTags];
-            [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
-            [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
-        }
-        [item setValue:tag forKey:@"__tags"];
-        [list addObject:item];
-    }];
-    return  [self getRequestWithURL:url body:[self arrayToJSONString:list] contentType:@"application/json"];
+    NSString *requestData = [self arrayToJSONString:datas];
+    ZYLog(@"requestData = %@",requestData);
+    return  [self getRequestWithURL:url body:requestData contentType:@"application/json"];
 }
 -(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
@@ -277,7 +280,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     [self.session invalidateAndCancel];
     self.session = nil;
 }
-
+#pragma mark ========== requestHTTPBody 数据处理 ==========
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
