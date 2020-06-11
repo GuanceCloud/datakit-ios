@@ -160,9 +160,7 @@ static dispatch_once_t onceToken;
        [FTURLProtocol stopMonitor];
     }
     if([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]){
-        if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
             [[FTLocationManager sharedInstance] startUpdatingLocation];
-        }
     }else{
         [[FTLocationManager sharedInstance] stopUpdatingLocation];
     }
@@ -287,10 +285,10 @@ static dispatch_once_t onceToken;
     }
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     
-    // 2.创建输入流
+    // 创建输入流
     AVCaptureDeviceInput *input = [[AVCaptureDeviceInput alloc]initWithDevice:device error:nil];
     
-    // 3.创建设备输出流
+    // 创建设备输出流
     AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
     if (input == nil || output == nil) {
         ZYLog(@"模拟器无法获取环境光感参数");
@@ -310,9 +308,7 @@ static dispatch_once_t onceToken;
     if ([self.session canAddOutput:output]) {
         [self.session addOutput:output];
     }
-    
-    // 9.启动会话
-    [self.session startRunning];
+        [self.session startRunning];
 }
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
@@ -451,11 +447,12 @@ static dispatch_once_t onceToken;
         [field setObject:[NSNumber numberWithDouble:usage] forKey:FT_MONITOR_GPU_RATE];
     }
     if ([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]) {
-        [tag setValue:[FTLocationManager sharedInstance].location.province forKey:FT_MONITOR_PROVINCE];
-        [tag setValue:[FTLocationManager sharedInstance].location.city forKey:FT_MONITOR_CITY];
-        [tag setValue:[FTLocationManager sharedInstance].location.country forKey:FT_MONITOR_COUNTRY];
-        [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.latitude] forKey:FT_MONITOR_LATITUDE];
-        [field setValue:[NSNumber numberWithDouble:[FTLocationManager sharedInstance].location.coordinate.longitude] forKey:FT_MONITOR_LONGITUDE];
+        FTLocationInfo *location =[FTLocationManager sharedInstance].location;
+        [tag setValue:location.province forKey:FT_MONITOR_PROVINCE];
+        [tag setValue:location.city forKey:FT_MONITOR_CITY];
+        [tag setValue:location.country forKey:FT_MONITOR_COUNTRY];
+        [field setValue:[NSNumber numberWithDouble:location.coordinate.latitude] forKey:FT_MONITOR_LATITUDE];
+        [field setValue:[NSNumber numberWithDouble:location.coordinate.longitude] forKey:FT_MONITOR_LONGITUDE];
         NSString *gpsOpen = [[FTLocationManager sharedInstance] gpsServicesEnabled]==0?@"false":@"true";
         [tag setValue:gpsOpen forKey:FT_MONITOR_GPS_OPEN];
     }

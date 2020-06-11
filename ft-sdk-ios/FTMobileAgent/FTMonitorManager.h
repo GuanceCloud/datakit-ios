@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-@class CBUUID;
 @interface FTMonitorManager : NSObject
 /**
  * 获取 FTMonitorManager 单例
