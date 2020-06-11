@@ -179,12 +179,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 -(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id _Nullable responseObject))callBackStatus{
+    NSParameterAssert(measurement);
+    NSParameterAssert(field);
     [self trackImmediate:measurement tags:nil field:field callBack:callBackStatus];
 }
 - (void)trackImmediate:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field callBack:(void (^)(NSInteger, id _Nullable))callBackStatus{
+    NSParameterAssert(measurement);
+    NSParameterAssert(field);
     @try {
-        NSParameterAssert(measurement);
-        NSParameterAssert(field);
         if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
@@ -199,25 +201,28 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
     NSParameterAssert(trackList);
-    __block NSMutableArray *list = [NSMutableArray new];
-    [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
-            FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm" netType:FTNetworkingTypeMetrics];
-            if(obj.timeMillis && obj.timeMillis>1000000000000){
-                model.tm = obj.timeMillis*1000;
+    @try {
+        __block NSMutableArray *list = [NSMutableArray new];
+        [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
+                FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm" netType:FTNetworkingTypeMetrics];
+                if(obj.timeMillis && obj.timeMillis>1000000000000){
+                    model.tm = obj.timeMillis*1000;
+                }
+                [list addObject:model];
+            }else{
+                ZYLog(@"传入的第 %d 个数据格式有误",idx);
             }
-            [list addObject:model];
+        }];
+        if (list.count>0) {
+            [self trackUpload:list callBack:callBackStatus];
         }else{
-            ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYLog(@"传入的数据格式有误");
+            callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
-    }];
-    if (list.count>0) {
-        [self trackUpload:list callBack:callBackStatus];
-    }else{
-        ZYLog(@"传入的数据格式有误");
-        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+    } @catch (NSException *exception) {
+        ZYLog(@"trackImmediateList exception = %@",exception);
     }
-    
 }
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
     if ([self.net isEqualToString:@"-1"]) {
@@ -233,42 +238,58 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
+    NSParameterAssert(product);
+    NSParameterAssert(traceId);
+    NSParameterAssert(name);
     [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeCode];
 }
 
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
+    NSParameterAssert(product);
+    NSParameterAssert(traceId);
+    NSParameterAssert(name);
     [self flowTrack:product traceId:traceId name:name parent:parent tags:tags duration:duration field:field withTrackType:FTTrackTypeCode];
 }
 #pragma mark - logging
 -(void)loggingBackground:(FTLoggingBean *)logging{
     if (logging.measurement.length>0 && logging.content.length>0) {
-        FTRecordModel *model = [self getLoggingModel:logging];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        @try {
+            FTRecordModel *model = [self getLoggingModel:logging];
+            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        } @catch (NSException *exception) {
+            ZYLog(@"loggingBackground exception %@",exception);
+        }
         
     }else{
         ZYLog(@"传入的第数据格式有误");
     }
 }
 -(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    NSParameterAssert(logging);
     [self loggingImmediateList:@[logging] callBack:callBackStatus];
 }
 -(void)loggingImmediateList:(NSArray <FTLoggingBean *> *)loggingList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
     NSParameterAssert(loggingList);
-       __block NSMutableArray *list = [NSMutableArray new];
-       [loggingList enumerateObjectsUsingBlock:^(FTLoggingBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-           if (obj.measurement.length>0 && obj.content.length>0) {
-               FTRecordModel *model = [self getLoggingModel:obj];
-               [list addObject:model];
-           }else{
-               ZYLog(@"传入的第 %d 个数据格式有误",idx);
-           }
-       }];
-       if (list.count>0) {
-           [self trackUpload:list callBack:callBackStatus];
-       }else{
-           ZYLog(@"传入的数据格式有误");
-           callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
-       }
+    @try {
+        __block NSMutableArray *list = [NSMutableArray new];
+        [loggingList enumerateObjectsUsingBlock:^(FTLoggingBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (obj.measurement.length>0 && obj.content.length>0) {
+                FTRecordModel *model = [self getLoggingModel:obj];
+                [list addObject:model];
+            }else{
+                ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            }
+        }];
+        if (list.count>0) {
+            [self trackUpload:list callBack:callBackStatus];
+        }else{
+            ZYLog(@"传入的数据格式有误");
+            callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+        }
+    } @catch (NSException *exception) {
+        ZYLog(@"loggingImmediateList exception = %@",exception);
+    }
+      
 }
 -(FTRecordModel *)getLoggingModel:(FTLoggingBean *)logging{
     NSMutableDictionary *tagDict = @{FT_KEY_CLASS:@"tracing"}.mutableCopy;
@@ -360,29 +381,39 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - keyevent
 -(void)keyeventBackground:(FTKeyeventBean *)keyevent{
     if (keyevent.title.length == 0) {
+        ZYLog(@"传入的数据格式有误，title不能为空");
         return;
     }
-    FTRecordModel *model = [self getKeyeventModel:keyevent];
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    @try {
+        FTRecordModel *model = [self getKeyeventModel:keyevent];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    } @catch (NSException *exception) {
+        ZYLog(@"keyeventBackground exception %@",exception);
+    }
 }
 -(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
+    NSParameterAssert(keyevent);
     [self keyeventImmediateList:@[keyevent] callBack:callBackStatus];
 }
 -(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
     NSParameterAssert(keyeventList);
-    __block NSMutableArray *list = [NSMutableArray new];
-    [keyeventList enumerateObjectsUsingBlock:^(FTKeyeventBean * _Nonnull keyevent, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (keyevent.title.length>0) {
-            [list addObject:[self getKeyeventModel:keyevent]];
+    @try {
+        __block NSMutableArray *list = [NSMutableArray new];
+        [keyeventList enumerateObjectsUsingBlock:^(FTKeyeventBean * _Nonnull keyevent, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (keyevent.title.length>0) {
+                [list addObject:[self getKeyeventModel:keyevent]];
+            }else{
+                ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            }
+        }];
+        if (list.count>0) {
+            [self trackUpload:list callBack:callBackStatus];
         }else{
-            ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYLog(@"传入的数据格式有误");
+            callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
-    }];
-    if (list.count>0) {
-        [self trackUpload:list callBack:callBackStatus];
-    }else{
-        ZYLog(@"传入的数据格式有误");
-        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+    } @catch (NSException *exception) {
+        ZYLog(@"keyeventImmediateList exception = %@",exception);
     }
 }
 - (FTRecordModel *)getKeyeventModel:(FTKeyeventBean *)keyevent{
@@ -491,6 +522,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
    @try {
        if (!self.isWriteDatabase) {
+           ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
            return;
        }
           NSParameterAssert(measurement);
@@ -516,9 +548,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         NSString *op,*productStr;
         if(trackType == FTTrackTypeCode){
-            NSParameterAssert(product);
-            NSParameterAssert(traceId);
-            NSParameterAssert(name);
             if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
                 ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
