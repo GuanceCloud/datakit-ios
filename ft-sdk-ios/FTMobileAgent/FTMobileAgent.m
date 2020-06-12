@@ -580,13 +580,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 - (void)netInterceptorWithopdata:(NSDictionary *)opdata{
-    NSString *op = @"netInterceptor";
+    NSString *op = @"trace";
+    
 }
 - (void)exceptionWithopdata:(NSString *)content {
     NSString *op = @"exception";
     NSDictionary *tag = @{FT_KEY_STATUS:@"error",
                           FT_KEY_CLASS:@"tracing",
-                          FT_KEY_SERVICENAME:@"dataflux sdk",
+                          FT_KEY_SERVICENAME:self.config.traceServiceName,
                           FT_KEY_ENV:self.config.loggingEnv,
                           FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
     };

@@ -36,6 +36,10 @@
         _enableDescLog = NO;
         _enableTrackAppCrash= NO;
         _collectRate = 1;
+        _traceServiceName = @"dataflux sdk";
+        _networkTrace = NO;
+        _traceConsoleLog = NO;
+        _eventFlowLog = NO;
 #ifdef DEBUG
         _loggingEnv = @"dev";
 #else
@@ -69,6 +73,10 @@
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.collectRate = self.collectRate;
     options.loggingEnv = self.loggingEnv;
+    options.traceServiceName = self.traceServiceName;
+    options.traceConsoleLog = self.traceConsoleLog;
+    options.networkTrace = self.networkTrace;
+    options.eventFlowLog = self.eventFlowLog;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
