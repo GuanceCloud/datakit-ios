@@ -7,8 +7,17 @@
 //
 
 #import "UIViewController+FT_RootVC.h"
+#import <objc/runtime.h>
 #import "FTConstants.h"
+static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
+
 @implementation UIViewController (FT_RootVC)
+-(void)setViewLoadStartTime:(CFAbsoluteTime)viewLoadStartTime{
+    objc_setAssociatedObject(self, &viewLoadStartTimeKey, @(viewLoadStartTime), OBJC_ASSOCIATION_COPY);
+}
+-(CFAbsoluteTime)viewLoadStartTime{
+    return [objc_getAssociatedObject(self, &viewLoadStartTimeKey) doubleValue];
+}
 + (NSString *)ft_getRootViewController{
     UIWindow* window = nil;
        if (@available(iOS 13.0, *)) {

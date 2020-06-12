@@ -30,6 +30,7 @@
 @property (nonatomic, copy)  NSString *flowId;
 @property (nonatomic, copy)  NSString *preOpenName;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
+@property (nonatomic, assign) CFAbsoluteTime launchTime;
 @end
 @implementation FTAutoTrack
 -(instancetype)init{
@@ -57,8 +58,8 @@
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch) {
         [notificationCenter addObserver:self
-                               selector:@selector(appDidFinishLaunchingWithOptions:)
-                                   name:UIApplicationDidFinishLaunchingNotification
+                               selector:@selector(appDidBecomeActiveNotification:)
+                                   name:UIApplicationDidBecomeActiveNotification
                                  object:nil];
     }
     
@@ -71,17 +72,29 @@
     }
     
 }
-- (void)appDidFinishLaunchingWithOptions:(NSNotification *)notification{
-    
-    [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
-    
+- (void)appDidBecomeActiveNotification:(NSNotification *)notification{
+    CFAbsoluteTime intervalTime = (CFAbsoluteTimeGetCurrent() - self.launchTime);
+    if ((int)intervalTime>10) {
+     [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
+    }
+     self.launchTime = CFAbsoluteTimeGetCurrent();
 }
 
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
+    [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+        UIViewController * vc = [info instance];
+        vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
+    } error:nil];
     WeakSelf
     id<ZY_AspectToken> lifeOpen = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
+        if (vc.viewLoadStartTime) {
+            CFAbsoluteTime loadTime = (CFAbsoluteTimeGetCurrent() - vc.viewLoadStartTime);
+            vc.viewLoadStartTime = 0;
+            [weakSelf track:FT_AUTO_TRACK_OP_OPEN withCpn:vc WithClickView:nil index:nil duration:loadTime];
+            [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
+        }
         [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
         [weakSelf flowOpenTrack:vc];
     } error:nil];
@@ -330,10 +343,14 @@
     }];
 }
 #pragma mark ========== 写入数据库操作 ==========
+
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
-    [self track:op withCpn:cpn WithClickView:view index:nil];
+    [self track:op withCpn:cpn WithClickView:view index:nil duration:0];
 }
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
+    [self track:op withCpn:cpn WithClickView:view index:indexPath duration:0];
+}
+-(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath duration:(CFAbsoluteTime)duration{
     //添加判断允许的全埋点类型  以防重置 config 带来的影响
     if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
         return;
@@ -357,6 +374,10 @@
         NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
         NSMutableDictionary *field = @{FT_AUTO_TRACK_EVENT:op
         }.mutableCopy;
+        FTLoggingBean *bean = [FTLoggingBean new];
+        bean.measurement = self.config.traceServiceName;
+        bean.content = [FTBaseInfoHander ft_convertToJsonData:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:FT_NULL_VALUE}];
+        bean.operationName = [NSString stringWithFormat:@"%@/event",op];
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:FT_AUTO_TRACK_ROOT_PAGE_NAME];
             NSString *current;
@@ -365,6 +386,7 @@
             }else if ([cpn isKindOfClass:UIViewController.class]){
                 current = NSStringFromClass([cpn class]);
             }
+            bean.content = [FTBaseInfoHander ft_convertToJsonData:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:current}];
             ZYDESCLog(@"current_page_name : %@",current);
             NSString *pageDesc = FT_NULL_VALUE;
             [tags setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
@@ -373,6 +395,10 @@
             }
             [field setValue:pageDesc forKey:FT_AUTO_TRACK_PAGE_DESC];
             ZYDESCLog(@"page_desc : %@",pageDesc);
+            if ([op isEqualToString:FT_AUTO_TRACK_OP_OPEN] && duration) {
+                [field setValue:[NSNumber numberWithInt:duration*1000] forKey:@"duration"];
+                bean.duration = duration*1000;
+            }
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 UIView *vtpView = view;
                 NSString *vtp =[view ft_getParentsView];
@@ -396,6 +422,9 @@
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];
+        if(self.config.eventFlowLog){
+        [[FTMobileAgent sharedInstance] loggingBackground:bean];
+        }
     } @catch (NSException *exception) {
         ZYDebug(@" error: %@", exception);
     }
