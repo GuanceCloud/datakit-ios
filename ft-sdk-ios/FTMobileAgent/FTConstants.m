@@ -29,6 +29,7 @@ NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
 NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
+NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
 NSString * const FT_AUTO_TRACK_EVENT = @"event";
 NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME = @"root_page_name";

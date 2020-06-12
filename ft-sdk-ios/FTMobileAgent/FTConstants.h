@@ -27,6 +27,8 @@ extern NSString * const FT_AUTO_TRACK_OP_ENTER;
 extern NSString * const FT_AUTO_TRACK_OP_LEAVE;
 extern NSString * const FT_AUTO_TRACK_OP_CLICK;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
+extern NSString * const FT_AUTO_TRACK_OP_OPEN;
+
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_AUTO_TRACK_EVENT_ID;
 extern NSString * const FT_AUTO_TRACK_EVENT;
