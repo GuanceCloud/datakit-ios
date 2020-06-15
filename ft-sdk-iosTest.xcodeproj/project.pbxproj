@@ -20,6 +20,7 @@
 		4A2FAF1B2424A11B0019B144 /* FTMobileAgent.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
+		4A7F62F524978BA9000893C1 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62F424978BA9000893C1 /* FrintHookTest.swift */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -117,6 +118,8 @@
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
 		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
+		4A7F62F424978BA9000893C1 /* FrintHookTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrintHookTest.swift; sourceTree = "<group>"; };
+		4A7F62F624978BE9000893C1 /* ft-sdk-iosTest-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ft-sdk-iosTest-Bridging-Header.h"; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -314,6 +317,8 @@
 				4AAF2B862416091200552B6D /* SubFlowTrackCell.m */,
 				4AE92780248F313A00F43875 /* TestCustomTrackVC.h */,
 				4AE92781248F313A00F43875 /* TestCustomTrackVC.m */,
+				4A7F62F624978BE9000893C1 /* ft-sdk-iosTest-Bridging-Header.h */,
+				4A7F62F424978BA9000893C1 /* FrintHookTest.swift */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -407,6 +412,7 @@
 				TargetAttributes = {
 					4A116955239113B600C0BC4E = {
 						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1140;
 					};
 					4A22526B23B5AC7600B0ED41 = {
 						CreatedOnToolsVersion = 11.1;
@@ -618,6 +624,7 @@
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				4AAF2B842416082200552B6D /* SubFlowTrack3.m in Sources */,
 				4AAF2B7E2416080800552B6D /* SubFlowTrack1.m in Sources */,
+				4A7F62F524978BA9000893C1 /* FrintHookTest.swift in Sources */,
 				4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.m in Sources */,
@@ -803,8 +810,10 @@
 			baseConfigurationReference = 6F303C4D960BF29EC67480B7 /* Pods-ft-sdk-iosTest.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)/**";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -825,8 +834,11 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest1";
+				PRODUCT_NAME = "ft-sdk-iosTest";
+				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -837,9 +849,11 @@
 			baseConfigurationReference = DC8D7A551013AD302F9D4A65 /* Pods-ft-sdk-iosTest.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BW62V33GLH;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -859,8 +873,10 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest1";
+				PRODUCT_NAME = "ft-sdk-iosTest";
+				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -870,6 +886,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
@@ -889,6 +906,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CD55C805E57315E634BCC5B3 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
@@ -908,6 +926,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4135E22EDAB8975BAD10FD50 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
@@ -946,6 +965,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;

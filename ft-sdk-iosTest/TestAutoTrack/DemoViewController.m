@@ -16,7 +16,7 @@
 #import "TestSubFlowTrack2.h"
 #import "TestBluetoothList.h"
 #import "TestCustomTrackVC.h"
-
+#import "ft_sdk_iosTest-Swift.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -29,7 +29,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -159,6 +159,11 @@
     NSString *value = nil;
     NSDictionary *dict = @{@"11":value};
 }
+- (void)testLog{
+    NSLog(@"testLog");
+    FrintHookTest *test = [[FrintHookTest alloc]init];
+    [test show];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -216,6 +221,9 @@
             break;
         case 14:
             [self testCrashLog];
+            break;
+        case 15:
+            [self testLog];
         default:
             break;
     }
