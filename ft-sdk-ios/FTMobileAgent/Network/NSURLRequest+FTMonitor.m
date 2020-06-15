@@ -73,4 +73,7 @@
     }
     return cookiesHeader;
 }
+- (NSString *)ft_getOperationName{
+    return [NSString stringWithFormat:@"%@/%@",self.HTTPMethod, self.URL.scheme];
+}
 @end

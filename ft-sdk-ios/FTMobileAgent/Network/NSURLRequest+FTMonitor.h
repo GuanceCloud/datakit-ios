@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSURLRequest (FTMonitor)
 - (NSData *)ft_getBodyData;
 - (NSString *)ft_getRequestContent;
+- (NSString *)ft_getOperationName;
 @end
 
 NS_ASSUME_NONNULL_END
