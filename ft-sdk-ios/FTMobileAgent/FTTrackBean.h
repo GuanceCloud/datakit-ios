@@ -54,8 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *source;
 ///日志所属业务或服务的名称，建议用户通过该标签指定产生该日志业务系统的名称
 @property (nonatomic, copy) NSString *serviceName;
-///日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义
-@property (nonatomic, copy) NSString *env;
+
 ///日志等级，状态，info：提示，warning：警告，error：错误，critical：严重，ok：成功，默认：info
 @property (nonatomic, assign) FTStatus status;
 ///用于链路日志，表示当前 span 的上一个 span的 ID
@@ -66,8 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *spanID;
 ///用于链路日志，表示当前链路的 ID
 @property (nonatomic, copy) NSString *traceID;
-///用于链路日志，请求的响应代码，例如 200 表示请求成功
-@property (nonatomic, assign) int errorCode;
+///布尔值，true 表示该 span 的请求响应是错误,false 或者无该标签，表示该 span 的响应是正常的请求
+@property (nonatomic, assign) BOOL isError;
 ///自定义标签  （可选）
 @property (nonatomic, strong) NSDictionary *tags;
 ///自定义指标  （可选）

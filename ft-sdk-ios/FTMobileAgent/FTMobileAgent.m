@@ -23,6 +23,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
 #import "FTUncaughtExceptionHandler.h"
+#import "FTLogHook.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -134,6 +135,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
         [self judgeIsWriteDatabase];
+        if (self.config.traceConsoleLog) {
+            [FTLogHook hook];
+        }
     }
     return self;
 }
@@ -296,12 +300,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
     [tagDict setValue:[FTBaseInfoHander getFTstatueStr:logging.status] forKey:FT_KEY_STATUS];
     [tagDict setValue:logging.serviceName forKey:FT_KEY_SERVICENAME];
-    [tagDict setValue:logging.env forKey:FT_KEY_ENV];
     [tagDict setValue:logging.parentID forKey:FT_KEY_PARENTID];
     [tagDict setValue:logging.operationName forKey:FT_KEY_OPERATIONNAME];
     [tagDict setValue:logging.spanID forKey:FT_KEY_SPANID];
     [tagDict setValue:logging.traceID forKey:FT_FLOW_TRACEID];
-    [tagDict setValue:[NSNumber numberWithInt:logging.errorCode] forKey:FT_KEY_ERRORCODE];
+    [tagDict setValue:[NSNumber numberWithBool:logging.isError] forKey:FT_KEY_ISERROR];
     [logging.tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
           if (![tagDict.allKeys containsObject:key]) {
               [tagDict setValue:obj forKey:key];
@@ -579,28 +582,32 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYDebug(@"flowTrack product traceId name exception %@",exception);
     }
 }
-- (void)netInterceptorWithopdata:(NSDictionary *)opdata{
-    NSString *op = @"trace";
-    
-}
 - (void)exceptionWithopdata:(NSString *)content {
+    if (!content || content.length == 0) {
+        return;
+    }
     NSString *op = @"exception";
-    NSDictionary *tag = @{FT_KEY_STATUS:@"error",
-                          FT_KEY_CLASS:@"tracing",
-                          FT_KEY_SERVICENAME:self.config.traceServiceName,
-                          FT_KEY_ENV:self.config.loggingEnv,
-                          FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
-    };
-    NSDictionary *filed = @{FT_KEY_CONTENT:content};
-   
-    FTRecordModel *model = [self getRecordModelWithMeasurement:@"ft_mobile_sdk_ios" tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    NSString *status = @"error";
+    [self _loggingBackgroundInsertWithOP:op status:status content:content];
 }
--(void)startNetworkingMonitor{
-    [[FTMonitorManager sharedInstance] startNetworkingMonitor];
+- (void)traceConsoleLog:(NSString *)content{
+    if (!content || content.length == 0) {
+        return;
+    }
+    NSString *op = @"consolelog";
+    NSString *status = @"info";
+    [self _loggingBackgroundInsertWithOP:op status:status content:content];
 }
--(void)stopNetworkingMonitor{
-    [[FTMonitorManager sharedInstance] stopNetworkingMonitor];
+- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
+    NSDictionary *tag = @{FT_KEY_STATUS:status,
+                             FT_KEY_CLASS:@"tracing",
+                             FT_KEY_SERVICENAME:self.config.traceServiceName,
+                             FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+       };
+       NSDictionary *filed = @{FT_KEY_CONTENT:content};
+      
+       FTRecordModel *model = [self getRecordModelWithMeasurement:@"ft_mobile_sdk_ios" tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
+       [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     FTRecordModel *model = [FTRecordModel new];

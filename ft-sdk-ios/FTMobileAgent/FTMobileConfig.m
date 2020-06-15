@@ -40,11 +40,6 @@
         _networkTrace = NO;
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
-#ifdef DEBUG
-        _loggingEnv = @"dev";
-#else
-        _loggingEnv = @"release";
-#endif
     }
       return self;
 }
@@ -72,7 +67,6 @@
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.collectRate = self.collectRate;
-    options.loggingEnv = self.loggingEnv;
     options.traceServiceName = self.traceServiceName;
     options.traceConsoleLog = self.traceConsoleLog;
     options.networkTrace = self.networkTrace;

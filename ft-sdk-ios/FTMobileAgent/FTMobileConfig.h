@@ -187,8 +187,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /*设置抓取的日志来源*/
 @property (nonatomic, copy) NSString *traceServiceName;
-/*崩溃日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义*/
-@property (nonatomic, copy) NSString *loggingEnv;
 
 @property (nonatomic, assign) BOOL networkTrace;
 
