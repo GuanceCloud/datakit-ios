@@ -13,6 +13,7 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+@class FTRecordModel;
 /**
  埋点方式
 
@@ -54,6 +55,7 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * autotrack  全埋点页面流程图抓取 存储数据库
  */
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:( NSString *)parent tags:(NSDictionary *)tags duration:(long)duration field:(NSDictionary *)field withTrackType:(FTTrackType)trackType;
+-(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode,  id responseObject))callBack;
 /**
  * 崩溃日志抓取
 */

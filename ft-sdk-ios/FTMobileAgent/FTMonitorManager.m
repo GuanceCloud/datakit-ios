@@ -137,10 +137,11 @@ static dispatch_once_t onceToken;
     };
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+    model.op = FTNetworkingTypeMetrics;
     void (^UploadResultBlock)(NSInteger,id) = ^(NSInteger statusCode,id responseObject){
         ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
     };
-    [[FTMobileAgent sharedInstance] performSelector:@selector(trackUpload:callBack:) withObject:@[model] withObject:UploadResultBlock];
+    [[FTMobileAgent sharedInstance] trackUpload:@[model] callBack:UploadResultBlock];
 }
 -(void)setMonitorType:(FTMonitorInfoType)type{
     _monitorType = type;
