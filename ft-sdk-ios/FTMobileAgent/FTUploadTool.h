@@ -13,8 +13,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTURLTaskCompletionHandler)(NSInteger  statusCode, NSData * _Nullable response);
+typedef void(^FTURLSessionTaskCompletionHandler)(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error);
+
 
 @interface FTUploadTool : NSObject
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTMobileConfig *config;
 -(instancetype)initWithConfig:(FTMobileConfig *)config;
 /**
