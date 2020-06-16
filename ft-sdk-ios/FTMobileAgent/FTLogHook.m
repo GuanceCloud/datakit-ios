@@ -21,7 +21,9 @@ ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
     }
     
     ////////// do something  这里可以捕获到日志 string
-    [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+    if(![string containsString:@"[FTLog]"]){
+        [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+    }
     // invoke origin mehtod
     ssize_t result = orig_writev(a, v, v_len);
     return result;
@@ -34,27 +36,29 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
 {
     /*
      typedef struct {
-         
-        unsigned int gp_offset;
-        unsigned int fp_offset;
-        void *overflow_arg_area;
-        void *reg_save_area;
+     
+     unsigned int gp_offset;
+     unsigned int fp_offset;
+     void *overflow_arg_area;
+     void *reg_save_area;
      } va_list[1];
      */
     va_list args;
     
     va_start(args, format);
-
+    
     NSString *formatter = [NSString stringWithUTF8String:format];
     NSString *string = [[NSString alloc] initWithFormat:formatter arguments:args];
     
     ////////// do something  这里可以捕获到日志
-    [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+    if(![string containsString:@"[FTLog]"]){
+        [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+    }
     // invoke orign fprintf
     int result = origin_fprintf(file, [string UTF8String]);
     
     va_end(args);
-
+    
     return result;
 }
 // origin fwrite IMP
@@ -72,7 +76,7 @@ void reset_buffer()
 
 // swizzle method
 size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE * __restrict stream) {
-        
+    
     if (__messageBuffer == NULL) {
         // initial Buffer
         reset_buffer();
@@ -90,10 +94,11 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
             
             // reset buffIdx
             reset_buffer();
-
+            
             ////////// do something  这里可以捕获到日志
-            [[FTMobileAgent sharedInstance] traceConsoleLog:s];
-
+            if(![s containsString:@"[FTLog]"]){
+                [[FTMobileAgent sharedInstance] traceConsoleLog:s];
+            }
         }
         else {
             
@@ -118,13 +123,13 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
         asl_writev,
         (void*)&orig_writev
     }}, 1);
-
+    
     // hook fwrite
     rebind_symbols((struct rebinding[1]){{
         "fwrite",
         asl_fwrite,
         (void *)&orig_fwrite}}, 1);
-
+    
     // hook fprintf
     rebind_symbols((struct rebinding[1]){{
         "fprintf",
