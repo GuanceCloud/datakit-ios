@@ -137,6 +137,7 @@ extern NSString *  const FT_NETWORKING_API_METRICS;
 extern NSString *  const FT_NETWORKING_API_OBJECT;
 extern NSString *  const FT_NETWORKING_API_KEYEVENT;
 extern NSString *  const FT_NETWORKING_API_LOGGING;
+extern NSString *  const FT_NETWORKING_API_CHECK_TOKEN;
 
 #pragma mark ========== object、keyevent ==========
 extern NSString *  const FT_KEYEVENT_MEASUREMENT;

@@ -144,7 +144,7 @@ NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metrics";
 NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
 NSString *const FT_NETWORKING_API_KEYEVENT = @"/v1/write/keyevent";
 NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
-
+NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
 #pragma mark ========== object、keyevent ==========
 NSString *const FT_KEYEVENT_MEASUREMENT = @"__keyevent";
 NSString *const FT_KEY_EVENTID = @"__eventId";
