@@ -179,6 +179,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self trackBackground:measurement tags:nil field:field withTrackType:FTTrackTypeCode];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
+    if (!self.isWriteDatabase) {
+        ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
+        return;
+    }
     [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
 }
 
@@ -200,7 +204,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
-        ZYDebug(@"track measurement tags field exception %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
@@ -225,7 +229,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
     } @catch (NSException *exception) {
-        ZYLog(@"trackImmediateList exception = %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
@@ -261,11 +265,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             FTRecordModel *model = [self getLoggingModel:logging];
             [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
         } @catch (NSException *exception) {
-            ZYLog(@"loggingBackground exception %@",exception);
+            ZYErrorLog(@"exception %@",exception);
         }
         
     }else{
-        ZYLog(@"传入的第数据格式有误");
+        ZYErrorLog(@"传入的第数据格式有误");
     }
 }
 -(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
@@ -281,13 +285,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 FTRecordModel *model = [self getLoggingModel:obj];
                 [list addObject:model];
             }else{
-                ZYLog(@"传入的第 %d 个数据格式有误",idx);
+                ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
             }
         }];
         if (list.count>0) {
             [self trackUpload:list callBack:callBackStatus];
         }else{
-            ZYLog(@"传入的数据格式有误");
+            ZYErrorLog(@"传入的数据格式有误");
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
     } @catch (NSException *exception) {
@@ -371,27 +375,27 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
             [list addObject:model];
         }else{
-            ZYLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
         }
     }];
     if (list.count>0) {
         [self trackUpload:list callBack:callBackStatus];
     }else{
-        ZYLog(@"传入的数据格式有误");
+        ZYErrorLog(@"传入的数据格式有误");
         callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
     }
 }
 #pragma mark - keyevent
 -(void)keyeventBackground:(FTKeyeventBean *)keyevent{
     if (keyevent.title.length == 0) {
-        ZYLog(@"传入的数据格式有误，title不能为空");
+        ZYErrorLog(@"传入的数据格式有误，title不能为空");
         return;
     }
     @try {
         FTRecordModel *model = [self getKeyeventModel:keyevent];
         [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     } @catch (NSException *exception) {
-        ZYLog(@"keyeventBackground exception %@",exception);
+        ZYErrorLog(@"keyeventBackground exception %@",exception);
     }
 }
 -(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
@@ -416,7 +420,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
     } @catch (NSException *exception) {
-        ZYLog(@"keyeventImmediateList exception = %@",exception);
+        ZYErrorLog(@"keyeventImmediateList exception = %@",exception);
     }
 }
 - (FTRecordModel *)getKeyeventModel:(FTKeyeventBean *)keyevent{
@@ -501,6 +505,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         int x = arc4random() % 100;
         is = x <= (rate*100)? YES:NO;
     }
+    if(!is){
+        ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
+    }
     self.isWriteDatabase = is;
 }
 #pragma mark - 调用监控项管理方法
@@ -524,27 +531,26 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
     
    @try {
-       if (!self.isWriteDatabase) {
-           ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
-           return;
-       }
           NSParameterAssert(measurement);
           NSParameterAssert(field);
           if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
-              ZYDebug(@"文件名 事件名不能为空");
+              ZYErrorLog(@"文件名 事件名不能为空");
               return;
           }
        NSString *op;
        if (trackType == FTTrackTypeCode) {
            op = @"cstm";
        }else{
+           if (!self.isWriteDatabase) {
+               return;
+           }
            op = [field valueForKey:@"event"];
        }
        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
       }
       @catch (NSException *exception) {
-          ZYDebug(@"track measurement tags field exception %@",exception);
+          ZYErrorLog(@"exception %@",exception);
       }
 }
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field withTrackType:(FTTrackType)trackType{
@@ -552,7 +558,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSString *op,*productStr;
         if(trackType == FTTrackTypeCode){
             if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
-                ZYDebug(@"产品名、跟踪ID、name、parent 不能为空");
+                ZYErrorLog(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
             }
             if (![FTBaseInfoHander verifyProductStr: [NSString stringWithFormat:@"flow_%@",product]]) {
@@ -579,7 +585,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics];
         [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     } @catch (NSException *exception) {
-        ZYDebug(@"flowTrack product traceId name exception %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 - (void)exceptionWithopdata:(NSString *)content {
@@ -708,7 +714,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.isForeground = NO;
     }
     @catch (NSException *exception) {
-        ZYLog(@"applicationWillResignActive exception %@",exception);
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
@@ -716,21 +722,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.isForeground = YES;
         NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
         NSDictionary *tag = @{FT_KEY_CLASS:@"Dataflux iOS SDK",
-                                     FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
+                              FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
         };
-       NSDictionary *dict = @{FT_KEY_NAME:deviceUUID,
-                              FT_KEY_TAGS:tag,
-                              FT_AGENT_OP:FTNetworkingTypeObject
-       };
-       FTRecordModel *model = [FTRecordModel new];
-       model.op = FTNetworkingTypeObject;
-       model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+        NSDictionary *dict = @{FT_KEY_NAME:deviceUUID,
+                               FT_KEY_TAGS:tag,
+                               FT_AGENT_OP:FTNetworkingTypeObject
+        };
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = FTNetworkingTypeObject;
+        model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
         [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
             ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
         }];
     }
     @catch (NSException *exception) {
-        ZYLog(@"applicationDidBecomeActive exception %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification {
