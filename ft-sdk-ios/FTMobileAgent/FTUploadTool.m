@@ -26,7 +26,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeUser      = 3 ,
 };
 typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
-    FTCheckTokenStateNone     = 0,
     FTCheckTokenStateLoading  = 1,
     FTCheckTokenStatePass     = 2,
     FTCheckTokenStateError    = 3,
@@ -114,10 +113,17 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 
 -(void)upload{
+    if(self.checkTokenState == FTCheckTokenStateNetError){
+        [self checkToken];
+        self.isUploading = NO;
+        return;
+    }
+    if (self.checkTokenState == FTCheckTokenStatePass) {
     if (!self.isUploading) {
         //当前数据库所有数据
         self.isUploading = YES;
         [self flushQueue];
+    }
     }
 }
 - (void)flushQueue{
@@ -132,13 +138,34 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     }
 }
 -(void)checkToken{
+    self.checkTokenState = FTCheckTokenStateLoading;
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_CHECK_TOKEN,self.config.datawayToken]];
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
     mutableRequest.HTTPMethod = @"GET";
-    NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:mutableRequest completionHandler:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
-        
+    NSURLSessionTask *task = [self dataTaskWithRequest:mutableRequest completionHandler:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
+            ZYDebug(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+            self.checkTokenState = FTCheckTokenStateNetError;
+            return;
+        }
+        NSInteger statusCode = response.statusCode;
+        if (statusCode >= 500 && statusCode < 600) {
+            self->_checkTokenState = FTCheckTokenStateNetError;
+        }else{
+            self->_checkTokenState = FTCheckTokenStateError;
+        }
+        if (statusCode ==200){
+            NSMutableDictionary *responseObject;
+            NSError *errors;
+            responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+            if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200){
+                self.checkTokenState = FTCheckTokenStatePass;
+            }else{
+                self.checkTokenState = FTCheckTokenStateError;
+            }
+        }
     }];
-    [dataTask resume];
+    [task resume];
 }
 -(void)flushWithType:(NSString *)type{
     @try {
@@ -155,42 +182,38 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
             }
             FTRecordModel *model = [updata lastObject];
             __block BOOL success = NO;
-            dispatch_group_t group = dispatch_group_create();
-            dispatch_group_enter(group);
+            dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
             [self trackList:updata callBack:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
                 if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
-                    ZYDebug(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                    ZYErrorLog(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                     success = NO;
-                    dispatch_group_leave(group);
+                    dispatch_semaphore_signal(flushSemaphore);
                     return;
                 }
                 NSInteger statusCode = response.statusCode;
+                success = (statusCode >=200 && statusCode < 400);
                 if (statusCode ==200){
                     NSMutableDictionary *responseObject;
                     NSError *errors;
                     responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
-                    if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200) {
-                        success = YES;
-                    }else{
+                    if (![responseObject valueForKey:@"code"] || [responseObject[@"code"] intValue] != 200){
                         if (errors){
-                            ZYDebug(@"response error = %@",errors);
+                            ZYErrorLog(@"response error = %@",errors);
                         }else {
-                            ZYDebug(@"上传失败 错误原因 = %@ 此条数据将删除",responseObject);
+                            ZYErrorLog(@"上传失败 错误原因 = %@ 此条数据将删除",responseObject);
                         }
-                        success = YES;
                     }
+                    
                 }else{
-                    success = (statusCode < 500 || statusCode >= 600);
                     if (success) {
-                        ZYDebug(@"上传失败，错误原因未知 此条数据将删除");
+                        ZYErrorLog(@"上传失败，错误原因未知 此条数据将删除");
                     }else{
-                        ZYDebug(@"服务器异常 稍后再试 response = %@",response);
+                        ZYErrorLog(@"服务器异常 稍后再试 response = %@",response);
                     }
                 }
-                dispatch_group_leave(group);
+                dispatch_semaphore_signal(flushSemaphore);
             }];
-               
-            dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+            dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
             if (!success) {//请求失败
                 break;
             }
@@ -199,13 +222,17 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         }
     }
     @catch (NSException *exception) {
-        ZYDebug(@"flushQueue exception %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 -(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
     [self trackImmediateList:@[model] callBack:callBack];
 }
 -(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
+    if (self.checkTokenState == FTCheckTokenStateError) {
+       callBack?callBack(UnknownException, nil):nil;
+        return;
+    }
     FTURLSessionTaskCompletionHandler handler = ^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error){
         if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
             callBack? callBack(error.code, nil):nil;
@@ -239,7 +266,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 - (void)trackRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
     NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:events];
     //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
+    NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
 }
@@ -259,7 +286,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     // 待处理 object 类型
     NSURLRequest *request = [self writeObjectRequestWithURL:url datas:list];
     //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
+    NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
 }
@@ -298,12 +325,12 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 
 #pragma mark - request
-- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(FTURLSessionTaskCompletionHandler)completionHandler {
+- (NSURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(FTURLSessionTaskCompletionHandler)completionHandler {
     return [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
-            return completionHandler(nil, nil, error);
+            completionHandler?completionHandler(nil, nil, error):nil;
         }
-        return completionHandler(data, (NSHTTPURLResponse *)response, error);
+        completionHandler?completionHandler(data, (NSHTTPURLResponse *)response, error):nil;
     }];
 }
 
