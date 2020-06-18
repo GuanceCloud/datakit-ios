@@ -606,7 +606,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
     NSDictionary *tag = @{FT_KEY_STATUS:status,
-                             FT_KEY_CLASS:@"tracing",
                              FT_KEY_SERVICENAME:self.config.traceServiceName,
                              FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
        };
