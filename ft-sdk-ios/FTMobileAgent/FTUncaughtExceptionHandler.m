@@ -13,6 +13,7 @@
 #import <FTMobileAgent.h>
 #import "FTMobileAgent+Private.h"
 #import "FTBaseInfoHander.h"
+#import <mach-o/ldsyms.h>
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数
@@ -42,8 +43,9 @@ void HandleException(NSException *exception) {
 
     //获取调用堆栈
     NSArray *callStack = [exception callStackSymbols];
+    NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
-    [userInfo setObject:callStack forKey:UncaughtExceptionHandlerAddressesKey];
+    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
 
     //在主线程中，执行制定的方法, withObject是执行方法传入的参数
     [[[FTUncaughtExceptionHandler alloc] init]
@@ -90,7 +92,8 @@ void SignalHandler(int signal) {
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     NSArray *callStack = [FTUncaughtExceptionHandler backtrace];
-    [userInfo setObject:callStack forKey:UncaughtExceptionHandlerAddressesKey];
+    NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
+    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
     [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
 }
 + (void)installUncaughtExceptionHandler{
@@ -129,12 +132,28 @@ void SignalHandler(int signal) {
 
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
-       NSDictionary *dict = @{@"name":exception.name,
-                           @"reason":exception.reason,
-                           @"userInfo":exception.userInfo
-    };
-    [[FTMobileAgent sharedInstance] exceptionWithopdata:[FTBaseInfoHander ft_convertToJsonData:dict]];
+   
+    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\nUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],executableUUID()];
+    [[FTMobileAgent sharedInstance] exceptionWithopdata:info];
 }
 
 
+NSString *executableUUID()
+{
+    const uint8_t *command = (const uint8_t *)(&_mh_execute_header + 1);
+    for (uint32_t idx = 0; idx < _mh_execute_header.ncmds; ++idx) {
+        if (((const struct load_command *)command)->cmd == LC_UUID) {
+            command += sizeof(struct load_command);
+            return [NSString stringWithFormat:@"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                    command[0], command[1], command[2], command[3],
+                    command[4], command[5],
+                    command[6], command[7],
+                    command[8], command[9],
+                    command[10], command[11], command[12], command[13], command[14], command[15]];
+        } else {
+            command += ((const struct load_command *)command)->cmdsize;
+        }
+    }
+    return nil;
+}
 @end
