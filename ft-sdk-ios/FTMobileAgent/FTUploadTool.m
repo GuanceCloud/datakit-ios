@@ -153,6 +153,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
             self->_checkTokenState = FTCheckTokenStateNetError;
         }else{
             self->_checkTokenState = FTCheckTokenStateError;
+            ZYErrorLog(@"Dataflux SDK 未能验证通过您配置的 token");
         }
         if (statusCode ==200){
             NSMutableDictionary *responseObject;
@@ -162,6 +163,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                 self.checkTokenState = FTCheckTokenStatePass;
             }else{
                 self.checkTokenState = FTCheckTokenStateError;
+                ZYErrorLog(@"Dataflux SDK 未能验证通过您配置的 token");
             }
         }
     }];
