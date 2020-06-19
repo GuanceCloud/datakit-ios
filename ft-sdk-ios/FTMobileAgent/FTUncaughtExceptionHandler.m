@@ -28,33 +28,35 @@ void SignalHandler(int signal);
 volatile int32_t UncaughtExceptionCount = 0;
 //错误最大的条数
 const int32_t UncaughtExceptionMaximum = 10;
+static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
+
 @interface FTUncaughtExceptionHandler()
 
 @end
 @implementation FTUncaughtExceptionHandler
 
 void HandleException(NSException *exception) {
-
+    
     int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
     // 如果太多不用处理
-    if (exceptionCount > UncaughtExceptionMaximum) {
-        return;
+    if (exceptionCount <= UncaughtExceptionMaximum) {
+        //获取调用堆栈
+        NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
+        [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
+        
+        //在主线程中，执行制定的方法, withObject是执行方法传入的参数
+        [[[FTUncaughtExceptionHandler alloc] init]
+         performSelectorOnMainThread:@selector(handleException:)
+         withObject:
+         [NSException exceptionWithName:[exception name]
+                                 reason:[exception reason]
+                               userInfo:userInfo]
+         waitUntilDone:YES];
     }
-
-    //获取调用堆栈
-    NSArray *callStack = [exception callStackSymbols];
-    NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
-    NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
-    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
-
-    //在主线程中，执行制定的方法, withObject是执行方法传入的参数
-    [[[FTUncaughtExceptionHandler alloc] init]
-     performSelectorOnMainThread:@selector(handleException:)
-     withObject:
-     [NSException exceptionWithName:[exception name]
-                             reason:[exception reason]
-                           userInfo:userInfo]
-     waitUntilDone:YES];
+    if (previousUncaughtExceptionHandler) {
+        previousUncaughtExceptionHandler(exception);
+    }
 }
 
 //2.2、signal报错处理
@@ -97,13 +99,14 @@ void SignalHandler(int signal) {
     [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
 }
 + (void)installUncaughtExceptionHandler{
-        NSSetUncaughtExceptionHandler(&HandleException);
-        signal(SIGABRT, SignalHandler);
-        signal(SIGILL,  SignalHandler);
-        signal(SIGSEGV, SignalHandler);
-        signal(SIGFPE,  SignalHandler);
-        signal(SIGBUS,  SignalHandler);
-        signal(SIGPIPE, SignalHandler);
+    previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
+    NSSetUncaughtExceptionHandler(&HandleException);
+    signal(SIGABRT, SignalHandler);
+    signal(SIGILL,  SignalHandler);
+    signal(SIGSEGV, SignalHandler);
+    signal(SIGFPE,  SignalHandler);
+    signal(SIGBUS,  SignalHandler);
+    signal(SIGPIPE, SignalHandler);
 }
 //med 1、专门针对Signal类型的错误获取堆栈信息
 + (NSArray *)backtrace {
@@ -133,7 +136,7 @@ void SignalHandler(int signal) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
    
-    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\nUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],executableUUID()];
+    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],executableUUID()];
     [[FTMobileAgent sharedInstance] exceptionWithopdata:info];
 }
 
