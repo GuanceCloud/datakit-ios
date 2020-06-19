@@ -942,7 +942,7 @@ typedef enum FTError : NSInteger {
   ```
 
 ### 3. 关于崩溃日志分析
-在 **Debug** 和 **Release** 模式下，**Crash** 时捕获的线程回溯是被符号化的。
+在开发时的 **Debug** 和 **Release** 模式下，**Crash** 时捕获的线程回溯是被符号化的。
 而发布包没带符号表，异常线程的关键回溯，会显示镜像的名字，不会转化为有效的代码符号，获取到的 **crash log** 中的相关信息都是 16 进制的内存地址，并不能定位崩溃的代码，所以需要将 16 进制的内存地址解析为对应的类及方法。
 
 #### 利用命令行工具解析 **Crash**     
@@ -960,16 +960,17 @@ typedef enum FTError : NSInteger {
 
 进行解析：    
 
-  1. 将symbolicatecrash与.app和.app.dSYM放在同一文件夹中    
+  1. 将 **symbolicatecrash** 与 **.app** 和 **.app.dSYM** 放在同一文件夹中    
   
-  2. 开启命令行工具，进入崩溃文件夹crash中    
+  2. 开启命令行工具，进入文件夹   
   
-  3. 使用命令解析Crash文件，*号指的是具体的文件名    
+  3. 使用命令解析 **Crash** 文件，*号指的是具体的文件名    
       
    ```
    ./symbolicatecrash ./*.crash ./*.app.dSYM > symbol.crash
-   ```
-  4. 解析完成后会生成一个新的.Crash文件，这个文件中就是崩溃详细信息。
+   ```   
+   
+  4. 解析完成后会生成一个新的 **.Crash** 文件，这个文件中就是崩溃详细信息。
 
 
 
