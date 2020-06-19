@@ -112,7 +112,29 @@
    [FTLog][DESCINFO]  -[FTAutoTrack track:withCpn:WithClickView:index:] [line 374]  page_desc : 首页    
     
    ```    
-    
+   
+ - enableTrackAppCrash 采集崩溃日志
+
+   ```objective-c 
+  /**
+   *设置是否需要采集崩溃日志 默认为NO
+   */
+@property (nonatomic, assign) BOOL enableTrackAppCrash;
+
+  ```   
+  [崩溃分析](#3-关于崩溃日志分析)
+ - traceConsoleLog 采集控制台日志
+ 
+   ```objective-c 
+  /**
+   *设置是否需要采集控制台日志 默认为NO
+   */
+@property (nonatomic, assign) BOOL traceConsoleLog;
+
+  ```   
+ 
+ 
+     
 ### 3. 设置X-Datakit-UUID
  ` X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
@@ -219,18 +241,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 @property (nonatomic, assign) float collectRate;
   ```
   
-### 8. 是否需要采集崩溃日志
-  ```objective-c 
-  /**
-   *设置是否需要采集崩溃日志 默认为NO
-   */
-@property (nonatomic, assign) BOOL enableTrackAppCrash;
-
- /**
-   * 崩溃日志所属环境，比如可用 dev 表示开发环境，prod 表示生产环境，用户可自定义
-   */
-@property (nonatomic, copy) NSString *loggingEnv;
-  ```
    
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
@@ -930,3 +940,42 @@ typedef enum FTError : NSInteger {
            end
        end
   ```
+
+### 3. 关于崩溃日志分析
+在 **Debug** 和 **Release** 模式下，**Crash** 时捕获的线程回溯是被符号化的。
+而发布包没带符号表，异常线程的关键回溯，会显示镜像的名字，不会转化为有效的代码符号，获取到的 **crash log** 中的相关信息都是 16 进制的内存地址，并不能定位崩溃的代码，所以需要将 16 进制的内存地址解析为对应的类及方法。
+
+#### 利用命令行工具解析 **Crash**     
+需要的文件：    
+
+1. 需要从 **DataFlux** 下载 **SDK** 采集上传的崩溃日志。下载后将后缀改为 **.crash**。
+2. 需要 **App** 打包时产生的 **dSYM** 文件，必须使用当前应用打包的电脑所生成的 **dSYM** 文件，其他电脑生成的文件可能会导致分析不准确的问题，建议按打包的版本保存对应的 **dSYM** 文件, **dSYM** 需要与 **.crash** 对应的包一致 。
+3. 需要使用 **symbolicatecrash**，**Xcode**自带的崩溃分析工具，使用这个工具可以更精确的定位崩溃所在的位置，将0x开头的地址替换为响应的代码和具体行数。 
+   
+    > 查找 **symbolicatecrash**方法  
+    终端输入 
+    `find /Applications/Xcode.app -name symbolicatecrash -type f`    
+    
+    >/Applications/Xcode.app/Contents/SharedFrameworks/DVTFoundation.framework/Versions/A/Resources/symbolicatecrash
+
+进行解析：    
+
+  1. 将symbolicatecrash与.app和.app.dSYM放在同一文件夹中    
+  
+  2. 开启命令行工具，进入崩溃文件夹crash中    
+  
+  3. 使用命令解析Crash文件，*号指的是具体的文件名    
+      
+   ```
+   ./symbolicatecrash ./*.crash ./*.app.dSYM > symbol.crash
+   ```
+  4. 解析完成后会生成一个新的.Crash文件，这个文件中就是崩溃详细信息。
+
+
+
+ 
+
+
+
+
+
