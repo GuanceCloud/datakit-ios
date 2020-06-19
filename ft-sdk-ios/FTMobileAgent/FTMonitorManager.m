@@ -597,6 +597,7 @@ static dispatch_once_t onceToken;
         logging.operationName = [task.originalRequest ft_getOperationName];
         logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
         logging.duration = [[NSNumber numberWithDouble:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000] intValue];
+        logging.serviceName = @"dataflux sdk";
         //spanID、traceID 待处理
         logging.spanID =[FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
         logging.traceID = [NSUUID UUID].UUIDString;
