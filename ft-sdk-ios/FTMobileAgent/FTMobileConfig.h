@@ -124,10 +124,6 @@ NS_ASSUME_NONNULL_BEGIN
 /*access key Secret*/
 @property (nonatomic, copy) NSString *akSecret;
 
-/*设置是否允许打印日志*/
-@property (nonatomic, assign) BOOL enableLog;
-/*设置是否允许打印描述日志*/
-@property (nonatomic, assign) BOOL enableDescLog;
 /*TAG 中的设备信息*/
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
 
@@ -183,15 +179,25 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableScreenFlow;
 
 #pragma mark ========== 日志相关 ==========
+/*设置是否允许打印日志*/
+@property (nonatomic, assign) BOOL enableLog;
+/*设置是否允许打印描述日志*/
+@property (nonatomic, assign) BOOL enableDescLog;
 /*设置是否需要采集崩溃日志*/
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /*设置抓取的日志来源*/
 @property (nonatomic, copy) NSString *traceServiceName;
-
+/**
+ * 设置网络请求信息采集 默认为NO
+*/
 @property (nonatomic, assign) BOOL networkTrace;
-
+/**
+ *设置是否需要采集控制台日志 默认为NO
+ */
 @property (nonatomic, assign) BOOL traceConsoleLog;
-
+/**
+ * 设置事件、流程图转化为日志数据  默认为NO
+*/
 @property (nonatomic, assign) BOOL eventFlowLog;
 /**
  * 设置采样率 0-1 默认为 1
