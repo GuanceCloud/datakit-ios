@@ -42,14 +42,16 @@
         config.enableLog = YES;
         config.enableDescLog = YES;
         config.enableAutoTrack = YES;
+        config.eventFlowLog = YES;
         config.needBindUser = NO;
+        config.traceConsoleLog = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [config setEnableScreenFlow:YES];
         config.enableTrackAppCrash = YES;
+        config.networkTrace = YES;
         config.collectRate = 0.5;
         self.config = config;
-        long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
        
         [FTMobileAgent startWithConfigOptions:config];
        

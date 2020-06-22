@@ -834,7 +834,7 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest1";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
 				PRODUCT_NAME = "ft-sdk-iosTest";
 				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -873,7 +873,7 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest1";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
 				PRODUCT_NAME = "ft-sdk-iosTest";
 				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
