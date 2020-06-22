@@ -167,3 +167,4 @@ extern NSString *  const FT_KEY_SUGGESTION;
 extern NSString *  const FT_KEY_DISMENSIONS;
 
 extern NSString *  const FT_DEFAULT_CLASS;
+extern NSString *  const FT_APP_VERSION_NAME;

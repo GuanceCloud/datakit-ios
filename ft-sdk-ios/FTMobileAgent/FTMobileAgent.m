@@ -593,14 +593,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!content || content.length == 0) {
         return;
     }
-    NSDictionary *tag = @{FT_KEY_STATUS:status,
-                             FT_KEY_SERVICENAME:self.config.traceServiceName,
-                             FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
-       };
-       NSDictionary *filed = @{FT_KEY_CONTENT:content};
-      
-       FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
-       [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    NSMutableDictionary *tag = @{FT_KEY_STATUS:status,
+                          FT_KEY_SERVICENAME:self.config.traceServiceName,
+                          FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+    }.mutableCopy;
+    if ([op isEqualToString:FT_TRACK_LOGGING_EXCEPTION]) {
+        NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+        NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+        NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
+        [tag setValue:app_version_name forKey:FT_APP_VERSION_NAME];
+    }
+    NSDictionary *filed = @{FT_KEY_CONTENT:content};
+    
+    FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
+    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     FTRecordModel *model = [FTRecordModel new];

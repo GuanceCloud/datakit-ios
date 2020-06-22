@@ -176,4 +176,4 @@ NSString *const FT_KEY_DISMENSIONS = @"__dimensions";
 
 NSString *const FT_DEFAULT_CLASS =@"Dataflux iOS SDK";
 
-
+NSString *const FT_APP_VERSION_NAME = @"app_version_name";
