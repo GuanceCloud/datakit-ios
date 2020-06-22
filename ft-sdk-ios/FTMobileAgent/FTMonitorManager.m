@@ -594,10 +594,11 @@ static dispatch_once_t onceToken;
                                   FT_NETWORK_REQUEST_CONTENT:[task.originalRequest ft_getRequestContent]
         };
         FTLoggingBean *logging = [FTLoggingBean new];
+        logging.classStr = @"tracing";
         logging.operationName = [task.originalRequest ft_getOperationName];
         logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-        logging.duration = [[NSNumber numberWithDouble:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000] intValue];
-        logging.serviceName = @"dataflux sdk";
+        logging.duration = [NSNumber numberWithDouble:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000];
+        logging.serviceName = FT_DEFAULT_SERVICE_NAME;
         //spanID、traceID 待处理
         logging.spanID =[FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
         logging.traceID = [NSUUID UUID].UUIDString;
