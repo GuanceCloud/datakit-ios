@@ -29,7 +29,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log",@"Test_NetworkTrace"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -164,6 +164,20 @@
     FrintHookTest *test = [[FrintHookTest alloc]init];
     [test show];
 }
+- (void)testNetworkTrace{
+    
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api.apiopen.top/musicDetails?id=604392760"]];
+    request.HTTPMethod = @"GET";
+    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSHTTPURLResponse *res =(NSHTTPURLResponse *)response;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self showResult:[NSString stringWithFormat:@"statusCode == %ld",(long)res.statusCode]];
+        });
+    }];
+    [task resume];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -224,6 +238,10 @@
             break;
         case 15:
             [self testLog];
+            break;
+        case 16:
+            [self testNetworkTrace];
+            break;
         default:
             break;
     }
