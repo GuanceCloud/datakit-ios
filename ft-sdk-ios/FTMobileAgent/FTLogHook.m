@@ -9,6 +9,8 @@
 #import "FTLogHook.h"
 #import "fishhook.h"
 #import "FTMobileAgent+Private.h"
+#import "FTConstants.h"
+#import "FTBaseInfoHander.h"
 static ssize_t (*orig_writev)(int a, const struct iovec * v, int v_len);
 
 // swizzle method
@@ -22,7 +24,7 @@ ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
     
     ////////// do something  这里可以捕获到日志 string
     if(![string containsString:@"[FTLog]"]){
-        [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:string];
     }
     // invoke origin mehtod
     ssize_t result = orig_writev(a, v, v_len);
@@ -52,7 +54,7 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     
     ////////// do something  这里可以捕获到日志
     if(![string containsString:@"[FTLog]"]){
-        [[FTMobileAgent sharedInstance] traceConsoleLog:string];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:string];
     }
     // invoke orign fprintf
     int result = origin_fprintf(file, [string UTF8String]);
@@ -97,7 +99,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
             
             ////////// do something  这里可以捕获到日志
             if(![s containsString:@"[FTLog]"]){
-                [[FTMobileAgent sharedInstance] traceConsoleLog:s];
+                [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:s];
             }
         }
         else {

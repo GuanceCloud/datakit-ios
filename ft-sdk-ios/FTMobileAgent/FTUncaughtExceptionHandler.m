@@ -14,6 +14,8 @@
 #import "FTMobileAgent+Private.h"
 #import "FTBaseInfoHander.h"
 #import <mach-o/ldsyms.h>
+#import "FTConstants.h"
+#import "FTBaseInfoHander.h"
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数
@@ -137,7 +139,7 @@ void SignalHandler(int signal) {
 - (void)handleException:(NSException *)exception {
    
     NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],executableUUID()];
-    [[FTMobileAgent sharedInstance] exceptionWithopdata:info];
+    [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info];
 }
 
 

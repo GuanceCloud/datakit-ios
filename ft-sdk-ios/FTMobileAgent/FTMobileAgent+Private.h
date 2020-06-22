@@ -60,12 +60,8 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 */
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode,  id responseObject))callBack;
 /**
- * 崩溃日志抓取
+ * logging 崩溃日志与控制台日志 写入
 */
-- (void)exceptionWithopdata:(NSString *)content;
-/**
- * 系统日志抓取
-*/
-- (void)traceConsoleLog:(NSString *)content;
+- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content;
 @end
 #endif /* FTMobileAgent_Private_h */

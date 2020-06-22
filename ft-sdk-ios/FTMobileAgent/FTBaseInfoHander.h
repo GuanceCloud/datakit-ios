@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  FTStatus 字符串转换
 */
-+(NSString *)getFTstatueStr:(FTStatus)status;
++(NSString *)ft_getFTstatueStr:(FTStatus)status;
 @end
 
 NS_ASSUME_NONNULL_END

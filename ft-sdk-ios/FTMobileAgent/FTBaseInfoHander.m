@@ -683,7 +683,7 @@
     }
     return result;
 }
-+(NSString *)getFTstatueStr:(FTStatus)status{
++(NSString *)ft_getFTstatueStr:(FTStatus)status{
     NSString *str = nil;
     switch (status) {
         case FTStatusInfo:

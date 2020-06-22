@@ -300,27 +300,27 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
       
 }
 -(FTRecordModel *)getLoggingModel:(FTLoggingBean *)logging{
-    NSMutableDictionary *tagDict = @{FT_KEY_CLASS:@"tracing"}.mutableCopy;
-    
-    [tagDict setValue:[FTBaseInfoHander getFTstatueStr:logging.status] forKey:FT_KEY_STATUS];
+    NSMutableDictionary *tagDict = [NSMutableDictionary new];
+    [tagDict setValue:[FTBaseInfoHander ft_getFTstatueStr:logging.status] forKey:FT_KEY_STATUS];
     [tagDict setValue:logging.serviceName forKey:FT_KEY_SERVICENAME];
     [tagDict setValue:logging.parentID forKey:FT_KEY_PARENTID];
     [tagDict setValue:logging.operationName forKey:FT_KEY_OPERATIONNAME];
     [tagDict setValue:logging.spanID forKey:FT_KEY_SPANID];
     [tagDict setValue:logging.traceID forKey:FT_FLOW_TRACEID];
-    [tagDict setValue:[NSNumber numberWithBool:logging.isError] forKey:FT_KEY_ISERROR];
+    [tagDict setValue:logging.isError forKey:FT_KEY_ISERROR];
+    [tagDict setValue:logging.classStr forKey:FT_KEY_CLASS];
     [logging.tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-          if (![tagDict.allKeys containsObject:key]) {
-              [tagDict setValue:obj forKey:key];
-          }
-      }];
+        if (![tagDict.allKeys containsObject:key]) {
+            [tagDict setValue:obj forKey:key];
+        }
+    }];
     NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
     if(logging.deviceUUID){
         uuid = logging.deviceUUID;
-       }
+    }
     [tagDict setValue:uuid forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
     NSMutableDictionary *fieldDict = @{FT_KEY_CONTENT:logging.content}.mutableCopy;
-    [fieldDict setValue:[NSNumber numberWithInt:logging.duration] forKey:FT_KEY_DURATION];
+    [fieldDict setValue:logging.duration forKey:FT_KEY_DURATION];
     [fieldDict addEntriesFromDictionary:logging.field];
     return  [self getRecordModelWithMeasurement:logging.measurement tags:tagDict field:fieldDict op:@"cstmLogging" netType:FTNetworkingTypeLogging];
 }
@@ -410,13 +410,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (keyevent.title.length>0) {
                 [list addObject:[self getKeyeventModel:keyevent]];
             }else{
-                ZYLog(@"传入的第 %d 个数据格式有误",idx);
+                ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
             }
         }];
         if (list.count>0) {
             [self trackUpload:list callBack:callBackStatus];
         }else{
-            ZYLog(@"传入的数据格式有误");
+            ZYErrorLog(@"传入的数据格式有误");
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
     } @catch (NSException *exception) {
@@ -428,7 +428,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags setValue:keyevent.eventId forKey:FT_KEY_EVENTID];
     [tags setValue:keyevent.source forKey:FT_KEY_SOURCE];
-    [tags setValue:[FTBaseInfoHander getFTstatueStr:keyevent.status] forKey:FT_KEY_STATUS];
+    [tags setValue:[FTBaseInfoHander ft_getFTstatueStr:keyevent.status] forKey:FT_KEY_STATUS];
     [tags setValue:keyevent.ruleId forKey:FT_KEY_RULEID];
     [tags setValue:keyevent.ruleName forKey:FT_KEY_RULENAME];
     [tags setValue:keyevent.type forKey:FT_KEY_TYPE];
@@ -537,14 +537,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
               ZYErrorLog(@"文件名 事件名不能为空");
               return;
           }
+      //采集率 控制全埋点与
+       if (!self.isWriteDatabase) {
+           return;
+       }
        NSString *op;
        if (trackType == FTTrackTypeCode) {
-           op = @"cstm";
+           op = FT_TRACK_OP_CUSTOM;
        }else{
-           if (!self.isWriteDatabase) {
-               return;
-           }
-           op = [field valueForKey:@"event"];
+           op = [field valueForKey:FT_AUTO_TRACK_EVENT];
        }
        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
@@ -565,10 +566,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 return;
             }
             productStr =[NSString stringWithFormat:@"__flow_%@",product];
-            op = @"flowcstm";
+            op = FT_TRACK_OP_FLOWCUSTOM;
         }else{
             productStr = product;
-            op = @"view";
+            op = FT_AUTO_TRACK_OP_VIEW;
         }
         NSMutableDictionary *fieldDict = @{FT_KEY_DURATION:[NSNumber numberWithLong:duration]}.mutableCopy;
         NSMutableDictionary *tagsDict =@{FT_FLOW_TRACEID:traceId,
@@ -588,30 +589,17 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)exceptionWithopdata:(NSString *)content {
-    if (!content || content.length == 0) {
-        return;
-    }
-    NSString *op = @"exception";
-    NSString *status = @"error";
-    [self _loggingBackgroundInsertWithOP:op status:status content:content];
-}
-- (void)traceConsoleLog:(NSString *)content{
-    if (!content || content.length == 0) {
-        return;
-    }
-    NSString *op = @"consolelog";
-    NSString *status = @"info";
-    [self _loggingBackgroundInsertWithOP:op status:status content:content];
-}
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
+    if (!content || content.length == 0) {
+        return;
+    }
     NSDictionary *tag = @{FT_KEY_STATUS:status,
                              FT_KEY_SERVICENAME:self.config.traceServiceName,
                              FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
        };
        NSDictionary *filed = @{FT_KEY_CONTENT:content};
       
-       FTRecordModel *model = [self getRecordModelWithMeasurement:@"ft_mobile_sdk_ios" tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
+       FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
@@ -621,7 +609,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [tagsDict addEntriesFromDictionary:tags];
     }
-    if (![op isEqualToString:@"flowcstm"] && ![op isEqualToString:@"view"]&&![op isEqualToString:@"exception"] && ![type isEqualToString:FTNetworkingTypeLogging] &&![type isEqualToString:FTNetworkingTypeKeyevent]) {
+    //METRICS 中流程图不添加监控项
+    if (![op isEqualToString:FT_TRACK_OP_FLOWCUSTOM] && ![op isEqualToString:FT_AUTO_TRACK_OP_VIEW] && [type isEqualToString:FT_NETWORKING_API_METRICS]) {
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
             [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
@@ -720,7 +709,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         self.isForeground = YES;
         NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
-        NSDictionary *tag = @{FT_KEY_CLASS:@"Dataflux iOS SDK",
+        NSDictionary *tag = @{FT_KEY_CLASS:FT_DEFAULT_CLASS,
                               FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
         };
         NSDictionary *dict = @{FT_KEY_NAME:deviceUUID,
