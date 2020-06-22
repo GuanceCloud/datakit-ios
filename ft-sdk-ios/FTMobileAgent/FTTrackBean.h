@@ -49,7 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *measurement;
 ///日志内容，纯文本或 JSONString 都可以 (必填)
 @property (nonatomic, copy) NSString *content;
-
+///日志的子分类，目前仅支持：tracing：表示该日志是链路追踪日志
+@property (nonatomic, copy) NSString *classStr;
 ///日志来源，日志上报后，会自动将指定的指标集名作为该标签附加到该条日志上
 @property (nonatomic, copy) NSString *source;
 ///日志所属业务或服务的名称，建议用户通过该标签指定产生该日志业务系统的名称
@@ -66,13 +67,13 @@ NS_ASSUME_NONNULL_BEGIN
 ///用于链路日志，表示当前链路的 ID
 @property (nonatomic, copy) NSString *traceID;
 ///布尔值，true 表示该 span 的请求响应是错误,false 或者无该标签，表示该 span 的响应是正常的请求
-@property (nonatomic, assign) BOOL isError;
+@property (nonatomic, strong) NSNumber *isError;
 ///自定义标签  （可选）
 @property (nonatomic, strong) NSDictionary *tags;
 ///自定义指标  （可选）
 @property (nonatomic, strong) NSDictionary *field;
 ///用于链路日志，当前链路的请求响应时间，微秒为单位
-@property (nonatomic, assign) int duration;
+@property (nonatomic, strong) NSNumber *duration;
 ///设备UUID
 @property (nonatomic, copy) NSString *deviceUUID;
 
@@ -105,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///事件处理建议 支持 markdown 格式
 @property (nonatomic, copy) NSString *suggestion;
 ///事件的持续时间 单位为微秒
-@property (nonatomic, assign) int duration;
+@property (nonatomic, strong) NSNumber *duration;
 ///触发维度 JSONString  例如：假设新建触发规则时设置的触发维度为 host,cpu，则该值为 ["host","cpu"]
 @property (nonatomic, copy) NSString *dimensions;
 ///设备UUID
