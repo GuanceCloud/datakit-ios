@@ -7,7 +7,7 @@
 //
 
 #import "FTLogHook.h"
-#import "fishhook.h"
+#import "FTfishhook.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
@@ -120,20 +120,20 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
 @implementation FTLogHook
 
 + (void)hook{
-    rebind_symbols((struct rebinding[1]){{
+    ft_rebind_symbols((struct ft_rebinding[1]){{
         "writev",
         asl_writev,
         (void*)&orig_writev
     }}, 1);
     
     // hook fwrite
-    rebind_symbols((struct rebinding[1]){{
+    ft_rebind_symbols((struct ft_rebinding[1]){{
         "fwrite",
         asl_fwrite,
         (void *)&orig_fwrite}}, 1);
     
     // hook fprintf
-    rebind_symbols((struct rebinding[1]){{
+    ft_rebind_symbols((struct ft_rebinding[1]){{
         "fprintf",
         asl_fprintf,
         (void *)&origin_fprintf}}, 1);

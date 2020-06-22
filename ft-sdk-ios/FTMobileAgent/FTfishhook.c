@@ -21,7 +21,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "fishhook.h"
+#include "FTfishhook.h"
 
 #include <dlfcn.h>
 #include <stdbool.h>
@@ -55,7 +55,7 @@ typedef struct nlist nlist_t;
 #endif
 
 struct rebindings_entry {
-  struct rebinding *rebindings;
+  struct ft_rebinding *rebindings;
   size_t rebindings_nel;
   struct rebindings_entry *next;
 };
@@ -63,18 +63,18 @@ struct rebindings_entry {
 static struct rebindings_entry *_rebindings_head;
 
 static int prepend_rebindings(struct rebindings_entry **rebindings_head,
-                              struct rebinding rebindings[],
+                              struct ft_rebinding rebindings[],
                               size_t nel) {
   struct rebindings_entry *new_entry = (struct rebindings_entry *) malloc(sizeof(struct rebindings_entry));
   if (!new_entry) {
     return -1;
   }
-  new_entry->rebindings = (struct rebinding *) malloc(sizeof(struct rebinding) * nel);
+  new_entry->rebindings = (struct ft_rebinding *) malloc(sizeof(struct ft_rebinding) * nel);
   if (!new_entry->rebindings) {
     free(new_entry);
     return -1;
   }
-  memcpy(new_entry->rebindings, rebindings, sizeof(struct rebinding) * nel);
+  memcpy(new_entry->rebindings, rebindings, sizeof(struct ft_rebinding) * nel);
   new_entry->rebindings_nel = nel;
   new_entry->next = *rebindings_head;
   *rebindings_head = new_entry;
@@ -224,9 +224,9 @@ static void _rebind_symbols_for_image(const struct mach_header *header,
     rebind_symbols_for_image(_rebindings_head, header, slide);
 }
 
-int rebind_symbols_image(void *header,
+int ft_rebind_symbols_image(void *header,
                          intptr_t slide,
-                         struct rebinding rebindings[],
+                         struct ft_rebinding rebindings[],
                          size_t rebindings_nel) {
     struct rebindings_entry *rebindings_head = NULL;
     int retval = prepend_rebindings(&rebindings_head, rebindings, rebindings_nel);
@@ -238,7 +238,7 @@ int rebind_symbols_image(void *header,
     return retval;
 }
 
-int rebind_symbols(struct rebinding rebindings[], size_t rebindings_nel) {
+int ft_rebind_symbols(struct ft_rebinding rebindings[], size_t rebindings_nel) {
   int retval = prepend_rebindings(&_rebindings_head, rebindings, rebindings_nel);
   if (retval < 0) {
     return retval;
