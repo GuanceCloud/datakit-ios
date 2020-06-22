@@ -10,7 +10,7 @@
 #import "FTBaseInfoHander.h"
 #import "FTLog.h"
 #import "FTMobileAgentVersion.h"
-
+#import "FTConstants.h"
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 #define FTAPP_DNAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
@@ -36,7 +36,7 @@
         _enableDescLog = NO;
         _enableTrackAppCrash= NO;
         _collectRate = 1;
-        _traceServiceName = @"dataflux sdk";
+        _traceServiceName = FT_DEFAULT_SERVICE_NAME;
         _networkTrace = NO;
         _traceConsoleLog = NO;
         _eventFlowLog = NO;

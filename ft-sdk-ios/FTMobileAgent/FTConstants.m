@@ -14,6 +14,8 @@ NSString * const FT_AGENT_TAGS  = @"tags";
 NSString * const FT_AGENT_OPDATA  = @"opdata";
 NSString * const FT_AGENT_OP  = @"op";
 
+NSString * const FT_USER_AGENT = @"ft_mobile_sdk_ios";
+NSString * const FT_DEFAULT_SERVICE_NAME = @"dataflux sdk";
 NSString * const FT_NULL_VALUE  = @"N/A";
 
 NSString * const FT_FLOW_CHART_PRODUCT  = @"__flow_mobile_activity";
@@ -29,6 +31,12 @@ NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
 NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
+NSString * const FT_AUTO_TRACK_OP_VIEW = @"view";
+NSString * const FT_TRACK_OP_CUSTOM = @"cstm";
+NSString * const FT_TRACK_OP_FLOWCUSTOM = @"flowcstm";
+NSString * const FT_TRACK_LOGGING_EXCEPTION = @"exception";
+NSString * const FT_TRACK_LOGGING_CONSOLELOG = @"consolelog";
+
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
 NSString * const FT_AUTO_TRACK_EVENT = @"event";
@@ -166,8 +174,6 @@ NSString *const FT_KEY_TITLE = @"__title";
 NSString *const FT_KEY_SUGGESTION = @"__suggestion";
 NSString *const FT_KEY_DISMENSIONS = @"__dimensions";
 
-
-
-
+NSString *const FT_DEFAULT_CLASS =@"Dataflux iOS SDK";
 
 

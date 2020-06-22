@@ -174,7 +174,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         while ([[FTTrackerEventDBTool sharedManger] getFirstTenData:type]>0){
             ZYDebug(@"DB DATAS COUNT = %ld",[[FTTrackerEventDBTool sharedManger] getDatasCount]);
             NSArray *updata;
-            if (self.config.needBindUser) {
+            if (self.config.needBindUser && [type isEqualToString:FT_NETWORKING_API_METRICS]) {
                 updata = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:type];
             }else{
                 updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData:type];
@@ -316,7 +316,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
      //设置请求参数
      [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-     [mutableRequest setValue:@"ft_mobile_sdk_ios" forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:FT_USER_AGENT forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
      if (self.config.enableRequestSigning) {

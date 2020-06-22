@@ -14,6 +14,8 @@ extern NSString * const FT_AGENT_FIELD;
 extern NSString * const FT_AGENT_TAGS;
 extern NSString * const FT_AGENT_OPDATA;
 extern NSString * const FT_AGENT_OP;
+extern NSString * const FT_USER_AGENT;
+extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_NULL_VALUE;
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
@@ -27,8 +29,12 @@ extern NSString * const FT_AUTO_TRACK_OP_ENTER;
 extern NSString * const FT_AUTO_TRACK_OP_LEAVE;
 extern NSString * const FT_AUTO_TRACK_OP_CLICK;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
+extern NSString * const FT_AUTO_TRACK_OP_VIEW;
+extern NSString * const FT_TRACK_OP_CUSTOM;
+extern NSString * const FT_TRACK_OP_FLOWCUSTOM;
 extern NSString * const FT_AUTO_TRACK_OP_OPEN;
-
+extern NSString * const FT_TRACK_LOGGING_EXCEPTION;
+extern NSString * const FT_TRACK_LOGGING_CONSOLELOG;
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_AUTO_TRACK_EVENT_ID;
 extern NSString * const FT_AUTO_TRACK_EVENT;
@@ -160,3 +166,4 @@ extern NSString *  const FT_KEY_TITLE;
 extern NSString *  const FT_KEY_SUGGESTION;
 extern NSString *  const FT_KEY_DISMENSIONS;
 
+extern NSString *  const FT_DEFAULT_CLASS;
