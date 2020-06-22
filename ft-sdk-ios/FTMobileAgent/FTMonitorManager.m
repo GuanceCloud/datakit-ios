@@ -591,13 +591,15 @@ static dispatch_once_t onceToken;
         NSDictionary *content = @{
                                   
                                   FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
-                                  FT_NETWORK_REQUEST_CONTENT:[task.originalRequest ft_getRequestContent]
+                                  FT_NETWORK_REQUEST_CONTENT:[task.currentRequest ft_getRequestContent]
         };
         FTLoggingBean *logging = [FTLoggingBean new];
+        logging.measurement = FT_USER_AGENT;
         logging.classStr = @"tracing";
         logging.operationName = [task.originalRequest ft_getOperationName];
         logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-        logging.duration = [NSNumber numberWithDouble:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000];
+        double time = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000;
+        logging.duration = [NSNumber numberWithInt:time];
         logging.serviceName = FT_DEFAULT_SERVICE_NAME;
         //spanID、traceID 待处理
         logging.spanID =[FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
