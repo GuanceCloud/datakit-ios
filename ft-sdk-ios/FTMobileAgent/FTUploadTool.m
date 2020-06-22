@@ -193,7 +193,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                     return;
                 }
                 NSInteger statusCode = response.statusCode;
-                success = (statusCode >=200 && statusCode < 400);
+                success = (statusCode >=200 && statusCode < 500);
                 if (statusCode ==200){
                     NSMutableDictionary *responseObject;
                     NSError *errors;
