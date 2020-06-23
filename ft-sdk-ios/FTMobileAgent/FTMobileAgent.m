@@ -314,6 +314,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tagDict setValue:obj forKey:key];
         }
     }];
+    if (![[tagDict allKeys] containsObject:FT_KEY_SERVICENAME]) {
+        [tagDict setValue:self.config.traceServiceName forKey:FT_KEY_SERVICENAME];
+    }
+    [tagDict setValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] forKey:FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER];
     NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
     if(logging.deviceUUID){
         uuid = logging.deviceUUID;
@@ -447,7 +451,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *field = @{FT_KEY_TITLE:keyevent.title}.mutableCopy;
     [field setValue:keyevent.content forKey:FT_KEY_CONTENT];
     [field setValue:keyevent.suggestion forKey:FT_KEY_SUGGESTION];
-    [field setValue:[NSNumber numberWithInt:keyevent.duration] forKey:FT_KEY_DURATION];
+    [field setValue:keyevent.duration forKey:FT_KEY_DURATION];
     [field setValue:keyevent.dimensions forKey:FT_KEY_DISMENSIONS];
     
     return  [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FTNetworkingTypeKeyevent netType:FTNetworkingTypeKeyevent];
@@ -600,8 +604,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     NSMutableDictionary *tag = @{FT_KEY_STATUS:status,
-                          FT_KEY_SERVICENAME:self.config.traceServiceName,
-                          FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                 FT_KEY_SERVICENAME:self.config.traceServiceName,
+                                 FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                 FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
     }.mutableCopy;
     if ([op isEqualToString:FT_TRACK_LOGGING_EXCEPTION]) {
         NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];

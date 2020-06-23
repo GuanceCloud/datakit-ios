@@ -600,7 +600,7 @@ static dispatch_once_t onceToken;
         logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
         double time = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000;
         logging.duration = [NSNumber numberWithInt:time];
-        logging.serviceName = FT_DEFAULT_SERVICE_NAME;
+        logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
         //spanID、traceID 待处理
         logging.spanID =[FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
         logging.traceID = [NSUUID UUID].UUIDString;

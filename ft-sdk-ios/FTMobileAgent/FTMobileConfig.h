@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableDescLog;
 /*设置是否需要采集崩溃日志*/
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
-/*设置抓取的日志来源*/
+/*设置日志所属业务或服务的名称*/
 @property (nonatomic, copy) NSString *traceServiceName;
 /**
  * 设置网络请求信息采集 默认为NO
