@@ -136,7 +136,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
         [self judgeIsWriteDatabase];
         if (self.config.traceConsoleLog) {
-            [FTLogHook hook];
+            [self _traceConsoleLog];
         }
     }
     return self;
@@ -200,7 +200,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
             return;
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:@"cstm" netType:FTNetworkingTypeMetrics];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics];
         [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
@@ -213,7 +213,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         __block NSMutableArray *list = [NSMutableArray new];
         [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
-                FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:@"cstm" netType:FTNetworkingTypeMetrics];
+                FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics];
                 if(obj.timeMillis && obj.timeMillis>1000000000000){
                     model.tm = obj.timeMillis*1000;
                 }
@@ -295,7 +295,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
     } @catch (NSException *exception) {
-        ZYLog(@"loggingImmediateList exception = %@",exception);
+        ZYErrorLog(@"exception = %@",exception);
     }
       
 }
@@ -588,6 +588,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
+}
+- (void)_traceConsoleLog{
+    __weak typeof(self) weakSelf = self;
+    [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr) {
+        [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
+    }];
 }
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
     if (!content || content.length == 0) {

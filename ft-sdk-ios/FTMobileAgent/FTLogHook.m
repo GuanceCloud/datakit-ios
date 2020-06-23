@@ -11,6 +11,8 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
+static FTFishHookCallBack FTHookCallBack;
+
 static ssize_t (*orig_writev)(int a, const struct iovec * v, int v_len);
 
 // swizzle method
@@ -23,8 +25,8 @@ ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
     }
     
     ////////// do something  这里可以捕获到日志 string
-    if(![string containsString:@"[FTLog]"]){
-        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:string];
+    if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
+        FTHookCallBack(string);
     }
     // invoke origin mehtod
     ssize_t result = orig_writev(a, v, v_len);
@@ -53,8 +55,8 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     NSString *string = [[NSString alloc] initWithFormat:formatter arguments:args];
     
     ////////// do something  这里可以捕获到日志
-    if(![string containsString:@"[FTLog]"]){
-        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:string];
+    if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
+        FTHookCallBack(string);
     }
     // invoke orign fprintf
     int result = origin_fprintf(file, [string UTF8String]);
@@ -98,8 +100,8 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
             reset_buffer();
             
             ////////// do something  这里可以捕获到日志
-            if(![s containsString:@"[FTLog]"]){
-                [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:s];
+            if(s.length>0&&![s containsString:@"[FTLog]"]&&FTHookCallBack){
+                FTHookCallBack(s);
             }
         }
         else {
@@ -119,7 +121,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
 }
 @implementation FTLogHook
 
-+ (void)hook{
++ (void)hookWithBlock:(FTFishHookCallBack)callBack{
     ft_rebind_symbols((struct ft_rebinding[1]){{
         "writev",
         asl_writev,
@@ -137,7 +139,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
         "fprintf",
         asl_fprintf,
         (void *)&origin_fprintf}}, 1);
-    
+    FTHookCallBack = callBack;
 }
 
 

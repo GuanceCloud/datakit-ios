@@ -9,10 +9,11 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+typedef void(^FTFishHookCallBack)(NSString *logStr);
 
 @interface FTLogHook : NSObject
 
-+ (void)hook;
++ (void)hookWithBlock:(FTFishHookCallBack)callBack;
 @end
 
 NS_ASSUME_NONNULL_END
