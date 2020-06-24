@@ -177,3 +177,8 @@ NSString *const FT_KEY_DISMENSIONS = @"__dimensions";
 NSString *const FT_DEFAULT_CLASS =@"Dataflux iOS SDK";
 
 NSString *const FT_APP_VERSION_NAME = @"app_version_name";
+
+NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
+NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
+NSString *const FT_NETWORK_ZIPKIN_SAMPLED =@"X-B3-Sampled";
+NSString *const FT_NETWORK_JAEGER_TRACEID = @"uber-trace-id";
