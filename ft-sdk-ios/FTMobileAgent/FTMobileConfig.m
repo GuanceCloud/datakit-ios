@@ -40,6 +40,7 @@
         _networkTrace = NO;
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
+        _networkTrace = FTNetworkTrackTypeZipkin;
     }
       return self;
 }
@@ -71,6 +72,7 @@
     options.traceConsoleLog = self.traceConsoleLog;
     options.networkTrace = self.networkTrace;
     options.eventFlowLog = self.eventFlowLog;
+    options.networkTraceType = self.networkTraceType;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
@@ -105,5 +107,9 @@
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
     return deviceId;
+}
+-(void)networkTraceWithTraceType:(FTNetworkTrackType)type{
+    self.networkTrace = YES;
+    self.networkTraceType = type;
 }
 @end

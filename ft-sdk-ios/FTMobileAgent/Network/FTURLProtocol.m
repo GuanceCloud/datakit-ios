@@ -8,7 +8,10 @@
 
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-#import "FTLog.h"
+#import "FTMobileAgent+Private.h"
+#import "FTBaseInfoHander.h"
+#import "FTConstants.h"
+#import "NSURLRequest+FTMonitor.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -81,10 +84,19 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 //开始请求
 - (void)startLoading
 {
-    
-    ZYLog(@"***监听接口：%@", self.request.URL.absoluteString);
-    
+        
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
+    if (![mutableReqeust.URL.host isEqualToString:[NSURL URLWithString:[FTMobileAgent sharedInstance].config.metricsUrl].host]&&[FTMobileAgent sharedInstance].config.networkTrace) {
+        if ([FTMobileAgent sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
+            [mutableReqeust setValue:[NSUUID UUID].UUIDString forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
+            [mutableReqeust setValue:@"1" forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
+        }else{
+            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[NSUUID UUID].UUIDString,[FTBaseInfoHander ft_getNetworkSpanID]];
+            [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+        }
+    }
+   
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     

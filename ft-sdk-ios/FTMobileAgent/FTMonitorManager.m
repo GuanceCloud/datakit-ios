@@ -602,9 +602,12 @@ static dispatch_once_t onceToken;
         logging.duration = [NSNumber numberWithInt:time];
         logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
         //spanID、traceID 待处理
-        logging.spanID =[FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
-        logging.traceID = [NSUUID UUID].UUIDString;
-        [[FTMobileAgent sharedInstance] loggingBackground:logging];
+        logging.spanID =[FTBaseInfoHander ft_getNetworkSpanID];
+        NSString *trace = [task.originalRequest ft_getNetworkTraceId];
+        if(trace){
+            logging.traceID = trace;
+            [[FTMobileAgent sharedInstance] loggingBackground:logging];
+        }
     }
 }
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{

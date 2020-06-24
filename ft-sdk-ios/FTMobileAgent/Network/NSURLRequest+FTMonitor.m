@@ -7,6 +7,7 @@
 //
 
 #import "NSURLRequest+FTMonitor.h"
+#import "FTConstants.h"
 
 @implementation NSURLRequest (FTMonitor)
 - (NSData *)ft_getBodyData{
@@ -75,5 +76,21 @@
 }
 - (NSString *)ft_getOperationName{
     return [NSString stringWithFormat:@"%@/http",self.HTTPMethod];
+}
+- (NSString *)ft_getNetworkTraceId{
+    NSDictionary *header = self.allHTTPHeaderFields;
+    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
+        return header[FT_NETWORK_ZIPKIN_TRACEID];
+
+    }
+    if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
+        NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
+        NSArray *traceAry = [trace componentsSeparatedByString:@":"];
+        if (traceAry.count == 4) {
+           return  [traceAry firstObject];
+        }
+        return nil;
+    }
+    return nil;
 }
 @end

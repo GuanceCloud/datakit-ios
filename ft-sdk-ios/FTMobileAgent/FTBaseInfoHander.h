@@ -89,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  FTStatus 字符串转换
 */
 +(NSString *)ft_getFTstatueStr:(FTStatus)status;
++(NSString *)ft_getNetworkSpanID;
 @end
 
 NS_ASSUME_NONNULL_END

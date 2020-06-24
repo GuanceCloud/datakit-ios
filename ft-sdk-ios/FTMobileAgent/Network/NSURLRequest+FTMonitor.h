@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSData *)ft_getBodyData;
 - (NSString *)ft_getRequestContent;
 - (NSString *)ft_getOperationName;
+- (NSString *)ft_getNetworkTraceId;
 @end
 
 NS_ASSUME_NONNULL_END

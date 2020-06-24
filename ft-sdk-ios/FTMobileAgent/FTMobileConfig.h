@@ -78,6 +78,11 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeSensorTorch        = 1 << 18,
     FTMonitorInfoTypeFPS                = 1 << 19,
 };
+
+typedef NS_ENUM(NSInteger, FTNetworkTrackType) {
+    FTNetworkTrackTypeZipkin          = 0,
+    FTNetworkTrackTypeJaeger          = 1,
+};
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
@@ -132,7 +137,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
 @property (nonatomic, copy) NSString *XDataKitUUID;
-
+/**
+ * 设置采样率 0-1 默认为 1
+ */
+@property (nonatomic, assign) float collectRate;
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
  * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
@@ -188,10 +196,6 @@ NS_ASSUME_NONNULL_BEGIN
 /*设置日志所属业务或服务的名称*/
 @property (nonatomic, copy) NSString *traceServiceName;
 /**
- * 设置网络请求信息采集 默认为NO
-*/
-@property (nonatomic, assign) BOOL networkTrace;
-/**
  *设置是否需要采集控制台日志 默认为NO
  */
 @property (nonatomic, assign) BOOL traceConsoleLog;
@@ -199,10 +203,21 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置事件、流程图转化为日志数据  默认为NO
 */
 @property (nonatomic, assign) BOOL eventFlowLog;
+
+#pragma mark - 网络请求信息采集
 /**
- * 设置采样率 0-1 默认为 1
- */
-@property (nonatomic, assign) float collectRate;
+ * 设置网络请求信息采集 默认为NO
+*/
+@property (nonatomic, assign) BOOL networkTrace;
+/**
+ *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
+*/
+@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
+/**
+ *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
+ *  @param  type   链路追踪类型 默认为 Zipkin
+*/
+-(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 @end
 
 NS_ASSUME_NONNULL_END

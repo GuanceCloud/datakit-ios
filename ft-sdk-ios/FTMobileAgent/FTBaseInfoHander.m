@@ -704,4 +704,7 @@
     }
     return str;
 }
++(NSString *)ft_getNetworkSpanID{
+    return [FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
+}
 @end
