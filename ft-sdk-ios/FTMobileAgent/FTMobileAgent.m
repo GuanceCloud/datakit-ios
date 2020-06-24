@@ -595,9 +595,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
-    [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr) {
-        [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr) {
+            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
+        }];
+    });
 }
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
     if (!content || content.length == 0) {
