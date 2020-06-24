@@ -142,6 +142,9 @@
     id<ZY_AspectToken> tableToken =[UITableView aspect_hookSelector:@selector(setDelegate:)
                                                         withOptions:ZY_AspectPositionAfter
                                                          usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
+        if(![target respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
+            return;
+        }
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
@@ -155,6 +158,9 @@
                                                                   withOptions:ZY_AspectPositionAfter
                                                                    usingBlock:^(id<ZY_AspectInfo> aspectInfo,id target) {
         if([NSStringFromClass([target class]) isEqualToString:@"TUICandidateGrid"]){
+            return;
+        }
+        if(![target respondsToSelector:@selector(collectionView:didSelectItemAtIndexPath:)]){
             return;
         }
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
