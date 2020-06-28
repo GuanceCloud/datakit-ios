@@ -90,7 +90,7 @@
     - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
   ```
  	
-### 2.设置日志    
+### 2.设置日志相关    
  - enableLog 打印日志    
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableLog` 属性。
@@ -239,8 +239,27 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  * 设置采样率 0-1 默认为 1
  */
 @property (nonatomic, assign) float collectRate;
-  ```
+  ```    
   
+### 8.设置网络追踪
+  
+  ``` objective-c   
+/**
+ * 设置网络请求信息采集 默认为NO
+ */
+@property (nonatomic, assign) BOOL networkTrace;
+/**
+ *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
+ *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger
+ */
+@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
+/**
+ *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
+ *  @param  type   链路追踪类型 默认为 Zipkin
+ */
+-(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
+
+  ```
    
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
@@ -450,11 +469,11 @@ typedef enum FTError : NSInteger {
 |    operationName    |  NSString      |   否    |  用于链路日志，表示当前 span 操作名，也可理解为 span 名称    |
 |    spanID    |  NSString      |   否    |  用于链路日志，表示当前 span 的 ID    |
 |    traceID    |  NSString      |   否    |  用于链路日志，表示当前链路的 ID    |
-|    errorCode    |  int      |   否    |  用于链路日志，请求的响应代码，例如 200 表示请求成功     |
+|    isError    |  NSNumber      |   否    |  布尔值类型number，true 表示该 span 的请求响应是错误,false 或者无该标签，表示该 span 的响应是正常的请求     |
 |    tags    |  NSDictionary      |   否    |  自定义标签   |
 |    field    |  NSDictionary      |   否    |  自定义指标  （可选）   |
 |    deviceUUID    |  NSString      |   否    |  设备UUID    |
-|    duration    |  int      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
+|    duration    |  NSNumber      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
     
  * 方法使用示例
  
@@ -577,7 +596,7 @@ typedef enum FTError : NSInteger {
 |    tags   | NSDictionary   |  否    |  用户自定义的标签|
 |    content    | NSString       |   否    | 事件内容 支持 markdown 格式|
 |    suggestion  |  NSString   |   否  |   事件处理建议 支持 markdown 格式   |
-|    duration   | int   |  否    |  事件的持续时间 单位为微秒|
+|    duration   | NSNumber   |  否    |  事件的持续时间 单位为微秒|
 |    dimensions    | NSString （JSONString ） |   否    | 触发维度 JSONString  例如：假设新建触发规则时设置的触发维度为 host,cpu，则该值为 ["host","cpu"] |
 |    deviceUUID  |  NSString   |   否  |   设备UUID   |
 
@@ -701,16 +720,17 @@ typedef enum FTError : NSInteger {
 ### 1.监控周期设置 
   在 `FTMobileConfig` 中设置 `flushInterval `。
 
-    1.  方法 
-      ​       
- ```objective-c  
-// FTMobileAgent  
-/**
+ 1.  方法     
+    
+ ```objective-c   
+ // FTMobileAgent  
+ /**
  * 设置 监控上传周期 默认为 10 秒
  */
 -(void)setMonitorFlushInterval:(NSInteger)interval;
  ```
-    2. 使用示例：
+    
+ 2. 使用示例：
 
 
  ```objective-c   
@@ -721,7 +741,7 @@ typedef enum FTError : NSInteger {
  ```
 
 ###  2. 启动上传    
-    1.  方法    
+ 1.  方法    
 
  ```objective-c    
 /**
@@ -738,7 +758,8 @@ typedef enum FTError : NSInteger {
 */
 -(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
  ```
-    2. 使用示例：
+  
+ 2. 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
@@ -751,7 +772,7 @@ typedef enum FTError : NSInteger {
   ```
 
 ### 3.关闭上传 
-    1.  方法    
+  1.  方法    
 
  ```objective-c    
 /**
@@ -761,7 +782,7 @@ typedef enum FTError : NSInteger {
  ```
 
 
-    2. 使用示例：
+  2. 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] stopMonitorFlush];
