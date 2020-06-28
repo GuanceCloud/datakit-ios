@@ -78,7 +78,14 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeSensorTorch        = 1 << 18,
     FTMonitorInfoTypeFPS                = 1 << 19,
 };
-
+/**
+ * @enum
+ * 网络链路追踪使用类型
+ *
+ * @constant
+ *   FTNetworkTrackTypeZipkin       - Zipkin
+ *   FTNetworkTrackTypeJaeger       - Jaeger
+ */
 typedef NS_ENUM(NSInteger, FTNetworkTrackType) {
     FTNetworkTrackTypeZipkin          = 0,
     FTNetworkTrackTypeJaeger          = 1,
@@ -145,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
  */
-@property (nonatomic) BOOL enableAutoTrack;
+@property (nonatomic, assign) BOOL enableAutoTrack;
 /**
  * @property
  *
@@ -201,6 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL traceConsoleLog;
 /**
  * 设置事件、流程图转化为日志数据  默认为NO
+ * 需 AutoTrack 开启 ，设置对应采集类型时生效
 */
 @property (nonatomic, assign) BOOL eventFlowLog;
 
