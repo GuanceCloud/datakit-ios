@@ -113,31 +113,36 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return sharedInstance;
 }
 - (instancetype)initWithConfig:(FTMobileConfig *)config{
-    if ([super init]) {
-        //基础类型的记录
-        if (config) {
-            self.config = config;
+    @try {
+        self = [super init];
+        if (self) {
+            //基础类型的记录
+            if (config) {
+                self.config = config;
+            }
+            [FTLog enableLog:config.enableLog];
+            [FTLog enableDescLog:config.enableDescLog];
+            [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
+            NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
+            self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
+            NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
+            self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
+            [self setupAppNetworkListeners];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
+            if (self.config.enableAutoTrack) {
+                [self startAutoTrack];
+            }
+            if (self.config.enableTrackAppCrash) {
+                [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
+            }
+            self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
+            [self judgeIsWriteDatabase];
+            if (self.config.traceConsoleLog) {
+                [self _traceConsoleLog];
+            }
         }
-        [FTLog enableLog:config.enableLog];
-        [FTLog enableDescLog:config.enableDescLog];
-        [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
-        NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
-        self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
-        NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
-        self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
-        [self setupAppNetworkListeners];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
-        if (self.config.enableAutoTrack) {
-            [self startAutoTrack];
-        }
-        if (self.config.enableTrackAppCrash) {
-            [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
-        }
-        self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
-        [self judgeIsWriteDatabase];
-        if (self.config.traceConsoleLog) {
-            [self _traceConsoleLog];
-        }
+    }@catch(NSException *exception) {
+        ZYErrorLog(@"exception: %@", self, exception);
     }
     return self;
 }
