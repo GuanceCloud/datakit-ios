@@ -592,9 +592,8 @@ static dispatch_once_t onceToken;
             return;
         }
         NSDictionary *content = @{
-                                  
-                                  FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
-                                  FT_NETWORK_REQUEST_CONTENT:[task.currentRequest ft_getRequestContent]
+                                  FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentDictWithData:data],
+                                  FT_NETWORK_REQUEST_CONTENT:[task.currentRequest ft_getRequestContentDict]
         };
         FTLoggingBean *logging = [FTLoggingBean new];
         logging.measurement = FT_USER_AGENT;

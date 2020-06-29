@@ -38,7 +38,19 @@ typedef CFHTTPMessageRef (*DMURLResponseGetHTTPResponse)(CFURLRef response);
     }
     return statusLine;
 }
-
+- (NSDictionary *)ft_getResponseContentDictWithData:(NSData *)data{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    if ([self isKindOfClass:[NSHTTPURLResponse class]]) {
+           NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+        NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
+        [dict setValue:headerFields forKey:@"headers"];
+    }
+    if (data) {
+        NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        [dict setValue:dataStr forKey:@"body"];
+       }
+    return dict;
+}
 - (NSString *)ft_getResponseContentWithData:(NSData *)data{
     NSString *headerStr;
     if ([self isKindOfClass:[NSHTTPURLResponse class]]) {

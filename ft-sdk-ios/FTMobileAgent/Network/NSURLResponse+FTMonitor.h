@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLResponse (FTMonitor)
-- (NSString *)ft_getResponseContentWithData:(NSData *)data;
+- (NSDictionary *)ft_getResponseContentDictWithData:(NSData *)data;
 
 @end
 

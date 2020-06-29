@@ -38,32 +38,24 @@
 }
 
 
-- (NSString *)ft_getRequestContent{
+- (NSDictionary *)ft_getRequestContentDict{
     NSDictionary<NSString *, NSString *> *headerFields = self.allHTTPHeaderFields;
     NSDictionary<NSString *, NSString *> *cookiesHeader = [self dgm_getCookies];
     [headerFields setValue:self.URL.host forKey:@"Host"];
-    // 添加 cookie 信息
     if (cookiesHeader.count) {
-        NSMutableDictionary *headerFieldsWithCookies = [NSMutableDictionary dictionaryWithDictionary:headerFields];
-        [headerFieldsWithCookies addEntriesFromDictionary:cookiesHeader];
-        headerFields = [headerFieldsWithCookies copy];
+           NSMutableDictionary *headerFieldsWithCookies = [NSMutableDictionary dictionaryWithDictionary:headerFields];
+           [headerFieldsWithCookies addEntriesFromDictionary:cookiesHeader];
+           headerFields = [headerFieldsWithCookies copy];
+       }
+    NSMutableDictionary *dict =@{@"method":self.HTTPMethod,
+             @"headers":headerFields,
+                                 @"url":self.URL.absoluteString,
+    }.mutableCopy;
+    NSData *data =[self ft_getBodyData];
+    if (data) {
+        [dict setValue:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] forKey:@"body"];
     }
-    NSString *headerStr = [self ft_getLineStr];
-
-    for (NSString *key in headerFields.allKeys) {
-        headerStr = [headerStr stringByAppendingString:key];
-        headerStr = [headerStr stringByAppendingString:@": "];
-        if ([headerFields objectForKey:key]) {
-            headerStr = [headerStr stringByAppendingString:headerFields[key]];
-        }
-        headerStr = [headerStr stringByAppendingString:@"\n"];
-    }
-    NSData *body =[self ft_getBodyData];
-    if(body.length>0){
-        NSString * bodyStr  =[[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];
-        headerStr = [headerStr stringByAppendingFormat:@"%@",bodyStr];
-    }
-    return headerStr;
+    return dict;
 }
 - (NSDictionary<NSString *, NSString *> *)dgm_getCookies {
     NSDictionary<NSString *, NSString *> *cookiesHeader;
