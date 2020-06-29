@@ -42,7 +42,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 + (id<FTHTTPProtocolDelegate>)delegate
 {
     id<FTHTTPProtocolDelegate> result;
-
+    
     @synchronized (self) {
         result = sDelegate;
     }
@@ -62,15 +62,29 @@ static id<FTHTTPProtocolDelegate> sDelegate;
         return NO;
     }
     
-     if ([scheme isEqualToString:@"http"] ||
-           [scheme isEqualToString:@"https"]) {
-           return YES;
-       }
+    if ([scheme isEqualToString:@"http"] ||
+        [scheme isEqualToString:@"https"]) {
+        return YES;
+    }
     
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    return request;
+    NSMutableURLRequest * mutableReqeust = [request mutableCopy];
+    if (![mutableReqeust.URL.host isEqualToString:[NSURL URLWithString:[FTMobileAgent sharedInstance].config.metricsUrl].host]&&[FTMobileAgent sharedInstance].config.networkTrace) {
+        if ([FTMobileAgent sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
+            [mutableReqeust setValue:[NSUUID UUID].UUIDString forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
+            [mutableReqeust setValue:@"1" forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
+        }else{
+            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[NSUUID UUID].UUIDString,[FTBaseInfoHander ft_getNetworkSpanID]];
+            [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+        }
+        if (!request.HTTPBody) {
+            mutableReqeust.HTTPBody = [request ft_getBodyData];
+        }
+    }
+    return [mutableReqeust copy];
 }
 
 + (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b {
@@ -84,19 +98,9 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 //开始请求
 - (void)startLoading
 {
-        
+    
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    if (![mutableReqeust.URL.host isEqualToString:[NSURL URLWithString:[FTMobileAgent sharedInstance].config.metricsUrl].host]&&[FTMobileAgent sharedInstance].config.networkTrace) {
-        if ([FTMobileAgent sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
-            [mutableReqeust setValue:[NSUUID UUID].UUIDString forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-            [mutableReqeust setValue:@"1" forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-        }else{
-            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[NSUUID UUID].UUIDString,[FTBaseInfoHander ft_getNetworkSpanID]];
-            [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
-        }
-    }
-   
+    
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     
@@ -127,10 +131,10 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 {
     [self.client URLProtocol:self didLoadData:data];
     id<FTHTTPProtocolDelegate> strongeDelegate;
-          strongeDelegate = [[self class] delegate];
-          if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithDataTask:didReceiveData:)]) {
-               [strongeDelegate ftHTTPProtocolWithDataTask:dataTask didReceiveData:data];
-          }
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithDataTask:didReceiveData:)]) {
+        [strongeDelegate ftHTTPProtocolWithDataTask:dataTask didReceiveData:data];
+    }
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
@@ -141,21 +145,21 @@ static id<FTHTTPProtocolDelegate> sDelegate;
         [self.client URLProtocolDidFinishLoading:self];
     }
     id<FTHTTPProtocolDelegate> strongeDelegate;
-       strongeDelegate = [[self class] delegate];
-       if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didCompleteWithError:)]) {
-            [strongeDelegate ftHTTPProtocolWithTask:task didCompleteWithError:error];
-       }
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didCompleteWithError:)]) {
+        [strongeDelegate ftHTTPProtocolWithTask:task didCompleteWithError:error];
+    }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
-       id<FTHTTPProtocolDelegate> strongeDelegate;
-          strongeDelegate = [[self class] delegate];
-          if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didFinishCollectingMetrics:)]) {
-              if (@available(iOS 10.0, *)) {
-                  [strongeDelegate ftHTTPProtocolWithTask:task didFinishCollectingMetrics:metrics];
-              }
-          }
-
+    id<FTHTTPProtocolDelegate> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didFinishCollectingMetrics:)]) {
+        if (@available(iOS 10.0, *)) {
+            [strongeDelegate ftHTTPProtocolWithTask:task didFinishCollectingMetrics:metrics];
+        }
+    }
+    
 }
 
 @end
