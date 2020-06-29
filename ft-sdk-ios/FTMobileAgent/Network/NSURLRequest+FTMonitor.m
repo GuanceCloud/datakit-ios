@@ -41,7 +41,7 @@
 - (NSString *)ft_getRequestContent{
     NSDictionary<NSString *, NSString *> *headerFields = self.allHTTPHeaderFields;
     NSDictionary<NSString *, NSString *> *cookiesHeader = [self dgm_getCookies];
-
+    [headerFields setValue:self.URL.host forKey:@"Host"];
     // 添加 cookie 信息
     if (cookiesHeader.count) {
         NSMutableDictionary *headerFieldsWithCookies = [NSMutableDictionary dictionaryWithDictionary:headerFields];
