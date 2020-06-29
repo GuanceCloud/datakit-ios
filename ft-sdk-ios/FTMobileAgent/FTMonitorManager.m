@@ -588,6 +588,9 @@ static dispatch_once_t onceToken;
         if (![FTMobileAgent sharedInstance].config.networkTrace) {
             return;
         }
+        if (!data) {
+            return;
+        }
         NSDictionary *content = @{
                                   
                                   FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentWithData:data],
