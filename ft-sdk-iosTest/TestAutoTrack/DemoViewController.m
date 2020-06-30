@@ -17,6 +17,7 @@
 #import "TestBluetoothList.h"
 #import "TestCustomTrackVC.h"
 #import "ft_sdk_iosTest-Swift.h"
+#import <FTMobileAgent/FTBaseInfoHander.h>
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -165,11 +166,19 @@
     [test show];
 }
 - (void)testNetworkTrace{
-    
+    NSArray *search = @[@"上海天气",@"鹅鹅鹅",@"温度",@"机器人"];
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api.apiopen.top/musicDetails?id=604392760"]];
-    request.HTTPMethod = @"GET";
+    int x = arc4random() % 4;
+    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",search[x]];
+    NSString *urlStr = @"http://api.qingyunke.com/api.php";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+
+    request.HTTPMethod = @"POST";
+    [request addValue:[FTBaseInfoHander ft_currentGMT] forHTTPHeaderField:@"Date"];
+    [request addValue:[FTBaseInfoHander ft_currentGMT] forHTTPHeaderField:@"Date"];
+
+    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSHTTPURLResponse *res =(NSHTTPURLResponse *)response;
         dispatch_async(dispatch_get_main_queue(), ^{
