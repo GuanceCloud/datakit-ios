@@ -122,7 +122,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
             [FTLog enableLog:config.enableLog];
             [FTLog enableDescLog:config.enableDescLog];
-            [[FTMonitorManager sharedInstance] setMonitorType:self.config.monitorInfoType];
+            [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
@@ -312,7 +312,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [tagDict setValue:logging.operationName forKey:FT_KEY_OPERATIONNAME];
     [tagDict setValue:logging.spanID forKey:FT_KEY_SPANID];
     [tagDict setValue:logging.traceID forKey:FT_FLOW_TRACEID];
-    [tagDict setValue:logging.isError forKey:FT_KEY_ISERROR];
+    if (logging.isError !=nil) {
+        if ([logging.isError boolValue] == YES) {
+            [tagDict setValue:FT_KEY_TRUE forKey:FT_KEY_ISERROR];
+        }else{
+            [tagDict setValue:FT_KET_FALSE forKey:FT_KEY_ISERROR];
+        }
+    }
     [tagDict setValue:logging.classStr forKey:FT_KEY_CLASS];
     [logging.tags enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         if (![tagDict.allKeys containsObject:key]) {
@@ -602,7 +608,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr) {
-            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
+            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
         }];
     });
 }
