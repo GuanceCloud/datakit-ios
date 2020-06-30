@@ -81,15 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)verifyProductStr:(NSString *)product;
 /**
  *  @abstract
- *  MD5 32位 大写
-*/
-+ (NSString *)ft_md5EncryptStr:(NSString *)string;
-/**
- *  @abstract
  *  FTStatus 字符串转换
 */
 +(NSString *)ft_getFTstatueStr:(FTStatus)status;
 +(NSString *)ft_getNetworkSpanID;
++(NSString *)ft_getNetworkTraceID;
+
 @end
 
 NS_ASSUME_NONNULL_END

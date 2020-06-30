@@ -20,6 +20,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
 #import "FTTrackBean.h"
+#import "NSString+FTMd5.h"
 @implementation FTBaseInfoHander : NSObject
 #pragma mark ========== 设备信息 ==========
 + (NSDictionary *)ft_getDeviceInfo{
@@ -595,16 +596,6 @@
     
     return [iosDateFormater stringFromDate:date];
 }
-+ (NSString *)ft_md5EncryptStr:(NSString *)string{
-    const char *cStr = [string UTF8String];
-    unsigned char digest[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, (CC_LONG)strlen(cStr), digest);
-    NSMutableString *result = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
-    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
-        [result appendFormat:@"%02X", digest[i]];
-    }
-    return result;
-}
 #pragma mark ========== 请求加密 ==========
 + (NSString *)ft_md5base64EncryptStr:(NSString *)str {
     const char *input = [str UTF8String];//UTF8转码
@@ -620,7 +611,7 @@
     
     [signString appendString:request.HTTPMethod];
     [signString appendString:@"\n"];
-    [signString appendString:[self ft_md5base64EncryptStr:data]];
+    [signString appendString:[data ft_md5HashToUpper32Bit]];
     [signString appendString:@"\n"];
     [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
@@ -705,6 +696,11 @@
     return str;
 }
 +(NSString *)ft_getNetworkSpanID{
-    return [FTBaseInfoHander ft_md5EncryptStr:[[UIDevice currentDevice] identifierForVendor].UUIDString];
+    return [[[UIDevice currentDevice] identifierForVendor].UUIDString ft_md5HashToLower16Bit];
+}
++(NSString *)ft_getNetworkTraceID{
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    return [uuid lowercaseString];
 }
 @end

@@ -8,7 +8,7 @@
 
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-#import "FTMobileAgent+Private.h"
+#import "FTMonitorManager.h"
 #import "FTBaseInfoHander.h"
 #import "FTConstants.h"
 #import "NSURLRequest+FTMonitor.h"
@@ -71,17 +71,14 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
     NSMutableURLRequest * mutableReqeust = [request mutableCopy];
-    if (![mutableReqeust.URL.host isEqualToString:[NSURL URLWithString:[FTMobileAgent sharedInstance].config.metricsUrl].host]&&[FTMobileAgent sharedInstance].config.networkTrace) {
-        if ([FTMobileAgent sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
-            [mutableReqeust setValue:[NSUUID UUID].UUIDString forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+    if ([[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL]) {
+        if ([FTMonitorManager sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
+            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
             [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
             [mutableReqeust setValue:@"1" forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
         }else{
-            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[NSUUID UUID].UUIDString,[FTBaseInfoHander ft_getNetworkSpanID]];
+            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID]];
             [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
-        }
-        if (!request.HTTPBody) {
-            mutableReqeust.HTTPBody = [request ft_getBodyData];
         }
     }
     return [mutableReqeust copy];
