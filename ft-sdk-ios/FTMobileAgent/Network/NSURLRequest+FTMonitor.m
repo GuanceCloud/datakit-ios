@@ -10,7 +10,7 @@
 #import "FTConstants.h"
 
 @implementation NSURLRequest (FTMonitor)
-- (NSData *)ft_getBodyData{
+- (NSString *)ft_getBodyData{
     NSData *bodyData = self.HTTPBody;
     
         if (self.HTTPBody == nil) {
@@ -29,7 +29,10 @@
         } else {
             bodyData = self.HTTPBody;
         }
-    return bodyData;
+       if (bodyData) {
+          return [[NSString alloc] initWithData:bodyData encoding:NSUTF8StringEncoding];
+       }
+    return @"";
 }
 - (NSString *)ft_getLineStr{
     //HTTP-Version 暂无法获取
@@ -48,13 +51,10 @@
            headerFields = [headerFieldsWithCookies copy];
        }
     NSMutableDictionary *dict =@{@"method":self.HTTPMethod,
-             @"headers":headerFields,
+                                 FT_NETWORK_HEADERS:headerFields,
                                  @"url":self.URL.absoluteString,
     }.mutableCopy;
-    NSData *data =[self ft_getBodyData];
-    if (data) {
-        [dict setValue:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] forKey:@"body"];
-    }
+   
     return dict;
 }
 - (NSDictionary<NSString *, NSString *> *)dgm_getCookies {
