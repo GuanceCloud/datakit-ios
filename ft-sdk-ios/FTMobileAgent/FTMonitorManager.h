@@ -11,11 +11,15 @@
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
+@property (nonatomic, strong) FTMobileConfig *config;
+
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
 */
 + (instancetype)sharedInstance;
+
+-(void)setMobileConfig:(FTMobileConfig *)config;
 /**
  * 设置 监控类型 可不设置直接获取 FTMobileAgent.config
 */
@@ -37,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(NSDictionary *)getMonitorTagFiledDict;
 
-
+- (BOOL)trackUrl:(NSURL *)url;
 - (void)resetInstance;
 @end
 

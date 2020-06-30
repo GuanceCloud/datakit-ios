@@ -87,6 +87,10 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
+-(void)setMobileConfig:(FTMobileConfig *)config{
+    self.config = config;
+    [self setMonitorType:config.monitorInfoType];
+}
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
     if(_timer){
@@ -418,7 +422,7 @@ static dispatch_once_t onceToken;
                 network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
             });
         }
-        NSString *roam = [FTMonitorUtils getRoamingStates] == NO?@"false":@"true";
+        NSString *roam = [FTMonitorUtils getRoamingStates] == NO?FT_KET_FALSE:FT_KEY_TRUE;
         [tag setObject:roam forKey:FT_MONITOR_ROAM];
         [tag setObject:network_type forKey:FT_MONITOR_NETWORK_TYPE];
         if([network_type isEqualToString:@"WIFI"]){
@@ -453,7 +457,7 @@ static dispatch_once_t onceToken;
         [tag setValue:location.country forKey:FT_MONITOR_COUNTRY];
         [field setValue:[NSNumber numberWithDouble:location.coordinate.latitude] forKey:FT_MONITOR_LATITUDE];
         [field setValue:[NSNumber numberWithDouble:location.coordinate.longitude] forKey:FT_MONITOR_LONGITUDE];
-        NSString *gpsOpen = [[FTLocationManager sharedInstance] gpsServicesEnabled]==0?@"false":@"true";
+        NSString *gpsOpen = [[FTLocationManager sharedInstance] gpsServicesEnabled]==0?FT_KET_FALSE:FT_KEY_TRUE;
         [tag setValue:gpsOpen forKey:FT_MONITOR_GPS_OPEN];
     }
     if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorBrightness]) {
@@ -471,7 +475,7 @@ static dispatch_once_t onceToken;
         
     }
     if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorTorch]){
-        NSString *torch =[FTMonitorUtils getTorchLevel] == 0?@"false":@"true";
+        NSString *torch =[FTMonitorUtils getTorchLevel] == 0?FT_KET_FALSE:FT_KEY_TRUE;
         [tag setValue:torch forKey:FT_MONITOR_TORCH];
     }
     if([self.motionManager isGyroAvailable] && ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorRotation])){
@@ -554,7 +558,7 @@ static dispatch_once_t onceToken;
 }
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {
-        self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? @"true":@"false";
+        self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? FT_KEY_TRUE:FT_KET_FALSE;
     }
 }
 #pragma mark ========== 网络请求相关时间/错误率 ==========
@@ -564,7 +568,7 @@ static dispatch_once_t onceToken;
         NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
         NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
         NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
-        if([taskMes.request.URL.host isEqualToString:[NSURL URLWithString:[FTMobileAgent sharedInstance].config.metricsUrl].host]){
+        if(![self trackUrl:task.originalRequest.URL]){
             @synchronized(_lastNetTaskMetrics) {
                 _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
                                         FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
@@ -584,37 +588,38 @@ static dispatch_once_t onceToken;
         NSData *data = nil;
         [self.lock lock];
         data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
-        [self.lock unlock];
-        if (![FTMobileAgent sharedInstance].config.networkTrace) {
-            return;
-        }
         if (!data) {
+            self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)] = taskMes;
+        }
+        [self.lock unlock];
+        if (![FTMobileAgent sharedInstance].config.networkTrace||!data) {
             return;
         }
-        NSDictionary *content = @{
-                                  FT_NETWORK_RESPONSE_CONTENT:[task.response ft_getResponseContentDictWithData:data],
-                                  FT_NETWORK_REQUEST_CONTENT:[task.currentRequest ft_getRequestContentDict]
-        };
-        FTLoggingBean *logging = [FTLoggingBean new];
-        logging.measurement = FT_USER_AGENT;
-        logging.classStr = @"tracing";
-        logging.operationName = [task.originalRequest ft_getOperationName];
-        logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-        double time = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000;
-        logging.duration = [NSNumber numberWithInt:time];
-        logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
-        //spanID、traceID 待处理
-        logging.spanID =[FTBaseInfoHander ft_getNetworkSpanID];
-        NSString *trace = [task.originalRequest ft_getNetworkTraceId];
-        if(trace){
-            logging.traceID = trace;
-            [[FTMobileAgent sharedInstance] loggingBackground:logging];
-        }
+        NSDictionary *responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
+        
+        [self loggingNetworkTraceWithTask:task metrics:taskMes responseDict:responseDict isError:NO];
     }
 }
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     if (error) {
         _errorNet++;
+        if ([self trackUrl:task.originalRequest.URL]) {
+            
+            NSDictionary *errorDict = @{FT_NETWORK_HEADERS:@{},
+                                        FT_NETWORK_BODY:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                                  @"errorDomain":error.domain,
+                                                 }
+            };
+            if (@available(iOS 10.0, *)) {
+                [self.lock lock];
+                NSURLSessionTaskTransactionMetrics *data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
+                
+                [self.mutableTaskDatasKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
+                [self.lock unlock];
+                [self loggingNetworkTraceWithTask:task metrics:data responseDict:errorDict isError:YES];
+            }
+            return;
+        }
     }else{
         _successNet++;
     }
@@ -628,6 +633,36 @@ static dispatch_once_t onceToken;
         self.mutableTaskDatasKeyedByTaskIdentifier[@(dataTask.taskIdentifier)] = data;
     }
     [self.lock unlock];
+}
+- (BOOL)trackUrl:(NSURL *)url{
+    if (self.config.metricsUrl) {
+        return ![url.host isEqualToString:[NSURL URLWithString:self.config.metricsUrl].host]&&self.config.networkTrace;
+    }
+    return NO;
+}
+- (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskTransactionMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
+    NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
+    [request setValue:[task.originalRequest ft_getBodyData] forKey:FT_NETWORK_BODY];
+    NSDictionary *response = dict?dict:@{};
+    NSDictionary *content = @{
+                                FT_NETWORK_RESPONSE_CONTENT:response,
+                                FT_NETWORK_REQUEST_CONTENT:request
+      };
+      FTLoggingBean *logging = [FTLoggingBean new];
+      logging.measurement = FT_USER_AGENT;
+      logging.classStr = FT_LOGGING_CLASS_TRACING;
+      logging.operationName = [task.originalRequest ft_getOperationName];
+      logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
+      double time = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000;
+      logging.duration = [NSNumber numberWithInt:time];
+      logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
+      logging.spanID =[FTBaseInfoHander ft_getNetworkSpanID];
+      logging.isError = [NSNumber numberWithBool:iserror];
+      NSString *trace = [task.originalRequest ft_getNetworkTraceId];
+      if(trace){
+          logging.traceID = trace;
+          [[FTMobileAgent sharedInstance] loggingBackground:logging];
+      }
 }
 - (void)resetInstance{
     onceToken = 0;
