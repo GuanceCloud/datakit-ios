@@ -22,6 +22,7 @@
 #import "BlacklistedVCClassNames.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
+#import "NSString+FTMd5.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()
@@ -377,7 +378,7 @@
         return ;
     }
     @try {
-        NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[FTBaseInfoHander ft_md5EncryptStr:op]}.mutableCopy;
+        NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[op ft_md5HashToUpper32Bit]}.mutableCopy;
         NSMutableDictionary *field = @{FT_AUTO_TRACK_EVENT:op
         }.mutableCopy;
         NSString *current = nil;
@@ -417,7 +418,7 @@
                 }
                 ZYDESCLog(@"vtp : %@",vtp);
                 [tags setValue:vtp forKey:FT_AUTO_TRACK_VTP];
-                [field setValue:[FTBaseInfoHander ft_md5EncryptStr:vtp] forKey:FT_AUTO_TRACK_VTP_ID];
+                [field setValue:[vtp ft_md5HashToUpper32Bit] forKey:FT_AUTO_TRACK_VTP_ID];
                 NSString *vtpDesc = FT_NULL_VALUE;
                 if ([[FTMobileAgent sharedInstance] getPageVtpDescEnabled]) {
                     if(vtpView.viewVtpDescID.length>0){
