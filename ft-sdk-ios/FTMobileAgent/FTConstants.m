@@ -20,7 +20,7 @@ NSString * const FT_NULL_VALUE  = @"N/A";
 
 NSString * const FT_FLOW_CHART_PRODUCT  = @"__flow_mobile_activity";
 NSString * const FT_KEY_DURATION  = @"__duration";
-NSString * const FT_FLOW_TRACEID  = @"__traceId";
+NSString * const FT_FLOW_TRACEID  = @"__traceID";
 NSString * const FT_KEY_NAME  = @"__name";
 NSString * const FT_FLOW_PARENT  = @"__parent";
 
@@ -182,3 +182,10 @@ NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
 NSString *const FT_NETWORK_ZIPKIN_SAMPLED =@"X-B3-Sampled";
 NSString *const FT_NETWORK_JAEGER_TRACEID = @"uber-trace-id";
+
+NSString *const FT_NETWORK_HEADERS = @"headers";
+NSString *const FT_NETWORK_BODY = @"body";
+NSString *const FT_LOGGING_CLASS_TRACING = @"tracing";
+
+NSString *const FT_KEY_TRUE = @"true";
+NSString *const FT_KET_FALSE = @"false";
