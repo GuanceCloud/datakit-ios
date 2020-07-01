@@ -20,28 +20,21 @@
 @end
 @implementation FTTrackerEventDBTool
 static FTTrackerEventDBTool *dbTool = nil;
-- (ZY_FMDatabaseQueue *)dbQueue
-{
-    if (!_dbQueue) {
-        ZY_FMDatabaseQueue *fmdb = [ZY_FMDatabaseQueue databaseQueueWithPath:_dbPath];
-        self.dbQueue = fmdb;
-        [_db close];
-        self.db = [fmdb valueForKey:@"_db"];
-    }
-    return _dbQueue;
-}
+
 #pragma mark --创建数据库
 + (instancetype)sharedManger {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
     if (!dbTool) {
         NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"ZYFMDB.sqlite"];
-        ZY_FMDatabase *fmdb = [ZY_FMDatabase databaseWithPath:path];
-        if ([fmdb open]) {
+        ZY_FMDatabaseQueue *dbQueue = [ZY_FMDatabaseQueue databaseQueueWithPath:path];
+        ZY_FMDatabase *fmdb = [dbQueue valueForKey:@"_db"];
+        if ([fmdb  open]) {
             dbTool = FTTrackerEventDBTool.new;
             dbTool.db = fmdb;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
+            dbTool.dbQueue = dbQueue;
         }
         [dbTool createTable];
      }
