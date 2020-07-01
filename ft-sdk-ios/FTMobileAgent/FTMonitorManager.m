@@ -564,7 +564,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== 网络请求相关时间/错误率 ==========
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if (@available(iOS 10.0, *)) {
-        NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics firstObject];
+        NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
         NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
         NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
         NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
@@ -604,10 +604,11 @@ static dispatch_once_t onceToken;
     if (error) {
         _errorNet++;
         if ([self trackUrl:task.originalRequest.URL]) {
-            
+            NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
             NSDictionary *errorDict = @{FT_NETWORK_HEADERS:@{},
                                         FT_NETWORK_BODY:@{@"errorCode":[NSNumber numberWithInteger:error.code],
                                                   @"errorDomain":error.domain,
+                                                          @"errorDescription":errorDescription,
                                                  }
             };
             if (@available(iOS 10.0, *)) {
