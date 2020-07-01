@@ -668,6 +668,7 @@ static dispatch_once_t onceToken;
 - (void)resetInstance{
     onceToken = 0;
     sharedInstance =nil;
+    [FTURLProtocol stopMonitor];
     [self stopFlushTimer];
     [self stopMonitor];
     self.netFlow = nil;
