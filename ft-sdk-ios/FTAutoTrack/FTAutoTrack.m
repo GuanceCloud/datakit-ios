@@ -83,7 +83,7 @@
 
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
-    [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+    id<ZY_AspectToken> viewOpen =[UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
     } error:nil];
@@ -104,7 +104,7 @@
         
         [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
-    [self.aspectTokenAry addObjectsFromArray:@[lifeOpen,lifeClose]];
+    [self.aspectTokenAry addObjectsFromArray:@[viewOpen,lifeOpen,lifeClose]];
     
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
