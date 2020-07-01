@@ -589,7 +589,7 @@ static dispatch_once_t onceToken;
         [self.lock lock];
         data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
         if (!data) {
-            self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)] = taskMes;
+            self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)] = metrics;
         }
         [self.lock unlock];
         if (![FTMobileAgent sharedInstance].config.networkTrace||!data) {
@@ -597,7 +597,7 @@ static dispatch_once_t onceToken;
         }
         NSDictionary *responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
         
-        [self loggingNetworkTraceWithTask:task metrics:taskMes responseDict:responseDict isError:NO];
+        [self loggingNetworkTraceWithTask:task metrics:metrics responseDict:responseDict isError:NO];
     }
 }
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
@@ -613,7 +613,7 @@ static dispatch_once_t onceToken;
             };
             if (@available(iOS 10.0, *)) {
                 [self.lock lock];
-                NSURLSessionTaskTransactionMetrics *data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
+                NSURLSessionTaskMetrics *data = self.mutableTaskDatasKeyedByTaskIdentifier[@(task.taskIdentifier)];
                 
                 [self.mutableTaskDatasKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
                 [self.lock unlock];
@@ -641,7 +641,7 @@ static dispatch_once_t onceToken;
     }
     return NO;
 }
-- (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskTransactionMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
+- (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
     NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
     [request setValue:[task.originalRequest ft_getBodyData] forKey:FT_NETWORK_BODY];
     NSDictionary *response = dict?dict:@{};
@@ -654,7 +654,7 @@ static dispatch_once_t onceToken;
       logging.classStr = FT_LOGGING_CLASS_TRACING;
       logging.operationName = [task.originalRequest ft_getOperationName];
       logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-      double time = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000*1000;
+      double time = [taskMes.taskInterval duration]*1000*1000;
       logging.duration = [NSNumber numberWithInt:time];
       logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
       logging.spanID =[FTBaseInfoHander ft_getNetworkSpanID];
