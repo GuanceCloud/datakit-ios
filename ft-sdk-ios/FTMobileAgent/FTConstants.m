@@ -46,6 +46,7 @@ NSString * const FT_AUTO_TRACK_VTP = @"vtp";
 NSString * const FT_AUTO_TRACK_VTP_ID = @"vtp_id";
 NSString * const FT_AUTO_TRACK_VTP_DESC = @"vtp_desc";
 NSString * const FT_AUTO_TRACK_PAGE_DESC = @"page_desc";
+NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 
 #pragma mark ========== comon ==========
 NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";

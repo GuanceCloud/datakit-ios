@@ -44,6 +44,7 @@ extern NSString * const FT_AUTO_TRACK_VTP;
 extern NSString * const FT_AUTO_TRACK_VTP_ID;
 extern NSString * const FT_AUTO_TRACK_VTP_DESC;
 extern NSString * const FT_AUTO_TRACK_PAGE_DESC;
+extern NSString * const FT_AUTO_TRACK_VTP_TREE_PATH;
 
 #pragma mark ========== common property ==========
 extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;
