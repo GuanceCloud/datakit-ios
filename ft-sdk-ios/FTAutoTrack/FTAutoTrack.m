@@ -387,24 +387,23 @@
         }else if ([cpn isKindOfClass:UIViewController.class]){
             current = NSStringFromClass([cpn class]);
         }
+        FTLoggingBean *bean = [FTLoggingBean new];
         if ([op isEqualToString:FT_AUTO_TRACK_OP_OPEN]) {
-            FTLoggingBean *bean = [FTLoggingBean new];
-            bean.measurement = FT_USER_AGENT;
-            bean.source = self.config.traceServiceName;
-            bean.operationName = [NSString stringWithFormat:@"%@/%@",op,FT_AUTO_TRACK_EVENT];
-            bean.content = [FTBaseInfoHander ft_convertToJsonData:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:current,FT_AUTO_TRACK_EVENT:op}];
-            bean.duration = [NSNumber numberWithInt:duration*1000*1000];
-            if(self.config.eventFlowLog){
-            [[FTMobileAgent sharedInstance] loggingBackground:bean];
+            if(!self.config.eventFlowLog){
+                return;
             }
-            return;
+            bean.duration = [NSNumber numberWithInt:duration*1000*1000];
         }
-      
+        NSMutableDictionary *content = @{FT_AUTO_TRACK_EVENT:op}.mutableCopy;
+        bean.measurement = FT_USER_AGENT;
+        bean.source = self.config.traceServiceName;
+        bean.operationName = [NSString stringWithFormat:@"%@/%@",op,FT_AUTO_TRACK_EVENT];
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             [tags setObject:[UIViewController ft_getRootViewController] forKey:FT_AUTO_TRACK_ROOT_PAGE_NAME];
             ZYDESCLog(@"current_page_name : %@",current);
             NSString *pageDesc = FT_NULL_VALUE;
             [tags setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
+            [content setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             if (current && [[[FTMobileAgent sharedInstance] getPageDescDict].allKeys containsObject:current]) {
                 pageDesc =[[FTMobileAgent sharedInstance] getPageDescDict][current];
             }
@@ -429,7 +428,12 @@
                 }
                 ZYDESCLog(@"vtpDesc : %@",vtpDesc);
                 [field setValue:vtpDesc forKey:FT_AUTO_TRACK_VTP_DESC];
+                [content setValue:vtp forKey:FT_AUTO_TRACK_VTP_TREE_PATH];
             }
+        }
+        bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
+        if(self.config.eventFlowLog){
+            [[FTMobileAgent sharedInstance] loggingBackground:bean];
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];
