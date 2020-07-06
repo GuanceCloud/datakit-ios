@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLResponse (FTMonitor)
 - (NSDictionary *)ft_getResponseContentDictWithData:(NSData *)data;
-
+- (NSNumber *)ft_getResponseStatusCode;
 @end
 
 NS_ASSUME_NONNULL_END
