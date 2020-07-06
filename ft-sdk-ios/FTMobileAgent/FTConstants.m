@@ -187,6 +187,7 @@ NSString *const FT_NETWORK_JAEGER_TRACEID = @"uber-trace-id";
 NSString *const FT_NETWORK_HEADERS = @"headers";
 NSString *const FT_NETWORK_BODY = @"body";
 NSString *const FT_LOGGING_CLASS_TRACING = @"tracing";
-
+NSString *const FT_NETWORK_CODE = @"code";
+NSString *const FT_NETWORK_ERROR = @"error";
 NSString *const FT_KEY_TRUE = @"true";
 NSString *const FT_KET_FALSE = @"false";
