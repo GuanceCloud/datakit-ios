@@ -9,10 +9,9 @@
 #import <libkern/OSAtomic.h>
 #import <objc/runtime.h>
 #import <objc/message.h>
-
+#import "FTLog.h"
 #define ZY_AspectLog(...)
-//#define AspectLog(...) do { NSLog(__VA_ARGS__); }while(0)
-#define ZY_AspectLogError(...) do { NSLog(__VA_ARGS__); }while(0)
+#define ZY_AspectLogError(...) do { ZYDebug(__VA_ARGS__); }while(0)
 
 // Block internals.
 typedef NS_OPTIONS(int, ZY_AspectBlockFlags) {
