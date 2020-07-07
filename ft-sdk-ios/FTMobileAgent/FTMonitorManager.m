@@ -605,13 +605,14 @@ static dispatch_once_t onceToken;
         _errorNet++;
         if ([self trackUrl:task.originalRequest.URL]) {
             NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
+            NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
             NSDictionary *errorDict = @{FT_NETWORK_HEADERS:@{},
                                         FT_NETWORK_BODY:@{},
                                         FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
                                                            @"errorDomain":error.domain,
                                                            @"errorDescription":errorDescription,
                                         },
-                                        FT_NETWORK_CODE:[task.response ft_getResponseStatusCode],
+                                        FT_NETWORK_CODE:errorCode,
             };
             if (@available(iOS 10.0, *)) {
                 [self.lock lock];
