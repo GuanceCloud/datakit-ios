@@ -260,6 +260,17 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
   ```
+### 9.设置页面事件追踪日志
+    
+  可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
+     
+ ```
+ /**
+ * 设置事件、流程图转化为日志数据  默认为NO
+ * 需 AutoTrack 开启 ，设置对应采集类型时生效
+ */
+ @property (nonatomic, assign) BOOL eventFlowLog; 
+ ```
    
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
@@ -660,63 +671,7 @@ typedef enum FTError : NSInteger {
     [[FTMobileAgent sharedInstance] logout];
 ```
 
-## 八、流程图
-### 1. 全埋点上报流程图
-抓取 App 一个生命周期内的页面 **Open** 事件，可绘制出用户使用 App 时的页面跳转流程图，并显示出在页面的停留时间。
- 设置方法：    
-
-```objective-c
- FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"Your App metricsUrl" akId:@"Your App akId" akSecret: @"Your App akSecret" enableRequestSigning:YES];
- [config enableTrackScreenFlow:YES];//设置开启全埋点上报流程图
-```
-### 2. 主动埋点上报流程图
- DF SDK 公开了 2 个方法，用户通过这两个方法可以在需要的地方实现流程图埋点，然后将数据上传到服务端。
-
-1. 方法一
-
- ```objective-c
- /**
- 上报流程图
- @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- @param traceId   标示一个流程单的唯一 ID
- @param name      流程节点名称
- @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
-*/
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
-
- ```
-
-2. 方法二
-
- ```objective-c
-/**
- 上报流程图
- @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- @param traceId   标示一个流程单的唯一 ID
- @param name      流程节点名称
- @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- @param tags      自定义标签
- @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
- @param values    自定义指标
-*/
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration values:(nullable NSDictionary *)values;
-
- ```
-
-3. 使用示例
-
-
- ```objective-c
- //节点一：
- [[FTMobileAgent sharedInstance] flowTrack:@"oa" traceId:@"fid_1" name:@"提交申请" parent:nil tags:@{@"申请人":@"张三"} duration:0];
- 
- //节点二：
- [[FTMobileAgent sharedInstance] flowTrack:@"oa" traceId:@"fid_1" name:@"直属领导审批" parent:@"提交申请" tags:@{@"申请人":@"张三",@"审批人":@"李四"} duration:1800000];
-
- ```
-
-## 九、监控数据周期上报 
+## 八、监控数据周期上报 
 ### 1.监控周期设置 
   在 `FTMobileConfig` 中设置 `flushInterval `。
 
@@ -844,7 +799,7 @@ typedef enum FTError : NSInteger {
  
 ```
 
-## 十、设置页面描述、视图树描述配置
+## 九、设置页面描述、视图树描述配置
 ### 1. 设置是否允许描述
 *  方法    
 
@@ -939,7 +894,7 @@ typedef enum FTError : NSInteger {
     ```   
 
 
-## 十一、常见问题
+## 十、常见问题
 ### 1. 关于查询指标 IMEI
    因为隐私问题，苹果用户在 iOS5 以后禁用代码直接获取 **IMEI** 的值。所以 iOS SDK 中不支持获取 **IMEI**。
 
@@ -981,7 +936,7 @@ typedef enum FTError : NSInteger {
 
 进行解析：    
 
-  1. 将 **symbolicatecrash** 与 **.app** 和 **.app.dSYM** 放在同一文件夹中    
+  1. 将 **symbolicatecrash** 与 **.crash** 和 **.app.dSYM** 放在同一文件夹中    
   
   2. 开启命令行工具，进入文件夹   
   

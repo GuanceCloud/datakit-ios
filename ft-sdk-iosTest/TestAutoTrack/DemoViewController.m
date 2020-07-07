@@ -30,7 +30,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_flowTrack",@"Test_autoTrack",@"Test_subFlowTrack",@"Test_subFlowTrack2",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log",@"Test_NetworkTrace"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_autoTrack",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log",@"Test_NetworkTrace"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -210,45 +210,36 @@
             [self testCustomTrack];
             break;
         case 3:
-            [self testFlowTrack];
-            break;
-        case 4:
             [self testAutoTrack];
             break;
-        case 5:
-            [self testSubFlowTrack];
-            break;
-        case 6:
-            [self testSubFlowTrack2];
-            break;
-        case 7:
+        case 4:
             [self testResetConfig];
             break;
-        case 8:
+        case 5:
             [self testStartLocation];
             break;
-        case 9:
+        case 6:
             [self testStartMonitorFlush];
             break;
-        case 10:
+        case 7:
             [self testStopMonitorFlush];
             break;
-        case 11:
+        case 8:
             [self testConnectBluetooth];
             break;
-        case 12:
+        case 9:
             [self testAddPageDesc];
             break;
-        case 13:
+        case 10:
             [self testAddVtpDesc];
             break;
-        case 14:
+        case 11:
             [self testCrashLog];
             break;
-        case 15:
+        case 12:
             [self testLog];
             break;
-        case 16:
+        case 13:
             [self testNetworkTrace];
             break;
         default:

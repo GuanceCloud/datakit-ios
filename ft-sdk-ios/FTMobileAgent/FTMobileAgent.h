@@ -77,26 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 */
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 /**
- * 上报流程图 有tags
- * @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- * @param traceId   标示一个流程单的唯一 ID
- * @param name      流程节点名称
- * @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- * @param tags      自定义标签
- * @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
- * @param field     自定义指标
-*/
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field;
-/**
- * 上报流程图 无tags
- * @param product   指标集 命名只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
- * @param traceId   标示一个流程单的唯一 ID
- * @param name      流程节点名称
- * @param parent    当前流程节点的上一个流程节点的名称，如果是流程的第一个节点，可不上报
- * @param duration  流程单在当前流程节点滞留时间或持续时间，毫秒为单位
-*/
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent duration:(long)duration;
-/**
  * 日志上报
  */
 -(void)loggingBackground:(FTLoggingBean *)logging;
