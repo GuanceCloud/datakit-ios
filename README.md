@@ -234,7 +234,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
       
  ```
   **注意：**    
-
       1. [关于GPU使用率获取](#2-关于-gpu-使用率)   
       2. [关于监控数据周期上报](#九监控数据周期上报)
 
