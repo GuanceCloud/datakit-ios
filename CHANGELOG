@@ -1,3 +1,10 @@
+# 1.0.3-alpha.3
+1.logging、object、keyevent上报类型添加
+2.增加网络信息采集链路追踪、日志采集、事件日志采集
+3.dSYMUUID获取方法修改
+4.SDK 内部log循环 bug 修改
+
+---
 # 1.0.3-alpha.2
 1.logging、object、keyevent上报类型添加
 2.增加网络信息采集链路追踪、日志采集、事件日志采集
