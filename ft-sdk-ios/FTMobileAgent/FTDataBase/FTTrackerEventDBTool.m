@@ -137,8 +137,8 @@ static FTTrackerEventDBTool *dbTool = nil;
     if([self isOpenDatabese:self.db]) {
         __block BOOL  is = NO;
         [self zy_inDatabase:^{
-            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '%@' , '%@' );",FT_DB_USERSESSION_TABLE_NAME,get_ft_sessionid,userdata];
-           is=  [self.db executeUpdate:sqlStr];
+            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES (  '?' , '?' );",FT_DB_USERSESSION_TABLE_NAME];
+           is=  [self.db executeUpdate:sqlStr,get_ft_sessionid,userdata];
             ZYDebug(@"bind user success == %ld \n userData = %@",is,userdata);
         }];
         return is;
@@ -153,8 +153,8 @@ static FTTrackerEventDBTool *dbTool = nil;
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  '%lld' , '%@' ,'%@','%@');",FT_DB_TRACREVENT_TABLE_NAME,item.tm,item.data,item.sessionid,item.op];
-          success=  [self.db executeUpdate:sqlStr];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  '?' , '?' ,'?','?');",FT_DB_TRACREVENT_TABLE_NAME];
+          success=  [self.db executeUpdate:sqlStr,item.tm,item.data,item.sessionid,item.op];
            ZYDebug(@"data storage success == %d",success);
        }];
    }
