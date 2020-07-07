@@ -16,6 +16,10 @@
 #import <mach-o/ldsyms.h>
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
+#include <limits.h>
+#include <mach-o/dyld.h>
+#include <mach-o/nlist.h>
+#include <string.h>
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数
@@ -138,27 +142,84 @@ void SignalHandler(int signal) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
    
-    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],executableUUID()];
+    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
     [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info];
 }
 
+- (NSString *)getUUIDDictionary {
+    // 获取 image 的 index
+    const uint32_t imageCount = _dyld_image_count();
 
-NSString *executableUUID()
-{
-    const uint8_t *command = (const uint8_t *)(&_mh_execute_header + 1);
-    for (uint32_t idx = 0; idx < _mh_execute_header.ncmds; ++idx) {
-        if (((const struct load_command *)command)->cmd == LC_UUID) {
-            command += sizeof(struct load_command);
-            return [NSString stringWithFormat:@"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                    command[0], command[1], command[2], command[3],
-                    command[4], command[5],
-                    command[6], command[7],
-                    command[8], command[9],
-                    command[10], command[11], command[12], command[13], command[14], command[15]];
-        } else {
-            command += ((const struct load_command *)command)->cmdsize;
+    uint32_t mainImg = 0;
+    NSString *path =getExecutablePath();
+    for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
+        const char* name = _dyld_get_image_name(iImg);
+        NSString *imagePath = [NSString stringWithUTF8String:name];
+        if ([imagePath isEqualToString:path]){
+            mainImg = iImg;
+        // 根据 index 获取 header
+           const struct mach_header* header = _dyld_get_image_header(mainImg);
+           uintptr_t cmdPtr = firstCmdAfterHeader(header);
+           if(cmdPtr == 0) {
+               return @"NULL";
+           }
+           
+           uint8_t* uuid = NULL;
+           
+           for(uint32_t iCmd = 0; iCmd < header->ncmds; iCmd++)
+           {
+               struct load_command* loadCmd = (struct load_command*)cmdPtr;
+               
+               if (loadCmd->cmd == LC_UUID) {
+                   struct uuid_command* uuidCmd = (struct uuid_command*)cmdPtr;
+                   uuid = uuidCmd->uuid;
+                   break;
+               }
+               cmdPtr += loadCmd->cmdsize;
+           }
+           const char* result = nil;
+           if(uuid != NULL)
+              {
+                  result = uuidBytesToString(uuid);
+                  NSString *lduuid = [NSString stringWithUTF8String:result];
+                  return lduuid;
+              }
         }
     }
-    return nil;
+    
+    return @"NULL";
+}
+static NSString* getExecutablePath()
+{
+    NSBundle* mainBundle = [NSBundle mainBundle];
+    NSDictionary* infoDict = [mainBundle infoDictionary];
+    NSString* bundlePath = [mainBundle bundlePath];
+    NSString* executableName = infoDict[@"CFBundleExecutable"];
+    return [bundlePath stringByAppendingPathComponent:executableName];
+}
+static const char* uuidBytesToString(const uint8_t* uuidBytes) {
+    CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuidBytes));
+    NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
+    CFRelease(uuidRef);
+    
+    return cString(str);
+}
+const char* cString(NSString* str) {
+    return str == NULL ? NULL : strdup(str.UTF8String);
+}
+//// 获取 Load Command
+static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
+    switch(header->magic)
+    {
+        case MH_MAGIC:
+        case MH_CIGAM:
+            return (uintptr_t)(header + 1);
+        case MH_MAGIC_64:
+        case MH_CIGAM_64:
+            return (uintptr_t)(((struct mach_header_64*)header) + 1);
+        default:
+            // Header is corrupt
+            return 0;
+    }
 }
 @end
