@@ -63,7 +63,8 @@
 ```
 
 ## 三、FTMobileConfig 配置
-### 1. FTMobileConfig 初始化方法    
+
+### 1. FTMobileConfig 初始化方法   
 
   - 不需要进行签名配置    
 
@@ -131,8 +132,20 @@
    */
 @property (nonatomic, assign) BOOL traceConsoleLog;
 
-  ```   
- 
+  ```    
+    
+ - eventFlowLog 采集页面事件日志
+    
+  设置后，可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
+     
+ ```objective-c
+ /**
+ * 设置事件、流程图转化为日志数据  默认为NO
+ * 需 AutoTrack 开启 ，设置对应采集类型时生效
+ */
+ @property (nonatomic, assign) BOOL eventFlowLog; 
+ ```
+
  
      
 ### 3. 设置X-Datakit-UUID
@@ -260,17 +273,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
   ```
-### 9.设置页面事件追踪日志
-    
-  可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
-     
- ```
- /**
- * 设置事件、流程图转化为日志数据  默认为NO
- * 需 AutoTrack 开启 ，设置对应采集类型时生效
- */
- @property (nonatomic, assign) BOOL eventFlowLog; 
- ```
    
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
@@ -293,6 +295,18 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |     needBindUser     |    BOOL    |        是否开启绑定用户数据         |              否(默认不开启)              |
 |   enableScreenFlow   |    BOOL    |       设置是否需要视图跳转流程图       |              否（默认NO）               |
 |    flushInterval     | NSInteger  |       监控数据周期上报时间间隔        |              否（默认10s）              |
+|   enableScreenFlow   |    BOOL    |       设置是否需要视图跳转流程图       |              否（默认NO）               |
+|   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
+|   traceServiceName   |    NSString    |       设置日志所属业务或服务的名称      |              否（默认dataflux sdk）              |
+|   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
+|   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
+|   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
+|   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
+
+
+
+
+
 
 ### 2. 错误码
 
