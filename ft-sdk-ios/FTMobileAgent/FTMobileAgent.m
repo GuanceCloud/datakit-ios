@@ -268,7 +268,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (logging.measurement.length>0 && logging.content.length>0) {
         @try {
             FTRecordModel *model = [self getLoggingModel:logging];
-            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+            [self insertDBWithItemData:model];
         } @catch (NSException *exception) {
             ZYErrorLog(@"exception %@",exception);
         }
@@ -358,7 +358,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     FTRecordModel *model = [FTRecordModel new];
     model.op = FTNetworkingTypeObject;
     model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    [self insertDBWithItemData:model];
 }
 -(void)objectImmediate:(NSString *)name deviceUUID:(nullable NSString *)deviceUUID tags:(NSDictionary *)tags classStr:(NSString *)classStr callBack:(nullable void (^)(NSInteger, id _Nullable))callBackStatus{
     NSParameterAssert(name);
@@ -408,7 +408,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     @try {
         FTRecordModel *model = [self getKeyeventModel:keyevent];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        [self insertDBWithItemData:model];
     } @catch (NSException *exception) {
         ZYErrorLog(@"keyeventBackground exception %@",exception);
     }
@@ -563,7 +563,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
            op = [field valueForKey:FT_AUTO_TRACK_EVENT];
        }
        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
-       [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+       [self insertDBWithItemData:model];
       }
       @catch (NSException *exception) {
           ZYErrorLog(@"exception %@",exception);
@@ -599,7 +599,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [tagsDict addEntriesFromDictionary:tags];
         }
         FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        [self insertDBWithItemData:model];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -630,9 +630,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *filed = @{FT_KEY_CONTENT:content};
     
     FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-    });
+       [self insertDBWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     FTRecordModel *model = [FTRecordModel new];
@@ -663,6 +661,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     model.op = type;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     return model;
+}
+- (void)insertDBWithItemData:(FTRecordModel *)model{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    });
 }
 - (NSDictionary *)getPageDescDict{
     if (_isPageVtpDescEnabled) {
