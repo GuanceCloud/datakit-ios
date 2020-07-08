@@ -151,21 +151,18 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         NSInteger statusCode = response.statusCode;
         if (statusCode >= 500 && statusCode < 600) {
             self->_checkTokenState = FTCheckTokenStateNetError;
-        }else{
-            self->_checkTokenState = FTCheckTokenStateError;
-            ZYErrorLog(@"Dataflux SDK 未能验证通过您配置的 token");
-        }
-        if (statusCode ==200){
+            return;
+        }else if (statusCode ==200){
             NSMutableDictionary *responseObject;
             NSError *errors;
             responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
             if ([responseObject valueForKey:@"code"] && [responseObject[@"code"] intValue] == 200){
                 self.checkTokenState = FTCheckTokenStatePass;
-            }else{
-                self.checkTokenState = FTCheckTokenStateError;
-                ZYErrorLog(@"Dataflux SDK 未能验证通过您配置的 token");
+                return;
             }
         }
+        self->_checkTokenState = FTCheckTokenStateError;
+        ZYErrorLog(@"Dataflux SDK 未能验证通过您配置的 token");
     }];
     [task resume];
 }
