@@ -88,7 +88,7 @@ static dispatch_queue_t _loggingQueue;
     @try {
         dispatch_async(_loggingQueue , ^{
             NSString *logMessage = [[NSString alloc] initWithFormat:@"[FTLog][%@]  %s [line %lu]  %@", [self descriptionForLevel:level], function, (unsigned long)line, message];
-            NSLog(@"%@", logMessage);
+            FTLogger(@"%@", logMessage);
         });
         //file
     } @catch(NSException *e) {
