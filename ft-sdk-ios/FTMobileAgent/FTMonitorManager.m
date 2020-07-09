@@ -595,8 +595,12 @@ static dispatch_once_t onceToken;
         if (![FTMobileAgent sharedInstance].config.networkTrace||!data) {
             return;
         }
-        NSDictionary *responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
-        
+        NSDictionary *responseDict;
+        if ([task isKindOfClass:NSURLSessionDownloadTask.class]) {
+            responseDict = @{};
+        }else{
+        responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
+        }
         [self loggingNetworkTraceWithTask:task metrics:metrics responseDict:responseDict isError:NO];
     }
 }
@@ -632,11 +636,13 @@ static dispatch_once_t onceToken;
     [self.lock unlock];
 }
 - (void)ftHTTPProtocolWithDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    if ([self trackUrl:dataTask.originalRequest.URL]) {
     [self.lock lock];
     if(data){
         self.mutableTaskDatasKeyedByTaskIdentifier[@(dataTask.taskIdentifier)] = data;
     }
     [self.lock unlock];
+    }
 }
 - (BOOL)trackUrl:(NSURL *)url{
     if (self.config.metricsUrl) {
@@ -660,11 +666,12 @@ static dispatch_once_t onceToken;
       double time = [taskMes.taskInterval duration]*1000*1000;
       logging.duration = [NSNumber numberWithInt:time];
       logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
-      logging.spanID =[FTBaseInfoHander ft_getNetworkSpanID];
       logging.isError = [NSNumber numberWithBool:iserror];
       NSString *trace = [task.originalRequest ft_getNetworkTraceId];
-      if(trace){
+      NSString *span = [task.originalRequest ft_getNetworkSpanID];
+      if(trace&&span){
           logging.traceID = trace;
+          logging.spanID = span;
           [[FTMobileAgent sharedInstance] loggingBackground:logging];
       }
 }

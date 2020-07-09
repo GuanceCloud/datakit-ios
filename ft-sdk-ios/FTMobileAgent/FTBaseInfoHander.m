@@ -695,10 +695,8 @@
     }
     return str;
 }
-+(NSString *)ft_getNetworkSpanID{
-    return [[[UIDevice currentDevice] identifierForVendor].UUIDString ft_md5HashToLower16Bit];
-}
-+(NSString *)ft_getNetworkTraceID{
+
++(NSString *)ft_getNetworkSpanIDOrTraceID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [uuid lowercaseString];
