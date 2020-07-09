@@ -12,26 +12,35 @@
 @implementation NSURLRequest (FTMonitor)
 - (NSString *)ft_getBodyData{
     NSData *bodyData = self.HTTPBody;
-    
-        if (self.HTTPBody == nil) {
-            uint8_t d[1024] = {0};
+    if (self.HTTPBody == nil) {
+        if (self.HTTPBodyStream) {
             NSInputStream *stream = self.HTTPBodyStream;
             NSMutableData *data = [[NSMutableData alloc] init];
             [stream open];
+            size_t bufferSize = 4096;
+            uint8_t *buffer = malloc(bufferSize);
+            if (buffer == NULL) {
+               return @"";
+            }
             while ([stream hasBytesAvailable]) {
-                NSInteger len = [stream read:d maxLength:1024];
-                if (len > 0 && stream.streamError == nil) {
-                    [data appendBytes:(void *)d length:len];
+                NSInteger bytesRead = [stream read:buffer maxLength:bufferSize];
+                if (bytesRead > 0 && stream.streamError == nil) {
+                    NSData *readData = [NSData dataWithBytes:buffer length:bytesRead];
+                    [data appendData:readData];
+                } else{
+                    break;
                 }
             }
+            free(buffer);
             bodyData = [data copy];
             [stream close];
-        } else {
-            bodyData = self.HTTPBody;
         }
-       if (bodyData) {
-          return [[NSString alloc] initWithData:bodyData encoding:NSUTF8StringEncoding];
-       }
+    } else {
+        bodyData = self.HTTPBody;
+    }
+    if (bodyData) {
+        return [[NSString alloc] initWithData:bodyData encoding:NSUTF8StringEncoding];
+    }
     return @"";
 }
 - (NSString *)ft_getLineStr{
@@ -84,5 +93,20 @@
         return nil;
     }
     return nil;
+}
+- (NSString *)ft_getNetworkSpanID{
+    NSDictionary *header = self.allHTTPHeaderFields;
+      if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
+          return header[FT_NETWORK_ZIPKIN_SPANID];
+      }
+      if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
+          NSString *trace =header[FT_NETWORK_ZIPKIN_SPANID];
+          NSArray *traceAry = [trace componentsSeparatedByString:@":"];
+          if (traceAry.count == 4) {
+             return  traceAry[1];
+          }
+          return nil;
+      }
+      return nil;
 }
 @end
