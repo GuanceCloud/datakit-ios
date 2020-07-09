@@ -458,4 +458,8 @@ NSDictionary * FTQueryPairsFromUserDict(NSDictionary *parameters) {
     }
     return mutableUserDictgComponents;
 }
+-(void)dealloc{
+    [self.session invalidateAndCancel];
+}
+
 @end
