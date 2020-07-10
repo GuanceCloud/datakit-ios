@@ -11,6 +11,9 @@
 
 @implementation NSURLRequest (FTMonitor)
 - (NSString *)ft_getBodyData{
+    if ([self checkIsFileUpLoad]) {
+        return @"";
+    }
     NSData *bodyData = self.HTTPBody;
     if (self.HTTPBody == nil) {
         if (self.HTTPBodyStream) {
@@ -108,5 +111,21 @@
           return nil;
       }
       return nil;
+}
+- (BOOL)checkIsFileUpLoad{
+    if ([self isKindOfClass:NSURLSessionUploadTask.class]) {
+        return YES;
+    }
+    if ([self.HTTPMethod isEqualToString:@"GET"]||[self.HTTPMethod isEqualToString:@"HEAD"]) {
+        return NO;
+    }
+    if([[self.allHTTPHeaderFields allKeys] containsObject:@"Content-Type"]){
+        NSString *contentType = self.allHTTPHeaderFields[@"Content-Type"];
+        if([contentType containsString:@"multipart/form-data"]){
+            return YES;
+        }
+      
+    }
+    return NO;
 }
 @end

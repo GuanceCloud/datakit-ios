@@ -21,11 +21,26 @@
         [dict setValue:[self ft_getResponseStatusCode] forKey:FT_NETWORK_CODE];
 
     }
-    if (data) {
+    if (data&&![self checkIsFileDownLoad]) {
         NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         [dict setValue:dataStr forKey:FT_NETWORK_BODY];
-       }
+    }else{
+        [dict setValue:@"" forKey:FT_NETWORK_BODY];
+    }
     return dict;
+}
+- (BOOL)checkIsFileDownLoad{
+    NSString *mime = self.MIMEType;
+    if ([mime isEqualToString:@"multipart/form-data"]) {
+        return YES;
+    }
+    if ([mime isEqualToString:@"application/javascript"] || [mime isEqualToString:@"application/json"]) {
+        return NO;
+    }
+    if([mime componentsSeparatedByString:@"/"].count>0&&[[[mime componentsSeparatedByString:@"/"] firstObject] isEqualToString:@"text"]){
+        return NO;
+    }
+    return YES;
 }
 - (NSNumber *)ft_getResponseStatusCode{
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;

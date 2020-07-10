@@ -597,7 +597,7 @@ static dispatch_once_t onceToken;
         }
         NSDictionary *responseDict;
         if ([task isKindOfClass:NSURLSessionDownloadTask.class]) {
-            responseDict = @{};
+        responseDict = task.response?[task.response ft_getResponseContentDictWithData:nil]:@{};
         }else{
         responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
         }
