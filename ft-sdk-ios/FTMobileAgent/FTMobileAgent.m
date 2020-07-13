@@ -24,6 +24,7 @@
 #import "FTLog.h"
 #import "FTUncaughtExceptionHandler.h"
 #import "FTLogHook.h"
+#import "NSString+FTMd5.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -137,6 +138,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self judgeIsWriteDatabase];
+            [self uploadSDKObject];
             if (self.config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
@@ -667,6 +669,25 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
      [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     });
 }
+- (void)uploadSDKObject{
+    NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+    NSString *name = [NSString stringWithFormat:@"%@_%@",deviceUUID,[identifier ft_md5HashToUpper16Bit]];
+    NSDictionary *tag = @{FT_KEY_CLASS:FT_DEFAULT_CLASS,
+                          FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
+    };
+    NSDictionary *dict = @{FT_KEY_NAME:name,
+                           FT_KEY_TAGS:tag,
+                           FT_AGENT_OP:FTNetworkingTypeObject
+    };
+    FTRecordModel *model = [FTRecordModel new];
+    model.op = FTNetworkingTypeObject;
+    model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+    [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+        ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
+    }];
+}
 - (NSDictionary *)getPageDescDict{
     if (_isPageVtpDescEnabled) {
         return _pageDesc;
@@ -743,20 +764,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
-        NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
-        NSDictionary *tag = @{FT_KEY_CLASS:FT_DEFAULT_CLASS,
-                              FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
-        };
-        NSDictionary *dict = @{FT_KEY_NAME:deviceUUID,
-                               FT_KEY_TAGS:tag,
-                               FT_AGENT_OP:FTNetworkingTypeObject
-        };
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = FTNetworkingTypeObject;
-        model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
-        [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-            ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
-        }];
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);

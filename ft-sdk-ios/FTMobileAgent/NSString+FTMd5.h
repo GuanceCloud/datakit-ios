@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSString (FTMd5)
 -(NSString *)ft_md5HashToLower16Bit;
 -(NSString *)ft_md5HashToUpper32Bit;
+-(NSString *)ft_md5HashToUpper16Bit;
 @end
 
 NS_ASSUME_NONNULL_END

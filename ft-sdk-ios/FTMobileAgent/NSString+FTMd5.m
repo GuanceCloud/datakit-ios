@@ -18,6 +18,14 @@
     }
     return string;
 }
+-(NSString *)ft_md5HashToUpper16Bit{
+    NSString *md5Str = [self ft_md5HashToUpper32Bit];
+       NSString *string;
+       for (int i=0; i<24; i++) {
+           string=[md5Str substringWithRange:NSMakeRange(8, 16)];
+       }
+       return string;
+}
 -(NSString *)ft_md5HashToUpper32Bit{
     const char *cStr = [self UTF8String];
     unsigned char digest[CC_MD5_DIGEST_LENGTH];
