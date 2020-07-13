@@ -1,3 +1,8 @@
+# 1.0.3-alpha.6
+1.object __name拼接应用bundleID
+2.网络追踪spanID改为UUID
+---
+
 # 1.0.3-alpha.5
 1.logging、object、keyevent上报类型添加
 2.增加网络信息采集链路追踪、日志采集、事件日志采集
