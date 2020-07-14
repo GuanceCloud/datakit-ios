@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) FTMobileConfig *config;
-
+@property (nonatomic, strong) NSSet *netContentType;
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例

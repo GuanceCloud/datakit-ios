@@ -12,10 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLRequest (FTMonitor)
 - (NSDictionary *)ft_getRequestContentDict;
-- (NSString *)ft_getBodyData;
+- (NSString *)ft_getBodyData:(BOOL)allow;
 - (NSString *)ft_getOperationName;
 - (NSString *)ft_getNetworkTraceId;
 - (NSString *)ft_getNetworkSpanID;
+- (BOOL)ft_isAllowedContentType;
 @end
 
 NS_ASSUME_NONNULL_END

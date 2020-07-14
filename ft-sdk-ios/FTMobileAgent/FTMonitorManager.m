@@ -30,7 +30,7 @@
 #import "ZYAspects.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "NSURLResponse+FTMonitor.h"
-
+#import "NSString+FTAdd.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
@@ -89,7 +89,17 @@ static dispatch_once_t onceToken;
 }
 -(void)setMobileConfig:(FTMobileConfig *)config{
     self.config = config;
+    if (config.networkTrace) {
+        [self dealNetworkContentType:config.networkContentType];
+    }
     [self setMonitorType:config.monitorInfoType];
+}
+-(void)dealNetworkContentType:(NSArray *)array{
+    if (array && array.count>0) {
+        self.netContentType = [NSSet setWithArray:array];
+    }else{
+        self.netContentType = [NSSet setWithArray:@[@"application/json",@"application/xml",@"application/javascript",@"text/html",@"text/xml",@"text/plain",@"application/x-www-form-urlencoded"]];
+    }
 }
 -(void)setFlushInterval:(NSInteger)interval{
     _flushInterval = interval;
@@ -596,11 +606,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSDictionary *responseDict;
-        if ([task isKindOfClass:NSURLSessionDownloadTask.class]) {
-        responseDict = task.response?[task.response ft_getResponseContentDictWithData:nil]:@{};
-        }else{
         responseDict = task.response?[task.response ft_getResponseContentDictWithData:data]:@{};
-        }
         [self loggingNetworkTraceWithTask:task metrics:metrics responseDict:responseDict isError:NO];
     }
 }
@@ -652,7 +658,7 @@ static dispatch_once_t onceToken;
 }
 - (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
     NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
-    [request setValue:[task.originalRequest ft_getBodyData] forKey:FT_NETWORK_BODY];
+    [request setValue:[task.originalRequest ft_getBodyData:[task.currentRequest ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
     NSDictionary *response = dict?dict:@{};
     NSDictionary *content = @{
                                 FT_NETWORK_RESPONSE_CONTENT:response,
