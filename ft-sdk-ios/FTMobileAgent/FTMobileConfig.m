@@ -73,6 +73,7 @@
     options.networkTrace = self.networkTrace;
     options.eventFlowLog = self.eventFlowLog;
     options.networkTraceType = self.networkTraceType;
+    options.networkContentType = self.networkContentType;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

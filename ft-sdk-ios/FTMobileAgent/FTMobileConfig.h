@@ -226,6 +226,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  @param  type   链路追踪类型 默认为 Zipkin
 */
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
+/**
+ *  设置 网络请求采集 支持的 contentType
+ *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded）
+*/
+@property (nonatomic, strong) NSArray <NSString *> *networkContentType;
 @end
 
 NS_ASSUME_NONNULL_END
