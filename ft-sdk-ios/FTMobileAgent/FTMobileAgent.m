@@ -24,7 +24,7 @@
 #import "FTLog.h"
 #import "FTUncaughtExceptionHandler.h"
 #import "FTLogHook.h"
-#import "NSString+FTMd5.h"
+#import "NSString+FTAdd.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;

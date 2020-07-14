@@ -22,7 +22,7 @@
 #import "BlacklistedVCClassNames.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "NSString+FTMd5.h"
+#import "NSString+FTAdd.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()

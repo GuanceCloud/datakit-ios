@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
-		4A1FFA2724AB072D00049D9E /* NSString+FTMd5.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTMd5.h */; };
-		4A1FFA2824AB072D00049D9E /* NSString+FTMd5.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1FFA2624AB072D00049D9E /* NSString+FTMd5.m */; };
+		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
+		4A1FFA2824AB072D00049D9E /* NSString+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */; };
 		4A297BDA246BBF340028645B /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BD8246BBF340028645B /* FTConstants.h */; };
 		4A297BDB246BBF340028645B /* FTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A297BD9246BBF340028645B /* FTConstants.m */; };
 		4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */; };
@@ -81,8 +81,8 @@
 /* Begin PBXFileReference section */
 		4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManager.m; sourceTree = "<group>"; };
-		4A1FFA2524AB072D00049D9E /* NSString+FTMd5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTMd5.h"; sourceTree = "<group>"; };
-		4A1FFA2624AB072D00049D9E /* NSString+FTMd5.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+FTMd5.m"; sourceTree = "<group>"; };
+		4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
+		4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+FTAdd.m"; sourceTree = "<group>"; };
 		4A297BD8246BBF340028645B /* FTConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTConstants.h; sourceTree = "<group>"; };
 		4A297BD9246BBF340028645B /* FTConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTConstants.m; sourceTree = "<group>"; };
 		4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Private.h"; sourceTree = "<group>"; };
@@ -239,8 +239,8 @@
 				4A6F891E2419E97700E05C36 /* FTTrackBean.m */,
 				4A884266239E5768001B44C3 /* FTBaseInfoHander.h */,
 				4A88426F239E5768001B44C3 /* FTBaseInfoHander.m */,
-				4A1FFA2524AB072D00049D9E /* NSString+FTMd5.h */,
-				4A1FFA2624AB072D00049D9E /* NSString+FTMd5.m */,
+				4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */,
+				4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */,
 				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
@@ -356,7 +356,7 @@
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
-				4A1FFA2724AB072D00049D9E /* NSString+FTMd5.h in Headers */,
+				4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */,
 				4A7F62EB24976804000893C1 /* FTLogHook.h in Headers */,
 				4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */,
 			);
@@ -492,7 +492,7 @@
 				4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */,
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
 				4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */,
-				4A1FFA2824AB072D00049D9E /* NSString+FTMd5.m in Sources */,
+				4A1FFA2824AB072D00049D9E /* NSString+FTAdd.m in Sources */,
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
 				4A7F62EC24976804000893C1 /* FTLogHook.m in Sources */,
 				4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */,

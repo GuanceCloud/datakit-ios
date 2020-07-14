@@ -20,7 +20,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
 #import "FTTrackBean.h"
-#import "NSString+FTMd5.h"
+#import "NSString+FTAdd.h"
 @implementation FTBaseInfoHander : NSObject
 #pragma mark ========== 设备信息 ==========
 + (NSDictionary *)ft_getDeviceInfo{

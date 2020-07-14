@@ -6,10 +6,10 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import "NSString+FTMd5.h"
+#import "NSString+FTAdd.h"
 #import <CommonCrypto/CommonDigest.h>
 
-@implementation NSString (FTMd5)
+@implementation NSString (FTAdd)
 -(NSString *)ft_md5HashToLower16Bit{
     NSString *md5Str = [self ft_md5HashToLower32Bit];
     NSString *string;
@@ -48,5 +48,27 @@
     
     return digest;
 }
+- (NSUInteger)charactorNumber
+{
+    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+    return [self charactorNumberWithEncoding:encoding];
+}
 
+- (NSUInteger)charactorNumberWithEncoding:(NSStringEncoding)encoding
+{
+    NSUInteger strLength = 0;
+    char *p = (char *)[self cStringUsingEncoding:encoding];
+    
+    NSUInteger lengthOfBytes = [self lengthOfBytesUsingEncoding:encoding];
+    for (int i = 0; i < lengthOfBytes; i++) {
+        if (*p) {
+            p++;
+            strLength++;
+        }
+        else {
+            p++;
+        }
+    }
+    return strLength;
+}
 @end
