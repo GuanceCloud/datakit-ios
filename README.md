@@ -254,12 +254,19 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
   ```    
   
 ### 8.设置网络追踪
+ -  开启网络请求信息采集
   
-  ``` objective-c   
+ ``` objective-c   
 /**
  * 设置网络请求信息采集 默认为NO
  */
 @property (nonatomic, assign) BOOL networkTrace;
+
+ ```   
+      
+ -  设置网络请求信息采集时 使用链路追踪类型 
+   
+ ``` objective-c   
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
  *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger
@@ -271,6 +278,18 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  */
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
+ ```    
+  
+ -  设置网络请求采集 Content-Type 类型     
+   
+  采集的 **__content** 大小限制在 30k 。 
+  
+  ``` objective-c   
+ /**
+ *  设置 网络请求采集 支持的 contentType
+ *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded）
+*/
+@property (nonatomic, strong) NSArray <NSString *> *networkContentType;
   ```
    
 ## 四、参数与错误码
