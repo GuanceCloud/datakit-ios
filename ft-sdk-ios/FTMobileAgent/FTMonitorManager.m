@@ -98,7 +98,7 @@ static dispatch_once_t onceToken;
     if (array && array.count>0) {
         self.netContentType = [NSSet setWithArray:array];
     }else{
-        self.netContentType = [NSSet setWithArray:@[@"application/json",@"application/xml",@"application/javascript",@"text/html",@"text/xml",@"text/plain",@"application/x-www-form-urlencoded"]];
+        self.netContentType = [NSSet setWithArray:@[@"application/json",@"application/xml",@"application/javascript",@"text/html",@"text/xml",@"text/plain",@"application/x-www-form-urlencoded",@"multipart/form-data"]];
     }
 }
 -(void)setFlushInterval:(NSInteger)interval{
