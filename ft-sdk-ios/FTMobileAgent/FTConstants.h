@@ -166,7 +166,8 @@ extern NSString *  const FT_KEY_ACTIONTYPE;
 extern NSString *  const FT_KEY_TITLE;
 extern NSString *  const FT_KEY_SUGGESTION;
 extern NSString *  const FT_KEY_DISMENSIONS;
-
+extern NSString *  const FT_KEY_SPANTYPE;
+extern NSString *  const FT_KEY_ENDPOINT;
 extern NSString *  const FT_DEFAULT_CLASS;
 extern NSString *  const FT_APP_VERSION_NAME;
 
@@ -183,3 +184,4 @@ extern NSString *  const FT_KEY_TRUE;
 extern NSString *  const FT_KET_FALSE;
 extern NSString *  const FT_NETWORK_CODE;
 extern NSString *  const FT_NETWORK_ERROR;
+extern NSString *  const FT_SPANTYPE_ENTRY;

@@ -174,7 +174,8 @@ NSString *const FT_KEY_ACTIONTYPE = @"__actionType";
 NSString *const FT_KEY_TITLE = @"__title";
 NSString *const FT_KEY_SUGGESTION = @"__suggestion";
 NSString *const FT_KEY_DISMENSIONS = @"__dimensions";
-
+NSString *const FT_KEY_SPANTYPE = @"__spanType";
+NSString *const FT_KEY_ENDPOINT = @"__endpoint";
 NSString *const FT_DEFAULT_CLASS =@"Dataflux iOS SDK";
 
 NSString *const FT_APP_VERSION_NAME = @"app_version_name";
@@ -191,3 +192,5 @@ NSString *const FT_NETWORK_CODE = @"code";
 NSString *const FT_NETWORK_ERROR = @"error";
 NSString *const FT_KEY_TRUE = @"true";
 NSString *const FT_KET_FALSE = @"false";
+
+NSString *const FT_SPANTYPE_ENTRY = @"entry";
