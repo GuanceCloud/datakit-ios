@@ -29,11 +29,9 @@
                 id responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
                 [dict setValue:responseObject forKey:FT_NETWORK_BODY];
             } @catch (NSException *exception) {
-                ZYErrorLog(@"%@",exception);
-            } @finally {
                 [dict setValue:@"" forKey:FT_NETWORK_BODY];
+                ZYErrorLog(@"%@",exception);
             }
-            
         }else{
             [dict setValue:@"采集类型外的内容" forKey:FT_NETWORK_BODY];
         }
