@@ -10,21 +10,30 @@
 #import "FTConstants.h"
 #include <dlfcn.h>
 #import "FTMonitorManager.h"
+#import "FTLog.h"
 @implementation NSURLResponse (FTMonitor)
 
 - (NSDictionary *)ft_getResponseContentDictWithData:(NSData *)data{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     if ([self isKindOfClass:[NSHTTPURLResponse class]]) {
-           NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
         NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
         [dict setValue:headerFields forKey:FT_NETWORK_HEADERS];
         [dict setValue:[self ft_getResponseStatusCode] forKey:FT_NETWORK_CODE];
-
+        
     }
     if (data) {
         if([self isAllowedContentType]){
-        NSString *dataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        [dict setValue:dataStr forKey:FT_NETWORK_BODY];
+            @try {
+                NSError *errors;
+                id responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+                [dict setValue:responseObject forKey:FT_NETWORK_BODY];
+            } @catch (NSException *exception) {
+                ZYErrorLog(@"%@",exception);
+            } @finally {
+                [dict setValue:@"" forKey:FT_NETWORK_BODY];
+            }
+            
         }else{
             [dict setValue:@"采集类型外的内容" forKey:FT_NETWORK_BODY];
         }
