@@ -314,6 +314,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [tagDict setValue:logging.operationName forKey:FT_KEY_OPERATIONNAME];
     [tagDict setValue:logging.spanID forKey:FT_KEY_SPANID];
     [tagDict setValue:logging.traceID forKey:FT_FLOW_TRACEID];
+    [tagDict setValue:logging.spanType forKey:FT_KEY_SPANTYPE];
+    [tagDict setValue:logging.endpoint forKey:FT_KEY_ENDPOINT];
+
     if (logging.isError !=nil) {
         if ([logging.isError boolValue] == YES) {
             [tagDict setValue:FT_KEY_TRUE forKey:FT_KEY_ISERROR];

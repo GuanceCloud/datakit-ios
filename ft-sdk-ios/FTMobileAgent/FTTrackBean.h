@@ -76,7 +76,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *duration;
 ///设备UUID
 @property (nonatomic, copy) NSString *deviceUUID;
-
+///span 的类型，目前支持 2 个值：entry 和 local，
+//entry span 表示该 span 的调用的是服务的入口，即该服务的对其他服务提供调用请求的端点，几乎所有服务和消息队列消费者都是 entry span，因此只有 span 是 entry 类型的调用才是一个独立的请求。 local span 表示该 span 和远程调用没有任何关系，只是程序内部的函数调用，例如一个普通的 Java 方法，默认值 entry
+@property (nonatomic, copy) NSString *spanType;
+///请求的目标地址，客户端用于访问目标服务的网络地址(但不一定是 IP + 端口)，例如 127.0.0.1:8080 ,默认：null
+@property (nonatomic, copy) NSString *endpoint;
 @end
 
 ///上报关键事件指标集指定为 __keyevent

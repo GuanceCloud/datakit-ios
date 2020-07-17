@@ -673,6 +673,7 @@ static dispatch_once_t onceToken;
       logging.duration = [NSNumber numberWithInt:time];
       logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
       logging.isError = [NSNumber numberWithBool:iserror];
+      logging.spanType = FT_SPANTYPE_ENTRY;
       NSString *trace = [task.originalRequest ft_getNetworkTraceId];
       NSString *span = [task.originalRequest ft_getNetworkSpanID];
       if(trace&&span){
