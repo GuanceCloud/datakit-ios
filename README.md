@@ -23,17 +23,18 @@
 1. 配置 `Podfile` 文件。    
     
   ```objective-c
-   target 'yourProjectName' do
+  target 'yourProjectName' do
 
-   # Pods for your project
-   //如果需要全埋点功能
-    pod 'FTMobileSDK'    
+  # Pods for your project
+  //如果需要全埋点功能
+   pod 'FTMobileSDK'    
     
-   //不需要全埋点功能
-    pod 'FTMobileSDK/FTMobileAgent'
+  //不需要全埋点功能
+   pod 'FTMobileSDK/FTMobileAgent'
     
-   end
-  ```
+  end
+  ```    
+  
 2. 在 `Podfile` 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
