@@ -177,7 +177,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         while (updata.count>0){
             NSUInteger sendBatchSize = ([updata count] > 10) ? 10 : [updata count];
             NSArray *events = [updata subarrayWithRange:NSMakeRange(0, sendBatchSize)];
-            ZYDebug(@"开始上报事件(本次上报事件数:%lu, 队列内事件总数:%lu", (unsigned long)[events count], (unsigned long)[updata count]);
+            ZYDebug(@"开始上报事件(本次上报事件数:%lu, 队列内事件总数:%lu)", (unsigned long)[events count], (unsigned long)[updata count]);
             FTRecordModel *model = [events lastObject];
             __block BOOL success = NO;
             dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);

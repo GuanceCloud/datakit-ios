@@ -26,7 +26,7 @@ ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
     
     ////////// do something  这里可以捕获到日志 string
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string);
+        FTHookCallBack(string,[FTBaseInfoHander ft_getCurrentTimestamp]);
     }
     // invoke origin mehtod
     ssize_t result = orig_writev(a, v, v_len);
@@ -56,7 +56,7 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     
     ////////// do something  这里可以捕获到日志
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string);
+        FTHookCallBack(string,[FTBaseInfoHander ft_getCurrentTimestamp]);
     }
     // invoke orign fprintf
     int result = origin_fprintf(file, [string UTF8String]);
@@ -101,7 +101,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
             
             ////////// do something  这里可以捕获到日志
             if(s.length>0&&![s containsString:@"[FTLog]"]&&FTHookCallBack){
-                FTHookCallBack(s);
+                FTHookCallBack(s,[FTBaseInfoHander ft_getCurrentTimestamp]);
             }
         }
         else {

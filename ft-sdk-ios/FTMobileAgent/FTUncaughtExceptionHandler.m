@@ -143,7 +143,7 @@ void SignalHandler(int signal) {
 - (void)handleException:(NSException *)exception {
    
     NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
-    [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info];
+    [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[FTBaseInfoHander ft_getCurrentTimestamp]];
 }
 
 - (NSString *)getUUIDDictionary {

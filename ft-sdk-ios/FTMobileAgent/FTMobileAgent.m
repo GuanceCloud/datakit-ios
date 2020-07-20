@@ -611,13 +611,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
-    [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr) {
+    [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr];
+            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr tm:tm];
         });
     }];
 }
-- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content{
+- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm{
     if (!content || content.length == 0) {
         return;
     }
@@ -635,7 +635,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *filed = @{FT_KEY_CONTENT:content};
     
     FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
-       [self insertDBWithItemData:model];
+    model.tm = tm;
+    [self insertDBWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     FTRecordModel *model = [FTRecordModel new];

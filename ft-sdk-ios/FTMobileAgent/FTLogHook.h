@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^FTFishHookCallBack)(NSString *logStr);
+typedef void(^FTFishHookCallBack)(NSString *logStr,long long tm);
 
 @interface FTLogHook : NSObject
 
