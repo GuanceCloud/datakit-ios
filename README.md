@@ -21,7 +21,7 @@
 ### 2. 通过 CocoaPods 导入
 
 1. 配置 `Podfile` 文件。    
-
+    
   ```objective-c
    target 'yourProjectName' do
 
@@ -33,8 +33,7 @@
     pod 'FTMobileSDK/FTMobileAgent'
     
    end
- ```
-
+  ```
 2. 在 `Podfile` 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
@@ -712,7 +711,7 @@ typedef enum FTError : NSInteger {
 ### 1.监控周期设置 
   在 `FTMobileConfig` 中设置 `flushInterval `。
 
-1.  方法     
+* 方法     
     
  ```objective-c   
  // FTMobileAgent  
@@ -722,7 +721,7 @@ typedef enum FTError : NSInteger {
 -(void)setMonitorFlushInterval:(NSInteger)interval;
  ```
     
-2. 使用示例：
+* 使用示例：
 
 
  ```objective-c   
@@ -733,7 +732,7 @@ typedef enum FTError : NSInteger {
  ```
 
 ###  2. 启动上传    
-1.  方法    
+* 方法    
 
  ```objective-c    
 /**
@@ -751,7 +750,7 @@ typedef enum FTError : NSInteger {
 -(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
  ```
   
-2. 使用示例：
+* 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
@@ -764,7 +763,7 @@ typedef enum FTError : NSInteger {
   ```
 
 ### 3.关闭上传 
-1.  方法    
+* 方法    
 
  ```objective-c    
 /**
@@ -774,7 +773,7 @@ typedef enum FTError : NSInteger {
  ```
 
 
-2. 使用示例：
+* 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] stopMonitorFlush];
