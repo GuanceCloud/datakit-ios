@@ -1,3 +1,9 @@
+# 1.0.3-alpha.9
+1.response解析修改
+2.logging类型添加新字段
+
+---
+
 # 1.0.3-alpha.8
 1.根据content-type 处理 body 内容
 2.网络追踪 __content 大小限制
