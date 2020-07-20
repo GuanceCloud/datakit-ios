@@ -517,6 +517,9 @@ typedef enum FTError : NSInteger {
 |    field    |  NSDictionary      |   否    |  自定义指标  （可选）   |
 |    deviceUUID    |  NSString      |   否    |  设备UUID    |
 |    duration    |  NSNumber      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
+|spanType| NSString | 否 |entry span 表示该 span 的调用的是服务的入口，即该服务的对其他服务提供调用请求的端点，几乎所有服务和消息队列消费者都是 entry span，因此只有 span 是 entry 类型的调用才是一个独立的请求。 local span 表示该 span 和远程调用没有任何关系，只是程序内部的函数调用，例如一个普通的 Java 方法，默认值 entry
+|
+|endpoint| NSString | 否 |请求的目标地址，客户端用于访问目标服务的网络地址(但不一定是 IP + 端口)，例如 127.0.0.1:8080 ,默认：null|
     
  * 方法使用示例
  
