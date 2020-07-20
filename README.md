@@ -69,17 +69,17 @@
  - 不需要进行签名配置    
 
     ```objective-c  
-      /** 
-        * @method 指定初始化方法，设置 metricsUrl 配置  不需要进行请求签名
-        * @param metricsUrl FT-GateWay metrics 写入地址
-        * @return 配置对象
-      */
-      - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;  
+     /** 
+       * @method 指定初始化方法，设置 metricsUrl 配置  不需要进行请求签名
+       * @param metricsUrl FT-GateWay metrics 写入地址
+       * @return 配置对象
+     */
+     - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;  
     ```
 
- - 需要进行签名配置   
-
-  ```objective-c
+ - 需要进行签名配置    
+    
+    ```objective-c
     /**
       * @method 指定初始化方法，设置 metricsUrl
       * @param metricsUrl FT-GateWay metrics 写入地址
@@ -87,9 +87,9 @@
       * @param akSecret   access key Secret
       * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
       * @return 配置对象
-    */
-    - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
-  ```
+     */
+     - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
+    ```
  	
 ### 2.设置日志相关    
 - enableLog 打印日志    
@@ -135,7 +135,7 @@
    */
 @property (nonatomic, assign) BOOL traceConsoleLog;
 
-  ```    
+   ```    
     
 - eventFlowLog 采集页面事件日志
     
@@ -648,15 +648,15 @@ typedef enum FTError : NSInteger {
 ``` 
 
 ```objective-c
-  FTKeyeventBean *key = [FTKeyeventBean new];
-  key.title = @"testKeyeventImmediate";
-  key.content = @"测试KeyeventImmediate";
-  [[FTMobileAgent sharedInstance] keyeventImmediate:key callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
+ FTKeyeventBean *key = [FTKeyeventBean new];
+ key.title = @"testKeyeventImmediate";
+ key.content = @"测试KeyeventImmediate";
+ [[FTMobileAgent sharedInstance] keyeventImmediate:key callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
+       NSLog(@"statusCode = %ld",(long)statusCode);
                dispatch_async(dispatch_get_main_queue(), ^{
                    [self showResult:statusCode==200?@"success":@"fail"];
                });
-   }];
+  }];
  
 ```   
 
@@ -688,12 +688,12 @@ typedef enum FTError : NSInteger {
 
 ```objective-c
 //登录后 绑定用户信息
-    [[FTMobileAgent sharedInstance] bindUserWithName:userName Id:userId exts:nil];
+[[FTMobileAgent sharedInstance] bindUserWithName:userName Id:userId exts:nil];
 ```
 
 ```objective-c
 //登出后 注销当前用户
-    [[FTMobileAgent sharedInstance] logout];
+[[FTMobileAgent sharedInstance] logout];
 ```
 
 ## 八、监控数据周期上报 
