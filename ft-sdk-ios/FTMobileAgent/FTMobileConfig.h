@@ -188,10 +188,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
  */
 @property (nonatomic,strong) NSArray *blackVCList;
-#pragma mark ========== 上报流程图 ==========
-
-/*设置是否需要视图跳转流程图*/
-@property (nonatomic, assign) BOOL enableScreenFlow;
 
 #pragma mark ========== 日志相关 ==========
 /*设置是否允许打印日志*/
@@ -207,7 +203,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) BOOL traceConsoleLog;
 /**
- * 设置事件、流程图转化为日志数据  默认为NO
+ * 可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等等  默认为NO
  * 需 AutoTrack 开启 ，设置对应采集类型时生效
 */
 @property (nonatomic, assign) BOOL eventFlowLog;

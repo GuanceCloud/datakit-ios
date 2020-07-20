@@ -143,7 +143,7 @@
      
  ```objective-c
  /**
- * 设置事件、流程图转化为日志数据  默认为NO
+ * 默认为NO
  * 需 AutoTrack 开启 ，设置对应采集类型时生效
  */
  @property (nonatomic, assign) BOOL eventFlowLog; 
@@ -241,13 +241,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
       2. [关于监控数据周期上报](#九监控数据周期上报)
 
 
-
-### 6. 设置是否需要视图跳转流程图
-
- 前提：设置全埋点 `enableAutoTrack =  YES;`。        
- 设置 `enableScreenFlow = YES;` 时 ，将自动抓取视图跳转流程图。[具体流程图相关](#八流程图)。
-
-### 7. 设置采集率
+### 6. 设置采集率
  
   ``` objective-c
   /**
@@ -256,7 +250,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 @property (nonatomic, assign) float collectRate;
   ```    
   
-### 8.设置网络追踪
+### 7.设置网络追踪
 -  开启网络请求信息采集
   
  ``` objective-c   
@@ -314,9 +308,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |     blackVCList      |  NSArray   |          控制器黑名单           |                 否                  |
 |   monitorInfoType    | NS_OPTIONS |     [采集数据](#5-采集数据配置)     |                 否                  |
 |     needBindUser     |    BOOL    |        是否开启绑定用户数据         |              否(默认不开启)              |
-|   enableScreenFlow   |    BOOL    |       设置是否需要视图跳转流程图       |              否（默认NO）               |
 |    flushInterval     | NSInteger  |       监控数据周期上报时间间隔        |              否（默认10s）              |
-|   enableScreenFlow   |    BOOL    |       设置是否需要视图跳转流程图       |              否（默认NO）               |
 |   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
 |   traceServiceName   |    NSString    |       设置日志所属业务或服务的名称      |              否（默认dataflux sdk）              |
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
@@ -841,17 +833,13 @@ typedef enum FTError : NSInteger {
   * 设置页面和视图树是否使用描述显示
   */
   -(void)isPageVtpDescEnabled:(BOOL)enable;
-  /**
-  * 设置流程图是否使用描述显示
-  */
-  -(void)isFlowChartDescEnabled:(BOOL)enable; 
+
 
   ```
 
 *  使用示例
 
   ```objective-c
-    [[FTMobileAgent sharedInstance] isFlowChartDescEnabled:YES];
     [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
   ```
 
@@ -864,7 +852,6 @@ typedef enum FTError : NSInteger {
  ```objective-c
 /**
  * 设置视图描述字典 key:视图ClassName  value:视图描述
- * 替换 流程图的 name parent
  * 增加 field:page_desc 描述 autoTrack 中的 current_page_name
 */
 -(void)addPageDescDict:(NSDictionary <NSString*,id>*)dict;    

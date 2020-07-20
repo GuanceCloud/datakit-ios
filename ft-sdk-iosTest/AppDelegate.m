@@ -47,7 +47,6 @@
         config.traceConsoleLog = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-        [config setEnableScreenFlow:YES];
         config.enableTrackAppCrash = YES;
         config.networkTrace = YES;
         config.collectRate = 0.5;

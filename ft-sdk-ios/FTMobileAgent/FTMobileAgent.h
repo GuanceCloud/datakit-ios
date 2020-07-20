@@ -135,10 +135,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 -(void)isPageVtpDescEnabled:(BOOL)enable;
 /**
- * 是否开启流程图中页面 描述
-*/
--(void)isFlowChartDescEnabled:(BOOL)enable;
-/**
  * 注销当前用户
 */
 - (void)logout;

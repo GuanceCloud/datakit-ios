@@ -107,7 +107,6 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = NO;
-    [config setEnableScreenFlow:NO];
     [FTMobileAgent startWithConfigOptions:config];
 }
 - (void)testStartMonitorFlush{
@@ -123,7 +122,6 @@
                                   @"ResultVC":@"测试结果",
            };
     [[FTMobileAgent sharedInstance] addPageDescDict:dict];
-    [[FTMobileAgent sharedInstance] isFlowChartDescEnabled:YES];
     [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
 }
 - (void)testConnectBluetooth{

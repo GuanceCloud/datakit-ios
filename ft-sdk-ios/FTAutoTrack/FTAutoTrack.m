@@ -97,7 +97,7 @@
             [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
         }
         [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
-        [weakSelf flowOpenTrack:vc];
+//        [weakSelf flowOpenTrack:vc];
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController *tempVC = (UIViewController *)info.instance;
@@ -108,9 +108,9 @@
     
 }
 - (void)flowOpenTrack:(UIViewController *)vc{
-    if (!self.config.enableScreenFlow) {
-        return;
-    }
+//    if (!self.config.enableScreenFlow) {
+//        return;
+//    }
     if ([vc isKindOfClass:UINavigationController.class]) {
         return;
     }

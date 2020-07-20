@@ -31,7 +31,6 @@
         _autoTrackEventType = FTAutoTrackTypeNone;
         _enableAutoTrack = NO;
         _needBindUser = NO;
-        _enableScreenFlow = NO;
         _XDataKitUUID = [self ft_defaultUUID];
         _enableDescLog = NO;
         _enableTrackAppCrash= NO;
@@ -63,7 +62,6 @@
     options.appName = self.appName;
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
-    options.enableScreenFlow = self.enableScreenFlow;
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
@@ -85,9 +83,7 @@
 -(void)setEnableDescLog:(BOOL)enableDescLog{
     _enableDescLog = enableDescLog;
 }
--(void)setEnableScreenFlow:(BOOL)enableScreenFlow{
-    _enableScreenFlow = enableScreenFlow;
-}
+
 -(void)setEnableTrackAppCrash:(BOOL)enableTrackAppCrash{
     _enableTrackAppCrash = enableTrackAppCrash;
 }
