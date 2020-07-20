@@ -121,9 +121,11 @@
    *设置是否需要采集崩溃日志 默认为NO
    */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
-
-  ```   
+  
+   ```    
+     
   [崩溃分析](#3-关于崩溃日志分析)    
+      
  
 - traceConsoleLog 采集控制台日志
  
@@ -150,7 +152,7 @@
  
      
 ### 3. 设置X-Datakit-UUID
- ` X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
+ `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
  ```objective-c
@@ -160,7 +162,7 @@
 ### 4. 设置是否开启全埋点  
 
    开启全埋点，设置 `FTMobileConfig` 的 `enableAutoTrack = YES ;` 。
-   在 `enableAutoTrack = YES ;` 的情况下，进行 `autoTrackEventType` 类型设置。    
+   在 `enableAutoTrack = YES;` 的情况下，进行 `autoTrackEventType` 类型设置。    
 
 ```objective-c
 /**
@@ -323,10 +325,6 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
 
 
-
-
-
-
 ### 2. 错误码
 
 ```objective-c
@@ -352,7 +350,6 @@ typedef enum FTError : NSInteger {
 * 触发： 控件被点击时，触发 **Click** 事件。    
 
 * **Click** 事件中包含以下属性：    
-
       +  `root_page_name`：当前页面的根部页面
       +  `current_page_name`：当前页面
       +  `vtp`：操作页面树状路径
@@ -366,8 +363,8 @@ typedef enum FTError : NSInteger {
 
 * **enter** 与 **leave** 事件中包含以下属性：
 
-    +  `root_page_name`：当前页面的根部页面
-    +  `current_page_name`：当前页面
+     +  `root_page_name`：当前页面的根部页面
+     +  `current_page_name`：当前页面
 
 ### 4. 设置全埋点黑白名单
    黑白名单判断顺序： 白名单 -> 黑名单，控制器 -> UI控件    
@@ -519,8 +516,7 @@ typedef enum FTError : NSInteger {
 |    field    |  NSDictionary      |   否    |  自定义指标  （可选）   |
 |    deviceUUID    |  NSString      |   否    |  设备UUID    |
 |    duration    |  NSNumber      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
-|spanType| NSString | 否 |entry span 表示该 span 的调用的是服务的入口，即该服务的对其他服务提供调用请求的端点，几乎所有服务和消息队列消费者都是 entry span，因此只有 span 是 entry 类型的调用才是一个独立的请求。 local span 表示该 span 和远程调用没有任何关系，只是程序内部的函数调用，例如一个普通的 Java 方法，默认值 entry
-|
+|spanType| NSString | 否 |entry span 表示该 span 的调用的是服务的入口，即该服务的对其他服务提供调用请求的端点，几乎所有服务和消息队列消费者都是 entry span，因此只有 span 是 entry 类型的调用才是一个独立的请求。 local span 表示该 span 和远程调用没有任何关系，只是程序内部的函数调用，例如一个普通的 Java 方法，默认值 entry|
 |endpoint| NSString | 否 |请求的目标地址，客户端用于访问目标服务的网络地址(但不一定是 IP + 端口)，例如 127.0.0.1:8080 ,默认：null|
     
  * 方法使用示例
