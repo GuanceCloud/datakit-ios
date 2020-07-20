@@ -33,7 +33,7 @@
     pod 'FTMobileSDK/FTMobileAgent'
     
    end
-  ```
+ ```
 
 2. 在 `Podfile` 目录下执行 `pod install` 安装 SDK。
 
@@ -66,7 +66,7 @@
 
 ### 1. FTMobileConfig 初始化方法   
 
-  - 不需要进行签名配置    
+ - 不需要进行签名配置    
 
     ```objective-c  
       /** 
@@ -77,7 +77,7 @@
       - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;  
     ```
 
-  - 需要进行签名配置   
+ - 需要进行签名配置   
 
   ```objective-c
     /**
@@ -92,7 +92,7 @@
   ```
  	
 ### 2.设置日志相关    
- - enableLog 打印日志    
+- enableLog 打印日志    
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableLog` 属性。
    
@@ -100,7 +100,7 @@
     config.enableLog = YES; //打印日志
    ```
 
- - enableDescLog 打印描述日志   
+- enableDescLog 打印描述日志   
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableDescLog` 属性。辅助设置 **page_desc** 与 **vtp_desc** ,将打印 `vtp`、`current_page_name`、`vtp_desc`、`page_desc` 。   
    
@@ -114,7 +114,7 @@
     
    ```    
    
- - enableTrackAppCrash 采集崩溃日志
+- enableTrackAppCrash 采集崩溃日志
 
    ```objective-c 
   /**
@@ -123,8 +123,9 @@
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 
   ```   
-  [崩溃分析](#3-关于崩溃日志分析)
- - traceConsoleLog 采集控制台日志
+  [崩溃分析](#3-关于崩溃日志分析)    
+ 
+- traceConsoleLog 采集控制台日志
  
    ```objective-c 
   /**
@@ -134,7 +135,7 @@
 
   ```    
     
- - eventFlowLog 采集页面事件日志
+- eventFlowLog 采集页面事件日志
     
   设置后，可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
      
@@ -254,7 +255,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
   ```    
   
 ### 8.设置网络追踪
- -  开启网络请求信息采集
+-  开启网络请求信息采集
   
  ``` objective-c   
 /**
@@ -264,7 +265,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 
  ```   
       
- -  设置网络请求信息采集时 使用链路追踪类型 
+-  设置网络请求信息采集时 使用链路追踪类型 
    
  ``` objective-c   
 /**
@@ -280,7 +281,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 
  ```    
   
- -  设置网络请求采集 Content-Type 类型     
+-  设置网络请求采集 Content-Type 类型     
    
   采集的 **__content** 大小限制在 30k 。 
   
@@ -391,6 +392,7 @@ typedef enum FTError : NSInteger {
       */
      @property (nonatomic,strong) NSArray *blackVCList;
    ```
+  
    + UI控件黑白名单设置
 
    ```objective-c
@@ -466,7 +468,7 @@ typedef enum FTError : NSInteger {
 |    timeMillis    | long long       |   否    |  需要为毫秒级13位时间戳      |
 
 
- * 方法使用示例
+* 方法使用示例
 
 ```objective-c
  //等待上传
@@ -497,7 +499,7 @@ typedef enum FTError : NSInteger {
 
 ```   
 
-*  **FTLoggingBean** 的属性    
+* **FTLoggingBean** 的属性    
 
 | 属性名 | 类型 |必需|说明|
 |--------|--------|--------|--------|
@@ -710,7 +712,7 @@ typedef enum FTError : NSInteger {
 ### 1.监控周期设置 
   在 `FTMobileConfig` 中设置 `flushInterval `。
 
- 1.  方法     
+1.  方法     
     
  ```objective-c   
  // FTMobileAgent  
@@ -720,7 +722,7 @@ typedef enum FTError : NSInteger {
 -(void)setMonitorFlushInterval:(NSInteger)interval;
  ```
     
- 2. 使用示例：
+2. 使用示例：
 
 
  ```objective-c   
@@ -731,7 +733,7 @@ typedef enum FTError : NSInteger {
  ```
 
 ###  2. 启动上传    
- 1.  方法    
+1.  方法    
 
  ```objective-c    
 /**
@@ -749,7 +751,7 @@ typedef enum FTError : NSInteger {
 -(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
  ```
   
- 2. 使用示例：
+2. 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] startMonitorFlush];
@@ -762,7 +764,7 @@ typedef enum FTError : NSInteger {
   ```
 
 ### 3.关闭上传 
-  1.  方法    
+1.  方法    
 
  ```objective-c    
 /**
@@ -772,7 +774,7 @@ typedef enum FTError : NSInteger {
  ```
 
 
-  2. 使用示例：
+2. 使用示例：
 
  ```objective-c   
   [[FTMobileAgent sharedInstance] stopMonitorFlush];
@@ -808,7 +810,7 @@ typedef enum FTError : NSInteger {
 
  - `FTMonitorInfoTypeSensorLight`：是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
  
- -  `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
+ - `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
 
 #### 4. FTMonitorInfoTypeNetwork 
    **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
@@ -909,7 +911,7 @@ typedef enum FTError : NSInteger {
 
       **UITableView** 、**UICollectionView** 可以设置 **vtp** 中是否添加 **NSIndexPath** 的 **row**、**section**
 
-    - 设置方法：    
+  - 设置方法：    
      
 
     ``` objective-c      
@@ -919,7 +921,7 @@ typedef enum FTError : NSInteger {
        
     ```
 
-    - vtp显示：    
+  - vtp显示：    
 
     ``` objective-c      
     // 不添加 NSIndexPath
@@ -971,17 +973,17 @@ typedef enum FTError : NSInteger {
 
 进行解析：    
 
-  1. 将 **symbolicatecrash** 与 **.crash** 和 **.app.dSYM** 放在同一文件夹中    
+ 1. 将 **symbolicatecrash** 与 **.crash** 和 **.app.dSYM** 放在同一文件夹中    
   
-  2. 开启命令行工具，进入文件夹   
+ 2. 开启命令行工具，进入文件夹   
   
-  3. 使用命令解析 **Crash** 文件，*号指的是具体的文件名    
+ 3. 使用命令解析 **Crash** 文件，*号指的是具体的文件名    
       
-   ```
-   ./symbolicatecrash ./*.crash ./*.app.dSYM > symbol.crash
-   ```   
+    ```
+    ./symbolicatecrash ./*.crash ./*.app.dSYM > symbol.crash
+    ```   
    
-  4. 解析完成后会生成一个新的 **.Crash** 文件，这个文件中就是崩溃详细信息。
+ 4. 解析完成后会生成一个新的 **.Crash** 文件，这个文件中就是崩溃详细信息。
 
 
 
