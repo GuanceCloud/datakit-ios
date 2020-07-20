@@ -191,6 +191,17 @@ static FTTrackerEventDBTool *dbTool = nil;
 
     return [self getDatasWithFormat:sql bindUser:NO];
 }
+-(NSArray *)getBindUserDataWithOP:(NSString *)op{
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,op];
+    NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
+    
+    return session;
+}
+-(NSArray *)getDatasWithOP:(NSString *)op{
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC   ;",FT_DB_TRACREVENT_TABLE_NAME,op];
+    
+    return [self getDatasWithFormat:sql bindUser:NO];
+}
 -(NSArray *)getDatasWithFormat:(NSString *)format bindUser:(BOOL)bindUser{
     if([self isOpenDatabese:self.db]) {
         __block  NSMutableArray *array = [NSMutableArray new];

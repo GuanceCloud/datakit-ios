@@ -168,21 +168,20 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 -(void)flushWithType:(NSString *)type{
     @try {
-        while ([[FTTrackerEventDBTool sharedManger] getFirstTenData:type]>0){
-            ZYDebug(@"DB DATAS COUNT = %ld",[[FTTrackerEventDBTool sharedManger] getDatasCount]);
-            NSArray *updata;
-            if (self.config.needBindUser && [type isEqualToString:FT_NETWORKING_API_METRICS]) {
-                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:type];
-            }else{
-                updata = [[FTTrackerEventDBTool sharedManger] getFirstTenData:type];
-            }
-            if(updata.count == 0){
-                break;
-            }
-            FTRecordModel *model = [updata lastObject];
+        NSMutableArray *updata = [NSMutableArray new];
+        if (self.config.needBindUser && [type isEqualToString:FT_NETWORKING_API_METRICS]) {
+            updata = [[[FTTrackerEventDBTool sharedManger] getBindUserDataWithOP:type] mutableCopy];
+        }else{
+            updata = [[[FTTrackerEventDBTool sharedManger] getDatasWithOP:type] mutableCopy];
+        }
+        while (updata.count>0){
+            NSUInteger sendBatchSize = ([updata count] > 10) ? 10 : [updata count];
+            NSArray *events = [updata subarrayWithRange:NSMakeRange(0, sendBatchSize)];
+            ZYDebug(@"开始上报事件(本次上报事件数:%lu, 队列内事件总数:%lu", (unsigned long)[events count], (unsigned long)[updata count]);
+            FTRecordModel *model = [events lastObject];
             __block BOOL success = NO;
             dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
-            [self trackList:updata callBack:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
+            [self trackList:events callBack:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
                 if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
                     ZYErrorLog(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                     success = NO;
@@ -191,24 +190,8 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                 }
                 NSInteger statusCode = response.statusCode;
                 success = (statusCode >=200 && statusCode < 500);
-                if (statusCode ==200){
-                    NSMutableDictionary *responseObject;
-                    NSError *errors;
-                    responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
-                    if (![responseObject valueForKey:@"code"] || [responseObject[@"code"] intValue] != 200){
-                        if (errors){
-                            ZYErrorLog(@"response error = %@",errors);
-                        }else {
-                            ZYErrorLog(@"上传失败 错误原因 = %@ 此条数据将删除",responseObject);
-                        }
-                    }
-                    
-                }else{
-                    if (success) {
-                        ZYErrorLog(@"上传失败，错误原因未知 此条数据将删除");
-                    }else{
-                        ZYErrorLog(@"服务器异常 稍后再试 response = %@",response);
-                    }
+                if (!success) {
+                    ZYErrorLog(@"服务器异常 稍后再试 response = %@",response);
                 }
                 dispatch_semaphore_signal(flushSemaphore);
             }];
@@ -217,6 +200,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                 break;
             }
             BOOL delect = [[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm];
+            [updata removeObjectsInArray:events];
             ZYDebug(@"上传事件成功 从数据库删除已上传数据 == %d",delect);
         }
     }

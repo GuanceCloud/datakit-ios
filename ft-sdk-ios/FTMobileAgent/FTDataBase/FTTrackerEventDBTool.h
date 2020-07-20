@@ -49,6 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 *  @return 获取的数据
 */
 -(NSArray *)getFirstTenData:(NSString *)op;
+-(NSArray *)getBindUserDataWithOP:(NSString *)op;
+-(NSArray *)getDatasWithOP:(NSString *)op;
 /**
 *  @abstract
 *  根据类型删除已上传的数据
