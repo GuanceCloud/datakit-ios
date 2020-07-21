@@ -1,0 +1,9 @@
+<root>
+<pagedesc>
+<page name="RootTabbarVC" desc="底部导航" />
+<page name="DemoViewController" desc="首页" />
+</pagedesc>
+<vtpdesc>
+<vtp path="UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]" desc="home点击" />
+</vtpdesc>
+</root>

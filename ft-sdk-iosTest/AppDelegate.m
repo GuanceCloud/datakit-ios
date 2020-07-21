@@ -45,6 +45,7 @@
         config.eventFlowLog = YES;
         config.needBindUser = NO;
         config.traceConsoleLog = YES;
+        config.enabledPageVtpDesc = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         config.enableTrackAppCrash = YES;
@@ -53,7 +54,6 @@
         self.config = config;
        
         [FTMobileAgent startWithConfigOptions:config];
-       
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
     }

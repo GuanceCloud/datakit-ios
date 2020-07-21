@@ -30,7 +30,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_autoTrack",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_addPageDesc",@"Test_addVtpDesc",@"Test_crashLog",@"Test_log",@"Test_NetworkTrace"];
+    self.dataSource = @[@"BindUser",@"LogOut",@"Test_CustomTrack",@"Test_autoTrack",@"Test_resetConfig",@"Test_startLocation",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"Test_log",@"Test_NetworkTrace"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -115,45 +115,12 @@
 - (void)testStopMonitorFlush{
     [[FTMobileAgent sharedInstance] stopMonitorFlush];
 }
-- (void)testAddPageDesc{
-    NSDictionary *dict = @{@"DemoViewController":@"首页",
-                                  @"RootTabbarVC":@"底部导航",
-                                  @"UITestVC":@"UI测试",
-                                  @"ResultVC":@"测试结果",
-           };
-    [[FTMobileAgent sharedInstance] addPageDescDict:dict];
-    [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
-}
 - (void)testConnectBluetooth{
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestBluetoothList new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
 }
-- (void)testAddVtpDesc{
-    NSDictionary *vtpdict = @{@"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[2]":@"second点击",
-                              @"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]":@"home点击",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationBar/_UINavigationBarContentView/_UIButtonBarStackView/_UIButtonBarButton[0]":@"导航确认点击",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[0]":@"测试绑定用户",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[1]":@"测试登出用户",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[2]":@"测试主动埋点",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[3]":@"测试主动埋点立即上传",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[4]":@"测试主动埋点立即上传多条",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[5]":@"测试流程图",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[6]":@"测试全埋点",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[7]":@"测试子页面流程图1",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[8]":@"测试子页面流程图2",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[9]":@"测试重置config",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[10]":@"测试获取地理位置信息",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[11]":@"测试监控项周期上传开启",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[12]":@"测试监控项周期上传关闭",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[13]":@"测试添加页面描述",
-                              @"DemoViewController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITransitionView/UIViewControllerWrapperView/UILayoutContainerView/UINavigationTransitionView/UIViewControllerWrapperView/UIView/UITableView[0]/section[0]/row[14]":@"测试添加视图树描述",
 
-    };
-    [[FTMobileAgent sharedInstance] addVtpDescDict:vtpdict];
-    [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
-    
-}
 - (void)testCrashLog{
     NSString *value = nil;
     NSDictionary *dict = @{@"11":value};
@@ -226,18 +193,12 @@
             [self testConnectBluetooth];
             break;
         case 9:
-            [self testAddPageDesc];
-            break;
-        case 10:
-            [self testAddVtpDesc];
-            break;
-        case 11:
             [self testCrashLog];
             break;
-        case 12:
+        case 10:
             [self testLog];
             break;
-        case 13:
+        case 11:
             [self testNetworkTrace];
             break;
         default:
