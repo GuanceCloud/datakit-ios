@@ -40,6 +40,7 @@
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
         _networkTrace = FTNetworkTrackTypeZipkin;
+        _enabledPageVtpDesc = NO;
     }
       return self;
 }
@@ -72,6 +73,7 @@
     options.eventFlowLog = self.eventFlowLog;
     options.networkTraceType = self.networkTraceType;
     options.networkContentType = self.networkContentType;
+    options.enabledPageVtpDesc = self.enabledPageVtpDesc;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

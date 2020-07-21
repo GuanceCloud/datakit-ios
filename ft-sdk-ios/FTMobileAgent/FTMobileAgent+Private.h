@@ -27,26 +27,6 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 
 @interface FTMobileAgent (Private)
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
-
-/**
- * 获取添加的页面描述字典
- * 如果 设置 isPageVtpDescEnabled 为NO return nil;
- */
-- (NSDictionary *)getPageDescDict;
-/**
- * 获取添加的视图树描述字典
- * 如果 设置 isPageVtpDescEnabled 为NO return nil;
-*/
-- (NSDictionary *)getVtpDescDict;
-/**
- * 获取添加的页面描述字典 替换流程图
- * 如果 设置 isFlowChartDescEnabled 为NO return nil;
- */
-- (NSDictionary *)getFlowChartDescDict;
-/**
- * 获取设置的  isPageVtpDescEnabled 状态
- */
--(BOOL)getPageVtpDescEnabled;
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */

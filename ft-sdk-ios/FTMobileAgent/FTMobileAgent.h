@@ -120,21 +120,6 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(void)stopMonitorFlush;
 /**
- * 设置视图描述字典 key:视图ClassName  value:视图描述
- * 替换 流程图的 name parent
- * 增加 field:page_desc 描述 autoTrack 中的 current_page_name
-*/
--(void)addPageDescDict:(NSDictionary <NSString*,id>*)dict;
-/**
- * 设置视图树描述字典 key:视图树string  value:视图树描述
- * 增加 field:vtp_desc 描述 autoTrack 中的 vtp
-*/
--(void)addVtpDescDict:(NSDictionary <NSString*,id>*)dict;
-/**
- * 是否开启页面、视图树 描述
- */
--(void)isPageVtpDescEnabled:(BOOL)enable;
-/**
  * 注销当前用户
 */
 - (void)logout;

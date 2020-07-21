@@ -50,12 +50,7 @@
     objc_setAssociatedObject(self, @"FTVtpAddIndexPath", [NSNumber numberWithBool:vtpAddIndexPath], OBJC_ASSOCIATION_ASSIGN);
 }
 @end
-@implementation FTMobileAgent{
-    NSDictionary *_pageDesc;
-    NSDictionary *_vtpDesc;
-    BOOL _isPageVtpDescEnabled;
-    BOOL _isFlowChartDescEnabled;
-}
+@implementation FTMobileAgent
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -495,25 +490,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     onceToken = 0;
     sharedInstance =nil;
 }
-#pragma mark - 添加描述
-/**
- * 设置视图描述字典 key:视图ClassName  value:视图描述
-*/
--(void)addPageDescDict:(NSDictionary <NSString*,id>*)dict{
-    _pageDesc = dict;
-}
-/**
- * 设置视图树描述字典 key:视图树string  value:视图树描述
-*/
--(void)addVtpDescDict:(NSDictionary <NSString*,id>*)dict{
-    _vtpDesc = dict;
-}
--(void)isPageVtpDescEnabled:(BOOL)enable{
-    _isPageVtpDescEnabled = enable;
-}
--(void)isFlowChartDescEnabled:(BOOL)enable{
-    _isFlowChartDescEnabled = enable;
-}
 #pragma mark - 采样率 判断该设备是否被采样
 - (void)judgeIsWriteDatabase{
     float rate = self.config.collectRate;
@@ -691,27 +667,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
         ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
     }];
-}
-- (NSDictionary *)getPageDescDict{
-    if (_isPageVtpDescEnabled) {
-        return _pageDesc;
-    }
-    return nil;
-}
-- (NSDictionary *)getVtpDescDict{
-    if (_isPageVtpDescEnabled) {
-        return _vtpDesc;
-    }
-    return nil;
-}
-- (NSDictionary *)getFlowChartDescDict{
-    if (_isFlowChartDescEnabled) {
-        return _pageDesc;
-    }
-    return nil;
-}
--(BOOL)getPageVtpDescEnabled{
-    return _isPageVtpDescEnabled;
 }
 #pragma mark - 网络与App的生命周期
 - (void)setupAppNetworkListeners{

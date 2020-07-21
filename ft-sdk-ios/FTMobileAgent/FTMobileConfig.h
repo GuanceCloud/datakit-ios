@@ -188,7 +188,10 @@ NS_ASSUME_NONNULL_BEGIN
  *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
  */
 @property (nonatomic,strong) NSArray *blackVCList;
-
+/**
+ * 是否开启页面、视图树 描述 默认 NO
+*/
+@property (nonatomic, assign) BOOL enabledPageVtpDesc;
 #pragma mark ========== 日志相关 ==========
 /*设置是否允许打印日志*/
 @property (nonatomic, assign) BOOL enableLog;
