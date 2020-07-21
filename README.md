@@ -249,8 +249,19 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  */
 @property (nonatomic, assign) float collectRate;
   ```    
+
+### 7.设置是否开启页面、视图树描述  
+ 
+  ``` objective-c
+ /**
+ * 是否开启页面、视图树 描述 默认 NO
+ */
+ @property (nonatomic, assign) BOOL enabledPageVtpDesc;@property (nonatomic, assign) float collectRate;
+  ```      
   
-### 7.设置网络追踪
+  [设置页面描述、视图树描述配置方法](#九设置页面描述视图树描述配置)    
+  
+### 8.设置网络追踪
 -  开启网络请求信息采集
   
  ``` objective-c   
@@ -826,63 +837,33 @@ typedef enum FTError : NSInteger {
 
 ## 九、设置页面描述、视图树描述配置
 ### 1. 设置是否允许描述
-*  方法    
+*  FTMobileConfig `enabledPageVtpDesc` 属性设置    
 
   ```objective-c
    /**
-  * 设置页面和视图树是否使用描述显示
+  * 是否开启页面、视图树 描述 默认 NO
   */
-  -(void)isPageVtpDescEnabled:(BOOL)enable;
-
-
+  @property (nonatomic, assign) BOOL enabledPageVtpDesc;
   ```
 
-*  使用示例
+### 2. 添加页面描述、视图树描述 XML 文件
+创建以 `ft_page_vtp_desc` 为名的 **xml** 文件，按照下面格式添加**页面描述**、**视图树描述**。将 `ft_page_vtp_desc.xml` 文件添加到项目工程中。
 
-  ```objective-c
-    [[FTMobileAgent sharedInstance] isPageVtpDescEnabled:YES];
-  ```
+* 格式示例   
 
-
-
-### 2. 添加页面描述、视图树描述配置字典
-
-* 方法    
-
- ```objective-c
-/**
- * 设置视图描述字典 key:视图ClassName  value:视图描述
- * 增加 field:page_desc 描述 autoTrack 中的 current_page_name
-*/
--(void)addPageDescDict:(NSDictionary <NSString*,id>*)dict;    
- ```
-
- ```objective-c
-/**
- * 设置视图树描述字典 key:视图树string  value:视图树描述
- * 增加 field:vtp_desc 描述 autoTrack 中的 vtp
-*/
--(void)addVtpDescDict:(NSDictionary <NSString*,id>*)dict;
+ ```xml
+<root>
+<pagedesc>
+<page name="RootTabbarVC" desc="底部导航" />
+<page name="DemoViewController" desc="首页" />
+</pagedesc>
+<vtpdesc>
+<vtp path="UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]" desc="home点击" />
+</vtpdesc>
+</root>
   
  ```
 
-* 使用示例    
-
-   ```objective-c    
-   //设置视图描述字典
-    NSDictionary *dict = @{@"DemoViewController":@"首页",
-                                     @"RootTabbarVC":@"底部导航",
-                                     @"UITestVC":@"UI测试",
-                                     @"ResultVC":@"测试结果",
-           };
-    [[FTMobileAgent sharedInstance] addPageDescDict:dict];
-    
-    //设置视图树描述字典
-    NSDictionary *vtpdict = @{@"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[2]":@"second点击",
-                              @"UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]":@"home点击",
-    };
-    [[FTMobileAgent sharedInstance] addVtpDescDict:vtpdict];
-   ```
 
 ### 3. vtp 的获取
 
