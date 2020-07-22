@@ -703,7 +703,7 @@ static dispatch_once_t onceToken;
         span = spanID;
         sampling = sampled;
     }];
-    if(trace&&span&&sampled){
+    if(trace&&span&&sampling){
         logging.traceID = trace;
         logging.spanID = span;
         logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
