@@ -257,13 +257,13 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     NSMutableArray *list = [NSMutableArray new];
       [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
           NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
-          NSMutableDictionary *tag = [item valueForKey:@"__tags"];
+          NSMutableDictionary *tag = [item valueForKey:FT_KEY_TAGS];
           if ([[item allKeys] containsObject:FT_AGENT_OP]) {
               [tag addEntriesFromDictionary:self.basicTags];
               [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
               [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
           }
-          [item setValue:tag forKey:@"__tags"];
+          [item setValue:tag forKey:FT_KEY_TAGS];
           [list addObject:item];
       }];
     // 待处理 object 类型
