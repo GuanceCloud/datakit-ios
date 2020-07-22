@@ -144,10 +144,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
 @property (nonatomic, copy) NSString *XDataKitUUID;
-/**
- * 设置采样率 0-1 默认为 1
- */
-@property (nonatomic, assign) float collectRate;
 #pragma mark ==========  FTAutoTrack 全埋点配置 ==========
 /**
  * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
@@ -216,6 +212,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置网络请求信息采集 默认为NO
 */
 @property (nonatomic, assign) BOOL networkTrace;
+/**
+ *  设置网络请求信息采集时 采样率 0-1 默认为 1
+ */
+@property (nonatomic, assign) float traceSamplingRate;
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
 */

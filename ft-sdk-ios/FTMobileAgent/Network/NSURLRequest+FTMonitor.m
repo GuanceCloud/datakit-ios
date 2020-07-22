@@ -114,6 +114,33 @@
     }
     return nil;
 }
+- (void)ft_getNetworkTraceingDatas:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler{
+    NSDictionary *header = self.allHTTPHeaderFields;
+    NSString *trace,*span,*sampling;
+    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
+        trace = header[FT_NETWORK_ZIPKIN_TRACEID];
+    }
+    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
+        span = header[FT_NETWORK_ZIPKIN_SPANID];
+    }
+    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
+        sampling = header[FT_NETWORK_ZIPKIN_SAMPLED] ;
+    }
+    if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
+        NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
+        NSArray *traceAry = [trace componentsSeparatedByString:@":"];
+        if (traceAry.count == 4) {
+            trace = [traceAry firstObject];
+            span =traceAry[1];
+            sampling = [traceAry lastObject];
+        }
+        
+    }
+    if (handler) {
+        handler(trace,span,[sampling boolValue]);
+    }
+}
+
 - (BOOL)ft_isAllowedContentType{
      BOOL allow = NO;
     if([FTMonitorManager sharedInstance].netContentType.count>0){

@@ -34,7 +34,6 @@
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, assign) BOOL isWriteDatabase;
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -132,7 +131,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
             }
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
-            [self judgeIsWriteDatabase];
             [self uploadSDKObject];
             if (self.config.traceConsoleLog) {
                 [self _traceConsoleLog];
@@ -181,10 +179,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self trackBackground:measurement tags:nil field:field withTrackType:FTTrackTypeCode];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
-    if (!self.isWriteDatabase) {
-        ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
-        return;
-    }
     [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
 }
 
@@ -490,22 +484,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     onceToken = 0;
     sharedInstance =nil;
 }
-#pragma mark - 采样率 判断该设备是否被采样
-- (void)judgeIsWriteDatabase{
-    float rate = self.config.collectRate;
-    if(rate<=0){
-        self.isWriteDatabase =  NO;
-    }
-    BOOL is = YES;
-    if (rate<1) {
-        int x = arc4random() % 100;
-        is = x <= (rate*100)? YES:NO;
-    }
-    if(!is){
-        ZYDebug(@"应用本次生命周期内不被采样，track事件将不被记录");
-    }
-    self.isWriteDatabase = is;
-}
 #pragma mark - 调用监控项管理方法
 -(void)setMonitorFlushInterval:(NSInteger)interval{
     [[FTMonitorManager sharedInstance] setFlushInterval:interval];
@@ -533,10 +511,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
               ZYErrorLog(@"文件名 事件名不能为空");
               return;
           }
-      //采集率 控制全埋点与
-       if (!self.isWriteDatabase) {
-           return;
-       }
        NSString *op;
        if (trackType == FTTrackTypeCode) {
            op = FT_TRACK_OP_CUSTOM;

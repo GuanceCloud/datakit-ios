@@ -656,31 +656,59 @@ static dispatch_once_t onceToken;
     }
     return NO;
 }
+- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type))completionHandler{
+    if ([self trackUrl:url]) {
+        if (completionHandler) {
+            completionHandler(YES,[self judgeIsTraceSampling],self.config.networkTraceType);
+        }
+    }else{
+        if (completionHandler) {
+            completionHandler(NO,NO,0);
+        }
+    }
+}
+#pragma mark - 采样率 判断该设备是否被采样
+- (BOOL)judgeIsTraceSampling{
+    float rate = self.config.traceSamplingRate;
+    if(rate<=0){
+        return NO;
+    }
+    if(rate<1){
+        int x = arc4random() % 100;
+        return x <= (rate*100)? YES:NO;
+    }
+    return YES;
+}
 - (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
     NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
     [request setValue:[task.originalRequest ft_getBodyData:[task.currentRequest ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
     NSDictionary *response = dict?dict:@{};
     NSDictionary *content = @{
-                                FT_NETWORK_RESPONSE_CONTENT:response,
-                                FT_NETWORK_REQUEST_CONTENT:request
-      };
-      FTLoggingBean *logging = [FTLoggingBean new];
-      logging.measurement = FT_USER_AGENT;
-      logging.classStr = FT_LOGGING_CLASS_TRACING;
-      logging.operationName = [task.originalRequest ft_getOperationName];
-      logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-      double time = [taskMes.taskInterval duration]*1000*1000;
-      logging.duration = [NSNumber numberWithInt:time];
-      logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
-      logging.isError = [NSNumber numberWithBool:iserror];
-      logging.spanType = FT_SPANTYPE_ENTRY;
-      NSString *trace = [task.originalRequest ft_getNetworkTraceId];
-      NSString *span = [task.originalRequest ft_getNetworkSpanID];
-      if(trace&&span){
-          logging.traceID = trace;
-          logging.spanID = span;
-          [[FTMobileAgent sharedInstance] loggingBackground:logging];
-      }
+        FT_NETWORK_RESPONSE_CONTENT:response,
+        FT_NETWORK_REQUEST_CONTENT:request
+    };
+    FTLoggingBean *logging = [FTLoggingBean new];
+    logging.measurement = FT_USER_AGENT;
+    logging.classStr = FT_LOGGING_CLASS_TRACING;
+    logging.operationName = [task.originalRequest ft_getOperationName];
+    double time = [taskMes.taskInterval duration]*1000*1000;
+    logging.duration = [NSNumber numberWithInt:time];
+    logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
+    logging.isError = [NSNumber numberWithBool:iserror];
+    logging.spanType = FT_SPANTYPE_ENTRY;
+    __block NSString *trace,*span;
+    __block BOOL sampling;
+    [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+        trace = traceId;
+        span = spanID;
+        sampling = sampled;
+    }];
+    if(trace&&span&&sampled){
+        logging.traceID = trace;
+        logging.spanID = span;
+        logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
+        [[FTMobileAgent sharedInstance] loggingBackground:logging];
+    }
 }
 - (void)resetInstance{
     onceToken = 0;

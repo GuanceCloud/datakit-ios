@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)ft_getOperationName;
 - (NSString *)ft_getNetworkTraceId;
 - (NSString *)ft_getNetworkSpanID;
+- (void)ft_getNetworkTraceingDatas:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler;
 - (BOOL)ft_isAllowedContentType;
 @end
 

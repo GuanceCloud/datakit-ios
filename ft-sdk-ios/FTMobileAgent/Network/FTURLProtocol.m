@@ -71,16 +71,18 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
     NSMutableURLRequest * mutableReqeust = [request mutableCopy];
-    if ([[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL]) {
-        if ([FTMonitorManager sharedInstance].config.networkTraceType  == FTNetworkTrackTypeZipkin) {
-            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-            [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-            [mutableReqeust setValue:@"1" forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-        }else{
-            NSString *value = [NSString stringWithFormat:@"%@:%@:0:1",[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID],[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID]];
-            [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTrackType type) {
+        if (track) {
+            if (type  == FTNetworkTrackTypeZipkin) {
+                [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+                [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
+                [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
+            }else{
+                NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID],[FTBaseInfoHander ft_getNetworkSpanIDOrTraceID],[NSNumber numberWithBool:sampled]];
+                [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+            }
         }
-    }
+    }];
     return [mutableReqeust copy];
 }
 

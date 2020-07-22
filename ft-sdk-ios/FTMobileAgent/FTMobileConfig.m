@@ -34,7 +34,7 @@
         _XDataKitUUID = [self ft_defaultUUID];
         _enableDescLog = NO;
         _enableTrackAppCrash= NO;
-        _collectRate = 1;
+        _traceSamplingRate = 1;
         _traceServiceName = FT_DEFAULT_SERVICE_NAME;
         _networkTrace = NO;
         _traceConsoleLog = NO;
@@ -66,7 +66,7 @@
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableDescLog = self.enableDescLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
-    options.collectRate = self.collectRate;
+    options.traceSamplingRate = self.traceSamplingRate;
     options.traceServiceName = self.traceServiceName;
     options.traceConsoleLog = self.traceConsoleLog;
     options.networkTrace = self.networkTrace;
