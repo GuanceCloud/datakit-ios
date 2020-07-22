@@ -240,17 +240,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
       1. [关于GPU使用率获取](#2-关于-gpu-使用率)   
       2. [关于监控数据周期上报](#九监控数据周期上报)
 
-
-### 6. 设置采集率
- 
-  ``` objective-c
-  /**
- * 设置采样率 0-1 默认为 1
- */
-@property (nonatomic, assign) float collectRate;
-  ```    
-
-### 7.设置是否开启页面、视图树描述  
+### 6.设置是否开启页面、视图树描述  
  
   ``` objective-c
  /**
@@ -261,7 +251,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
   
   [设置页面描述、视图树描述配置方法](#九设置页面描述视图树描述配置)    
   
-### 8.设置网络追踪
+### 7.设置网络追踪
 -  开启网络请求信息采集
   
  ``` objective-c   
@@ -270,7 +260,17 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  */
 @property (nonatomic, assign) BOOL networkTrace;
 
- ```   
+ ```    
+    
+- 设置采集率
+ 
+  ``` objective-c
+  /**
+   *  设置网络请求信息采集时 采样率 0-1 默认为 1
+   */
+  @property (nonatomic, assign) float traceSamplingRate;
+  ```    
+   
       
 -  设置网络请求信息采集时 使用链路追踪类型 
    
@@ -325,7 +325,9 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
 |   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
 |   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
+| traceSamplingRate |float|设置网络请求信息采集率|否（默认1）|
 |   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
+|networkContentType|NSArray|设置 网络请求采集 支持的 contentType|否（默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data））|
 
 
 ### 2. 错误码
