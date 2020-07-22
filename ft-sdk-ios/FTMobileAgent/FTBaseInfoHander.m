@@ -696,9 +696,14 @@
     return str;
 }
 
-+(NSString *)ft_getNetworkSpanIDOrTraceID{
++(NSString *)ft_getNetworkTraceID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [uuid lowercaseString];
+}
++(NSString *)ft_getNetworkSpanID{
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    return [[uuid lowercaseString] ft_md5HashToLower16Bit];
 }
 @end
