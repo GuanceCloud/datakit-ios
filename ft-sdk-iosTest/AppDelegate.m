@@ -50,7 +50,7 @@
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         config.enableTrackAppCrash = YES;
         config.networkTrace = YES;
-        config.collectRate = 0.5;
+        config.traceSamplingRate = 0.5;
         self.config = config;
        
         [FTMobileAgent startWithConfigOptions:config];
