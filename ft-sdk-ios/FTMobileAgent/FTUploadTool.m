@@ -19,7 +19,7 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "FTMonitorUtils.h"
-
+#import "NSDate+FTAdd.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
@@ -287,7 +287,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 -(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
-     NSString *date =[FTBaseInfoHander ft_currentGMT];
+     NSString *date =[[NSDate date] ft_dateGMT];
      mutableRequest.HTTPMethod = @"POST";
      //添加header
      [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];

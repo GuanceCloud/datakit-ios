@@ -18,6 +18,7 @@
 #import "TestCustomTrackVC.h"
 #import "ft_sdk_iosTest-Swift.h"
 #import <FTMobileAgent/FTBaseInfoHander.h>
+#import <FTMobileAgent/NSDate+FTAdd.h>
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -140,8 +141,8 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
 
     request.HTTPMethod = @"POST";
-    [request addValue:[FTBaseInfoHander ft_currentGMT] forHTTPHeaderField:@"Date"];
-    [request addValue:[FTBaseInfoHander ft_currentGMT] forHTTPHeaderField:@"Date"];
+    [request addValue:[[NSDate date] ft_dateGMT] forHTTPHeaderField:@"Date"];
+    [request addValue:[[NSDate date] ft_dateGMT] forHTTPHeaderField:@"Date"];
 
     request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {

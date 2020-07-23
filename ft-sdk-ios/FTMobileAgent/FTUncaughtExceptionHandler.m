@@ -8,6 +8,7 @@
 
 #import "FTUncaughtExceptionHandler.h"
 #import "FTLog.h"
+#import "NSDate+FTAdd.h"
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
 #import <FTMobileAgent.h>
@@ -143,7 +144,7 @@ void SignalHandler(int signal) {
 - (void)handleException:(NSException *)exception {
    
     NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
-    [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[FTBaseInfoHander ft_getCurrentTimestamp]];
+    [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[[NSDate date] ft_dateTimestamp]];
 }
 
 - (NSString *)getUUIDDictionary {

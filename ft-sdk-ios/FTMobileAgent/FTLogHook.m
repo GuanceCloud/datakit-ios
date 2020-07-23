@@ -11,6 +11,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
+#import "NSDate+FTAdd.h"
 static FTFishHookCallBack FTHookCallBack;
 
 static ssize_t (*orig_writev)(int a, const struct iovec * v, int v_len);
@@ -26,7 +27,7 @@ ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
     
     ////////// do something  这里可以捕获到日志 string
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string,[FTBaseInfoHander ft_getCurrentTimestamp]);
+        FTHookCallBack(string,[[NSDate date] ft_dateTimestamp]);
     }
     // invoke origin mehtod
     ssize_t result = orig_writev(a, v, v_len);
@@ -56,7 +57,7 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     
     ////////// do something  这里可以捕获到日志
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string,[FTBaseInfoHander ft_getCurrentTimestamp]);
+        FTHookCallBack(string,[[NSDate date] ft_dateTimestamp]);
     }
     // invoke orign fprintf
     int result = origin_fprintf(file, [string UTF8String]);
@@ -101,7 +102,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
             
             ////////// do something  这里可以捕获到日志
             if(s.length>0&&![s containsString:@"[FTLog]"]&&FTHookCallBack){
-                FTHookCallBack(s,[FTBaseInfoHander ft_getCurrentTimestamp]);
+                FTHookCallBack(s,[[NSDate date] ft_dateTimestamp]);
             }
         }
         else {

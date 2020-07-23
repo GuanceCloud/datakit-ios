@@ -23,6 +23,7 @@
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "NSString+FTAdd.h"
+#import "NSDate+FTAdd.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()<NSXMLParserDelegate>
@@ -129,7 +130,7 @@
         parent =self.pageDesc[parent];
     }
     long  duration;
-    long long tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+    long long tm =[[NSDate date] ft_dateTimestamp];
     if (self.preFlowTime==0) {
         duration = 0;
     }else{

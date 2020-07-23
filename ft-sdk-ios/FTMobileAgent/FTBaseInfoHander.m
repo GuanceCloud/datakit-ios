@@ -574,28 +574,6 @@
     }
     return dic;
 }
-#pragma mark ========== 时间相关 ==========
-+ (long long)ft_getCurrentTimestamp{
-    NSDate *datenow = [NSDate date];
-    long long time= (long long)([datenow timeIntervalSince1970]*1000*1000);
-    return  time;
-}
-+ (NSString *)ft_currentGMT {
-    
-    NSDate *date = [NSDate date];
-    
-    NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
-    
-    [NSTimeZone setDefaultTimeZone:tzGMT];
-    
-    NSDateFormatter *iosDateFormater=[[NSDateFormatter alloc]init];
-    
-    iosDateFormater.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
-    
-    iosDateFormater.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
-    
-    return [iosDateFormater stringFromDate:date];
-}
 #pragma mark ========== 请求加密 ==========
 + (NSString *)ft_md5base64EncryptStr:(NSString *)str {
     const char *input = [str UTF8String];//UTF8转码
@@ -660,20 +638,7 @@
     }
     
 }
-// 验证指标集名称是否符合要求
-+ (BOOL)verifyProductStr:(NSString *)product{
-    BOOL result= NO;
-    @try {
-        NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";//$flow_
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
-        // 字符串判断，然后BOOL值
-        result = [predicate evaluateWithObject:product];
-        ZYDebug(@"result : %@",result ? @"指标集命名正确" : @"验证失败");
-    }@catch (NSException *exception) {
-        ZYDebug(@"verifyProductStr %@",exception);
-    }
-    return result;
-}
+
 +(NSString *)ft_getFTstatueStr:(FTStatus)status{
     NSString *str = nil;
     switch (status) {

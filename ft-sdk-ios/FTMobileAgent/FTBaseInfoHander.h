@@ -32,25 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_resolution;
 /**
  *  @abstract
- *  获取当前时间戳
- *
- *  @return 时间戳
- */
-+ (long long)ft_getCurrentTimestamp;
-/**
- *  @abstract
  *  FT access 签名算法
  *
  *  @return 签名后字符串
  */
 +(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data;
-/**
- *  @abstract
- *  获取GMT格式的时间
- *
- *  @return GMT格式的时间
- */
-+ (NSString *)ft_currentGMT;
 /**
  *  @abstract
  *  将json字符串转换成字典
@@ -74,11 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  Measurement 替换特殊字符 ' ' ','
 */
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
-/**
- *  @abstract
- *  校验 product 是否符合 只能包含英文字母、数字、中划线和下划线，最长 40 个字符，区分大小写
-*/
-+ (BOOL)verifyProductStr:(NSString *)product;
 /**
  *  @abstract
  *  FTStatus 字符串转换

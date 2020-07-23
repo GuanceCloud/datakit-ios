@@ -8,12 +8,12 @@
 
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
-
+#import "NSDate+FTAdd.h"
 @implementation FTRecordModel
 -(instancetype)init{
    self = [super init];
     if (self) {
-        self.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+        self.tm = [[NSDate date] ft_dateTimestamp];
         NSString *sessionid;
            sessionid =get_ft_sessionid;
            if (!sessionid) {
