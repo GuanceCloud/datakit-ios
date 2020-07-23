@@ -331,7 +331,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *fieldDict = @{FT_KEY_CONTENT:logging.content}.mutableCopy;
     [fieldDict setValue:logging.duration forKey:FT_KEY_DURATION];
     [fieldDict addEntriesFromDictionary:logging.field];
-    return  [self getRecordModelWithMeasurement:logging.measurement tags:tagDict field:fieldDict op:@"cstmLogging" netType:FTNetworkingTypeLogging];
+    return  [self getRecordModelWithMeasurement:logging.measurement tags:tagDict field:fieldDict op:@"cstmLogging" netType:FTNetworkingTypeLogging tm:logging.tm];
 }
 #pragma mark - object
 -(void)objectBackground:(NSString *)name deviceUUID:(NSString *)deviceUUID tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr{
@@ -459,7 +459,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [field setValue:keyevent.duration forKey:FT_KEY_DURATION];
     [field setValue:keyevent.dimensions forKey:FT_KEY_DISMENSIONS];
     
-    return  [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FTNetworkingTypeKeyevent netType:FTNetworkingTypeKeyevent];
+    return  [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FTNetworkingTypeKeyevent netType:FTNetworkingTypeKeyevent tm:keyevent.tm];
 }
 #pragma mark - 用户绑定与注销
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
@@ -532,7 +532,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 ZYErrorLog(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
             }
-            if (![FTBaseInfoHander verifyProductStr: [NSString stringWithFormat:@"flow_%@",product]]) {
+            if (![[NSString stringWithFormat:@"flow_%@",product] ft_verifyProductStr]) {
                 return;
             }
             productStr =[NSString stringWithFormat:@"__flow_%@",product];
@@ -584,11 +584,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     NSDictionary *filed = @{FT_KEY_CONTENT:content};
     
-    FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging];
-    model.tm = tm;
+    FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging tm:tm];
     [self insertDBWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
+    return [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:type tm:0];
+}
+- (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type tm:(long long)tm{
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *fieldDict = field.mutableCopy;
     NSMutableDictionary *tagsDict = [NSMutableDictionary new];
@@ -616,6 +618,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"datas == %@",data);
     model.op = type;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    if (tm&&tm>0) {
+        model.tm = tm;
+    }
     return model;
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model{

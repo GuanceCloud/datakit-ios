@@ -31,6 +31,7 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "NSString+FTAdd.h"
+#import "NSDate+FTAdd.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
@@ -150,7 +151,7 @@ static dispatch_once_t onceToken;
         FT_AGENT_OPDATA:opdata,
     };
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
+    model.tm =[[NSDate date] ft_dateTimestamp];
     model.op = FTNetworkingTypeMetrics;
     void (^UploadResultBlock)(NSInteger,id) = ^(NSInteger statusCode,id responseObject){
         ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
@@ -694,6 +695,7 @@ static dispatch_once_t onceToken;
     double time = [taskMes.taskInterval duration]*1000*1000;
     logging.duration = [NSNumber numberWithInt:time];
     logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
+    logging.tm = [[taskMes.transactionMetrics lastObject].requestStartDate ft_dateTimestamp];
     logging.isError = [NSNumber numberWithBool:iserror];
     logging.spanType = FT_SPANTYPE_ENTRY;
     __block NSString *trace,*span;

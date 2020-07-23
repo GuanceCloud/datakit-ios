@@ -81,6 +81,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *spanType;
 ///请求的目标地址，客户端用于访问目标服务的网络地址(但不一定是 IP + 端口)，例如 127.0.0.1:8080 ,默认：null
 @property (nonatomic, copy) NSString *endpoint;
+/// 当前日志发生的时间，时间戳，默认单位为纳秒
+@property (nonatomic, assign) long long tm;
 @end
 
 ///上报关键事件指标集指定为 __keyevent
@@ -115,6 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *dimensions;
 ///设备UUID
 @property (nonatomic, copy) NSString *deviceUUID;
- 
+/// 当前事件发生的时间，时间戳，默认单位为纳秒
+@property (nonatomic, assign) long long tm;
 @end
 NS_ASSUME_NONNULL_END
