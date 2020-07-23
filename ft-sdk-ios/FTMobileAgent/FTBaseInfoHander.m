@@ -589,7 +589,7 @@
     
     [signString appendString:request.HTTPMethod];
     [signString appendString:@"\n"];
-    [signString appendString:[data ft_md5HashToUpper32Bit]];
+    [signString appendString:[self ft_md5base64EncryptStr:data]];
     [signString appendString:@"\n"];
     [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
     [signString appendString:@"\n"];
@@ -603,11 +603,6 @@
     return [HMAC base64EncodedStringWithOptions:0];
 }
 #pragma mark ========== 字符串处理  前后空格移除、特殊字符转换、校验合法 ==========
-+(NSString *)removeFrontBackBlank:(NSString *)str{
-    NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-    NSString *string = [str stringByTrimmingCharactersInSet:set];
-    return string;
-}
 + (id)repleacingSpecialCharacters:(id )str{
     if ([str isKindOfClass:NSString.class]) {
         NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];

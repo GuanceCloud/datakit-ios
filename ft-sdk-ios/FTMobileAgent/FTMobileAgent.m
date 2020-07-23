@@ -191,7 +191,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSParameterAssert(measurement);
     NSParameterAssert(field);
     @try {
-        if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0 || field == nil || [field allKeys].count == 0) {
+        if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0 || field == nil || [field allKeys].count == 0) {
             ZYDebug(@"文件名 事件名不能为空");
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
             return;
@@ -507,7 +507,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
    @try {
           NSParameterAssert(measurement);
           NSParameterAssert(field);
-          if (measurement == nil || [FTBaseInfoHander removeFrontBackBlank:measurement].length == 0  || field == nil || [field allKeys].count == 0) {
+          if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0  || field == nil || [field allKeys].count == 0) {
               ZYErrorLog(@"文件名 事件名不能为空");
               return;
           }
@@ -528,7 +528,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         NSString *op,*productStr;
         if(trackType == FTTrackTypeCode){
-            if ([FTBaseInfoHander removeFrontBackBlank:product].length == 0 ||  [FTBaseInfoHander removeFrontBackBlank:traceId].length== 0||[FTBaseInfoHander removeFrontBackBlank:name].length==0) {
+            if ([product ft_removeFrontBackBlank].length == 0 || [traceId ft_removeFrontBackBlank].length== 0||[name ft_removeFrontBackBlank].length==0) {
                 ZYErrorLog(@"产品名、跟踪ID、name、parent 不能为空");
                 return;
             }

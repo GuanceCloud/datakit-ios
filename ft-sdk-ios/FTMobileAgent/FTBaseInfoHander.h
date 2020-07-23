@@ -47,11 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (id)repleacingSpecialCharactersField:(id )str;
 /**
  *  @abstract
- *  清除字符串前后的空格
- */
-+ (NSString *)removeFrontBackBlank:(NSString *)str;
-/**
- *  @abstract
  *  tags key、value 替换特殊字符 ',' '=' ' '
 */
 + (id)repleacingSpecialCharacters:(id )str;

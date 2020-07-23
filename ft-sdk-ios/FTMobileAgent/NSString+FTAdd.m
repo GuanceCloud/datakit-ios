@@ -84,4 +84,9 @@
     }
     return result;
 }
+-(NSString *)ft_removeFrontBackBlank{
+    NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSString *string = [self stringByTrimmingCharactersInSet:set];
+    return string;
+}
 @end
