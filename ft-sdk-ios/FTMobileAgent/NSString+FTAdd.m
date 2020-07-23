@@ -8,7 +8,7 @@
 
 #import "NSString+FTAdd.h"
 #import <CommonCrypto/CommonDigest.h>
-
+#import "FTLog.h"
 @implementation NSString (FTAdd)
 -(NSString *)ft_md5HashToLower16Bit{
     NSString *md5Str = [self ft_md5HashToLower32Bit];
@@ -70,5 +70,18 @@
         }
     }
     return strLength;
+}
+- (BOOL)ft_verifyProductStr{
+    BOOL result= NO;
+    @try {
+        NSString *regex = @"^[A-Za-z0-9_\\-]{0,40}+$";//$flow_
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
+        // 字符串判断，然后BOOL值
+        result = [predicate evaluateWithObject:self];
+        ZYDebug(@"result : %@",result ? @"指标集命名正确" : @"验证失败");
+    }@catch (NSException *exception) {
+        ZYDebug(@"verifyProductStr %@",exception);
+    }
+    return result;
 }
 @end
