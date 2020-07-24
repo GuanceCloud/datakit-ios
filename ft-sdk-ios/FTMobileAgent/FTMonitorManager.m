@@ -114,7 +114,7 @@ static dispatch_once_t onceToken;
         return;
     }
     ZYDebug(@"starting monitor flush timer.");
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_main_async_safe(^{
         if (self.flushInterval > 0) {
             self.timer = [NSTimer scheduledTimerWithTimeInterval:self.flushInterval
                                                           target:self
@@ -424,15 +424,10 @@ static dispatch_once_t onceToken;
     if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
         __block NSNumber *network_strength;
         __block NSString *network_type;
-        if ([NSThread isMainThread]) {
+        dispatch_main_sync_safe(^{
             network_type =[FTNetworkInfo getNetworkType];
-            network_strength =[NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
-        }else{
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                network_type =[FTNetworkInfo getNetworkType];
-                network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
-            });
-        }
+            network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
+        });
         NSString *roam = [FTMonitorUtils getRoamingStates] == NO?FT_KET_FALSE:FT_KEY_TRUE;
         [tag setObject:roam forKey:FT_MONITOR_ROAM];
         [tag setObject:network_type forKey:FT_MONITOR_NETWORK_TYPE];

@@ -185,3 +185,15 @@ extern NSString *  const FT_KET_FALSE;
 extern NSString *  const FT_NETWORK_CODE;
 extern NSString *  const FT_NETWORK_ERROR;
 extern NSString *  const FT_SPANTYPE_ENTRY;
+#define dispatch_main_async_safe(block)\
+if ([NSThread isMainThread]) {\
+    block();\
+} else {\
+    dispatch_async(dispatch_get_main_queue(), block);\
+}
+#define dispatch_main_sync_safe(block)\
+if ([NSThread isMainThread]) {\
+    block();\
+} else {\
+    dispatch_sync(dispatch_get_main_queue(), block);\
+}
