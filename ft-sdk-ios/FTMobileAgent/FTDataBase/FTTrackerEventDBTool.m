@@ -197,11 +197,6 @@ static FTTrackerEventDBTool *dbTool = nil;
     
     return session;
 }
--(NSArray *)getDatasWithOP:(NSString *)op{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC   ;",FT_DB_TRACREVENT_TABLE_NAME,op];
-    
-    return [self getDatasWithFormat:sql bindUser:NO];
-}
 -(NSArray *)getDatasWithFormat:(NSString *)format bindUser:(BOOL)bindUser{
     if([self isOpenDatabese:self.db]) {
         __block  NSMutableArray *array = [NSMutableArray new];
