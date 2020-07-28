@@ -178,7 +178,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     }
     FTRecordModel *model = [events lastObject];
     if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:op tm:model.tm]) {
-        ZYErrorLog(@"Failed to remove records from SQLite.");
+        ZYErrorLog(@"数据库删除已上传数据失败");
         return NO;
     }
    return [self flushWithType:op];

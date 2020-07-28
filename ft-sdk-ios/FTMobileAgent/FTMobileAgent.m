@@ -30,10 +30,11 @@
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
-@property (nonatomic, strong) dispatch_queue_t immediateLabel;
+@property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
+@property (nonatomic, strong) NSMutableArray *loggingArray;
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -120,8 +121,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
-            NSString *immediateLabel = [NSString stringWithFormat:@"io.immediateLabel.%p", self];
-            self.immediateLabel = dispatch_queue_create([immediateLabel UTF8String], DISPATCH_QUEUE_SERIAL);
+            NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
+            self.concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             [self setupAppNetworkListeners];
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
             if (self.config.enableAutoTrack) {
@@ -232,7 +233,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if ([self.net isEqualToString:@"-1"]) {
         callBack? callBack(NetWorkException,nil):nil;
     }else{
-    dispatch_async(self.immediateLabel, ^{
+    dispatch_async(self.concurrentLabel, ^{
         [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 callBack? callBack(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
@@ -259,13 +260,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (logging.measurement.length>0 && logging.content.length>0) {
         @try {
             FTRecordModel *model = [self getLoggingModel:logging];
-            [self insertDBWithItemData:model];
+            if (model) {
+                [self insertDBWithItemData:model];
+            }
         } @catch (NSException *exception) {
             ZYErrorLog(@"exception %@",exception);
         }
         
     }else{
-        ZYErrorLog(@"传入的第数据格式有误");
+        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
     }
 }
 -(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
@@ -279,7 +282,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [loggingList enumerateObjectsUsingBlock:^(FTLoggingBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (obj.measurement.length>0 && obj.content.length>0) {
                 FTRecordModel *model = [self getLoggingModel:obj];
-                [list addObject:model];
+                if (model) {
+                    [list addObject:model];
+                }
             }else{
                 ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
             }
@@ -296,6 +301,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
       
 }
 -(FTRecordModel *)getLoggingModel:(FTLoggingBean *)logging{
+    if ([logging.content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+        ZYErrorLog(@"content size limit 30kb");
+        return nil;
+    }
     NSMutableDictionary *tagDict = [NSMutableDictionary new];
     [tagDict setValue:[FTBaseInfoHander ft_getFTstatueStr:logging.status] forKey:FT_KEY_STATUS];
     [tagDict setValue:logging.serviceName forKey:FT_KEY_SERVICENAME];
@@ -568,7 +577,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }];
 }
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm{
-    if (!content || content.length == 0) {
+    if (!content || content.length == 0 || [content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
         return;
     }
     NSMutableDictionary *tag = @{FT_KEY_STATUS:status,

@@ -194,3 +194,4 @@ NSString *const FT_KEY_TRUE = @"true";
 NSString *const FT_KET_FALSE = @"false";
 
 NSString *const FT_SPANTYPE_ENTRY = @"entry";
+NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;

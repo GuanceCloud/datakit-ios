@@ -185,6 +185,7 @@ extern NSString *  const FT_KET_FALSE;
 extern NSString *  const FT_NETWORK_CODE;
 extern NSString *  const FT_NETWORK_ERROR;
 extern NSString *  const FT_SPANTYPE_ENTRY;
+extern NSUInteger  const FT_LOGGING_CONTENT_SIZE;
 #define dispatch_main_async_safe(block)\
 if ([NSThread isMainThread]) {\
     block();\
