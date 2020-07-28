@@ -163,7 +163,6 @@ static FTTrackerEventDBTool *dbTool = nil;
            NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
            if (time>10) {
                self.lastSentDate = [NSDate date];
-           //待处理通知
                [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
            }
        }else{
@@ -172,7 +171,23 @@ static FTTrackerEventDBTool *dbTool = nil;
        }
     return success;
 }
-
+-(BOOL)insertItemWithItemDatas:(NSArray *)items{
+    __block BOOL needRoolback = NO;
+    if([self isOpenDatabese:self.db]) {
+        [self zy_inTransaction:^(BOOL *rollback) {
+            [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  ? , ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
+                if(![self.db executeUpdate:sqlStr,@(item.tm),item.data,item.sessionid,item.op]){
+                    *stop = YES;
+                    needRoolback = YES;
+                }
+            }];
+            rollback = &needRoolback;
+        }];
+        
+    }
+    return !needRoolback;
+}
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
 

@@ -30,6 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)insertItemWithItemData:(FTRecordModel *)datas;
 /**
 *  @abstract
+*  向数据库中添加一组对象
+*
+*  @param items 要记录的数据
+*
+*  @return 存储是否成功
+*/
+-(BOOL)insertItemWithItemDatas:(NSArray *)items;
+/**
+*  @abstract
 *  获取数据库所有的数据 不绑定用户信息
 
 *  @return 获取的数据
