@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		4A01160C24C966C200AECC1C /* NSDate+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */; };
 		4A01160D24C966C200AECC1C /* NSDate+FTAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */; };
-		4A01162A24D022AF00AECC1C /* FTReadWriteLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A01162824D022AF00AECC1C /* FTReadWriteLock.h */; };
-		4A01162B24D022AF00AECC1C /* FTReadWriteLock.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A01162924D022AF00AECC1C /* FTReadWriteLock.m */; };
 		4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */; };
 		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
@@ -85,8 +83,6 @@
 /* Begin PBXFileReference section */
 		4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDate+FTAdd.h"; sourceTree = "<group>"; };
 		4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDate+FTAdd.m"; sourceTree = "<group>"; };
-		4A01162824D022AF00AECC1C /* FTReadWriteLock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTReadWriteLock.h; sourceTree = "<group>"; };
-		4A01162924D022AF00AECC1C /* FTReadWriteLock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTReadWriteLock.m; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTMonitorManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTMonitorManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManager.m; sourceTree = "<group>"; };
 		4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
@@ -251,8 +247,6 @@
 				4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */,
 				4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */,
 				4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */,
-				4A01162824D022AF00AECC1C /* FTReadWriteLock.h */,
-				4A01162924D022AF00AECC1C /* FTReadWriteLock.m */,
 				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
 				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
@@ -348,7 +342,6 @@
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				4AECBCED244EE8450023DEF7 /* FTURLProtocol.h in Headers */,
 				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,
-				4A01162A24D022AF00AECC1C /* FTReadWriteLock.h in Headers */,
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
@@ -513,7 +506,6 @@
 				4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
-				4A01162B24D022AF00AECC1C /* FTReadWriteLock.m in Sources */,
 				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
