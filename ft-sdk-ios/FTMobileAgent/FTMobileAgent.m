@@ -35,6 +35,7 @@
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSMutableArray *loggingArray;
+@property (nonatomic, strong) dispatch_queue_t serialLoggingQueue;
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -134,6 +135,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
             if (self.config.traceConsoleLog) {
+                self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
                 [self _traceConsoleLog];
             }
         }
@@ -174,6 +176,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     [[FTMonitorManager sharedInstance] setMonitorType:config.monitorInfoType];
     self.upTool.config = config;
+}
+-(NSMutableArray *)loggingArray{
+    if (!_loggingArray) {
+        _loggingArray = [NSMutableArray new];
+    }
+    return _loggingArray;
 }
 #pragma mark ========== publick method ==========
 - (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
@@ -594,7 +602,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *filed = @{FT_KEY_CONTENT:content};
     
     FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filed op:op netType:FTNetworkingTypeLogging tm:tm];
-    [self insertDBWithItemData:model];
+    [self insertDBArrayWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     return [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:type tm:0];
@@ -632,8 +640,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return model;
 }
+- (void)insertDBArrayWithItemData:(FTRecordModel *)model{
+    dispatch_async(self.serialLoggingQueue, ^{
+        [self.loggingArray addObject:model];
+        if (self.loggingArray.count>20) {
+            NSArray *array = [self.loggingArray subarrayWithRange:NSMakeRange(0, 20)];
+            [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
+            [self.loggingArray removeObjectsInArray:array];
+        }
+    });
+}
 - (void)insertDBWithItemData:(FTRecordModel *)model{
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(self.concurrentLabel, ^{
      [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
     });
 }
@@ -703,6 +721,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         self.isForeground = NO;
+        dispatch_async(self.serialLoggingQueue, ^{
+            if(self.loggingArray.count>0){
+                [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
+                self.loggingArray = nil;
+            }
+        });
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
