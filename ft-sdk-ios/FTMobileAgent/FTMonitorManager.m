@@ -114,16 +114,16 @@ static dispatch_once_t onceToken;
         return;
     }
     ZYDebug(@"starting monitor flush timer.");
-    dispatch_main_async_safe(^{
-        if (self.flushInterval > 0) {
+    if (self.flushInterval > 0) {
+        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
             self.timer = [NSTimer scheduledTimerWithTimeInterval:self.flushInterval
                                                           target:self
                                                         selector:@selector(flush)
                                                         userInfo:nil
                                                          repeats:YES];
             [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-        }
-    });
+        }];
+    }
 }
 -(void)stopFlush{
     if (self.timer) {
@@ -369,19 +369,19 @@ static dispatch_once_t onceToken;
  *  @param handler 查询结果、变化就更新
  */
 - (void)startPedometerUpdatesTodayWithHandler:(FTPedometerHandler)handler{
-  NSDate *toDate = [NSDate date];
-  NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-  [dateFormatter setDateFormat:@"yyyy-MM-dd"];
-  NSDate *fromDate =
-      [dateFormatter dateFromString:[dateFormatter stringFromDate:toDate]];
-  WeakSelf
-  [_pedometer
-      startPedometerUpdatesFromDate:fromDate
-                        withHandler:^(CMPedometerData *_Nullable pedometerData,
-                                      NSError *_Nullable error) {
-      weakSelf.steps = pedometerData.numberOfSteps;
-      handler? handler(pedometerData.numberOfSteps, error):nil;
-                        }];
+    NSDate *toDate = [NSDate date];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+    NSDate *fromDate =
+    [dateFormatter dateFromString:[dateFormatter stringFromDate:toDate]];
+    WeakSelf
+    [_pedometer
+     startPedometerUpdatesFromDate:fromDate
+     withHandler:^(CMPedometerData *_Nullable pedometerData,
+                   NSError *_Nullable error) {
+        weakSelf.steps = pedometerData.numberOfSteps;
+        handler? handler(pedometerData.numberOfSteps, error):nil;
+    }];
 }
 #pragma mark ========== tag\field 数据拼接 ==========
 -(NSDictionary *)getMonitorTagDicts{
@@ -424,10 +424,10 @@ static dispatch_once_t onceToken;
     if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
         __block NSNumber *network_strength;
         __block NSString *network_type;
-        dispatch_main_sync_safe(^{
+        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
             network_type =[FTNetworkInfo getNetworkType];
             network_strength = [NSNumber numberWithInt:[FTNetworkInfo getNetSignalStrength]];
-        });
+        }];
         NSString *roam = [FTMonitorUtils getRoamingStates] == NO?FT_KET_FALSE:FT_KEY_TRUE;
         [tag setObject:roam forKey:FT_MONITOR_ROAM];
         [tag setObject:network_type forKey:FT_MONITOR_NETWORK_TYPE];

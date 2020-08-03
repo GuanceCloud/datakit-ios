@@ -548,7 +548,7 @@
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
     NSString *jsonString;
     if (!jsonData) {
-        ZYDebug(@"ERROR == %@",error);
+        ZYErrorLog(@"ERROR == %@",error);
     }else{
         jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
@@ -569,7 +569,7 @@
                                                           error:&err];
     if(err)
     {
-        ZYDebug(@"json解析失败：%@",err);
+        ZYErrorLog(@"json解析失败：%@",err);
         return nil;
     }
     return dic;
@@ -665,5 +665,12 @@
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
+}
++ (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block{
+    if (NSThread.isMainThread) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
+    }
 }
 @end

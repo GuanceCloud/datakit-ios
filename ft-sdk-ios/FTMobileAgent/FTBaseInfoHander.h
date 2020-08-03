@@ -62,6 +62,10 @@ NS_ASSUME_NONNULL_BEGIN
 +(NSString *)ft_getFTstatueStr:(FTStatus)status;
 +(NSString *)ft_getNetworkSpanID;
 +(NSString *)ft_getNetworkTraceID;
+/**
+ * 主线程同步执行
+ */
++ (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
 @end
 
 NS_ASSUME_NONNULL_END
