@@ -266,7 +266,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         @try {
             FTRecordModel *model = [self getLoggingModel:logging];
             if (model) {
-                [self insertDBWithItemData:model];
+                [self insertDBArrayWithItemData:model];
             }
         } @catch (NSException *exception) {
             ZYErrorLog(@"exception %@",exception);
