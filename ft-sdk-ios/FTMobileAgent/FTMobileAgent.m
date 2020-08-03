@@ -251,9 +251,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
-    NSParameterAssert(product);
-    NSParameterAssert(traceId);
-    NSParameterAssert(name);
     [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeCode];
 }
 
@@ -274,7 +271,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         } @catch (NSException *exception) {
             ZYErrorLog(@"exception %@",exception);
         }
-        
     }else{
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
     }
@@ -383,32 +379,36 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 -(void)objectImmediateList:(NSArray<FTObjectBean *> *)objectList callBack:(void (^)(NSInteger, id _Nullable))callBackStatus{
     NSParameterAssert(objectList);
-    __block NSMutableArray *list = [NSMutableArray new];
-    [objectList enumerateObjectsUsingBlock:^(FTObjectBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.name.length>0 && obj.classStr.length>0) {
-            NSMutableDictionary *tag = @{FT_KEY_CLASS:obj.classStr}.mutableCopy;
-            [tag addEntriesFromDictionary:obj.tags];
-            NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
-            if(obj.deviceUUID){
-                uuid = obj.deviceUUID;
+    @try {
+        __block NSMutableArray *list = [NSMutableArray new];
+        [objectList enumerateObjectsUsingBlock:^(FTObjectBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (obj.name.length>0 && obj.classStr.length>0) {
+                NSMutableDictionary *tag = @{FT_KEY_CLASS:obj.classStr}.mutableCopy;
+                [tag addEntriesFromDictionary:obj.tags];
+                NSString *uuid = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+                if(obj.deviceUUID){
+                    uuid = obj.deviceUUID;
+                }
+                [tag setValue:uuid forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
+                NSDictionary *dict = @{FT_KEY_NAME:obj.name,
+                                       FT_KEY_TAGS:tag,
+                };
+                FTRecordModel *model = [FTRecordModel new];
+                model.op = FTNetworkingTypeObject;
+                model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+                [list addObject:model];
+            }else{
+                ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
             }
-            [tag setValue:uuid forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
-            NSDictionary *dict = @{FT_KEY_NAME:obj.name,
-                                   FT_KEY_TAGS:tag,
-            };
-            FTRecordModel *model = [FTRecordModel new];
-            model.op = FTNetworkingTypeObject;
-            model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
-            [list addObject:model];
+        }];
+        if (list.count>0) {
+            [self trackUpload:list callBack:callBackStatus];
         }else{
-            ZYErrorLog(@"传入的第 %d 个数据格式有误",idx);
+            ZYErrorLog(@"传入的数据格式有误");
+            callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
         }
-    }];
-    if (list.count>0) {
-        [self trackUpload:list callBack:callBackStatus];
-    }else{
-        ZYErrorLog(@"传入的数据格式有误");
-        callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 #pragma mark - keyevent
@@ -421,7 +421,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         FTRecordModel *model = [self getKeyeventModel:keyevent];
         [self insertDBWithItemData:model];
     } @catch (NSException *exception) {
-        ZYErrorLog(@"keyeventBackground exception %@",exception);
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 -(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus{
@@ -520,26 +520,25 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark ========== private method==========
 #pragma mark - 数据拼接 存储数据库
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
-    
-   @try {
-          NSParameterAssert(measurement);
-          NSParameterAssert(field);
-          if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0  || field == nil || [field allKeys].count == 0) {
-              ZYErrorLog(@"文件名 事件名不能为空");
-              return;
-          }
-       NSString *op;
-       if (trackType == FTTrackTypeCode) {
-           op = FT_TRACK_OP_CUSTOM;
-       }else{
-           op = [field valueForKey:FT_AUTO_TRACK_EVENT];
-       }
-       FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
-       [self insertDBWithItemData:model];
-      }
-      @catch (NSException *exception) {
-          ZYErrorLog(@"exception %@",exception);
-      }
+    NSParameterAssert(measurement);
+    NSParameterAssert(field);
+    @try {
+        if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0  || field == nil || [field allKeys].count == 0) {
+            ZYErrorLog(@"文件名 事件名不能为空");
+            return;
+        }
+        NSString *op;
+        if (trackType == FTTrackTypeCode) {
+            op = FT_TRACK_OP_CUSTOM;
+        }else{
+            op = [field valueForKey:FT_AUTO_TRACK_EVENT];
+        }
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
+        [self insertDBWithItemData:model];
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 - (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field withTrackType:(FTTrackType)trackType{
     @try {
@@ -688,7 +687,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     }
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
     // 应用生命周期通知
     [notificationCenter addObserver:self
                            selector:@selector(applicationWillResignActive:)
@@ -698,11 +696,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                            selector:@selector(applicationDidBecomeActive:)
                                name:UIApplicationDidBecomeActiveNotification
                              object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidEnterBackground:)
-                               name:UIApplicationDidEnterBackgroundNotification
-                             object:nil];
-    
 }
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
     if (flags & kSCNetworkReachabilityFlagsReachable) {
@@ -721,7 +714,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         self.isForeground = NO;
-        dispatch_async(self.serialLoggingQueue, ^{
+        dispatch_sync(self.serialLoggingQueue, ^{
             if(self.loggingArray.count>0){
                 [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
                 self.loggingArray = nil;
@@ -740,10 +733,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)applicationDidEnterBackground:(NSNotification *)notification {
-    ZYLog(@"applicationDidEnterBackground ");
-}
-
 #pragma mark - 上报策略
 - (void)uploadFlush{
     dispatch_async(self.serialQueue, ^{

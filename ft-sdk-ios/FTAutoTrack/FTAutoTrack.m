@@ -55,7 +55,7 @@
     self.aspectTokenAry = @[].mutableCopy;
     _config = config;
     if (config.enabledPageVtpDesc) {
-        [self _parserPageVtpXML];
+        [self parserPageVtpXML];
     }
     [self setLogContent];
 }
@@ -351,9 +351,10 @@
         id<ZY_AspectToken> token = obj;
         [token remove];
     }];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 #pragma mark - xmlParse
--(void)_parserPageVtpXML{
+-(void)parserPageVtpXML{
     if (_pageDesc&&_vtpDesc) {
         return;
     }
@@ -378,47 +379,35 @@
 }
 #pragma mark ========== 写入数据库操作 ==========
 -(void)trackOpenWithCpn:( id)cpn duration:(float)duration{
-    if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
-        return;
-    }
     if (![self judgeWhiteAndBlackWithViewController:cpn]) {
-           return ;
+        return ;
     }
     if (!self.config.eventFlowLog) {
         return;
     }
-    NSMutableDictionary *content = @{FT_AUTO_TRACK_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
-    [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-    FTLoggingBean *bean = [FTLoggingBean new];
-    bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
-    bean.measurement = FT_USER_AGENT;
-    bean.source = self.config.traceServiceName;
-    bean.operationName = [NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_AUTO_TRACK_EVENT];
-    bean.duration = [NSNumber numberWithInt:duration*1000*1000];
-    [[FTMobileAgent sharedInstance] loggingBackground:bean];
+    @try {
+        NSMutableDictionary *content = @{FT_AUTO_TRACK_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
+        [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
+        FTLoggingBean *bean = [FTLoggingBean new];
+        bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
+        bean.measurement = FT_USER_AGENT;
+        bean.source = self.config.traceServiceName;
+        bean.operationName = [NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_AUTO_TRACK_EVENT];
+        bean.duration = [NSNumber numberWithInt:duration*1000*1000];
+        [[FTMobileAgent sharedInstance] loggingBackground:bean];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@" error: %@", exception);
+    }
 }
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
     [self track:op withCpn:cpn WithClickView:view index:nil];
 }
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
-    //添加判断允许的全埋点类型  以防重置 config 带来的影响
-    if (!self.config.enableAutoTrack || self.config.autoTrackEventType &  FTAutoTrackTypeNone) {
-        return;
-    }
     if (![self judgeWhiteAndBlackWithViewController:cpn]) {
         return ;
     }
     if (view != nil && ![self isAutoTrackUI:[view class]]) {
         return ;
-    }
-    if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK] && !(self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick)) {
-        return;
-    }
-    if ([op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH] && !(self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch)) {
-        return;
-    }
-    if (([op isEqualToString:FT_AUTO_TRACK_OP_ENTER] || [op isEqualToString:FT_AUTO_TRACK_OP_LEAVE]) && !(self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen)) {
-        return;
     }
     @try {
         NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[op ft_md5HashToUpper32Bit]}.mutableCopy;
@@ -478,7 +467,7 @@
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];
     } @catch (NSException *exception) {
-        ZYDebug(@" error: %@", exception);
+        ZYErrorLog(@" error: %@", exception);
     }
 }
 -(void)dealloc{

@@ -134,7 +134,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         [self flushWithType:FTNetworkingTypeKeyevent];
         self.isUploading = NO;
     } @catch (NSException *exception) {
-        ZYDebug(@"执行上传操作失败 %@",exception);
+        ZYErrorLog(@"执行上传操作失败 %@",exception);
     }
 }
 -(void)checkToken{
@@ -233,13 +233,13 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
           NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
           [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
           return;
-      }
-      if ([model.op isEqualToString:FTNetworkingTypeMetrics])
-      {   api = FT_NETWORKING_API_METRICS;
-      }
+      }else
+      if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
+          api = FT_NETWORKING_API_METRICS;
+      }else
       if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
           api = FT_NETWORKING_API_LOGGING;
-      }
+      }else
       if ([model.op isEqualToString:FTNetworkingTypeKeyevent]) {
           api = FT_NETWORKING_API_KEYEVENT;
       }
