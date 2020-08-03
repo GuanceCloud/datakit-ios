@@ -344,7 +344,7 @@ typedef enum FTError : NSInteger {
 
 
 ## 五、全埋点
-  全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览
+  全埋点自动抓取的事件包括：项目启动、事件点击、页面浏览 。 全埋点数据会先存储在数据库中，等待时机上传。
 ### 1. Launch (App 启动) 
 * 设置： `config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch;`    
 * 触发：  **App** 启动或从后台恢复时，触发 `launch `事件。    
@@ -414,12 +414,18 @@ typedef enum FTError : NSInteger {
 
 
 ## 六、主动上报方法
- DF SDK 公开了 4 类上报方法 。    
+ DF SDK 公开了 4 类上报方法， 2 种上传机制。   
  
-1.  上报主动埋点
-2. 上报日志
-3. 上报对象数据
-4. 上报事件数据 
+ *  上报方法    
+  1.  上报主动埋点
+  2. 上报日志
+  3. 上报对象数据
+  4. 上报事件数据  
+  
+*  上传机制     
+ **background** 上传机制 : 将数据存储到数据库中，等待时机进行上传。数据库存储量限制在 5000 条，如果网络异常等原因导致数据堆积，存储 5000 条后，会丢弃新传入的数据。    
+ **immediate** 上传机制 : 立即上传，回调上传结果。
+
 
 ### 1.上报主动埋点
 * background方法    
@@ -523,6 +529,7 @@ typedef enum FTError : NSInteger {
 |    duration    |  NSNumber      |   否    |  用于链路日志，当前链路的请求响应时间，微秒为单位|
 |spanType| NSString | 否 |entry span 表示该 span 的调用的是服务的入口，即该服务的对其他服务提供调用请求的端点，几乎所有服务和消息队列消费者都是 entry span，因此只有 span 是 entry 类型的调用才是一个独立的请求。 local span 表示该 span 和远程调用没有任何关系，只是程序内部的函数调用，例如一个普通的 Java 方法，默认值 entry|
 |endpoint| NSString | 否 |请求的目标地址，客户端用于访问目标服务的网络地址(但不一定是 IP + 端口)，例如 127.0.0.1:8080 ,默认：null|
+|    tm    | long long       |   否    |  需要为毫秒级13位时间戳      |
     
  * 方法使用示例
  
@@ -648,6 +655,7 @@ typedef enum FTError : NSInteger {
 |    duration   | NSNumber   |  否    |  事件的持续时间 单位为微秒|
 |    dimensions    | NSString （JSONString ） |   否    | 触发维度 JSONString  例如：假设新建触发规则时设置的触发维度为 host,cpu，则该值为 ["host","cpu"] |
 |    deviceUUID  |  NSString   |   否  |   设备UUID   |
+|    tm    | long long       |   否    |  需要为毫秒级13位时间戳      |
 
  
 * 方法使用示例   
