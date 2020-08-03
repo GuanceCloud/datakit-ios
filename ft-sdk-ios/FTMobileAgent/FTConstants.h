@@ -186,15 +186,4 @@ extern NSString *  const FT_NETWORK_CODE;
 extern NSString *  const FT_NETWORK_ERROR;
 extern NSString *  const FT_SPANTYPE_ENTRY;
 extern NSUInteger  const FT_LOGGING_CONTENT_SIZE;
-#define dispatch_main_async_safe(block)\
-if ([NSThread isMainThread]) {\
-    block();\
-} else {\
-    dispatch_async(dispatch_get_main_queue(), block);\
-}
-#define dispatch_main_sync_safe(block)\
-if ([NSThread isMainThread]) {\
-    block();\
-} else {\
-    dispatch_sync(dispatch_get_main_queue(), block);\
-}
+extern NSUInteger  const FT_DB_CONTENT_MAX_COUNT;

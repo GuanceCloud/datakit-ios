@@ -10,6 +10,7 @@
 #import "FTRecordModel.h"
 #import "ZY_FMDB.h"
 #import "FTLog.h"
+#import "FTConstants.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
@@ -152,6 +153,10 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(BOOL)insertItemWithItemData:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
+       if([self getDatasCount]>FT_DB_CONTENT_MAX_COUNT){
+         [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+           return NO;
+       }
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  ? , ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
           success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.sessionid,item.op];
@@ -174,6 +179,9 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(BOOL)insertItemWithItemDatas:(NSArray *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
+        if([self getDatasCount]>FT_DB_CONTENT_MAX_COUNT){
+            return NO;
+        }
         [self zy_inTransaction:^(BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  ? , ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
