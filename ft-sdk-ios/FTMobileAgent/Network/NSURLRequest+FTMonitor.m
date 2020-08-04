@@ -9,7 +9,7 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "FTConstants.h"
 #import "FTMonitorManager.h"
-
+#import "NSString+FTAdd.h"
 @implementation NSURLRequest (FTMonitor)
 - (NSString *)ft_getBodyData:(BOOL)allow{
     NSData *bodyData = self.HTTPBody;
@@ -135,6 +135,15 @@
             sampling = [traceAry lastObject];
         }
         
+    }
+    if ([[header allKeys] containsObject:FT_NETWORK_KYWALKING_V3]) {
+        NSString *trace =header[FT_NETWORK_KYWALKING_V3];
+        NSArray *traceAry = [trace componentsSeparatedByString:@"-"];
+        if (traceAry.count == 8) {
+            trace = [traceAry[1] ft_base64Decode];
+            span = [traceAry[2] ft_base64Decode];
+            sampling = [traceAry firstObject];
+        }
     }
     if (handler) {
         handler(trace,span,[sampling boolValue]);

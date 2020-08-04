@@ -73,13 +73,23 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     NSMutableURLRequest * mutableReqeust = [request mutableCopy];
     [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTrackType type) {
         if (track) {
-            if (type  == FTNetworkTrackTypeZipkin) {
-                [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-                [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-                [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-            }else{
-                NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID],[NSNumber numberWithBool:sampled]];
-                [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+            switch (type) {
+                case FTNetworkTrackTypeZipkin:
+                    [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+                    [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
+                    [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
+                    break;
+                case FTNetworkTrackTypeJaeger:{
+                    NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID],[NSNumber numberWithBool:sampled]];
+                    [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
+                }
+                    break;
+                case FTNetworkTrackTypeSKYWALKING_V3:{
+                    NSString *skyStr = [[FTMonitorManager sharedInstance] getSkyWalking_V3Str:sampled url:mutableReqeust.URL];
+                    [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_KYWALKING_V3];
+
+                }
+                    break;
             }
         }
     }];

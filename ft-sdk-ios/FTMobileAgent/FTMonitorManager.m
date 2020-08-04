@@ -54,6 +54,8 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
 @property (nonatomic, copy) NSString *isBlueOn;
 @property (nonatomic, strong) NSMutableDictionary *mutableTaskDatasKeyedByTaskIdentifier;
 @property (readwrite, nonatomic, strong) NSLock *lock;
+@property (nonatomic, copy) NSString *traceId;
+@property (nonatomic, copy) NSString *parentInstance;
 @end
 
 @implementation FTMonitorManager{
@@ -65,6 +67,7 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
     NSUInteger _errorNet;
     NSUInteger _successNet;
     BOOL _proximityState;
+    NSUInteger _skywalkingSeq;
 }
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -82,6 +85,7 @@ static dispatch_once_t onceToken;
         _lastNetTaskMetrics = nil;
         _errorNet = 0;
         _successNet = 0;
+        _skywalkingSeq = 1;
         self.mutableTaskDatasKeyedByTaskIdentifier = [[NSMutableDictionary alloc] init];
         self.lock = [[NSLock alloc] init];
         self.lock.name = FTUELSessionLockName;
@@ -662,6 +666,32 @@ static dispatch_once_t onceToken;
             completionHandler(NO,NO,0);
         }
     }
+}
+- (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
+    NSString *traceIdStr = [NSString stringWithFormat:@"%@.%d.%lld",self.traceId,2,[[NSDate date] ft_dateTimestamp]];
+    NSString *parentInstanceStr = [NSString stringWithFormat:@"[%@]@[%@]",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]];
+    NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
+    NSString *urlPath = url.path.length>0 ? url.path : @"/";
+    NSString *sw8 = [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode],[self.config.traceServiceName ft_base64Encode],[parentInstanceStr ft_base64Encode],[urlPath ft_base64Encode],[urlStr ft_base64Encode]];
+    _skywalkingSeq++;
+    if (_skywalkingSeq > 9999) {
+        _skywalkingSeq = 1;
+    }
+    return sw8;
+}
+
+-(NSString *)traceId{
+    if (!_traceId) {
+        _traceId = [FTBaseInfoHander ft_getNetworkTraceID];
+    }
+    return _traceId;
+}
+-(NSString *)parentInstance{
+        if (!_parentInstance) {
+            _parentInstance = [FTBaseInfoHander ft_getNetworkTraceID];
+        }
+        return _parentInstance;
+    
 }
 #pragma mark - 采样率 判断该设备是否被采样
 - (BOOL)judgeIsTraceSampling{

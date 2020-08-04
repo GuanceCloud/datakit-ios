@@ -89,6 +89,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 typedef NS_ENUM(NSInteger, FTNetworkTrackType) {
     FTNetworkTrackTypeZipkin          = 0,
     FTNetworkTrackTypeJaeger          = 1,
+    FTNetworkTrackTypeSKYWALKING_V3   = 2,
 };
 NS_ASSUME_NONNULL_BEGIN
 
