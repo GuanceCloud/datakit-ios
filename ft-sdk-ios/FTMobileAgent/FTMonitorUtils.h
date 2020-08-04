@@ -83,6 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取蜂窝移动 数据漫游是否开启
  */
 + (BOOL)getRoamingStates;
++ (NSString *)getCELLULARIPAddress:(BOOL)preferIPv4;
+
 @end
 
 NS_ASSUME_NONNULL_END
