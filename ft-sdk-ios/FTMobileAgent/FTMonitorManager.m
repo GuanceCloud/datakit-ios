@@ -85,7 +85,7 @@ static dispatch_once_t onceToken;
         _lastNetTaskMetrics = nil;
         _errorNet = 0;
         _successNet = 0;
-        _skywalkingSeq = 1;
+        _skywalkingSeq = 0;
         self.mutableTaskDatasKeyedByTaskIdentifier = [[NSMutableDictionary alloc] init];
         self.lock = [[NSLock alloc] init];
         self.lock.name = FTUELSessionLockName;
@@ -668,18 +668,31 @@ static dispatch_once_t onceToken;
     }
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
-    NSString *traceIdStr = [NSString stringWithFormat:@"%@.%d.%lld",self.traceId,2,[[NSDate date] ft_dateTimestamp]];
+    NSString *traceIdStr = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
     NSString *parentInstanceStr = [NSString stringWithFormat:@"[%@]@[%@]",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
-    NSString *sw8 = [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode],[self.config.traceServiceName ft_base64Encode],[parentInstanceStr ft_base64Encode],[urlPath ft_base64Encode],[urlStr ft_base64Encode]];
-    _skywalkingSeq++;
+    _skywalkingSeq ++ ;
     if (_skywalkingSeq > 9999) {
         _skywalkingSeq = 1;
     }
-    return sw8;
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode],[self.config.traceServiceName ft_base64Encode],[parentInstanceStr ft_base64Encode],[urlPath ft_base64Encode],[urlStr ft_base64Encode]];
 }
-
+-(NSString *)getThreadNumber{
+    NSString *str = [NSThread currentThread].description;
+    NSString *chooseStr = @"2";
+    while ([str containsString:@"="]) {
+        NSRange range = [str rangeOfString:@"="];
+        NSRange range1 = [str rangeOfString:@","];
+        if (range.location != NSNotFound) {
+            NSInteger loc = range.location+1;
+            NSInteger len = range1.location - loc;
+            chooseStr = [str substringWithRange:NSMakeRange(loc, len )];
+            break;
+        }
+    }
+   return [chooseStr ft_removeFrontBackBlank];
+}
 -(NSString *)traceId{
     if (!_traceId) {
         _traceId = [FTBaseInfoHander ft_getNetworkTraceID];

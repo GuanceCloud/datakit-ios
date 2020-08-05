@@ -137,12 +137,12 @@
         
     }
     if ([[header allKeys] containsObject:FT_NETWORK_KYWALKING_V3]) {
-        NSString *trace =header[FT_NETWORK_KYWALKING_V3];
-        NSArray *traceAry = [trace componentsSeparatedByString:@"-"];
+        NSString *traceStr =header[FT_NETWORK_KYWALKING_V3];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 8) {
-            trace = [traceAry[1] ft_base64Decode];
             span = [traceAry[2] ft_base64Decode];
             sampling = [traceAry firstObject];
+            trace = [traceAry[1] ft_base64Decode];
         }
     }
     if (handler) {
