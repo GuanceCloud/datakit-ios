@@ -11,7 +11,7 @@
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
 ### 1. 直接下载下来安装
-1. 从 [GitHub]() 获取 SDK 的源代码。	 
+1. 从 [GitHub](https://github.com/CloudCare/dataflux-sdk-ios) 获取 SDK 的源代码。	 
 2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。    
       -  需要全埋点功能：直接将 **FTMobileSDK** 整个文件夹导入项目。
       -  不需要全埋点功能：只导入 **FTMobileAgent** 即可。
@@ -277,7 +277,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  ``` objective-c   
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
- *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger
+ *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、FTNetworkTrackTypeSKYWALKING_V3
  */
 @property (nonatomic, assign) FTNetworkTrackType networkTraceType;
 /**
@@ -417,7 +417,7 @@ typedef enum FTError : NSInteger {
  DF SDK 公开了 4 类上报方法， 2 种上传机制。   
  
  *  上报方法    
-  1.  上报主动埋点
+  1. 上报主动埋点
   2. 上报日志
   3. 上报对象数据
   4. 上报事件数据  
