@@ -174,7 +174,7 @@ extern NSString *  const FT_APP_VERSION_NAME;
 extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SPANID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SAMPLED;
-extern NSString *  const FT_NETWORK_KYWALKING_V3;
+extern NSString *  const FT_NETWORK_SKYWALKING_V3;
 extern NSString *  const FT_NETWORK_JAEGER_TRACEID;
 
 extern NSString *  const FT_NETWORK_HEADERS;

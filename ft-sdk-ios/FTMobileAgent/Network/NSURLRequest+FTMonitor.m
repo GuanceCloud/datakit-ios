@@ -136,8 +136,8 @@
         }
         
     }
-    if ([[header allKeys] containsObject:FT_NETWORK_KYWALKING_V3]) {
-        NSString *traceStr =header[FT_NETWORK_KYWALKING_V3];
+    if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 8) {
             span = [traceAry[2] ft_base64Decode];
