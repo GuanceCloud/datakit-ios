@@ -656,27 +656,36 @@ static dispatch_once_t onceToken;
     }
     return NO;
 }
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type))completionHandler{
+- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type,NSString *skyStr))completionHandler{
     if ([self trackUrl:url]) {
+        NSString *skyStr = nil;
+        BOOL sample = [self judgeIsTraceSampling];
+        if (self.config.networkTraceType == FTNetworkTrackTypeSKYWALKING_V3) {
+            skyStr = [self getSkyWalking_V3Str:sample url:url];
+        }
         if (completionHandler) {
-            completionHandler(YES,[self judgeIsTraceSampling],self.config.networkTraceType);
+            completionHandler(YES,[self judgeIsTraceSampling],self.config.networkTraceType,skyStr);
         }
     }else{
         if (completionHandler) {
-            completionHandler(NO,NO,0);
+            completionHandler(NO,NO,0,nil);
         }
     }
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
-    NSString *traceIdStr = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
-    NSString *parentInstanceStr = [NSString stringWithFormat:@"[%@]@[%@]",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]];
+    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
+    NSString *parentServiceInstance = [[NSString stringWithFormat:@"[%@]@[%@]",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
+    urlPath = [urlPath ft_base64Encode];
+    urlStr = [urlStr ft_base64Encode];
     _skywalkingSeq ++ ;
     if (_skywalkingSeq > 9999) {
         _skywalkingSeq = 1;
     }
-    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode],[[traceIdStr stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode],[self.config.traceServiceName ft_base64Encode],[parentInstanceStr ft_base64Encode],[urlPath ft_base64Encode],[urlStr ft_base64Encode]];
+    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode];
+    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode];
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[self.config.traceServiceName ft_base64Encode],parentServiceInstance,urlPath,urlStr];
 }
 -(NSString *)getThreadNumber{
     NSString *str = [NSThread currentThread].description;

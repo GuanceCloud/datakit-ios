@@ -71,7 +71,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
     NSMutableURLRequest * mutableReqeust = [request mutableCopy];
-    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTrackType type) {
+    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTrackType type ,NSString *skyStr) {
         if (track) {
             switch (type) {
                 case FTNetworkTrackTypeZipkin:
@@ -85,9 +85,9 @@ static id<FTHTTPProtocolDelegate> sDelegate;
                 }
                     break;
                 case FTNetworkTrackTypeSKYWALKING_V3:{
-                    NSString *skyStr = [[FTMonitorManager sharedInstance] getSkyWalking_V3Str:sampled url:mutableReqeust.URL];
-                    [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_KYWALKING_V3];
-
+                    if (skyStr) {
+                        [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
+                    }
                 }
                     break;
             }

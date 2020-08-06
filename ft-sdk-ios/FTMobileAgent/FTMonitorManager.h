@@ -41,8 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 */
 -(NSDictionary *)getMonitorTagFiledDict;
 
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type))completionHandler;
-- (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url;
+- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type,NSString *skyStr))completionHandler;
 - (void)resetInstance;
 @end
 
