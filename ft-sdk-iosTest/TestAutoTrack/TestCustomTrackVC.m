@@ -20,9 +20,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.dataSource = @[@[@"Test_TrackBackground",@"Test_TrackImmediate",@"Test_TrackImmediateList"],
-                        @[@"Test_LoggingBackground",@"Test_LoggingImmediate",@"Test_LoggingImmediateList"],
-                        @[@"Test_ObjectBackground",@"Test_ObjectImmediate",@"Test_ObjectImmediateList"],
-                        @[@"Test_KeyeventBackground",@"Test_KeyeventImmediate",@"Test_KeyeventImmediateList"]];
+                        @[@"Test_Logging"]];
     [self createUI];
     // Do any additional setup after loading the view.
 }
@@ -67,94 +65,9 @@
     
 }
 -(void)testLoggingBackground{
-    FTLoggingBean *logging = [FTLoggingBean new];
-    logging.measurement = @"Test";
-    logging.content = @"TestLoggingBackground";
-    [[FTMobileAgent sharedInstance] loggingBackground:logging];
-}
-- (void)testLoggingImmediate{
-    FTLoggingBean *logging = [FTLoggingBean new];
-    logging.measurement = @"Test";
-    logging.content = @"TestLogging";
-    [[FTMobileAgent sharedInstance] loggingImmediate:logging callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-}
-- (void)testLoggingImmediateList{
-    FTLoggingBean *logging = [FTLoggingBean new];
-    logging.measurement = @"Test";
-    logging.content = @"TestLoggingList1";
-    FTLoggingBean *logging2 = [FTLoggingBean new];
-    logging2.measurement = @"Test";
-    logging2.content = @"TestLoggingList2";
-    [[FTMobileAgent sharedInstance] loggingImmediateList:@[logging,logging2] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-}
-- (void)testObjectBackground{
-    [[FTMobileAgent sharedInstance] objectBackground:@"TestObjectBackground" deviceUUID:nil tags:nil classStr:@"ObjectBackground"];
-}
-- (void)testObjectImmediate{
-    [[FTMobileAgent sharedInstance] objectImmediate:@"TestObjectImmediate" deviceUUID:nil tags:nil classStr:@"ObjectImmediate" callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-}
-- (void)testObjectImmediateList{
-    FTObjectBean *object1 = [FTObjectBean new];
-    object1.name =@"TestObjectImmediateList";
-    object1.classStr = @"ObjectImmediateList1";
-    FTObjectBean *object2 = [FTObjectBean new];
-    object2.name =@"TestObjectImmediateList";
-    object2.classStr = @"ObjectImmediateList2";
-    [[FTMobileAgent sharedInstance] objectImmediateList:@[object1,object2] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
+    [[FTMobileAgent sharedInstance] logging:@"TestLoggingBackground" status:FTStatusInfo];
 }
 
-- (void)testKeyeventBackground{
-    FTKeyeventBean *key = [FTKeyeventBean new];
-    key.title = @"testKeyeventBackground";
-    key.content = @"测试KeyeventBackground";
-    [[FTMobileAgent sharedInstance] keyeventBackground:key];
-}
-- (void)testKeyeventImmediate{
-    FTKeyeventBean *key = [FTKeyeventBean new];
-    key.title = @"testKeyeventImmediate";
-    key.content = @"测试KeyeventImmediate";
-    [[FTMobileAgent sharedInstance] keyeventImmediate:key callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-               dispatch_async(dispatch_get_main_queue(), ^{
-                   [self showResult:statusCode==200?@"success":@"fail"];
-               });
-    }];
-}
-- (void)testKeyeventImmediateList{
-    FTKeyeventBean *key = [FTKeyeventBean new];
-    key.title = @"testKeyeventImmediateList1";
-    key.content = @"测试KeyeventImmediateList数据1";
-
-    FTKeyeventBean *key2 = [FTKeyeventBean new];
-    key2.title = @"testKeyeventImmediateList2";
-    key2.content = @"测试KeyeventImmediateList数据2";
-    [[FTMobileAgent sharedInstance] keyeventImmediateList:@[key,key2] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        NSLog(@"statusCode = %ld",(long)statusCode);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showResult:statusCode==200?@"success":@"fail"];
-        });
-    }];
-}
 -(void)showResult:(NSString *)title{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *commit = [UIAlertAction actionWithTitle:@"ok" style:UIAlertActionStyleCancel handler:nil];
@@ -177,12 +90,6 @@
             break;
         case 1:
             title = @"logging";
-            break;
-        case 2:
-            title = @"object";
-            break;
-        case 3:
-            title = @"keyevent";
             break;
         default:
             break;
@@ -218,49 +125,9 @@
                 case 0:
                     [self testLoggingBackground];
                     break;
-                case 1:
-                    [self testLoggingImmediate];
-                    break;
-                case 2:
-                    [self testLoggingImmediateList];
-                    break;
                 default:
                     break;
             }
-        }
-            break;
-        case 2:{
-            switch (row) {
-                case 0:
-                    [self testObjectBackground];
-                    
-                    break;
-                case 1:
-                    [self testObjectImmediate];
-                    break;
-                case 2:
-                    [self testObjectImmediateList];
-                    break;
-                default:
-                    break;
-            }
-        }
-            break;
-        case 3:{
-            switch (row) {
-                case 0:
-                    [self testKeyeventBackground];
-                    break;
-                case 1:
-                    [self testKeyeventImmediate];
-                    break;
-                case 2:
-                    [self testKeyeventImmediateList];
-                    break;
-                default:
-                    break;
-            }
-            
         }
             break;
         default:
