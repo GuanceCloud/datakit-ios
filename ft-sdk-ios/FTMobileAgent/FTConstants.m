@@ -146,7 +146,6 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 #pragma mark ========== API ==========
 NSString *const FTNetworkingTypeMetrics = @"metrics";
 NSString *const FTNetworkingTypeObject = @"object";
-NSString *const FTNetworkingTypeKeyevent = @"keyevent";
 NSString *const FTNetworkingTypeLogging = @"logging";
 
 NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metrics";

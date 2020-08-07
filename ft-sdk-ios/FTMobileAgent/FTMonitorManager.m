@@ -735,16 +735,13 @@ static dispatch_once_t onceToken;
         FT_NETWORK_RESPONSE_CONTENT:response,
         FT_NETWORK_REQUEST_CONTENT:request
     };
-    FTLoggingBean *logging = [FTLoggingBean new];
-    logging.measurement = FT_USER_AGENT;
-    logging.classStr = FT_LOGGING_CLASS_TRACING;
-    logging.operationName = [task.originalRequest ft_getOperationName];
-    double time = [taskMes.taskInterval duration]*1000*1000;
-    logging.duration = [NSNumber numberWithInt:time];
-    logging.serviceName = [FTMobileAgent sharedInstance].config.traceServiceName;
-    logging.tm = [[taskMes.transactionMetrics lastObject].requestStartDate ft_dateTimestamp];
-    logging.isError = [NSNumber numberWithBool:iserror];
-    logging.spanType = FT_SPANTYPE_ENTRY;
+    NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[task.originalRequest ft_getOperationName],
+                                  FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
+                                  FT_KEY_ISERROR:[NSNumber numberWithBool:iserror],
+                                  FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+                                  
+    }.mutableCopy;
+    NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithLong:[taskMes.taskInterval duration]*1000*1000]};
     __block NSString *trace,*span;
     __block BOOL sampling;
     [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
@@ -753,10 +750,9 @@ static dispatch_once_t onceToken;
         sampling = sampled;
     }];
     if(trace&&span&&sampling){
-        logging.traceID = trace;
-        logging.spanID = span;
-        logging.content = [FTBaseInfoHander ft_convertToJsonData:content];
-        [[FTMobileAgent sharedInstance] loggingBackground:logging];
+        [tags setValue:trace forKey:FT_FLOW_TRACEID];
+        [tags setValue:span forKey:FT_KEY_SPANID];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[taskMes.transactionMetrics lastObject].requestStartDate ft_dateTimestamp] tags:tags field:field];
     }
 }
 - (void)resetInstance{

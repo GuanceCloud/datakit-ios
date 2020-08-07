@@ -137,7 +137,6 @@ extern NSString *  const FTBaseInfoHanderDeviceGPUType;
 #pragma mark ========== api ==========
 extern NSString *  const FTNetworkingTypeMetrics;
 extern NSString *  const FTNetworkingTypeObject;
-extern NSString *  const FTNetworkingTypeKeyevent;
 extern NSString *  const FTNetworkingTypeLogging;
 
 extern NSString *  const FT_NETWORKING_API_METRICS;

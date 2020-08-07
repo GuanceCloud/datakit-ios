@@ -388,13 +388,9 @@
     @try {
         NSMutableDictionary *content = @{FT_AUTO_TRACK_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
         [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-        FTLoggingBean *bean = [FTLoggingBean new];
-        bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
-        bean.measurement = FT_USER_AGENT;
-        bean.source = self.config.traceServiceName;
-        bean.operationName = [NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_AUTO_TRACK_EVENT];
-        bean.duration = [NSNumber numberWithInt:duration*1000*1000];
-        [[FTMobileAgent sharedInstance] loggingBackground:bean];
+        NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_AUTO_TRACK_EVENT]};
+        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]};
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"loggingOpen" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:field];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
@@ -456,13 +452,8 @@
         }
         if(self.config.eventFlowLog){
             [content setValue:op forKey:FT_AUTO_TRACK_EVENT];
-            FTLoggingBean *bean = [FTLoggingBean new];
-            bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
-            bean.measurement = FT_USER_AGENT;
-            bean.source = self.config.traceServiceName;
-            bean.content = [FTBaseInfoHander ft_convertToJsonData:content];
-            bean.operationName = [NSString stringWithFormat:@"%@/%@",op,FT_AUTO_TRACK_EVENT];
-            [[FTMobileAgent sharedInstance] loggingBackground:bean];
+            NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",op,FT_AUTO_TRACK_EVENT]};
+            [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"eventFlowLog" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:nil];
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];

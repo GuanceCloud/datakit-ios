@@ -128,10 +128,8 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 - (void)flushQueue{
     @try {
-        [self flushWithType:FTNetworkingTypeObject];
         [self flushWithType:FTNetworkingTypeLogging];
         [self flushWithType:FTNetworkingTypeMetrics];
-        [self flushWithType:FTNetworkingTypeKeyevent];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);
@@ -239,9 +237,6 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
       }else
       if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
           api = FT_NETWORKING_API_LOGGING;
-      }else
-      if ([model.op isEqualToString:FTNetworkingTypeKeyevent]) {
-          api = FT_NETWORKING_API_KEYEVENT;
       }
       NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
       NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
@@ -341,7 +336,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
         NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_AGENT_MEASUREMENT]];
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[FT_AGENT_TAGS]];
-        if (![obj.op isEqualToString:FTNetworkingTypeLogging] && ![obj.op isEqualToString:FTNetworkingTypeKeyevent]) {
+        if (![obj.op isEqualToString:FTNetworkingTypeLogging]) {
             [tagDict addEntriesFromDictionary:self.basicTags];
         }
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
