@@ -11,12 +11,4 @@
 @implementation FTTrackBean
 
 @end
-@implementation FTObjectBean
 
-@end
-@implementation FTLoggingBean
-
-@end
-@implementation FTKeyeventBean
-
-@end

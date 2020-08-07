@@ -78,22 +78,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)trackImmediateList:(NSArray <FTTrackBean *>*)trackList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
 /**
  * 日志上报
+ * @param content  日志内容，可为json字符串
+ * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+
  */
--(void)loggingBackground:(FTLoggingBean *)logging;
--(void)loggingImmediate:(FTLoggingBean *)logging callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
--(void)loggingImmediateList:(NSArray <FTLoggingBean *> *)loggingList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
-/**
- * 对象上报
-*/
--(void)objectBackground:(NSString *)name deviceUUID:(nullable NSString *)deviceUUID tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr;
--(void)objectImmediate:(NSString *)name deviceUUID:(nullable NSString *)deviceUUID tags:(nullable NSDictionary *)tags classStr:(NSString *)classStr callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
--(void)objectImmediateList:(NSArray <FTObjectBean *> *)name callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
-/**
- * 事件上报
-*/
--(void)keyeventBackground:(FTKeyeventBean *)keyevent;
--(void)keyeventImmediate:(FTKeyeventBean *)keyevent callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
--(void)keyeventImmediateList:(NSArray <FTKeyeventBean *> *)keyeventList callBack:(nullable void (^)(NSInteger statusCode, _Nullable id responseObject))callBackStatus;
+-(void)logging:(NSString *)content status:(FTStatus)status;
+
 /**
  * 绑定用户信息
  * @param name      用户名
