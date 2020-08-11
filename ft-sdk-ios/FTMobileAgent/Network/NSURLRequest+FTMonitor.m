@@ -144,7 +144,15 @@
             sampling = [traceAry firstObject];
             trace = [traceAry[1] ft_base64Decode];
         }
-    }
+    }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V2]) {
+           NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
+           NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+           if (traceAry.count == 11) {
+               span = [traceAry[2] ft_base64Decode];
+               sampling = [traceAry firstObject];
+               trace = [traceAry[1] ft_base64Decode];
+           }
+       }
     if (handler) {
         handler(trace,span,[sampling boolValue]);
     }

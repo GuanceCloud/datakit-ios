@@ -68,6 +68,8 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
     NSUInteger _successNet;
     BOOL _proximityState;
     NSUInteger _skywalkingSeq;
+    NSUInteger _skywalkingv2;
+
 }
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -662,6 +664,8 @@ static dispatch_once_t onceToken;
         BOOL sample = [self judgeIsTraceSampling];
         if (self.config.networkTraceType == FTNetworkTrackTypeSKYWALKING_V3) {
             skyStr = [self getSkyWalking_V3Str:sample url:url];
+        }else if(self.config.networkTraceType == FTNetworkTrackTypeSKYWALKING_V2){
+            skyStr = [self getSkyWalking_V2Str:sample url:url];
         }
         if (completionHandler) {
             completionHandler(YES,[self judgeIsTraceSampling],self.config.networkTraceType,skyStr);
@@ -671,6 +675,19 @@ static dispatch_once_t onceToken;
             completionHandler(NO,NO,0,nil);
         }
     }
+}
+- (NSString *)getSkyWalking_V2Str:(BOOL)sampled url:(NSURL *)url{
+    _skywalkingv2 ++;
+    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)_skywalkingv2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
+    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: url.host;
+    urlStr = [urlStr ft_base64Encode];
+    _skywalkingSeq ++ ;
+    if (_skywalkingSeq > 9999) {
+        _skywalkingSeq = 1;
+    }
+    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode];
+    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode];
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@--1--1",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:_skywalkingv2],[NSNumber numberWithInteger:_skywalkingv2],urlStr];
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];

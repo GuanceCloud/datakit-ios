@@ -184,6 +184,7 @@ NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
 NSString *const FT_NETWORK_ZIPKIN_SAMPLED =@"X-B3-Sampled";
 NSString *const FT_NETWORK_JAEGER_TRACEID = @"uber-trace-id";
 NSString *const FT_NETWORK_SKYWALKING_V3 = @"sw8";
+NSString *const FT_NETWORK_SKYWALKING_V2 = @"sw6";
 
 NSString *const FT_NETWORK_HEADERS = @"headers";
 NSString *const FT_NETWORK_BODY = @"body";

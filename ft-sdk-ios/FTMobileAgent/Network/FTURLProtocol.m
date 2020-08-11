@@ -84,6 +84,12 @@ static id<FTHTTPProtocolDelegate> sDelegate;
                     [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
                 }
                     break;
+                case FTNetworkTrackTypeSKYWALKING_V2:{
+                    if (skyStr) {
+                        [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
+                    }
+                }
+                    break;
                 case FTNetworkTrackTypeSKYWALKING_V3:{
                     if (skyStr) {
                         [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
