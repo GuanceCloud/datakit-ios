@@ -21,9 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 //当前数据点所属的指标集 （必填）
 @property (nonatomic, copy) NSString *measurement;
 //自定义标签  （可选）
-@property (nonatomic, strong) NSDictionary *tags;
+@property (nonatomic, copy) NSDictionary *tags;
 //自定义指标  （必填）
-@property (nonatomic, strong) NSDictionary *field;
+@property (nonatomic, copy) NSDictionary *field;
 //需要为毫秒级13位时间戳 （可选） 不传则为当前时间
 @property (nonatomic, assign) long long  timeMillis;
 @end

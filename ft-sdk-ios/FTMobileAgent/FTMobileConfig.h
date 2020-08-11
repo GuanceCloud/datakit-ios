@@ -168,23 +168,23 @@ NS_ASSUME_NONNULL_BEGIN
  *  与 黑名单  二选一使用  若都没有则为全抓取
  *  eg: @[UITableView.class];
  */
-@property (nonatomic,strong) NSArray<Class> *whiteViewClass;
+@property (nonatomic, copy) NSArray<Class> *whiteViewClass;
 /**
  * @abstract
  *  忽略某一类型的 View
  *  与 白名单  二选一使用  若都没有则为全抓取
  */
-@property (nonatomic,strong) NSArray<Class> *blackViewClass;
+@property (nonatomic, copy) NSArray<Class> *blackViewClass;
 
 /**
  *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
  * eg: @[@"HomeViewController"];  字符串类型
  */
-@property (nonatomic,strong) NSArray *whiteVCList;
+@property (nonatomic, copy) NSArray *whiteVCList;
 /**
  *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
  */
-@property (nonatomic,strong) NSArray *blackVCList;
+@property (nonatomic, copy) NSArray *blackVCList;
 /**
  * 是否开启页面、视图树 描述 默认 NO
 */
@@ -230,7 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  设置 网络请求采集 支持的 contentType
  *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data）
 */
-@property (nonatomic, strong) NSArray <NSString *> *networkContentType;
+@property (nonatomic, copy) NSArray <NSString *> *networkContentType;
 @end
 
 NS_ASSUME_NONNULL_END
