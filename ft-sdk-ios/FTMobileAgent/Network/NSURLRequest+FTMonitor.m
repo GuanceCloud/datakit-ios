@@ -119,14 +119,13 @@
     NSString *trace,*span,*sampling;
     if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
         trace = header[FT_NETWORK_ZIPKIN_TRACEID];
-    }
-    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
-        span = header[FT_NETWORK_ZIPKIN_SPANID];
-    }
-    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
-        sampling = header[FT_NETWORK_ZIPKIN_SAMPLED] ;
-    }
-    if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
+        if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
+            span = header[FT_NETWORK_ZIPKIN_SPANID];
+        }
+        if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SAMPLED]) {
+            sampling = header[FT_NETWORK_ZIPKIN_SAMPLED] ;
+        }
+    }else if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
         NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
         NSArray *traceAry = [trace componentsSeparatedByString:@":"];
         if (traceAry.count == 4) {
@@ -135,8 +134,7 @@
             sampling = [traceAry lastObject];
         }
         
-    }
-    if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
+    }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 8) {
@@ -145,14 +143,14 @@
             trace = [traceAry[1] ft_base64Decode];
         }
     }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V2]) {
-           NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
-           NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
-           if (traceAry.count == 11) {
-               span = [traceAry[2] ft_base64Decode];
-               sampling = [traceAry firstObject];
-               trace = [traceAry[1] ft_base64Decode];
-           }
-       }
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        if (traceAry.count == 11) {
+            span = [traceAry[2] ft_base64Decode];
+            sampling = [traceAry firstObject];
+            trace = [traceAry[1] ft_base64Decode];
+        }
+    }
     if (handler) {
         handler(trace,span,[sampling boolValue]);
     }
