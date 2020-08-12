@@ -13,6 +13,7 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
+#import <FTMobileAgent/NSDate+FTAdd.h>
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) FTUploadTool *upTool;
 @end
@@ -21,7 +22,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-       long  tm =[FTBaseInfoHander ft_getCurrentTimestamp];
+       long  tm =[[NSDate now] ft_dateTimestamp];
        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
        [[FTMobileAgent sharedInstance] logout];
        for (NSInteger i=0; i<25; i++) {
@@ -38,7 +39,6 @@
                },
            } ;
            FTRecordModel *model = [FTRecordModel new];
-           model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
            model.data =[FTBaseInfoHander ft_convertToJsonData:data];
            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
            
@@ -52,7 +52,6 @@
                        },
                    } ;
            FTRecordModel *model2 = [FTRecordModel new];
-           model2.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
            model2.data =[FTBaseInfoHander ft_convertToJsonData:data2];
            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
        }
@@ -65,21 +64,24 @@
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     if (akId && akSecret && url) {
-     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url akId:akId akSecret:akSecret enableRequestSigning:YES];
+     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
       config.enableLog = YES;
       self.upTool = [[FTUploadTool alloc]initWithConfig:config];
     }
 }
 -(void)setBadMetricsUrl{
-     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" akId:akId akSecret:akSecret enableRequestSigning:YES];
-
-      config.enableLog = YES;
-      config.enableAutoTrack = YES;
-      self.upTool = [[FTUploadTool alloc]initWithConfig:config];
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    
+    
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    self.upTool = [[FTUploadTool alloc]initWithConfig:config];
 }
 - (void)setOHHTTPStubs{
     [self setRightConfig];

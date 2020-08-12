@@ -51,7 +51,7 @@
         config.enableTrackAppCrash = YES;
         config.networkTrace = YES;
         config.traceSamplingRate = 0.5;
-        config.networkTraceType = FTNetworkTrackTypeSKYWALKING_V3;
+        config.networkTraceType = FTNetworkTrackTypeSKYWALKING_V2;
         self.config = config;
        
         [FTMobileAgent startWithConfigOptions:config];

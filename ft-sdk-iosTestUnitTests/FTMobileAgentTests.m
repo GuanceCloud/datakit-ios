@@ -41,7 +41,6 @@
                    },
                } ;
                FTRecordModel *model = [FTRecordModel new];
-               model.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
                model.data =[FTBaseInfoHander ft_convertToJsonData:data];
                [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
                
@@ -56,7 +55,6 @@
                    },
                };
                FTRecordModel *model2 = [FTRecordModel new];
-               model2.tm = [FTBaseInfoHander ft_getCurrentTimestamp];
                model2.data =[FTBaseInfoHander ft_convertToJsonData:data2];
                [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model2];
           
@@ -106,22 +104,22 @@
        dispatch_async(queue, ^{
            [NSThread sleepForTimeInterval:1.0f];
              tag= [tool performSelector:@selector(getBasicData)];
-    if(self.config.monitorInfoType & FTMonitorInfoTypeLocation || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeLocation ){
         XCTAssertTrue([tag rangeOfString:@"city"].location != NSNotFound);
     }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeCamera || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeCamera ){
          XCTAssertTrue([tag rangeOfString:@"camera_front_px"].location != NSNotFound);
      }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeNetwork || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeNetwork ){
         XCTAssertTrue([tag rangeOfString:@"network_type"].location != NSNotFound);
     }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeCpu || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeCpu ){
         XCTAssertTrue([tag rangeOfString:@"cpu_no"].location != NSNotFound);
     }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeMemory || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeMemory ){
               XCTAssertTrue([tag rangeOfString:@"memory_total"].location != NSNotFound);
       }
-    if(self.config.monitorInfoType & FTMonitorInfoTypeBattery || self.config.monitorInfoType & FTMonitorInfoTypeAll){
+    if(self.config.monitorInfoType & FTMonitorInfoTypeBattery){
             XCTAssertTrue([tag rangeOfString:@"battery_use"].location != NSNotFound);
     }
            
@@ -147,7 +145,7 @@
 */
 -(void)testChangeUser{
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:@"metrics"];
     NSString *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];
@@ -160,9 +158,9 @@
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
 
-    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenDataWithUser];
+    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:@"metrics"];
     NSString *newUserData;
-    if (array.count>0) {
+    if (newarray.count>0) {
         FTRecordModel *model = [newarray lastObject];
         newUserData = model.userdata;
     }

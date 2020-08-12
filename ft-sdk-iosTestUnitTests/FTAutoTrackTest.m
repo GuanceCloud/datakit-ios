@@ -23,6 +23,8 @@
 @property (nonatomic, copy) NSString *akId;
 @property (nonatomic, copy) NSString *akSecret;
 @property (nonatomic, copy) NSString *url;
+@property (nonatomic, copy) NSString *token;
+
 
 @end
 
@@ -53,7 +55,8 @@
     self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
     self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    
+    self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+
 }
 
 - (void)tearDown {
@@ -83,7 +86,7 @@
 */
 - (void)testWhiteVCList{
     
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
@@ -99,7 +102,7 @@
   验证控制器黑名单
 */
 - (void)testBlackVCList{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
@@ -115,7 +118,7 @@
   验证UI白名单
 */
 - (void)testWhiteViewList{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
 
     config.enableLog = YES;
     config.enableAutoTrack = YES;
@@ -131,7 +134,7 @@
   验证UI黑名单
 */
 - (void)testBlackViewList{
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
 
     config.enableLog = YES;
     config.enableAutoTrack = YES;
