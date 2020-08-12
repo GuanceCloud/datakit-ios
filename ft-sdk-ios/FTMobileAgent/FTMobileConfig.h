@@ -56,8 +56,8 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
  *   FTMonitorInfoTypeSensorTorch      - 手电筒亮度级别0-1
  *   FTMonitorInfoTypeFPS              - 每秒传输帧数
  */
-typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
-    FTMonitorInfoTypeAll          = 1 << 0,
+typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
+    FTMonitorInfoTypeAll          = 0xFFFFFFFF,
     FTMonitorInfoTypeBattery      = 1 << 1,
     FTMonitorInfoTypeMemory       = 1 << 2,
     FTMonitorInfoTypeCpu          = 1 << 3,

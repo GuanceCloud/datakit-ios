@@ -172,7 +172,7 @@ static dispatch_once_t onceToken;
         [self stopMonitor];
         return;
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
+    if (_monitorType & FTMonitorInfoTypeNetwork) {
         [FTURLProtocol startMonitor];
         [FTURLProtocol setDelegate:self];
         [self startFlushTimer];
@@ -180,7 +180,7 @@ static dispatch_once_t onceToken;
        [_netFlow stopMonitor];
        [FTURLProtocol stopMonitor];
     }
-    if([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]){
+    if(_monitorType & FTMonitorInfoTypeLocation){
             [[FTLocationManager sharedInstance] startUpdatingLocation];
     }else{
         [[FTLocationManager sharedInstance] stopUpdatingLocation];
@@ -225,7 +225,7 @@ static dispatch_once_t onceToken;
     }else{
         _motionManager.isGyroActive? [_motionManager stopGyroUpdates]:nil;
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeFPS]) {
+    if (_monitorType & FTMonitorInfoTypeFPS) {
         if (!_displayLink) {
             _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
             [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
@@ -245,18 +245,12 @@ static dispatch_once_t onceToken;
             _displayLink = nil;
         }
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBluetooth]) {
+    if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
     }
 }
--(BOOL)isMonitorTypeAllow:(FTMonitorInfoType)type{
-    if (_monitorType & FTMonitorInfoTypeAll || _monitorType & type){
-           return YES;
-       }
-       return NO;
-}
 -(BOOL)isMonitorMotionTypeAllow:(FTMonitorInfoType)type{
-    if (_monitorType & FTMonitorInfoTypeAll ||_monitorType & FTMonitorInfoTypeSensor || _monitorType &  type ){
+    if (_monitorType & FTMonitorInfoTypeSensor || _monitorType &  type ){
         return YES;
     }
     return NO;
@@ -393,24 +387,24 @@ static dispatch_once_t onceToken;
 -(NSDictionary *)getMonitorTagDicts{
         NSMutableDictionary *tag = [NSMutableDictionary new];
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-        if ([self isMonitorTypeAllow:FTMonitorInfoTypeBattery]) {
+        if (_monitorType & FTMonitorInfoTypeBattery) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:FT_MONITOR_BATTERY_TOTAL];
         }
-        if ([self isMonitorTypeAllow:FTMonitorInfoTypeMemory]) {
+        if (_monitorType & FTMonitorInfoTypeMemory) {
             [tag setObject:[FTMonitorUtils ft_getTotalMemorySize] forKey:FT_MONITOR_MEMORY_TOTAL];
         }
-        if ([self isMonitorTypeAllow:FTMonitorInfoTypeCpu]) {
+        if (_monitorType & FTMonitorInfoTypeCpu) {
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUType] forKey:FT_MONITOR_CPU_NO];
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceCPUClock] forKey:FT_MONITOR_CPU_HZ];
         }
-        if([self isMonitorTypeAllow:FTMonitorInfoTypeGpu]){
+        if(_monitorType & FTMonitorInfoTypeGpu){
             [tag setObject:deviceInfo[FTBaseInfoHanderDeviceGPUType] forKey:FT_MONITOR_GPU_MODEL];
         }
-        if ([self isMonitorTypeAllow:FTMonitorInfoTypeCamera]) {
+        if (_monitorType & FTMonitorInfoTypeCamera) {
             [tag setObject:[FTMonitorUtils ft_getFrontCameraPixel] forKey:FT_MONITOR_CAMERA_FRONT_PX];
             [tag setObject:[FTMonitorUtils ft_getBackCameraPixel] forKey:FT_MONITOR_CAMERA_BACK_PX];
         }
-        if ([self isMonitorTypeAllow:FTMonitorInfoTypeSystem]) {
+        if (_monitorType & FTMonitorInfoTypeSystem) {
             [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
         }
     return tag;
@@ -418,16 +412,16 @@ static dispatch_once_t onceToken;
 -(NSDictionary *)getMonitorTagFiledDict{
     NSMutableDictionary *tag = self.monitorTagDict.mutableCopy;//常量监控项
     NSMutableDictionary *field = [[NSMutableDictionary alloc]init];
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeSystem]) {
+    if (_monitorType & FTMonitorInfoTypeSystem) {
         [field setValue:[FTMonitorUtils getLaunchSystemTime] forKey:FT_MONITOR_DEVICE_OPEN_TIME];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeCpu]) {
+    if (_monitorType & FTMonitorInfoTypeCpu) {
         [field setObject:[NSNumber numberWithLong:[FTMonitorUtils ft_cpuUsage]] forKey:FT_MONITOR_CPU_USE];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeMemory]) {
+    if (_monitorType & FTMonitorInfoTypeMemory) {
         [field setObject:[NSNumber numberWithDouble:[FTMonitorUtils ft_usedMemory]] forKey:FT_MONITOR_MEMORY_USE];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeNetwork]) {
+    if (_monitorType & FTMonitorInfoTypeNetwork) {
         __block NSNumber *network_strength;
         __block NSString *network_type;
         [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
@@ -454,15 +448,15 @@ static dispatch_once_t onceToken;
         [field setObject:errorRate forKey:FT_MONITOR_NETWORK_ERROR_RATE];
         [tag setObject:[FTNetworkInfo getProxyHost] forKey:FT_MONITOR_NETWORK_PROXY];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBattery]) {
+    if (_monitorType & FTMonitorInfoTypeBattery) {
         [field setObject:[NSNumber numberWithDouble:[FTMonitorUtils ft_getBatteryUse]] forKey:FT_MONITOR_BATTERY_USE];
         [tag setObject:[FTMonitorUtils ft_batteryStatus] forKey:FT_MONITOR_BATTERY_STATUS];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeGpu]){
+    if (_monitorType & FTMonitorInfoTypeGpu){
         double usage =[[FTGPUUsage new] fetchCurrentGpuUsage];
         [field setObject:[NSNumber numberWithDouble:usage] forKey:FT_MONITOR_GPU_RATE];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeLocation]) {
+    if (_monitorType & FTMonitorInfoTypeLocation) {
         FTLocationInfo *location =[FTLocationManager sharedInstance].location;
         [tag setValue:location.province forKey:FT_MONITOR_PROVINCE];
         [tag setValue:location.city forKey:FT_MONITOR_CITY];
@@ -478,10 +472,10 @@ static dispatch_once_t onceToken;
     if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorProximity]) {
         [field setValue:[NSNumber numberWithBool:_proximityState]  forKey:FT_MONITOR_PROXIMITY];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeFPS]) {
+    if (_monitorType & FTMonitorInfoTypeFPS) {
         [field setValue:[NSNumber numberWithInt:_fps] forKey:FT_MONITOR_FPS];
     }
-    if ([self isMonitorTypeAllow:FTMonitorInfoTypeBluetooth]) {
+    if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [field addEntriesFromDictionary:[self getConnectBluetoothIdentifiers]];
         [tag setValue:self.isBlueOn forKey:FT_MONITOR_BT_OPEN];
         
@@ -523,7 +517,7 @@ static dispatch_once_t onceToken;
 }
 // 启动获取实时网络定时器
 - (void)startFlushTimer {
-    if (self.monitorType & FTMonitorInfoTypeNetwork || self.monitorType & FTMonitorInfoTypeAll) {
+    if (self.monitorType & FTMonitorInfoTypeNetwork ) {
         [self stopFlushTimer];
         [self.netFlow startMonitor];
     }
