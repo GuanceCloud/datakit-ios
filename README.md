@@ -127,7 +127,9 @@
   [崩溃分析](#3-关于崩溃日志分析)    
       
  
-- traceConsoleLog 采集控制台日志
+- traceConsoleLog 采集控制台日志    
+
+   一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出App里的保密数据， 所以在发布正式版时会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用 [日志写入接口](#2上报日志) 来上传想查看的日志。
  
    ```objective-c 
   /**
@@ -657,7 +659,8 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 
  - 设置 `FTMonitorInfoTypeSensor` 会一并抓取传感器数据，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
 
- - `FTMonitorInfoTypeSensorLight`：是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度。
+ - `FTMonitorInfoTypeSensorLight`：[谨慎开启环境光感参数监控项](#3-谨慎开启环境光感参数监控项) SDK 是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度，**iOS14 中 App 使用相机时会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，我们无法控制是否显示该提示** 所以建议谨慎开启此项。
+
  
  - `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
 
@@ -800,7 +803,23 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  4. 解析完成后会生成一个新的 **.Crash** 文件，这个文件中就是崩溃详细信息。
 
 
-
+### 4. 谨慎开启环境光感参数监控项
+     
+   iOS14 中 App 使用相机会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，并且我们无法控制是否显示该提示。    
+  
+  触发相机小绿点的代码示例:    
+  
+```   
+AVCaptureDeviceInput *videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:videoCaptureDevice error:nil];
+AVCaptureSession *session = [[AVCaptureSession alloc] init];
+if ([session canAddInput:videoInput]) {
+    [session addInput:videoInput];
+}
+[session startRunning];
+```
+   在 SDK 中获取环境光感参数的方法是, 启动 AVCaptureSession ，获取视频流数据，分析得到当前的环境光强度，使用了上面的接口 ，所以会**触发相机小绿点**。
+   
+   
  
 
 
