@@ -675,12 +675,8 @@ static dispatch_once_t onceToken;
     NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)_skywalkingv2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
     urlStr = [urlStr ft_base64Encode];
-    _skywalkingSeq ++ ;
-    if (_skywalkingSeq > 9999) {
-        _skywalkingSeq = 1;
-    }
-    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode];
-    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode];
+    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)[self getSkywalkingSeq]] ft_base64Encode];
+    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)[self getSkywalkingSeq]] ft_base64Encode];
     NSString *endPoint = [@"-1" ft_base64Encode];
     return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:_skywalkingv2],[NSNumber numberWithInteger:_skywalkingv2],urlStr,endPoint,endPoint];
 }
@@ -691,13 +687,18 @@ static dispatch_once_t onceToken;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
     urlPath = [urlPath ft_base64Encode];
     urlStr = [urlStr ft_base64Encode];
-    _skywalkingSeq ++ ;
-    if (_skywalkingSeq > 9999) {
-        _skywalkingSeq = 1;
-    }
-    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode];
-    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode];
+
+    NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)[self getSkywalkingSeq]] ft_base64Encode];
+    NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)[self getSkywalkingSeq]] ft_base64Encode];
     return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[self.config.traceServiceName ft_base64Encode],parentServiceInstance,urlPath,urlStr];
+}
+-(NSUInteger)getSkywalkingSeq{
+    NSUInteger seq =  _skywalkingSeq;
+      _skywalkingSeq ++ ;
+    if (_skywalkingSeq > 9999) {
+        _skywalkingSeq = 0;
+    }
+    return seq;
 }
 -(NSString *)getThreadNumber{
     NSString *str = [NSThread currentThread].description;
