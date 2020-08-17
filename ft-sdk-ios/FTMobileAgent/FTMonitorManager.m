@@ -673,7 +673,7 @@ static dispatch_once_t onceToken;
 - (NSString *)getSkyWalking_V2Str:(BOOL)sampled url:(NSURL *)url{
     _skywalkingv2 ++;
     NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)_skywalkingv2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
-    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: url.host;
+    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
     urlStr = [urlStr ft_base64Encode];
     _skywalkingSeq ++ ;
     if (_skywalkingSeq > 9999) {
@@ -681,7 +681,8 @@ static dispatch_once_t onceToken;
     }
     NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq] ft_base64Encode];
     NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)_skywalkingSeq-1] ft_base64Encode];
-    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@--1--1",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:_skywalkingv2],[NSNumber numberWithInteger:_skywalkingv2],urlStr];
+    NSString *endPoint = [@"-1" ft_base64Encode];
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:_skywalkingv2],[NSNumber numberWithInteger:_skywalkingv2],urlStr,endPoint,endPoint];
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
