@@ -530,6 +530,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
         self.isForeground = YES;
+        [self uploadFlush];
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
