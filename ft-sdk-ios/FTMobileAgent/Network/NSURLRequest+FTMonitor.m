@@ -68,7 +68,7 @@
                                  FT_NETWORK_HEADERS:headerFields,
                                  @"url":self.URL.absoluteString,
     }.mutableCopy;
-    
+
     return dict;
 }
 - (NSDictionary<NSString *, NSString *> *)dgm_getCookies {
@@ -87,7 +87,7 @@
     NSDictionary *header = self.allHTTPHeaderFields;
     if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
         return header[FT_NETWORK_ZIPKIN_TRACEID];
-        
+
     }
     if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
         NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
@@ -133,14 +133,15 @@
             span =traceAry[1];
             sampling = [traceAry lastObject];
         }
-        
+
     }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 8) {
             sampling = [traceAry firstObject];
             trace = [traceAry[1] ft_base64Decode];
-            span = [trace stringByAppendingString:@"1"];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            span = [parentTraceID stringByAppendingString:@"0"];
         }
     }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V2]) {
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
@@ -148,7 +149,8 @@
         if (traceAry.count == 9) {
             sampling = [traceAry firstObject];
             trace = [traceAry[1] ft_base64Decode];
-            span = [trace stringByAppendingString:@"1"];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            span = [parentTraceID stringByAppendingString:@"0"];
         }
     }
     if (handler) {
