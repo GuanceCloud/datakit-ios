@@ -135,8 +135,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
+            self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
             if (self.config.traceConsoleLog) {
-                self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
                 [self _traceConsoleLog];
             }
         }
