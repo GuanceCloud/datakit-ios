@@ -15,6 +15,8 @@
 #import <objc/runtime.h>
 #import <FTAutoTrack.h>
 #import <FTAutoTrack/FTAutoTrack.h>
+#import "FTAutoTrack+Test.h"
+
 @interface FTAutoTrackTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -24,8 +26,6 @@
 @property (nonatomic, copy) NSString *akSecret;
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *token;
-
-
 @end
 
 @implementation FTAutoTrackTest
@@ -57,11 +57,6 @@
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
 
-}
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-  
 }
 /**
   测试当前控制器获取是否正确
@@ -148,11 +143,23 @@
     XCTAssertTrue(newCount-lastCount==1);
     
 }
+-(void)testPageVtpDesc{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    config.enabledPageVtpDesc = YES;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
+    config.monitorInfoType = FTMonitorInfoTypeAll;
+    FTAutoTrack *track = [FTAutoTrack new];
+    [track startWithConfig:config];
+    NSDictionary *page = track.pageDesc;
+    XCTAssertTrue( [page.allKeys containsObject:@"RootTabbarVC"]);
+}
 /**
   模拟点击操作
 */
 - (void)trackMethodWithConfig:(FTMobileConfig *)config{
-//    [FTMobileAgent startWithConfigOptions:config];
     FTAutoTrack *track = [FTAutoTrack new];
     [track startWithConfig:config];
     

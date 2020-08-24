@@ -16,6 +16,7 @@
 		4A297BDA246BBF340028645B /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BD8246BBF340028645B /* FTConstants.h */; };
 		4A297BDB246BBF340028645B /* FTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A297BD9246BBF340028645B /* FTConstants.m */; };
 		4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */; };
+		4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */; };
 		4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57ED2458141300478547 /* FTMonitorUtils.h */; };
 		4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMonitorUtils.m */; };
 		4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A31E75223CDA69C0077531B /* FTNetworkInfo.h */; };
@@ -25,7 +26,6 @@
 		4A37A94B2486006100E0381B /* NSURLRequest+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A9492486006100E0381B /* NSURLRequest+FTMonitor.h */; };
 		4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */; };
 		4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */; };
-		4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */; };
 		4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
@@ -495,6 +495,7 @@
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
 				4A88429F239E5768001B44C3 /* ZY_FMDatabase.m in Sources */,
 				4A297BDB246BBF340028645B /* FTConstants.m in Sources */,
+				4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				4A88429C239E5768001B44C3 /* FTTrackerEventDBTool.m in Sources */,
 				4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */,
@@ -503,7 +504,6 @@
 				4A1FFA2824AB072D00049D9E /* NSString+FTAdd.m in Sources */,
 				4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */,
 				4A7F62EC24976804000893C1 /* FTLogHook.m in Sources */,
-				4A37A95024862A8000E0381B /* NSURLResponse+FTMonitor.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AB7841123C73277001FC994 /* FTNetMonitorFlow.m in Sources */,
 				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
