@@ -207,13 +207,13 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
-    [self trackImmediateList:@[model] callBack:callBack];
+-(NSURLRequest *)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
+   return [self trackImmediateList:@[model] callBack:callBack];
 }
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
+-(NSURLRequest*)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
     if (self.checkTokenState == FTCheckTokenStateError) {
        callBack?callBack(UnknownException, nil):nil;
-        return;
+        return nil;
     }
     FTURLSessionTaskCompletionHandler handler = ^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error){
         if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
@@ -221,16 +221,16 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         }
         callBack?callBack([(NSHTTPURLResponse *)response statusCode], data):nil;
     };
-    [self trackList:modelList callBack:handler];
+   return [self trackList:modelList callBack:handler];
 }
--(void)trackList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLSessionTaskCompletionHandler)callBack{
+-(NSURLRequest *)trackList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLSessionTaskCompletionHandler)callBack{
     FTRecordModel *model = [modelList firstObject];
       NSString *api = nil;
       if ([model.op isEqualToString:FTNetworkingTypeObject]) {
           NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
           NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
           [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
-          return;
+          return nil;
       }else
       if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
           api = FT_NETWORKING_API_METRICS;
@@ -240,14 +240,15 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
       }
       NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
       NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
-      [self trackRequestWithURL:url eventsAry:modelList callBack:callBack];
+    return  [self trackRequestWithURL:url eventsAry:modelList callBack:callBack];
 }
-- (void)trackRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
+- (NSURLRequest *)trackRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
     NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:events];
     //设置网络请求的返回接收器
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
+    return request;
 }
 - (void)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
     NSMutableArray *list = [NSMutableArray new];

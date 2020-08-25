@@ -27,11 +27,11 @@ typedef void(^FTURLSessionTaskCompletionHandler)(NSData * _Nullable data, NSHTTP
 /**
  *立即上传 单条数据
 */
--(void)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack;
+-(NSURLRequest *)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack;
 /**
  *立即上传 多条数据
 */
--(void)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack;
+-(NSURLRequest *)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack;
 - (void)stopLoading;
 @end
 
