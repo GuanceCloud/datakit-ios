@@ -17,7 +17,9 @@
 		4A1169842391145B00C0BC4E /* DemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169832391145B00C0BC4E /* DemoViewController.m */; };
 		4A11698A2391146600C0BC4E /* ResultVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* ResultVC.m */; };
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
+		4A1D789224F4E371006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D789124F4E371006125D0 /* FTDatabaseTest.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
+		4A2C826524F3597F006D4FC6 /* MonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* MonitorManagerTest.m */; };
 		4A2FAF1B2424A11B0019B144 /* FTMobileAgent.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
@@ -114,9 +116,14 @@
 		4A1169872391146600C0BC4E /* ResultVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResultVC.m; sourceTree = "<group>"; };
 		4A159F3623D3F3BD00804D70 /* RootTabbarVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootTabbarVC.h; sourceTree = "<group>"; };
 		4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootTabbarVC.m; sourceTree = "<group>"; };
+		4A1D789124F4E371006125D0 /* FTDatabaseTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDatabaseTest.m; sourceTree = "<group>"; };
+		4A1D789624F4F571006125D0 /* FTTrackerEventDBTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackerEventDBTool+Test.h"; sourceTree = "<group>"; };
 		4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A2C826424F3597F006D4FC6 /* MonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MonitorManagerTest.m; sourceTree = "<group>"; };
+		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
+		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
 		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
@@ -252,6 +259,34 @@
 			path = "ft-sdk-iosTestUITests";
 			sourceTree = "<group>";
 		};
+		4A2C825F24EFC9AB006D4FC6 /* AutoTrack */ = {
+			isa = PBXGroup;
+			children = (
+				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
+				4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */,
+			);
+			path = AutoTrack;
+			sourceTree = "<group>";
+		};
+		4A2C826224EFD13D006D4FC6 /* AgentTest */ = {
+			isa = PBXGroup;
+			children = (
+				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
+				4A1D789124F4E371006125D0 /* FTDatabaseTest.m */,
+				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
+				4A1D789624F4F571006125D0 /* FTTrackerEventDBTool+Test.h */,
+			);
+			path = AgentTest;
+			sourceTree = "<group>";
+		};
+		4A2C826324EFDA1F006D4FC6 /* MonitorManager */ = {
+			isa = PBXGroup;
+			children = (
+				4A2C826424F3597F006D4FC6 /* MonitorManagerTest.m */,
+			);
+			path = MonitorManager;
+			sourceTree = "<group>";
+		};
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -269,9 +304,10 @@
 		4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
+				4A2C826224EFD13D006D4FC6 /* AgentTest */,
+				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
+				4A2C826324EFDA1F006D4FC6 /* MonitorManager */,
 				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
-				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
 				4A85313A23AB85FC00B40B5D /* Info.plist */,
 			);
 			path = "ft-sdk-iosTestUnitTests";
@@ -289,7 +325,6 @@
 		4AAF0E7723B9901500817C52 /* TestAutoTrack */ = {
 			isa = PBXGroup;
 			children = (
-				4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */,
 				4A1169822391145B00C0BC4E /* DemoViewController.h */,
 				4A1169832391145B00C0BC4E /* DemoViewController.m */,
 				4A159F3623D3F3BD00804D70 /* RootTabbarVC.h */,
@@ -322,6 +357,7 @@
 				4AE92781248F313A00F43875 /* TestCustomTrackVC.m */,
 				4A7F62F624978BE9000893C1 /* ft-sdk-iosTest-Bridging-Header.h */,
 				4A7F62F424978BA9000893C1 /* FrintHookTest.swift */,
+				4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -660,6 +696,8 @@
 			files = (
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */,
+				4A2C826524F3597F006D4FC6 /* MonitorManagerTest.m in Sources */,
+				4A1D789224F4E371006125D0 /* FTDatabaseTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -24,7 +24,7 @@
 }
 -(instancetype)init{
     if ([super init]) {
-        self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+        self.lastCount =  0;
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
         self.autoTrackClickCount = 0;

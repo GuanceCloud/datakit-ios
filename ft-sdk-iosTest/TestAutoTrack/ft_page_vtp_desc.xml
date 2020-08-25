@@ -2,8 +2,10 @@
 <pagedesc>
 <page name="RootTabbarVC" desc="底部导航" />
 <page name="DemoViewController" desc="首页" />
+<page name="UITestVC" desc="UI测试页面" />
 </pagedesc>
 <vtpdesc>
 <vtp path="UITabBarController/UIWindow/UITransitionView/UIDropShadowView/UILayoutContainerView/UITabBar/UITabBarButton[1]" desc="home点击" />
+<vtp path="UITestVC/UIView/UIScrollView/UIButton[0]" desc="测试点击事件" />
 </vtpdesc>
 </root>

@@ -15,6 +15,12 @@
 #import <objc/runtime.h>
 #import <FTAutoTrack.h>
 #import <FTAutoTrack/FTAutoTrack.h>
+#import "FTAutoTrack+Test.h"
+#import <FTMobileAgent/FTMobileAgent+Private.h>
+#import "FTUploadTool+Test.h"
+#import <FTBaseInfoHander.h>
+#import <FTRecordModel.h>
+
 @interface FTAutoTrackTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -24,8 +30,6 @@
 @property (nonatomic, copy) NSString *akSecret;
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *token;
-
-
 @end
 
 @implementation FTAutoTrackTest
@@ -34,34 +38,31 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
-
+    
     self.testVC = [[UITestVC alloc] init];
-
+    
     self.tabBarController = [[UITabBarController alloc] init];
-
+    
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
     self.navigationController.tabBarItem.title = @"UITestVC";
-
+    
     UITableViewController *firstViewController = [[UITableViewController alloc] init];
     UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
     
     self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
     self.window.rootViewController = self.tabBarController;
-
+    
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-
-}
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-  
+    self.akId =[processInfo environment][@"TACCESS_KEY_ID"];
+    self.akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
+    self.url = [processInfo environment][@"TACCESS_SERVER_URL"];
+    self.token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
 /**
   测试当前控制器获取是否正确
@@ -76,7 +77,6 @@
   测试根视图是否正确
 */
 - (void)testRootViewControllerOfTheView{
-    
       NSString *rootStr = [UIViewController ft_getRootViewController];
       XCTAssertTrue([rootStr isEqualToString:@"UITabBarController"]);
 
@@ -131,7 +131,7 @@
     XCTAssertTrue(newCount-lastCount==1);
 }
 /**
-  验证UI黑名单
+ * 验证UI黑名单
 */
 - (void)testBlackViewList{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -149,10 +149,32 @@
     
 }
 /**
+ * page_desc vtp_desc
+ * 验证： xml写入  模拟点击后 验证新的数据是否包含 页面描述信息
+ */
+-(void)testPageVtpDesc{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    config.enabledPageVtpDesc = YES;
+    config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
+    config.monitorInfoType = FTMonitorInfoTypeAll;
+    [self trackMethodWithConfig:config];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = item[@"opdata"];
+    NSDictionary *field = opdata[@"field"];
+    NSString *desc = field[@"page_desc"];
+    NSString *vtp_desc =field[@"vtp_desc"];
+    XCTAssertTrue([desc isEqualToString:@"UI测试页面"]);
+    XCTAssertTrue([vtp_desc isEqualToString:@"测试点击事件"]);
+}
+/**
   模拟点击操作
 */
 - (void)trackMethodWithConfig:(FTMobileConfig *)config{
-//    [FTMobileAgent startWithConfigOptions:config];
     FTAutoTrack *track = [FTAutoTrack new];
     [track startWithConfig:config];
     
@@ -163,7 +185,8 @@
     IMP imp = [track methodForSelector:startMethod];
      
     void (*func)(id, SEL,id,id,id) = (void (*)(id,SEL,id,id,id))imp;
-     func(track,startMethod,@"click",self.testVC,self.testVC.tableView);
-     func(track,startMethod,@"click",self.testVC,self.testVC.firstButton);
+    func(track,startMethod,@"click",self.testVC,self.testVC.tableView);
+    func(track,startMethod,@"click",self.testVC,self.testVC.firstButton);
+    [NSThread sleepForTimeInterval:2];
 }
 @end

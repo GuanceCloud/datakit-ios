@@ -13,7 +13,7 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class FTRecordModel;
+@class FTRecordModel,FTUploadTool;
 /**
  埋点方式
 
@@ -27,6 +27,7 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 
 @interface FTMobileAgent (Private)
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
+@property (nonatomic, strong) FTUploadTool *upTool;
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */
