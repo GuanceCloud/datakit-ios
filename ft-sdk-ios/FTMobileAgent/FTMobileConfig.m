@@ -41,6 +41,7 @@
         _eventFlowLog = NO;
         _networkTrace = FTNetworkTrackTypeZipkin;
         _enabledPageVtpDesc = NO;
+        _source = FT_USER_AGENT;
     }
       return self;
 }
@@ -74,6 +75,7 @@
     options.networkTraceType = self.networkTraceType;
     options.networkContentType = self.networkContentType;
     options.enabledPageVtpDesc = self.enabledPageVtpDesc;
+    options.source = self.source;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{

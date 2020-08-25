@@ -402,7 +402,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (field) {
         [filedDict addEntriesFromDictionary:field];
     }
-    FTRecordModel *model = [self getRecordModelWithMeasurement:FT_USER_AGENT tags:tag field:filedDict op:op netType:FTNetworkingTypeLogging tm:tm];
+    FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:filedDict op:op netType:FTNetworkingTypeLogging tm:tm];
     [self insertDBArrayWithItemData:model];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
