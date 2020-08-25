@@ -23,11 +23,19 @@
 static FTTrackerEventDBTool *dbTool = nil;
 
 #pragma mark --创建数据库
-+ (instancetype)sharedManger {
++ (instancetype)sharedManger
+{
+    return [FTTrackerEventDBTool shareDatabase:nil];
+}
++ (instancetype)shareDatabase:(NSString *)dbName {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
     if (!dbTool) {
-        NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"ZYFMDB.sqlite"];
+        NSString *name = dbName;
+        if (!name) {
+            name = @"ZYFMDB.sqlite";
+        }
+        NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:name];
         ZY_FMDatabaseQueue *dbQueue = [ZY_FMDatabaseQueue databaseQueueWithPath:path];
         ZY_FMDatabase *fmdb = [dbQueue valueForKey:@"_db"];
         if ([fmdb  open]) {
@@ -153,7 +161,7 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(BOOL)insertItemWithItemData:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
-       if([self getDatasCount]>FT_DB_CONTENT_MAX_COUNT){
+       if([self getDatasCount]>=FT_DB_CONTENT_MAX_COUNT){
          [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
            return NO;
        }
@@ -179,8 +187,12 @@ static FTTrackerEventDBTool *dbTool = nil;
 -(BOOL)insertItemWithItemDatas:(NSArray *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
-        if([self getDatasCount]>FT_DB_CONTENT_MAX_COUNT){
+        NSInteger count = FT_DB_CONTENT_MAX_COUNT - [self getDatasCount];
+        
+        if(count <= 0){
             return NO;
+        }else if(items.count > count){
+          items =  [items subarrayWithRange:NSMakeRange(0, count)];
         }
         [self zy_inTransaction:^(BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
