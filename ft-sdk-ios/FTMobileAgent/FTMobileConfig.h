@@ -201,6 +201,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *traceServiceName;
 /*日志的来源 默认为：ft_mobile_sdk_ios*/
 @property (nonatomic, copy) NSString *source;
+/*日志的环境 默认为： release 、debug*/
+@property (nonatomic, copy) NSString *env;
 /**
  *设置是否需要采集控制台日志 默认为NO
  */

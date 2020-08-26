@@ -168,6 +168,7 @@ extern NSString *  const FT_KEY_DISMENSIONS;
 extern NSString *  const FT_KEY_SPANTYPE;
 extern NSString *  const FT_KEY_ENDPOINT;
 extern NSString *  const FT_DEFAULT_CLASS;
+extern NSString *  const FT_KEY_ENV;
 extern NSString *  const FT_APP_VERSION_NAME;
 
 extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;

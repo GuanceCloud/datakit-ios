@@ -42,6 +42,11 @@
         _networkTrace = FTNetworkTrackTypeZipkin;
         _enabledPageVtpDesc = NO;
         _source = FT_USER_AGENT;
+#if DEBUG
+        _env = @"dev";
+#else
+        _env = @"release";
+#endif
     }
       return self;
 }
@@ -76,6 +81,7 @@
     options.networkContentType = self.networkContentType;
     options.enabledPageVtpDesc = self.enabledPageVtpDesc;
     options.source = self.source;
+    options.env = self.env;
     return options;
 }
 -(void)setEnableAutoTrack:(BOOL)enableAutoTrack{
