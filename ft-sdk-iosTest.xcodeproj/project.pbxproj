@@ -18,6 +18,8 @@
 		4A11698A2391146600C0BC4E /* ResultVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* ResultVC.m */; };
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
 		4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */; };
+		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
+		4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A924F66ECF006125D0 /* UploadDataTest.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
 		4A2C826524F3597F006D4FC6 /* MonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* MonitorManagerTest.m */; };
 		4A2FAF1B2424A11B0019B144 /* FTMobileAgent.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -25,7 +27,6 @@
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
 		4A7F62F524978BA9000893C1 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62F424978BA9000893C1 /* FrintHookTest.swift */; };
 		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
-		4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
@@ -118,6 +119,8 @@
 		4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootTabbarVC.m; sourceTree = "<group>"; };
 		4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDatabaseTest.m; sourceTree = "<group>"; };
 		4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTTrackerEventDBTool+Test.h"; sourceTree = "<group>"; };
+		4A1D78A824F66ECF006125D0 /* UploadDataTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadDataTest.h; sourceTree = "<group>"; };
+		4A1D78A924F66ECF006125D0 /* UploadDataTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadDataTest.m; sourceTree = "<group>"; };
 		4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -273,7 +276,6 @@
 			children = (
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
 				4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */,
-				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
 			);
 			path = AgentTest;
@@ -304,6 +306,9 @@
 		4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				4A1D78A824F66ECF006125D0 /* UploadDataTest.h */,
+				4A1D78A924F66ECF006125D0 /* UploadDataTest.m */,
+				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
 				4A2C826224EFD13D006D4FC6 /* AgentTest */,
 				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
 				4A2C826324EFDA1F006D4FC6 /* MonitorManager */,
@@ -695,10 +700,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
-				4A85313923AB85FC00B40B5D /* FTMobileAgentTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
+				4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */,
 				4A2C826524F3597F006D4FC6 /* MonitorManagerTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
+				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
