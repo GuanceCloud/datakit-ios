@@ -130,9 +130,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (self.config.enableAutoTrack) {
                 [self startAutoTrack];
             }
-            if (self.config.enableTrackAppCrash) {
-                [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
-            }
+            [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
+            
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
             self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
@@ -388,13 +387,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                                  FT_KEY_SERVICENAME:self.config.traceServiceName,
                                  FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
                                  FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                 FT_KEY_ENV:self.config.env,
     }.mutableCopy;
-    if ([op isEqualToString:FT_TRACK_LOGGING_EXCEPTION]) {
-        NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-        NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
-        NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
-        [tag setValue:app_version_name forKey:FT_APP_VERSION_NAME];
-    }
     if (tags) {
         [tag addEntriesFromDictionary:tags];
     }
@@ -404,6 +398,29 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:filedDict op:op netType:FTNetworkingTypeLogging tm:tm];
     [self insertDBArrayWithItemData:model];
+}
+- (void)_loggingExceptionInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm{
+    if (self.config.enableTrackAppCrash) {
+    NSMutableDictionary *tag = @{FT_KEY_STATUS:status,
+                                 FT_KEY_SERVICENAME:self.config.traceServiceName,
+                                 FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                 FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                 FT_KEY_ENV:self.config.env,
+    }.mutableCopy;
+    
+    NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
+    [tag setValue:app_version_name forKey:FT_APP_VERSION_NAME];
+    FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:@{FT_KEY_CONTENT:content} op:op netType:FTNetworkingTypeLogging tm:tm];
+    dispatch_sync(self.serialLoggingQueue, ^{
+        [self.loggingArray addObject:model];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
+        self.loggingArray = nil;
+    });
+    }else if(self.loggingArray.count>0){
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
+    }
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
     return [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:type tm:0];

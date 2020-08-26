@@ -41,9 +41,10 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 */
 -(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode,  id responseObject))callBack;
 /**
- * logging 崩溃日志与控制台日志 写入
+ * logging 控制台日志 写入
 */
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
+- (void)_loggingExceptionInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
 /**
  * eventFlowLog、networkTrace 写入
 */
