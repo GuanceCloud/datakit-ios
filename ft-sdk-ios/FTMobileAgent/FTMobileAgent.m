@@ -397,7 +397,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [filedDict addEntriesFromDictionary:field];
     }
     FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:filedDict op:op netType:FTNetworkingTypeLogging tm:tm];
+    if([op isEqualToString:@"logging"]){
+        [self insertDBWithItemData:model];
+    }else{
     [self insertDBArrayWithItemData:model];
+    }
 }
 - (void)_loggingExceptionInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm{
     if (self.config.enableTrackAppCrash) {
