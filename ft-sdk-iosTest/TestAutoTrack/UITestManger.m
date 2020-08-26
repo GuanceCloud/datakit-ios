@@ -35,7 +35,7 @@
     return self;
 }
 -(void)reset{
-    self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    self.lastCount =  0;
     NSLog(@"lastCount == %ld",self.lastCount);
     self.trackCount = 1;//lunch
     self.autoTrackViewScreenCount = 1; //UITabBarController (open)

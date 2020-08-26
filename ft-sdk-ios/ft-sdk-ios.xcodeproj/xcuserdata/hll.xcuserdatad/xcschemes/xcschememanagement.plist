@@ -17,12 +17,12 @@
 		<key>FTAutoTrack.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>6</integer>
+			<integer>9</integer>
 		</dict>
 		<key>FTMobileAgent.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>8</integer>
 		</dict>
 		<key>ft-sdk-ios.xcscheme_^#shared#^_</key>
 		<dict>
