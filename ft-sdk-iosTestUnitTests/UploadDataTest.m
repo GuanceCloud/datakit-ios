@@ -40,10 +40,70 @@
     return name;
 }
 - (NSString *)testLogging{
-    return nil;
+    /*
+     {"queries":[{"measurements":["logging"],"fields":[],"filter":{"tags":[{"name":"__tags.__source.keyword","value":["iOSTest"],"operation":"=","condition":"and"}]},"groupBy":[],"orderBy":[{"name":"__timestampMs","method":"desc"}],"limit":50,"offset":0,"timeRange":[1598511038648,1598514640646],"intervalTime":"1m"}]}
+     */
+    NSDictionary *param = @{@"queries":@[@{@"measurements":@[@"logging"],
+                                           @"fields":@[],
+                                           @"filter":@{@"tags":@[
+                                                               @{@"name":@"__tags.__source.keyword",
+                                                                 @"value":@[@"iOSTest"],
+                                                                 @"operation":@"=",
+                                                                 @"condition":@"and"
+                                                               }]},
+                                           @"groupBy":@[],
+                                           @"orderBy":@[@{@"name":@"__timestampMs",
+                                                          @"method":@"desc"}],
+                                           @"limit":@1,
+                                           @"offset":@0,
+                                           @"timeRange":[self getTime],
+                                           @"intervalTime":@"1m"
+    }
+    ]};
+     NSDictionary *dict = [self getUploadResultWithUrl:@"http://testing.api-ft2x.cloudcare.cn:10531/api/v1/elasticsearch/query_data" params:param];
+    NSString *contentStr = nil;
+     if([[dict valueForKey:@"code"] intValue] == 200){
+         NSDictionary *content = dict[@"content"];
+         NSArray *responses = content[@"responses"];
+         NSDictionary *hitsDict = [responses firstObject][@"hits"];
+         NSArray *hitsArray = hitsDict[@"hits"];
+         NSDictionary *_source = [hitsArray firstObject][@"_source"];
+         contentStr = _source[@"__content"];
+     }
+     return contentStr;
+}
+-(NSArray *)getTime{
+    NSDate *datenow = [NSDate date];
+    long  time= (long)([datenow timeIntervalSince1970]*1000);
+    return @[[NSNumber numberWithLong:time-(1000 * 60)],[NSNumber numberWithLong:time]];
 }
 - (NSString *)testTrack{
-    return nil;
+    NSDictionary *param = @{@"queries":@[@{@"qtype":@"http",
+                                           @"query":@{@"measurements":@[@"iOSTest"],
+                                                      @"fields":@[@{@"name":@"event"}],
+                                                      @"filter":@{},
+                                                      @"interval":@"time(4924ms)",
+                                                      @"timeRange":[self getTime],
+                                                      @"intervalTime":@"5s",
+                                                      @"limit":@"1",
+                                                      @"offset":@0,
+                                                      @"orderBy":@[@{@"name":@"time",
+                                                                     @"method":@"desc"}],
+                                           }
+    }]
+    };
+    NSDictionary *dict = [self getUploadResultWithUrl:@"http://testing.api-ft2x.cloudcare.cn:10531/api/v1/influx/query_data" params:param];
+    NSString *contentStr = nil;
+    if([[dict valueForKey:@"code"] intValue] == 200){
+        NSDictionary *content= [dict valueForKey:@"content"];
+                             NSArray *data = [content valueForKey:@"data"];
+                             NSArray *series = [[data firstObject] valueForKey:@"Series"];
+        if (![series isKindOfClass:[NSNull class]] && ![series isEqual:[NSNull null]]) {
+            NSArray *values = [[series firstObject] valueForKey:@"values"];
+            contentStr = [[values lastObject] lastObject];
+        }
+    }
+    return contentStr;
 }
 - (NSString *)tesrTrace{
     return nil;

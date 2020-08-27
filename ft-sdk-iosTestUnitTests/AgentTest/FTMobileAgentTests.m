@@ -171,7 +171,7 @@ do {                                                                            
     }];
     NSString *body = [request ft_getBodyData:YES];
     NSArray *bodyArray = [body componentsSeparatedByString:@","];
-    XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"testSetSource"]);
+    XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"iOSTest"]);
 }
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -314,17 +314,18 @@ do {                                                                            
 - (void)testTrackMethod {
     [self setRightSDKConfig];
     NSString *uuid = [NSUUID UUID].UUIDString;
-    [[FTMobileAgent sharedInstance] trackBackground:@"Test" field:@{@"event":uuid}];
+    [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"event":uuid}];
     [NSThread sleepForTimeInterval:2];//写入数据库方法是异步的
     [FTMobileAgent sharedInstance].upTool.isUploading = NO;
-    [[FTMobileAgent sharedInstance].upTool upload];
-    [NSThread sleepForTimeInterval:60];
-    
-    
+    [[FTMobileAgent sharedInstance].upTool upload];//开始上传
+    [NSThread sleepForTimeInterval:30];
+    UploadDataTest *upload = [UploadDataTest new];
+    NSString *content = [upload testTrack];
+    XCTAssertTrue([content isEqualToString:uuid]);
 }
 - (void)testLoggingMethod {
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
-    config.source = @"Test";
+    config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
@@ -333,9 +334,10 @@ do {                                                                            
     [NSThread sleepForTimeInterval:2];
     [FTMobileAgent sharedInstance].upTool.isUploading = NO;
     [[FTMobileAgent sharedInstance].upTool upload];
-    [NSThread sleepForTimeInterval:10];
-    
-
+    [NSThread sleepForTimeInterval:30];
+    UploadDataTest *upload = [UploadDataTest new];
+    NSString *content = [upload testLogging];
+    XCTAssertTrue([content isEqualToString:uuid]);
 }
 - (void)testObjectMethod{
     [self setRightSDKConfig];

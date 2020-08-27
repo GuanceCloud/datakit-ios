@@ -14,7 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)testObject;
 - (NSString *)testLogging;
 - (NSString *)testTrack;
-- (NSString *)tesrTrace;
+
+- (NSString *)testTrace;
+
 @end
 
 NS_ASSUME_NONNULL_END
