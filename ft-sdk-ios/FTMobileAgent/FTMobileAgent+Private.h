@@ -45,6 +45,7 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 */
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
 - (void)_loggingExceptionInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
+- (void)_loggingArrayInsertDBImmediately;
 /**
  * eventFlowLog、networkTrace 写入
 */
