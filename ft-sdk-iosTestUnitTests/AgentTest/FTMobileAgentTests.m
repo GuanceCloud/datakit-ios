@@ -20,6 +20,9 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import "UploadDataTest.h"
+#import <objc/runtime.h>
+#import "FTMonitorManager+Test.h"
+
 
 #define WAIT                                                                \
 do {                                                                        \
@@ -357,31 +360,7 @@ do {                                                                            
     UploadDataTest *upload = [UploadDataTest new];
     XCTAssertTrue([[upload testObject] isEqualToString:uuid]);
 }
-/**
- * 测试控制台日志抓取
- * 日志类型数据 由于缓存策略 累计20条 使用事务写入数据库
- * 验证：new - old = 20 并且 最近添加数据库的数据类型 为 logging 且 抓取__content 包含"testTrackConsoleLog19"
-*/
-- (void)testTrackConsoleLog{
-    [self setRightSDKConfig];
-    NSInteger old =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    for (int i = 0; i<21; i++) {
-        NSLog(@"testTrackConsoleLog%d",i);
-    }
-    __block NSInteger new;
-    [NSThread sleepForTimeInterval:2];
-    new =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    FTRecordModel *model = [data lastObject];
-    XCTAssertTrue(new-old == 20);
-    XCTAssertTrue([model.op isEqualToString:@"logging"]);
-    XCTAssertTrue([model.data containsString:@"testTrackConsoleLog"]);
-}
-- (void)testExceptionLog{
-    [self setRightSDKConfig];
-  
 
-}
 /**
  * 测试是否能够获取地理位置
 */
@@ -463,5 +442,54 @@ do {                                                                            
     
     //用户登出后 获取
     XCTAssertTrue(logoutArray.count == array.count && newCount > oldCount);
+}
+#pragma mark ========== SDK 生命周期 ==========
+
+- (void)testSDKStart{
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    config.traceConsoleLog = YES;
+    config.enableTrackAppCrash = YES;
+    config.networkTrace = YES;
+    config.monitorInfoType = FTMonitorInfoTypeAll;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+   
+    XCTAssertTrue([FTMonitorManager sharedInstance].monitorTagDict != nil);
+    
+
+}
+- (void)testSDKEnd{
+    [self setRightSDKConfig];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    config.traceConsoleLog = YES;
+    config.enableTrackAppCrash = YES;
+    config.networkTrace = YES;
+    config.monitorInfoType = FTMonitorInfoTypeAll;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] resetInstance];
+    XCTAssertTrue([FTMonitorManager sharedInstance].monitorTagDict == nil);
+    XCTAssertNil([FTMonitorManager sharedInstance].monitorTagDict);
+
+}
+- (void)testSDKReset{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
+    config.enableLog = YES;
+    config.enableAutoTrack = YES;
+    config.traceConsoleLog = YES;
+    config.enableTrackAppCrash = YES;
+    config.networkTrace = YES;
+    config.monitorInfoType = FTMonitorInfoTypeAll;
+    [FTMobileAgent startWithConfigOptions:config];
+    NSDictionary *dict =[FTMonitorManager sharedInstance].monitorTagDict;
+    
+    config.monitorInfoType = FTMonitorInfoTypeCpu;
+    [FTMobileAgent startWithConfigOptions:config];
+    NSDictionary *dict2 =[FTMonitorManager sharedInstance].monitorTagDict;
+    XCTAssertFalse([dict isEqualToDictionary:dict2]);
 }
 @end

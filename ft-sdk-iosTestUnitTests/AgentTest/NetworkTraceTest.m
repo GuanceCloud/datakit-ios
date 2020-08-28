@@ -11,6 +11,8 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
+#import <FTMobileAgent/NSString+FTAdd.h>
+#import "OHHTTPStubs.h"
 
 #define WAIT                                                                \
 do {                                                                        \
@@ -42,7 +44,7 @@ do {                                                                            
     NSString *akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"TACCESS_SERVER_URL"];
     NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
-   
+    
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.networkTrace = YES;
     config.monitorInfoType = FTMonitorInfoTypeNetwork;
@@ -50,7 +52,9 @@ do {                                                                            
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [self networkUpload];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 
 - (void)testFTNetworkTrackTypeZipkin{
@@ -82,23 +86,71 @@ do {                                                                            
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+
     NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
+    NSString *traceId,*spanID,*sampled;
     switch (self.type) {
         case FTNetworkTrackTypeZipkin:
+            traceId = [header valueForKey:FT_NETWORK_ZIPKIN_TRACEID];
+            spanID = [header valueForKey:FT_NETWORK_ZIPKIN_SPANID];
+            sampled = [header valueForKey:FT_NETWORK_ZIPKIN_SAMPLED];
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_ZIPKIN_TRACEID]&&[header.allKeys containsObject:FT_NETWORK_ZIPKIN_SPANID]&&[header.allKeys containsObject:FT_NETWORK_ZIPKIN_SAMPLED]);
+    
+            XCTAssertTrue(traceId.length == 32 && spanID.length == 16);
+            XCTAssertTrue([traceId.lowercaseString isEqualToString:traceId] && [spanID.lowercaseString isEqualToString:spanID]);
+
             break;
-        case FTNetworkTrackTypeJaeger:
+        case FTNetworkTrackTypeJaeger:{
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_JAEGER_TRACEID]);
+            NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
+            NSArray *traceAry = [trace componentsSeparatedByString:@":"];
+            traceId = [traceAry firstObject];
+            spanID =traceAry[1];
+            sampled = [traceAry lastObject];
+            XCTAssertTrue(traceId.length == 32 && spanID.length == 16);
+            XCTAssertTrue([traceId.lowercaseString isEqualToString:traceId] && [spanID.lowercaseString isEqualToString:spanID]);
+        }
             break;
-        case FTNetworkTrackTypeSKYWALKING_V2:
+        case FTNetworkTrackTypeSKYWALKING_V2:{
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V2]);
+            NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
+            NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+            sampled = [traceAry firstObject];
+            traceId = [traceAry[1] ft_base64Decode];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            spanID = [parentTraceID stringByAppendingString:@"0"];
+            XCTAssertTrue([traceAry[7] isEqualToString:@"-1"] && [traceAry[8] isEqualToString:@"-1"]);
+        }
             break;
-        case FTNetworkTrackTypeSKYWALKING_V3:
+        case FTNetworkTrackTypeSKYWALKING_V3:{
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]);
+            NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
+            NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+            sampled = [traceAry firstObject];
+            traceId = [traceAry[1] ft_base64Decode];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            spanID = [parentTraceID stringByAppendingString:@"0"];
+            
+        }
             break;
     }
-    NOTIFY
+    
+    XCTAssertTrue([sampled isEqualToString:@"0"] || [sampled isEqualToString:@"1"]);
+    XCTAssertTrue(sampled && traceId && spanID);
+    [expect fulfill];
+}
+-(void)setErrorNetOHHTTPStubs{
+    NSString *urlStr = @"http://api.qingyunke.com/api.php";
 
+    NSURL *url = [NSURL URLWithString:urlStr];
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.host isEqualToString:url.host];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorNotConnectedToInternet userInfo:nil];
+        return [OHHTTPStubsResponse responseWithError:notConnectedError];
+    }];
+    
 }
 - (void)testPerformanceExample {
     // This is an example of a performance test case.

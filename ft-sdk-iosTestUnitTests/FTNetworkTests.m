@@ -102,7 +102,7 @@
 
 -(void)setErrorNetOHHTTPStubs{
     [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"FACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
