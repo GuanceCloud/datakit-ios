@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)testLogging;
 - (NSString *)testTrack;
 
-- (NSString *)testTrace;
 
 @end
 

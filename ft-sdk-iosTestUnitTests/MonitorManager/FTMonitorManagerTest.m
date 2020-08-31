@@ -19,11 +19,11 @@ do {                                                                        \
 do {                                                                                      \
 [[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
 } while(0);
-@interface MonitorManagerTest : XCTestCase
+@interface FTMonitorManagerTest : XCTestCase
 
 @end
 
-@implementation MonitorManagerTest
+@implementation FTMonitorManagerTest
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.

@@ -23,11 +23,11 @@ do {                                                                        \
 do {                                                                                      \
 [[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
 } while(0);
-@interface NetworkTraceTest : XCTestCase<NSURLSessionDelegate>
+@interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @property (nonatomic, assign) FTNetworkTrackType type;
 @end
 
-@implementation NetworkTraceTest
+@implementation FTNetworkTraceTest
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
