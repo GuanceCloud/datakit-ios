@@ -425,7 +425,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4A884254239E5754001B44C3 /* Build configuration list for PBXProject "ft-sdk-ios" */;
+			buildConfigurationList = 4A884254239E5754001B44C3 /* Build configuration list for PBXProject "FTMobileSDK" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -743,7 +743,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A884254239E5754001B44C3 /* Build configuration list for PBXProject "ft-sdk-ios" */ = {
+		4A884254239E5754001B44C3 /* Build configuration list for PBXProject "FTMobileSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4A884260239E5754001B44C3 /* Debug */,

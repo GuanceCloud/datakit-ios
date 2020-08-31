@@ -23,16 +23,14 @@
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A924F66ECF006125D0 /* UploadDataTest.m */; };
 		4A22526F23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */; };
+		4A270E6D24FD0D940079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
+		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
-		4A2FAF1B2424A11B0019B144 /* FTMobileAgent.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
-		4A7F62F524978BA9000893C1 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62F424978BA9000893C1 /* FrintHookTest.swift */; };
-		4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
-		4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */; };
 		4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A89DD1B23D70C07006EB6BB /* IOKit.framework */; };
 		4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF0E7123B5E75900817C52 /* UITestManger.m */; };
 		4AAF2B47240FB17C00552B6D /* TestFlowTrackVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B46240FB17C00552B6D /* TestFlowTrackVC.m */; };
@@ -43,7 +41,6 @@
 		4AAF2B842416082200552B6D /* SubFlowTrack3.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B832416082200552B6D /* SubFlowTrack3.m */; };
 		4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B862416091200552B6D /* SubFlowTrackCell.m */; };
 		4AAF2B8A24163B6200552B6D /* TestSubFlowTrack2.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B8924163B6200552B6D /* TestSubFlowTrack2.m */; };
-		4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4A852FE823A241B700B40B5D /* FTAutoTrack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4AE92782248F313B00F43875 /* TestCustomTrackVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AE92781248F313A00F43875 /* TestCustomTrackVC.m */; };
 		4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */; };
 		4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
@@ -61,9 +58,16 @@
 			remoteGlobalIDString = 4A116955239113B600C0BC4E;
 			remoteInfo = "ft-sdk-iosTest";
 		};
-		4A852FE723A241B700B40B5D /* PBXContainerItemProxy */ = {
+		4A270E6924FD0D7F0079F455 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */;
+			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A88425A239E5754001B44C3;
+			remoteInfo = FTMobileAgent;
+		};
+		4A270E6B24FD0D7F0079F455 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 4A852FCB23A2408600B40B5D;
 			remoteInfo = FTAutoTrack;
@@ -75,13 +79,6 @@
 			remoteGlobalIDString = 4A116955239113B600C0BC4E;
 			remoteInfo = "ft-sdk-iosTest";
 		};
-		4A8842AC239E57B6001B44C3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A88425A239E5754001B44C3;
-			remoteInfo = "ft-sdk-ios";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -91,8 +88,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				4A2FAF1B2424A11B0019B144 /* FTMobileAgent.framework in CopyFiles */,
-				4AB783B023C2D667001FC994 /* FTAutoTrack.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,7 +101,7 @@
 		4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTraceTest.m; sourceTree = "<group>"; };
 		4A037EFD24F8DB32007B2104 /* FTLogTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLogTest.m; sourceTree = "<group>"; };
 		4A037F0024F9079F007B2104 /* FTMonitorManager+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMonitorManager+Test.h"; sourceTree = "<group>"; };
-		4A116956239113B600C0BC4E /* ft-sdk-iosTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ft-sdk-iosTest.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A116956239113B600C0BC4E /* SampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A116959239113B600C0BC4E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4A11695A239113B600C0BC4E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		4A11695C239113B600C0BC4E /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
@@ -126,25 +121,25 @@
 		4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTTrackerEventDBTool+Test.h"; sourceTree = "<group>"; };
 		4A1D78A824F66ECF006125D0 /* UploadDataTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadDataTest.h; sourceTree = "<group>"; };
 		4A1D78A924F66ECF006125D0 /* UploadDataTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadDataTest.m; sourceTree = "<group>"; };
-		4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ft_sdk_iosTestUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A270E6124FD0D520079F455 /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A270E6324FD0D560079F455 /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManagerTest.m; sourceTree = "<group>"; };
 		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
 		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
 		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
-		4A7F62F424978BA9000893C1 /* FrintHookTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrintHookTest.swift; sourceTree = "<group>"; };
-		4A7F62F624978BE9000893C1 /* ft-sdk-iosTest-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ft-sdk-iosTest-Bridging-Header.h"; sourceTree = "<group>"; };
-		4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ft-sdk-iosTestUnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A85314423AC6B2700B40B5D /* UITestVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITestVC.h; sourceTree = "<group>"; };
 		4A85314523AC6B2700B40B5D /* UITestVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestVC.m; sourceTree = "<group>"; };
 		4A85318B23B23A4000B40B5D /* FTNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTests.m; sourceTree = "<group>"; };
 		4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackTest.m; sourceTree = "<group>"; };
-		4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "ft-sdk-ios.xcodeproj"; path = "ft-sdk-ios/ft-sdk-ios.xcodeproj"; sourceTree = "<group>"; };
+		4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FTMobileSDK.xcodeproj; path = FTMobileSDK/FTMobileSDK.xcodeproj; sourceTree = "<group>"; };
 		4A89DD1B23D70C07006EB6BB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
 		4AAF0E7023B5E75900817C52 /* UITestManger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UITestManger.h; sourceTree = "<group>"; };
 		4AAF0E7123B5E75900817C52 /* UITestManger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestManger.m; sourceTree = "<group>"; };
@@ -186,12 +181,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
+				4A270E6D24FD0D940079F455 /* FTAutoTrack.framework in Frameworks */,
 				4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
 				4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */,
-				4A852FE923A241B700B40B5D /* FTAutoTrack.framework in Frameworks */,
-				4A8842B1239E5A24001B44C3 /* FTMobileAgent.framework in Frameworks */,
 				4BE272660CFB03991403A952 /* Pods_ft_sdk_iosTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -218,10 +213,10 @@
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
-				4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */,
-				4A116958239113B600C0BC4E /* ft-sdk-iosTest */,
-				4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* ft-sdk-iosTestUITests */,
+				4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */,
+				4A116958239113B600C0BC4E /* SampleApp */,
+				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
@@ -234,14 +229,14 @@
 		4A116957239113B600C0BC4E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4A116956239113B600C0BC4E /* ft-sdk-iosTest.app */,
-				4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */,
-				4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */,
+				4A116956239113B600C0BC4E /* SampleApp.app */,
+				4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */,
+				4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A116958239113B600C0BC4E /* ft-sdk-iosTest */ = {
+		4A116958239113B600C0BC4E /* SampleApp */ = {
 			isa = PBXGroup;
 			children = (
 				4A116959239113B600C0BC4E /* AppDelegate.h */,
@@ -255,16 +250,25 @@
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
 			);
-			path = "ft-sdk-iosTest";
+			path = SampleApp;
 			sourceTree = "<group>";
 		};
-		4A22526D23B5AC7600B0ED41 /* ft-sdk-iosTestUITests */ = {
+		4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
 			isa = PBXGroup;
 			children = (
 				4A22526E23B5AC7600B0ED41 /* ft_sdk_iosTestUITests.m */,
 				4A22527023B5AC7600B0ED41 /* Info.plist */,
 			);
-			path = "ft-sdk-iosTestUITests";
+			path = FTMobileSDKUITests;
+			sourceTree = "<group>";
+		};
+		4A270E6524FD0D7F0079F455 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */,
+				4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		4A2C825F24EFC9AB006D4FC6 /* AutoTrack */ = {
@@ -298,6 +302,8 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4A270E6324FD0D560079F455 /* FTMobileAgent.framework */,
+				4A270E6124FD0D520079F455 /* FTAutoTrack.framework */,
 				4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */,
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
 				4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */,
@@ -309,7 +315,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A85313723AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
+		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
 				4A1D78A824F66ECF006125D0 /* UploadDataTest.h */,
@@ -323,16 +329,7 @@
 				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
 				4A85313A23AB85FC00B40B5D /* Info.plist */,
 			);
-			path = "ft-sdk-iosTestUnitTests";
-			sourceTree = "<group>";
-		};
-		4A8842A9239E57B6001B44C3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */,
-				4A852FE823A241B700B40B5D /* FTAutoTrack.framework */,
-			);
-			name = Products;
+			path = FTMobileSDKUnitTests;
 			sourceTree = "<group>";
 		};
 		4AAF0E7723B9901500817C52 /* TestAutoTrack */ = {
@@ -368,8 +365,6 @@
 				4AAF2B862416091200552B6D /* SubFlowTrackCell.m */,
 				4AE92780248F313A00F43875 /* TestCustomTrackVC.h */,
 				4AE92781248F313A00F43875 /* TestCustomTrackVC.m */,
-				4A7F62F624978BE9000893C1 /* ft-sdk-iosTest-Bridging-Header.h */,
-				4A7F62F424978BA9000893C1 /* FrintHookTest.swift */,
 				4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */,
 			);
 			path = TestAutoTrack;
@@ -393,9 +388,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4A116955239113B600C0BC4E /* ft-sdk-iosTest */ = {
+		4A116955239113B600C0BC4E /* SampleApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "ft-sdk-iosTest" */;
+			buildConfigurationList = 4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "SampleApp" */;
 			buildPhases = (
 				9F68AFC96271DEE2B2F610E4 /* [CP] Check Pods Manifest.lock */,
 				4A116952239113B600C0BC4E /* Sources */,
@@ -408,14 +403,14 @@
 			);
 			dependencies = (
 			);
-			name = "ft-sdk-iosTest";
+			name = SampleApp;
 			productName = "ft-sdk-ios";
-			productReference = 4A116956239113B600C0BC4E /* ft-sdk-iosTest.app */;
+			productReference = 4A116956239113B600C0BC4E /* SampleApp.app */;
 			productType = "com.apple.product-type.application";
 		};
-		4A22526B23B5AC7600B0ED41 /* ft-sdk-iosTestUITests */ = {
+		4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4A22527323B5AC7600B0ED41 /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUITests" */;
+			buildConfigurationList = 4A22527323B5AC7600B0ED41 /* Build configuration list for PBXNativeTarget "FTMobileSDKUITests" */;
 			buildPhases = (
 				930B51D93238CABBB3D8E67D /* [CP] Check Pods Manifest.lock */,
 				4A22526823B5AC7600B0ED41 /* Sources */,
@@ -428,14 +423,14 @@
 			dependencies = (
 				4A22527223B5AC7600B0ED41 /* PBXTargetDependency */,
 			);
-			name = "ft-sdk-iosTestUITests";
+			name = FTMobileSDKUITests;
 			productName = "ft-sdk-iosTestUITests";
-			productReference = 4A22526C23B5AC7600B0ED41 /* ft-sdk-iosTestUITests.xctest */;
+			productReference = 4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		4A85313523AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */ = {
+		4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUnitTests" */;
+			buildConfigurationList = 4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "FTMobileSDKUnitTests" */;
 			buildPhases = (
 				6177BECAEEC68B7AC555C8E0 /* [CP] Check Pods Manifest.lock */,
 				4A85313223AB85FC00B40B5D /* Sources */,
@@ -448,9 +443,9 @@
 			dependencies = (
 				4A85313C23AB85FC00B40B5D /* PBXTargetDependency */,
 			);
-			name = "ft-sdk-iosTestUnitTests";
+			name = FTMobileSDKUnitTests;
 			productName = "ft-sdk-iosTestUnitTests";
-			productReference = 4A85313623AB85FC00B40B5D /* ft-sdk-iosTestUnitTests.xctest */;
+			productReference = 4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -476,7 +471,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4A116951239113B600C0BC4E /* Build configuration list for PBXProject "ft-sdk-iosTest" */;
+			buildConfigurationList = 4A116951239113B600C0BC4E /* Build configuration list for PBXProject "SampleApp" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -489,32 +484,32 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 4A8842A9239E57B6001B44C3 /* Products */;
-					ProjectRef = 4A8842A8239E57B6001B44C3 /* ft-sdk-ios.xcodeproj */;
+					ProductGroup = 4A270E6524FD0D7F0079F455 /* Products */;
+					ProjectRef = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
 				},
 			);
 			projectRoot = "";
 			targets = (
-				4A116955239113B600C0BC4E /* ft-sdk-iosTest */,
-				4A85313523AB85FC00B40B5D /* ft-sdk-iosTestUnitTests */,
-				4A22526B23B5AC7600B0ED41 /* ft-sdk-iosTestUITests */,
+				4A116955239113B600C0BC4E /* SampleApp */,
+				4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */,
+				4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4A852FE823A241B700B40B5D /* FTAutoTrack.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = FTAutoTrack.framework;
-			remoteRef = 4A852FE723A241B700B40B5D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4A8842AD239E57B6001B44C3 /* FTMobileAgent.framework */ = {
+		4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = FTMobileAgent.framework;
-			remoteRef = 4A8842AC239E57B6001B44C3 /* PBXContainerItemProxy */;
+			remoteRef = 4A270E6924FD0D7F0079F455 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = FTAutoTrack.framework;
+			remoteRef = 4A270E6B24FD0D7F0079F455 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -677,7 +672,6 @@
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				4AAF2B842416082200552B6D /* SubFlowTrack3.m in Sources */,
 				4AAF2B7E2416080800552B6D /* SubFlowTrack1.m in Sources */,
-				4A7F62F524978BA9000893C1 /* FrintHookTest.swift in Sources */,
 				4AAF2B872416091200552B6D /* SubFlowTrackCell.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.m in Sources */,
@@ -723,12 +717,12 @@
 /* Begin PBXTargetDependency section */
 		4A22527223B5AC7600B0ED41 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4A116955239113B600C0BC4E /* ft-sdk-iosTest */;
+			target = 4A116955239113B600C0BC4E /* SampleApp */;
 			targetProxy = 4A22527123B5AC7600B0ED41 /* PBXContainerItemProxy */;
 		};
 		4A85313C23AB85FC00B40B5D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4A116955239113B600C0BC4E /* ft-sdk-iosTest */;
+			target = 4A116955239113B600C0BC4E /* SampleApp */;
 			targetProxy = 4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -880,11 +874,11 @@
 					"FT_TRACK_GPUUSAGE=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(PODS_ROOT)/**",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/ft-sdk-iosTest/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/SampleApp/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0.0;
@@ -893,7 +887,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
-				PRODUCT_NAME = "ft-sdk-iosTest";
+				PRODUCT_NAME = SampleApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -919,11 +913,11 @@
 					"FT_TRACK_GPUUSAGE=1",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(PODS_ROOT)/**",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/ft-sdk-iosTest/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/SampleApp/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MARKETING_VERSION = 1.0.0;
@@ -932,7 +926,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
-				PRODUCT_NAME = "ft-sdk-iosTest";
+				PRODUCT_NAME = SampleApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "ft-sdk-iosTest/TestAutoTrack/ft-sdk-iosTest-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -944,10 +938,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
-				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
+				INFOPLIST_FILE = FTMobileSDKUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -964,10 +957,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CD55C805E57315E634BCC5B3 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
-				INFOPLIST_FILE = "ft-sdk-iosTestUITests/Info.plist";
+				INFOPLIST_FILE = FTMobileSDKUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -984,27 +976,26 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4135E22EDAB8975BAD10FD50 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/ft-sdk-ios/FTAutoTrack\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/Interceptor\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/ft-sdk-ios/FTAutoTrack\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/Interceptor\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
-				INFOPLIST_FILE = "ft-sdk-iosTestUnitTests/Info.plist";
+				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1014,7 +1005,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTestUnitTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
@@ -1023,27 +1014,26 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/ft-sdk-ios/FTAutoTrack\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/Interceptor\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/ft-sdk-ios\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/ft-sdk-ios/FTAutoTrack\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/Interceptor\"",
-					"\"$(SRCROOT)/ft-sdk-ios/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
-				INFOPLIST_FILE = "ft-sdk-iosTestUnitTests/Info.plist";
+				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1053,7 +1043,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTestUnitTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ft-sdk-iosTest.app/ft-sdk-iosTest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
@@ -1061,7 +1051,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4A116951239113B600C0BC4E /* Build configuration list for PBXProject "ft-sdk-iosTest" */ = {
+		4A116951239113B600C0BC4E /* Build configuration list for PBXProject "SampleApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4A11696D239113B900C0BC4E /* Debug */,
@@ -1070,7 +1060,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "ft-sdk-iosTest" */ = {
+		4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "SampleApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4A116970239113B900C0BC4E /* Debug */,
@@ -1079,7 +1069,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A22527323B5AC7600B0ED41 /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUITests" */ = {
+		4A22527323B5AC7600B0ED41 /* Build configuration list for PBXNativeTarget "FTMobileSDKUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4A22527423B5AC7600B0ED41 /* Debug */,
@@ -1088,7 +1078,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "ft-sdk-iosTestUnitTests" */ = {
+		4A85314323AB85FC00B40B5D /* Build configuration list for PBXNativeTarget "FTMobileSDKUnitTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4A85313D23AB85FC00B40B5D /* Debug */,
