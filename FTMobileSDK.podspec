@@ -36,12 +36,12 @@ Pod::Spec.new do |s|
 #   s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/.zip" }
    s.source       = { :git => "https://github.com/CloudCare/dataflux-sdk-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
    s.subspec  'FTMobileAgent' do | agent |
-       agent.source_files = 'ft-sdk-ios/FTMobileAgent/**/*'
+       agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*'
        agent.library = "resolv.9"
    end
 
    s.subspec  'FTAutoTrack' do | autotrack |
-       autotrack.source_files = 'ft-sdk-ios/FTAutoTrack/**/*'
+       autotrack.source_files = 'FTMobileSDK/FTAutoTrack/**/*'
        autotrack.dependency  "FTMobileSDK/FTMobileAgent"
    end
 
