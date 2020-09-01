@@ -126,8 +126,8 @@
             sampling = header[FT_NETWORK_ZIPKIN_SAMPLED] ;
         }
     }else if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
-        NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
-        NSArray *traceAry = [trace componentsSeparatedByString:@":"];
+        NSString *traceStr =header[FT_NETWORK_JAEGER_TRACEID];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@":"];
         if (traceAry.count == 4) {
             trace = [traceAry firstObject];
             span =traceAry[1];

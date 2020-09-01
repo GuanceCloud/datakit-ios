@@ -112,7 +112,6 @@
 }
 
 - (void)firstAction:(UIButton *)sender {
-    NSLog(@"%@ Touch Up Inside", sender.currentTitle);
     
     [[UITestManger sharedManger] addAutoTrackClickCount];
     

@@ -729,7 +729,7 @@ static dispatch_once_t onceToken;
         return _parentInstance;
     
 }
-#pragma mark - 采样率 判断该设备是否被采样
+#pragma mark - 采样率 判断该请求是否被采样
 - (BOOL)judgeIsTraceSampling{
     float rate = self.config.traceSamplingRate;
     if(rate<=0){

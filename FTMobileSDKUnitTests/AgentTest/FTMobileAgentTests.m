@@ -453,13 +453,35 @@ do {                                                                            
     config.traceConsoleLog = YES;
     config.enableTrackAppCrash = YES;
     config.networkTrace = YES;
+    config.autoTrackEventType  = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch;
     config.monitorInfoType = FTMonitorInfoTypeAll;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-   
+   //监控项启动
     XCTAssertTrue([FTMonitorManager sharedInstance].monitorTagDict != nil);
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
     
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    //uploadTool启动
+    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
+    }];
+    NSInteger old = [[FTTrackerEventDBTool sharedManger] getDatasCount];
 
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [NSThread sleepForTimeInterval:1];
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    NSInteger new = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(new-old == 1);
 }
 - (void)testSDKEnd{
     [self setRightSDKConfig];
@@ -485,11 +507,13 @@ do {                                                                            
     config.networkTrace = YES;
     config.monitorInfoType = FTMonitorInfoTypeAll;
     [FTMobileAgent startWithConfigOptions:config];
+    NSInteger oldHash = [FTMobileAgent sharedInstance].hash;
     NSDictionary *dict =[FTMonitorManager sharedInstance].monitorTagDict;
-    
     config.monitorInfoType = FTMonitorInfoTypeCpu;
     [FTMobileAgent startWithConfigOptions:config];
+    NSInteger newHash = [FTMobileAgent sharedInstance].hash;
     NSDictionary *dict2 =[FTMonitorManager sharedInstance].monitorTagDict;
+    XCTAssertTrue(newHash == oldHash);
     XCTAssertFalse([dict isEqualToDictionary:dict2]);
 }
 @end

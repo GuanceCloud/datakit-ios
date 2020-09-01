@@ -13,11 +13,11 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
-
+#import "UploadDataTest.h"
 #define WAIT                                                                \
 do {                                                                        \
 [self expectationForNotification:@"LCUnitTest" object:nil handler:nil]; \
-[self waitForExpectationsWithTimeout:10 handler:nil];                   \
+[self waitForExpectationsWithTimeout:60 handler:nil];                   \
 } while(0);
 #define NOTIFY                                                                            \
 do {                                                                                      \
@@ -46,28 +46,34 @@ do {                                                                            
     NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    config.source = @"iOSTest";
     config.networkTrace = YES;
     config.monitorInfoType = FTMonitorInfoTypeNetwork;
     config.networkTraceType = type;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [self networkUpload];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
+   
 }
 
 - (void)testFTNetworkTrackTypeZipkin{
     [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
+    [self networkUpload];
+    WAIT
 }
 - (void)testFTNetworkTrackTypeJaeger{
     [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    [self networkUpload];
+    WAIT
 }
 - (void)testFTNetworkTrackTypeSKYWALKING_V2{
     [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V2];
+    [self networkUpload];
+    WAIT
 }
 - (void)testFTNetworkTrackTypeSKYWALKING_V3{
    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V3];
+   [self networkUpload];
+    WAIT
 }
 - (void)networkUpload{
      NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -86,7 +92,6 @@ do {                                                                            
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error{
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
 
     NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
     NSString *traceId,*spanID,*sampled;
@@ -120,7 +125,7 @@ didCompleteWithError:(nullable NSError *)error{
             traceId = [traceAry[1] ft_base64Decode];
             NSString *parentTraceID=[traceAry[2] ft_base64Decode];
             spanID = [parentTraceID stringByAppendingString:@"0"];
-            XCTAssertTrue([traceAry[7] isEqualToString:@"-1"] && [traceAry[8] isEqualToString:@"-1"]);
+            XCTAssertTrue([[traceAry[7] ft_base64Decode] isEqualToString:@"-1"] && [[traceAry[8] ft_base64Decode] isEqualToString:@"-1"]);
         }
             break;
         case FTNetworkTrackTypeSKYWALKING_V3:{
@@ -138,19 +143,99 @@ didCompleteWithError:(nullable NSError *)error{
     
     XCTAssertTrue([sampled isEqualToString:@"0"] || [sampled isEqualToString:@"1"]);
     XCTAssertTrue(sampled && traceId && spanID);
-    [expect fulfill];
+    NOTIFY
 }
--(void)setErrorNetOHHTTPStubs{
+-(void)setBadNetOHHTTPStubs{
     NSString *urlStr = @"http://api.qingyunke.com/api.php";
-
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
-        NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorNotConnectedToInternet userInfo:nil];
+        NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorTimedOut userInfo:@{NSLocalizedDescriptionKey:@"time out"}];
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
     }];
+}
+- (void)testTimeOut{
     
+}
+- (void)testRightRequest{
+    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
+    NSString *urlStr = @"http://api.qingyunke.com/api.php";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    request.HTTPMethod = @"POST";
+    
+    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
+    NSURLSessionTask *task = [session dataTaskWithRequest:request];
+    
+    [task resume];
+    WAIT
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
+    [[FTMobileAgent sharedInstance].upTool upload];
+    [NSThread sleepForTimeInterval:30];
+    UploadDataTest *upload = [UploadDataTest new];
+    NSString *content = [upload testLogging];
+    
+    XCTAssertTrue([content containsString:uuid]);
+}
+- (void)testNewThread{
+    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
+        NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
+        NSString *urlStr = @"http://api.qingyunke.com/api.php";
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+        
+        request.HTTPMethod = @"POST";
+        
+        request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
+        NSURLSessionTask *task = [session dataTaskWithRequest:request];
+        
+        [task resume];
+        
+    });
+    WAIT
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
+    [[FTMobileAgent sharedInstance].upTool upload];
+    [NSThread sleepForTimeInterval:30];
+    UploadDataTest *upload = [UploadDataTest new];
+    NSString *content = [upload testLogging];
+    XCTAssertTrue([content containsString:uuid]);
+}
+
+- (void)testBadResponse{
+    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
+    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
+    NSString *urlStr = @"http://api.qingyunke.com/api.php1";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    request.HTTPMethod = @"POST";
+    
+    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
+    NSURLSessionTask *task = [session dataTaskWithRequest:request];
+    
+    [task resume];
+    
+    WAIT
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
+    [[FTMobileAgent sharedInstance].upTool upload];
+    [NSThread sleepForTimeInterval:30];
+    UploadDataTest *upload = [UploadDataTest new];
+    NSString *content = [upload testLogging];
+    XCTAssertTrue([content containsString:uuid]);
 }
 - (void)testPerformanceExample {
     // This is an example of a performance test case.

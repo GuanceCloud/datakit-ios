@@ -59,10 +59,6 @@
     
     self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
     self.window.rootViewController = self.tabBarController;
-    
-    [self.testVC view];
-    [self.testVC viewWillAppear:NO];
-    [self.testVC viewDidAppear:NO];
 }
 
 - (void)tearDown {
@@ -89,6 +85,9 @@
     XCTAssertTrue([model.data containsString:@"testTrackConsoleLog"]);
 }
 - (void)testTraceEventEnter{
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
@@ -101,6 +100,9 @@
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
 }
 - (void)testTraceEventLevae{
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
     [self.testVC viewDidDisappear:NO];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
@@ -114,6 +116,9 @@
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
 }
 - (void)testTraceEventClick{
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
@@ -141,7 +146,14 @@
     NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
 }
+- (NSDictionary * _Nonnull)extracted:(NSString *)content {
+    return [FTBaseInfoHander ft_dictionaryWithJsonString:content];
+}
+
 - (void)testTraceUploading{
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
@@ -150,7 +162,7 @@
     [NSThread sleepForTimeInterval:30];
     UploadDataTest *upload = [UploadDataTest new];
     NSString *content = [upload testLogging];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[self extracted:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
 }
 - (void)testPerformanceExample {

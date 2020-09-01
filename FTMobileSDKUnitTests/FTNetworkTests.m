@@ -27,7 +27,7 @@
        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
        for (int i=0; i<25; i++) {
            NSDictionary *dict = @{
-               FT_AGENT_MEASUREMENT:@"FTNetworkTests",
+               FT_AGENT_MEASUREMENT:@"iOSTest",
                FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
                FT_AGENT_TAGS:@{@"name":[NSString stringWithFormat:@"FTNetworkTests%d",i]},
            };
@@ -196,67 +196,130 @@
  */
 -(void)testNoJsonResponseNetWork{
     [self setNoJsonResponseOHHTTPStubs];
-    [self.upTool upload];
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
     
-    
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据 返回请求结果错误时 数据库数据不变
-    XCTAssertTrue(count== 50);
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        NSError *errors;
+        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
+        NSString *result =[[ NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
+        XCTAssertTrue(response == nil && [result isEqualToString:@"Hello World!"]);
+    }];
 }
 /**
 测试请求成功 返回结果为错误json数据格式
 */
 - (void)testWrongJsonResponseNetWork{
     [self setWrongJsonResponseOHHTTPStubs];
-    [self.upTool upload];
-       
-       
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据 返回请求结果错误时 数据库数据不变
-    XCTAssertTrue(count== 50);
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        NSError *errors;
+        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
+        XCTAssertTrue(errors != nil);
+    }];
 }
 /**
   测试请求成功 返回结果为空数据
 */
 - (void)testEmptyResponseDataNetWork{
     [self setEmptyResponseOHHTTPStubs];
-    [self.upTool upload];
-          
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据 返回请求结果错误时 数据库数据不变
-    XCTAssertTrue(count== 50);
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(response == nil);
+    }];
 }
 /**
   测试请求成功 返回结果code 非200
 */
 - (void)testErrorResponse{
     [self setErrorResponseOHHTTPStubs];
-    [self.upTool upload];
-                    
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据 返回请求结果错误时 数据库数据不变
-    XCTAssertTrue(count== 50);
+     NSDictionary *dict = @{
+           FT_AGENT_MEASUREMENT:@"iOSTest",
+           FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+           FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+       };
+       NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                             FT_AGENT_OPDATA:dict,
+       };
+       
+       FTRecordModel *model = [FTRecordModel new];
+       model.op =FTNetworkingTypeMetrics;
+       model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+       [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+           XCTAssertTrue(response == nil);
+       }];
 }
 /**
  测试无效地址
  */
 -(void)testBadMetricsUrl{
     [self setBadMetricsUrl];
-    [self.upTool upload];
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
     
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //上传失败 数据库数据不变
-    XCTAssertTrue(count== 50);
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode != 200);
+    }];
 }
 /**
  测试网络错误
  */
 - (void)testErrorNet{
     [self setErrorNetOHHTTPStubs];
-    [self.upTool upload];
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
     
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //上传失败 数据库数据不变
-    XCTAssertTrue(count== 50);
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(response == nil && statusCode == -1009);
+    }];
 }
 @end
