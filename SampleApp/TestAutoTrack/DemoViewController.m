@@ -16,7 +16,7 @@
 #import "TestSubFlowTrack2.h"
 #import "TestBluetoothList.h"
 #import "TestCustomTrackVC.h"
-//#import "ft_sdk_iosTest-Swift.h"
+#import "SampleApp-Swift.h"
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
@@ -128,8 +128,8 @@
 }
 - (void)testLog{
     NSLog(@"testLog");
-//    FrintHookTest *test = [[FrintHookTest alloc]init];
-//    [test show];
+    FrintHookTest *test = [[FrintHookTest alloc]init];
+    [test show];
 }
 - (void)testNetworkTrace{
     NSArray *search = @[@"上海天气",@"鹅鹅鹅",@"温度",@"机器人"];
