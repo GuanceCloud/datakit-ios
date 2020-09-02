@@ -99,6 +99,10 @@ static dispatch_once_t onceToken;
     if (config.networkTrace) {
         [self dealNetworkContentType:config.networkContentType];
     }
+    if (config.networkTrace || config.monitorInfoType | FTMonitorInfoTypeNetwork) {
+        [FTURLProtocol startMonitor];
+        [FTURLProtocol setDelegate:self];
+    }
     [self setMonitorType:config.monitorInfoType];
 }
 -(void)dealNetworkContentType:(NSArray *)array{
@@ -173,12 +177,12 @@ static dispatch_once_t onceToken;
         return;
     }
     if (_monitorType & FTMonitorInfoTypeNetwork) {
-        [FTURLProtocol startMonitor];
-        [FTURLProtocol setDelegate:self];
         [self startFlushTimer];
     }else{
        [_netFlow stopMonitor];
-       [FTURLProtocol stopMonitor];
+        if (!self.config.networkTrace) {
+           [FTURLProtocol stopMonitor];
+        }
     }
     if(_monitorType & FTMonitorInfoTypeLocation){
             [[FTLocationManager sharedInstance] startUpdatingLocation];
@@ -265,7 +269,9 @@ static dispatch_once_t onceToken;
     _motionManager.isMagnetometerActive? [_motionManager stopMagnetometerUpdates]:nil;
     [self stopMonitorProximity];
     [_netFlow stopMonitor];
-    [FTURLProtocol stopMonitor];
+    if (!self.config.networkTrace) {
+        [FTURLProtocol stopMonitor];
+    }
     [[FTLocationManager sharedInstance] stopUpdatingLocation];
     _pedometer?[_pedometer stopPedometerUpdates]:nil;
     [_session stopRunning];
