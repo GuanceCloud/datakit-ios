@@ -1,19 +1,19 @@
 # Uncomment the next line to define a global platform for your project
  platform :ios, '9.0'
 
-target 'ft-sdk-iosTest' do
+target 'SampleApp' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
       pod 'OHHTTPStubs','8.0.0'
 
   # Pods for ft-sdk-iosTest
 
-  target 'ft-sdk-iosTestUITests' do
+  target 'FTMobileSDKUITests' do
     # Pods for testing
     
   end
 
-  target 'ft-sdk-iosTestUnitTests' do
+  target 'FTMobileSDKUnitTests' do
     use_frameworks!
     pod 'OHHTTPStubs','8.0.0'
 

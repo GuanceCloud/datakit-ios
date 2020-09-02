@@ -8,11 +8,11 @@
 
 #import <XCTest/XCTest.h>
 
-@interface ft_sdk_iosTestUITests : XCTestCase
+@interface FTMobileSDKUITests : XCTestCase
 
 @end
 
-@implementation ft_sdk_iosTestUITests
+@implementation FTMobileSDKUITests
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
