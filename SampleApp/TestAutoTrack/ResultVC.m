@@ -41,7 +41,7 @@
     [self.view addSubview:lable];
     dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(90 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         dispatch_async(queue, ^{
             NSInteger count = [self getUploadInfo];
             [self judjeSuccessWithCount:count];
@@ -75,8 +75,8 @@
 }
 -(NSString *)login{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *account =[processInfo environment][@"FTTestAccount"];
-    NSString *password = [processInfo environment][@"FTTestPassword"];
+    NSString *account =[processInfo environment][@"TFTTestAccount"];
+    NSString *password = [processInfo environment][@"TFTTestPassword"];
     if (account.length>0 && password.length>0) {
         NSLog(@"account:%@,password:%@",account,password);
     }else{

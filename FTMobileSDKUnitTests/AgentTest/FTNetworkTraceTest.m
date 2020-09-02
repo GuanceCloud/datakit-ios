@@ -184,7 +184,7 @@ didCompleteWithError:(nullable NSError *)error{
     XCTAssertTrue([content containsString:uuid]);
 }
 - (void)testNewThread{
-    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V2];
     NSString *uuid = [NSUUID UUID].UUIDString;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -212,7 +212,7 @@ didCompleteWithError:(nullable NSError *)error{
 }
 
 - (void)testBadResponse{
-    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
     NSString *uuid = [NSUUID UUID].UUIDString;
     
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];

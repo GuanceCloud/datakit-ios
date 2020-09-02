@@ -150,7 +150,7 @@
     return [FTBaseInfoHander ft_dictionaryWithJsonString:content];
 }
 
-- (void)testTraceUploading{
+- (void)testTraceUploadingMethod{
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];

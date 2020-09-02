@@ -11,6 +11,7 @@
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/FTMonitorManager.h>
+#import <FTMobileAgent/NSDate+FTAdd.h>
 @interface AppDelegate ()
 
 @end
@@ -42,21 +43,26 @@
         config.enableLog = YES;
         config.enableDescLog = YES;
         config.enableAutoTrack = YES;
-        config.eventFlowLog = YES;
-        config.needBindUser = NO;
-        config.traceConsoleLog = YES;
         config.enabledPageVtpDesc = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
-        config.enableTrackAppCrash = YES;
-        config.networkTrace = YES;
-        config.traceSamplingRate = 0.5;
-        config.networkTraceType = FTNetworkTrackTypeSKYWALKING_V2;
+        [FTMobileAgent startWithConfigOptions:config];
+        [[FTMobileAgent sharedInstance] logout];
+    }
+    NSProcessInfo *tprocessInfo = [NSProcessInfo processInfo];
+    NSString *takId =[tprocessInfo environment][@"TACCESS_KEY_ID"];
+    NSString *takSecret = [tprocessInfo environment][@"TACCESS_KEY_SECRET"];
+    NSString *turl = [tprocessInfo environment][@"TACCESS_SERVER_URL"];
+    NSString *ttoken = [tprocessInfo environment][@"TACCESS_DATAWAY_TOKEN"];
+    if (takId && takSecret && turl) {
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:turl datawayToken:ttoken akId:takId akSecret:takSecret enableRequestSigning:YES];
+        config.enableAutoTrack = YES;
+        config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         self.config = config;
-       
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
         [FTMobileAgent startWithConfigOptions:config];
         [UITestManger sharedManger];
-        [[FTMobileAgent sharedInstance] logout];
+        
     }
     return YES;
 }
