@@ -84,6 +84,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger)getDatasCount;
 /**
 *  @abstract
+*  获取数据库某类型数据总数
+ 
+*  @return 数据数量
+*/
+- (NSInteger)getDatasCountWithOp:(NSString *)op;
+/**
+*  @abstract
 *  添加用户
 *  @param name 用户名
 *  @param Id 用户Id

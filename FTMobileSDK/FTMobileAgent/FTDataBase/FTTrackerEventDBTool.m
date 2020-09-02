@@ -270,6 +270,20 @@ static FTTrackerEventDBTool *dbTool = nil;
     }];
      return count;
 }
+- (NSInteger)getDatasCountWithOp:(NSString *)op{
+    __block NSInteger count =0;
+       [self zy_inDatabase:^{
+           NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACREVENT_TABLE_NAME,op];
+             ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
+
+             while ([set next]) {
+                 count= [set intForColumn:@"count"];
+             }
+
+       }];
+        return count;
+    
+}
 -(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm{
     __block BOOL is;
        [self zy_inDatabase:^{
