@@ -4,8 +4,8 @@ Pod::Spec.new do |s|
 #   s.version      = "1.0.2-alpha.8"
   s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "驻云 DataFlux FT Mobile SDK 无埋点"
-  s.description  = "驻云 DataFlux FT Mobile SDK 无埋点 iOS 版本，配合 FTMobileAgent 将无埋点数据传输至 FT GateWay。"
-  s.homepage     = "http://gitlab.jiagouyun.com/cma/ft-sdk-ios.git"
+  s.description  = "驻云 DataFlux FT Mobile SDK 无埋点 iOS 版本，配合 FTMobileAgent 将无埋点数据传输至 DataWay。"
+  s.homepage     = "https://github.com/CloudCare/dataflux-sdk-ios"
 
   s.license      = { type: 'MIT', text: <<-LICENSE
   Copyright (c) 2018-2020 Shanghai Zhuyun Information Technology CO.,Ltd <support@jiagouyun.com>
