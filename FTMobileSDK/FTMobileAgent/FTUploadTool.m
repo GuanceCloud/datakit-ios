@@ -299,7 +299,8 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
      if (self.config.enableRequestSigning) {
-         NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,[FTBaseInfoHander ft_getSSOSignWithRequest:mutableRequest akSecret:self.config.akSecret data:body]];
+         NSString *ssoSign =[FTBaseInfoHander ft_getSignatureWithHTTPMethod:@"POST" contentType:[mutableRequest valueForHTTPHeaderField:@"Content-Type"] dateStr:date akSecret:self.config.akSecret data:body];
+         NSString *authorization = [NSString stringWithFormat:@"DWAY %@:%@",self.config.akId,ssoSign];
          [mutableRequest addValue:authorization forHTTPHeaderField:@"Authorization"];
      }
      return mutableRequest;

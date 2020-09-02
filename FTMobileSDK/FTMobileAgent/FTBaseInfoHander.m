@@ -583,17 +583,17 @@
     NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
     return string;
 }
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data
++(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     
-    [signString appendString:request.HTTPMethod];
+    [signString appendString:method];
     [signString appendString:@"\n"];
     [signString appendString:[self ft_md5base64EncryptStr:data]];
     [signString appendString:@"\n"];
-    [signString appendString:[request valueForHTTPHeaderField:@"Content-Type"]];
+    [signString appendString:contentType];
     [signString appendString:@"\n"];
-    [signString appendString:[request valueForHTTPHeaderField:@"Date"]];
+    [signString appendString:dateStr];
     const char *secretStr = [akSecret UTF8String];
     const char * signStr = [signString UTF8String];
     

@@ -30,13 +30,14 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取设备分辨率
  */
 + (NSString *)ft_resolution;
++ (NSString *)ft_md5base64EncryptStr:(NSString *)str;
 /**
  *  @abstract
  *  FT access 签名算法
  *
  *  @return 签名后字符串
  */
-+(NSString*)ft_getSSOSignWithRequest:(NSMutableURLRequest *)request akSecret:(NSString *)akSecret data:(NSString *)data;
++(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
 /**
  *  @abstract
  *  将json字符串转换成字典
