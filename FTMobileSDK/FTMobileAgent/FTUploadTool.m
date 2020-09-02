@@ -218,8 +218,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     FTURLSessionTaskCompletionHandler handler = ^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error){
         if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
             callBack? callBack(error.code, nil):nil;
-        }
+        }else{
         callBack?callBack([(NSHTTPURLResponse *)response statusCode], data):nil;
+        }
     };
    return [self trackList:modelList callBack:handler];
 }
@@ -309,8 +310,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     return [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error || ![response isKindOfClass:[NSHTTPURLResponse class]]) {
             completionHandler?completionHandler(nil, nil, error):nil;
-        }
+        }else{
         completionHandler?completionHandler(data, (NSHTTPURLResponse *)response, error):nil;
+        }
     }];
 }
 

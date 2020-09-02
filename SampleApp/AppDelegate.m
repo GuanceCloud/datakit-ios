@@ -32,37 +32,36 @@
       ACCESS_KEY_ID  = @"Your App akId";
       ACCESS_KEY_SECRET  = @"Your App akSecret";
       ACCESS_SERVER_URL  = @"Your App metricsUrl";
+     
+      进行单元测试时 在FTMobileSDKUnitTests 的 scheme 中添加
+      isUnitTests = 1;
+      防止 SDK 在 AppDelegate 启动 对单元测试造成影响
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-    if (akId && akSecret && url) {
+
+    BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
+
+    if (akId && akSecret && url && !isUnitTests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
         config.enableLog = YES;
         config.enableDescLog = YES;
         config.enableAutoTrack = YES;
         config.enabledPageVtpDesc = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
+        config.traceConsoleLog = YES;
+        config.networkTrace = YES;
+        config.enableTrackAppCrash = YES;
+        config.eventFlowLog = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [FTMobileAgent startWithConfigOptions:config];
-        [[FTMobileAgent sharedInstance] logout];
-    }
-    NSProcessInfo *tprocessInfo = [NSProcessInfo processInfo];
-    NSString *takId =[tprocessInfo environment][@"TACCESS_KEY_ID"];
-    NSString *takSecret = [tprocessInfo environment][@"TACCESS_KEY_SECRET"];
-    NSString *turl = [tprocessInfo environment][@"TACCESS_SERVER_URL"];
-    NSString *ttoken = [tprocessInfo environment][@"TACCESS_DATAWAY_TOKEN"];
-    if (takId && takSecret && turl) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:turl datawayToken:ttoken akId:takId akSecret:takSecret enableRequestSigning:YES];
-        config.enableAutoTrack = YES;
-        config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         self.config = config;
-        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-        [FTMobileAgent startWithConfigOptions:config];
         [UITestManger sharedManger];
-        
+        [[FTMobileAgent sharedInstance] logout];
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     }
     return YES;
 }

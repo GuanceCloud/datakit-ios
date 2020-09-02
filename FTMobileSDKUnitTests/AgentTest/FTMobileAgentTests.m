@@ -46,20 +46,21 @@ do {                                                                            
 @implementation FTMobileAgentTests
 
 - (void)setUp {
-    //设置 ft-sdk-iosTestUnitTests 的 Environment Variables
-    //key 与 ft-sdk-iosTest 中设置的不同 用以 避免启动测试用例时 在 AppDelegate 中 启动SDK
+    /**
+     * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
+     * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    self.akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    self.akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    self.token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
-    self.url = [processInfo environment][@"TACCESS_SERVER_URL"];
+    self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
-  
+    [super tearDown];  
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -475,13 +476,14 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
     }];
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger old = [[FTTrackerEventDBTool sharedManger] getDatasCount];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [NSThread sleepForTimeInterval:1];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger new = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(new-old == 1);
+    XCTAssertLessThan(old, new);
 }
 - (void)testSDKEnd{
     [self setRightSDKConfig];

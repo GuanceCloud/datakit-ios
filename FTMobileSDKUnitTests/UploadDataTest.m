@@ -110,8 +110,8 @@
 }
 -(NSString *)login{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *account =[processInfo environment][@"TFTTestAccount"];
-    NSString *password = [processInfo environment][@"TFTTestPassword"];
+    NSString *account =[processInfo environment][@"FTTestAccount"];
+    NSString *password = [processInfo environment][@"FTTestPassword"];
     if (account.length>0 && password.length>0) {
     }else{
         return @"";

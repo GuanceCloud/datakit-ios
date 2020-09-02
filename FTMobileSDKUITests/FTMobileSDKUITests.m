@@ -33,9 +33,8 @@
 - (void)testAutoTrackUIExample {
     // UI tests must launch the application that they test.
     XCUIApplication *app = [[XCUIApplication alloc] init];
-    app.launchEnvironment = [[NSProcessInfo processInfo] environment];  //将test 运行使用环境赋值给 application
-
     XCUIElement *window = [app.windows elementBoundByIndex:0];
+    ////将test 运行使用环境赋值给 application
     app.launchEnvironment =[[NSProcessInfo processInfo] environment];
     [app launch];
     
@@ -64,7 +63,7 @@
     [app2.buttons[@"result"] tap];
 
    
-    [window pressForDuration:100];
+    [window pressForDuration:70];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
          //判断上传成功数量 与 实际上传数量是否相等
     XCTAssertTrue(success.exists);

@@ -35,7 +35,7 @@
     lable.backgroundColor = [UIColor whiteColor];
     lable.textColor = [UIColor blackColor];
     lable.numberOfLines = 0;
-    lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCount]];
+    lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"]];
     
     self.lable = lable;
     [self.view addSubview:lable];
@@ -47,7 +47,7 @@
             [self judjeSuccessWithCount:count];
             dispatch_async(dispatch_get_main_queue(), ^{
                 // 追加在主线程中执行的任务
-                self.lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n上传：%ld条",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCount],(long)count];
+                self.lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n上传：%ld条",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"],(long)count];
             });
         });
     });
@@ -64,7 +64,7 @@
         realCount +=[UITestManger sharedManger].trackCount;
     }
     
-    if(realCount-[[FTTrackerEventDBTool sharedManger] getDatasCount] == count){
+    if(realCount-[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"] == count){
         dispatch_async(dispatch_get_main_queue(), ^{
             UILabel *lab = [[UILabel alloc]initWithFrame:CGRectMake(270, 100, 50, 50)];
             lab.text = @"SUCCESS";
@@ -75,8 +75,8 @@
 }
 -(NSString *)login{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *account =[processInfo environment][@"TFTTestAccount"];
-    NSString *password = [processInfo environment][@"TFTTestPassword"];
+    NSString *account =[processInfo environment][@"FTTestAccount"];
+    NSString *password = [processInfo environment][@"FTTestPassword"];
     if (account.length>0 && password.length>0) {
         NSLog(@"account:%@,password:%@",account,password);
     }else{
@@ -217,7 +217,7 @@
 -(NSArray *)getTime{
     NSDate *datenow = [NSDate date];
     long  time= (long)([datenow timeIntervalSince1970]*1000);
-    return @[[NSNumber numberWithLong:time-(1000 * 60 * 3)],[NSNumber numberWithLong:time]];
+    return @[[NSNumber numberWithLong:time-(1000 * 60 * 2)],[NSNumber numberWithLong:time]];
 }
 
 

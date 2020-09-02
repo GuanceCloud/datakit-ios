@@ -25,9 +25,10 @@
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A924F66ECF006125D0 /* UploadDataTest.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
-		4A270E6D24FD0D940079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
 		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A270E7824FDE0840079F455 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E7724FDE0840079F455 /* FrintHookTest.swift */; };
+		4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
+		4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
@@ -128,7 +129,6 @@
 		4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileSDKUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A270E6124FD0D520079F455 /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A270E6324FD0D560079F455 /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A270E7624FDE0840079F455 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		4A270E7724FDE0840079F455 /* FrintHookTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrintHookTest.swift; sourceTree = "<group>"; };
 		4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManagerTest.m; sourceTree = "<group>"; };
@@ -191,7 +191,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
-				4A270E6D24FD0D940079F455 /* FTAutoTrack.framework in Frameworks */,
+				4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */,
 				4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
@@ -311,7 +311,6 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4A270E6324FD0D560079F455 /* FTMobileAgent.framework */,
 				4A270E6124FD0D520079F455 /* FTAutoTrack.framework */,
 				4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */,
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
@@ -548,6 +547,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -959,6 +959,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/OHHTTPStubs\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
+				);
 				INFOPLIST_FILE = FTMobileSDKUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -980,6 +985,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/OHHTTPStubs\"",
+					"\"$(SRCROOT)/FTMobileSDK\"",
+				);
 				INFOPLIST_FILE = FTMobileSDKUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1029,10 +1039,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -1071,10 +1078,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

@@ -56,10 +56,10 @@
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    self.akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    self.akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    self.url = [processInfo environment][@"TACCESS_SERVER_URL"];
-    self.token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
+    self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;

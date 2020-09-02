@@ -29,10 +29,10 @@
 
 - (void)setUp {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
-    NSString *url = [processInfo environment][@"TACCESS_SERVER_URL"];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.eventFlowLog = YES;
     config.traceConsoleLog = YES;
@@ -165,11 +165,6 @@
     NSDictionary *contentDict =[self extracted:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
 }
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
-}
+
 
 @end

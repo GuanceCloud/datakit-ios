@@ -40,19 +40,17 @@ do {                                                                            
 - (void)setNetworkTraceType:(FTNetworkTrackType)type{
     self.type = type;
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    NSString *url = [processInfo environment][@"TACCESS_SERVER_URL"];
-    NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.source = @"iOSTest";
     config.networkTrace = YES;
-    config.monitorInfoType = FTMonitorInfoTypeNetwork;
     config.networkTraceType = type;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-   
 }
 
 - (void)testFTNetworkTrackTypeZipkin{
@@ -237,11 +235,6 @@ didCompleteWithError:(nullable NSError *)error{
     NSString *content = [upload testLogging];
     XCTAssertTrue([content containsString:uuid]);
 }
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
-}
+
 
 @end

@@ -15,6 +15,15 @@
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
+#define WAIT                                                                \
+do {                                                                        \
+[self expectationForNotification:@"LCUnitTest" object:nil handler:nil]; \
+[self waitForExpectationsWithTimeout:60 handler:nil];                   \
+} while(0);
+#define NOTIFY                                                                            \
+do {                                                                                      \
+[[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
+} while(0);
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) FTUploadTool *upTool;
 @end
@@ -45,10 +54,10 @@
 }
 - (void)setRightConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    NSString *url = [processInfo environment][@"TACCESS_SERVER_URL"];
-    NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     if (akId && akSecret && url) {
      FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
       config.enableLog = YES;
@@ -58,10 +67,10 @@
 }
 -(void)setBadMetricsUrl{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"TACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"TACCESS_KEY_SECRET"];
-    NSString *token = [processInfo environment][@"TACCESS_DATAWAY_TOKEN"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu.com" datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
+    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
+    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu1.com" datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     
     
     config.enableLog = YES;
@@ -71,7 +80,7 @@
 - (void)setOHHTTPStubs{
     [self setRightConfig];
     [NSThread sleepForTimeInterval:2];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -86,7 +95,7 @@
 }
 -(void)setBadNetOHHTTPStubs{
     [self setRightConfig];
-     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
 
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -102,7 +111,7 @@
 
 -(void)setErrorNetOHHTTPStubs{
     [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -115,7 +124,7 @@
 }
 -(void)setErrorResponseOHHTTPStubs{
     [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -125,12 +134,12 @@
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
 
       NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-      return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
+      return [OHHTTPStubsResponse responseWithData:requestData statusCode:500 headers:nil];
     }];
 }
 -(void)setNoJsonResponseOHHTTPStubs{
     [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -144,7 +153,7 @@
 }
 -(void)setWrongJsonResponseOHHTTPStubs{
     [self setRightConfig];
-     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
            return [request.URL.host isEqualToString:url.host];
@@ -157,7 +166,7 @@
 }
 -(void)setEmptyResponseOHHTTPStubs{
      [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TACCESS_SERVER_URL"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
      [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -212,8 +221,10 @@
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
         NSString *result =[[ NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
-        XCTAssertTrue(response == nil && [result isEqualToString:@"Hello World!"]);
+        XCTAssertTrue(errors != nil && [result isEqualToString:@"Hello World!"]);
+        NOTIFY
     }];
+    WAIT
 }
 /**
 测试请求成功 返回结果为错误json数据格式
@@ -236,7 +247,9 @@
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
+        NOTIFY
     }];
+    WAIT
 }
 /**
   测试请求成功 返回结果为空数据
@@ -256,8 +269,10 @@
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(response == nil);
+        XCTAssertTrue(response.bytes == 0);
+        NOTIFY
     }];
+    WAIT
 }
 /**
   测试请求成功 返回结果code 非200
@@ -277,8 +292,10 @@
        model.op =FTNetworkingTypeMetrics;
        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
        [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-           XCTAssertTrue(response == nil);
+           XCTAssertTrue(statusCode != 200);
+           NOTIFY
        }];
+    WAIT
 }
 /**
  测试无效地址
@@ -299,7 +316,9 @@
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        NOTIFY
     }];
+    WAIT
 }
 /**
  测试网络错误
@@ -319,7 +338,9 @@
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
     [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(response == nil && statusCode == -1009);
+        XCTAssertTrue(statusCode == -1009);
+        NOTIFY
     }];
+    WAIT
 }
 @end
