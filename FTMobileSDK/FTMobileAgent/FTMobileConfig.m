@@ -9,12 +9,9 @@
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
 #import "FTLog.h"
-#import "FTMobileAgentVersion.h"
 #import "FTConstants.h"
 #define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
-#define FTAPP_DNAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
-#define FTAPP_NAME [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"]
 
 @implementation FTMobileConfig
 
@@ -25,8 +22,6 @@
         _akId = akId;
         _akSecret = akSecret;
         _enableRequestSigning = enableRequestSigning;
-        _sdkAgentVersion = SDK_VERSION;
-        _appName = FTAPP_DNAME?FTAPP_DNAME:FTAPP_NAME;
         _enableLog = NO;
         _autoTrackEventType = FTAutoTrackTypeNone;
         _enableAutoTrack = NO;
@@ -63,10 +58,8 @@
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;
 
-    options.sdkAgentVersion = self.sdkAgentVersion;
     options.sdkTrackVersion = self.sdkTrackVersion;
     
-    options.appName = self.appName;
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
     options.XDataKitUUID = self.XDataKitUUID;

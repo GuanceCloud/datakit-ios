@@ -118,12 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
 /* SDK版本 */
-@property (nonatomic, copy) NSString *sdkAgentVersion;
-/* SDK版本 */
 @property (nonatomic, copy) NSString *sdkTrackVersion;
-
-/*应用名称（默认：info.plist中的CFBundleDisplayName）*/
-@property (nonatomic ,copy) NSString *appName;
 
 /*FT-GateWay metrics 写入地址*/
 @property (nonatomic, copy) NSString *metricsUrl;

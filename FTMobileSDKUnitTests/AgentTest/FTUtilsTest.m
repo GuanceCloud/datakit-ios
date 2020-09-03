@@ -7,8 +7,11 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <FTMobileAgent/FTRecordModel.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
+#import "FTUploadTool+Test.h"
+#import <FTMobileAgent/FTConstants.h>
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -31,6 +34,29 @@
     NSString *signature = [FTBaseInfoHander ft_getSignatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
     
     XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
+}
+- (void)testLineProtocol{
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
+        FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeLogging,
+                          FT_AGENT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeLogging;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    FTUploadTool *tool =  [FTUploadTool new];
+    NSString *line = [tool getRequestDataWithEventArray:@[model]];
+    NSArray *array = [line componentsSeparatedByString:@" "];
+    XCTAssertTrue(array.count == 3);
+    
+    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
+    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm*1000];
+    XCTAssertEqualObjects([array lastObject],tm);
 }
 - (void)testExample {
     // This is an example of a functional test case.

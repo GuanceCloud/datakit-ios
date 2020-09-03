@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUploadTool (Test)
 // isUploading = YES 时限制上传 
 @property (nonatomic, assign) BOOL isUploading;
+- (NSString *)getRequestDataWithEventArray:(NSArray *)events;
 @end
 
 NS_ASSUME_NONNULL_END

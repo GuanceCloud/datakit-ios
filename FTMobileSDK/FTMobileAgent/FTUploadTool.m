@@ -20,6 +20,7 @@
 #import "FTConstants.h"
 #import "FTMonitorUtils.h"
 #import "NSDate+FTAdd.h"
+#import "FTMobileAgentVersion.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
@@ -379,13 +380,14 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
         NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+        NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
         CFShow((__bridge CFTypeRef)(infoDictionary));
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
         NSMutableDictionary *tag = @{FT_COMMON_PROPERTY_DEVICE_UUID:uuid,
                                      FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:identifier,
-                                     FT_COMMON_PROPERTY_APPLICATION_NAME:self.config.appName,
+                                     FT_COMMON_PROPERTY_APPLICATION_NAME:appName,
                                      FT_COMMON_PROPERTY_OS:@"iOS",
                                      FT_COMMON_PROPERTY_OS_VERSION:version,
                                      FT_COMMON_PROPERTY_DEVICE_BAND:@"APPLE",
@@ -393,7 +395,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                                      FT_COMMON_PROPERTY_DEVICE_MODEL:deviceInfo[FTBaseInfoHanderDeviceType],
                                      FT_COMMON_PROPERTY_DISPLAY:[FTBaseInfoHander ft_resolution],
                                      FT_COMMON_PROPERTY_CARRIER:[FTBaseInfoHander ft_getTelephonyInfo],
-                                     FT_COMMON_PROPERTY_AGENT:self.config.sdkAgentVersion,
+                                     FT_COMMON_PROPERTY_AGENT:SDK_VERSION,
                                      
         }.mutableCopy;
         self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;
