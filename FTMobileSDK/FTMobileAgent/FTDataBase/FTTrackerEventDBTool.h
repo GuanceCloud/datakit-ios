@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTrackerEventDBTool : NSObject
 
 +(FTTrackerEventDBTool *)sharedManger;
-+ (instancetype)shareDatabase:(NSString *)dbName;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (id)copy NS_UNAVAILABLE; // 没有遵循协议可以不写

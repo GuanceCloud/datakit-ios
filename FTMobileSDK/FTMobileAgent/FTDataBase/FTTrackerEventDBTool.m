@@ -21,6 +21,7 @@
 @end
 @implementation FTTrackerEventDBTool
 static FTTrackerEventDBTool *dbTool = nil;
+static dispatch_once_t onceToken;
 
 #pragma mark --创建数据库
 + (instancetype)sharedManger
@@ -28,7 +29,6 @@ static FTTrackerEventDBTool *dbTool = nil;
     return [FTTrackerEventDBTool shareDatabase:nil];
 }
 + (instancetype)shareDatabase:(NSString *)dbName {
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
     if (!dbTool) {
         NSString *name = dbName;
@@ -349,5 +349,8 @@ static FTTrackerEventDBTool *dbTool = nil;
     }];
 
 }
-
+- (void)resetInstance{
+    onceToken = 0;
+    dbTool =nil;
+}
 @end
