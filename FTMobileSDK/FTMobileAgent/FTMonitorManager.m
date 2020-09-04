@@ -748,6 +748,10 @@ static dispatch_once_t onceToken;
     return YES;
 }
 - (void)loggingNetworkTraceWithTask:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)taskMes responseDict:(NSDictionary *)dict isError:(BOOL)iserror API_AVAILABLE(ios(10.0)){
+    NSInteger statusCode = [[task.response ft_getResponseStatusCode] integerValue];
+    if (statusCode>=400) {
+        iserror = YES;
+    }
     NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
     [request setValue:[task.originalRequest ft_getBodyData:[task.currentRequest ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
     NSDictionary *response = dict?dict:@{};
