@@ -9,6 +9,7 @@
 #import "UIViewController+FT_RootVC.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
+#import "FTBaseInfoHander.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 
 @implementation UIViewController (FT_RootVC)
@@ -19,23 +20,26 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
     return [objc_getAssociatedObject(self, &viewLoadStartTimeKey) doubleValue];
 }
 + (NSString *)ft_getRootViewController{
-    UIWindow* window = nil;
-       if (@available(iOS 13.0, *)) {
-           for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
-           {
-              if (windowScene.activationState == UISceneActivationStateForegroundActive)
-              {
-                   window = windowScene.windows.firstObject;
-                   break;
-              }
-           }
-       }else{
-           #pragma clang diagnostic push
-           #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-               // 这部分使用到的过期api
+    __block UIWindow* window = nil;
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        if (@available(iOS 13.0, *)) {
+            for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
+            {
+                if (windowScene.activationState == UISceneActivationStateForegroundActive)
+                {
+                    window = windowScene.windows.firstObject;
+                    break;
+                }
+            }
+        }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // 这部分使用到的过期api
             window = [UIApplication sharedApplication].keyWindow;
-           #pragma clang diagnostic pop
-       }
+#pragma clang diagnostic pop
+        }
+        
+    }];
     NSString *name = NSStringFromClass([window.rootViewController class]);
     
     if( [name isKindOfClass:NSNull.class]
