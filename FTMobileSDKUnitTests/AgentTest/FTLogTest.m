@@ -16,7 +16,7 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTBaseInfoHander.h>
 #import "UITestVC.h"
-#import "UploadDataTest.h"
+#import "FTTrackerEventDBTool+Test.h"
 
 @interface FTLogTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
@@ -71,13 +71,13 @@
  * 验证：new - old = 20 并且 最近添加数据库的数据类型 为 logging 且 抓取__content 包含"testTrackConsoleLog19"
 */
 - (void)testTrackConsoleLog{
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     NSInteger old =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<21; i++) {
         NSLog(@"testTrackConsoleLog%d",i);
     }
-    __block NSInteger new;
     [NSThread sleepForTimeInterval:2];
-    new =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSInteger new =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     FTRecordModel *model = [data lastObject];
     XCTAssertTrue(new-old == 20);
@@ -157,13 +157,18 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
-    [[FTMobileAgent sharedInstance].upTool upload];
-    [NSThread sleepForTimeInterval:30];
-    UploadDataTest *upload = [UploadDataTest new];
-    NSString *content = [upload testLogging];
-    NSDictionary *contentDict =[self extracted:content];
+    
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
+    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
+    }];
 }
 
 

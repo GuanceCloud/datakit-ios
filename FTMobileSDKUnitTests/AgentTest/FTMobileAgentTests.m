@@ -19,7 +19,6 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
-#import "UploadDataTest.h"
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
 
@@ -91,6 +90,7 @@ do {                                                                            
     }];
     NSString *uuid = [request.allHTTPHeaderFields valueForKey:@"X-Datakit-UUID"];
     XCTAssertTrue(uuid.length>0);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetUUID{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -104,6 +104,8 @@ do {                                                                            
     }];
     NSString *uuid = [request.allHTTPHeaderFields valueForKey:@"X-Datakit-UUID"];
     XCTAssertTrue([uuid isEqualToString:@"testXDataKitUUID"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+
 }
 -(void)testSetEmptyServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -121,6 +123,7 @@ do {                                                                            
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICENAME];
     XCTAssertTrue(serviceName.length>0);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 -(void)testSetServiceName{
@@ -140,6 +143,7 @@ do {                                                                            
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICENAME];
     XCTAssertTrue([serviceName isEqualToString:@"testSetServiceName"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * source
@@ -159,6 +163,7 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSArray *bodyArray = [body componentsSeparatedByString:@","];
     XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"ft_mobile_sdk_ios"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetSource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -176,6 +181,8 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSArray *bodyArray = [body componentsSeparatedByString:@","];
     XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"iOSTest"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+
 }
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -195,6 +202,7 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSString *env = @"__env=dev";
     XCTAssertTrue([body containsString:env]);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -215,6 +223,7 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSString *env = @"__env=testSetEnv";
     XCTAssertTrue([body containsString:env]);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 - (void)testSetEmptyToken{
@@ -227,6 +236,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetIllegalToken{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:@"1111" akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -238,6 +248,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * url 为 空字符串
@@ -257,6 +268,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 /**
@@ -277,6 +289,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 /**
@@ -297,6 +310,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * token\url\akid\aksecret 正确
@@ -310,6 +324,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 #pragma mark ========== 数据同步 ==========
 /**
@@ -320,12 +335,18 @@ do {                                                                            
     NSString *uuid = [NSUUID UUID].UUIDString;
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"event":uuid}];
     [NSThread sleepForTimeInterval:2];//写入数据库方法是异步的
-    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
-    [[FTMobileAgent sharedInstance].upTool upload];//开始上传
-    [NSThread sleepForTimeInterval:30];
-    UploadDataTest *upload = [UploadDataTest new];
-    NSString *content = [upload testTrack];
-    XCTAssertTrue([content isEqualToString:uuid]);
+    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeMetrics];
+    FTRecordModel *model = [data lastObject];
+    NSDictionary *dict =  [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *field = opdata[@"field"];
+    NSString *event = field[@"event"];
+    XCTAssertEqualObjects(event, uuid);
+    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
+    }];
+
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testLoggingMethod {
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -336,12 +357,16 @@ do {                                                                            
     NSString *uuid = [NSUUID UUID].UUIDString;
     [[FTMobileAgent sharedInstance] logging:uuid status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
-    [FTMobileAgent sharedInstance].upTool.isUploading = NO;
-    [[FTMobileAgent sharedInstance].upTool upload];
-    [NSThread sleepForTimeInterval:30];
-    UploadDataTest *upload = [UploadDataTest new];
-    NSString *content = [upload testLogging];
-    XCTAssertTrue([content isEqualToString:uuid]);
+    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeLogging];
+    FTRecordModel *model = [data lastObject];
+    NSDictionary *dict =  [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *field = opdata[@"field"];
+    NSString *content = field[@"__content"];
+    XCTAssertTrue([content containsString:uuid]);
+    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+          XCTAssertTrue(statusCode == 200);
+    }];
 }
 - (void)testObjectMethod{
     [self setRightSDKConfig];
@@ -355,11 +380,10 @@ do {                                                                            
     model.op = FTNetworkingTypeObject;
     model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
     
-    [NSThread sleepForTimeInterval:10];
-    UploadDataTest *upload = [UploadDataTest new];
-    XCTAssertTrue([[upload testObject] isEqualToString:uuid]);
 }
 
 /**
@@ -390,7 +414,7 @@ do {                                                                            
     XCTAssertTrue(newCount>count);
     XCTAssertTrue([userData[@"name"] isEqualToString:@"bindUser"]);
     XCTAssertTrue([userData[@"id"] isEqualToString:@"bindUserId"]);
-
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 测试 切换用户
@@ -422,7 +446,7 @@ do {                                                                            
 
     }
     XCTAssertTrue(userData.allKeys.count>0 && lastUserData.allKeys.count>0 && [userData[@"name"] isEqualToString:@"bindNewUser"] && [lastUserData[@"name"] isEqualToString:@"bindUser"]);
-
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 用户解绑
@@ -443,6 +467,7 @@ do {                                                                            
     
     //用户登出后 获取
     XCTAssertTrue(logoutArray.count == array.count && newCount > oldCount);
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 #pragma mark ========== SDK 生命周期 ==========
 
@@ -498,7 +523,7 @@ do {                                                                            
     [[FTMobileAgent sharedInstance] resetInstance];
     XCTAssertTrue([FTMonitorManager sharedInstance].monitorTagDict == nil);
     XCTAssertNil([FTMonitorManager sharedInstance].monitorTagDict);
-
+    
 }
 - (void)testSDKReset{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];

@@ -64,6 +64,10 @@
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
+- (void)tearDown {
+//    [[FTMobileAgent sharedInstance] resetInstance];
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
 /**
   测试当前控制器获取是否正确
 */

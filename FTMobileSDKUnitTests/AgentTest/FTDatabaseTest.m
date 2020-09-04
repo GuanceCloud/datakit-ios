@@ -21,11 +21,13 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [[FTTrackerEventDBTool sharedManger] resetInstance];
     [FTTrackerEventDBTool shareDatabase:@"test.sqlite"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
 
 - (void)tearDown {
+    [[FTTrackerEventDBTool sharedManger] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)testCreateDB{

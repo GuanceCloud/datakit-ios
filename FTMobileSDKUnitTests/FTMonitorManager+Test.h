@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager (Test)
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
+@property (nonatomic, copy) NSString *parentInstance;
 
 @end
 

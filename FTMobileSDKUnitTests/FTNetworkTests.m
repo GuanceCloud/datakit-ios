@@ -15,186 +15,173 @@
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
-#define WAIT                                                                \
-do {                                                                        \
-[self expectationForNotification:@"LCUnitTest" object:nil handler:nil]; \
-[self waitForExpectationsWithTimeout:60 handler:nil];                   \
-} while(0);
-#define NOTIFY                                                                            \
-do {                                                                                      \
-[[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
-} while(0);
+
 @interface FTNetworkTests : XCTestCase
-@property (nonatomic, strong) FTUploadTool *upTool;
 @end
 
 @implementation FTNetworkTests
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-       long  tm =[[NSDate now] ft_dateTimestamp];
-       [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
-       for (int i=0; i<25; i++) {
-           NSDictionary *dict = @{
-               FT_AGENT_MEASUREMENT:@"iOSTest",
-               FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-               FT_AGENT_TAGS:@{@"name":[NSString stringWithFormat:@"FTNetworkTests%d",i]},
-           };
-           NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
-                                 FT_AGENT_OPDATA:dict,
-           };
-          
-           FTRecordModel *model = [FTRecordModel new];
-           model.op =FTNetworkingTypeMetrics;
-           model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-           [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-       }
-       NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-       NSLog(@"Record Count == %ld",(long)count);
+    long  tm =[[NSDate now] ft_dateTimestamp];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+    for (int i=0; i<25; i++) {
+        NSDictionary *dict = @{
+            FT_AGENT_MEASUREMENT:@"iOSTest",
+            FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+            FT_AGENT_TAGS:@{@"name":[NSString stringWithFormat:@"FTNetworkTests%d",i]},
+        };
+        NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                              FT_AGENT_OPDATA:dict,
+        };
+        
+        FTRecordModel *model = [FTRecordModel new];
+        model.op =FTNetworkingTypeMetrics;
+        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    }
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    NSLog(@"Record Count == %ld",(long)count);
 }
-- (void)setRightConfig{
+- (void)tearDown {
+}
+- (FTUploadTool *)setRightConfig:(NSString *)urlStr{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-    if (akId && akSecret && url) {
-     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-      config.enableLog = YES;
-      self.upTool = [[FTUploadTool alloc]initWithConfig:config];
-        [NSThread sleepForTimeInterval:2];
+    if (!urlStr) {
+        urlStr = url;
     }
+    if (akId && akSecret && url) {
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
+        config.enableLog = YES;
+        return  [[FTUploadTool alloc]initWithConfig:config];
+    }
+    return nil;
 }
--(void)setBadMetricsUrl{
+-(FTUploadTool *)setBadMetricsUrl{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu1.com" datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu1.com" datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
     
     
     config.enableLog = YES;
     config.enableAutoTrack = YES;
-    self.upTool = [[FTUploadTool alloc]initWithConfig:config];
+    return  [[FTUploadTool alloc]initWithConfig:config];
 }
-- (void)setOHHTTPStubs{
-    [self setRightConfig];
-    [NSThread sleepForTimeInterval:2];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-
-    NSURL *url = [NSURL URLWithString:urlStr];
+- (void)setOHHTTPStubs:(NSString *)urlStr{
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-      return [request.URL.host isEqualToString:url.host];
+        NSString *str =  request.URL.absoluteString;
+        return [str isEqualToString:urlStr];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
-
-      NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-      return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
+        
+        NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
     }];
 }
--(void)setBadNetOHHTTPStubs{
-    [self setRightConfig];
-     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-    NSURL *url = [NSURL URLWithString:urlStr];
-
+-(void)setBadNetOHHTTPStubs:(NSString *)urlStr{
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:url.host];
+        return [request.URL.absoluteString isEqualToString:urlStr];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
-
+        
         NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         return [[OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil]
                 requestTime:1.0 responseTime:3.0];
     }];
 }
 
--(void)setErrorNetOHHTTPStubs{
-    [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-
-    NSURL *url = [NSURL URLWithString:urlStr];
+-(void)setErrorNetOHHTTPStubs:(NSString *)urlStr{
+    
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:url.host];
+        return [request.URL.absoluteString isEqualToString:urlStr];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSError* notConnectedError = [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorNotConnectedToInternet userInfo:nil];
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
     }];
     
 }
--(void)setErrorResponseOHHTTPStubs{
-    [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-
-    NSURL *url = [NSURL URLWithString:urlStr];
+-(void)setErrorResponseOHHTTPStubs:(NSString *)urlStr{
+    
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-      return [request.URL.host isEqualToString:url.host];
+        return [request.URL.absoluteString isEqualToString:urlStr];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
         NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
-
-      NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-      return [OHHTTPStubsResponse responseWithData:requestData statusCode:500 headers:nil];
+        
+        NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:500 headers:nil];
     }];
 }
--(void)setNoJsonResponseOHHTTPStubs{
-    [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-
-    NSURL *url = [NSURL URLWithString:urlStr];
+-(void)setNoJsonResponseOHHTTPStubs:(NSString *)urlStr{
+   
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return [request.URL.host isEqualToString:url.host];
+        NSString *str =request.URL.absoluteString;
+        return [str isEqualToString:urlStr];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =@"Hello World!";
-
+        
         NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
     }];
 }
--(void)setWrongJsonResponseOHHTTPStubs{
-    [self setRightConfig];
-     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-    NSURL *url = [NSURL URLWithString:urlStr];
+-(void)setWrongJsonResponseOHHTTPStubs:(NSString *)urlStr{
+    
+    
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-           return [request.URL.host isEqualToString:url.host];
-       } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
-           NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
-           data = [data stringByAppendingString:@"/n/t"];
-           NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-           return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
-       }];
+        return [request.URL.absoluteString isEqualToString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        data = [data stringByAppendingString:@"/n/t"];
+        NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
+    }];
 }
--(void)setEmptyResponseOHHTTPStubs{
-     [self setRightConfig];
-    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-
-    NSURL *url = [NSURL URLWithString:urlStr];
-     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-         return [request.URL.host isEqualToString:url.host];
-     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+-(void)setEmptyResponseOHHTTPStubs:(NSString *)urlStr{
+   
+    
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return [request.URL.absoluteString isEqualToString:urlStr];
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         
-         return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
-     }];
+        return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
+    }];
 }
 /**
-测试上传过程是否正确
-*/
+ 测试上传过程是否正确
+ */
 -(void)testNetwork{
-     [self setOHHTTPStubs];
-     [self.upTool upload];
-              
-     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-      //验证数据库中数据是否上传完毕
-     XCTAssertTrue(count== 0);
-            
+    FTUploadTool *tool = [self setRightConfig:nil];
+    [NSThread sleepForTimeInterval:2];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    [self setOHHTTPStubs:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [tool upload];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    //验证数据库中数据是否上传完毕
+    XCTAssertTrue(count== 0);
+    
 }
 /**
-测试网络状态较差时上传过程是否正确
-*/
+ 测试网络状态较差时上传过程是否正确
+ */
 -(void)testBadNetwork{
-    [self setBadNetOHHTTPStubs];
-    [self.upTool upload];
-                 
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    urlStr = [urlStr stringByAppendingString:@"badNet"];
+    FTUploadTool *tool = [self setRightConfig:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setBadNetOHHTTPStubs:urlStr];
+    [tool upload];
+    
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     //验证数据库中数据是否上传完毕
     XCTAssertTrue(count== 0);
@@ -204,7 +191,12 @@ do {                                                                            
  测试请求成功 返回结果为非json数据格式
  */
 -(void)testNoJsonResponseNetWork{
-    [self setNoJsonResponseOHHTTPStubs];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+       urlStr = [urlStr stringByAppendingString:@"noJson"];
+    FTUploadTool *tool = [self setRightConfig:urlStr];
+       urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setNoJsonResponseOHHTTPStubs:urlStr];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -217,20 +209,27 @@ do {                                                                            
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
         NSString *result =[[ NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
         XCTAssertTrue(errors != nil && [result isEqualToString:@"Hello World!"]);
-        NOTIFY
+        [expectation fulfill];
     }];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 /**
-测试请求成功 返回结果为错误json数据格式
-*/
+ 测试请求成功 返回结果为错误json数据格式
+ */
 - (void)testWrongJsonResponseNetWork{
-    [self setWrongJsonResponseOHHTTPStubs];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    urlStr = [urlStr stringByAppendingString:@"wrongJson"];
+    FTUploadTool *tool = [self setRightConfig:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setWrongJsonResponseOHHTTPStubs:urlStr];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -243,19 +242,26 @@ do {                                                                            
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
-        NOTIFY
+        [expectation fulfill];
     }];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 /**
-  测试请求成功 返回结果为空数据
-*/
+ 测试请求成功 返回结果为空数据
+ */
 - (void)testEmptyResponseDataNetWork{
-    [self setEmptyResponseOHHTTPStubs];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    urlStr = [urlStr stringByAppendingString:@"emptyResponse"];
+    FTUploadTool *tool =  [self setRightConfig:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setEmptyResponseOHHTTPStubs:urlStr];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -268,40 +274,51 @@ do {                                                                            
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(response.bytes == 0);
-        NOTIFY
+        [expectation fulfill];
     }];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 /**
-  测试请求成功 返回结果code 非200
-*/
+ 测试请求成功 返回结果code 非200
+ */
 - (void)testErrorResponse{
-    [self setErrorResponseOHHTTPStubs];
-     NSDictionary *dict = @{
-           FT_AGENT_MEASUREMENT:@"iOSTest",
-           FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-           FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
-       };
-       NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
-                             FT_AGENT_OPDATA:dict,
-       };
-       
-       FTRecordModel *model = [FTRecordModel new];
-       model.op =FTNetworkingTypeMetrics;
-       model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-       [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-           XCTAssertTrue(statusCode != 200);
-           NOTIFY
-       }];
-    WAIT
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    
+    urlStr = [urlStr stringByAppendingString:@"errorResponse"];
+   FTUploadTool *tool = [self setRightConfig:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setErrorResponseOHHTTPStubs:urlStr];
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode != 200);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 /**
  测试无效地址
  */
 -(void)testBadMetricsUrl{
-    [self setBadMetricsUrl];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    FTUploadTool *tool = [self setBadMetricsUrl];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -314,17 +331,24 @@ do {                                                                            
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
-        NOTIFY
+        [expectation fulfill];
     }];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 /**
  测试网络错误
  */
 - (void)testErrorNet{
-    [self setErrorNetOHHTTPStubs];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
+    urlStr = [urlStr stringByAppendingString:@"errorNet"];
+    FTUploadTool *tool = [self setRightConfig:urlStr];
+    urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    [self setErrorNetOHHTTPStubs:urlStr];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -337,10 +361,12 @@ do {                                                                            
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    [self.upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == -1009);
-        NOTIFY
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode != 200);
+        [expectation fulfill];
     }];
-    WAIT
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 @end

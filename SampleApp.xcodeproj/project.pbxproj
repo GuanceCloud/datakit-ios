@@ -22,7 +22,6 @@
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
 		4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */; };
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
-		4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A924F66ECF006125D0 /* UploadDataTest.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
 		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A270E7824FDE0840079F455 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E7724FDE0840079F455 /* FrintHookTest.swift */; };
@@ -122,8 +121,6 @@
 		4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootTabbarVC.m; sourceTree = "<group>"; };
 		4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDatabaseTest.m; sourceTree = "<group>"; };
 		4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTTrackerEventDBTool+Test.h"; sourceTree = "<group>"; };
-		4A1D78A824F66ECF006125D0 /* UploadDataTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UploadDataTest.h; sourceTree = "<group>"; };
-		4A1D78A924F66ECF006125D0 /* UploadDataTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UploadDataTest.m; sourceTree = "<group>"; };
 		4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileSDKUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -323,8 +320,6 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				4A1D78A824F66ECF006125D0 /* UploadDataTest.h */,
-				4A1D78A924F66ECF006125D0 /* UploadDataTest.m */,
 				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
 				4A037F0024F9079F007B2104 /* FTMonitorManager+Test.h */,
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
@@ -660,7 +655,6 @@
 				4A037EFE24F8DB32007B2104 /* FTLogTest.m in Sources */,
 				4A037EFA24F791CB007B2104 /* FTNetworkTraceTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
-				4A1D78B324F66FA7006125D0 /* UploadDataTest.m in Sources */,
 				4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
@@ -974,10 +968,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Debug;
 		};
@@ -1016,10 +1007,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleApp.app/SampleApp";
-				USER_HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					" ",
-				);
+				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
 			};
 			name = Release;
 		};

@@ -197,14 +197,14 @@ do {                                                                            
     [[FTMonitorManager sharedInstance] startFlush];
     NSDictionary *dict =  [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
     NSDictionary *field =  [dict valueForKey:FT_AGENT_FIELD];
-
+    
     [[FTMonitorManager sharedInstance] setMonitorType:FTMonitorInfoTypeFPS];
     
     NSDictionary *dict2 =  [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
     NSDictionary *field2 =  [dict2 valueForKey:FT_AGENT_FIELD];
     
     XCTAssertTrue([field2.allKeys containsObject:FT_MONITOR_FPS] && field.allKeys.count > field2.allKeys.count);
-
+    
 }
 
 
