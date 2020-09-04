@@ -160,6 +160,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     config.sdkTrackVersion = self.config.sdkTrackVersion;
     [FTLog enableLog:config.enableLog];
     [FTLog enableDescLog:config.enableDescLog];
+    if (config.traceConsoleLog) {
+        [self _traceConsoleLog];
+    }
     id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
     self.config = config;
     if (!autotrack) {
@@ -370,7 +373,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr tm:tm];
+            if (weakSelf.config.traceConsoleLog) {
+                [weakSelf _loggingBackgroundInsertWithOP:FT_TRACK_LOGGING_CONSOLELOG status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:logStr tm:tm];
+            }
         });
     }];
 }
