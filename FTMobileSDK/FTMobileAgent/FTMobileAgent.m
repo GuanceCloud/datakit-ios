@@ -174,7 +174,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         void (*func)(id, SEL,id) = (void (*)(id,SEL,id))imp;
         func(autotrack,startMethod,self.config);
     }
-    [[FTMonitorManager sharedInstance] setMonitorType:config.monitorInfoType];
+    [[FTMonitorManager sharedInstance] setMobileConfig:config];
     self.upTool.config = config;
 }
 -(NSMutableArray *)loggingArray{
