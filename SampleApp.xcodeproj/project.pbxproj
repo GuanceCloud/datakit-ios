@@ -28,6 +28,7 @@
 		4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
 		4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
+		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
@@ -128,6 +129,8 @@
 		4A270E7624FDE0840079F455 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		4A270E7724FDE0840079F455 /* FrintHookTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrintHookTest.swift; sourceTree = "<group>"; };
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
+		4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionConfiguration+Test.h"; sourceTree = "<group>"; };
+		4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTSessionConfiguration+Test.m"; sourceTree = "<group>"; };
 		4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManagerTest.m; sourceTree = "<group>"; };
 		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
 		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
@@ -323,6 +326,8 @@
 				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
 				4A037F0024F9079F007B2104 /* FTMonitorManager+Test.h */,
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
+				4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */,
+				4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */,
 				4A2C826224EFD13D006D4FC6 /* AgentTest */,
 				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
 				4A2C826324EFDA1F006D4FC6 /* MonitorManager */,
@@ -658,6 +663,7 @@
 				4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
+				4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

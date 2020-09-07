@@ -21,6 +21,7 @@
 #import <FTRecordModel.h>
 #import <FTBaseInfoHander.h>
 #import <NSDate+FTAdd.h>
+#import "FTSessionConfiguration+Test.h"
 @interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -171,7 +172,30 @@
     }];
 }
 - (void)testTimeOut{
-    
+    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V3];
+    [self setBadNetOHHTTPStubs];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [NSThread sleepForTimeInterval:2];
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    FTRecordModel *model = [data lastObject];
+    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *field = opdata[@"field"];
+    NSDictionary *tags = opdata[@"tags"];
+    BOOL isError = [tags[@"__isError"] boolValue];
+    XCTAssertTrue(isError == YES);
+    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:field[@"__content"]];
+    NSDictionary *responseContent = content[@"responseContent"];
+    NSDictionary *error = responseContent[@"error"];
+    NSNumber *errorCode = error[@"errorCode"];
+    XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
 }
 - (void)testRightRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
