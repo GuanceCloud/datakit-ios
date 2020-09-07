@@ -21,6 +21,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 }
 + (NSString *)ft_getRootViewController{
     __block UIWindow* window = nil;
+    __block NSString *name;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
         if (@available(iOS 13.0, *)) {
             for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
@@ -38,10 +39,9 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
             window = [UIApplication sharedApplication].keyWindow;
 #pragma clang diagnostic pop
         }
-        
+
+    name = NSStringFromClass([window.rootViewController class]);
     }];
-    NSString *name = NSStringFromClass([window.rootViewController class]);
-    
     if( [name isKindOfClass:NSNull.class]
        ||name==nil){
         return FT_NULL_VALUE;
