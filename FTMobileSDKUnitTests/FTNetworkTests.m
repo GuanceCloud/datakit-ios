@@ -47,7 +47,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://www.baidu1.com" datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://162.215.252.78" datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
     
     
     config.enableLog = YES;
