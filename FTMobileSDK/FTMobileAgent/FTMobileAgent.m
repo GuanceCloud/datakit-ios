@@ -130,8 +130,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (self.config.enableAutoTrack) {
                 [self startAutoTrack];
             }
-            [FTUncaughtExceptionHandler installUncaughtExceptionHandler];
-            
+            [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
             self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
@@ -287,6 +286,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     [[FTLocationManager sharedInstance] resetInstance];
+    [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
     self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
@@ -423,10 +423,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [tag setValue:app_version_name forKey:FT_APP_VERSION_NAME];
         FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:@{FT_KEY_CONTENT:content} op:op netType:FTNetworkingTypeLogging tm:tm];
         [self.loggingArray addObject:model];
-        [self _loggingArrayInsertDBImmediately];
-    }else if(self.loggingArray.count>0){
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
     }
+    [self _loggingArrayInsertDBImmediately];
 }
 - (void)_loggingArrayInsertDBImmediately{
     dispatch_sync(self.serialLoggingQueue, ^{

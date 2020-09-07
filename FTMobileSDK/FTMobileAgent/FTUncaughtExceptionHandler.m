@@ -38,7 +38,7 @@ const int32_t UncaughtExceptionMaximum = 10;
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 @interface FTUncaughtExceptionHandler()
-
+@property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
 @implementation FTUncaughtExceptionHandler
 
@@ -105,7 +105,27 @@ void SignalHandler(int signal) {
     [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
     [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
 }
-+ (void)installUncaughtExceptionHandler{
++ (instancetype)sharedHandler {
+    static FTUncaughtExceptionHandler *sharedHandler = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedHandler = [[FTUncaughtExceptionHandler alloc] init];
+    });
+    return sharedHandler;
+}
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        // Create a hash table of weak pointers to SensorsAnalytics instances
+        _ftSDKInstances = [NSHashTable weakObjectsHashTable];
+        
+        
+        // Install our handler
+        [self installUncaughtExceptionHandler];
+    }
+    return self;
+}
+- (void)installUncaughtExceptionHandler{
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&HandleException);
     signal(SIGABRT, SignalHandler);
@@ -114,6 +134,18 @@ void SignalHandler(int signal) {
     signal(SIGFPE,  SignalHandler);
     signal(SIGBUS,  SignalHandler);
     signal(SIGPIPE, SignalHandler);
+}
+- (void)addftSDKInstance:(FTMobileAgent *)instance{
+    NSParameterAssert(instance != nil);
+    if (![self.ftSDKInstances containsObject:instance]) {
+        [self.ftSDKInstances addObject:instance];
+    }
+}
+- (void)removeftSDKInstance:(FTMobileAgent *)instance{
+    NSParameterAssert(instance != nil);
+    if ([self.ftSDKInstances containsObject:instance]) {
+        [self.ftSDKInstances removeObject:instance];
+    }
 }
 //med 1、专门针对Signal类型的错误获取堆栈信息
 + (NSArray *)backtrace {
@@ -142,9 +174,10 @@ void SignalHandler(int signal) {
 
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
-   
-    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
-    [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[[NSDate date] ft_dateTimestamp]];
+    for (FTMobileAgent *instance in self.ftSDKInstances) {
+        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
+        [instance _loggingExceptionInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[[NSDate date] ft_dateTimestamp]];
+    }
 }
 
 - (NSString *)getUUIDDictionary {
