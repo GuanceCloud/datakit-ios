@@ -49,6 +49,7 @@
     config.traceServiceName = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
 }
 
 - (void)testFTNetworkTrackTypeZipkin{
@@ -279,6 +280,7 @@
         XCTAssertNil(error);
     }];
     [NSThread sleepForTimeInterval:2];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];

@@ -25,23 +25,6 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     long  tm =[[NSDate now] ft_dateTimestamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
-    for (int i=0; i<25; i++) {
-        NSDictionary *dict = @{
-            FT_AGENT_MEASUREMENT:@"iOSTest",
-            FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-            FT_AGENT_TAGS:@{@"name":[NSString stringWithFormat:@"FTNetworkTests%d",i]},
-        };
-        NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
-                              FT_AGENT_OPDATA:dict,
-        };
-        
-        FTRecordModel *model = [FTRecordModel new];
-        model.op =FTNetworkingTypeMetrics;
-        model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-    }
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    NSLog(@"Record Count == %ld",(long)count);
 }
 - (void)tearDown {
 }
@@ -163,12 +146,29 @@
     FTUploadTool *tool = [self setRightConfig:nil];
     [NSThread sleepForTimeInterval:2];
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"ACCESS_SERVER_URL"];
-    [self setOHHTTPStubs:urlStr];
     urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
-    [tool upload];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据是否上传完毕
-    XCTAssertTrue(count== 0);
+    [self setOHHTTPStubs:urlStr];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+       NSDictionary *dict = @{
+         FT_AGENT_MEASUREMENT:@"iOSTest",
+         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+     };
+     NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                           FT_AGENT_OPDATA:dict,
+     };
+     
+     FTRecordModel *model = [FTRecordModel new];
+     model.op =FTNetworkingTypeMetrics;
+     model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+         XCTAssertTrue(statusCode == 200);
+         [expectation fulfill];
+     }];
+     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+         XCTAssertNil(error);
+     }];
     
 }
 /**
@@ -180,11 +180,28 @@
     FTUploadTool *tool = [self setRightConfig:urlStr];
     urlStr = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
     [self setBadNetOHHTTPStubs:urlStr];
-    [tool upload];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    //验证数据库中数据是否上传完毕
-    XCTAssertTrue(count== 0);
+    NSDictionary *dict = @{
+        FT_AGENT_MEASUREMENT:@"iOSTest",
+        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
+        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+    };
+    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+                          FT_AGENT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FTNetworkingTypeMetrics;
+    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
 }
 
 /**

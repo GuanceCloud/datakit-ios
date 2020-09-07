@@ -54,7 +54,7 @@ do {                                                                            
     self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
 
 - (void)tearDown {
@@ -65,7 +65,6 @@ do {                                                                            
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.traceConsoleLog = YES;
-    config.enableTrackAppCrash = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
@@ -163,7 +162,6 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSArray *bodyArray = [body componentsSeparatedByString:@","];
     XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"ft_mobile_sdk_ios"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetSource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -181,7 +179,6 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSArray *bodyArray = [body componentsSeparatedByString:@","];
     XCTAssertTrue([[bodyArray firstObject] isEqualToString:@"iOSTest"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 
 }
 - (void)testSetEmptyEnv{
@@ -202,7 +199,6 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSString *env = @"__env=dev";
     XCTAssertTrue([body containsString:env]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -223,10 +219,10 @@ do {                                                                            
     NSString *body = [request ft_getBodyData:YES];
     NSString *env = @"__env=testSetEnv";
     XCTAssertTrue([body containsString:env]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 - (void)testSetEmptyToken{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:@"" akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     
@@ -235,20 +231,28 @@ do {                                                                            
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        [expect fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
 }
 - (void)testSetIllegalToken{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:@"1111" akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     
+    [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testSetIllegalToken"}];
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testSetIllegalToken"}];
     [NSThread sleepForTimeInterval:2];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        [expect fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+          XCTAssertNil(error);
+      }];
 }
 /**
  * url 为 空字符串
@@ -260,6 +264,7 @@ do {                                                                            
     XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
 }
 - (void)testIllegalUrl{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:[NSString stringWithFormat:@"%@11",self.url] datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testIllegalUrl"}];
@@ -267,8 +272,11 @@ do {                                                                            
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        [expect fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 
 /**
@@ -281,6 +289,7 @@ do {                                                                            
     XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
 }
 - (void)testSetIllegalAkId{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:@"aaaaa" akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testSetIllegalAkId"}];
@@ -288,6 +297,10 @@ do {                                                                            
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        [expect fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
     }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
@@ -302,6 +315,7 @@ do {                                                                            
     XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
 }
 - (void)testSetIllegalAkSecret{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:@"aaaa" enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testSetIllegalAkSecret"}];
@@ -309,13 +323,19 @@ do {                                                                            
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
+        [expect fulfill];
     }];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * token\url\akid\aksecret 正确
 */
 - (void)testConfigSetRight{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] trackBackground:@"Test" field:@{@"test":@"testConfigSetRight"}];
@@ -323,14 +343,18 @@ do {                                                                            
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expect fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
 }
 #pragma mark ========== 数据同步 ==========
 /**
  * 测试主动埋点是否成功
  */
 - (void)testTrackMethod {
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     [self setRightSDKConfig];
     NSString *uuid = [NSUUID UUID].UUIDString;
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"event":uuid}];
@@ -344,11 +368,14 @@ do {                                                                            
     XCTAssertEqualObjects(event, uuid);
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expect fulfill];
     }];
-
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 - (void)testLoggingMethod {
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
@@ -366,9 +393,14 @@ do {                                                                            
     XCTAssertTrue([content containsString:uuid]);
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
           XCTAssertTrue(statusCode == 200);
+        [expect fulfill];
     }];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
 }
 - (void)testObjectMethod{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     [self setRightSDKConfig];
     NSString *uuid =[NSUUID UUID].UUIDString;
     NSDictionary *tag = @{FT_KEY_CLASS:@"iOSTest"};
@@ -381,8 +413,11 @@ do {                                                                            
     model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expect fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
     
 }
 
@@ -414,7 +449,6 @@ do {                                                                            
     XCTAssertTrue(newCount>count);
     XCTAssertTrue([userData[@"name"] isEqualToString:@"bindUser"]);
     XCTAssertTrue([userData[@"id"] isEqualToString:@"bindUserId"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 测试 切换用户
@@ -446,7 +480,6 @@ do {                                                                            
 
     }
     XCTAssertTrue(userData.allKeys.count>0 && lastUserData.allKeys.count>0 && [userData[@"name"] isEqualToString:@"bindNewUser"] && [lastUserData[@"name"] isEqualToString:@"bindUser"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 用户解绑
@@ -467,12 +500,11 @@ do {                                                                            
     
     //用户登出后 获取
     XCTAssertTrue(logoutArray.count == array.count && newCount > oldCount);
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 #pragma mark ========== SDK 生命周期 ==========
 
 - (void)testSDKStart{
-    
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableLog = YES;
     config.enableAutoTrack = YES;
@@ -500,7 +532,11 @@ do {                                                                            
     //uploadTool启动
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expect fulfill];
     }];
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger old = [[FTTrackerEventDBTool sharedManger] getDatasCount];
 

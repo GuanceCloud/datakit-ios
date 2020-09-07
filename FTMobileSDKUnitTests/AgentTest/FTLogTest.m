@@ -36,7 +36,6 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     config.eventFlowLog = YES;
     config.traceConsoleLog = YES;
-    config.enableTrackAppCrash = YES;
     config.enableAutoTrack = YES;
     config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch | FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
     config.source = @"iOSTest";
@@ -146,10 +145,6 @@
     NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
 }
-- (NSDictionary * _Nonnull)extracted:(NSString *)content {
-    return [FTBaseInfoHander ft_dictionaryWithJsonString:content];
-}
-
 - (void)testTraceUploadingMethod{
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
@@ -166,8 +161,13 @@
     NSString *content = field[@"__content"];
     NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
     }];
 }
 
