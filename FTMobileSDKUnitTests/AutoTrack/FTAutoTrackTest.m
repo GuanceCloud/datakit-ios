@@ -81,9 +81,16 @@
   测试根视图是否正确
 */
 - (void)testRootViewControllerOfTheView{
-      NSString *rootStr = [UIViewController ft_getRootViewController];
-      XCTAssertTrue([rootStr isEqualToString:@"UITabBarController"]);
-
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    __block NSString *rootStr;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        rootStr = [UIViewController ft_getRootViewController];
+        XCTAssertTrue([rootStr isEqualToString:@"UITabBarController"]);
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+         XCTAssertNil(error);
+     }];
 }
 /**
   验证控制器白名单
