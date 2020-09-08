@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
-- (void)ftHTTPProtocolWithDataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data;
+
+// FTNetworkTrack
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task taskDuration:(NSNumber *)duration requestStartDate:(NSDate*)start responseData:(NSData *)data didCompleteWithError:(NSError *)error;
 @end
 NS_ASSUME_NONNULL_END

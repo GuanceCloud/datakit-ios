@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取监控项的tag、field
 */
 -(NSDictionary *)getMonitorTagFiledDict;
-
+- (BOOL)trackUrl:(NSURL *)url;
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type,NSString *skyStr))completionHandler;
 - (void)resetInstance;
 @end
