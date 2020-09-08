@@ -176,7 +176,7 @@ void SignalHandler(int signal) {
 - (void)handleException:(NSException *)exception {
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
-        [instance _loggingExceptionInsertWithOP:FT_TRACK_LOGGING_EXCEPTION status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical] content:info tm:[[NSDate date] ft_dateTimestamp]];
+        [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
 
