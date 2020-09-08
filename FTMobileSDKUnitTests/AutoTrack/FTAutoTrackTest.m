@@ -72,10 +72,16 @@
   测试当前控制器获取是否正确
 */
 - (void)testControllerOfTheView{
-
-      UIViewController *currentVC = [self.testVC.firstButton ft_getCurrentViewController];
-      XCTAssertEqualObjects(self.testVC, currentVC);
-
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    __block UIViewController *currentVC;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        currentVC = [self.testVC.firstButton ft_getCurrentViewController];
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTAssertEqualObjects(self.testVC, currentVC);
 }
 /**
   测试根视图是否正确

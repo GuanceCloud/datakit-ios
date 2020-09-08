@@ -7,17 +7,22 @@
 //
 
 #import "UIView+FT_CurrentController.h"
-
+#import "FTBaseInfoHander.h"
 
 @implementation UIView (FT_CurrentController)
 -(UIViewController *)ft_getCurrentViewController{
-    UIResponder *next = [self nextResponder];
-    do {
-        if ([next isKindOfClass:[UIViewController class]]) {
-            return (UIViewController *)next;
-        }
-        next = [next nextResponder];
-    } while (next != nil);
+    __block UIResponder *next = nil;
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        next = [self nextResponder];
+        do {
+            if ([next isKindOfClass:[UIViewController class]]) {
+                break;        }
+            next = [next nextResponder];
+        } while (next != nil);
+    }];
+    if (next != nil) {
+        return (UIViewController *)next;
+    }
     return nil;
 }
 -(NSString *)ft_getParentsView{
