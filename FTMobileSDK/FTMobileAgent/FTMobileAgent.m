@@ -207,7 +207,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             callBackStatus?callBackStatus(InvalidParamsException,nil):nil;
             return;
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics tm:0];
         [self trackUpload:@[model] callBack:callBackStatus];
     }
     @catch (NSException *exception) {
@@ -220,7 +220,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         __block NSMutableArray *list = [NSMutableArray new];
         [trackList enumerateObjectsUsingBlock:^(FTTrackBean * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (obj.measurement.length>0 && obj.field.allKeys.count>0) {
-                FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics];
+                FTRecordModel *model = [self getRecordModelWithMeasurement:obj.measurement tags:obj.tags field:obj.field op:FT_TRACK_OP_CUSTOM netType:FTNetworkingTypeMetrics tm:0];
                 if(obj.timeMillis && obj.timeMillis>1000000000000){
                     model.tm = obj.timeMillis*1000;
                 }
@@ -327,7 +327,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }else{
             op = [field valueForKey:FT_AUTO_TRACK_EVENT];
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics tm:0];
         [self insertDBWithItemData:model];
     }
     @catch (NSException *exception) {
@@ -363,7 +363,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tagsDict addEntriesFromDictionary:tags];
         }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics tm:0];
         [self insertDBWithItemData:model];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -433,9 +433,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.loggingArray = nil;
         }
     });
-}
-- (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type{
-    return [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:type tm:0];
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type tm:(long long)tm{
     FTRecordModel *model = [FTRecordModel new];
