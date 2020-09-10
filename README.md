@@ -124,32 +124,30 @@
   /**
    *设置是否需要采集崩溃日志 默认为NO
    */
-@property (nonatomic, assign) BOOL enableTrackAppCrash;
-  
+   @property (nonatomic, assign) BOOL enableTrackAppCrash;
   ``` 
      
 - traceConsoleLog 采集控制台日志    
 
    一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出App里的保密数据， 所以在发布正式版时会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用 [日志写入接口](#2上报日志) 来上传想查看的日志。
  
-   ```objective-c 
+  ```objective-c 
   /**
    *设置是否需要采集控制台日志 默认为NO
    */
-@property (nonatomic, assign) BOOL traceConsoleLog;
-
-   ```    
+   @property (nonatomic, assign) BOOL traceConsoleLog;
+  ```    
     
 - eventFlowLog 采集页面事件日志
     
   设置后，可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
       
   ```objective-c
- /**
- * 默认为NO
- * 需 AutoTrack 开启 ，设置对应采集类型时生效
- */
- @property (nonatomic, assign) BOOL eventFlowLog; 
+  /**
+   * 默认为NO
+   * 需 AutoTrack 开启 ，设置对应采集类型时生效
+   */
+   @property (nonatomic, assign) BOOL eventFlowLog; 
   ```
 
  
@@ -267,12 +265,12 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
     
 - 设置采集率
  
-  ``` objective-c
-  /**
-   *  设置网络请求信息采集时 采样率 0-1 默认为 1
-   */
-  @property (nonatomic, assign) float traceSamplingRate;
-  ```    
+ ``` objective-c
+ /**
+  *  设置网络请求信息采集时 采样率 0-1 默认为 1
+  */
+ @property (nonatomic, assign) float traceSamplingRate;
+ ```    
    
       
 -  设置网络请求信息采集时 使用链路追踪类型 
