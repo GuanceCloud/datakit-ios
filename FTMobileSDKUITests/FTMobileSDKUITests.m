@@ -41,7 +41,7 @@
    
     
     XCUIElementQuery *tablesQuery = app.tables;
-    [tablesQuery.staticTexts[@"BindUser"] tap];
+//    [tablesQuery.staticTexts[@"BindUser"] tap];
     [tablesQuery.staticTexts[@"Test_autoTrack"] tap];
         
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
