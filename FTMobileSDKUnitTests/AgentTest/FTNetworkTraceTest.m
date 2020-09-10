@@ -101,7 +101,7 @@
         NSString *sampled = [array firstObject];
         NSString *traceId = [array[1] ft_base64Decode];
         NSString *parentTraceID=[array[2] ft_base64Decode];
-        NSString *urlStr = [@"#api.qingyunke.com" ft_base64Encode];
+        NSString *urlStr = [@"#www.weather.com.cn" ft_base64Encode];
         NSArray *traceIdAry = [traceId componentsSeparatedByString:@"."];
         NSInteger seq =  [[traceId  substringFromIndex:traceId.length-4] integerValue];
         NSInteger parentSeq = [[parentTraceID  substringFromIndex:parentTraceID.length-4] integerValue];
@@ -137,8 +137,8 @@
         XCTAssertEqualObjects(traceAry[3], @"0");
         XCTAssertEqualObjects([traceAry[4] ft_base64Decode], @"iOSTestService");
         XCTAssertEqualObjects([traceAry[5] ft_base64Decode], parentServiceInstance);
-        XCTAssertEqualObjects([traceAry[6] ft_base64Decode], @"/api.php");
-        XCTAssertEqualObjects([traceAry[7] ft_base64Decode], @"api.qingyunke.com");
+        XCTAssertEqualObjects([traceAry[6] ft_base64Decode], @"/data/sk/101010100.html");
+        XCTAssertEqualObjects([traceAry[7] ft_base64Decode], @"www.weather.com.cn");
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -148,13 +148,9 @@
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",str];
-    NSString *urlStr = @"http://api.qingyunke.com/api.php";
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     
-    request.HTTPMethod = @"POST";
-    
-    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
         completionHandler?completionHandler(header):nil;
@@ -163,7 +159,7 @@
     [task resume];
 }
 -(void)setBadNetOHHTTPStubs{
-    NSString *urlStr = @"http://api.qingyunke.com/api.php";
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSURL *url = [NSURL URLWithString:urlStr];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return [request.URL.host isEqualToString:url.host];
@@ -180,8 +176,8 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
+        XCTAssertNil(error);
+    }];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
@@ -197,6 +193,7 @@
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
     XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
+    [self uploadModel:model];
 }
 - (void)testRightRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -215,17 +212,12 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
-    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:field[@"__content"]];
-    NSDictionary *requestContent = content[@"requestContent"];
-    NSString *body = requestContent[@"body"];
-    XCTAssertTrue([body containsString:@"testRightRequest"]);
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
-    }];
+
+    [self uploadModel:model];
+    
 }
 - (void)testNewThread{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -244,17 +236,11 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
-    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:field[@"__content"]];
-    NSDictionary *requestContent = content[@"requestContent"];
-    NSString *body = requestContent[@"body"];
-    XCTAssertTrue([body containsString:@"testNewThread"]);
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
-    }];
+
+    [self uploadModel:model];
 }
 
 - (void)testBadResponse{
@@ -294,10 +280,40 @@
     XCTAssertTrue([body containsString:uuid]);
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == YES);
+    [self uploadModel:model];
+}
+- (void)testNSURLConnection{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    FTRecordModel *model = [data lastObject];
+    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags = opdata[@"tags"];
+    BOOL isError = [tags[@"__isError"] boolValue];
+    XCTAssertTrue(isError == NO);
+
+    [self uploadModel:model];
+}
+- (void)uploadModel:(FTRecordModel *)model{
+    XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
+        [expectation2 fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
     }];
 }
-
-
 @end
