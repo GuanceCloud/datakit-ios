@@ -118,18 +118,16 @@
     
    ```    
    
-- enableTrackAppCrash 采集崩溃日志
+- enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#3-关于崩溃日志分析)） 
 
-   ```objective-c 
+  ```objective-c 
   /**
    *设置是否需要采集崩溃日志 默认为NO
    */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
   
-   ```    
-      
- [崩溃分析](#3-关于崩溃日志分析)       
- 
+  ``` 
+     
 - traceConsoleLog 采集控制台日志    
 
    一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出App里的保密数据， 所以在发布正式版时会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用 [日志写入接口](#2上报日志) 来上传想查看的日志。
