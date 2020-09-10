@@ -8,6 +8,10 @@
 ![Cocoapods](https://img.shields.io/cocoapods/v/FTMobileSDK)
 ![Cocoapods](https://img.shields.io/cocoapods/l/FTMobileSDK)
 
+**基本要求**    
+ 
+**iOS 8.0**及以上 
+  
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
 ### 1. 直接下载下来安装
@@ -659,34 +663,20 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 
  - 设置 `FTMonitorInfoTypeSensor` 会一并抓取传感器数据，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
 
- - `FTMonitorInfoTypeSensorLight`：[谨慎开启环境光感参数监控项](#3-谨慎开启环境光感参数监控项) SDK 是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度，**iOS14 中 App 使用相机时会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，我们无法控制是否显示该提示** 所以建议谨慎开启此项。
+ - `FTMonitorInfoTypeSensorLight`：[谨慎开启环境光感参数监控项](#-谨慎开启环境光感参数监控项) SDK 是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度，**iOS14 中 App 使用相机时会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，我们无法控制是否显示该提示** 所以建议谨慎开启此项。
 
  
  - `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
 
 #### 4. FTMonitorInfoTypeNetwork 
-   **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
+ -  **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
+ -  需要在 **iOS 10.0** 及以上，才能获取网络请求各阶段时间。
 
 #### 5. FTMonitorInfoTypeBluetooth 
 
-  `FTMonitorInfoTypeBluetooth` 获取应用已匹配过的外设信息，需要开发者在第一次匹配时,保存起来,比如用 **NSUserDefaults**。  
-  使用以下方法将信息传给 SDK 。 
+  `FTMonitorInfoTypeBluetooth` 需要 **iOS 10.0** 才能获取蓝牙当前开关状态。
 
-```objective-c
- /**
- * 在监控项设置抓取蓝牙后使用
- * 设置设备连接过的蓝牙外设 CBUUID 数组，建议用户将已连接过设备的identifier使用NSUserDefault保存起来  
- * 用于采集已连接设备相关信息
-*/
--(void)setConnectBluetoothCBUUID:(nullable NSArray<CBUUID *> *)serviceUUIDs;
-```
-使用示例:
 
-```objective-c
-
- [[FTMobileAgent sharedInstance] setConnectBluetoothCBUUID:@[[CBUUID UUIDWithString:@"蓝牙设备identifier"]];
- 
-```
 
 ## 九、设置页面描述、视图树描述配置
 ### 1. 设置是否允许描述
@@ -803,7 +793,16 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  4. 解析完成后会生成一个新的 **.Crash** 文件，这个文件中就是崩溃详细信息。
 
 
-### 4. 谨慎开启环境光感参数监控项
+### 4. iOS 版本注意事项
+#### iOS 10.0        
+  -  需要在 **iOS 10.0** 及以上，才能获取网络请求各阶段时间。 
+  -  需要 **iOS 10.0** 及以上，才能获取蓝牙当前开关状态 。 
+
+#### iOS 12.0/iOS 13.0     
+ -   **iOS 12** 之后 获取 **WifiSSID** 需要配置 `'capability' ->'Access WiFi Infomation'` 才能获取， **iOS 13** 之后需要开启定位权限，才能获取到信息。
+
+#### iOS 14.0
+ - **谨慎开启环境光感参数监控项**
      
    iOS14 中 App 使用相机会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，并且我们无法控制是否显示该提示。    
   
@@ -821,7 +820,6 @@ if ([session canAddInput:videoInput]) {
    
    
  
-
 
 
 
