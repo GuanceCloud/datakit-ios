@@ -10,7 +10,7 @@
 
 **基本要求**    
  
-**iOS 8.0**及以上 
+**iOS 8.0**及以上  （[版本相关注意事项](4-ios-版本注意事项)）
   
 ## 一、 导入SDK
    你可以使用下面方法进行导入：
@@ -128,6 +128,7 @@
   
    ```    
      
+     
   [崩溃分析](#3-关于崩溃日志分析)    
       
  
@@ -146,14 +147,14 @@
 - eventFlowLog 采集页面事件日志
     
   设置后，可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
-     
- ```objective-c
+      
+  ```objective-c
  /**
  * 默认为NO
  * 需 AutoTrack 开启 ，设置对应采集类型时生效
  */
  @property (nonatomic, assign) BOOL eventFlowLog; 
- ```
+  ```
 
  
      
@@ -161,16 +162,16 @@
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
- ```objective-c
+  ```objective-c
    [config setXDataKitUUID:@"YOUR UUID"];
- ```
+  ```
 
 ### 4. 设置是否开启全埋点  
 
    开启全埋点，设置 `FTMobileConfig` 的 `enableAutoTrack = YES ;` 。
    在 `enableAutoTrack = YES;` 的情况下，进行 `autoTrackEventType` 类型设置。    
 
-```objective-c
+ ```objective-c
 /**
  * @enum
  * AutoTrack 抓取信息
@@ -186,7 +187,7 @@ typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
     FTAutoTrackEventTypeAppClick      = 1 << 1,
     FTAutoTrackEventTypeAppViewScreen = 1 << 2,
 };
-```
+ ```
 全埋点详细设置：[全埋点](#五全埋点)
 
 ### 5. 采集数据配置
@@ -663,7 +664,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 
  - 设置 `FTMonitorInfoTypeSensor` 会一并抓取传感器数据，无须另外设置。 如果只抓取传感器的某一项，单独设置需要的即可。   
 
- - `FTMonitorInfoTypeSensorLight`：[谨慎开启环境光感参数监控项](#-谨慎开启环境光感参数监控项) SDK 是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度，**iOS14 中 App 使用相机时会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，我们无法控制是否显示该提示** 所以建议谨慎开启此项。
+ - `FTMonitorInfoTypeSensorLight`：[谨慎开启环境光感参数监控项](#ios-140) SDK 是利用摄像头获取环境光感参数, 启动`AVCaptureSession `，获取视频流数据后可以分析得到当前的环境光强度，**iOS14 中 App 使用相机时会有图标以及绿点提示，并且会显示当前是哪个 App 在使用此功能，我们无法控制是否显示该提示** 所以建议谨慎开启此项。
 
  
  - `FTMonitorInfoTypeSensorProximity` ：会开启距离传感器。当有物体靠近听筒时,屏幕会自动变暗。
@@ -808,14 +809,14 @@ typedef NS_ENUM(NSInteger, FTStatus) {
   
   触发相机小绿点的代码示例:    
   
-```   
+  ```   
 AVCaptureDeviceInput *videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:videoCaptureDevice error:nil];
 AVCaptureSession *session = [[AVCaptureSession alloc] init];
 if ([session canAddInput:videoInput]) {
     [session addInput:videoInput];
 }
 [session startRunning];
-```
+  ```
    在 SDK 中获取环境光感参数的方法是, 启动 AVCaptureSession ，获取视频流数据，分析得到当前的环境光强度，使用了上面的接口 ，所以会**触发相机小绿点**。
    
    
