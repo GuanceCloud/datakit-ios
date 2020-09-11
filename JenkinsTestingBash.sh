@@ -47,4 +47,4 @@ pod install
 xcodebuild test -workspace SampleApp.xcworkspace \
   -scheme FTMobileSDKUnitTests \
   -destination "platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.7" \
-  -only-testing FTMobileSDKUnitTests/FTAutoTrackTest
+  -only-testing FTMobileSDKUnitTests
