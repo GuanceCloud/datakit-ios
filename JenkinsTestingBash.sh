@@ -45,6 +45,6 @@ sed -i -e 's/$ACCESS_DATAWAY_TOKEN/'"$ACCESS_DATAWAY_TOKEN"'/g' FTMobileSDKUnitT
 cd ../../..
 pod install
 xcodebuild test -workspace SampleApp.xcworkspace \
-  -scheme FTMobileSDKUnitTests \
+  -scheme FTMobileSDKUnitTestsForCmd \
   -destination "platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.7" \
   -only-testing FTMobileSDKUnitTests
