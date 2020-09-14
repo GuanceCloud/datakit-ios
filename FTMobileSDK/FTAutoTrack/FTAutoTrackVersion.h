@@ -8,7 +8,7 @@
 
 #ifndef FTAutoTrackVersion_h
 #define FTAutoTrackVersion_h
-#define SDK_VERSION  @"1.0.3-beta.2"
+#define SDK_VERSION  @"1.0.4-alpha.1"
 
 
 #endif /* FTAutoTrackVersion_h */
