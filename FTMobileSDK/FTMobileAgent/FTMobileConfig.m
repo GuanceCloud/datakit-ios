@@ -34,7 +34,7 @@
         _networkTrace = NO;
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
-        _networkTrace = FTNetworkTrackTypeZipkin;
+        _networkTrace = FTNetworkTraceTypeZipkin;
         _enabledPageVtpDesc = NO;
         _source = FT_USER_AGENT;
 #if DEBUG
@@ -108,7 +108,7 @@
     }
     return deviceId;
 }
--(void)networkTraceWithTraceType:(FTNetworkTrackType)type{
+-(void)networkTraceWithTraceType:(FTNetworkTraceType)type{
     self.networkTrace = YES;
     self.networkTraceType = type;
 }

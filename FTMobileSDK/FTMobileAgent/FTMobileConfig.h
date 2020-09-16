@@ -86,11 +86,11 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  *   FTNetworkTrackTypeZipkin       - Zipkin
  *   FTNetworkTrackTypeJaeger       - Jaeger
  */
-typedef NS_ENUM(NSInteger, FTNetworkTrackType) {
-    FTNetworkTrackTypeZipkin          = 0,
-    FTNetworkTrackTypeJaeger          = 1,
-    FTNetworkTrackTypeSKYWALKING_V2   = 2,
-    FTNetworkTrackTypeSKYWALKING_V3   = 3,
+typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
+    FTNetworkTraceTypeZipkin          = 0,
+    FTNetworkTraceTypeJaeger          = 1,
+    FTNetworkTraceTypeSKYWALKING_V2   = 2,
+    FTNetworkTraceTypeSKYWALKING_V3   = 3,
 };
 NS_ASSUME_NONNULL_BEGIN
 
@@ -220,12 +220,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
 */
-@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
+@property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 /**
  *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
  *  @param  type   链路追踪类型 默认为 Zipkin
 */
--(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
+-(void)networkTraceWithTraceType:(FTNetworkTraceType)type;
 /**
  *  设置 网络请求采集 支持的 contentType
  *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data）
