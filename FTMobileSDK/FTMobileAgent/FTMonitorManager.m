@@ -32,17 +32,19 @@
 #import "NSURLResponse+FTMonitor.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
+#import "FTWKWebViewHandler.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
 static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manager.lock";
 
-@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate>
+@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate,FTWKWebViewTraceDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray<CBPeripheral *> *devicesListArray;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
 @property (nonatomic, strong) NSDictionary *monitorTagDict;
 @property (nonatomic, strong) FTNetMonitorFlow *netFlow;
+@property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, strong) CMPedometer *pedometer;
 @property (nonatomic, strong) CMMotionManager *motionManager;
 @property (nonatomic, strong) NSNumber *steps;
@@ -99,7 +101,11 @@ static dispatch_once_t onceToken;
         [FTURLProtocol setDelegate:self];
     }
     [self setMonitorType:config.monitorInfoType];
+    if (config.networkTrace) {
+        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    }
 }
+
 -(void)dealNetworkContentType:(NSArray *)array{
     if (array && array.count>0) {
         self.netContentType = [NSSet setWithArray:array];
@@ -652,6 +658,37 @@ static dispatch_once_t onceToken;
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
 }
+#pragma mark ========== FTWKWebViewDelegate ==========
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration{
+    BOOL iserror= [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
+    NSDictionary *responseDict = response?[response ft_getResponseContentDictWithData:nil]:@{};
+        NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
+    [requestDict setValue:[request ft_getBodyData:[request ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
+    NSDictionary *responseDic = responseDict?responseDict:@{};
+    NSDictionary *content = @{
+        FT_NETWORK_RESPONSE_CONTENT:responseDic,
+        FT_NETWORK_REQUEST_CONTENT:requestDict
+    };
+    NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[request ft_getOperationName],
+                                  FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
+                                  FT_KEY_ISERROR:[NSNumber numberWithBool:iserror],
+                                  FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+                                  
+    }.mutableCopy;
+    NSDictionary *field = @{FT_KEY_DURATION:duration};
+    __block NSString *trace,*span;
+    __block BOOL sampling;
+    [request ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+        trace = traceId;
+        span = spanID;
+        sampling = sampled;
+    }];
+    if(trace&&span&&sampling){
+        [tags setValue:trace forKey:FT_FLOW_TRACEID];
+        [tags setValue:span forKey:FT_KEY_SPANID];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
+    }
+}
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)judgeIsTraceSampling{
     float rate = self.config.traceSamplingRate;
@@ -670,13 +707,13 @@ static dispatch_once_t onceToken;
     }
     return NO;
 }
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTrackType type,NSString *skyStr))completionHandler{
+- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler{
     if ([self trackUrl:url]) {
         NSString *skyStr = nil;
         BOOL sample = [self judgeIsTraceSampling];
-        if (self.config.networkTraceType == FTNetworkTrackTypeSKYWALKING_V3) {
+        if (self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V3) {
             skyStr = [self getSkyWalking_V3Str:sample url:url];
-        }else if(self.config.networkTraceType == FTNetworkTrackTypeSKYWALKING_V2){
+        }else if(self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V2){
             skyStr = [self getSkyWalking_V2Str:sample url:url];
         }
         if (completionHandler) {

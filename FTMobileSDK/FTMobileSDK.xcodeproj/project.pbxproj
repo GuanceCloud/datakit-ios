@@ -30,6 +30,10 @@
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
 		4A3E7DC8245AAD540004A499 /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */; };
+		4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */; };
+		4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */; };
+		4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */; };
 		4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6F891E2419E97700E05C36 /* FTTrackBean.m */; };
@@ -104,6 +108,10 @@
 		4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGPUUsage.m; sourceTree = "<group>"; };
 		4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
 		4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BlacklistedVCClassNames.m; sourceTree = "<group>"; };
+		4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewHandler.h; sourceTree = "<group>"; };
+		4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewHandler.m; sourceTree = "<group>"; };
+		4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTTrace.h"; sourceTree = "<group>"; };
+		4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "WKWebView+FTTrace.m"; sourceTree = "<group>"; };
 		4A6F891D2419E97700E05C36 /* FTTrackBean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTrackBean.h; sourceTree = "<group>"; };
 		4A6F891E2419E97700E05C36 /* FTTrackBean.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTrackBean.m; sourceTree = "<group>"; };
 		4A7F62E124976622000893C1 /* FTfishhook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTfishhook.c; sourceTree = "<group>"; };
@@ -261,6 +269,10 @@
 				4A7F62E224976622000893C1 /* FTfishhook.h */,
 				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
 				4A852FD323A240B300B40B5D /* ZYAspects.m */,
+				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
+				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
+				4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */,
+				4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
@@ -336,6 +348,7 @@
 			files = (
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
+				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
 				4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
@@ -348,6 +361,7 @@
 				4A7F62E424976622000893C1 /* FTfishhook.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
+				4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */,
 				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
@@ -479,6 +493,7 @@
 			files = (
 				4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */,
 				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
+				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A01160D24C966C200AECC1C /* NSDate+FTAdd.m in Sources */,
@@ -497,6 +512,7 @@
 				4A297BDB246BBF340028645B /* FTConstants.m in Sources */,
 				4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
+				4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */,
 				4A88429C239E5768001B44C3 /* FTTrackerEventDBTool.m in Sources */,
 				4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */,
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
