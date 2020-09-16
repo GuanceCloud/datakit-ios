@@ -53,7 +53,7 @@ void HandleException(NSException *exception) {
         [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
         
         //在主线程中，执行制定的方法, withObject是执行方法传入的参数
-        [[[FTUncaughtExceptionHandler alloc] init]
+        [[FTUncaughtExceptionHandler sharedHandler]
          performSelectorOnMainThread:@selector(handleException:)
          withObject:
          [NSException exceptionWithName:[exception name]
