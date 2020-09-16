@@ -24,13 +24,13 @@
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
 		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
-		4A270E7824FDE0840079F455 /* FrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E7724FDE0840079F455 /* FrintHookTest.swift */; };
 		4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
 		4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
+		4A4D9200250B8C23004B9FA0 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
@@ -118,8 +118,6 @@
 		4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileSDKUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A270E6124FD0D520079F455 /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A270E7624FDE0840079F455 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		4A270E7724FDE0840079F455 /* FrintHookTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrintHookTest.swift; sourceTree = "<group>"; };
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
 		4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionConfiguration+Test.h"; sourceTree = "<group>"; };
 		4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTSessionConfiguration+Test.m"; sourceTree = "<group>"; };
@@ -127,6 +125,8 @@
 		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
 		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		4A4D91FC250B8C22004B9FA0 /* TestWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWKWebViewVC.h; sourceTree = "<group>"; };
+		4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
 		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
 		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -316,8 +316,6 @@
 		4AAF0E7723B9901500817C52 /* TestAutoTrack */ = {
 			isa = PBXGroup;
 			children = (
-				4A270E7724FDE0840079F455 /* FrintHookTest.swift */,
-				4A270E7624FDE0840079F455 /* SampleApp-Bridging-Header.h */,
 				4A1169822391145B00C0BC4E /* DemoViewController.h */,
 				4A1169832391145B00C0BC4E /* DemoViewController.m */,
 				4A159F3623D3F3BD00804D70 /* RootTabbarVC.h */,
@@ -332,6 +330,8 @@
 				4AAF0E7123B5E75900817C52 /* UITestManger.m */,
 				4AAF2B4C240FB19C00552B6D /* RootVController.h */,
 				4AAF2B4D240FB19C00552B6D /* RootVController.m */,
+				4A4D91FC250B8C22004B9FA0 /* TestWKWebViewVC.h */,
+				4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */,
 				4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */,
 			);
 			path = TestAutoTrack;
@@ -581,8 +581,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A4D9200250B8C23004B9FA0 /* TestWKWebViewVC.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
-				4A270E7824FDE0840079F455 /* FrintHookTest.swift in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.m in Sources */,
 				4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */,
@@ -701,7 +701,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -755,7 +755,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
@@ -768,6 +768,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 74CC6CC4479FC4E5FAC65FCF /* Pods-SampleApp.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -807,6 +808,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A7C2BAF1B667F5A8064AE281 /* Pods-SampleApp.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -844,7 +846,6 @@
 		4A22527423B5AC7600B0ED41 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -869,7 +870,6 @@
 		4A22527523B5AC7600B0ED41 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -895,7 +895,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
@@ -934,7 +933,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
