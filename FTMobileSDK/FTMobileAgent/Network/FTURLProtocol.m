@@ -74,36 +74,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    NSMutableURLRequest * mutableReqeust = [request mutableCopy];
-    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTrackType type ,NSString *skyStr) {
-        if (track) {
-            switch (type) {
-                case FTNetworkTrackTypeZipkin:
-                    [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-                    [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-                    [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-                    break;
-                case FTNetworkTrackTypeJaeger:{
-                    NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID],[NSNumber numberWithBool:sampled]];
-                    [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
-                }
-                    break;
-                case FTNetworkTrackTypeSKYWALKING_V2:{
-                    if (skyStr) {
-                        [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
-                    }
-                }
-                    break;
-                case FTNetworkTrackTypeSKYWALKING_V3:{
-                    if (skyStr) {
-                        [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
-                    }
-                }
-                    break;
-            }
-        }
-    }];
-    return [mutableReqeust copy];
+    return [request ft_NetworkTrace];
 }
 
 + (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b {
