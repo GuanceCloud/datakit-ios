@@ -17,10 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration;
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
-
+@property (nonatomic, assign) BOOL trace;
 @property (nonatomic, weak) id<FTWKWebViewTraceDelegate> traceDelegate;
 + (instancetype)sharedInstance;
 - (void)addWebView:(WKWebView *)webView;
+- (void)addWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
 - (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
 - (void)removeWebView:(WKWebView *)webView;

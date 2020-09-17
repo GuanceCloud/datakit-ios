@@ -61,18 +61,40 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     Method originalMethod = class_getInstanceMethod([WKWebView class], @selector(setNavigationDelegate:));
     Method ownerMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_setNavigationDelegate:));
     method_exchangeImplementations(originalMethod, ownerMethod);
+    
+    Method originalreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(reload));
+      Method ownerreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_reload));
+      method_exchangeImplementations(originalreLoadMethod, ownerreLoadMethod);
 }
 - (void)ft_loadRequest:(NSURLRequest *)request{
-    NSURLRequest *newrequest = [request ft_NetworkTrace];
-    if (!self.navigationDelegate) {
-        self.navigationDelegate = [FTWKWebViewHandler sharedInstance];
+    if ([FTWKWebViewHandler sharedInstance].trace) {
+        NSURLRequest *newrequest = [request ft_NetworkTrace];
+        if (!self.navigationDelegate) {
+            self.navigationDelegate = [FTWKWebViewHandler sharedInstance];
+        }
+        [[FTWKWebViewHandler sharedInstance] addWebView:self];
+        [self loadRequest:newrequest];
+    }else{
+        [self loadRequest:request];
     }
-    [[FTWKWebViewHandler sharedInstance] addWebView:self];
-
-    [self loadRequest:newrequest];
+}
+- (void)fthook_reload{
+    if ([FTWKWebViewHandler sharedInstance].trace) {
+        [[FTWKWebViewHandler sharedInstance] addWebView:self completionHandler:^(NSURLRequest * _Nonnull request, BOOL needTrace) {
+            if (needTrace && request) {
+                [self ft_loadRequest:request];
+            }else{
+                [self fthook_reload];
+            }
+        }];
+    }else{
+        [self fthook_reload];
+    }
 }
 - (void)fthook_dealloc{
+     if ([FTWKWebViewHandler sharedInstance].trace) {
     [[FTWKWebViewHandler sharedInstance] removeWebView:self];
+     }
     [self fthook_dealloc];
 }
 - (void)fthook_setNavigationDelegate:(id<UIWebViewDelegate>)delegate {
@@ -83,22 +105,30 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
 
 }
 - (void)owner_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
+   if ([FTWKWebViewHandler sharedInstance].trace) {
     [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
+   }
     //允许跳转
     [self owner_webView:webView decidePolicyForNavigationAction:navigationAction decisionHandler:decisionHandler];
 
 }
 - (void)none_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
+    if ([FTWKWebViewHandler sharedInstance].trace) {
     [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
+    }
     //允许跳转
     decisionHandler(WKNavigationActionPolicyAllow);
 }
 - (void)owner_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+    if ([FTWKWebViewHandler sharedInstance].trace) {
     [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
+    }
     [self owner_webView:webView decidePolicyForNavigationResponse:navigationResponse decisionHandler:decisionHandler];
 }
 - (void)none_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+    if ([FTWKWebViewHandler sharedInstance].trace) {
     [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
+    }
     decisionHandler(WKNavigationResponsePolicyAllow);
 }
 

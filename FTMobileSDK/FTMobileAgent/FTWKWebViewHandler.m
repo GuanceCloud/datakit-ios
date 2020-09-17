@@ -11,7 +11,9 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "FTLog.h"
 @interface FTWKWebViewHandler ()
-@property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebview;
+@property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
+@property (nonatomic, strong) NSMutableDictionary *mutableLoadStateByWebviewHash;
+
 @property (nonatomic, strong) NSLock *lock;
 @end
 @implementation FTWKWebViewHandler
@@ -26,44 +28,42 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.mutableRequestKeyedByWebview = [NSMutableDictionary new];
+        self.mutableRequestKeyedByWebviewHash = [NSMutableDictionary new];
+        self.mutableLoadStateByWebviewHash = [NSMutableDictionary new];
         self.lock = [NSLock new];
+        self.trace = NO;
     }
     return self;
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView{
     [self.lock lock];
-    if (![self.mutableRequestKeyedByWebview.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
-    [self.mutableRequestKeyedByWebview setValue:@NO forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-    }
+    [self.mutableLoadStateByWebviewHash setValue:@NO forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
     [self.lock unlock];
 }
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView{
     NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     request.ftRequestStartDate = [NSDate date];
     [self.lock lock];
-    if ([self.mutableRequestKeyedByWebview.allKeys containsObject:key]) {
-        id data = [self.mutableRequestKeyedByWebview valueForKey:key];
-        if ([data isEqual:@NO]) {
-        [self.mutableRequestKeyedByWebview setValue:request forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-        }
+    if ([self.mutableLoadStateByWebviewHash.allKeys containsObject:key] && [[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO]) {
+        [self.mutableRequestKeyedByWebviewHash setValue:request forKey:key];
     }
     [self.lock unlock];
 }
 - (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView{
+    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     NSDate *endDate = [NSDate date];
-    NSURLRequest *request;
+    BOOL isTrace = NO;
     [self.lock lock];
-    id data = [self.mutableRequestKeyedByWebview objectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-    if ([data isKindOfClass:NSURLRequest.class]) {
-        request = data;
-        if([request.URL isEqual:response.URL]){
-            [self.mutableRequestKeyedByWebview setValue:@YES forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+    NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+    if (request) {
+        if([request.URL isEqual:response.URL] && [[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO]){
+            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+            isTrace = YES;
         }
     }
     [self.lock unlock];
-    if (request) {
+    if (isTrace) {
         NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration];
@@ -74,10 +74,39 @@ static dispatch_once_t onceToken;
 
 - (void)removeWebView:(WKWebView *)webView{
     [self.lock lock];
-    if ([self.mutableRequestKeyedByWebview.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
-        [self.mutableRequestKeyedByWebview removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
+        [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+        [self.mutableLoadStateByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+
     }
     [self.lock unlock];
+}
+- (BOOL)needTraceReloadWebView:(WKWebView *)webView{
+    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
+    BOOL need = NO;
+    [self.lock lock];
+    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
+        NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+        if ([request.URL isEqual:webView.URL] && !webView.canGoBack) {
+            need = YES;
+        }
+    }
+    [self.lock unlock];
+    return need;
+}
+- (void)addWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler{
+    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
+    NSURLRequest *request;
+       [self.lock lock];
+       if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
+        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+       }
+       [self.lock unlock];
+    if ([request.URL isEqual:webView.URL] && !webView.canGoBack) {
+        completionHandler? completionHandler(request,YES):nil;
+    }else{
+        completionHandler? completionHandler(nil,NO):nil;
+    }
 }
  
 @end
