@@ -102,7 +102,10 @@ static dispatch_once_t onceToken;
     }
     [self setMonitorType:config.monitorInfoType];
     if (config.networkTrace) {
+        [FTWKWebViewHandler sharedInstance].trace = YES;
         [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    }else{
+        [FTWKWebViewHandler sharedInstance].trace = NO;
     }
 }
 
@@ -787,6 +790,7 @@ static dispatch_once_t onceToken;
 - (void)resetInstance{
     onceToken = 0;
     sharedInstance =nil;
+    [FTWKWebViewHandler sharedInstance].trace = NO;
     [FTURLProtocol stopMonitor];
     [self stopFlushTimer];
     [self stopMonitor];

@@ -54,11 +54,11 @@
       [request addValue:[NSString stringWithFormat:@"user=%@", @"userValue"] forHTTPHeaderField:@"Cookie"];
     }
     //! 使用configuration对象初始化webView
-    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height/3) configuration:config];
-    [self.view addSubview:_webView];
+    self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
+    [self.view addSubview:self.webView];
 //    _webView.navigationDelegate = self;
     
-    [_webView ft_loadRequest:request];
+    [self.webView ft_loadRequest:request];
 //    _webView2 = [[WKWebView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height/3+20, self.view.bounds.size.width, self.view.bounds.size.height/3) configuration:config];
 //        [self.view addSubview:_webView2];
 //    //    _webView.navigationDelegate = self;
@@ -69,7 +69,7 @@
         NSLog(@"userAgent == %@",result);
     }];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self->_webView reload];
+        [self.webView reload];
     });
     
 }
@@ -77,6 +77,7 @@
 
     
 }
+
 - (void)viewWillDisappear:(BOOL)animated {
     
     [super viewWillDisappear:animated];
