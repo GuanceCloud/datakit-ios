@@ -35,7 +35,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-- (void)setNetworkTraceType:(FTNetworkTrackType)type{
+- (void)setNetworkTraceType:(FTNetworkTraceType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
@@ -55,7 +55,7 @@
 - (void)testFTNetworkTrackTypeZipkin{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
     [self networkUpload:@"Zipkin" handler:^(NSDictionary *header) {
         NSString *traceId = [header valueForKey:FT_NETWORK_ZIPKIN_TRACEID];
         NSString *spanID = [header valueForKey:FT_NETWORK_ZIPKIN_SPANID];
@@ -74,7 +74,7 @@
 - (void)testFTNetworkTrackTypeJaeger{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
     [self networkUpload:@"Jaeger" handler:^(NSDictionary *header) {
         NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
         NSArray *traceAry = [trace componentsSeparatedByString:@":"];
@@ -93,7 +93,7 @@
 - (void)testFTNetworkTrackTypeSKYWALKING_V2{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V2];
+    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V2];
     [self networkUpload:@"SKYWALKING_V2" handler:^(NSDictionary *header) {
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V2]);
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
@@ -122,7 +122,7 @@
 - (void)testFTNetworkTrackTypeSKYWALKING_V3{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V3];
+    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V3];
     [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray  *traceAry = [traceStr componentsSeparatedByString:@"-"];
@@ -169,7 +169,7 @@
     }];
 }
 - (void)testTimeOut{
-    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V3];
+    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V3];
     [self setBadNetOHHTTPStubs];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
@@ -198,7 +198,7 @@
 - (void)testRightRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTrackTypeJaeger];
+    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
     [self networkUpload:@"testRightRequest" handler:^(NSDictionary *header) {
         [expectation fulfill];
     }];
@@ -221,7 +221,7 @@
 }
 - (void)testNewThread{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTrackTypeSKYWALKING_V2];
+    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V2];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
             [expectation fulfill];
@@ -245,7 +245,7 @@
 
 - (void)testBadResponse{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
     NSString *uuid = [NSUUID UUID].UUIDString;
     
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -284,7 +284,7 @@
 }
 - (void)testNSURLConnection{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTrackTypeZipkin];
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     
