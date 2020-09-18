@@ -106,6 +106,7 @@ static dispatch_once_t onceToken;
         [FTWKWebViewHandler sharedInstance].traceDelegate = self;
     }else{
         [FTWKWebViewHandler sharedInstance].trace = NO;
+        [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
     }
 }
 

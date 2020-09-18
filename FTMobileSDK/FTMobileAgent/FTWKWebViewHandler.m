@@ -45,7 +45,7 @@ static dispatch_once_t onceToken;
     NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     request.ftRequestStartDate = [NSDate date];
     [self.lock lock];
-    if ([self.mutableLoadStateByWebviewHash.allKeys containsObject:key] && [[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO]) {
+    if ([self.mutableLoadStateByWebviewHash.allKeys containsObject:key]) {
         [self.mutableRequestKeyedByWebviewHash setValue:request forKey:key];
     }
     [self.lock unlock];
@@ -57,7 +57,7 @@ static dispatch_once_t onceToken;
     [self.lock lock];
     NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
     if (request) {
-        if([request.URL isEqual:response.URL] && [[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO]){
+        if([[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO] && [request.URL isEqual:response.URL]){
             [self.mutableLoadStateByWebviewHash setValue:@YES forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
             isTrace = YES;
         }
@@ -89,8 +89,10 @@ static dispatch_once_t onceToken;
         request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
        }
        [self.lock unlock];
-    if ([request.URL isEqual:webView.URL] && !webView.canGoBack) {
-        completionHandler? completionHandler(request,YES):nil;
+    if ([request.URL isEqual:webView.URL]) {
+        NSURLRequest *newReq = [request ft_NetworkTrace];
+        [self addWebView:webView];
+        completionHandler? completionHandler(newReq,YES):nil;
     }else{
         completionHandler? completionHandler(nil,NO):nil;
     }

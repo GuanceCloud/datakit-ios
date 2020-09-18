@@ -82,7 +82,7 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     if ([FTWKWebViewHandler sharedInstance].trace) {
         [[FTWKWebViewHandler sharedInstance] reloadWebView:self completionHandler:^(NSURLRequest * _Nonnull request, BOOL needTrace) {
             if (needTrace && request) {
-                [self ft_loadRequest:request];
+                [self loadRequest:request];
             }else{
                 [self fthook_reload];
             }
