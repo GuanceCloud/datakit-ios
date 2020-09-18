@@ -14,7 +14,6 @@
 #import "TestBluetoothList.h"
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
-#import "TestWKWebViewVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -27,7 +26,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"Test_WKWebViewTrace"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -70,11 +69,6 @@
     NSString *value = nil;
     NSDictionary *dict = @{@"11":value};
 }
-- (void)testWKWebViewTrace{
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -102,9 +96,6 @@
             break;
         case 4:
             [self testCrashLog];
-            break;
-        case 5:
-            [self testWKWebViewTrace];
             break;
         default:
             break;
