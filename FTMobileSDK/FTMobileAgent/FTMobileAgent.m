@@ -58,6 +58,7 @@ static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
 static char FTAutoTrack;
 static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
+    
     if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
         @autoreleasepool {
             FTMobileAgent *zy = (__bridge FTMobileAgent *)info;
@@ -287,6 +288,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [[FTMonitorManager sharedInstance] resetInstance];
     [[FTLocationManager sharedInstance] resetInstance];
     [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
+    if (_reachability) {
+        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+    }
     self.config = nil;
     objc_setAssociatedObject(self, &FTAutoTrack, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_removeAssociatedObjects(self);
