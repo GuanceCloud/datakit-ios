@@ -21,6 +21,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #include <string.h>
+
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数
@@ -29,8 +30,17 @@ NSString * const UncaughtExceptionHandlerSignalKey = @"UncaughtExceptionHandlerS
 NSString * const UncaughtExceptionHandlerAddressesKey = @"UncaughtExceptionHandlerAddressesKey";
 
 void HandleException(NSException *exception);
-//Signal类型错误信号处理
-void SignalHandler(int signal);
+
+typedef void(*SignalHandler)(int signal, siginfo_t *info, void *context);
+
+static SignalHandler previousABRTSignalHandler = NULL;
+static SignalHandler previousBUSSignalHandler = NULL;
+static SignalHandler previousFPESignalHandler = NULL;
+static SignalHandler previousILLSignalHandler = NULL;
+static SignalHandler previousPIPESignalHandler = NULL;
+static SignalHandler previousSEGVSignalHandler = NULL;
+static SignalHandler previousSYSSignalHandler = NULL;
+static SignalHandler previousTRAPSignalHandler = NULL;
 //初始化的错误条数
 volatile int32_t UncaughtExceptionCount = 0;
 //错误最大的条数
@@ -65,45 +75,54 @@ void HandleException(NSException *exception) {
         previousUncaughtExceptionHandler(exception);
     }
 }
-
-//2.2、signal报错处理
-void SignalHandler(int signal) {
-
+////2.2、signal报错处理
+static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
-    // 如果太多不用处理
-    if (exceptionCount > UncaughtExceptionMaximum) {
-        return;
+    if (exceptionCount <= UncaughtExceptionMaximum) {
+        NSString* description = nil;
+        switch (signal) {
+            case SIGABRT:
+                description = [NSString stringWithFormat:@"Signal SIGABRT was raised!\n"];
+                break;
+            case SIGILL:
+                description = [NSString stringWithFormat:@"Signal SIGILL was raised!\n"];
+                break;
+            case SIGSEGV:
+                description = [NSString stringWithFormat:@"Signal SIGSEGV was raised!\n"];
+                break;
+            case SIGFPE:
+                description = [NSString stringWithFormat:@"Signal SIGFPE was raised!\n"];
+                break;
+            case SIGBUS:
+                description = [NSString stringWithFormat:@"Signal SIGBUS was raised!\n"];
+                break;
+            case SIGPIPE:
+                description = [NSString stringWithFormat:@"Signal SIGPIPE was raised!\n"];
+                break;
+            default:
+                description = [NSString stringWithFormat:@"Signal %d was raised!",signal];
+        }
+        // 保存崩溃日志
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+        NSArray *callStack = [FTUncaughtExceptionHandler backtrace];
+        NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
+        [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
+        [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
+        @try {
+            [[FTUncaughtExceptionHandler sharedHandler]
+             performSelectorOnMainThread:@selector(handleException:) withObject:
+             [NSException exceptionWithName:UncaughtExceptionHandlerSignalExceptionName reason:description userInfo:userInfo]
+             waitUntilDone:YES];
+        } @catch (NSException *exception) {
+        }
+        
     }
-
-    NSString* description = nil;
-    switch (signal) {
-        case SIGABRT:
-            description = [NSString stringWithFormat:@"Signal SIGABRT was raised!\n"];
-            break;
-        case SIGILL:
-            description = [NSString stringWithFormat:@"Signal SIGILL was raised!\n"];
-            break;
-        case SIGSEGV:
-            description = [NSString stringWithFormat:@"Signal SIGSEGV was raised!\n"];
-            break;
-        case SIGFPE:
-            description = [NSString stringWithFormat:@"Signal SIGFPE was raised!\n"];
-            break;
-        case SIGBUS:
-            description = [NSString stringWithFormat:@"Signal SIGBUS was raised!\n"];
-            break;
-        case SIGPIPE:
-            description = [NSString stringWithFormat:@"Signal SIGPIPE was raised!\n"];
-            break;
-        default:
-            description = [NSString stringWithFormat:@"Signal %d was raised!",signal];
-    }
-
-    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-    NSArray *callStack = [FTUncaughtExceptionHandler backtrace];
-    NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
-    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
-    [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
+    FTClearSignalRegister();
+    // 调用之前崩溃的回调函数
+    // 在自己handler处理完后自觉把别人的handler注册回去，规规矩矩的传递
+    previousSignalHandler(signal, info, context);
+    
+    kill(getpid(), SIGKILL);
 }
 + (instancetype)sharedHandler {
     static FTUncaughtExceptionHandler *sharedHandler = nil;
@@ -118,8 +137,6 @@ void SignalHandler(int signal) {
     if (self) {
         // Create a hash table of weak pointers to SensorsAnalytics instances
         _ftSDKInstances = [NSHashTable weakObjectsHashTable];
-        
-        
         // Install our handler
         [self installUncaughtExceptionHandler];
     }
@@ -128,12 +145,59 @@ void SignalHandler(int signal) {
 - (void)installUncaughtExceptionHandler{
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&HandleException);
-    signal(SIGABRT, SignalHandler);
-    signal(SIGILL,  SignalHandler);
-    signal(SIGSEGV, SignalHandler);
-    signal(SIGFPE,  SignalHandler);
-    signal(SIGBUS,  SignalHandler);
-    signal(SIGPIPE, SignalHandler);
+    struct sigaction old_action_abrt;
+    sigaction(SIGABRT, NULL, &old_action_abrt);
+    if (old_action_abrt.sa_sigaction) {
+        previousABRTSignalHandler = old_action_abrt.sa_sigaction;
+    }
+    
+    struct sigaction old_action_bus;
+    sigaction(SIGBUS, NULL, &old_action_bus);
+    if (old_action_bus.sa_sigaction) {
+        previousBUSSignalHandler = old_action_bus.sa_sigaction;
+    }
+    
+    struct sigaction old_action_fpe;
+    sigaction(SIGFPE, NULL, &old_action_fpe);
+    if (old_action_fpe.sa_sigaction) {
+        previousFPESignalHandler = old_action_fpe.sa_sigaction;
+    }
+    struct sigaction old_action_ill;
+    sigaction(SIGILL, NULL, &old_action_ill);
+    if (old_action_ill.sa_sigaction) {
+        previousILLSignalHandler = old_action_ill.sa_sigaction;
+    }
+    
+    struct sigaction old_action_pipe;
+    sigaction(SIGPIPE, NULL, &old_action_pipe);
+    if (old_action_pipe.sa_sigaction) {
+        previousPIPESignalHandler = old_action_pipe.sa_sigaction;
+    }
+    
+    struct sigaction old_action_segv;
+    sigaction(SIGSEGV, NULL, &old_action_segv);
+    if (old_action_segv.sa_sigaction) {
+        previousSEGVSignalHandler = old_action_segv.sa_sigaction;
+    }
+    
+    struct sigaction old_action_sys;
+    sigaction(SIGSYS, NULL, &old_action_sys);
+    if (old_action_sys.sa_sigaction) {
+        previousSYSSignalHandler = old_action_sys.sa_sigaction;
+    }
+    struct sigaction old_action_trap;
+    sigaction(SIGTRAP, NULL, &old_action_trap);
+    if (old_action_trap.sa_sigaction) {
+        previousTRAPSignalHandler = old_action_trap.sa_sigaction;
+    }
+    FTSignalRegister(SIGABRT);
+    FTSignalRegister(SIGBUS);
+    FTSignalRegister(SIGFPE);
+    FTSignalRegister(SIGILL);
+    FTSignalRegister(SIGPIPE);
+    FTSignalRegister(SIGSEGV);
+    FTSignalRegister(SIGSYS);
+    FTSignalRegister(SIGTRAP);
 }
 - (void)addftSDKInstance:(FTMobileAgent *)instance{
     NSParameterAssert(instance != nil);
@@ -147,9 +211,61 @@ void SignalHandler(int signal) {
         [self.ftSDKInstances removeObject:instance];
     }
 }
+static void FTSignalRegister(int signal) {
+    struct sigaction action;
+    action.sa_sigaction = FTSignalHandler;
+    action.sa_flags = SA_NODEFER | SA_SIGINFO;
+    sigemptyset(&action.sa_mask);
+    sigaction(signal, &action, 0);
+}
+static void FTClearSignalRegister() {
+    signal(SIGSEGV,SIG_DFL);
+    signal(SIGFPE,SIG_DFL);
+    signal(SIGBUS,SIG_DFL);
+    signal(SIGTRAP,SIG_DFL);
+    signal(SIGABRT,SIG_DFL);
+    signal(SIGILL,SIG_DFL);
+    signal(SIGPIPE,SIG_DFL);
+    signal(SIGSYS,SIG_DFL);
+}
+static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
+    SignalHandler previousSignalHandler = NULL;
+    switch (signal) {
+        case SIGABRT:
+            previousSignalHandler = previousABRTSignalHandler;
+            break;
+        case SIGBUS:
+            previousSignalHandler = previousBUSSignalHandler;
+            break;
+        case SIGFPE:
+            previousSignalHandler = previousFPESignalHandler;
+            break;
+        case SIGILL:
+            previousSignalHandler = previousILLSignalHandler;
+            break;
+        case SIGPIPE:
+            previousSignalHandler = previousPIPESignalHandler;
+            break;
+        case SIGSEGV:
+            previousSignalHandler = previousSEGVSignalHandler;
+            break;
+        case SIGSYS:
+            previousSignalHandler = previousSYSSignalHandler;
+            break;
+        case SIGTRAP:
+            previousSignalHandler = previousTRAPSignalHandler;
+            break;
+        default:
+            break;
+    }
+    
+    if (previousSignalHandler) {
+        previousSignalHandler(signal, info, context);
+    }
+}
+
 //med 1、专门针对Signal类型的错误获取堆栈信息
 + (NSArray *)backtrace {
-
     //指针列表
     void* callstack[128];
     //backtrace用来获取当前线程的调用堆栈，获取的信息存放在这里的callstack中
@@ -160,15 +276,15 @@ void SignalHandler(int signal) {
     //返回一个指向字符串数组的指针
     //每个字符串包含了一个相对于callstack中对应元素的可打印信息，包括函数名、偏移地址、实际返回地址
     char **strs = backtrace_symbols(callstack, frames);
-
+    
     int i;
     NSMutableArray *backtrace = [NSMutableArray arrayWithCapacity:frames];
     for (i = 0; i < frames; i++) {
-
+        
         [backtrace addObject:[NSString stringWithUTF8String:strs[i]]];
     }
     free(strs);
-
+    
     return backtrace;
 }
 
@@ -183,7 +299,7 @@ void SignalHandler(int signal) {
 - (NSString *)getUUIDDictionary {
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();
-
+    
     uint32_t mainImg = 0;
     NSString *path =getExecutablePath();
     for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
@@ -191,33 +307,33 @@ void SignalHandler(int signal) {
         NSString *imagePath = [NSString stringWithUTF8String:name];
         if ([imagePath isEqualToString:path]){
             mainImg = iImg;
-        // 根据 index 获取 header
-           const struct mach_header* header = _dyld_get_image_header(mainImg);
-           uintptr_t cmdPtr = firstCmdAfterHeader(header);
-           if(cmdPtr == 0) {
-               return @"NULL";
-           }
-           
-           uint8_t* uuid = NULL;
-           
-           for(uint32_t iCmd = 0; iCmd < header->ncmds; iCmd++)
-           {
-               struct load_command* loadCmd = (struct load_command*)cmdPtr;
-               
-               if (loadCmd->cmd == LC_UUID) {
-                   struct uuid_command* uuidCmd = (struct uuid_command*)cmdPtr;
-                   uuid = uuidCmd->uuid;
-                   break;
-               }
-               cmdPtr += loadCmd->cmdsize;
-           }
-           const char* result = nil;
-           if(uuid != NULL)
-              {
-                  result = uuidBytesToString(uuid);
-                  NSString *lduuid = [NSString stringWithUTF8String:result];
-                  return lduuid;
-              }
+            // 根据 index 获取 header
+            const struct mach_header* header = _dyld_get_image_header(mainImg);
+            uintptr_t cmdPtr = firstCmdAfterHeader(header);
+            if(cmdPtr == 0) {
+                return @"NULL";
+            }
+            
+            uint8_t* uuid = NULL;
+            
+            for(uint32_t iCmd = 0; iCmd < header->ncmds; iCmd++)
+            {
+                struct load_command* loadCmd = (struct load_command*)cmdPtr;
+                
+                if (loadCmd->cmd == LC_UUID) {
+                    struct uuid_command* uuidCmd = (struct uuid_command*)cmdPtr;
+                    uuid = uuidCmd->uuid;
+                    break;
+                }
+                cmdPtr += loadCmd->cmdsize;
+            }
+            const char* result = nil;
+            if(uuid != NULL)
+            {
+                result = uuidBytesToString(uuid);
+                NSString *lduuid = [NSString stringWithUTF8String:result];
+                return lduuid;
+            }
         }
     }
     

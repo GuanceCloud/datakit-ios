@@ -26,7 +26,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -69,6 +69,26 @@
     NSString *value = nil;
     NSDictionary *dict = @{@"11":value};
 }
+/**
+ *
+ * SIGSEGV
+ */
+- (void)testSIGSEGVCrash{
+    
+    id x_id = [self performSelector:@selector(createNum)];
+}
+/**
+ *  lldb
+ *  pro hand -p true -s false SIGBUS
+ */
+- (void)testSIGBUSCrash{
+    
+        char *s = "hello world";
+        *s = 'H';
+}
+- (int)createNum {
+       return 10;
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -96,6 +116,12 @@
             break;
         case 4:
             [self testCrashLog];
+            break;
+        case 5:
+            [self testSIGSEGVCrash];
+            break;
+        case 6:
+            [self testSIGBUSCrash];
             break;
         default:
             break;

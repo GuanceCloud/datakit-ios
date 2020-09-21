@@ -63,11 +63,9 @@
         config.eventFlowLog = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [FTMobileAgent startWithConfigOptions:config];
-        [FTMobileAgent sharedInstance].upTool.isUploading = YES;
         self.config = config;
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
-        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     }
     return YES;
 }
