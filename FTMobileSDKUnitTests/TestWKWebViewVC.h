@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)ft_load:(NSString *)urlStr;
 - (void)ft_loadOther:(NSString *)urlStr;
 - (void)ft_reload;
+- (void)ft_testNextLink;
 @end
 
 NS_ASSUME_NONNULL_END

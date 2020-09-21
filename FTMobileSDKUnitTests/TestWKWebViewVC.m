@@ -57,6 +57,17 @@
     
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:@"track1"];
 }
+- (void)ft_testNextLink{
+    [_webView evaluateJavaScript:@"window.location.href = \"https://www.baidu.com\";" completionHandler:^(id result, NSError *error) {
+        if (error == nil) {
+            if (result != nil) {
+            }
+        } else {
+            NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+        }
+    }];
+}
+
 ///* 在发送请求之前，决定是否跳转 */
 //- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
 //

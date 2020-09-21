@@ -120,6 +120,41 @@
     }];
 }
 /**
+ * 使用 loadRequest 方法发起请求 之后页面跳转 nextLink 再进行reload
+ * 验证：reload 时 发起的请求 能新增trace数据，header中都添加数据
+ * reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url、spanid 都不一致
+*/
+- (void)testWKWebViewReloadNextLink{
+    [self setTraceConfig];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.testVC ft_testNextLink];
+        [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
+    });
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount-lastCount == 2);
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    FTRecordModel *reloadModel = [array lastObject];
+    FTRecordModel *model = [array objectAtIndex:array.count-2];
+    __block NSString *reloadUrl;
+    __block NSString *reloadSpanID;
+    [self getX_B3_SpanId:reloadModel completionHandler:^(NSString *spanID, NSString *urlStr) {
+        reloadUrl = urlStr;
+        reloadSpanID = spanID;
+    }];
+    [self getX_B3_SpanId:model completionHandler:^(NSString *spanID, NSString *urlStr) {
+        XCTAssertFalse([reloadUrl isEqualToString:urlStr]);
+        XCTAssertFalse([reloadSpanID isEqualToString:spanID]);
+    }];
+}
+/**
  * loadRequest 方法发起请求
  * 验证： reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url一致 spanid 不一致
 */
@@ -162,7 +197,7 @@
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.testVC ft_load:@"https://github.com/CloudCare"];
+        [self.testVC ft_testNextLink];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.testVC.webView goBack];
             [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
@@ -173,10 +208,10 @@
     }];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount-lastCount == 3);
+    XCTAssertTrue(newCount-lastCount == 2);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *reloadModel = [array lastObject];
-    FTRecordModel *model = [array objectAtIndex:array.count-3];
+    FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
     __block NSString *reloadSpanID;
     [self getX_B3_SpanId:reloadModel completionHandler:^(NSString *spanID, NSString *urlStr) {
