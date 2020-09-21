@@ -63,19 +63,23 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     method_exchangeImplementations(originalMethod, ownerMethod);
     
     Method originalreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(reload));
-      Method ownerreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_reload));
-      method_exchangeImplementations(originalreLoadMethod, ownerreLoadMethod);
+    Method ownerreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_reload));
+    method_exchangeImplementations(originalreLoadMethod, ownerreLoadMethod);
+    
+    Method originalLoadRequest= class_getInstanceMethod([WKWebView class], @selector(loadRequest:));
+    Method ownerreLoadRequest = class_getInstanceMethod([WKWebView class], @selector(fthook_loadRequest:));
+    method_exchangeImplementations(originalLoadRequest, ownerreLoadRequest);
 }
-- (void)ft_loadRequest:(NSURLRequest *)request{
+- (void)fthook_loadRequest:(NSURLRequest *)request{
     if ([FTWKWebViewHandler sharedInstance].trace) {
         NSURLRequest *newrequest = [request ft_NetworkTrace];
         if (!self.navigationDelegate) {
             self.navigationDelegate = [FTWKWebViewHandler sharedInstance];
         }
         [[FTWKWebViewHandler sharedInstance] addWebView:self];
-        [self loadRequest:newrequest];
+        [self fthook_loadRequest:newrequest];
     }else{
-        [self loadRequest:request];
+        [self fthook_loadRequest:request];
     }
 }
 - (void)fthook_reload{

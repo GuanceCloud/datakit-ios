@@ -32,7 +32,7 @@
 		4A3E7DC8245AAD540004A499 /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */; };
 		4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */; };
 		4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */; };
-		4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */; };
 		4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */; };
 		4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -348,10 +348,10 @@
 			files = (
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
-				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
 				4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
+				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				4AECBCED244EE8450023DEF7 /* FTURLProtocol.h in Headers */,
 				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,

@@ -90,9 +90,8 @@ static dispatch_once_t onceToken;
        }
        [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
-        NSURLRequest *newReq = [request ft_NetworkTrace];
         [self addWebView:webView];
-        completionHandler? completionHandler(newReq,YES):nil;
+        completionHandler? completionHandler(request,YES):nil;
     }else{
         completionHandler? completionHandler(nil,NO):nil;
     }

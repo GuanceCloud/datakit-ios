@@ -42,17 +42,9 @@
 }
 - (void)ft_load:(NSString *)urlStr{
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
-    [self.webView ft_loadRequest:request];
-}
-- (void)org_load:(NSString *)urlStr{
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
     [self.webView loadRequest:request];
 }
 - (void)ft_loadOther:(NSString *)urlStr{
-    NSMutableURLRequest *request2 = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
-    [self.webView ft_loadRequest:request2];
-}
-- (void)org_loadOther:(NSString *)urlStr{
     NSMutableURLRequest *request2 = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
     [self.webView loadRequest:request2];
 }
@@ -67,14 +59,14 @@
 }
 ///* 在发送请求之前，决定是否跳转 */
 //- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-//   
+//
 //    //允许跳转
 //    decisionHandler(WKNavigationActionPolicyAllow);
 //    //不允许跳转
 ////    decisionHandler(WKNavigationActionPolicyCancel);
 //}
 //- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-//   
+//
 //    decisionHandler(WKNavigationResponsePolicyAllow);
 //}
 -(void)dealloc{

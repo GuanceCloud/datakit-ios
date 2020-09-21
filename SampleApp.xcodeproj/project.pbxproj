@@ -30,7 +30,7 @@
 		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A299B92251464E000400931 /* FTWKWebViewTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
-		4A299B9825149E3500400931 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */; };
+		4A299BA32518996000400931 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
@@ -612,7 +612,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A299B9825149E3500400931 /* TestWKWebViewVC.m in Sources */,
+				4A299BA32518996000400931 /* TestWKWebViewVC.m in Sources */,
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				4A037EFE24F8DB32007B2104 /* FTLogTest.m in Sources */,

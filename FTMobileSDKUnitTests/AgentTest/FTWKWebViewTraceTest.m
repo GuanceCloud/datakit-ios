@@ -93,7 +93,7 @@
     }];
 }
 /**
- * 使用SDK 提供 ft_loadRequest 方法发起请求
+ * loadRequest 方法发起请求
  * 验证： trace 到的数据 url与请求url一致 header中有trace数据
  */
 - (void)testWKWebViewTrace{
@@ -120,28 +120,7 @@
     }];
 }
 /**
- * 使用系统 提供 loadRequest 方法发起请求
- * 验证： 无trace添加
-*/
-- (void)testWKWebViewOriginLoadRequest{
-    [self setTraceConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [self.testVC org_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-        XCTAssertTrue(newCount-lastCount == 0);
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-}
-/**
- * 使用SDK 提供 ft_loadRequest 方法发起请求
+ * loadRequest 方法发起请求
  * 验证： reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url一致 spanid 不一致
 */
 - (void)testWKWebViewReloadTrace{
@@ -172,53 +151,18 @@
     }];
 }
 /**
- * 使用SDK 提供 ft_loadRequest 方法发起请求 之后页面跳转发起新请求 再进行reload
- * 验证：reload 时 发起的请求 都能新增trace数据，header中都添加数据
- * reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url、spanid 都不一致
-*/
-- (void)testWKWebViewReloadNewURLTrace{
-    [self setTraceConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.testVC org_load:@"https://github.com/CloudCare"];
-        [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
-    });
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
-    FTRecordModel *reloadModel = [array lastObject];
-    FTRecordModel *model = [array objectAtIndex:array.count-2];
-    __block NSString *reloadUrl;
-    __block NSString *reloadSpanID;
-    [self getX_B3_SpanId:reloadModel completionHandler:^(NSString *spanID, NSString *urlStr) {
-        reloadUrl = urlStr;
-        reloadSpanID = spanID;
-    }];
-    [self getX_B3_SpanId:model completionHandler:^(NSString *spanID, NSString *urlStr) {
-        XCTAssertFalse([reloadUrl isEqualToString:urlStr]);
-        XCTAssertFalse([reloadSpanID isEqualToString:spanID]);
-    }];
-}
-/**
- * 使用SDK 提供 ft_loadRequest 方法发起请求 之后页面跳转再回退到初始页面 再进行reload
+ * 使用 loadRequest 方法发起请求 之后页面跳转再回退到初始页面 再进行reload
  * 验证：reload 时 发起的请求 都能新增trace数据，header中都添加数据
  * reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url 一致 ，spanid 不一致
 */
 - (void)testWKWebViewGobackReloadTrace{
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
+
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.testVC org_load:@"https://github.com/CloudCare"];
+        [self.testVC ft_load:@"https://github.com/CloudCare"];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.testVC.webView goBack];
             [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
@@ -229,10 +173,10 @@
     }];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount-lastCount == 2);
+    XCTAssertTrue(newCount-lastCount == 3);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *reloadModel = [array lastObject];
-    FTRecordModel *model = [array objectAtIndex:array.count-2];
+    FTRecordModel *model = [array objectAtIndex:array.count-3];
     __block NSString *reloadUrl;
     __block NSString *reloadSpanID;
     [self getX_B3_SpanId:reloadModel completionHandler:^(NSString *spanID, NSString *urlStr) {
