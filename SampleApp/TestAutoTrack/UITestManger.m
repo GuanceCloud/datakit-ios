@@ -24,7 +24,7 @@
 }
 -(instancetype)init{
     if ([super init]) {
-        self.lastCount =  0;
+        self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"];
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch
         self.autoTrackClickCount = 0;
@@ -35,7 +35,7 @@
     return self;
 }
 -(void)reset{
-    self.lastCount =  0;
+    self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"];
     NSLog(@"lastCount == %ld",self.lastCount);
     self.trackCount = 1;//lunch
     self.autoTrackViewScreenCount = 1; //UITabBarController (open)
