@@ -10,10 +10,12 @@
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import "UITestManger.h"
-#import "AppDelegate.h"
 #import "TestBluetoothList.h"
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
+//测试崩溃采集
+#import "FTUncaughtExceptionHandler+Test.h"
+
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -66,28 +68,39 @@
 }
 
 - (void)testCrashLog{
-    NSString *value = nil;
-    NSDictionary *dict = @{@"11":value};
+    //阻塞了主线程防止崩溃  主线程阻塞了
+    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *value = nil;
+        NSDictionary *dict = @{@"11":value};
+    });
 }
 /**
  *
  * SIGSEGV
  */
 - (void)testSIGSEGVCrash{
-    
-    id x_id = [self performSelector:@selector(createNum)];
+    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        id x_id = [self performSelector:@selector(createNum)];
+    });
 }
 /**
  *  lldb
  *  pro hand -p true -s false SIGBUS
  */
 - (void)testSIGBUSCrash{
-    
+    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
         char *s = "hello world";
         *s = 'H';
+    });
 }
 - (int)createNum {
-       return 10;
+    return 10;
 }
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{

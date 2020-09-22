@@ -72,7 +72,20 @@
     // Use XCTAssert and related functions to verify your tests produce the correct results.
 }
 
-
+- (void)testCrash{
+    XCUIApplication *app = [[XCUIApplication alloc] init];
+    XCUIElement *window = [app.windows elementBoundByIndex:0];
+    ////将test 运行使用环境赋值给 application
+    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
+    [app launch];
+    
+    [app.tables.staticTexts[@"Test_crashLog"] tap];
+    [NSThread sleepForTimeInterval:3];
+    XCUIElement *success  = app.alerts[@"Crash"];
+    
+    XCTAssertTrue(success.exists);
+    
+}
 
 
 

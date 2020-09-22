@@ -8,7 +8,6 @@
 
 #import "TestWKWebViewVC.h"
 #import <FTMobileAgent/WKWebView+FTTrace.h>
-#import "FTUncaughtExceptionHandler+Test.h"
 
 @interface TestWKWebViewVC ()<WKNavigationDelegate>
 
@@ -56,10 +55,6 @@
             NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
         }
     }];
-}
--(void)ft_testCrash{
-    NSString *value = nil;
-    NSDictionary *dict = @{@"11":value};
 }
 -(void)dealloc{
     NSLog(@"dealloc");
