@@ -8,17 +8,13 @@
 
 #import "TestWKWebViewVC.h"
 #import <FTMobileAgent/WKWebView+FTTrace.h>
-@interface TestWKWebViewVC ()<WKScriptMessageHandler,WKNavigationDelegate>
+#import "FTUncaughtExceptionHandler+Test.h"
+
+@interface TestWKWebViewVC ()<WKNavigationDelegate>
 
 @end
 
 @implementation TestWKWebViewVC
-- (void)viewWillAppear:(BOOL)animated {
-    
-    [super viewWillAppear:animated];
-    
-    [_webView.configuration.userContentController addScriptMessageHandler:self name:@"track1"];
-}
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -51,12 +47,6 @@
 - (void)ft_reload{
     [self.webView reload];
 }
-- (void)viewWillDisappear:(BOOL)animated {
-    
-    [super viewWillDisappear:animated];
-    
-    [_webView.configuration.userContentController removeScriptMessageHandlerForName:@"track1"];
-}
 - (void)ft_testNextLink{
     [_webView evaluateJavaScript:@"window.location.href = \"https://www.baidu.com\";" completionHandler:^(id result, NSError *error) {
         if (error == nil) {
@@ -67,19 +57,10 @@
         }
     }];
 }
-
-///* 在发送请求之前，决定是否跳转 */
-//- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-//
-//    //允许跳转
-//    decisionHandler(WKNavigationActionPolicyAllow);
-//    //不允许跳转
-////    decisionHandler(WKNavigationActionPolicyCancel);
-//}
-//- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-//
-//    decisionHandler(WKNavigationResponsePolicyAllow);
-//}
+-(void)ft_testCrash{
+    NSString *value = nil;
+    NSDictionary *dict = @{@"11":value};
+}
 -(void)dealloc{
     NSLog(@"dealloc");
 }
