@@ -139,12 +139,15 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
         _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
         [self installUncaughtExceptionHandler];
+        [self installSignalHandler];
     }
     return self;
 }
 - (void)installUncaughtExceptionHandler{
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&HandleException);
+}
+- (void)installSignalHandler{
     struct sigaction old_action_abrt;
     sigaction(SIGABRT, NULL, &old_action_abrt);
     if (old_action_abrt.sa_sigaction) {
@@ -190,14 +193,15 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     if (old_action_trap.sa_sigaction) {
         previousTRAPSignalHandler = old_action_trap.sa_sigaction;
     }
-    FTSignalRegister(SIGABRT);
-    FTSignalRegister(SIGBUS);
-    FTSignalRegister(SIGFPE);
-    FTSignalRegister(SIGILL);
-    FTSignalRegister(SIGPIPE);
-    FTSignalRegister(SIGSEGV);
-    FTSignalRegister(SIGSYS);
-    FTSignalRegister(SIGTRAP);
+    struct sigaction action;
+    action.sa_sigaction = FTSignalHandler;
+    action.sa_flags = SA_NODEFER | SA_SIGINFO;
+    sigemptyset(&action.sa_mask);
+    int signals[] = {SIGABRT,SIGBUS, SIGFPE, SIGILL, SIGPIPE, SIGSEGV,SIGSYS,SIGTRAP};
+    for (int i = 0; i < sizeof(signals) / sizeof(int); i++) {
+        sigaction(signals[i], &action, 0);
+    }
+    
 }
 - (void)addftSDKInstance:(FTMobileAgent *)instance{
     NSParameterAssert(instance != nil);
@@ -210,13 +214,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     if ([self.ftSDKInstances containsObject:instance]) {
         [self.ftSDKInstances removeObject:instance];
     }
-}
-static void FTSignalRegister(int signal) {
-    struct sigaction action;
-    action.sa_sigaction = FTSignalHandler;
-    action.sa_flags = SA_NODEFER | SA_SIGINFO;
-    sigemptyset(&action.sa_mask);
-    sigaction(signal, &action, 0);
 }
 static void FTClearSignalRegister() {
     signal(SIGSEGV,SIG_DFL);
