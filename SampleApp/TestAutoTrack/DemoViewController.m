@@ -68,33 +68,29 @@
 }
 
 - (void)testCrashLog{
-    //阻塞了主线程防止崩溃  主线程阻塞了
-    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
-    
+    //在子线程测试崩溃时 crash alert才能显示出来
+    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *value = nil;
         NSDictionary *dict = @{@"11":value};
     });
 }
 /**
- *
- * SIGSEGV
+ *SignalHandler不要在debug环境下测试。因为系统的debug会优先去拦截。在模拟器上运行一次后，关闭debug状态，然后直接在模拟器上点击我们build上去的app去运行
  */
 - (void)testSIGSEGVCrash{
-    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
+    
+    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
         id x_id = [self performSelector:@selector(createNum)];
     });
 }
 /**
- *  lldb
- *  pro hand -p true -s false SIGBUS
+ *SignalHandler不要在debug环境下测试。因为系统的debug会优先去拦截。在模拟器上运行一次后，关闭debug状态，然后直接在模拟器上点击我们build上去的app去运行
  */
 - (void)testSIGBUSCrash{
-    [FTUncaughtExceptionHandler sharedHandler].testSuccess = NO;
+    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
         char *s = "hello world";
         *s = 'H';
     });
