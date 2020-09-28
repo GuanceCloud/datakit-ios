@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTWKWebViewTraceDelegate <NSObject>
 @optional
 
-- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration;
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(nullable NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(nullable NSError *)error;
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL trace;
@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
 - (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
 - (void)removeWebView:(WKWebView *)webView;
+- (void)didLoadFailWithError:(NSError *)error webView:(WKWebView *)webview;
+- (void)didFinishWithWebview:(WKWebView *)webview;
 
 @end
 

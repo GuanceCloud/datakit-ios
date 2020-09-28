@@ -446,7 +446,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [tagsDict addEntriesFromDictionary:tags];
     }
     //METRICS 中流程图不添加监控项
-    if (![op isEqualToString:FT_TRACK_OP_FLOWCUSTOM] && ![op isEqualToString:FT_AUTO_TRACK_OP_VIEW] && [type isEqualToString:FT_NETWORKING_API_METRICS]) {
+    if (![op isEqualToString:FT_TRACK_OP_FLOWCUSTOM] && ![op isEqualToString:FT_AUTO_TRACK_OP_VIEW] && [type isEqualToString:FTNetworkingTypeMetrics]) {
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
             [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];

@@ -58,15 +58,15 @@ static dispatch_once_t onceToken;
     NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
     if (request) {
         if([[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO] && [request.URL isEqual:response.URL]){
-            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:key];
             isTrace = YES;
         }
     }
     [self.lock unlock];
     if (isTrace) {
         NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
-        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:)]) {
-            [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration];
+        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
+            [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
         }
     }
    
@@ -96,5 +96,28 @@ static dispatch_once_t onceToken;
         completionHandler? completionHandler(nil,NO):nil;
     }
 }
- 
+-(void)didFinishWithWebview:(WKWebView *)webview{
+    
+}
+- (void)didLoadFailWithError:(NSError *)error webView:(WKWebView *)webview{
+    NSString *key = [[NSNumber numberWithInteger:webview.hash] stringValue];
+    NSDate *endDate = [NSDate date];
+    BOOL isTrace = NO;
+    [self.lock lock];
+    NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+    if (request) {
+        if([[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO] && [request.URL isEqual:webview.URL]){
+            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:key];
+            isTrace = YES;
+        }
+    }
+    [self.lock unlock];
+    if (isTrace) {
+        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
+            [self.traceDelegate ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
+        }
+    }
+}
+
 @end

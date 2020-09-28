@@ -17,6 +17,9 @@ extern NSString * const FT_AGENT_OP;
 extern NSString * const FT_USER_AGENT;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_NULL_VALUE;
+extern NSString * const FT_HTTP_MEASUREMENT;
+extern NSString * const FT_WEB_HTTP_MEASUREMENT;
+
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
 extern NSString * const FT_KEY_DURATION;

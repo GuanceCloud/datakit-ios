@@ -24,6 +24,8 @@ NSString * const FT_FLOW_TRACEID  = @"__traceID";
 NSString * const FT_KEY_NAME  = @"__name";
 NSString * const FT_FLOW_PARENT  = @"__parent";
 
+NSString * const FT_HTTP_MEASUREMENT = @"mobile_client_http";
+NSString * const FT_WEB_HTTP_MEASUREMENT = @"mobile_webview_http";
 
 #pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";

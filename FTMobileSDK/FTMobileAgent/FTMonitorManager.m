@@ -299,6 +299,10 @@ static dispatch_once_t onceToken;
     if (delta < 1) return;
     _lastTime = link.timestamp;
     _fps = _count / delta;
+    if(_fps<10){
+        NSDictionary *field =  @{FT_AUTO_TRACK_EVENT:@"block"};
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackType:FTTrackTypeAuto];
+    }
     _count = 0;
 }
 - (void)applicationDidBecomeActiveNotification {
@@ -661,11 +665,29 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
+    [[FTMobileAgent sharedInstance] trackBackground:@"mobile_client_http" tags:@{@"isError":[NSNumber numberWithBool:iserror]
+    } field:@{@"url":task.originalRequest.URL.absoluteString} withTrackType:FTTrackTypeAuto];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
-- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration{
-    BOOL iserror= [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
-    NSDictionary *responseDict = response?[response ft_getResponseContentDictWithData:nil]:@{};
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
+    BOOL iserror = NO;
+    NSDictionary *responseDict = @{};
+    if (error) {
+        iserror = YES;
+        NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
+        NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
+        responseDict = @{FT_NETWORK_HEADERS:@{},
+                                    FT_NETWORK_BODY:@{},
+                                    FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                                       @"errorDomain":error.domain,
+                                                       @"errorDescription":errorDescription,
+                                    },
+                                    FT_NETWORK_CODE:errorCode,
+        };
+    }else{
+        iserror = [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
+    }
+    responseDict = response?[response ft_getResponseContentDictWithData:nil]:responseDict;
         NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
     [requestDict setValue:[request ft_getBodyData:[request ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
     NSDictionary *responseDic = responseDict?responseDict:@{};
@@ -692,6 +714,8 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
+    [[FTMobileAgent sharedInstance] trackBackground:@"mobile_webview_http" tags:@{@"isError":[NSNumber numberWithBool:iserror]
+       } field:@{@"url":request.URL.absoluteString} withTrackType:FTTrackTypeAuto];
 }
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)judgeIsTraceSampling{
