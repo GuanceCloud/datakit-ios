@@ -33,7 +33,9 @@
         
     //! 使用configuration对象初始化webView
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
+    self.webView.navigationDelegate = self;
     [self.view addSubview:self.webView];
+    [self ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios"];
 }
 - (void)ft_load:(NSString *)urlStr{
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
@@ -56,6 +58,26 @@
         }
     }];
 }
+//- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
+//    
+//    decisionHandler(WKNavigationActionPolicyAllow);
+//}
+//- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+//    
+//    decisionHandler(WKNavigationResponsePolicyAllow);
+//}
+//- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
+//    
+//}
+//- (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
+//    
+//}
+//- (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
+//    
+//}
+//- (void)webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation{
+//    
+//}
 -(void)dealloc{
     NSLog(@"dealloc");
 }

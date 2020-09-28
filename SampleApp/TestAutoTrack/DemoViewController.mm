@@ -15,7 +15,8 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 //测试崩溃采集
 #import "FTUncaughtExceptionHandler+Test.h"
-
+#import "TestCCrash.hpp"
+#import "TestWKWebViewVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -28,7 +29,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"test_webview"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -98,6 +99,17 @@
 - (int)createNum {
     return 10;
 }
+- (void)testCCrash{
+    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        MyCppClass::testCrash();
+    });
+}
+- (void)test_webview{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -132,6 +144,11 @@
         case 6:
             [self testSIGBUSCrash];
             break;
+        case 7:
+            [self testCCrash];
+            break;
+        case 8:
+            [self test_webview];
         default:
             break;
     }
