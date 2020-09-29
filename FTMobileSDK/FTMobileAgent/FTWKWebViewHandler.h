@@ -13,8 +13,20 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTWKWebViewTraceDelegate <NSObject>
 @optional
-
+/**
+ * WKWebView Trace
+ */
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(nullable NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(nullable NSError *)error;
+/**
+ * mobile_webview_time_cost   loading
+ * ⻚面开始 - 开始加载资源
+ */
+-(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration;
+/**
+ * mobile_webview_time_cost   loadCompleted
+ * ⻚面开始 - 资源加载完毕
+*/
+-(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration;
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL trace;
@@ -25,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
 - (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
 - (void)removeWebView:(WKWebView *)webView;
-- (void)didLoadFailWithError:(NSError *)error webView:(WKWebView *)webview;
+- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webview;
+- (void)loadingWebView:(WKWebView *)webView;
 - (void)didFinishWithWebview:(WKWebView *)webview;
 
 @end

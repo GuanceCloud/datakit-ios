@@ -96,10 +96,39 @@ static dispatch_once_t onceToken;
         completionHandler? completionHandler(nil,NO):nil;
     }
 }
--(void)didFinishWithWebview:(WKWebView *)webview{
-    
+- (void)loadingWebView:(WKWebView *)webView{
+    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
+    NSDate *endDate = [NSDate date];
+    NSURLRequest *request;
+    [self.lock lock];
+    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
+        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+    }
+    [self.lock unlock];
+    if ([request.URL isEqual:webView.URL]) {
+        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadingWithURL:duration:)]) {
+            [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL.absoluteString duration:duration];
+        }
+    }
 }
-- (void)didLoadFailWithError:(NSError *)error webView:(WKWebView *)webview{
+-(void)didFinishWithWebview:(WKWebView *)webView{
+    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
+    NSDate *endDate = [NSDate date];
+    NSURLRequest *request;
+    [self.lock lock];
+    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
+        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
+    }
+    [self.lock unlock];
+    if ([request.URL isEqual:webView.URL]) {
+        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadCompletedWithURL:duration:)]) {
+            [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL.absoluteString duration:duration];
+        }
+    }
+}
+- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webview{
     NSString *key = [[NSNumber numberWithInteger:webview.hash] stringValue];
     NSDate *endDate = [NSDate date];
     BOOL isTrace = NO;

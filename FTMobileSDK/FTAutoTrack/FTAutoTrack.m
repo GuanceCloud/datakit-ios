@@ -35,7 +35,7 @@
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
 @property (nonatomic, strong) NSMutableDictionary *pageDesc;
 @property (nonatomic, strong) NSMutableDictionary *vtpDesc;
-
+@property (nonatomic, assign) BOOL isLaunch;
 @end
 @implementation FTAutoTrack
 -(instancetype)init{
@@ -69,6 +69,7 @@
                                selector:@selector(appDidBecomeActiveNotification:)
                                    name:UIApplicationDidBecomeActiveNotification
                                  object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillResignActiveNotification:) name:UIApplicationWillResignActiveNotification object:nil];
     }
     
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick) {
@@ -81,13 +82,23 @@
     
 }
 - (void)appDidBecomeActiveNotification:(NSNotification *)notification{
+    self.isLaunch = YES;
     CFAbsoluteTime intervalTime = (CFAbsoluteTimeGetCurrent() - self.launchTime);
     if ((int)intervalTime>10) {
      [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
     }
      self.launchTime = CFAbsoluteTimeGetCurrent();
 }
-
+- (void)applicationWillResignActiveNotification:(NSNotification *)notification{
+    self.isLaunch = NO;
+    CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (!self.isLaunch) {
+            float duration = (endDate - self.launchTime);
+            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"actived"} field:@{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+        }
+    });
+}
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
     id<ZY_AspectToken> viewOpen =[UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
@@ -386,9 +397,9 @@
         return;
     }
     @try {
-        NSMutableDictionary *content = @{FT_AUTO_TRACK_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
+        NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
         [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-        NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_AUTO_TRACK_EVENT]};
+        NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
         NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]};
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"loggingOpen" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:field];
     } @catch (NSException *exception) {
@@ -407,7 +418,7 @@
     }
     @try {
         NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[op ft_md5HashToUpper32Bit]}.mutableCopy;
-        NSMutableDictionary *field = @{FT_AUTO_TRACK_EVENT:op
+        NSMutableDictionary *field = @{FT_KEY_EVENT:op
         }.mutableCopy;
         NSMutableDictionary *content = [NSMutableDictionary new];
         
@@ -451,12 +462,12 @@
             }
         }
         if(self.config.eventFlowLog){
-            [content setValue:op forKey:FT_AUTO_TRACK_EVENT];
-            NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",op,FT_AUTO_TRACK_EVENT]};
+            [content setValue:op forKey:FT_KEY_EVENT];
+            NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
             [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"eventFlowLog" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:nil];
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
-        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackType:FTTrackTypeAuto];
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackOP:op];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }

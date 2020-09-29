@@ -33,12 +33,13 @@
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
 #import "FTWKWebViewHandler.h"
+#import "FTANRDetector.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
 static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manager.lock";
 
-@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate,FTWKWebViewTraceDelegate>
+@interface FTMonitorManager ()<CBCentralManagerDelegate,CBPeripheralDelegate, AVCaptureVideoDataOutputSampleBufferDelegate,FTHTTPProtocolDelegate,FTWKWebViewTraceDelegate,FTANRDetectorDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) NSMutableArray<CBPeripheral *> *devicesListArray;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
@@ -108,6 +109,10 @@ static dispatch_once_t onceToken;
         [FTWKWebViewHandler sharedInstance].trace = NO;
         [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
     }
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        [FTANRDetector sharedInstance].delegate = self;
+        [[FTANRDetector sharedInstance] startDetecting];
+    }];
 }
 
 -(void)dealNetworkContentType:(NSArray *)array{
@@ -300,8 +305,8 @@ static dispatch_once_t onceToken;
     _lastTime = link.timestamp;
     _fps = _count / delta;
     if(_fps<10){
-        NSDictionary *field =  @{FT_AUTO_TRACK_EVENT:@"block"};
-        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackType:FTTrackTypeAuto];
+        NSDictionary *field =  @{FT_KEY_EVENT:@"block"};
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackOP:@"block"];
     }
     _count = 0;
 }
@@ -665,8 +670,8 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:@"mobile_client_http" tags:@{@"isError":[NSNumber numberWithBool:iserror]
-    } field:@{@"url":task.originalRequest.URL.absoluteString} withTrackType:FTTrackTypeAuto];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:iserror]
+    } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString} withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
@@ -714,8 +719,25 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:@"mobile_webview_http" tags:@{@"isError":[NSNumber numberWithBool:iserror]
-       } field:@{@"url":request.URL.absoluteString} withTrackType:FTTrackTypeAuto];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:iserror]
+       } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_HTTP_MEASUREMENT];
+}
+-(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loading"
+    } field:@{FT_NETWORK_REQUEST_URL:urlStr} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+}
+-(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loadCompleted"
+       } field:@{@"url":urlStr} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+}
+#pragma mark ========== FTANRDetectorDelegate ==========
+- (void)onMainThreadSlowStackDetected:(NSArray*)slowStack{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:@{FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
+    
+    if (slowStack.count>0) {
+        NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", [slowStack componentsJoinedByString:@"\n"]];
+        [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
+    }
 }
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)judgeIsTraceSampling{

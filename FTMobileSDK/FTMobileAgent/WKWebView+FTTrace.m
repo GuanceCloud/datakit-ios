@@ -105,10 +105,10 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     Hook_Method([delegate class], @selector(webView:decidePolicyForNavigationResponse:decisionHandler:), [self class], @selector(owner_webView:decidePolicyForNavigationResponse:decisionHandler:), @selector(none_webView:decidePolicyForNavigationResponse:decisionHandler:));
     //load error
     Hook_Method([delegate class], @selector(webView:didFailProvisionalNavigation:withError:), [self class], @selector(owner_webView:didFailProvisionalNavigation:withError:), @selector(none_webView:didFailProvisionalNavigation:withError:));
+    //
+    Hook_Method([delegate class], @selector(webView:didCommitNavigation:), [self class], @selector(owner_webView:didCommitNavigation:), @selector(none_webView:didCommitNavigation:));
     //navigation Finish
     Hook_Method([delegate class], @selector(webView:didFinishNavigation:), [self class], @selector(owner_webView:didFinishNavigation:), @selector(none_webView:didFinishNavigation:));
-    //navigation error
-    Hook_Method([delegate class], @selector(webView:didFailNavigation:withError:), [self class], @selector(owner_webView:didFailNavigation:withError:), @selector(none_webView:didFailNavigation:withError:));
     [self fthook_setNavigationDelegate:delegate];
     
 }
@@ -141,28 +141,28 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
 }
 - (void)owner_webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
     if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] didLoadFailWithError:error webView:webView];
+        [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
     }
     [self owner_webView:webView didFailProvisionalNavigation:navigation withError:error];
 }
 - (void)none_webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
     if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] didLoadFailWithError:error webView:webView];
+        [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
     }
 }
-- (void)owner_webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
+- (void)owner_webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation{
     if ([FTWKWebViewHandler sharedInstance].trace) {
+        [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
     }
-    [self owner_webView:webView didFailNavigation:navigation withError:error];
 }
-- (void)none_webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
+- (void)none_webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation{
     if ([FTWKWebViewHandler sharedInstance].trace) {
+        [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
     }
 }
 - (void)none_webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
     if ([FTWKWebViewHandler sharedInstance].trace) {
         [[FTWKWebViewHandler sharedInstance] didFinishWithWebview:webView];
-        
     }
 }
 - (void)owner_webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
