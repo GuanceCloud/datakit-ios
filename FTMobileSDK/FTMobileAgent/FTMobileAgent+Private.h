@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 /**
  * autotrack  全埋点事件抓取 存储数据库
  */
-- (void)trackBackground:(NSString *)measurement tags:(NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType;
+- (void)trackBackground:(NSString *)measurement tags:(NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP;
 /**
  * autotrack  全埋点页面流程图抓取 存储数据库
  */

@@ -19,7 +19,8 @@ extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_HTTP_MEASUREMENT;
 extern NSString * const FT_WEB_HTTP_MEASUREMENT;
-
+extern NSString * const FT_WEB_TIMECOST_MEASUREMENT;
+extern NSString * const FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT;
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
 extern NSString * const FT_KEY_DURATION;
@@ -40,7 +41,7 @@ extern NSString * const FT_TRACK_LOGGING_EXCEPTION;
 extern NSString * const FT_TRACK_LOGGING_CONSOLELOG;
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_AUTO_TRACK_EVENT_ID;
-extern NSString * const FT_AUTO_TRACK_EVENT;
+extern NSString * const FT_KEY_EVENT;
 extern NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME;
 extern NSString * const FT_AUTO_TRACK_CURRENT_PAGE_NAME;
 extern NSString * const FT_AUTO_TRACK_VTP;

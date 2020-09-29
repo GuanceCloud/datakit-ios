@@ -188,10 +188,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark ========== publick method ==========
 - (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
-    [self trackBackground:measurement tags:nil field:field withTrackType:FTTrackTypeCode];
+    [self trackBackground:measurement tags:nil field:field withTrackOP:FT_TRACK_OP_CUSTOM];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
-    [self trackBackground:measurement tags:tags field:field withTrackType:FTTrackTypeCode];
+    [self trackBackground:measurement tags:tags field:field withTrackOP:FT_TRACK_OP_CUSTOM];
 }
 
 -(void)trackImmediate:(NSString *)measurement field:(NSDictionary *)field callBack:(void (^)(NSInteger statusCode, id _Nullable responseObject))callBackStatus{
@@ -317,7 +317,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark ========== private method==========
 #pragma mark - 数据拼接 存储数据库
-- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackType:(FTTrackType)trackType{
+- (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP{
     NSParameterAssert(measurement);
     NSParameterAssert(field);
     @try {
@@ -325,13 +325,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYErrorLog(@"文件名 事件名不能为空");
             return;
         }
-        NSString *op;
-        if (trackType == FTTrackTypeCode) {
-            op = FT_TRACK_OP_CUSTOM;
-        }else{
-            op = [field valueForKey:FT_AUTO_TRACK_EVENT];
-        }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:op netType:FTNetworkingTypeMetrics tm:0];
+        FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:trackOP netType:FTNetworkingTypeMetrics tm:0];
         [self insertDBWithItemData:model];
     }
     @catch (NSException *exception) {

@@ -26,7 +26,8 @@ NSString * const FT_FLOW_PARENT  = @"__parent";
 
 NSString * const FT_HTTP_MEASUREMENT = @"mobile_client_http";
 NSString * const FT_WEB_HTTP_MEASUREMENT = @"mobile_webview_http";
-
+NSString * const FT_WEB_TIMECOST_MEASUREMENT = @"mobile_webview_time_cost";
+NSString * const FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT = @"mobile_client_time_cost";
 #pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
@@ -41,7 +42,7 @@ NSString * const FT_TRACK_LOGGING_CONSOLELOG = @"consolelog";
 
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
-NSString * const FT_AUTO_TRACK_EVENT = @"event";
+NSString * const FT_KEY_EVENT = @"event";
 NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME = @"root_page_name";
 NSString * const FT_AUTO_TRACK_CURRENT_PAGE_NAME = @"current_page_name";
 NSString * const FT_AUTO_TRACK_VTP = @"vtp";

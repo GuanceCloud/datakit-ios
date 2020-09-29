@@ -288,8 +288,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
     for (FTMobileAgent *instance in self.ftSDKInstances) {
-        NSDictionary *field =  @{FT_AUTO_TRACK_EVENT:@"crash"};
-        [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackType:FTTrackTypeAuto];
+        NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
+        [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackOP:@"crash"];
 
         NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
