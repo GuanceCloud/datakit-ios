@@ -33,7 +33,7 @@ static void thread_singal_handler(int sig)
     
     NSArray* callStack = [NSThread callStackSymbols];
     
-    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].watchDelegate;
+    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
     if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
         [del onMainThreadSlowStackDetected:callStack];
     }
@@ -139,7 +139,7 @@ dispatch_source_t createGCDTimer(uint64_t interval, uint64_t leeway, dispatch_qu
 - (void)onPongTimeout
 {
     [self cancelPongTimer];
-    printMainThreadCallStack();
+  //  printMainThreadCallStack();
 }
 
 - (void)detectPongFromMainThread

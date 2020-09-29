@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sharedInstance;
 
-@property (nonatomic, weak) id<FTANRDetectorDelegate> watchDelegate;
+@property (nonatomic, weak) id<FTANRDetectorDelegate> delegate;
 
 
 //must be called from main thread
