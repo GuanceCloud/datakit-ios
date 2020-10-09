@@ -720,22 +720,22 @@ static dispatch_once_t onceToken;
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
     [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:iserror]
-       } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_HTTP_MEASUREMENT];
+       } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
     [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loading"
-    } field:@{FT_NETWORK_REQUEST_URL:urlStr} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+    } field:@{FT_NETWORK_REQUEST_URL:urlStr,FT_DURATION_TIME:duration} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
     [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loadCompleted"
-       } field:@{@"url":urlStr} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+       } field:@{@"url":urlStr,FT_DURATION_TIME:duration} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
-- (void)onMainThreadSlowStackDetected:(NSArray*)slowStack{
+- (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:@{FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
     
-    if (slowStack.count>0) {
-        NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", [slowStack componentsJoinedByString:@"\n"]];
+    if (slowStack.length>0) {
+        NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];
         [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
@@ -838,6 +838,7 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance =nil;
     [FTWKWebViewHandler sharedInstance].trace = NO;
+    [[FTANRDetector sharedInstance] stopDetecting];
     [FTURLProtocol stopMonitor];
     [self stopFlushTimer];
     [self stopMonitor];

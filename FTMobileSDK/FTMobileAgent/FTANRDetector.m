@@ -8,6 +8,7 @@
 
 #import "FTANRDetector.h"
 #import "FTLog.h"
+#import "FTCallStack.h"
 #define FTANRDetector_Watch_Interval     1.0f
 #define FTANRDetector_Warning_Level     (16.0f/1000.0f)
 
@@ -22,43 +23,6 @@ static pthread_t mainThreadID;
 
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
-
-static void thread_singal_handler(int sig)
-{
-    NSLog(@"main thread catch signal: %d", sig);
-    
-    if (sig != CALLSTACK_SIG) {
-        return;
-    }
-    
-    NSArray* callStack = [NSThread callStackSymbols];
-    
-    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
-    if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
-        [del onMainThreadSlowStackDetected:callStack];
-    }
-    else
-    {
-        ZYDebug(@"detect slow call stack on main thread! \n");
-        for (NSString* call in callStack) {
-            ZYDebug(@"%@\n", call);
-        }
-    }
-    
-    return;
-}
-
-static void install_signal_handler()
-{
-    signal(CALLSTACK_SIG, thread_singal_handler);
-}
-
-static void printMainThreadCallStack()
-{
-    ZYDebug(@"sending signal: %d to main thread", CALLSTACK_SIG);
-    pthread_kill(mainThreadID, CALLSTACK_SIG);
-}
-
 
 dispatch_source_t createGCDTimer(uint64_t interval, uint64_t leeway, dispatch_queue_t queue, dispatch_block_t block)
 {
@@ -100,9 +64,7 @@ dispatch_source_t createGCDTimer(uint64_t interval, uint64_t leeway, dispatch_qu
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectPingFromWorkerThread) name:Notification_FTANRDetector_Worker_Ping object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectPongFromMainThread) name:Notification_FTANRDetector_Main_Pong object:nil];
-    
-    install_signal_handler();
-    
+        
     mainThreadID = pthread_self();
     
     //ping from worker thread
@@ -139,7 +101,16 @@ dispatch_source_t createGCDTimer(uint64_t interval, uint64_t leeway, dispatch_qu
 - (void)onPongTimeout
 {
     [self cancelPongTimer];
-  //  printMainThreadCallStack();
+    NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
+    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
+       if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
+           [del onMainThreadSlowStackDetected:backtrace];
+       }
+       else
+       {
+           ZYDebug(@"detect slow call stack on main thread! \n");
+           ZYDebug(@"%@\n", backtrace);
+       }
 }
 
 - (void)detectPongFromMainThread

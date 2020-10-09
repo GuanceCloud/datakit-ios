@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTANRDetectorDelegate <NSObject>
-- (void)onMainThreadSlowStackDetected:(NSArray*)slowStack;
+- (void)onMainThreadSlowStackDetected:(NSString*)slowStack;
 @end
 @interface FTANRDetector : NSObject
 
