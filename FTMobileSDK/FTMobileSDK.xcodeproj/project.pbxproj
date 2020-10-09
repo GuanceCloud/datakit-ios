@@ -28,6 +28,8 @@
 		4A37A94B2486006100E0381B /* NSURLRequest+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A9492486006100E0381B /* NSURLRequest+FTMonitor.h */; };
 		4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */; };
 		4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */; };
+		4A39314D25300D2100BC2134 /* FTCallStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A39314B25300D2100BC2134 /* FTCallStack.m */; };
+		4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A39314C25300D2100BC2134 /* FTCallStack.h */; };
 		4A3C7D5723E7CA17006DC9C7 /* FTGPUUsage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */; };
 		4A3C7D5823E7CA17006DC9C7 /* FTGPUUsage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */; };
 		4A3E7DC7245AAD540004A499 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */; };
@@ -108,6 +110,8 @@
 		4A37A94A2486006100E0381B /* NSURLRequest+FTMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+FTMonitor.m"; sourceTree = "<group>"; };
 		4A37A94D24862A8000E0381B /* NSURLResponse+FTMonitor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLResponse+FTMonitor.h"; sourceTree = "<group>"; };
 		4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLResponse+FTMonitor.m"; sourceTree = "<group>"; };
+		4A39314B25300D2100BC2134 /* FTCallStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTCallStack.m; sourceTree = "<group>"; };
+		4A39314C25300D2100BC2134 /* FTCallStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTCallStack.h; sourceTree = "<group>"; };
 		4A3C7D5523E7CA17006DC9C7 /* FTGPUUsage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGPUUsage.h; sourceTree = "<group>"; };
 		4A3C7D5623E7CA17006DC9C7 /* FTGPUUsage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGPUUsage.m; sourceTree = "<group>"; };
 		4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
@@ -275,6 +279,8 @@
 				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4A299F8F2521F7F800400931 /* FTANRDetector.h */,
 				4A299F902521F7F800400931 /* FTANRDetector.m */,
+				4A39314C25300D2100BC2134 /* FTCallStack.h */,
+				4A39314B25300D2100BC2134 /* FTCallStack.m */,
 				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
 				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
 				4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */,
@@ -364,6 +370,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
+				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
 				4A7F62E424976622000893C1 /* FTfishhook.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
@@ -503,6 +510,7 @@
 				4A299F922521F7F800400931 /* FTANRDetector.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
+				4A39314D25300D2100BC2134 /* FTCallStack.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A01160D24C966C200AECC1C /* NSDate+FTAdd.m in Sources */,
 				4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */,
