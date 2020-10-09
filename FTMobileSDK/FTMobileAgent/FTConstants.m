@@ -28,6 +28,7 @@ NSString * const FT_HTTP_MEASUREMENT = @"mobile_client_http";
 NSString * const FT_WEB_HTTP_MEASUREMENT = @"mobile_webview_http";
 NSString * const FT_WEB_TIMECOST_MEASUREMENT = @"mobile_webview_time_cost";
 NSString * const FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT = @"mobile_client_time_cost";
+NSString * const FT_EVENT_ACTIVATED = @"activated";
 #pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";
 NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
@@ -107,7 +108,7 @@ NSString * const FT_MONITOR_NETWORK_TCP_TIME  = @"network_tcp_time";
 NSString * const FT_MONITOR_NETWORK_RESPONSE_TIME  = @"network_response_time";
 
 NSString * const FT_NETWORK_CONNECT_TIME = @"connectTime";
-NSString * const FT_NETWORK_DURATION_TIME =@"duration";
+NSString * const FT_DURATION_TIME =@"duration";
 
 NSString * const FT_MONITOR_FT_NETWORK_DNS_TIME  = @"_network_dns_time";
 NSString * const FT_MONITOR_FT_NETWORK_TCP_TIME  = @"_network_tcp_time";

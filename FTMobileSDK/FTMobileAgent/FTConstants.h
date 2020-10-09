@@ -21,6 +21,7 @@ extern NSString * const FT_HTTP_MEASUREMENT;
 extern NSString * const FT_WEB_HTTP_MEASUREMENT;
 extern NSString * const FT_WEB_TIMECOST_MEASUREMENT;
 extern NSString * const FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT;
+extern NSString * const FT_EVENT_ACTIVATED;
 #pragma mark ========== flow ==========
 extern NSString * const FT_FLOW_CHART_PRODUCT;
 extern NSString * const FT_KEY_DURATION;
@@ -111,7 +112,7 @@ extern NSString * const FT_NETWORK_REQUEST_URL;
 extern NSString * const FT_NETWORK_REQUEST_CONTENT;
 extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
 extern NSString * const FT_NETWORK_CONNECT_TIME;
-extern NSString * const FT_NETWORK_DURATION_TIME;
+extern NSString * const FT_DURATION_TIME;
 
 extern NSString * const FT_MONITOR_ROTATION_X;
 extern NSString * const FT_MONITOR_ROTATION_Y;

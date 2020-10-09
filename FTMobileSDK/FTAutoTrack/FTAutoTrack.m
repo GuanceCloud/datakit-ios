@@ -95,7 +95,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!self.isLaunch) {
             float duration = (endDate - self.launchTime);
-            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"actived"} field:@{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
         }
     });
 }
