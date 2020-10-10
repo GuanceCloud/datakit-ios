@@ -73,8 +73,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
-        if ([self.field isEqualToString:FT_KEY_DURATION]) {
-            return [NSString stringWithFormat:@"%@=%@i", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];;
+        if ([self.field isEqualToString:FT_KEY_DURATION]||[self.field isEqualToString:FT_DURATION_TIME]) {
+          NSNumber *number = self.value;
+            return [NSString stringWithFormat:@"%@=%di", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.intValue];;
         }
         if([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], [FTBaseInfoHander repleacingSpecialCharactersField:self.value]];
@@ -165,22 +166,22 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     }];
     [task resume];
 }
--(BOOL)flushWithType:(NSString *)op{
+-(BOOL)flushWithType:(NSString *)type{
     NSArray *events;
-    if (self.config.needBindUser && [op isEqualToString:FTNetworkingTypeMetrics]) {
-        events = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:op];
+    if (self.config.needBindUser && [type isEqualToString:FTNetworkingTypeMetrics]) {
+        events = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:type];
     }else{
-        events = [[FTTrackerEventDBTool sharedManger] getFirstTenData:op];
+        events = [[FTTrackerEventDBTool sharedManger] getFirstTenData:type];
     }
     if (events.count == 0 || ![self flushWithEvents:events]) {
         return NO;
     }
     FTRecordModel *model = [events lastObject];
-    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:op tm:model.tm]) {
+    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
         ZYErrorLog(@"数据库删除已上传数据失败");
         return NO;
     }
-   return [self flushWithType:op];
+   return [self flushWithType:type];
 }
 -(BOOL)flushWithEvents:(NSArray *)events{
     @try {
@@ -227,32 +228,26 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 -(NSURLRequest *)trackList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLSessionTaskCompletionHandler)callBack{
     FTRecordModel *model = [modelList firstObject];
-      NSString *api = nil;
-      if ([model.op isEqualToString:FTNetworkingTypeObject]) {
-          NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-          NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
-          [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
-          return nil;
-      }else
-      if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
-          api = FT_NETWORKING_API_METRICS;
-      }else
-      if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
-          api = FT_NETWORKING_API_LOGGING;
-      }
-      NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-      NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
-    return  [self trackRequestWithURL:url eventsAry:modelList callBack:callBack];
-}
-- (NSURLRequest *)trackRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
-    NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:events];
+    NSString *api = nil;
+    if ([model.op isEqualToString:FTNetworkingTypeObject]) {
+        NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
+        return    [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
+    }else if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
+        api = FT_NETWORKING_API_METRICS;
+    }else if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
+        api = FT_NETWORKING_API_LOGGING;
+    }
+    NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
+    NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:modelList];
     //设置网络请求的返回接收器
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
     return request;
 }
-- (void)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
+- (NSURLRequest *)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
     NSMutableArray *list = [NSMutableArray new];
       [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
           NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
@@ -271,6 +266,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
+    return request;
 }
 // metrics、logging、keyevent
 -(NSURLRequest *)lineProtocolRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
@@ -280,7 +276,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 }
 // object
 -(NSURLRequest *)writeObjectRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
-    NSString *requestData = [self arrayToJSONString:datas];
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:datas options:NSJSONWritingPrettyPrinted error:&error];
+    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     ZYLog(@"requestData = %@",requestData);
     return  [self getRequestWithURL:url body:requestData contentType:@"application/json"];
 }
@@ -347,12 +345,11 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
             field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);
         }
-        if (userData.allKeys.count>0) {
-            NSDictionary *userDict =  FTQueryPairsFromUserDict(userData);
-            [tagDict addEntriesFromDictionary:userDict];
-        }
         NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
-        
+        if (userData.allKeys.count>0) {
+            NSString *userStr =  FTQueryStringFromParameters(userData, FTParameterTypeUser);
+            tagsStr = tagsStr.length>0?[tagsStr stringByAppendingFormat:@",%@",userStr]:userStr;
+        }
         NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm*1000]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm*1000];
         if (idx==0) {
             [requestDatas appendString:requestStr];
@@ -367,13 +364,6 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                       });
     }];
     return requestDatas;
-}
-- (NSString *)arrayToJSONString:(NSArray *)array {
-    NSError *error = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:NSJSONWritingPrettyPrinted error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    ZYDebug(@"jsonArray = %@",jsonString);
-    return jsonString;
 }
 - (NSDictionary *)basicTags{
     if (!_basicTags) {
@@ -414,7 +404,6 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
             [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
         }
     }
-    
     return [mutablePairs componentsJoinedByString:@","];
 }
 NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterType type) {
@@ -435,14 +424,6 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         }
     }
     return mutableQueryStringComponents;
-}
-//循环遍历userData字典  key 添加 ud_  去除嵌套字典
-NSDictionary * FTQueryPairsFromUserDict(NSDictionary *parameters) {
-    NSMutableDictionary *mutableUserDictgComponents = [NSMutableDictionary new];
-    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,FTParameterTypeUser)) {
-        [mutableUserDictgComponents setValue:pair.value forKey:pair.field];
-    }
-    return mutableUserDictgComponents;
 }
 -(void)dealloc{
     [self.session invalidateAndCancel];

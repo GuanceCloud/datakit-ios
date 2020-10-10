@@ -44,6 +44,7 @@ static dispatch_once_t onceToken;
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView{
     NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     request.ftRequestStartDate = [NSDate date];
+    ZYDebug(@"%@",request.ftRequestStartDate);
     [self.lock lock];
     if ([self.mutableLoadStateByWebviewHash.allKeys containsObject:key]) {
         [self.mutableRequestKeyedByWebviewHash setValue:request forKey:key];
@@ -64,7 +65,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if (isTrace) {
-        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
         }
@@ -106,7 +107,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadingWithURL:duration:)]) {
             [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL.absoluteString duration:duration];
         }
@@ -122,7 +123,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadCompletedWithURL:duration:)]) {
             [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL.absoluteString duration:duration];
         }

@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *data;
 //从数据库读取数据时拼接的用户信息
 @property (nonatomic, strong) NSString *userdata;
-
+//上传时的API类型
 @property (nonatomic, strong) NSString *op;
 
 @end

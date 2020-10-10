@@ -240,17 +240,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
-    if ([self.net isEqualToString:@"-1"]) {
-        callBack? callBack(NetWorkException,nil):nil;
-    }else{
-    dispatch_async(self.concurrentLabel, ^{
-        [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                callBack? callBack(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
-            });
-        }];
-    });
+#pragma mark - logging
+-(void)logging:(NSString *)content status:(FTStatus)status{
+    NSParameterAssert(content);
+    @try {
+        [self _loggingBackgroundInsertWithOP:@"logging" status:[FTBaseInfoHander ft_getFTstatueStr:status] content:content tm:[[NSDate date] ft_dateTimestamp] tags:nil field:nil];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
     }
 }
 -(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
@@ -262,15 +258,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSParameterAssert(traceId);
     NSParameterAssert(name);
     [self flowTrack:product traceId:traceId name:name parent:parent tags:tags duration:duration field:field withTrackType:FTTrackTypeCode];
-}
-#pragma mark - logging
--(void)logging:(NSString *)content status:(FTStatus)status{
-    NSParameterAssert(content);
-    @try {
-        [self _loggingBackgroundInsertWithOP:@"logging" status:[FTBaseInfoHander ft_getFTstatueStr:status] content:content tm:[[NSDate date] ft_dateTimestamp]];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
 }
 #pragma mark - 用户绑定与注销
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
@@ -316,6 +303,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [[FTMonitorManager sharedInstance] stopFlush];
 }
 #pragma mark ========== private method==========
+#pragma mark - 立即上传
+-(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode, _Nullable id responseObject))callBack{
+    if ([self.net isEqualToString:@"-1"]) {
+        callBack? callBack(NetWorkException,nil):nil;
+    }else{
+    dispatch_async(self.concurrentLabel, ^{
+        [self.upTool trackImmediateList:list callBack:^(NSInteger statusCode, NSData * _Nonnull response) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                callBack? callBack(statusCode,[[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding]):nil;
+            });
+        }];
+    });
+    }
+}
 #pragma mark - 数据拼接 存储数据库
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP{
     NSParameterAssert(measurement);
@@ -367,6 +368,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
+//控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {

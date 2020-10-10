@@ -44,11 +44,18 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * logging 控制台日志 写入
 */
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
-- (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm;
-- (void)_loggingArrayInsertDBImmediately;
 /**
  * eventFlowLog、networkTrace 写入
 */
 - (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm tags:(NSDictionary *)tags field:(NSDictionary *)field;
+/**
+ * 崩溃日志写入
+*/
+- (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm;
+/**
+ * 内存数据立即写入数据库
+*/
+- (void)_loggingArrayInsertDBImmediately;
+
 @end
 #endif /* FTMobileAgent_Private_h */
