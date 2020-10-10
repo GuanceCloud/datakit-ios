@@ -9,125 +9,133 @@
 #import "FTANRDetector.h"
 #import "FTLog.h"
 #import "FTCallStack.h"
-#define FTANRDetector_Watch_Interval     1.0f
-#define FTANRDetector_Warning_Level     (16.0f/1000.0f)
-
-#define Notification_FTANRDetector_Worker_Ping    @"Notification_FTANRDetector_Worker_Ping"
-#define Notification_FTANRDetector_Main_Pong    @"Notification_FTANRDetector_Main_Pong"
 
 #include <signal.h>
 #include <pthread.h>
 
-#define CALLSTACK_SIG SIGUSR1
-static pthread_t mainThreadID;
-
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
 
-dispatch_source_t createGCDTimer(uint64_t interval, uint64_t leeway, dispatch_queue_t queue, dispatch_block_t block)
-{
-    dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
-    if (timer)
-    {
-        dispatch_source_set_timer(timer, dispatch_walltime(NULL, interval), interval, leeway);
-        dispatch_source_set_event_handler(timer, block);
-        dispatch_resume(timer);
-    }
-    return timer;
+// minimum
+static const NSInteger MXRMonitorRunloopMinOneStandstillMillisecond = 20;
+static const NSInteger MXRMonitorRunloopMinStandstillCount = 1;
+
+// default
+// 超过多少毫秒为一次卡顿
+static const NSInteger MXRMonitorRunloopOneStandstillMillisecond = 400;
+// 多少次卡顿纪录为一次有效卡顿
+static const NSInteger MXRMonitorRunloopStandstillCount = 5;
+
+@interface FTANRDetector (){
+    CFRunLoopObserverRef _observer;  // 观察者
+    dispatch_semaphore_t _semaphore; // 信号量
+    CFRunLoopActivity _activity;     // 状态
 }
 
-
-@interface FTANRDetector ()
-@property (nonatomic, strong) dispatch_source_t  pingTimer;
-@property (nonatomic, strong) dispatch_source_t  pongTimer;
+@property (nonatomic, assign) BOOL isCancel;
+@property (nonatomic, assign) NSInteger countTime; // 耗时次数
+@property (nonatomic, strong) NSMutableArray *backtrace;
 @end
 @implementation FTANRDetector
 + (instancetype)sharedInstance
 {
     static FTANRDetector* instance = nil;
-
+    
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         instance = [FTANRDetector new];
+        instance.limitMillisecond = MXRMonitorRunloopOneStandstillMillisecond;
+        instance.standstillCount  = MXRMonitorRunloopStandstillCount;
     });
-
+    
     return instance;
 }
+- (void)setLimitMillisecond:(int)limitMillisecond
+{
+    [self willChangeValueForKey:@"limitMillisecond"];
+    _limitMillisecond = limitMillisecond >= MXRMonitorRunloopMinOneStandstillMillisecond ? limitMillisecond : MXRMonitorRunloopMinOneStandstillMillisecond;
+    [self didChangeValueForKey:@"limitMillisecond"];
+}
 
+- (void)setStandstillCount:(int)standstillCount
+{
+    [self willChangeValueForKey:@"standstillCount"];
+    _standstillCount = standstillCount >= MXRMonitorRunloopMinStandstillCount ? standstillCount : MXRMonitorRunloopMinStandstillCount;
+    [self didChangeValueForKey:@"standstillCount"];
+}
 - (void)startDetecting {
+    self.isCancel = NO;
+    [self registerObserver];
+}
+static void runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info)
+{
+    FTANRDetector *instance = [FTANRDetector sharedInstance];
+    // 记录状态值
+    instance->_activity = activity;
+    // 发送信号
+    dispatch_semaphore_t semaphore = instance->_semaphore;
+    dispatch_semaphore_signal(semaphore);
+}
+// 注册一个Observer来监测Loop的状态,回调函数是runLoopObserverCallBack
+- (void)registerObserver
+{
+    // 设置Runloop observer的运行环境
+    CFRunLoopObserverContext context = {0, (__bridge void *)self, NULL, NULL};
+    // 创建Runloop observer对象
+    _observer = CFRunLoopObserverCreate(kCFAllocatorDefault,
+                                        kCFRunLoopAllActivities,
+                                        YES,
+                                        0,
+                                        &runLoopObserverCallBack,
+                                        &context);
+    // 将新建的observer加入到当前thread的runloop
+    CFRunLoopAddObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);
+    // 创建信号
+    _semaphore = dispatch_semaphore_create(0);
     
-    if ([NSThread isMainThread] == false) {
-        ZYDebug(@"Error: startWatch must be called from main thread!");
-        return;
-    }
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectPingFromWorkerThread) name:Notification_FTANRDetector_Worker_Ping object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectPongFromMainThread) name:Notification_FTANRDetector_Main_Pong object:nil];
-        
-    mainThreadID = pthread_self();
-    
-    //ping from worker thread
-    uint64_t interval = FTANRDetector_Watch_Interval * NSEC_PER_SEC;
-    self.pingTimer = createGCDTimer(interval, interval / 10000, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self pingMainThread];
+    __weak __typeof(self) weakSelf = self;
+    // 在子线程监控时长
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        while (YES) {
+            if (strongSelf.isCancel) {
+                return;
+            }
+            // N次卡顿超过阈值T记录为一次卡顿
+            long dsw = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitMillisecond * NSEC_PER_MSEC));
+            if (dsw != 0) {
+                if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
+                    if (++strongSelf.countTime < strongSelf.standstillCount){
+                        ZYDebug(@"%ld",(long)strongSelf.countTime);
+                        continue;
+                    }
+                    NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
+                    ZYDebug(@"++++%@",backtrace);
+                    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
+                    if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
+                        [del onMainThreadSlowStackDetected:backtrace];
+                    }
+                    else
+                    {
+                        ZYDebug(@"detect slow call stack on main thread! \n");
+                        ZYDebug(@"%@\n", backtrace);
+                    }
+                }
+            }
+            strongSelf.countTime = 0;
+        }
     });
 }
+
 - (void)stopDetecting{
-    if (![NSThread isMainThread]) {
-        NSLog(@"error: %s must be executing in mainthread", __func__);
-        return;
-    }
-    
-    [self cancelPingTimer];
-}
-- (void)pingMainThread
-{
-    uint64_t interval = FTANRDetector_Warning_Level * NSEC_PER_SEC;
-    self.pongTimer = createGCDTimer(interval, interval / 10000, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self onPongTimeout];
-    });
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:Notification_FTANRDetector_Worker_Ping object:nil];
-    });
+    self.isCancel = YES;
+    if(!_observer) return;
+    CFRunLoopRemoveObserver(CFRunLoopGetMain(), _observer, kCFRunLoopCommonModes);
+    CFRelease(_observer);
+    _observer = NULL;
 }
 
-- (void)detectPingFromWorkerThread
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:Notification_FTANRDetector_Main_Pong object:nil];
-}
-
-- (void)onPongTimeout
-{
-    [self cancelPongTimer];
-    NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
-    id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
-       if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
-           [del onMainThreadSlowStackDetected:backtrace];
-       }
-       else
-       {
-           ZYDebug(@"detect slow call stack on main thread! \n");
-           ZYDebug(@"%@\n", backtrace);
-       }
-}
-
-- (void)detectPongFromMainThread
-{
-    [self cancelPongTimer];
-}
-- (void)cancelPingTimer{
-    if (self.pingTimer) {
-           dispatch_source_cancel(_pingTimer);
-           _pingTimer = nil;
-       }
-}
-- (void)cancelPongTimer
-{
-    if (self.pongTimer) {
-        dispatch_source_cancel(_pongTimer);
-        _pongTimer = nil;
-    }
-}
 @end
