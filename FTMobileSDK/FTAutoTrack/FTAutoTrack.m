@@ -70,6 +70,7 @@
                                    name:UIApplicationDidBecomeActiveNotification
                                  object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationWillResignActiveNotification:) name:UIApplicationWillResignActiveNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
     }
     
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick) {
@@ -98,6 +99,13 @@
             [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
         }
     });
+}
+- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+    if (!self.isLaunch) {
+        CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
+        float duration = (endDate - self.launchTime);
+        [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+    }
 }
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{
