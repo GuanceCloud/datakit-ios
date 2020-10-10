@@ -34,6 +34,7 @@
 		4A299F852520A77800400931 /* TestCCrash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A299F832520A77800400931 /* TestCCrash.cpp */; };
 		4A299F8E2521C1DB00400931 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */; };
 		4A2C826524F3597F006D4FC6 /* FTMonitorManagerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */; };
+		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -134,6 +135,8 @@
 		4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManagerTest.m; sourceTree = "<group>"; };
 		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
 		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
+		4A3931532531C26300BC2134 /* TestANRVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
+		4A3931542531C26300BC2134 /* TestANRVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestANRVC.m; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A4D91FC250B8C22004B9FA0 /* TestWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWKWebViewVC.h; sourceTree = "<group>"; };
 		4A4D91FF250B8C23004B9FA0 /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
@@ -349,6 +352,8 @@
 				4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */,
 				4A299F832520A77800400931 /* TestCCrash.cpp */,
 				4A299F842520A77800400931 /* TestCCrash.hpp */,
+				4A3931532531C26300BC2134 /* TestANRVC.h */,
+				4A3931542531C26300BC2134 /* TestANRVC.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -599,6 +604,7 @@
 			files = (
 				4A299F8E2521C1DB00400931 /* TestWKWebViewVC.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
+				4A3931552531C26300BC2134 /* TestANRVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.mm in Sources */,
 				4AAF0E7223B5E75900817C52 /* UITestManger.m in Sources */,

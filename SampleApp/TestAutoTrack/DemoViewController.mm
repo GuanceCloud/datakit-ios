@@ -17,6 +17,7 @@
 #import "FTUncaughtExceptionHandler+Test.h"
 #import "TestCCrash.hpp"
 #import "TestWKWebViewVC.h"
+#import "TestANRVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -29,7 +30,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"test_webview"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"test_webview",@"Test_ANR"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -63,6 +64,22 @@
     [[FTMobileAgent sharedInstance] stopMonitorFlush];
 }
 - (void)testConnectBluetooth{
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
+    NSString *urlStr = @"http://api.qingyunke.com/api.php";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    request.HTTPMethod = @"POST";
+    
+    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
+    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    }];
+    
+    [task resume];
+
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestBluetoothList new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
@@ -110,6 +127,11 @@
     [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
 }
+- (void)Test_ANR{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestANRVC new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -149,6 +171,10 @@
             break;
         case 8:
             [self test_webview];
+            break;
+        case 9:
+            [self Test_ANR];
+            break;
         default:
             break;
     }
