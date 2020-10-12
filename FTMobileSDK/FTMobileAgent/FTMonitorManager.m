@@ -109,10 +109,37 @@ static dispatch_once_t onceToken;
         [FTWKWebViewHandler sharedInstance].trace = NO;
         [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
     }
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-        [FTANRDetector sharedInstance].delegate = self;
-        [[FTANRDetector sharedInstance] startDetecting];
-    }];
+    if (config.enableTrackAppANR || _monitorType & FTMonitorInfoTypeFPS) {
+        if (!_displayLink) {
+            _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+            [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            [[NSNotificationCenter defaultCenter] addObserver: self
+                                                     selector: @selector(applicationDidBecomeActiveNotification)
+                                                         name: UIApplicationDidBecomeActiveNotification
+                                                       object: nil];
+            
+            [[NSNotificationCenter defaultCenter] addObserver: self
+                                                     selector: @selector(applicationWillResignActiveNotification)
+                                                         name: UIApplicationWillResignActiveNotification
+                                                       object: nil];
+        }
+    }else{
+        if (_displayLink) {
+            [_displayLink setPaused:YES];
+            _displayLink = nil;
+        }
+    }
+
+    if (config.enableTrackAppANR) {
+        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+            [FTANRDetector sharedInstance].delegate = self;
+            [[FTANRDetector sharedInstance] startDetecting];
+        }];
+    }else{
+        [FTANRDetector sharedInstance].delegate = nil;
+        [[FTANRDetector sharedInstance] stopDetecting];
+    }
+    
 }
 
 -(void)dealNetworkContentType:(NSArray *)array{
@@ -238,26 +265,6 @@ static dispatch_once_t onceToken;
         }
     }else{
         _motionManager.isGyroActive? [_motionManager stopGyroUpdates]:nil;
-    }
-    if (_monitorType & FTMonitorInfoTypeFPS) {
-        if (!_displayLink) {
-            _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
-            [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-            [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(applicationDidBecomeActiveNotification)
-                                                         name: UIApplicationDidBecomeActiveNotification
-                                                       object: nil];
-            
-            [[NSNotificationCenter defaultCenter] addObserver: self
-                                                     selector: @selector(applicationWillResignActiveNotification)
-                                                         name: UIApplicationWillResignActiveNotification
-                                                       object: nil];
-        }
-    }else{
-        if (_displayLink) {
-            [_displayLink setPaused:YES];
-            _displayLink = nil;
-        }
     }
     if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
