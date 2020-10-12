@@ -35,7 +35,6 @@
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
 @property (nonatomic, strong) NSMutableDictionary *pageDesc;
 @property (nonatomic, strong) NSMutableDictionary *vtpDesc;
-@property (nonatomic, assign) BOOL isLaunch;
 @end
 @implementation FTAutoTrack
 -(instancetype)init{
@@ -69,8 +68,6 @@
                                selector:@selector(appDidBecomeActiveNotification:)
                                    name:UIApplicationDidBecomeActiveNotification
                                  object:nil];
-        [notificationCenter addObserver:self selector:@selector(applicationWillResignActiveNotification:) name:UIApplicationWillResignActiveNotification object:nil];
-        [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
     }
     
     if (self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick) {
@@ -83,29 +80,11 @@
     
 }
 - (void)appDidBecomeActiveNotification:(NSNotification *)notification{
-    self.isLaunch = YES;
     CFAbsoluteTime intervalTime = (CFAbsoluteTimeGetCurrent() - self.launchTime);
     if ((int)intervalTime>10) {
      [self track:FT_AUTO_TRACK_OP_LAUNCH withCpn:nil WithClickView:nil];
     }
      self.launchTime = CFAbsoluteTimeGetCurrent();
-}
-- (void)applicationWillResignActiveNotification:(NSNotification *)notification{
-    self.isLaunch = NO;
-    CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!self.isLaunch) {
-            float duration = (endDate - self.launchTime);
-            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
-        }
-    });
-}
-- (void)applicationWillTerminateNotification:(NSNotification *)notification{
-    if (!self.isLaunch) {
-        CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
-        float duration = (endDate - self.launchTime);
-        [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
-    }
 }
 #pragma mark ========== 控制器的生命周期 ==========
 - (void)logViewControllerLifeCycle{

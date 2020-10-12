@@ -37,6 +37,7 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSMutableArray *loggingArray;
 @property (nonatomic, strong) dispatch_queue_t serialLoggingQueue;
+@property (nonatomic, assign) CFAbsoluteTime launchTime;
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -524,6 +525,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                            selector:@selector(applicationDidBecomeActive:)
                                name:UIApplicationDidBecomeActiveNotification
                              object:nil];
+    [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
 }
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
     if (flags & kSCNetworkReachabilityFlagsReachable) {
@@ -542,6 +544,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         self.isForeground = NO;
+        CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (!self.isForeground) {
+                float duration = (endDate - self.launchTime);
+                [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+            }
+        });
         [self _loggingArrayInsertDBImmediately];
     }
     @catch (NSException *exception) {
@@ -552,8 +561,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         self.isForeground = YES;
         [self uploadFlush];
+        self.launchTime = CFAbsoluteTimeGetCurrent();
     }
     @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
+- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+    @try {
+        if (!self.isForeground) {
+            CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
+            float duration = (endDate - self.launchTime);
+            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+        }
+    } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
 }
