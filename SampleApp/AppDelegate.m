@@ -60,6 +60,7 @@
         config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
+        config.enableTrackAppANR = YES;
         config.eventFlowLog = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [FTMobileAgent startWithConfigOptions:config];
