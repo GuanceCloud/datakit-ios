@@ -35,7 +35,7 @@
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
     self.webView.navigationDelegate = self;
     [self.view addSubview:self.webView];
-    [self ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios"];
+//    [self ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios"];
 }
 - (void)ft_load:(NSString *)urlStr{
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];

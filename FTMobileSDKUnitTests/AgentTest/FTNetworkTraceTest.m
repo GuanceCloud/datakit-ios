@@ -193,6 +193,15 @@
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
     XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
+    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+    FTRecordModel *metricsModel = [metricsData lastObject];
+    NSDictionary *metricsDict = [FTBaseInfoHander ft_dictionaryWithJsonString:metricsModel.data];
+    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
+    NSDictionary *metricsTags = metricsOpdata[@"tags"];
+    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
+    XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
+    BOOL metricsIsError = [metricsTags[@"isError"] boolValue];
+    XCTAssertTrue(metricsIsError == YES);
     [self uploadModel:model];
 }
 - (void)testRightRequest{
@@ -216,6 +225,15 @@
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
 
+    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+    FTRecordModel *metricsModel = [metricsData lastObject];
+    NSDictionary *metricsDict = [FTBaseInfoHander ft_dictionaryWithJsonString:metricsModel.data];
+    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
+    NSDictionary *metricsTags = metricsOpdata[@"tags"];
+    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
+    XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
+    BOOL metricsIsError = [metricsTags[@"isError"] boolValue];
+    XCTAssertTrue(metricsIsError == NO);
     [self uploadModel:model];
     
 }
