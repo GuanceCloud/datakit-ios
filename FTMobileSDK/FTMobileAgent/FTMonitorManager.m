@@ -726,8 +726,10 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:iserror]
-       } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
+}
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request isError:(BOOL)isError{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:isError]
+          } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
     [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loading"

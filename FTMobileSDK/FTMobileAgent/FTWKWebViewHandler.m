@@ -70,7 +70,9 @@ static dispatch_once_t onceToken;
             [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
         }
     }
-   
+    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:isError:)]) {
+        [self.traceDelegate ftWKWebViewTraceRequest:request isError:NO];
+    }
 }
 
 - (void)removeWebView:(WKWebView *)webView{
@@ -147,6 +149,9 @@ static dispatch_once_t onceToken;
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
         }
+    }
+    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:isError:)]) {
+        [self.traceDelegate ftWKWebViewTraceRequest:request isError:YES];
     }
 }
 

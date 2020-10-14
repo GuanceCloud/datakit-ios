@@ -18,6 +18,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(nullable NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(nullable NSError *)error;
 /**
+ * mobile_webview_http
+*/
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request isError:(BOOL)isError;
+/**
  * mobile_webview_time_cost   loading
  * ⻚面开始 - 开始加载资源
  */
