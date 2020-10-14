@@ -16,7 +16,6 @@
 //测试崩溃采集
 #import "FTUncaughtExceptionHandler+Test.h"
 #import "TestCCrash.hpp"
-#import "TestWKWebViewVC.h"
 #import "TestANRVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -30,7 +29,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"test_webview",@"Test_ANR"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -122,11 +121,6 @@
         MyCppClass::testCrash();
     });
 }
-- (void)test_webview{
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
 - (void)Test_ANR{
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[TestANRVC new] animated:YES];
@@ -170,9 +164,6 @@
             [self testCCrash];
             break;
         case 8:
-            [self test_webview];
-            break;
-        case 9:
             [self Test_ANR];
             break;
         default:
