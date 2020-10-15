@@ -12,7 +12,6 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTLocationManager.h>
-#import "AppDelegate.h"
 #import <FTUploadTool.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTMobileAgent+Private.h>
@@ -341,5 +340,35 @@ do {                                                                            
     XCTAssertTrue(newHash == oldHash);
     XCTAssertFalse([dict isEqualToDictionary:dict2]);
     [[FTMobileAgent sharedInstance] resetInstance];
+}
+- (void)testTrackClientTimeCost{
+    [self setRightSDKConfig];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [NSThread sleepForTimeInterval:2];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+        XCTAssertTrue(newCount>oldCount);
+     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+      FTRecordModel *model = [datas lastObject];
+        NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+        NSString *op = [dict valueForKey:@"op"];
+        XCTAssertTrue([op isEqualToString:@"mobile_client_time_cost"]);
+        NSDictionary *opdata = [dict valueForKey:@"opdata"];
+        NSDictionary *field = [opdata valueForKey:@"field"];
+        NSDictionary *tags = [opdata valueForKey:@"tags"];
+        NSNumber *duration = [field valueForKey:@"duration"];
+        XCTAssertTrue(duration.intValue > 2*1000*1000);
+        XCTAssertTrue([[tags valueForKey:@"event"] isEqualToString:@"activated"]);
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTMobileAgent sharedInstance] resetInstance];
+
 }
 @end
