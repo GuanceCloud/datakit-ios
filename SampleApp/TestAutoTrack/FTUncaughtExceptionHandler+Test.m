@@ -12,12 +12,14 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
-
+#import <FTMobileAgent/FTConstants.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"],[self getUUIDDictionary]];
     ;
     for (FTMobileAgent *instance in self.ftSDKInstances) {
+        NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
+        [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackOP:@"crash"];
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
    __block BOOL testSuccess = NO;
