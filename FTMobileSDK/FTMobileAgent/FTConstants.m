@@ -183,6 +183,7 @@ NSString *const FT_KEY_ENV = @"__env";
 NSString *const FT_DEFAULT_CLASS =@"Dataflux iOS SDK";
 
 NSString *const FT_APP_VERSION_NAME = @"app_version_name";
+NSString *const FT_APP_VERSION_BUILD_NAME = @"app_version_build_name";
 
 NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
