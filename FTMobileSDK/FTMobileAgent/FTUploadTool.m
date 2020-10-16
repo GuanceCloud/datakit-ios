@@ -341,6 +341,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[FT_AGENT_TAGS]];
         if (![obj.op isEqualToString:FTNetworkingTypeLogging]) {
             [tagDict addEntriesFromDictionary:self.basicTags];
+            if (![measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
+                [tagDict removeObjectForKey:FT_COMMON_PROPERTY_DEVICE_UUID];
+            }
         }
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
             field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);
@@ -375,6 +378,8 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         NSString *version = [UIDevice currentDevice].systemVersion;
+        NSString *appversion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+
         NSMutableDictionary *tag = @{FT_COMMON_PROPERTY_DEVICE_UUID:uuid,
                                      FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:identifier,
                                      FT_COMMON_PROPERTY_APPLICATION_NAME:appName,
@@ -386,6 +391,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
                                      FT_COMMON_PROPERTY_DISPLAY:[FTBaseInfoHander ft_resolution],
                                      FT_COMMON_PROPERTY_CARRIER:[FTBaseInfoHander ft_getTelephonyInfo],
                                      FT_COMMON_PROPERTY_AGENT:SDK_VERSION,
+                                     FT_APP_VERSION_NAME:appversion,
                                      
         }.mutableCopy;
         self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;

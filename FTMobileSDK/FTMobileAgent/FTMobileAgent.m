@@ -250,16 +250,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(NSString *)parent duration:(long)duration{
-    [self flowTrack:product traceId:traceId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeCode];
-}
-
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(nonnull NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field{
-    NSParameterAssert(product);
-    NSParameterAssert(traceId);
-    NSParameterAssert(name);
-    [self flowTrack:product traceId:traceId name:name parent:parent tags:tags duration:duration field:field withTrackType:FTTrackTypeCode];
-}
 #pragma mark - 用户绑定与注销
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     NSParameterAssert(name);
@@ -334,41 +324,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)flowTrack:(NSString *)product traceId:(NSString *)traceId name:(NSString *)name parent:(nullable NSString *)parent tags:(nullable NSDictionary *)tags duration:(long)duration field:(nullable NSDictionary *)field withTrackType:(FTTrackType)trackType{
-    @try {
-        NSString *op,*productStr;
-        if(trackType == FTTrackTypeCode){
-            if ([product ft_removeFrontBackBlank].length == 0 || [traceId ft_removeFrontBackBlank].length== 0||[name ft_removeFrontBackBlank].length==0) {
-                ZYErrorLog(@"产品名、跟踪ID、name、parent 不能为空");
-                return;
-            }
-            if (![[NSString stringWithFormat:@"flow_%@",product] ft_verifyProductStr]) {
-                return;
-            }
-            productStr =[NSString stringWithFormat:@"__flow_%@",product];
-            op = FT_TRACK_OP_FLOWCUSTOM;
-        }else{
-            productStr = product;
-            op = FT_AUTO_TRACK_OP_VIEW;
-        }
-        NSMutableDictionary *fieldDict = @{FT_KEY_DURATION:[NSNumber numberWithLong:duration]}.mutableCopy;
-        NSMutableDictionary *tagsDict =@{FT_FLOW_TRACEID:traceId,
-                                         FT_KEY_NAME:name,
-        }.mutableCopy;
-        
-        [tagsDict setValue:parent forKey:FT_FLOW_PARENT];
-        if (field.allKeys.count>0) {
-            [fieldDict addEntriesFromDictionary:field];
-        }
-        if (tags) {
-            [tagsDict addEntriesFromDictionary:tags];
-        }
-        FTRecordModel *model = [self getRecordModelWithMeasurement:[NSString stringWithFormat:@"%@",productStr] tags:tagsDict field:fieldDict op:op netType:FTNetworkingTypeMetrics tm:0];
-        [self insertDBWithItemData:model];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
@@ -421,7 +376,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
         NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
         NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
-        [tag setValue:app_version_name forKey:FT_APP_VERSION_NAME];
+        [tag setValue:app_version_name forKey:FT_APP_VERSION_BUILD_NAME];
         FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:@{FT_KEY_CONTENT:content} op:FT_TRACK_LOGGING_EXCEPTION netType:FTNetworkingTypeLogging tm:tm];
         [self.loggingArray addObject:model];
     }
@@ -442,8 +397,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [tagsDict addEntriesFromDictionary:tags];
     }
-    //METRICS 中流程图不添加监控项
-    if (![op isEqualToString:FT_TRACK_OP_FLOWCUSTOM] && ![op isEqualToString:FT_AUTO_TRACK_OP_VIEW] && [type isEqualToString:FTNetworkingTypeMetrics]) {
+    //METRICS  mobile_tracker 添加监控项 
+    if ([type isEqualToString:FTNetworkingTypeMetrics] && [measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
         NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
         if ([addDict objectForKey:FT_AGENT_TAGS]) {
             [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
@@ -548,7 +503,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (!self.isForeground) {
                 float duration = (endDate - self.launchTime);
-                [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+                [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],FT_KEY_EVENT:FT_EVENT_ACTIVATED} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
             }
         });
         [self _loggingArrayInsertDBImmediately];
