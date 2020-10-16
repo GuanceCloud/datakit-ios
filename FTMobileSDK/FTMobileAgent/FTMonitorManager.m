@@ -313,7 +313,7 @@ static dispatch_once_t onceToken;
     _fps = _count / delta;
     if(_fps<10){
         NSDictionary *field =  @{FT_KEY_EVENT:@"block"};
-        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:field withTrackOP:@"block"];
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"block"];
     }
     _count = 0;
 }
@@ -677,8 +677,7 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:iserror]
-    } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString} withTrackOP:FT_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:nil field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,@"isError":[NSNumber numberWithBool:iserror]} withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
@@ -728,20 +727,19 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request isError:(BOOL)isError{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{@"isError":[NSNumber numberWithBool:isError]
-          } field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:nil field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString,@"isError":[NSNumber numberWithBool:isError]} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loading"
-    } field:@{FT_NETWORK_REQUEST_URL:urlStr,FT_DURATION_TIME:duration} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[@"loading" ft_md5HashToUpper32Bit]
+    } field:@{FT_NETWORK_REQUEST_URL:urlStr,FT_DURATION_TIME:duration,FT_KEY_EVENT:@"loading"} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:@"loadCompleted"
-       } field:@{@"url":urlStr,FT_DURATION_TIME:duration} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[@"loadCompleted" ft_md5HashToUpper32Bit]
+       } field:@{@"url":urlStr,FT_DURATION_TIME:duration,FT_KEY_EVENT:@"loadCompleted"} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:nil field:@{FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:@{FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
     
     if (slowStack.length>0) {
         NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];
