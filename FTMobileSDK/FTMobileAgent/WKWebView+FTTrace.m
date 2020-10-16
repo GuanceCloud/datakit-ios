@@ -27,9 +27,8 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
         if (didAddNoneMethod) {
             ZYDebug(@"******** 没有实现 (%@) 方法，手动添加成功！！",NSStringFromSelector(originalSel));
         }
-        return;
     }
-   
+    originalMethod = class_getInstanceMethod(originalClass, originalSel);
     // 向实现 delegate 的类中添加新的方法
     // 这里是向 originalClass 的 replaceSel（@selector(owner_webViewDidStartLoad:)） 添加 replaceMethod
     BOOL didAddMethod = class_addMethod(originalClass, replacedSel, method_getImplementation(replacedMethod), method_getTypeEncoding(replacedMethod));
@@ -121,9 +120,6 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     
 }
 - (void)none_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-    if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
-    }
     //允许跳转
     decisionHandler(WKNavigationActionPolicyAllow);
 }
@@ -134,9 +130,6 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     [self owner_webView:webView decidePolicyForNavigationResponse:navigationResponse decisionHandler:decisionHandler];
 }
 - (void)none_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-    if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
-    }
     decisionHandler(WKNavigationResponsePolicyAllow);
 }
 - (void)owner_webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
@@ -146,9 +139,6 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     [self owner_webView:webView didFailProvisionalNavigation:navigation withError:error];
 }
 - (void)none_webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
-    if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
-    }
 }
 - (void)owner_webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation{
     if ([FTWKWebViewHandler sharedInstance].trace) {
@@ -156,14 +146,9 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     }
 }
 - (void)none_webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation{
-    if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
-    }
 }
 - (void)none_webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
-    if ([FTWKWebViewHandler sharedInstance].trace) {
-        [[FTWKWebViewHandler sharedInstance] didFinishWithWebview:webView];
-    }
+
 }
 - (void)owner_webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
     if ([FTWKWebViewHandler sharedInstance].trace) {
