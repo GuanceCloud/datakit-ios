@@ -67,6 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 主线程同步执行
  */
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
++ (NSString *)ft_getCurrentPageName;
 @end
 
 NS_ASSUME_NONNULL_END

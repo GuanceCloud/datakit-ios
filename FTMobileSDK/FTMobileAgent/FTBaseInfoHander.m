@@ -673,4 +673,64 @@
         dispatch_sync(dispatch_get_main_queue(), block);
     }
 }
++ (NSString *)ft_getCurrentPageName{
+    __block UIViewController *result = nil;
+    __block UIWindow * window;
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        
+        if (@available(iOS 13.0, *)) {
+            for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
+            {
+                if (windowScene.activationState == UISceneActivationStateForegroundActive)
+                {
+                    window = windowScene.windows.firstObject;
+                    break;
+                }
+            }
+        }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // 这部分使用到的过期api
+            window = [UIApplication sharedApplication].keyWindow;
+#pragma clang diagnostic pop
+        }
+        if (window.windowLevel != UIWindowLevelNormal)
+        {
+            NSArray *windows = [[UIApplication sharedApplication] windows];
+            for(UIWindow * tmpWin in windows)
+            {
+                if (tmpWin.windowLevel == UIWindowLevelNormal)
+                {
+                    window = tmpWin;
+                    break;
+                }
+            }
+        }
+        
+        UIView *frontView = [[window subviews] objectAtIndex:0];
+        id nextResponder = [frontView nextResponder];
+        
+        if ([nextResponder isKindOfClass:[UIViewController class]])
+            result = nextResponder;
+        else
+            result = window.rootViewController;
+        
+        if ([result isKindOfClass:[UITabBarController class]]) {
+            
+            UIViewController  *tabSelectVC = ((UITabBarController*)result).selectedViewController;
+            
+            if ([tabSelectVC isKindOfClass:[UINavigationController class]]) {
+                
+              result=((UINavigationController*)tabSelectVC).viewControllers.lastObject ;
+            }else{
+                result=  tabSelectVC;
+            }
+        }else
+            if ([result isKindOfClass:[UINavigationController class]]) {
+                result = ((UINavigationController*)result).viewControllers.lastObject;
+            }
+    }];
+    return  NSStringFromClass(result.class);
+    
+}
 @end
