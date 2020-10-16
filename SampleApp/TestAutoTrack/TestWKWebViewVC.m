@@ -58,6 +58,10 @@
         }
     }];
 }
+-(void)ft_stopLoading{
+    [_webView stopLoading];
+    _webView = nil;
+}
 //- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
 //    
 //    decisionHandler(WKNavigationActionPolicyAllow);

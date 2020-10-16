@@ -35,7 +35,7 @@
 		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A49E9312536E541009C44AD /* FTWKWebViewTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */; };
-		4A49E9342536E5E9009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
+		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
@@ -314,8 +314,6 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */,
-				4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */,
 				4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */,
 				4A037F0024F9079F007B2104 /* FTMonitorManager+Test.h */,
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
@@ -354,6 +352,8 @@
 				4A299F842520A77800400931 /* TestCCrash.hpp */,
 				4A3931532531C26300BC2134 /* TestANRVC.h */,
 				4A3931542531C26300BC2134 /* TestANRVC.m */,
+				4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */,
+				4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -610,6 +610,7 @@
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
 				4AAF2B4E240FB19C00552B6D /* RootVController.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
+				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,
 				4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */,
@@ -630,7 +631,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A49E9342536E5E9009C44AD /* TestWKWebViewVC.m in Sources */,
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				4A037EFE24F8DB32007B2104 /* FTLogTest.m in Sources */,

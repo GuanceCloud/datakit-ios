@@ -197,10 +197,10 @@
     FTRecordModel *metricsModel = [metricsData lastObject];
     NSDictionary *metricsDict = [FTBaseInfoHander ft_dictionaryWithJsonString:metricsModel.data];
     NSDictionary *metricsOpdata = metricsDict[@"opdata"];
-    NSDictionary *metricsTags = metricsOpdata[@"tags"];
+    NSDictionary *metricsField = metricsOpdata[@"field"];
     NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
     XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
-    BOOL metricsIsError = [metricsTags[@"isError"] boolValue];
+    BOOL metricsIsError = [metricsField[@"isError"] boolValue];
     XCTAssertTrue(metricsIsError == YES);
     [self uploadModel:model];
 }

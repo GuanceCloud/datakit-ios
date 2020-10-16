@@ -362,7 +362,7 @@ do {                                                                            
         NSDictionary *tags = [opdata valueForKey:@"tags"];
         NSNumber *duration = [field valueForKey:@"duration"];
         XCTAssertTrue(duration.intValue > 2*1000*1000);
-        XCTAssertTrue([[tags valueForKey:@"event"] isEqualToString:@"activated"]);
+        XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"activated"]);
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {

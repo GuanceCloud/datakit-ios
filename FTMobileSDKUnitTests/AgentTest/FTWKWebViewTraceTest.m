@@ -30,8 +30,9 @@
 - (void)setUp {
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
-    
-    self.testVC = [[TestWKWebViewVC alloc] init];
+    if (!_testVC) {
+        self.testVC = [[TestWKWebViewVC alloc] init];
+    }
     
     self.tabBarController = [[UITabBarController alloc] init];
     
@@ -89,6 +90,9 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [self.testVC ft_stopLoading];
+
+    self.testVC = nil;
 }
 /**
  * loadRequest 方法发起请求
@@ -120,8 +124,8 @@
             NSMutableDictionary *field = [opdata valueForKey:@"field"];
             if (i==0) {
                 XCTAssertTrue([measurement isEqualToString:FT_WEB_HTTP_MEASUREMENT]);
-                XCTAssertTrue([tags.allKeys containsObject:@"isError"]);
-                BOOL isError = [[tags valueForKey:@"isError"] boolValue];
+                XCTAssertTrue([field.allKeys containsObject:@"isError"]);
+                BOOL isError = [[field valueForKey:@"isError"] boolValue];
                 if (isError) {
                     XCTAssertTrue(metricsArray.count == 2);
                 }else{
@@ -129,7 +133,7 @@
                 }
             }else{
                 XCTAssertTrue([measurement isEqualToString:FT_WEB_TIMECOST_MEASUREMENT]);
-                XCTAssertTrue([[tags valueForKey:@"event"] isEqualToString:@"loading"] || [[tags valueForKey:@"event"] isEqualToString:@"loadCompleted"]);
+                XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"loading"] || [[field valueForKey:@"event"] isEqualToString:@"loadCompleted"]);
                 NSString *url = [field valueForKey:@"url"];
                 XCTAssertTrue([url isEqualToString:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"]);
                 XCTAssertTrue([field.allKeys containsObject:@"duration"]);
@@ -146,6 +150,8 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [self.testVC ft_stopLoading];
+    self.testVC = nil;
 }
 /**
  * 使用 loadRequest 方法发起请求 之后页面跳转 nextLink
@@ -183,6 +189,8 @@
     XCTAssertTrue(newMetricsCount>lastMetricsCount);
     NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
     XCTAssertTrue(newLoggingCount == lastLoggingCount);
+    [self.testVC ft_stopLoading];
+    self.testVC = nil;
 }
 /**
  * 使用 loadRequest 方法发起请求 之后页面跳转 nextLink 再进行reload
@@ -218,6 +226,8 @@
         XCTAssertFalse([reloadUrl isEqualToString:urlStr]);
         XCTAssertFalse([reloadSpanID isEqualToString:spanID]);
     }];
+    [self.testVC ft_stopLoading];
+    self.testVC = nil;
 }
 /**
  * loadRequest 方法发起请求
@@ -225,7 +235,7 @@
 */
 - (void)testWKWebViewReloadTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
+    [self setTraceConfig];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
    
@@ -249,6 +259,8 @@
         XCTAssertTrue([reloadUrl isEqualToString:urlStr]);
         XCTAssertFalse([reloadSpanID isEqualToString:spanID]);
     }];
+    [self.testVC ft_stopLoading];
+    self.testVC = nil;
 }
 /**
  * 使用 loadRequest 方法发起请求 之后页面跳转再回退到初始页面 再进行reload
@@ -287,6 +299,8 @@
         XCTAssertTrue([reloadUrl isEqualToString:urlStr]);
         XCTAssertFalse([reloadSpanID isEqualToString:spanID]);
     }];
+    [self.testVC ft_stopLoading];
+    self.testVC = nil;
 }
 - (void)webviewReload:(XCTestExpectation *)expection{
     [self.testVC ft_reload];
