@@ -730,7 +730,9 @@
                 result = ((UINavigationController*)result).viewControllers.lastObject;
             }
     }];
-    return  NSStringFromClass(result.class);
-    
+    if (result) {
+        return  NSStringFromClass(result.class);
+    }
+    return FT_NULL_VALUE;
 }
 @end
