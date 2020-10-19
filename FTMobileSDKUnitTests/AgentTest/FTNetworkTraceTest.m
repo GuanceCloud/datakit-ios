@@ -22,6 +22,7 @@
 #import <FTBaseInfoHander.h>
 #import <NSDate+FTAdd.h>
 #import "FTSessionConfiguration+Test.h"
+#import <FTMobileAgent/FTConstants.h>
 @interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -200,7 +201,7 @@
     NSDictionary *metricsField = metricsOpdata[@"field"];
     NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
     XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
-    BOOL metricsIsError = [metricsField[@"isError"] boolValue];
+    BOOL metricsIsError = [metricsField[FT_ISERROR] boolValue];
     XCTAssertTrue(metricsIsError == YES);
     [self uploadModel:model];
 }

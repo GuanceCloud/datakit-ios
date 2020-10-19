@@ -113,7 +113,8 @@ extern NSString * const FT_NETWORK_REQUEST_CONTENT;
 extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
 extern NSString * const FT_NETWORK_CONNECT_TIME;
 extern NSString * const FT_DURATION_TIME;
-
+extern NSString * const FT_KEY_HOST;
+extern NSString * const FT_ISERROR;
 extern NSString * const FT_MONITOR_ROTATION_X;
 extern NSString * const FT_MONITOR_ROTATION_Y;
 extern NSString * const FT_MONITOR_ROTATION_Z;

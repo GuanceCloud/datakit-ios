@@ -109,7 +109,7 @@ NSString * const FT_MONITOR_NETWORK_RESPONSE_TIME  = @"network_response_time";
 
 NSString * const FT_NETWORK_CONNECT_TIME = @"connectTime";
 NSString * const FT_DURATION_TIME =@"duration";
-
+NSString * const FT_KEY_HOST = @"host";
 NSString * const FT_MONITOR_FT_NETWORK_DNS_TIME  = @"_network_dns_time";
 NSString * const FT_MONITOR_FT_NETWORK_TCP_TIME  = @"_network_tcp_time";
 NSString * const FT_MONITOR_FT_NETWORK_RESPONSE_TIME  = @"_network_response_time";
@@ -118,7 +118,7 @@ NSString * const FT_MONITOR_NETWORK_PROXY  = @"network_proxy";
 NSString * const FT_NETWORK_REQUEST_URL  = @"url";
 NSString * const FT_NETWORK_REQUEST_CONTENT =@"requestContent";
 NSString * const FT_NETWORK_RESPONSE_CONTENT =@"responseContent";
-
+NSString * const FT_ISERROR = @"isError";
 NSString * const FT_MONITOR_ROTATION_X  = @"rotation_x";
 NSString * const FT_MONITOR_ROTATION_Y  = @"rotation_y";
 NSString * const FT_MONITOR_ROTATION_Z  = @"rotation_z";

@@ -124,8 +124,8 @@
             NSMutableDictionary *field = [opdata valueForKey:@"field"];
             if (i==0) {
                 XCTAssertTrue([measurement isEqualToString:FT_WEB_HTTP_MEASUREMENT]);
-                XCTAssertTrue([field.allKeys containsObject:@"isError"]);
-                BOOL isError = [[field valueForKey:@"isError"] boolValue];
+                XCTAssertTrue([field.allKeys containsObject:FT_ISERROR]);
+                BOOL isError = [[field valueForKey:FT_ISERROR] boolValue];
                 if (isError) {
                     XCTAssertTrue(metricsArray.count == 2);
                 }else{
