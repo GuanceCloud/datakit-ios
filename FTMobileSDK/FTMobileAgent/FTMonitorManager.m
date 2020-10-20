@@ -630,7 +630,7 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== FTHTTPProtocolDelegate  FTNetworkTrack==========
-- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task taskDuration:(NSNumber *)duration requestStartDate:(NSDate *)start responseData:(NSData *)data didCompleteWithError:(NSError *)error{
+- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task taskDuration:(NSNumber *)duration requestStartDate:(NSDate *)start responseTime:(nonnull NSNumber *)time responseData:(nonnull NSData *)data didCompleteWithError:(nonnull NSError *)error{
     BOOL iserror;
     NSDictionary *responseDict = @{};
     if (error) {
@@ -677,7 +677,7 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:nil field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,@"isError":[NSNumber numberWithBool:iserror]} withTrackOP:FT_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:task.originalRequest.URL.host} field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:iserror],FT_MONITOR_NETWORK_RESPONSE_TIME:time} withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
@@ -727,7 +727,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request isError:(BOOL)isError{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:nil field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString,@"isError":[NSNumber numberWithBool:isError]} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:request.URL.host} field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:isError]} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
 }
 -(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
     [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[@"loading" ft_md5HashToUpper32Bit]

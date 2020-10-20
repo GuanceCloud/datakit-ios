@@ -143,15 +143,20 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     if (self.trackUrl) {
         NSNumber *duration;
         NSDate *start;
+        NSNumber *responseDate;
         if (@available(iOS 10.0, *)) {
-            duration = [NSNumber numberWithLong:[self.metrics.taskInterval duration]*1000*1000];
+            duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000*1000];
             start = [self.metrics.transactionMetrics lastObject].requestStartDate;
+            NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
+
+            responseDate = [NSNumber numberWithFloat:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000.0];
         }else{
             duration = [NSNumber numberWithDouble:[self.endDate timeIntervalSinceDate:self.startDate]*1000*1000];
             start = self.startDate;
+            responseDate = duration;
         }
-        if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:taskDuration:requestStartDate:responseData:didCompleteWithError:)]){
-            [strongeDelegate ftHTTPProtocolWithTask:task taskDuration:duration requestStartDate:start responseData:self.data didCompleteWithError:error];
+        if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:taskDuration:requestStartDate:responseTime:responseData:didCompleteWithError:)]){
+            [strongeDelegate ftHTTPProtocolWithTask:task taskDuration:duration requestStartDate:start responseTime:responseDate responseData:self.data didCompleteWithError:error];
         }
     }
 }
