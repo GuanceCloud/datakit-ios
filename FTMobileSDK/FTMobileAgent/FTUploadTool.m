@@ -73,10 +73,6 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     if (!self.value || [self.value isEqual:[NSNull null]]) {
         return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
-        if ([self.field isEqualToString:FT_KEY_DURATION]||[self.field isEqualToString:FT_DURATION_TIME]) {
-          NSNumber *number = self.value;
-            return [NSString stringWithFormat:@"%@=%di", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.intValue];;
-        }
         if([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], [FTBaseInfoHander repleacingSpecialCharactersField:self.value]];
         }else if([self.value isKindOfClass:NSNumber.class]){
