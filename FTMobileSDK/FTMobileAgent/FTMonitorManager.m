@@ -602,17 +602,17 @@ static dispatch_once_t onceToken;
         NSTimeInterval responseTime = [taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
         if(![self trackUrl:task.originalRequest.URL]){
             @synchronized(_lastNetTaskMetrics) {
-                _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
-                                        FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
-                                        FT_MONITOR_FT_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime]
+                _lastNetTaskMetrics = @{FT_MONITOR_FT_NETWORK_DNS_TIME:[NSNumber numberWithInt:dnsTime],
+                                        FT_MONITOR_FT_NETWORK_TCP_TIME:[NSNumber numberWithInt:tcpTime],
+                                        FT_MONITOR_FT_NETWORK_RESPONSE_TIME:[NSNumber numberWithInt:responseTime]
                 };
             }
             return;
         }else{
             @synchronized(_lastNetTaskMetrics) {
-                _lastNetTaskMetrics = @{FT_MONITOR_NETWORK_DNS_TIME:[NSNumber numberWithDouble:dnsTime],
-                                        FT_MONITOR_NETWORK_TCP_TIME:[NSNumber numberWithDouble:tcpTime],
-                                        FT_MONITOR_NETWORK_RESPONSE_TIME:[NSNumber numberWithDouble:responseTime]
+                _lastNetTaskMetrics = @{FT_MONITOR_NETWORK_DNS_TIME:[NSNumber numberWithInt:dnsTime],
+                                        FT_MONITOR_NETWORK_TCP_TIME:[NSNumber numberWithInt:tcpTime],
+                                        FT_MONITOR_NETWORK_RESPONSE_TIME:[NSNumber numberWithInt:responseTime]
                 };
             }
         }
