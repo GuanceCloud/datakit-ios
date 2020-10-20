@@ -21,6 +21,7 @@
 #import "FTConstants.h"
 #import "FTTrackBean.h"
 #import "NSString+FTAdd.h"
+#import "FTJSONUtil.h"
 @implementation FTBaseInfoHander : NSObject
 #pragma mark ========== 设备信息 ==========
 + (NSDictionary *)ft_getDeviceInfo{
@@ -544,12 +545,10 @@
 #pragma mark ========== 字符串转字典 字典转字符串 ==========
 +(NSString *)ft_convertToJsonData:(NSDictionary *)dict
 {
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+    FTJSONUtil *json = [FTJSONUtil new];
+    NSData *jsonData = [json JSONSerializeDictObject:dict];
     NSString *jsonString;
-    if (!jsonData) {
-        ZYErrorLog(@"ERROR == %@",error);
-    }else{
+    if (jsonData) {
         jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
     NSMutableString *mutStr = [NSMutableString stringWithString:jsonString];

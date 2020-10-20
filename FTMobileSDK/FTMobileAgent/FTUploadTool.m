@@ -77,11 +77,12 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
             return [NSString stringWithFormat:@"%@=\"%@\"", [FTBaseInfoHander repleacingSpecialCharacters:self.field], [FTBaseInfoHander repleacingSpecialCharactersField:self.value]];
         }else if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            if (abs(number.intValue) <fabsf(number.floatValue) || abs(number.intValue)<fabs(number.doubleValue)) {
-                return [NSString stringWithFormat:@"%@=%.2f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
+            if (strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0)
+            {
+                return  [NSString stringWithFormat:@"%@=%.1f", [FTBaseInfoHander repleacingSpecialCharacters:self.field], number.floatValue];
             }
         }
-        return [NSString stringWithFormat:@"%@=%@", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=%@i", [FTBaseInfoHander repleacingSpecialCharacters:self.field], self.value];
     }
 }
 @end

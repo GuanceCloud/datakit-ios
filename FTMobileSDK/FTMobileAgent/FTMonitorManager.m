@@ -443,7 +443,7 @@ static dispatch_once_t onceToken;
         [field setValue:[FTMonitorUtils getLaunchSystemTime] forKey:FT_MONITOR_DEVICE_OPEN_TIME];
     }
     if (_monitorType & FTMonitorInfoTypeCpu) {
-        [field setObject:[NSNumber numberWithLong:[FTMonitorUtils ft_cpuUsage]] forKey:FT_MONITOR_CPU_USE];
+        [field setObject:[NSNumber numberWithFloat:[FTMonitorUtils ft_cpuUsage]] forKey:FT_MONITOR_CPU_USE];
     }
     if (_monitorType & FTMonitorInfoTypeMemory) {
         [field setObject:[NSNumber numberWithDouble:[FTMonitorUtils ft_usedMemory]] forKey:FT_MONITOR_MEMORY_USE];
@@ -497,10 +497,10 @@ static dispatch_once_t onceToken;
         [field setValue:[NSNumber numberWithFloat:[FTMonitorUtils screenBrightness]] forKey:FT_MONITOR_SCREEN_BRIGHTNESS];
     }
     if ([self isMonitorMotionTypeAllow:FTMonitorInfoTypeSensorProximity]) {
-        [field setValue:[NSNumber numberWithBool:_proximityState]  forKey:FT_MONITOR_PROXIMITY];
+        [field setValue:[NSNumber numberWithFloat:_proximityState]  forKey:FT_MONITOR_PROXIMITY];
     }
     if (_monitorType & FTMonitorInfoTypeFPS) {
-        [field setValue:[NSNumber numberWithInt:_fps] forKey:FT_MONITOR_FPS];
+        [field setValue:[NSNumber numberWithFloat:_fps] forKey:FT_MONITOR_FPS];
     }
     if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [field addEntriesFromDictionary:[self getConnectBluetoothIdentifiers]];
