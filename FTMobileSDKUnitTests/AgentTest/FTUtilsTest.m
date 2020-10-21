@@ -12,6 +12,7 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
+#import <FTMobileAgent/FTJSONUtil.h>
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -57,6 +58,29 @@
     XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm*1000];
     XCTAssertEqualObjects([array lastObject],tm);
+}
+- (void)testJSONSerializeDictObject{
+    NSDictionary *dict =@{@"key1":@"value1",
+                          @"key2":@{@"key11":@1,
+                                    @"key12":@[@"1",@"2"],
+                          },
+                          @"key3":@1,
+                          @"key4":@[@1,@2,[NSNumber numberWithFloat:2.0]],
+                          @"key5":[NSNumber numberWithFloat:0],
+                          @"key6":@"测试",
+    };
+    
+    FTJSONUtil *util = [FTJSONUtil new];
+    NSData *data = [util JSONSerializeDictObject:dict];
+    NSString *jsonString = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    XCTAssertTrue([dic isEqual:dict]);
+    NSNumber *number = [dict valueForKey:@"key5"];
+    XCTAssertTrue(strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0);
 }
 
 
