@@ -677,7 +677,10 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
-    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:task.originalRequest.URL.host} field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:iserror],FT_MONITOR_NETWORK_RESPONSE_TIME:time} withTrackOP:FT_HTTP_MEASUREMENT];
+    FTLocationInfo *location =[FTLocationManager sharedInstance].location;
+    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:task.originalRequest.URL.host,FT_MONITOR_CITY:location.city,
+                                                                               FT_MONITOR_PROVINCE:location.province,FT_MONITOR_COUNTRY:location.country,
+    } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:iserror],FT_MONITOR_NETWORK_RESPONSE_TIME:time} withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{

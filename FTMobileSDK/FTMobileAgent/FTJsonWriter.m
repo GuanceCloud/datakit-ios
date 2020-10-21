@@ -18,11 +18,11 @@
 @end
 @interface FTJsonWriter ()
 @property (nonatomic, strong) FTJsonWriterState *stateObjectStart,
-  *stateObjectKey,
-  *stateObjectValue,
-  *stateArrayStart,
-  *stateArrayValue,
-  *state;
+*stateObjectKey,
+*stateObjectValue,
+*stateArrayStart,
+*stateArrayValue,
+*state;
 @property (nonatomic, readonly, strong) NSMutableArray *stateStack;
 @end
 
@@ -52,9 +52,9 @@
 - (BOOL)expectingKey:(FTJsonWriter *)writer { return NO; }
 - (void)transitionState:(FTJsonWriter *)writer {}
 - (void)appendWhitespace:(FTJsonWriter *)writer {
-  [writer appendBytes:"\n" length:1];
-  for (NSUInteger i = 0; i < writer.stateStack.count; i++)
-    [writer appendBytes:"  " length:2];
+    [writer appendBytes:"\n" length:1];
+    for (NSUInteger i = 0; i < writer.stateStack.count; i++)
+        [writer appendBytes:"  " length:2];
 }
 @end
 
@@ -63,29 +63,29 @@
     writer.state = writer.stateObjectValue;
 }
 - (BOOL)expectingKey:(FTJsonWriter *)writer {
-  writer.error = @"JSON object key must be string";
-  return YES;
+    writer.error = @"JSON object key must be string";
+    return YES;
 }
 - (void)appendWhitespace:(FTJsonWriter *)writer {
-  [writer appendBytes:" " length:1];
+    [writer appendBytes:" " length:1];
 }
 @end
 
 @implementation FTJsonWriterStateObjectKey
 - (void)appendSeparator:(FTJsonWriter *)writer {
-  [writer appendBytes:"," length:1];
+    [writer appendBytes:"," length:1];
 }
 @end
 
 @implementation FTJsonWriterStateObjectValue
 - (void)appendSeparator:(FTJsonWriter *)writer {
-  [writer appendBytes:":" length:1];
+    [writer appendBytes:":" length:1];
 }
 - (void)transitionState:(FTJsonWriter *)writer {
     writer.state = writer.stateObjectKey;
 }
 - (void)appendWhitespace:(FTJsonWriter *)writer {
-  [writer appendBytes:" " length:1];
+    [writer appendBytes:" " length:1];
 }
 @end
 
@@ -97,13 +97,13 @@
 
 @implementation FTJsonWriterStateArrayValue
 - (void)appendSeparator:(FTJsonWriter *)writer {
-  [writer appendBytes:"," length:1];
+    [writer appendBytes:"," length:1];
 }
 @end
 
 @implementation FTJsonWriterStateStart
 - (void)transitionState:(FTJsonWriter *)writer {
-  writer.state = [[FTJsonWriterStateComplete alloc] init];
+    writer.state = [[FTJsonWriterStateComplete alloc] init];
 }
 - (void)appendSeparator:(FTJsonWriter *)writer {
 }
@@ -111,20 +111,20 @@
 
 @implementation FTJsonWriterStateComplete
 - (BOOL)isInvalidState:(FTJsonWriter *)writer {
-  writer.error = @"Stream is closed";
-  return YES;
+    writer.error = @"Stream is closed";
+    return YES;
 }
 @end
 @interface FTJsonWriter (){
     NSNumber *kTrue, *kFalse, *kPositiveInfinity, *kNegativeInfinity;
     __weak id<FTJsonWriterDelegate> _delegate;
-
+    
 }
 @end
 @implementation FTJsonWriter
 + (id)writerWithDelegate:(id<FTJsonWriterDelegate>)delegate
-                {
-  return [[self alloc] initWithDelegate:delegate];
+{
+    return [[self alloc] initWithDelegate:delegate];
 }
 - (id)initWithDelegate:(id<FTJsonWriterDelegate>)delegate{
     self = [super init];
@@ -133,14 +133,14 @@
         kNegativeInfinity = [NSNumber numberWithDouble:-HUGE_VAL];
         kTrue = [NSNumber numberWithBool:YES];
         kFalse = [NSNumber numberWithBool:NO];
-
+        
         _stateObjectStart = [[FTJsonWriterStateObjectStart alloc] init];
         _stateObjectKey = [[FTJsonWriterStateObjectKey alloc] init];
         _stateObjectValue = [[FTJsonWriterStateObjectValue alloc] init];
         _stateArrayStart = [[FTJsonWriterStateArrayStart alloc] init];
         _stateArrayValue = [[FTJsonWriterStateArrayValue alloc] init];
         _state = [[FTJsonWriterStateStart alloc] init];
-
+        
         _delegate = delegate;
         _stateStack = [[NSMutableArray alloc] initWithCapacity:32];
         cache = [[NSMutableDictionary alloc] initWithCapacity:32];
@@ -177,21 +177,21 @@
 - (BOOL)writeValue:(id)o {
     if ([o isKindOfClass:[NSDictionary class]]) {
         return [self writeObject:o];
-
+        
     } else if ([o isKindOfClass:[NSArray class]]) {
         return [self writeArray:o];
-
+        
     } else if ([o isKindOfClass:[NSString class]]) {
         return [self writeString:o];
-
+        
     } else if ([o isKindOfClass:[NSNumber class]]) {
         return [self writeNumber:o];
-
+        
     } else if ([o isKindOfClass:[NSNull class]]) {
         return [self writeNull];
-
+        
     }
-
+    
     self.error = [NSString stringWithFormat:@"JSON serialisation not supported for %@", [o class]];
     return NO;
 }
@@ -201,12 +201,12 @@
     [_state appendSeparator:self];
     [_stateStack addObject:_state];
     self.state = self.stateArrayStart;
-
+    
     if (_stateStack.count > 32) {
         self.error = @"Nested too deep";
         return NO;
     }
-
+    
     [_delegate writer:self appendBytes:"[" length:1];
     return YES;
 }
@@ -223,13 +223,13 @@
     if ([_state isInvalidState:self]) return NO;
     if ([_state expectingKey:self]) return NO;
     FTJsonWriterState *prev = _state;
-
+    
     self.state = [_stateStack lastObject];
     [_stateStack removeLastObject];
     [prev appendWhitespace:self];
-
+    
     [_delegate writer:self appendBytes:"]" length:1];
-
+    
     [_state transitionState:self];
     return YES;
 }
@@ -245,28 +245,28 @@
 - (BOOL)writeNumber:(NSNumber*)number {
     if (number == kTrue || number == kFalse)
         return [self writeBool:[number boolValue]];
-
+    
     if ([_state isInvalidState:self]) return NO;
     if ([_state expectingKey:self]) return NO;
     [_state appendSeparator:self];
- [_state appendWhitespace:self];
+    [_state appendWhitespace:self];
     if ([kPositiveInfinity isEqualToNumber:number]) {
         self.error = @"+Infinity is not a valid number in JSON";
         return NO;
-
+        
     } else if ([kNegativeInfinity isEqualToNumber:number]) {
         self.error = @"-Infinity is not a valid number in JSON";
         return NO;
-
+        
     } else if (isnan([number doubleValue])) {
         self.error = @"NaN is not a valid number in JSON";
         return NO;
     }
-
+    
     const char *objcType = [number objCType];
     char num[128];
     int len;
-
+    
     switch (objcType[0]) {
         case 'c': case 'i': case 's': case 'l': case 'q':
             len = snprintf(num, sizeof num, "%lld", [number longLongValue]);
@@ -279,7 +279,7 @@
             break;
         }
     }
-
+    
     // It is always safe to cast `len` to NSUInteger here, because
     // snprintf above guarantees its range is in the range 0 to 128
     // (the length of the `num` buffer).

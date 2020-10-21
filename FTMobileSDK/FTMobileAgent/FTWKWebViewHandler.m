@@ -145,7 +145,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if (isTrace) {
-        NSNumber  *duration = [NSNumber numberWithDouble:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
+        NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
         }

@@ -149,9 +149,9 @@ static id<FTHTTPProtocolDelegate> sDelegate;
             start = [self.metrics.transactionMetrics lastObject].requestStartDate;
             NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
 
-            responseDate = [NSNumber numberWithFloat:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000.0];
+            responseDate = [NSNumber numberWithInt:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000.0];
         }else{
-            duration = [NSNumber numberWithDouble:[self.endDate timeIntervalSinceDate:self.startDate]*1000*1000];
+            duration = [NSNumber numberWithInt:[self.endDate timeIntervalSinceDate:self.startDate]*1000*1000];
             start = self.startDate;
             responseDate = duration;
         }
