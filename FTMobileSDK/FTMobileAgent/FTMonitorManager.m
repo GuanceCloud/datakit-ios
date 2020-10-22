@@ -595,6 +595,7 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
+// 监控项采集 网络请求各阶段时间
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
         NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
         NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
@@ -617,6 +618,7 @@ static dispatch_once_t onceToken;
             }
         }
 }
+// 监控项采集 网络请求错误率
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     if (error) {
         _errorNet++;
@@ -630,6 +632,7 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== FTHTTPProtocolDelegate  FTNetworkTrack==========
+// 网络请求信息采集 链路追踪
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task taskDuration:(NSNumber *)duration requestStartDate:(NSDate *)start responseTime:(nonnull NSNumber *)time responseData:(nonnull NSData *)data didCompleteWithError:(nonnull NSError *)error{
     BOOL iserror;
     NSDictionary *responseDict = @{};
@@ -638,12 +641,12 @@ static dispatch_once_t onceToken;
         NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
         NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
         responseDict = @{FT_NETWORK_HEADERS:@{},
-                                    FT_NETWORK_BODY:@{},
-                                    FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
-                                                       @"errorDomain":error.domain,
-                                                       @"errorDescription":errorDescription,
-                                    },
-                                    FT_NETWORK_CODE:errorCode,
+                         FT_NETWORK_BODY:@{},
+                         FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                            @"errorDomain":error.domain,
+                                            @"errorDescription":errorDescription,
+                         },
+                         FT_NETWORK_CODE:errorCode,
         };
     }else{
         iserror = [[task.response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
@@ -677,12 +680,24 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
+    // 网络请求错误率指标采集
     FTLocationInfo *location =[FTLocationManager sharedInstance].location;
-    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:task.originalRequest.URL.host,FT_MONITOR_CITY:location.city,
-                                                                               FT_MONITOR_PROVINCE:location.province,FT_MONITOR_COUNTRY:location.country,
-    } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:iserror],FT_MONITOR_NETWORK_RESPONSE_TIME:time} withTrackOP:FT_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_HTTP_MEASUREMENT
+                                               tags:@{
+                                                   FT_KEY_HOST:task.originalRequest.URL.host,
+                                                   FT_MONITOR_CITY:location.city,
+                                                   FT_MONITOR_PROVINCE:location.province,
+                                                   FT_MONITOR_COUNTRY:location.country,
+                                               } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,
+                                                         FT_ISERROR:[NSNumber numberWithInt:iserror],
+                                                         FT_MONITOR_NETWORK_RESPONSE_TIME:time,
+                                               } withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
+/**
+ * KWebView  网络请求信息采集
+ * wkwebview 使用loadRequest 与 reload 发起的请求
+ */
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
     BOOL iserror = NO;
     NSDictionary *responseDict = @{};
@@ -729,20 +744,51 @@ static dispatch_once_t onceToken;
         [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
 }
+/**
+ * WKWebView 采集错误率 (所有请求)
+*/
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request isError:(BOOL)isError{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT tags:@{FT_KEY_HOST:request.URL.host} field:@{FT_NETWORK_REQUEST_URL:request.URL.absoluteString,FT_ISERROR:[NSNumber numberWithInt:isError]} withTrackOP:FT_WEB_HTTP_MEASUREMENT];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_HTTP_MEASUREMENT
+                                               tags:@{
+                                                   FT_KEY_HOST:request.URL.host
+                                               } field:@{
+                                                   FT_NETWORK_REQUEST_URL:request.URL.absoluteString,
+                                                   FT_ISERROR:[NSNumber numberWithInt:isError],
+                                               } withTrackOP:FT_WEB_HTTP_MEASUREMENT];
 }
--(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[@"loading" ft_md5HashToUpper32Bit]
-    } field:@{FT_NETWORK_REQUEST_URL:urlStr,FT_DURATION_TIME:duration,FT_KEY_EVENT:@"loading"} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+/**
+ * WKWebView 采集loading时间 (所有请求)
+*/
+-(void)ftWKWebViewLoadingWithURL:(NSURL *)url duration:(NSNumber *)duration{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT
+                                               tags:@{
+                                                   FT_AUTO_TRACK_EVENT_ID:[@"loading" ft_md5HashToUpper32Bit],
+                                                   FT_NETWORK_REQUEST_URL:url.absoluteString,
+                                                   FT_KEY_HOST:url.host
+                                               } field:@{
+                                                   FT_DURATION_TIME:duration,
+                                                   FT_KEY_EVENT:@"loading",
+                                               } withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
--(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[@"loadCompleted" ft_md5HashToUpper32Bit]
-       } field:@{@"url":urlStr,FT_DURATION_TIME:duration,FT_KEY_EVENT:@"loadCompleted"} withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
+/**
+ * WKWebView 采集loadCompleted时间(所有请求)
+*/
+-(void)ftWKWebViewLoadCompletedWithURL:(NSURL *)url duration:(NSNumber *)duration{
+    [[FTMobileAgent sharedInstance] trackBackground:FT_WEB_TIMECOST_MEASUREMENT
+                                               tags:@{
+                                                   FT_AUTO_TRACK_EVENT_ID:[@"loadCompleted" ft_md5HashToUpper32Bit],
+                                                   FT_NETWORK_REQUEST_URL:url.absoluteString,
+                                                   FT_KEY_HOST:url.host,
+                                               } field:@{
+                                                   FT_DURATION_TIME:duration,
+                                                   FT_KEY_EVENT:@"loadCompleted"
+                                               } withTrackOP:FT_WEB_TIMECOST_MEASUREMENT];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:@{FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
+    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{
+        FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:@{
+            FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
     
     if (slowStack.length>0) {
         NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];

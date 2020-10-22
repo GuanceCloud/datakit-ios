@@ -10,6 +10,7 @@
 #import "ZYAspects.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTLog.h"
+#import "NSURLResponse+FTMonitor.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 @property (nonatomic, strong) NSMutableDictionary *mutableLoadStateByWebviewHash;
@@ -64,6 +65,8 @@ static dispatch_once_t onceToken;
         }
     }
     [self.lock unlock];
+    // 判断是否是SDK添加链路追踪信息的request
+    // wkwebview 使用loadRequest 与 reload 发起的请求
     if (isTrace) {
         NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
@@ -71,7 +74,8 @@ static dispatch_once_t onceToken;
         }
     }
     if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:isError:)]) {
-        [self.traceDelegate ftWKWebViewTraceRequest:request isError:NO];
+        BOOL iserror = [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
+        [self.traceDelegate ftWKWebViewTraceRequest:request isError:iserror];
     }
 }
 
@@ -111,7 +115,7 @@ static dispatch_once_t onceToken;
     if ([request.URL isEqual:webView.URL]) {
         NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadingWithURL:duration:)]) {
-            [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL.absoluteString duration:duration];
+            [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL duration:duration];
         }
     }
 }
@@ -127,7 +131,7 @@ static dispatch_once_t onceToken;
     if ([request.URL isEqual:webView.URL]) {
         NSNumber  *duration = [NSNumber numberWithInt:[endDate timeIntervalSinceDate:request.ftRequestStartDate]*1000*1000];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadCompletedWithURL:duration:)]) {
-            [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL.absoluteString duration:duration];
+            [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL duration:duration];
         }
     }
 }

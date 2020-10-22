@@ -25,12 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
  * mobile_webview_time_cost   loading
  * ⻚面开始 - 开始加载资源
  */
--(void)ftWKWebViewLoadingWithURL:(NSString *)urlStr duration:(NSNumber *)duration;
+-(void)ftWKWebViewLoadingWithURL:(NSURL *)url duration:(NSNumber *)duration;
 /**
  * mobile_webview_time_cost   loadCompleted
  * ⻚面开始 - 资源加载完毕
 */
--(void)ftWKWebViewLoadCompletedWithURL:(NSString *)urlStr duration:(NSNumber *)duration;
+-(void)ftWKWebViewLoadCompletedWithURL:(NSURL *)url duration:(NSNumber *)duration;
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL trace;
