@@ -5,7 +5,9 @@
 //  Created by 胡蕾蕾 on 2019/11/28.
 //  Copyright © 2019 hll. All rights reserved.
 //
-
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
+#endif
 #import "FTMobileAgent.h"
 #import <UIKit/UIKit.h>
 #import "FTTrackerEventDBTool.h"
@@ -192,6 +194,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self trackBackground:measurement tags:nil field:field withTrackOP:FT_TRACK_OP_CUSTOM];
 }
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field{
+    NSParameterAssert(measurement);
+    NSParameterAssert(field);
+    if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0  || field == nil || [field allKeys].count == 0) {
+        ZYErrorLog(@"文件名 事件名不能为空");
+        return;
+    }
     [self trackBackground:measurement tags:tags field:field withTrackOP:FT_TRACK_OP_CUSTOM];
 }
 
@@ -310,13 +318,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 数据拼接 存储数据库
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP{
-    NSParameterAssert(measurement);
-    NSParameterAssert(field);
     @try {
-        if (measurement == nil || [measurement ft_removeFrontBackBlank].length == 0  || field == nil || [field allKeys].count == 0) {
-            ZYErrorLog(@"文件名 事件名不能为空");
-            return;
-        }
         FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:trackOP netType:FTNetworkingTypeMetrics tm:0];
         [self insertDBWithItemData:model];
     }
@@ -503,7 +505,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (!self.isForeground) {
                 float duration = (endDate - self.launchTime);
-                [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],FT_KEY_EVENT:FT_EVENT_ACTIVATED} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+                [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],FT_KEY_EVENT:FT_EVENT_ACTIVATED} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
             }
         });
         [self _loggingArrayInsertDBImmediately];
@@ -527,7 +529,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (!self.isForeground) {
             CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
             float duration = (endDate - self.launchTime);
-            [[FTMobileAgent sharedInstance] trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+            [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
         }
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);

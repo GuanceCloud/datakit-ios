@@ -5,7 +5,9 @@
 //  Created by 胡蕾蕾 on 2020/6/2.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
+#endif
 #import "NSURLRequest+FTMonitor.h"
 #import "FTConstants.h"
 #import "FTMonitorManager.h"

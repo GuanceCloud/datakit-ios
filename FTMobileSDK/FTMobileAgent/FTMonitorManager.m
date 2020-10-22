@@ -5,7 +5,9 @@
 //  Created by 胡蕾蕾 on 2020/4/14.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
+#if ! __has_feature(objc_arc)
+#error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
+#endif
 #import "FTMonitorManager.h"
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreBluetooth/CoreBluetooth.h>
@@ -688,9 +690,10 @@ static dispatch_once_t onceToken;
                                                    FT_MONITOR_CITY:location.city,
                                                    FT_MONITOR_PROVINCE:location.province,
                                                    FT_MONITOR_COUNTRY:location.country,
-                                               } field:@{FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,
-                                                         FT_ISERROR:[NSNumber numberWithInt:iserror],
-                                                         FT_MONITOR_NETWORK_RESPONSE_TIME:time,
+                                               } field:@{
+                                                   FT_NETWORK_REQUEST_URL:task.originalRequest.URL.absoluteString,
+                                                   FT_ISERROR:[NSNumber numberWithInt:iserror],
+                                                   FT_MONITOR_NETWORK_RESPONSE_TIME:time,
                                                } withTrackOP:FT_HTTP_MEASUREMENT];
 }
 #pragma mark ========== FTWKWebViewDelegate ==========
@@ -786,10 +789,12 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{
-        FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:@{
-            FT_KEY_EVENT:@"anr"} withTrackOP:@"anr"];
-    
+    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT
+                                               tags:@{
+                                                   FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName],
+                                               }field:@{
+                                                   FT_KEY_EVENT:@"anr",
+                                               } withTrackOP:@"anr"];
     if (slowStack.length>0) {
         NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];
         [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];

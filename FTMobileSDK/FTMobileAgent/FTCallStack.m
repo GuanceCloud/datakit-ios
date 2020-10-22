@@ -197,8 +197,8 @@ thread_t ft_machThreadFromNSThread(NSThread *nsthread) {
 
 #pragma -mark GenerateBacbsrackEnrty
 NSString* ft_logBacktraceEntry(const int entryNum,
-                                const uintptr_t address,
-                                const Dl_info* const dlInfo) {
+                               const uintptr_t address,
+                               const Dl_info* const dlInfo) {
     char faddrBuff[20];
     char saddrBuff[20];
     
@@ -266,9 +266,9 @@ kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size
 
 #pragma -mark Symbolicate
 void ft_symbolicate(const uintptr_t* const backtraceBuffer,
-                     Dl_info* const symbolsBuffer,
-                     const int numEntries,
-                     const int skippedEntries){
+                    Dl_info* const symbolsBuffer,
+                    const int numEntries,
+                    const int skippedEntries){
     int i = 0;
     
     if(!skippedEntries && i < numEntries) {
@@ -360,7 +360,7 @@ uintptr_t ft_firstCmdAfterHeader(const struct mach_header* const header) {
 }
 
 uint32_t ft_imageIndexContainingAddress(const uintptr_t address) {
-   // 调用API函数_dyld_image_count(void) ，获取images文件总数，即mach-o文件总数
+    // 调用API函数_dyld_image_count(void) ，获取images文件总数，即mach-o文件总数
     const uint32_t imageCount = _dyld_image_count();
     const struct mach_header* header = 0;
     
