@@ -42,7 +42,7 @@ typedef struct {
             strongSelf.lastBytes = [self getInterfaceBytes];
             strongSelf.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(refreshFlow) userInfo:nil repeats:YES];
             NSRunLoop *runloop = [NSRunLoop currentRunLoop];
-            [runloop addTimer:strongSelf.timer forMode:NSDefaultRunLoopMode];
+            [runloop addTimer:strongSelf.timer forMode:NSRunLoopCommonModes];
             [runloop run];
         }
     });
