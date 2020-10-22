@@ -110,34 +110,6 @@
     [self.aspectTokenAry addObjectsFromArray:@[viewOpen,lifeOpen,lifeClose]];
     
 }
-- (void)flowOpenTrack:(UIViewController *)vc{
-
-    if ([vc isKindOfClass:UINavigationController.class]) {
-        return;
-    }
-    if ([self isBlackListContainsViewController:vc]) {
-        return;
-    }
-    NSString *parent = self.preOpenName;
-    NSString *name =NSStringFromClass(vc.class);
-    self.preOpenName = name;
-    if ([self.pageDesc.allKeys containsObject:name]) {
-        name =self.pageDesc[name];
-    }
-    if ([self.pageDesc.allKeys containsObject:parent]) {
-        parent =self.pageDesc[parent];
-    }
-    long  duration;
-    long long tm =[[NSDate date] ft_dateTimestamp];
-    if (self.preFlowTime==0) {
-        duration = 0;
-    }else{
-        duration = (long)((tm-self.preFlowTime)/1000);
-    }
-    self.preFlowTime = tm;
-    [[FTMobileAgent sharedInstance] flowTrack:FT_FLOW_CHART_PRODUCT traceId:self.flowId name:name parent:parent tags:nil duration:duration field:nil withTrackType:FTTrackTypeAuto];
-}
-
 #pragma mark ========== UITableView\UICollectionView的点击事件 ==========
 - (void)logTableViewCollectionView{
     WeakSelf
