@@ -17,6 +17,7 @@
 #import "FTUncaughtExceptionHandler+Test.h"
 #import "TestCCrash.hpp"
 #import "TestANRVC.h"
+#import "TestWKWebViewVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -29,7 +30,7 @@
     [super viewDidLoad];
     UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
     self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR"];
+    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_webview",@"Test_CLIENT_HTTP"];
     [self createUI];
 }
 - (void)onClickedOKbtn {
@@ -126,6 +127,18 @@
     [self.navigationController pushViewController:[TestANRVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
 }
+- (void)test_webview{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+}
+- (void)test_client_http{
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+    }];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -165,6 +178,12 @@
             break;
         case 8:
             [self Test_ANR];
+            break;
+            case 9:
+            [self test_webview];
+            break;
+            case 10:
+            [self test_client_http];
             break;
         default:
             break;

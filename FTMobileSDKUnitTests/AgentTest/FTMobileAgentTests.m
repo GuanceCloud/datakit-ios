@@ -20,6 +20,7 @@
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
+#import "NSString+FTAdd.h"
 
 
 #define WAIT                                                                \
@@ -362,6 +363,8 @@ do {                                                                            
         NSDictionary *tags = [opdata valueForKey:@"tags"];
         NSNumber *duration = [field valueForKey:@"duration"];
         XCTAssertTrue(duration.intValue > 2*1000*1000);
+        XCTAssertTrue([[tags valueForKey:FT_AUTO_TRACK_EVENT_ID] isEqualToString:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]]);
+
         XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"activated"]);
         [expect fulfill];
     });
