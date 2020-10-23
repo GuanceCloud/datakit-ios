@@ -12,24 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTBaseInfoHander : NSObject
-/**
- *  获取设备相关信息
- */
-+ (NSDictionary *)ft_getDeviceInfo;
-/**
- *  获取运营商信息
- */
-+ (NSString *)ft_getTelephonyInfo;
-/**
- *  将字典转化Json字符串
- *  @param dict 需要转化的字典
- *  @return Json字符串
- */
-+ (NSString *)ft_convertToJsonData:(NSDictionary *)dict;
-/**
- *  获取设备分辨率
- */
-+ (NSString *)ft_resolution;
+
 + (NSString *)ft_md5base64EncryptStr:(NSString *)str;
 /**
  *  @abstract
@@ -38,13 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 签名后字符串
  */
 +(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
-/**
- *  @abstract
- *  将json字符串转换成字典
- *
- *  @return 转换后字典
- */
-+ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString;
 + (id)repleacingSpecialCharactersField:(id )str;
 /**
  *  @abstract
