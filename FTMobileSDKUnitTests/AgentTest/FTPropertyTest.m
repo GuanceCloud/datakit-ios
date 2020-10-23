@@ -21,6 +21,8 @@
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
+#import <FTMobileAgent/FTJSONUtil.h>
+
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -60,7 +62,7 @@
                                   FT_AGENT_FIELD:@{@"test":@"testSetUUID"},
                           },
     };
-    model.data = [FTBaseInfoHander ft_convertToJsonData:data];
+    model.data = [FTJSONUtil ft_convertToJsonData:data];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         
     }];
@@ -93,7 +95,7 @@
     [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:@"testSetEmptyServiceName" tm:[[NSDate date] ft_dateTimestamp]];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICENAME];
@@ -110,7 +112,7 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICENAME];
@@ -208,7 +210,7 @@
                               FT_AGENT_FIELD:@{@"name":@"testSetEmptyToken"},
                           },
     };
-    model.data = [FTBaseInfoHander ft_convertToJsonData:data];
+    model.data = [FTJSONUtil ft_convertToJsonData:data];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         if (statusCode != 200) {
             NSError *errors;

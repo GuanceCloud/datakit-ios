@@ -48,7 +48,7 @@
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeLogging;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     FTUploadTool *tool =  [FTUploadTool new];
     NSString *line = [tool getRequestDataWithEventArray:@[model]];
     NSArray *array = [line componentsSeparatedByString:@" "];

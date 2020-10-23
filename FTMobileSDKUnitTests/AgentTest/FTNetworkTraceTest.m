@@ -23,6 +23,7 @@
 #import <NSDate+FTAdd.h>
 #import "FTSessionConfiguration+Test.h"
 #import <FTMobileAgent/FTConstants.h>
+#import <FTJSONUtil.h>
 @interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -183,20 +184,20 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == YES);
-    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:field[@"__content"]];
+    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
     NSDictionary *responseContent = content[@"responseContent"];
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
     XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
     NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
     FTRecordModel *metricsModel = [metricsData lastObject];
-    NSDictionary *metricsDict = [FTBaseInfoHander ft_dictionaryWithJsonString:metricsModel.data];
+    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
     NSDictionary *metricsOpdata = metricsDict[@"opdata"];
     NSDictionary *metricsField = metricsOpdata[@"field"];
     NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
@@ -220,7 +221,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
@@ -228,7 +229,7 @@
 
     NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
     FTRecordModel *metricsModel = [metricsData lastObject];
-    NSDictionary *metricsDict = [FTBaseInfoHander ft_dictionaryWithJsonString:metricsModel.data];
+    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
     NSDictionary *metricsOpdata = metricsDict[@"opdata"];
     NSDictionary *metricsTags = metricsOpdata[@"tags"];
     NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
@@ -253,7 +254,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
@@ -289,11 +290,11 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:field[@"__content"]];
+    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
     NSDictionary *requestContent = content[@"requestContent"];
     NSString *body = requestContent[@"body"];
     XCTAssertTrue([body containsString:uuid]);
@@ -317,7 +318,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];

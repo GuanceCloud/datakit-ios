@@ -57,14 +57,15 @@
         config.enableAutoTrack = YES;
         config.enabledPageVtpDesc = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
-        config.traceConsoleLog = YES;
+//        config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
-        config.enableTrackAppANR = YES;
+//        config.enableTrackAppANR = YES;
         config.eventFlowLog = YES;
         config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [FTMobileAgent startWithConfigOptions:config];
         self.config = config;
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
     }

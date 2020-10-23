@@ -17,7 +17,7 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
-
+#import <FTJSONUtil.h>
 @interface FTWKWebViewTraceTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) TestWKWebViewVC *testVC;
@@ -117,7 +117,7 @@
         NSArray *metricsArray =  [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
         for (int i =0 ; i<metricsArray.count; i++) {
             FTRecordModel *model = metricsArray[i];
-            NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+            NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
             NSString *measurement = [opdata valueForKey:@"measurement"];
             NSMutableDictionary *tags = [opdata valueForKey:@"tags"];
@@ -134,7 +134,7 @@
             }else{
                 XCTAssertTrue([measurement isEqualToString:FT_WEB_TIMECOST_MEASUREMENT]);
                 XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"loading"] || [[field valueForKey:@"event"] isEqualToString:@"loadCompleted"]);
-                NSString *url = [field valueForKey:@"url"];
+                NSString *url = [tags valueForKey:@"url"];
                 XCTAssertTrue([url isEqualToString:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"]);
                 XCTAssertTrue([field.allKeys containsObject:@"duration"]);
             }
@@ -309,10 +309,10 @@
       });
 }
 - (void)getX_B3_SpanId:(FTRecordModel *)model completionHandler:(void (^)(NSString *spanID,NSString *urlStr))completionHandler{
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = [dict valueForKey:@"opdata"];
     NSDictionary *field = [opdata valueForKey:@"field"];
-    NSDictionary *content = [FTBaseInfoHander ft_dictionaryWithJsonString:[field valueForKey:@"__content"]];
+    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:[field valueForKey:@"__content"]];
     NSDictionary *requestContent = [content valueForKey:@"requestContent"];
     NSDictionary *headers = [requestContent valueForKey:@"headers"];
     completionHandler?completionHandler([headers valueForKey:@"X-B3-SpanId"],[requestContent valueForKey:@"url"]):nil;

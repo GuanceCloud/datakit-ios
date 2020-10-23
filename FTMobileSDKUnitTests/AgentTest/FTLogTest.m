@@ -17,7 +17,7 @@
 #import <FTBaseInfoHander.h>
 #import "UITestVC.h"
 #import "FTTrackerEventDBTool+Test.h"
-
+#import <FTJSONUtil.h>
 @interface FTLogTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -91,11 +91,11 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
     NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
 }
 - (void)testTraceEventLevae{
@@ -107,11 +107,11 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
     NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
 }
 - (void)testTraceEventClick{
@@ -123,11 +123,11 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
     NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
 }
 - (void)testTraceEventLaunch{
@@ -138,11 +138,11 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
     NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
 }
 - (void)testTraceUploadingMethod{
@@ -155,11 +155,11 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
     NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTBaseInfoHander ft_dictionaryWithJsonString:content];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {

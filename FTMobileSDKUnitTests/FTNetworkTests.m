@@ -10,11 +10,11 @@
 #import <FTUploadTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
+#import <FTMobileAgent/FTJSONUtil.h>
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -69,14 +69,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         switch (type) {
             case FTNetworkTest:{
-                NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
             }
                 break;
                 
             case FTNetworkTestBad:{
-                NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
@@ -90,7 +90,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             }
                 break;
             case FTNetworkTestWrongJsonResponse:{
-                NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 data = [data stringByAppendingString:@"/n/t"];
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
@@ -101,7 +101,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             }
                 break;
             case FTNetworkTestErrorResponse:{
-                NSString *data  =[FTBaseInfoHander ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
+                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:500 headers:nil];
             }
@@ -151,7 +151,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expectation fulfill];
@@ -179,7 +179,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expectation fulfill];
@@ -207,7 +207,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
@@ -236,7 +236,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
@@ -264,7 +264,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(response.bytes == 0);
         [expectation fulfill];
@@ -290,7 +290,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];
@@ -316,7 +316,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];
@@ -342,7 +342,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];

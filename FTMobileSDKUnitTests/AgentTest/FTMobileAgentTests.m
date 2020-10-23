@@ -21,17 +21,7 @@
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
 #import "NSString+FTAdd.h"
-
-
-#define WAIT                                                                \
-do {                                                                        \
-[self expectationForNotification:@"LCUnitTest" object:nil handler:nil]; \
-[self waitForExpectationsWithTimeout:10 handler:nil];                   \
-} while(0);
-#define NOTIFY                                                                            \
-do {                                                                                      \
-[[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
-} while(0);
+#import <FTMobileAgent/FTJSONUtil.h>
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -91,7 +81,7 @@ do {                                                                            
     [NSThread sleepForTimeInterval:2];//写入数据库方法是异步的
     NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeMetrics];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict =  [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict =  [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSString *event = field[@"event"];
@@ -149,7 +139,7 @@ do {                                                                            
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict =  [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict =  [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSString *content = field[@"__content"];
@@ -177,7 +167,7 @@ do {                                                                            
     };
     FTRecordModel *model = [FTRecordModel new];
     model.op = FTNetworkingTypeObject;
-    model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+    model.data = [FTJSONUtil ft_convertToJsonData:dict];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expect fulfill];
@@ -203,7 +193,7 @@ do {                                                                            
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
+    NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
     XCTAssertTrue(newCount>count);
     XCTAssertTrue([userData[@"name"] isEqualToString:@"bindUser"]);
     XCTAssertTrue([userData[@"id"] isEqualToString:@"bindUserId"]);
@@ -222,7 +212,7 @@ do {                                                                            
     NSDictionary *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];
-        lastUserData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
+        lastUserData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
     }
     
     [[FTMobileAgent sharedInstance] logout];
@@ -235,7 +225,7 @@ do {                                                                            
     NSDictionary *userData;
     if (newarray.count>0) {
         FTRecordModel *model = [newarray lastObject];
-        userData = [FTBaseInfoHander ft_dictionaryWithJsonString:model.userdata];
+        userData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
         
     }
     XCTAssertTrue(userData.allKeys.count>0 && lastUserData.allKeys.count>0 && [userData[@"name"] isEqualToString:@"bindNewUser"] && [lastUserData[@"name"] isEqualToString:@"bindUser"]);
@@ -289,7 +279,7 @@ do {                                                                            
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FTNetworkingTypeMetrics;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     //uploadTool启动
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
@@ -355,7 +345,7 @@ do {                                                                            
         XCTAssertTrue(newCount>oldCount);
      NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
       FTRecordModel *model = [datas lastObject];
-        NSDictionary *dict = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
         NSString *op = [dict valueForKey:@"op"];
         XCTAssertTrue([op isEqualToString:@"mobile_client_time_cost"]);
         NSDictionary *opdata = [dict valueForKey:@"opdata"];

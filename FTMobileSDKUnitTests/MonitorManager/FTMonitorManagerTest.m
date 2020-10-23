@@ -194,7 +194,6 @@ do {                                                                            
 }
 -(void)testMangerChangeMonitorType{
     [[FTMonitorManager sharedInstance] setMonitorType:FTMonitorInfoTypeAll];
-    [[FTMonitorManager sharedInstance] startFlush];
     NSDictionary *dict =  [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
     NSDictionary *field =  [dict valueForKey:FT_AGENT_FIELD];
     

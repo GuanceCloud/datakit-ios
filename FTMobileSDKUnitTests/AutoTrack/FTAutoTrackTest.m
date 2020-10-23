@@ -20,7 +20,7 @@
 #import "FTUploadTool+Test.h"
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
-
+#import <FTJSONUtil.h>
 @interface FTAutoTrackTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -180,7 +180,7 @@
     [self trackMethodWithConfig:config];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:model.data];
+    NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = item[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSString *desc = field[@"page_desc"];
