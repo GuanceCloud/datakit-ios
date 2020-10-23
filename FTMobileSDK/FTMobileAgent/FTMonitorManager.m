@@ -36,6 +36,8 @@
 #import "NSDate+FTAdd.h"
 #import "FTWKWebViewHandler.h"
 #import "FTANRDetector.h"
+#import "FTJSONUtil.h"
+#import "FTPresetProperty.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 typedef void (^FTPedometerHandler)(NSNumber *pedometerSteps,
 NSError *error);
@@ -51,8 +53,6 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
 @property (nonatomic, strong) CMPedometer *pedometer;
 @property (nonatomic, strong) CMMotionManager *motionManager;
 @property (nonatomic, strong) NSNumber *steps;
-@property (nonatomic, assign) NSInteger flushInterval;
-@property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, assign) float lightValue;
 @property (nonatomic, strong) NSDictionary *blDict;
@@ -86,7 +86,6 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         self.devicesListArray = [NSMutableArray new];
-        _flushInterval = 10;
         _lastNetTaskMetrics = nil;
         _errorNet = 0;
         _successNet = 0;
@@ -151,67 +150,10 @@ static dispatch_once_t onceToken;
         self.netContentType = [NSSet setWithArray:@[@"application/json",@"application/xml",@"application/javascript",@"text/html",@"text/xml",@"text/plain",@"application/x-www-form-urlencoded",@"multipart/form-data"]];
     }
 }
--(void)setFlushInterval:(NSInteger)interval{
-    _flushInterval = interval;
-    if(_timer){
-        [self stopFlush];
-        [self startFlush];
-    }
-}
--(void)startFlush{
-    if ((self.timer && [self.timer isValid])) {
-        return;
-    }
-    ZYDebug(@"starting monitor flush timer.");
-    if (self.flushInterval > 0) {
-        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-            self.timer = [NSTimer scheduledTimerWithTimeInterval:self.flushInterval
-                                                          target:self
-                                                        selector:@selector(flush)
-                                                        userInfo:nil
-                                                         repeats:YES];
-            [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-        }];
-    }
-}
--(void)stopFlush{
-    if (self.timer) {
-        [self.timer invalidate];
-    }
-    self.timer = nil;
-}
--(void)flush{
-    if (self.monitorType == 0) {
-        return;
-    }
-    NSDictionary *addDict = [self getMonitorTagFiledDict];
-    FTRecordModel *model = [FTRecordModel new];
-
-    NSMutableDictionary *opdata = @{
-        FT_AGENT_MEASUREMENT:@"mobile_monitor"}.mutableCopy;
-    if ([addDict objectForKey:FT_AGENT_TAGS]) {
-        [opdata setValue:[addDict objectForKey:FT_AGENT_TAGS] forKey:FT_AGENT_TAGS];
-    }
-    if ([addDict objectForKey:FT_AGENT_FIELD]) {
-        [opdata setValue:[addDict objectForKey:FT_AGENT_FIELD] forKey:FT_AGENT_FIELD];
-    }
-    NSDictionary *data =@{
-        FT_AGENT_OP:@"monitor",
-        FT_AGENT_OPDATA:opdata,
-    };
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
-    model.tm =[[NSDate date] ft_dateTimestamp];
-    model.op = FTNetworkingTypeMetrics;
-    void (^UploadResultBlock)(NSInteger,id) = ^(NSInteger statusCode,id responseObject){
-        ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
-    };
-    [[FTMobileAgent sharedInstance] trackUpload:@[model] callBack:UploadResultBlock];
-}
 -(void)setMonitorType:(FTMonitorInfoType)type{
     _monitorType = type;
     _monitorTagDict = [self getMonitorTagDicts];
     if (type == 0) {
-        [self stopFlush];
         [self stopMonitor];
         return;
     }
@@ -314,8 +256,11 @@ static dispatch_once_t onceToken;
     _lastTime = link.timestamp;
     _fps = _count / delta;
     if(_fps<10){
-        NSDictionary *field =  @{FT_KEY_EVENT:@"block"};
-        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"block"];
+        [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{
+            FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]
+        } field:@{
+            FT_KEY_EVENT:@"block"
+        } withTrackOP:@"block"];
     }
     _count = 0;
 }
@@ -415,7 +360,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== tag\field 数据拼接 ==========
 -(NSDictionary *)getMonitorTagDicts{
         NSMutableDictionary *tag = [NSMutableDictionary new];
-        NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
+        NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         if (_monitorType & FTMonitorInfoTypeBattery) {
             [tag setObject:deviceInfo[FTBaseInfoHanderBatteryTotal] forKey:FT_MONITOR_BATTERY_TOTAL];
         }
@@ -434,7 +379,7 @@ static dispatch_once_t onceToken;
             [tag setObject:[FTMonitorUtils ft_getBackCameraPixel] forKey:FT_MONITOR_CAMERA_BACK_PX];
         }
         if (_monitorType & FTMonitorInfoTypeSystem) {
-            [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
+            [tag setValue:[[UIDevice currentDevice] name] forKey:FT_MONITOR_DEVICE_NAME];
         }
     return tag;
 }
@@ -680,7 +625,7 @@ static dispatch_once_t onceToken;
     if(trace&&span&&sampling){
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
-        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTJSONUtil ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
     // 网络请求错误率指标采集
     FTLocationInfo *location =[FTLocationManager sharedInstance].location;
@@ -744,7 +689,7 @@ static dispatch_once_t onceToken;
     if(trace&&span&&sampling){
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
-        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"networkTrace" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTJSONUtil ft_convertToJsonData:content] tm:[start ft_dateTimestamp] tags:tags field:field];
     }
 }
 /**
