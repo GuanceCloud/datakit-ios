@@ -24,12 +24,12 @@
 #import "FTMobileAgent+Private.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
+#import "FTJSONUtil.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTAutoTrack()<NSXMLParserDelegate>
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, assign) long long preFlowTime;
-@property (nonatomic, copy)  NSString *flowId;
 @property (nonatomic, copy)  NSString *preOpenName;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
@@ -41,12 +41,10 @@
     self = [super init];
     if (self) {
         self.preFlowTime = 0;
-        self.flowId = [[NSUUID UUID] UUIDString];
     }
     return self;
 }
 -(void)startWithConfig:(FTMobileConfig *)config{
-    config.sdkTrackVersion = SDK_VERSION;
     self.config = config;
 }
 -(void)setConfig:(FTMobileConfig *)config{
@@ -360,7 +358,7 @@
         [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
         NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
         NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]};
-        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"loggingOpen" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:field];
+        [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"loggingOpen" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTJSONUtil ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:field];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
@@ -423,13 +421,16 @@
         if(self.config.eventFlowLog){
             [content setValue:op forKey:FT_KEY_EVENT];
             NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
-            [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"eventFlowLog" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTBaseInfoHander ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:nil];
+            [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"eventFlowLog" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTJSONUtil ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:nil];
         }
         //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackOP:op];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
+}
+- (NSString *)sdkTrackVersion{
+    return SDK_VERSION;
 }
 -(void)dealloc{
     [self remove];

@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 移除全埋点
 */
 -(void)remove;
+- (NSString *)sdkTrackVersion;
 @end
 
 NS_ASSUME_NONNULL_END
