@@ -22,7 +22,7 @@
 #import "FTConstants.h"
 #import "FTMonitorUtils.h"
 #import "NSDate+FTAdd.h"
-#import "FTMobileAgentVersion.h"
+#import "FTJSONUtil.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
@@ -92,7 +92,6 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, assign) FTCheckTokenState checkTokenState;
-@property (nonatomic, strong) NSDictionary *basicTags;
 @property (nonatomic, strong) NSURLSession *session;
 /// 网络请求调用结束的 Block 所在的线程
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
@@ -228,58 +227,27 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 -(NSURLRequest *)trackList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLSessionTaskCompletionHandler)callBack{
     FTRecordModel *model = [modelList firstObject];
     NSString *api = nil;
-    if ([model.op isEqualToString:FTNetworkingTypeObject]) {
-        NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
-        return    [self objectRequestWithURL:url eventsAry:modelList callBack:callBack];
-    }else if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
-        api = FT_NETWORKING_API_METRICS;
-    }else if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
-        api = FT_NETWORKING_API_LOGGING;
-    }
+    NSURLRequest *request;
     NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
-    NSURLRequest *request = [self lineProtocolRequestWithURL:url datas:modelList];
+    if ([model.op isEqualToString:FTNetworkingTypeObject]) {
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
+        NSString *requestData = [self getObjctRequestWithEventArray:modelList];
+        request = [self getRequestWithURL:url body:requestData contentType:@"application/json"];
+    }else{
+        if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
+            api = FT_NETWORKING_API_METRICS;
+        }else if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
+            api = FT_NETWORKING_API_LOGGING;
+        }
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
+        NSString *requestData = [self getRequestDataWithEventArray:modelList];
+        request = [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
+    }
     //设置网络请求的返回接收器
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
     [dataTask resume];
     return request;
-}
-- (NSURLRequest *)objectRequestWithURL:(NSURL *)url eventsAry:(NSArray *)events callBack:(FTURLSessionTaskCompletionHandler)callBack{
-    NSMutableArray *list = [NSMutableArray new];
-      [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-          NSMutableDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data].mutableCopy;
-          NSMutableDictionary *tag = [item valueForKey:FT_KEY_TAGS];
-          if ([[item allKeys] containsObject:FT_AGENT_OP]) {
-              [tag addEntriesFromDictionary:self.basicTags];
-              [tag setValue:[FTMonitorUtils userDeviceName] forKey:FT_MONITOR_DEVICE_NAME];
-              [tag removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
-          }
-          [item setValue:tag forKey:FT_KEY_TAGS];
-          [list addObject:item];
-      }];
-    // 待处理 object 类型
-    NSURLRequest *request = [self writeObjectRequestWithURL:url datas:list];
-    //设置网络请求的返回接收器
-    NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
-    //开始请求
-    [dataTask resume];
-    return request;
-}
-// metrics、logging、keyevent
--(NSURLRequest *)lineProtocolRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
-    NSString *requestData = [self getRequestDataWithEventArray:datas];
-    ZYLog(@"requestData = %@",requestData);
-    return  [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
-}
-// object
--(NSURLRequest *)writeObjectRequestWithURL:(NSURL *)url datas:(NSArray *)datas{
-    NSError *error = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:datas options:NSJSONWritingPrettyPrinted error:&error];
-    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    ZYLog(@"requestData = %@",requestData);
-    return  [self getRequestWithURL:url body:requestData contentType:@"application/json"];
 }
 -(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
@@ -329,25 +297,32 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     self.session = nil;
 }
 #pragma mark ========== requestHTTPBody 数据处理 ==========
+- (NSString *)getObjctRequestWithEventArray:(NSArray *)events{
+    NSMutableArray *list = [NSMutableArray new];
+    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data].mutableCopy;
+        [list addObject:item];
+    }];
+    // 待处理 object 类型
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:list options:NSJSONWritingPrettyPrinted error:&error];
+    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    ZYLog(@"requestData = %@",requestData);
+    return  requestData;
+}
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.data];
-        NSDictionary *userData = [FTBaseInfoHander ft_dictionaryWithJsonString:obj.userdata];
+        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data];
+        NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:obj.userdata];
         NSString *field = @"";
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
         NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_AGENT_MEASUREMENT]];
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:opdata[FT_AGENT_TAGS]];
-        if (![obj.op isEqualToString:FTNetworkingTypeLogging]) {
-            [tagDict addEntriesFromDictionary:self.basicTags];
-            if (![measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
-                [tagDict removeObjectForKey:FT_COMMON_PROPERTY_DEVICE_UUID];
-            }
-        }
+        NSDictionary *tagDict = opdata[FT_AGENT_TAGS];
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
             field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);
         }
-        NSString *tagsStr = FTQueryStringFromParameters(tagDict,FTParameterTypetTag);
+        NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypetTag):nil;
         if (userData.allKeys.count>0) {
             NSString *userStr =  FTQueryStringFromParameters(userData, FTParameterTypeUser);
             tagsStr = tagsStr.length>0?[tagsStr stringByAppendingFormat:@",%@",userStr]:userStr;
@@ -359,45 +334,10 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
             [requestDatas appendFormat:@"\n%@",requestStr];
         }
         ZYDebug(@"-------%d-------",idx);
-        ZYDebug(@"%@",@{FT_AGENT_MEASUREMENT:measurement,
-                        FT_AGENT_TAGS:tagDict,
-                        FT_AGENT_FIELD:opdata[FT_AGENT_FIELD],
-                        @"time":[NSNumber numberWithLongLong:obj.tm*1000],
-                      });
+        
+        ZYDebug(@"%@",item);
     }];
     return requestDatas;
-}
-- (NSDictionary *)basicTags{
-    if (!_basicTags) {
-        NSDictionary *deviceInfo = [FTBaseInfoHander ft_getDeviceInfo];
-        NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-        NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
-        CFShow((__bridge CFTypeRef)(infoDictionary));
-        NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-        NSString *version = [UIDevice currentDevice].systemVersion;
-        NSString *appversion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-
-        NSMutableDictionary *tag = @{FT_COMMON_PROPERTY_DEVICE_UUID:uuid,
-                                     FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:identifier,
-                                     FT_COMMON_PROPERTY_APPLICATION_NAME:appName,
-                                     FT_COMMON_PROPERTY_OS:@"iOS",
-                                     FT_COMMON_PROPERTY_OS_VERSION:version,
-                                     FT_COMMON_PROPERTY_DEVICE_BAND:@"APPLE",
-                                     FT_COMMON_PROPERTY_LOCALE:preferredLanguage,
-                                     FT_COMMON_PROPERTY_DEVICE_MODEL:deviceInfo[FTBaseInfoHanderDeviceType],
-                                     FT_COMMON_PROPERTY_DISPLAY:[FTBaseInfoHander ft_resolution],
-                                     FT_COMMON_PROPERTY_CARRIER:[FTBaseInfoHander ft_getTelephonyInfo],
-                                     FT_COMMON_PROPERTY_AGENT:SDK_VERSION,
-                                     FT_APP_VERSION_NAME:appversion,
-                                     
-        }.mutableCopy;
-        self.config.sdkTrackVersion.length>0?[tag setObject:self.config.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;
-         ;
-        _basicTags = tag;
-    }
-    return _basicTags;
 }
 
 NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {

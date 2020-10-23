@@ -28,6 +28,8 @@
 #import "FTLogHook.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
+#import "FTJSONUtil.h"
+#import "FTPresetProperty.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) BOOL isForeground;
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
@@ -40,6 +42,9 @@
 @property (nonatomic, strong) NSMutableArray *loggingArray;
 @property (nonatomic, strong) dispatch_queue_t serialLoggingQueue;
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
+@property (nonatomic, strong) FTPresetProperty *presetProperty;
+@property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, assign) NSInteger flushInterval;
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -125,6 +130,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [FTLog enableLog:config.enableLog];
             [FTLog enableDescLog:config.enableDescLog];
             [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
+            _flushInterval = 10;
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
@@ -134,6 +140,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (self.config.enableAutoTrack) {
                 [self startAutoTrack];
             }
+            self.presetProperty = [[FTPresetProperty alloc]initWithTrackVersion:[self sdkTrackVersion]];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
@@ -160,7 +167,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)resetConfig:(FTMobileConfig *)config{
-    config.sdkTrackVersion = self.config.sdkTrackVersion;
     [FTLog enableLog:config.enableLog];
     [FTLog enableDescLog:config.enableDescLog];
     if (config.traceConsoleLog) {
@@ -287,19 +293,70 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 调用监控项管理方法
 -(void)setMonitorFlushInterval:(NSInteger)interval{
-    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
-}
--(void)startMonitorFlush{
-    [[FTMonitorManager sharedInstance] startFlush];
+    _flushInterval = interval;
+       if(_timer){
+           [self stopMonitorFlush];
+           [self startMonitorFlush];
+       }
 }
 -(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type{
     _config.monitorInfoType = type;
-    [[FTMonitorManager sharedInstance] setMonitorType:type];
-    [[FTMonitorManager sharedInstance] setFlushInterval:interval];
-    [[FTMonitorManager sharedInstance] startFlush];
+    [self setMonitorFlushInterval:interval];
+    [self startMonitorFlush];
 }
+-(void)startMonitorFlush{
+    if (self.config.monitorInfoType == 0) {
+        return;
+    }
+    if ((self.timer && [self.timer isValid])) {
+        return;
+    }
+    ZYDebug(@"starting monitor flush timer.");
+    if (self.flushInterval > 0) {
+        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+            self.timer = [NSTimer scheduledTimerWithTimeInterval:self.flushInterval
+                                                          target:self
+                                                        selector:@selector(monitorFlush)
+                                                        userInfo:nil
+                                                         repeats:YES];
+            [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
+        }];
+    }
+}
+
 -(void)stopMonitorFlush{
-    [[FTMonitorManager sharedInstance] stopFlush];
+   if (self.timer) {
+        [self.timer invalidate];
+    }
+    self.timer = nil;
+}
+-(void)monitorFlush{
+    if (self.config.monitorInfoType == 0) {
+        return;
+    }
+    NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
+    FTRecordModel *model = [FTRecordModel new];
+    NSMutableDictionary *opdata = @{
+        FT_AGENT_MEASUREMENT:@"mobile_monitor"}.mutableCopy;
+    NSMutableDictionary *tags = [self.presetProperty automaticProperties].mutableCopy;
+    if ([addDict objectForKey:FT_AGENT_TAGS]) {
+        [tags addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
+    }
+    if ([addDict objectForKey:FT_AGENT_FIELD]) {
+        [opdata setValue:[addDict objectForKey:FT_AGENT_FIELD] forKey:FT_AGENT_FIELD];
+    }
+    [opdata setValue:tags forKey:FT_AGENT_TAGS];
+    NSDictionary *data =@{
+        FT_AGENT_OP:@"monitor",
+        FT_AGENT_OPDATA:opdata,
+    };
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.tm =[[NSDate date] ft_dateTimestamp];
+    model.op = FTNetworkingTypeMetrics;
+    void (^UploadResultBlock)(NSInteger,id) = ^(NSInteger statusCode,id responseObject){
+        ZYDebug(@"statusCode == %d\nresponseObject == %@",statusCode,responseObject);
+    };
+    [[FTMobileAgent sharedInstance] trackUpload:@[model] callBack:UploadResultBlock];
 }
 #pragma mark ========== private method==========
 #pragma mark - 立即上传
@@ -400,13 +457,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [tagsDict addEntriesFromDictionary:tags];
     }
     //METRICS  mobile_tracker 添加监控项 
-    if ([type isEqualToString:FTNetworkingTypeMetrics] && [measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
-        NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-        if ([addDict objectForKey:FT_AGENT_TAGS]) {
-            [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
-        }
-        if ([addDict objectForKey:FT_AGENT_FIELD]) {
-            [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
+    if ([type isEqualToString:FTNetworkingTypeMetrics]) {
+        if ([measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
+            NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
+            if ([addDict objectForKey:FT_AGENT_TAGS]) {
+                [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
+            }
+            if ([addDict objectForKey:FT_AGENT_FIELD]) {
+                [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
+            }
+            [tagsDict addEntriesFromDictionary:[self.presetProperty automaticProperties]];
+        }else{
+            [tagsDict addEntriesFromDictionary:[self.presetProperty noUUIDProperties]];
         }
     }
     NSMutableDictionary *opdata = @{
@@ -419,7 +481,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     };
     ZYDebug(@"datas == %@",data);
     model.op = type;
-    model.data =[FTBaseInfoHander ft_convertToJsonData:data];
+    model.data =[FTJSONUtil ft_convertToJsonData:data];
     if (tm&&tm>0) {
         model.tm = tm;
     }
@@ -445,19 +507,29 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
     NSString *name = [NSString stringWithFormat:@"%@_%@",deviceUUID,[identifier ft_md5HashToUpper16Bit]];
-    NSDictionary *tag = @{FT_KEY_CLASS:FT_DEFAULT_CLASS,
-                          FT_COMMON_PROPERTY_DEVICE_UUID:deviceUUID,
-    };
     NSDictionary *dict = @{FT_KEY_NAME:name,
-                           FT_KEY_TAGS:tag,
+                           FT_KEY_TAGS:[self.presetProperty objectProperties],
                            FT_AGENT_OP:FTNetworkingTypeObject
     };
     FTRecordModel *model = [FTRecordModel new];
     model.op = FTNetworkingTypeObject;
-    model.data = [FTBaseInfoHander ft_convertToJsonData:dict];
+    model.data = [FTJSONUtil ft_convertToJsonData:dict];
     [self trackUpload:@[model] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
         ZYDebug(@"上报对象数据 statusCode == %d",statusCode);
     }];
+}
+- (NSString *)sdkTrackVersion{
+    id autotrack = objc_getAssociatedObject(self, &FTAutoTrack);
+    if (!autotrack) {
+        return nil;
+    }
+    else{
+        NSString *invokeMethod = @"sdkTrackVersion";
+        SEL versionMethod = NSSelectorFromString(invokeMethod);
+        IMP imp = [autotrack methodForSelector:versionMethod];
+        NSString* (*func)(id, SEL) = (NSString* (*)(id,SEL))imp;
+       return func(autotrack,versionMethod);
+    }
 }
 #pragma mark - 网络与App的生命周期
 - (void)setupAppNetworkListeners{

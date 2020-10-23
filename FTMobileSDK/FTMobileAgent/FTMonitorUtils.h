@@ -11,14 +11,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMonitorUtils : NSObject
++ (NSDictionary *)ft_getDeviceInfo;
 /**
  * 获取开机时间
  */
 + (NSString *)getLaunchSystemTime;
-/**
- * 获取设备自定义名称
- */
-+ (NSString *)userDeviceName;
 /**
  * 获取网络dns
  */

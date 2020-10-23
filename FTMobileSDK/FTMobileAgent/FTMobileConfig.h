@@ -117,9 +117,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
-/* SDK版本 */
-@property (nonatomic, copy) NSString *sdkTrackVersion;
-
 /*FT-GateWay metrics 写入地址*/
 @property (nonatomic, copy) NSString *metricsUrl;
 

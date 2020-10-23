@@ -43,11 +43,6 @@
     NSString *timeStr = [NSString stringWithFormat:@"%d-%02d-%02d %02d:%02d:%02d",time->tm_year + 1900,time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min, time->tm_sec];
     return timeStr;
 }
-//用户自定义的手机名称
-+ (NSString *)userDeviceName{
-    NSString * userPhoneName = [[UIDevice currentDevice] name];
-    return userPhoneName;
-}
 #pragma mark ==========  dns ==========
 + (NSDictionary *)getDNSInfo{
     NSMutableDictionary *dnsDict = [NSMutableDictionary new];

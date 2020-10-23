@@ -59,10 +59,7 @@
     options.autoTrackEventType = self.autoTrackEventType;
     options.akId = self.akId;
     options.akSecret = self.akSecret;
-    options.enableRequestSigning = self.enableRequestSigning;
-
-    options.sdkTrackVersion = self.sdkTrackVersion;
-    
+    options.enableRequestSigning = self.enableRequestSigning;    
     options.enableLog = self.enableLog;
     options.needBindUser = self.needBindUser;
     options.XDataKitUUID = self.XDataKitUUID;
