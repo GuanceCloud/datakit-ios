@@ -42,5 +42,34 @@
 - (void)writer:(FTJsonWriter *)writer appendBytes:(const void *)bytes length:(NSUInteger)length {
     [self.acc appendBytes:bytes length:length];
 }
++ (NSString *)ft_convertToJsonData:(NSDictionary *)dict
+{
+    FTJSONUtil *util = [FTJSONUtil new];
+    NSData *jsonData = [util JSONSerializeDictObject:dict];
+    NSString *jsonString;
+    if (jsonData) {
+        jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+    NSMutableString *mutStr = [NSMutableString stringWithString:jsonString];
+    return mutStr;
+}
++ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString
+{
+    if (jsonString == nil) {
+        return nil;
+    }
+    
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&err];
+    if(err)
+    {
+        ZYErrorLog(@"json解析失败：%@",err);
+        return nil;
+    }
+    return dic;
+}
 
 @end

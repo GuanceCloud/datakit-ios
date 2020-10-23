@@ -11,7 +11,24 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTJSONUtil : NSObject
-
+/**
+ *  @abstract
+ *  把一个 dict 转成 Json字符串
+ *
+ *  @param dict 要转化的对象
+ *
+ *  @return 转化后得到的字符串
+ */
++ (NSString *)ft_convertToJsonData:(NSDictionary *)dict;
+/**
+ *  @abstract
+ *  把一个 Json字符串 转成 dict
+ *
+ *  @param jsonString 要转化的 Json字符串
+ *
+ *  @return 转化后得到的 dict
+*/
++ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString;
 /**
  *  @abstract
  *  把一个Object转成Json字符串
@@ -21,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 转化后得到的字符串
  */
 - (NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
+
 @end
 
 NS_ASSUME_NONNULL_END
