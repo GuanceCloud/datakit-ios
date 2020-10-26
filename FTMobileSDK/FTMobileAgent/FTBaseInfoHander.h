@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTBaseInfoHander : NSObject
 
-+ (NSString *)ft_md5base64EncryptStr:(NSString *)str;
 /**
  *  @abstract
  *  FT access 签名算法
@@ -21,6 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 签名后字符串
  */
 +(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
+/**
+ *  @abstract
+ *  tags key、value 替换特殊字符 '"'
+*/
 + (id)repleacingSpecialCharactersField:(id )str;
 /**
  *  @abstract

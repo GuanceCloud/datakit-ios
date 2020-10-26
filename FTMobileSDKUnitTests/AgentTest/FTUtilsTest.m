@@ -13,6 +13,7 @@
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/FTJSONUtil.h>
+#import <NSString+FTAdd.h>
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -27,7 +28,7 @@
 
 }
 - (void)testMd5Base64{
-    NSString *str = [FTBaseInfoHander ft_md5base64EncryptStr:@"iosTest"];
+    NSString *str = [@"iosTest" ft_md5base64Encrypt];
     XCTAssertEqualObjects(str, @"YODdoqDoIU+kZc597EPHXQ==");
 }
 - (void)testSignature{

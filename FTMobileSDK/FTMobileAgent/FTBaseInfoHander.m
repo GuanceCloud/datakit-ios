@@ -11,14 +11,9 @@
 #import "FTBaseInfoHander.h"
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
-
 #import <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 #import "FTLog.h"
-#import <mach/mach.h>
-#import <assert.h>
-#import <SystemConfiguration/SystemConfiguration.h>
-#import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
 #import "FTTrackBean.h"
 #import "NSString+FTAdd.h"
@@ -26,21 +21,12 @@
 @implementation FTBaseInfoHander : NSObject
 
 #pragma mark ========== 请求加密 ==========
-+ (NSString *)ft_md5base64EncryptStr:(NSString *)str {
-    const char *input = [str UTF8String];//UTF8转码
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(input, (CC_LONG)strlen(input), result);
-    NSData *data = [NSData dataWithBytes: result length:16];
-    NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
-    return string;
-}
 +(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
-    
     [signString appendString:method];
     [signString appendString:@"\n"];
-    [signString appendString:[self ft_md5base64EncryptStr:data]];
+    [signString appendString:[data ft_md5base64Encrypt]];
     [signString appendString:@"\n"];
     [signString appendString:contentType];
     [signString appendString:@"\n"];

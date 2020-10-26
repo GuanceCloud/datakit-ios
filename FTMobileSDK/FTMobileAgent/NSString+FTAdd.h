@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  清除字符串前后的空格
 */
 -(NSString *)ft_removeFrontBackBlank;
+/**
+ *  @abstract
+ *  Content-MD5 加密方法
+*/
+- (NSString *)ft_md5base64Encrypt;
 @end
 
 NS_ASSUME_NONNULL_END
