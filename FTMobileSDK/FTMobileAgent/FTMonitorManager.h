@@ -24,18 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置 监控类型 可不设置直接获取 FTMobileAgent.config
 */
 -(void)setMonitorType:(FTMonitorInfoType)type;
-///**
-// * 设置 监控上传周期
-//*/
-//-(void)setFlushInterval:(NSInteger)interval;
-///**
-// * 开启监控同步
-//*/
-//-(void)startFlush;
-///**
-// * 关闭监控同步
-//*/
-//-(void)stopFlush;
 /**
  * 获取监控项的tag、field
 */
