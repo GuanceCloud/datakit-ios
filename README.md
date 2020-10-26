@@ -150,7 +150,21 @@
    @property (nonatomic, assign) BOOL eventFlowLog; 
   ```
 
- 
+- enableTrackAppANR 采集卡顿事件
+
+    -  通过 **fps** 采集 **fps** 小于 10 的事件；
+    -  通过 **runloop** 采集主线程卡顿事件。
+   
+   ```
+   /**
+   * 默认为NO
+   * 设置是否需要采集卡顿
+   * 采集fps小于10 和 runloop采集主线程卡顿
+   */
+  @property (nonatomic, assign) BOOL enableTrackAppANR;
+  ```
+
+
      
 ### 3. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
@@ -474,8 +488,7 @@ typedef enum FTError : NSInteger {
 |    tags    |  NSDictionary      |     否  |   自定义标签     |
 |    field    | NSDictionary       |   是    |  自定义指标      |
 |    timeMillis    | long long       |   否    |  需要为毫秒级13位时间戳      |
-
-
+  
 * 方法使用示例
 
 ```objective-c
@@ -489,7 +502,7 @@ typedef enum FTError : NSInteger {
 [[FTMobileAgent sharedInstance] trackImmediate:@"home.operation" tags:@{@"pushVC":@"SecondViewController"} field:@{@"event":@"BtnClick"}];
    
 ```
-
+**field 设置注意事项** ： **field** 中 value 是浮点类型的，值为 **0** 时请使用 `[NSNumber numberWithFloat:@0]` 或 `[NSNumber numberWithDouble:@0];`。
 ### 2.上报日志
 * background 方法 
 
