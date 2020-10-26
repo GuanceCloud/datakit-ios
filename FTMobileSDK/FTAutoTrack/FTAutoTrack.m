@@ -377,6 +377,7 @@
         NSMutableDictionary *tags = @{FT_AUTO_TRACK_EVENT_ID:[op ft_md5HashToUpper32Bit]}.mutableCopy;
         NSMutableDictionary *field = @{FT_KEY_EVENT:op
         }.mutableCopy;
+        //事件日志
         NSMutableDictionary *content = [NSMutableDictionary new];
         
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
@@ -388,14 +389,16 @@
                 current = NSStringFromClass([cpn class]);
             }
             ZYDESCLog(@"current_page_name : %@",current);
-            NSString *pageDesc = (current && [self.pageDesc.allKeys containsObject:current])?self.pageDesc[current]:FT_NULL_VALUE;
+            NSString *pageDesc = FT_NULL_VALUE;
             [tags setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             [content setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-            if (current && [self.pageDesc.allKeys containsObject:current]) {
+            //添加视图描述
+            if (self.config.enabledPageVtpDesc && current && [self.pageDesc.allKeys containsObject:current]) {
                 pageDesc =self.pageDesc[current];
             }
             [field setValue:pageDesc forKey:FT_AUTO_TRACK_PAGE_DESC];
             ZYDESCLog(@"page_desc : %@",pageDesc);
+            //点击事件 添加视图树与视图树描述
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
                 UIView *vtpView = view;
                 NSString *vtp =[view ft_getParentsView];
@@ -423,7 +426,7 @@
             NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
             [[FTMobileAgent sharedInstance] _loggingBackgroundInsertWithOP:@"eventFlowLog" status:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo] content:[FTJSONUtil ft_convertToJsonData:content] tm:[[NSDate date] ft_dateTimestamp] tags:tag field:nil];
         }
-        //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控线tag
+        //让 FTMobileAgent 处理数据添加问题 在 FTMobileAgent 里处理添加实时监控tag、field 与 设备基本信息tag
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:tags field:field withTrackOP:op];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);

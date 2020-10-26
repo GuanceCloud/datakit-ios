@@ -305,6 +305,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self startMonitorFlush];
 }
 -(void)startMonitorFlush{
+    //如果监控类型为空 直接返回
     if (self.config.monitorInfoType == 0) {
         return;
     }
@@ -323,7 +324,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }];
     }
 }
-
 -(void)stopMonitorFlush{
    if (self.timer) {
         [self.timer invalidate];
@@ -577,6 +577,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (!self.isForeground) {
                 float duration = (endDate - self.launchTime);
+                //记录 APP打开一次 使用时间
                 [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],FT_KEY_EVENT:FT_EVENT_ACTIVATED} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
             }
         });

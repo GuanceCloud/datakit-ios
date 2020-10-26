@@ -15,6 +15,7 @@
 #import "NSURLResponse+FTMonitor.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
+//记录trace wkwebview的request url trace状态 为YES时，trace完成
 @property (nonatomic, strong) NSMutableDictionary *mutableLoadStateByWebviewHash;
 
 @property (nonatomic, strong) NSLock *lock;
