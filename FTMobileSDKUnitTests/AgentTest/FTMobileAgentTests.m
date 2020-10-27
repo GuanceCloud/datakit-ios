@@ -281,7 +281,7 @@
     model.op =FTNetworkingTypeMetrics;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     //uploadTool启动
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    [[FTMobileAgent sharedInstance] trackUpload:@[model] callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expect fulfill];
     }];
