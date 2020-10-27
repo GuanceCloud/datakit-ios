@@ -24,7 +24,7 @@
     
 }
 - (void)testAnrBlock{
-    //使用GCD调动source1
+    //单元测试时 使用GCD唤醒runloop
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.myTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
     });
