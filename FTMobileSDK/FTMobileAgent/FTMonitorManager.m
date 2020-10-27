@@ -769,7 +769,7 @@ static dispatch_once_t onceToken;
                                                } withTrackOP:@"anr"];
     if (slowStack.length>0) {
         NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];
-        [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
+        [[FTMobileAgent sharedInstance] _loggingANRInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
 #pragma mark ========== FTNetworkTrack ==========

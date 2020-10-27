@@ -49,6 +49,11 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 */
 - (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm;
 /**
+ * ANR日志写入
+*/
+- (void)_loggingANRInsertWithContent:(NSString *)content tm:(long long)tm;
+
+/**
  * 内存数据立即写入数据库
 */
 - (void)_loggingArrayInsertDBImmediately;
