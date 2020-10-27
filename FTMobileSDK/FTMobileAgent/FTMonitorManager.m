@@ -256,6 +256,9 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)stopMonitorFPS{
+    if (self.config.enableTrackAppANR) {
+        return;
+    }
     if (_displayLink) {
         [_displayLink setPaused:YES];
         _displayLink = nil;
@@ -271,7 +274,7 @@ static dispatch_once_t onceToken;
     if (delta < 1) return;
     _lastTime = link.timestamp;
     _fps = _count / delta;
-    if(_fps<10){
+    if(_fps<10 && self.config.enableTrackAppANR){
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{
             FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]
         } field:@{
@@ -868,6 +871,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
+    _config = nil;
     self.monitorTagDict = nil;
     onceToken = 0;
     sharedInstance =nil;
