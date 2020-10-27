@@ -44,21 +44,25 @@
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
+    
+}
+- (void)initSDKWithEnableTrackAppANR:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
     NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-    config.enableTrackAppANR = YES;
-    config.monitorInfoType = FTMonitorInfoTypeFPS;
+    if (enable) {
+        config.enableTrackAppANR = YES;
+    }
     config.enableLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
-
-- (void)testAnrBlock{
+- (void)testTraceAnrBlock{
+    [self initSDKWithEnableTrackAppANR:YES];
     [NSThread sleepForTimeInterval:2];
      NSInteger oldLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
 
@@ -110,5 +114,21 @@
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 
-
+- (void)testNoTraceAnrBlock{
+    [self initSDKWithEnableTrackAppANR:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self.testVC testAnrBlock];
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+        XCTAssertTrue(newCount == lastCount);
+        [expect fulfill];
+        
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
 @end
