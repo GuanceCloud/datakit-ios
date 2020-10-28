@@ -149,22 +149,6 @@
    */
    @property (nonatomic, assign) BOOL eventFlowLog; 
   ```
-
-- enableTrackAppANR 采集卡顿事件
-
-    -  通过 **fps** 采集 **fps** 小于 10 的事件；
-    -  通过 **runloop** 采集主线程卡顿事件。
-   
-   ```
-   /**
-   * 默认为NO
-   * 设置是否需要采集卡顿
-   * 采集fps小于10 和 runloop采集主线程卡顿
-   */
-  @property (nonatomic, assign) BOOL enableTrackAppANR;
-  ```
-
-
      
 ### 3. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
@@ -301,8 +285,7 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  */
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
- ```    
-  
+ ```      
 -  设置网络请求采集 Content-Type 类型     
    
   采集的 **__content** 大小限制在 30k 。 
@@ -313,7 +296,37 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
  *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data）
 */
 @property (nonatomic, strong) NSArray <NSString *> *networkContentType;
+  ```   
+  
+### 8.设置 UI 卡顿、ANR 事件采集
+
+
+ - enableTrackAppUIBlock 采集UI卡顿事件
+
+     通过 **fps** 采集 **fps** 小于 10 的事件； 
+     
+   ```
+   /**
+   * 默认为NO
+   * 设置是否需要采集卡顿
+   * 采集fps小于10
+   */
+  @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
   ```
+     
+- enableTrackAppANR  采集ANR卡顿无响应事件
+
+     通过 **runloop** 采集主线程卡顿事件。
+   
+   ```
+   /**
+   * 默认为NO
+   * 设置是否需要采集卡顿
+   * runloop采集主线程卡顿
+   */
+  @property (nonatomic, assign) BOOL enableTrackAppANR;
+  ```
+ 
    
 ## 四、参数与错误码
 ### 1. FTMobileConfig  可配置参数：
@@ -336,6 +349,8 @@ typedef NS_OPTIONS(NSInteger, FTMonitorInfoType) {
 |     needBindUser     |    BOOL    |        是否开启绑定用户数据         |              否(默认不开启)              |
 |    flushInterval     | NSInteger  |       监控数据周期上报时间间隔        |              否（默认10s）              |
 |   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
+|   enableTrackAppANR   |    BOOL    |       采集ANR卡顿无响应事件      |              否（默认NO）              |
+|   enableTrackAppUIBlock   |    BOOL    |       采集UI卡顿事件      |              否（默认NO）              |
 |   traceServiceName   |    NSString    |       设置日志所属业务或服务的名称      |              否（默认dataflux sdk）              |
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
 |   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
