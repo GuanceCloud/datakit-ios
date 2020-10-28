@@ -14,6 +14,8 @@
 #import <CoreTelephony/CTCarrier.h>
 #import "FTMobileAgentVersion.h"
 #import "NSString+FTAdd.h"
+static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
+
 @interface FTPresetProperty ()
 @property (nonatomic, strong) NSMutableDictionary *automaticProperties;
 @property (nonatomic, strong) NSMutableDictionary *noUUIDProperties;
@@ -588,7 +590,7 @@
 - (NSDictionary *)objectProperties{
     if (!_objectProperties) {
         _objectProperties =[self automaticProperties].mutableCopy;
-        [_objectProperties setValue:FT_DEFAULT_CLASS forKey:FT_KEY_CLASS];
+        [_objectProperties setValue:FT_OBJECT_DEFAULT_CLASS forKey:FT_KEY_CLASS];
         [_objectProperties removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
     }
     return _objectProperties;
