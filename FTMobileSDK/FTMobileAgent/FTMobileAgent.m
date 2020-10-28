@@ -517,7 +517,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSString *name = [NSString stringWithFormat:@"%@_%@",deviceUUID,[identifier ft_md5HashToUpper16Bit]];
     NSDictionary *dict = @{FT_KEY_NAME:name,
                            FT_KEY_TAGS:[self.presetProperty objectProperties],
-                           FT_AGENT_OP:FTNetworkingTypeObject
     };
     FTRecordModel *model = [FTRecordModel new];
     model.op = FTNetworkingTypeObject;
