@@ -107,7 +107,7 @@ static dispatch_once_t onceToken;
         [FTURLProtocol startMonitor];
         [FTURLProtocol setDelegate:self];
     }
-    if (config.enableTrackAppANR || _monitorType & FTMonitorInfoTypeFPS) {
+    if (config.enableTrackAppUIBlock || _monitorType & FTMonitorInfoTypeFPS) {
         [self startMonitorFPS];
     }else{
         [self stopMonitorFPS];
@@ -256,7 +256,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)stopMonitorFPS{
-    if (self.config.enableTrackAppANR) {
+    if (self.config.enableTrackAppUIBlock) {
         return;
     }
     if (_displayLink) {
@@ -274,7 +274,7 @@ static dispatch_once_t onceToken;
     if (delta < 1) return;
     _lastTime = link.timestamp;
     _fps = _count / delta;
-    if(_fps<10 && self.config.enableTrackAppANR){
+    if(_fps<10 && self.config.enableTrackAppUIBlock){
         [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{
             FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]
         } field:@{

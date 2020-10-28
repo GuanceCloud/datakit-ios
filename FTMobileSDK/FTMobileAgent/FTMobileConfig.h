@@ -191,8 +191,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /**
  * 设置是否需要采集卡顿
- * 采集fps小于10 和 runloop采集主线程卡顿
+ * 采集fps小于10
  */
+@property (nonatomic, assign) BOOL enableTrackAppUIBlock;
+/**
+ * 设置是否需要采集卡顿
+ * runloop采集主线程卡顿
+*/
 @property (nonatomic, assign) BOOL enableTrackAppANR;
 /*设置日志所属业务或服务的名称*/
 @property (nonatomic, copy) NSString *traceServiceName;

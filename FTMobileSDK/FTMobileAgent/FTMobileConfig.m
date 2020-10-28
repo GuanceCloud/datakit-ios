@@ -39,7 +39,9 @@
         _networkTrace = FTNetworkTraceTypeZipkin;
         _enabledPageVtpDesc = NO;
         _source = FT_USER_AGENT;
+        _enableTrackAppUIBlock = NO;
         _enableTrackAppANR = NO;
+
 #if DEBUG
         _env = @"dev";
 #else
@@ -75,6 +77,7 @@
     options.enabledPageVtpDesc = self.enabledPageVtpDesc;
     options.source = self.source;
     options.env = self.env;
+    options.enableTrackAppUIBlock = self.enableTrackAppUIBlock;
     options.enableTrackAppANR = self.enableTrackAppANR;
     return options;
 }
