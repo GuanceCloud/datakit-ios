@@ -55,6 +55,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
     if (enable) {
         config.enableTrackAppANR = YES;
+        config.enableTrackAppUIBlock = YES;
     }
     config.enableLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
