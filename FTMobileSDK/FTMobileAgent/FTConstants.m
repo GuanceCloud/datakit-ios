@@ -40,7 +40,6 @@ NSString * const FT_TRACK_OP_CUSTOM = @"cstm";
 NSString * const FT_TRACK_OP_FLOWCUSTOM = @"flowcstm";
 NSString * const FT_TRACK_LOGGING_EXCEPTION = @"exception";
 NSString * const FT_TRACK_LOGGING_CONSOLELOG = @"consolelog";
-
 NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
 NSString * const FT_KEY_EVENT = @"event";
@@ -52,20 +51,6 @@ NSString * const FT_AUTO_TRACK_VTP_DESC = @"vtp_desc";
 NSString * const FT_AUTO_TRACK_PAGE_DESC = @"page_desc";
 NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 
-#pragma mark ========== comon ==========
-NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
-NSString * const FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER = @"application_identifier";
-NSString * const FT_COMMON_PROPERTY_APPLICATION_NAME = @"application_name";
-NSString * const FT_COMMON_PROPERTY_OS = @"os";
-NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
-NSString * const FT_COMMON_PROPERTY_DEVICE_BAND = @"device_band";
-NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
-NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"device_model";
-NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
-NSString * const FT_COMMON_PROPERTY_CARRIER = @"carrier";
-NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
-NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
-
 #pragma mark ========== MONTION ==========
 
 NSString * const FT_MONITOR_BATTERY_TOTAL  = @"battery_total";
@@ -75,21 +60,15 @@ NSString * const FT_MONITOR_BATTERY_STATUS  = @"battery_status";
 NSString * const FT_MONITOR_MEMORY_TOTAL  = @"memory_total";
 NSString * const FT_MONITOR_MEMORY_USE  = @"memory_use";
 
-
 NSString * const FT_MONITOR_CPU_NO  = @"cpu_no";
 NSString * const FT_MONITOR_CPU_HZ  = @"cpu_hz";
 NSString * const FT_MONITOR_CPU_USE  = @"cpu_use";
-
-
 NSString * const FT_MONITOR_GPU_MODEL  = @"gpu_model";
 NSString * const FT_MONITOR_GPU_RATE  = @"gpu_rate";
-
 NSString * const FT_MONITOR_CAMERA_FRONT_PX  = @"camera_front_px";
 NSString * const FT_MONITOR_CAMERA_BACK_PX  = @"camera_back_px";
-
 NSString * const FT_MONITOR_DEVICE_NAME  = @"device_name";
 NSString * const FT_MONITOR_DEVICE_OPEN_TIME  = @"device_open_time";
-
 NSString * const FT_MONITOR_PROVINCE  = @"province";
 NSString * const FT_MONITOR_CITY  = @"city";
 NSString * const FT_MONITOR_COUNTRY  = @"country";
@@ -141,7 +120,6 @@ NSString * const FT_MONITOR_FPS  = @"fps";
 NSString * const FT_MONITOR_BT_OPEN  = @"bt_open";
 NSString * const FT_MONITOR_TORCH  = @"torch";
 
-NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 NSString *const FTBaseInfoHanderDeviceCPUType = @"FTBaseInfoHanderDeviceCPUType";
 NSString *const FTBaseInfoHanderDeviceCPUClock = @"FTBaseInfoHanderDeviceCPUClock";
 NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
@@ -158,8 +136,6 @@ NSString *const FT_NETWORKING_API_KEYEVENT = @"/v1/write/keyevent";
 NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
 NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
 #pragma mark ========== object、keyevent ==========
-NSString *const FT_KEYEVENT_MEASUREMENT = @"__keyevent";
-NSString *const FT_KEY_EVENTID = @"__eventId";
 NSString *const FT_KEY_SOURCE = @"__source";
 NSString *const FT_KEY_STATUS = @"__status";
 NSString *const FT_KEY_TAGS = @"__tags";
@@ -181,7 +157,6 @@ NSString *const FT_KEY_SPANTYPE = @"__spanType";
 NSString *const FT_KEY_ENDPOINT = @"__endpoint";
 NSString *const FT_KEY_ENV = @"__env";
 
-NSString *const FT_APP_VERSION_NAME = @"app_version_name";
 NSString *const FT_APP_VERSION_BUILD_NAME = @"app_version_build_name";
 
 NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";

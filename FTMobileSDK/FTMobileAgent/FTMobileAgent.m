@@ -140,7 +140,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (self.config.enableAutoTrack) {
                 [self startAutoTrack];
             }
-            self.presetProperty = [[FTPresetProperty alloc]initWithTrackVersion:[self sdkTrackVersion]];
+            self.presetProperty = [[FTPresetProperty alloc]initWithTrackVersion:[self sdkTrackVersion] traceServiceName:self.config.traceServiceName env:self.config.env];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
@@ -404,10 +404,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     NSMutableDictionary *tag = @{FT_KEY_STATUS:status,
-                                 FT_KEY_SERVICENAME:self.config.traceServiceName,
-                                 FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
-                                 FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                 FT_KEY_ENV:self.config.env,
     }.mutableCopy;
     if (tags) {
         [tag addEntriesFromDictionary:tags];
@@ -436,12 +432,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)loggingExceptionOrANRInsertWithContent:(NSString *)content tm:(long long)tm{
     NSMutableDictionary *tag = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical],
-                                 FT_KEY_SERVICENAME:self.config.traceServiceName,
-                                 FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
-                                 FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                 FT_KEY_ENV:self.config.env,
     }.mutableCopy;
-    
     NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
     NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
@@ -478,6 +469,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }else{
             [tagsDict addEntriesFromDictionary:[self.presetProperty noUUIDProperties]];
         }
+    }else if([type isEqualToString:FTNetworkingTypeLogging]){
+        [tagsDict addEntriesFromDictionary:[self.presetProperty loggingProperties]];
     }
     NSMutableDictionary *opdata = @{
         FT_AGENT_MEASUREMENT:measurement,

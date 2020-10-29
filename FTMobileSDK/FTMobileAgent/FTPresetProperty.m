@@ -14,20 +14,57 @@
 #import <CoreTelephony/CTCarrier.h>
 #import "FTMobileAgentVersion.h"
 #import "NSString+FTAdd.h"
+//设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
+//系统版本
+static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
+//操作系统
+static NSString * const FT_COMMON_PROPERTY_OS = @"os";
+//设备提供商
+static NSString * const FT_COMMON_PROPERTY_DEVICE_BAND = @"device_band";
+//本地语言
+static NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
+//分辨率，格式 height * width，例子：1920*1080
+static NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
+//运营商
+static NSString * const FT_COMMON_PROPERTY_CARRIER = @"carrier";
+//agent 版本号
+static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
+//autotrack 版本号
+static NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
+//app 版本号
+static NSString *const FT_APP_VERSION_NAME = @"app_version_name";
+//应用名称
+static NSString * const FT_COMMON_PROPERTY_APPLICATION_NAME = @"application_name";
+//设备机型
+static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"device_model";
+//设备 UUID
+static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
+//应用 ID
+static NSString * const FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER = @"application_identifier";
+
+
+static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 
 @interface FTPresetProperty ()
 @property (nonatomic, strong) NSMutableDictionary *automaticProperties;
 @property (nonatomic, strong) NSMutableDictionary *noUUIDProperties;
 @property (nonatomic, strong) NSMutableDictionary *objectProperties;
+@property (nonatomic, strong) NSMutableDictionary *loggingProperties;
 @property (nonatomic, copy) NSString *sdkTrackVersion;
+@property (nonatomic, copy) NSString *serviceName;
+@property (nonatomic, copy) NSString *env;
+
+
 @end
 @implementation FTPresetProperty
 
-- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion {
+- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion traceServiceName:(NSString *)serviceName env:(NSString *)env{
     self = [super init];
     if (self) {
         self.sdkTrackVersion = sdkTrackVersion;
+        self.serviceName = serviceName;
+        self.env = env;
     }
     return self;
 }
@@ -594,5 +631,15 @@ static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
         [_objectProperties removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
     }
     return _objectProperties;
+}
+- (NSDictionary *)loggingProperties{
+    if (!_loggingProperties) {
+        _loggingProperties = [[NSMutableDictionary alloc]init];
+        [_loggingProperties setValue:self.serviceName forKey:FT_KEY_SERVICENAME];
+        [_loggingProperties setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
+        [_loggingProperties setValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] forKey:FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER];
+        [_loggingProperties setValue:self.env forKey:FT_KEY_ENV];
+    }
+    return _loggingProperties;
 }
 @end

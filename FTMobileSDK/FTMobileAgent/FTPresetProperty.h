@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param sdkTrackVersion SDK 版本
  * @return 初始化对象
  */
-- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion traceServiceName:(NSString *)serviceName env:(NSString *)env; NS_DESIGNATED_INITIALIZER;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)automaticProperties;
 - (NSDictionary *)noUUIDProperties;
 - (NSDictionary *)objectProperties;
+- (NSDictionary *)loggingProperties;
 + (NSDictionary *)ft_getDeviceInfo;
 @end
 

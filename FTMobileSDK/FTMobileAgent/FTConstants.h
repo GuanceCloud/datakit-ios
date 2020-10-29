@@ -51,20 +51,6 @@ extern NSString * const FT_AUTO_TRACK_VTP_DESC;
 extern NSString * const FT_AUTO_TRACK_PAGE_DESC;
 extern NSString * const FT_AUTO_TRACK_VTP_TREE_PATH;
 
-#pragma mark ========== common property ==========
-extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;
-extern NSString * const FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER;
-extern NSString * const FT_COMMON_PROPERTY_APPLICATION_NAME;
-extern NSString * const FT_COMMON_PROPERTY_OS;
-extern NSString * const FT_COMMON_PROPERTY_OS_VERSION;
-extern NSString * const FT_COMMON_PROPERTY_DEVICE_BAND;
-extern NSString * const FT_COMMON_PROPERTY_LOCALE;
-extern NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL;
-extern NSString * const FT_COMMON_PROPERTY_DISPLAY;
-extern NSString * const FT_COMMON_PROPERTY_CARRIER;
-extern NSString * const FT_COMMON_PROPERTY_AGENT;
-extern NSString * const FT_COMMON_PROPERTY_AUTOTRACK;
-
 #pragma mark ========== monitor  ==========
 extern NSString * const FT_MONITOR_BATTERY_TOTAL;
 extern NSString * const FT_MONITOR_BATTERY_USE;
@@ -135,7 +121,6 @@ extern NSString * const FT_MONITOR_BT_OPEN;
 extern NSString * const FT_MONITOR_TORCH;
 
 #pragma mark ========== device info ==========
-extern NSString *  const FTBaseInfoHanderDeviceType;
 extern NSString *  const FTBaseInfoHanderDeviceCPUType;
 extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
 extern NSString *  const FTBaseInfoHanderBatteryTotal;
@@ -152,8 +137,6 @@ extern NSString *  const FT_NETWORKING_API_LOGGING;
 extern NSString *  const FT_NETWORKING_API_CHECK_TOKEN;
 
 #pragma mark ========== object、keyevent ==========
-extern NSString *  const FT_KEYEVENT_MEASUREMENT;
-extern NSString *  const FT_KEY_EVENTID;;
 extern NSString *  const FT_KEY_SOURCE;
 extern NSString *  const FT_KEY_STATUS;
 extern NSString *  const FT_KEY_TAGS;
@@ -174,7 +157,6 @@ extern NSString *  const FT_KEY_DISMENSIONS;
 extern NSString *  const FT_KEY_SPANTYPE;
 extern NSString *  const FT_KEY_ENDPOINT;
 extern NSString *  const FT_KEY_ENV;
-extern NSString *  const FT_APP_VERSION_NAME;
 extern NSString *  const FT_APP_VERSION_BUILD_NAME;
 extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SPANID;
