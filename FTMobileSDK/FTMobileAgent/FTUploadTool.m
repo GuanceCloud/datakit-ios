@@ -208,11 +208,19 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     }
 }
 -(NSURLRequest *)trackImmediate:(FTRecordModel *)model callBack:(FTURLTaskCompletionHandler)callBack{
+   if (model == nil) {
+        callBack?callBack(InvalidParamsException, nil):nil;
+        return nil;
+    }
    return [self trackImmediateList:@[model] callBack:callBack];
 }
 -(NSURLRequest*)trackImmediateList:(NSArray <FTRecordModel *>*)modelList callBack:(FTURLTaskCompletionHandler)callBack{
     if (self.checkTokenState == FTCheckTokenStateError) {
        callBack?callBack(UnknownException, nil):nil;
+        return nil;
+    }
+    if (modelList.count == 0) {
+        callBack?callBack(InvalidParamsException, nil):nil;
         return nil;
     }
     FTURLSessionTaskCompletionHandler handler = ^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error){
