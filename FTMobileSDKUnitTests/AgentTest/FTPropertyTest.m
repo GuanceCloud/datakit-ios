@@ -107,6 +107,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.traceServiceName = @"testSetServiceName";
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
@@ -125,6 +126,7 @@
 - (void)testSetEmptySource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptySource" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
@@ -143,6 +145,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] logging:@"testSetSource" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
@@ -160,6 +163,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     for (int i=0; i<21; i++) {
         [[FTMobileAgent sharedInstance] logging:@"testSetEmptyEnv" status:FTStatusInfo];
@@ -181,6 +185,7 @@
     config.source = @"iOSTest";
     config.env = @"testSetEnv";
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     for (int i=0; i<21; i++) {
         [[FTMobileAgent sharedInstance] logging:@"testSetEnv" status:FTStatusInfo];
@@ -255,6 +260,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:[NSString stringWithFormat:@"%@11",self.url] datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testIllegalUrl"}];
     [NSThread sleepForTimeInterval:2];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
@@ -281,6 +287,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:@"aaaaa" akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"test":@"testSetIllegalAkId"}];
     [NSThread sleepForTimeInterval:2];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
@@ -328,6 +335,7 @@
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] trackBackground:@"Test" field:@{@"test":@"testConfigSetRight"}];
     [NSThread sleepForTimeInterval:2];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
