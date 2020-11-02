@@ -293,85 +293,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
         [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"crash"];
 
-        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\ndSYMUUID:%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey],[self getUUIDDictionary]];
+        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
-    }
-}
-
-- (NSString *)getUUIDDictionary {
-    // 获取 image 的 index
-    const uint32_t imageCount = _dyld_image_count();
-    
-    uint32_t mainImg = 0;
-    NSString *path =getExecutablePath();
-    for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
-        const char* name = _dyld_get_image_name(iImg);
-        NSString *imagePath = [NSString stringWithUTF8String:name];
-        if ([imagePath isEqualToString:path]){
-            mainImg = iImg;
-            // 根据 index 获取 header
-            const struct mach_header* header = _dyld_get_image_header(mainImg);
-            uintptr_t cmdPtr = firstCmdAfterHeader(header);
-            if(cmdPtr == 0) {
-                return @"NULL";
-            }
-            
-            uint8_t* uuid = NULL;
-            
-            for(uint32_t iCmd = 0; iCmd < header->ncmds; iCmd++)
-            {
-                struct load_command* loadCmd = (struct load_command*)cmdPtr;
-                
-                if (loadCmd->cmd == LC_UUID) {
-                    struct uuid_command* uuidCmd = (struct uuid_command*)cmdPtr;
-                    uuid = uuidCmd->uuid;
-                    break;
-                }
-                cmdPtr += loadCmd->cmdsize;
-            }
-            const char* result = nil;
-            if(uuid != NULL)
-            {
-                result = uuidBytesToString(uuid);
-                NSString *lduuid = [NSString stringWithUTF8String:result];
-                return lduuid;
-            }
-        }
-    }
-    
-    return @"NULL";
-}
-static NSString* getExecutablePath()
-{
-    NSBundle* mainBundle = [NSBundle mainBundle];
-    NSDictionary* infoDict = [mainBundle infoDictionary];
-    NSString* bundlePath = [mainBundle bundlePath];
-    NSString* executableName = infoDict[@"CFBundleExecutable"];
-    return [bundlePath stringByAppendingPathComponent:executableName];
-}
-static const char* uuidBytesToString(const uint8_t* uuidBytes) {
-    CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuidBytes));
-    NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
-    CFRelease(uuidRef);
-    
-    return cString(str);
-}
-const char* cString(NSString* str) {
-    return str == NULL ? NULL : strdup(str.UTF8String);
-}
-//// 获取 Load Command
-static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
-    switch(header->magic)
-    {
-        case MH_MAGIC:
-        case MH_CIGAM:
-            return (uintptr_t)(header + 1);
-        case MH_MAGIC_64:
-        case MH_CIGAM_64:
-            return (uintptr_t)(((struct mach_header_64*)header) + 1);
-        default:
-            // Header is corrupt
-            return 0;
     }
 }
 @end

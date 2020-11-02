@@ -157,7 +157,7 @@ extern NSString *  const FT_KEY_DISMENSIONS;
 extern NSString *  const FT_KEY_SPANTYPE;
 extern NSString *  const FT_KEY_ENDPOINT;
 extern NSString *  const FT_KEY_ENV;
-extern NSString *  const FT_APP_VERSION_BUILD_NAME;
+extern NSString *  const FT_APPLICATION_UUID;
 extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SPANID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SAMPLED;

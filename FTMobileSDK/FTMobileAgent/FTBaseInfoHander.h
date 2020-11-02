@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
 + (NSString *)ft_getCurrentPageName;
++ (NSString *)ft_getApplicationUUID;
 @end
 
 NS_ASSUME_NONNULL_END

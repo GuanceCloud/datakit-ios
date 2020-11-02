@@ -157,7 +157,7 @@ NSString *const FT_KEY_SPANTYPE = @"__spanType";
 NSString *const FT_KEY_ENDPOINT = @"__endpoint";
 NSString *const FT_KEY_ENV = @"__env";
 
-NSString *const FT_APP_VERSION_BUILD_NAME = @"app_version_build_name";
+NSString *const FT_APPLICATION_UUID = @"application_UUID";
 
 NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";

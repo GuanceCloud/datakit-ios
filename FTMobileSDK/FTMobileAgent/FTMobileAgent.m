@@ -433,10 +433,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)loggingExceptionOrANRInsertWithContent:(NSString *)content tm:(long long)tm{
     NSMutableDictionary *tag = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:FTStatusCritical],
     }.mutableCopy;
-    NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
-    NSString *app_version_name = [NSString stringWithFormat:@"%@(%@)",version,build];
-    [tag setValue:app_version_name forKey:FT_APP_VERSION_BUILD_NAME];
+    //崩溃日志、ANR日志  tag 中 添加 dSYM 中的 UUID 用于符号化解析
+    [tag setValue:[FTBaseInfoHander ft_getApplicationUUID] forKey:FT_APPLICATION_UUID];
     FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:@{FT_KEY_CONTENT:content} op:FT_TRACK_LOGGING_EXCEPTION netType:FTNetworkingTypeLogging tm:tm];
     [self.loggingArray addObject:model];
 }
