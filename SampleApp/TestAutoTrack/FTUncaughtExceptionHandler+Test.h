@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUncaughtExceptionHandler (Test)
 @property (nonatomic, strong) NSHashTable *ftSDKInstances;
 + (NSArray *)backtrace;
-- (NSString *)getUUIDDictionary;
 @end
 
 NS_ASSUME_NONNULL_END
