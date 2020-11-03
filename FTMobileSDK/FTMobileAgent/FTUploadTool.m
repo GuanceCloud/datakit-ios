@@ -88,6 +88,7 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
     }
 }
 @end
+static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
 @interface FTUploadTool()
 @property (nonatomic, assign) BOOL isUploading;
@@ -167,9 +168,9 @@ typedef NS_OPTIONS(NSInteger, FTCheckTokenState) {
 -(BOOL)flushWithType:(NSString *)type{
     NSArray *events;
     if (self.config.needBindUser && [type isEqualToString:FTNetworkingTypeMetrics]) {
-        events = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:type];
+        events = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:kOnceUploadDefaultCount withType:type];
     }else{
-        events = [[FTTrackerEventDBTool sharedManger] getFirstTenData:type];
+        events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
     }
     if (events.count == 0 || ![self flushWithEvents:events]) {
         return NO;

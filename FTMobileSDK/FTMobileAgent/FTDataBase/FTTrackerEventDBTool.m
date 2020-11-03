@@ -15,8 +15,7 @@
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong) ZY_FMDatabase *db;
-
-@property (nonatomic, strong) NSDate *lastSentDate;
+@property (nonatomic, strong) NSMutableArray<FTRecordModel *> *messageCaches;
 
 @end
 @implementation FTTrackerEventDBTool
@@ -161,8 +160,7 @@ static dispatch_once_t onceToken;
 -(BOOL)insertItemWithItemData:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
-       if([self getDatasCount]>=FT_DB_CONTENT_MAX_COUNT){
-         [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
+       if([self getDatasCount]+self.messageCaches.count>=FT_DB_CONTENT_MAX_COUNT){
            return NO;
        }
        [self zy_inDatabase:^{
@@ -171,24 +169,12 @@ static dispatch_once_t onceToken;
            ZYDebug(@"data storage success == %d",success);
        }];
    }
-    if (self.lastSentDate) {
-           NSDate* now = [NSDate date];
-           NSTimeInterval time = [now timeIntervalSinceDate:self.lastSentDate];
-           if (time>10) {
-               self.lastSentDate = [NSDate date];
-               [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
-           }
-       }else{
-           self.lastSentDate = [NSDate date];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"FTUploadNotification" object:nil];
-       }
     return success;
 }
 -(BOOL)insertItemWithItemDatas:(NSArray *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
-        NSInteger count = FT_DB_CONTENT_MAX_COUNT - [self getDatasCount];
-        
+        NSInteger count = FT_DB_CONTENT_MAX_COUNT - [self getDatasCount]-self.messageCaches.count;
         if(count <= 0){
             return NO;
         }else if(items.count > count){
@@ -208,30 +194,48 @@ static dispatch_once_t onceToken;
     }
     return !needRoolback;
 }
+-(void)insertItemToCache:(FTRecordModel *)data{
+    if (!data) {
+        return;
+    }
+    [self.messageCaches addObject:data];
+    if (self.messageCaches.count>20) {
+        NSArray *array = [self.messageCaches subarrayWithRange:NSMakeRange(0, 20)];
+        [self insertItemWithItemDatas:array];
+        [self.messageCaches removeObjectsInArray:array];
+    }
+}
+-(void)insertCacheToDB{
+    if (self.messageCaches.count > 0) {
+        [self insertItemWithItemDatas:[self.messageCaches copy]];
+        self.messageCaches = nil;
+    }
+}
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
 
     return [self getDatasWithFormat:sql bindUser:NO];
 
 }
--(NSArray *)getFirstTenBindUserData:(NSString *)op{
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,op];
+-(NSArray *)getFirstBindUserRecords:(NSUInteger)recordSize withType:(NSString *)type{
+    if (recordSize == 0) {
+        return @[];
+    }
+    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit %lu ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
     NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
 
     return session;
    
 }
--(NSArray *)getFirstTenData:(NSString *)op{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC limit 10  ;",FT_DB_TRACREVENT_TABLE_NAME,op];
+-(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type{
+    if (recordSize == 0) {
+        return @[];
+    }
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC limit %lu  ;",FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
 
     return [self getDatasWithFormat:sql bindUser:NO];
 }
--(NSArray *)getBindUserDataWithOP:(NSString *)op{
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit 10 ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,op];
-    NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
-    
-    return session;
-}
+
 -(NSArray *)getDatasWithFormat:(NSString *)format bindUser:(BOOL)bindUser{
     if([self isOpenDatabese:self.db]) {
         __block  NSMutableArray *array = [NSMutableArray new];
@@ -348,6 +352,12 @@ static dispatch_once_t onceToken;
         block(rollback);
     }];
 
+}
+- (NSMutableArray<FTRecordModel *> *)messageCaches {
+    if (!_messageCaches) {
+        _messageCaches = [NSMutableArray array];
+    }
+    return _messageCaches;
 }
 - (void)resetInstance{
     onceToken = 0;

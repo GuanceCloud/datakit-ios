@@ -39,12 +39,12 @@
 @property (nonatomic, copy) NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, strong) NSMutableArray *loggingArray;
-@property (nonatomic, strong) dispatch_queue_t serialLoggingQueue;
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, assign) NSInteger flushInterval;
+@property (nonatomic, strong) NSDate *lastAddDBDate;
+
 @end
 @implementation UIView (FTMobileSdk)
 -(NSString *)viewVtpDescID{
@@ -136,7 +136,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             self.concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             [self setupAppNetworkListeners];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(uploadFlush) name:@"FTUploadNotification" object:nil];
             if (self.config.enableAutoTrack) {
                 [self startAutoTrack];
             }
@@ -144,7 +143,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             [self uploadSDKObject];
-            self.serialLoggingQueue =dispatch_queue_create("ft.logging", DISPATCH_QUEUE_SERIAL);
             if (self.config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
@@ -188,12 +186,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
     self.upTool.config = config;
-}
--(NSMutableArray *)loggingArray{
-    if (!_loggingArray) {
-        _loggingArray = [NSMutableArray new];
-    }
-    return _loggingArray;
 }
 #pragma mark ========== publick method ==========
 - (void)trackBackground:(NSString *)measurement field:(NSDictionary *)field{
@@ -377,7 +369,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)trackBackground:(NSString *)measurement tags:(nullable NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP{
     @try {
         FTRecordModel *model = [self getRecordModelWithMeasurement:measurement tags:tags field:field op:trackOP netType:FTNetworkingTypeMetrics tm:0];
-        [self insertDBWithItemData:model];
+        [self insertDBWithItemData:model cache:NO];
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -413,10 +405,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         [filedDict addEntriesFromDictionary:field];
     }
     FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:filedDict op:op netType:FTNetworkingTypeLogging tm:tm];
+    //用户自定义logging 立即存储
     if([op isEqualToString:@"logging"]){
-        [self insertDBWithItemData:model];
+        [self insertDBWithItemData:model cache:NO];
     }else{
-    [self insertDBArrayWithItemData:model];
+        [self insertDBWithItemData:model cache:YES];
     }
 }
 - (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm{
@@ -436,14 +429,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     //崩溃日志、ANR日志  tag 中 添加 dSYM 中的 UUID 用于符号化解析
     [tag setValue:[FTBaseInfoHander ft_getApplicationUUID] forKey:FT_APPLICATION_UUID];
     FTRecordModel *model = [self getRecordModelWithMeasurement:self.config.source tags:tag field:@{FT_KEY_CONTENT:content} op:FT_TRACK_LOGGING_EXCEPTION netType:FTNetworkingTypeLogging tm:tm];
-    [self.loggingArray addObject:model];
+    [self insertDBWithItemData:model cache:YES];
 }
 - (void)_loggingArrayInsertDBImmediately{
-    dispatch_sync(self.serialLoggingQueue, ^{
-        if (self.loggingArray.count>0) {
-            [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:self.loggingArray];
-            self.loggingArray = nil;
-        }
+    dispatch_sync(self.serialQueue, ^{
+    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     });
 }
 - (FTRecordModel *)getRecordModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field op:(NSString *)op netType:(NSString *)type tm:(long long)tm{
@@ -486,20 +476,25 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return model;
 }
-- (void)insertDBArrayWithItemData:(FTRecordModel *)model{
-    dispatch_async(self.serialLoggingQueue, ^{
-        [self.loggingArray addObject:model];
-        if (self.loggingArray.count>20) {
-            NSArray *array = [self.loggingArray subarrayWithRange:NSMakeRange(0, 20)];
-            [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
-            [self.loggingArray removeObjectsInArray:array];
+- (void)insertDBWithItemData:(FTRecordModel *)model cache:(BOOL)cache{
+    dispatch_async(self.serialQueue, ^{
+        if (cache) {
+        [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
+        }else{
+        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
         }
     });
-}
-- (void)insertDBWithItemData:(FTRecordModel *)model{
-    dispatch_async(self.concurrentLabel, ^{
-     [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-    });
+    //上传逻辑 数据库写入 距第一次写入间隔10秒以上 启动上传
+    if (self.lastAddDBDate) {
+        NSDate* now = [NSDate date];
+        NSTimeInterval time = [now timeIntervalSinceDate:self.lastAddDBDate];
+        if (time>10) {
+            self.lastAddDBDate = [NSDate date];
+            [self uploadFlush];
+        }
+    }else{
+        self.lastAddDBDate = [NSDate date];
+    }
 }
 - (void)uploadSDKObject{
     NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
@@ -573,10 +568,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self.isForeground = NO;
         CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (!self.isForeground) {
-                float duration = (endDate - self.launchTime);
-                //记录 APP打开一次 使用时间
-                [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],FT_KEY_EVENT:FT_EVENT_ACTIVATED} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
+            float duration = (endDate - self.launchTime);
+            if(!self.isForeground){
+            [self trackMobileClientTimeCost:duration];
             }
         });
         [self _loggingArrayInsertDBImmediately];
@@ -597,14 +591,24 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationWillTerminateNotification:(NSNotification *)notification{
     @try {
-        if (!self.isForeground) {
-            CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
-            float duration = (endDate - self.launchTime);
-            [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{FT_KEY_EVENT:FT_EVENT_ACTIVATED} field:@{FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000]} withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
-        }
+        CFAbsoluteTime endDate = CFAbsoluteTimeGetCurrent();
+        float duration = (endDate - self.launchTime);
+        [self trackMobileClientTimeCost:duration];
+        [self _loggingArrayInsertDBImmediately];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
+}
+/**
+ * 记录 APP打开一次 使用时间
+ */
+- (void)trackMobileClientTimeCost:(float)duration{
+    [self trackBackground:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT tags:@{
+        FT_AUTO_TRACK_EVENT_ID:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]
+    } field:@{
+        FT_DURATION_TIME:[NSNumber numberWithInt:duration*1000*1000],
+        FT_KEY_EVENT:FT_EVENT_ACTIVATED
+    } withTrackOP:FT_MOBILE_CLIENT_TIMECOST_MEASUREMENT];
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{

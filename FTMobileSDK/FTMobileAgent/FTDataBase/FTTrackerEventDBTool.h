@@ -39,6 +39,19 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)insertItemWithItemDatas:(NSArray *)items;
 /**
 *  @abstract
+*  向缓存中添加一组对象
+*
+*  @param data 要记录的数据
+*
+*/
+-(void)insertItemToCache:(FTRecordModel *)data;
+/**
+*  @abstract
+*  缓存中的数据添加到数据库中
+*/
+-(void)insertCacheToDB;
+/**
+*  @abstract
 *  获取数据库所有的数据 不绑定用户信息
 
 *  @return 获取的数据
@@ -50,14 +63,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 *  @return 获取的数据
 */
--(NSArray *)getFirstTenBindUserData:(NSString *)op;
+
+-(NSArray *)getFirstBindUserRecords:(NSUInteger)recordSize withType:(NSString *)type;
 /**
 *  @abstract
 *  从数据库前端，获取十条记录
 
 *  @return 获取的数据
 */
--(NSArray *)getFirstTenData:(NSString *)op;
+-(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type;
 /**
 *  @abstract
 *  根据类型删除已上传的数据
