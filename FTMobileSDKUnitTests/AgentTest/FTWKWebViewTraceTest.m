@@ -114,7 +114,7 @@
         NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
         XCTAssertTrue(newLoggingCount-lastLoggingCount == 1);
         XCTAssertTrue(newMetricsCount-lastMetricsCount >= 2);
-        NSArray *metricsArray =  [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+        NSArray *metricsArray =  [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType  :FTNetworkingTypeMetrics];
         for (int i =0 ; i<metricsArray.count; i++) {
             FTRecordModel *model = metricsArray[i];
             NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
@@ -139,7 +139,7 @@
                 XCTAssertTrue([field.allKeys containsObject:@"duration"]);
             }
         }
-        FTRecordModel *loggingModel = [[[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging] lastObject];
+        FTRecordModel *loggingModel = [[[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging] lastObject];
         [self getX_B3_SpanId:loggingModel completionHandler:^(NSString *spanID, NSString *urlStr) {
             XCTAssertTrue(spanID.length>0);
             XCTAssertTrue([urlStr isEqualToString:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"]);
@@ -213,7 +213,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -246,7 +246,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -286,7 +286,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;

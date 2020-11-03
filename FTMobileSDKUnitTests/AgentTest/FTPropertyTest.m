@@ -93,7 +93,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] _loggingExceptionInsertWithContent:@"testSetEmptyServiceName" tm:[[NSDate date] ft_dateTimestamp]];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -111,7 +111,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -131,7 +131,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptySource" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         
@@ -149,7 +149,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] logging:@"testSetSource" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         
@@ -170,7 +170,7 @@
     }
     [NSThread sleepForTimeInterval:2];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         
@@ -192,7 +192,7 @@
     }
     [NSThread sleepForTimeInterval:2];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         

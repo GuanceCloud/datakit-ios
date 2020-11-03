@@ -89,7 +89,7 @@
     [self.testVC viewDidAppear:NO];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -105,7 +105,7 @@
     [self.testVC viewDidDisappear:NO];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -121,7 +121,7 @@
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -136,7 +136,7 @@
     
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -153,7 +153,7 @@
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];

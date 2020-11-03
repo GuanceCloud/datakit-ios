@@ -79,7 +79,7 @@
     NSString *uuid = [NSUUID UUID].UUIDString;
     [[FTMobileAgent sharedInstance] trackBackground:@"iOSTest" field:@{@"event":uuid}];
     [NSThread sleepForTimeInterval:2];//写入数据库方法是异步的
-    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeMetrics];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeMetrics];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict =  [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -109,7 +109,7 @@
 }
 - (void)testTrackImmediateListMethod{
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-       [self setRightSDKConfig];
+    [self setRightSDKConfig];
     FTTrackBean *bean = [FTTrackBean new];
     bean.measurement = @"iOSTest";
     bean.field =@{@"test":@"testTrackImmediateListMethod"};
@@ -123,8 +123,8 @@
         [expect fulfill];
     }];
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-          XCTAssertNil(error);
-      }];
+        XCTAssertNil(error);
+    }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testLoggingMethod {
@@ -137,7 +137,7 @@
     NSString *uuid = [NSUUID UUID].UUIDString;
     [[FTMobileAgent sharedInstance] logging:uuid status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict =  [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -191,7 +191,7 @@
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     FTRecordModel *model = [data lastObject];
     NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
     XCTAssertTrue(newCount>count);
@@ -208,7 +208,7 @@
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSDictionary *lastUserData;
     if (array.count>0) {
         FTRecordModel *model = [array lastObject];
@@ -221,7 +221,7 @@
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
-    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
+    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSDictionary *userData;
     if (newarray.count>0) {
         FTRecordModel *model = [newarray lastObject];
@@ -239,13 +239,13 @@
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSInteger oldCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] logout];
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
-    NSArray *logoutArray = [[FTTrackerEventDBTool sharedManger] getFirstTenBindUserData:FTNetworkingTypeMetrics];
+    NSArray *logoutArray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     
     //用户登出后 获取
@@ -332,7 +332,7 @@
     XCTAssertFalse([dict isEqualToDictionary:dict2]);
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-- (void)testTrackClientTimeCost{
+- (void)testTrackClientTimeCostResignActive{
     [self setRightSDKConfig];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -343,7 +343,39 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
       NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
         XCTAssertTrue(newCount>oldCount);
-     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
+      FTRecordModel *model = [datas lastObject];
+        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+        NSString *op = [dict valueForKey:@"op"];
+        XCTAssertTrue([op isEqualToString:@"mobile_client_time_cost"]);
+        NSDictionary *opdata = [dict valueForKey:@"opdata"];
+        NSDictionary *field = [opdata valueForKey:@"field"];
+        NSDictionary *tags = [opdata valueForKey:@"tags"];
+        NSNumber *duration = [field valueForKey:@"duration"];
+        XCTAssertTrue(duration.intValue > 2*1000*1000);
+        XCTAssertTrue([[tags valueForKey:FT_AUTO_TRACK_EVENT_ID] isEqualToString:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]]);
+
+        XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"activated"]);
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTMobileAgent sharedInstance] resetInstance];
+
+}
+- (void)testTrackClientTimeCostTerminate{
+    [self setRightSDKConfig];
+    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    [NSThread sleepForTimeInterval:2];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification object:nil];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+        XCTAssertTrue(newCount>oldCount);
+     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
       FTRecordModel *model = [datas lastObject];
         NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
         NSString *op = [dict valueForKey:@"op"];

@@ -77,7 +77,7 @@
 
         XCTAssertTrue(anrLogging - oldLogging == 1);
         XCTAssertTrue(newCount-lastCount>=2);
-        FTRecordModel *anrLog = [[[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging] firstObject];
+        FTRecordModel *anrLog = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging] firstObject];
         NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:anrLog.data];
         NSDictionary *opdata = [dict valueForKey:@"opdata"];
         NSDictionary *field = [opdata valueForKey:@"field"];
@@ -86,7 +86,7 @@
         XCTAssertTrue([content containsString:@"ANR Stack:"]);
         XCTAssertTrue([op isEqualToString:@"exception"]);
 
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
         BOOL hasBlock = NO;
         BOOL hasANR = NO;
         for (NSInteger i=0; i<datas.count; i++) {

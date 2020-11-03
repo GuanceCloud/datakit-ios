@@ -182,7 +182,7 @@
     }];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -195,7 +195,7 @@
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
     XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
-    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
     FTRecordModel *metricsModel = [metricsData lastObject];
     NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
     NSDictionary *metricsOpdata = metricsDict[@"opdata"];
@@ -219,7 +219,7 @@
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -227,7 +227,7 @@
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
 
-    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeMetrics];
+    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
     FTRecordModel *metricsModel = [metricsData lastObject];
     NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
     NSDictionary *metricsOpdata = metricsDict[@"opdata"];
@@ -252,7 +252,7 @@
     }];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -288,7 +288,7 @@
     [NSThread sleepForTimeInterval:2];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
@@ -316,7 +316,7 @@
     }];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstTenData:FTNetworkingTypeLogging];
+    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
