@@ -59,6 +59,8 @@ static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manag
 @property (nonatomic, copy) NSString *isBlueOn;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
+@property (nonatomic, strong) NSLock *lock;
+
 @end
 
 @implementation FTMonitorManager{
@@ -90,6 +92,7 @@ static dispatch_once_t onceToken;
         _errorNet = 0;
         _successNet = 0;
         _skywalkingSeq = 0;
+        self.lock = [NSLock new];
     }
     return self;
 }
@@ -812,15 +815,17 @@ static dispatch_once_t onceToken;
     }
 }
 - (NSString *)getSkyWalking_V2Str:(BOOL)sampled url:(NSURL *)url{
-    _skywalkingv2 ++;
-    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)_skywalkingv2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
+    [self.lock lock];
+    NSInteger v2 =  _skywalkingv2 ++;
+    [self.lock unlock];
+    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
     urlStr = [urlStr ft_base64Encode];
     NSUInteger seq = [self getSkywalkingSeq];
     NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq] ft_base64Encode];
     NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long) seq+1] ft_base64Encode];
     NSString *endPoint = [@"-1" ft_base64Encode];
-    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:_skywalkingv2],[NSNumber numberWithInteger:_skywalkingv2],urlStr,endPoint,endPoint];
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:v2],[NSNumber numberWithInteger:v2],urlStr,endPoint,endPoint];
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
@@ -835,11 +840,13 @@ static dispatch_once_t onceToken;
     return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[self.config.traceServiceName ft_base64Encode],parentServiceInstance,urlPath,urlStr];
 }
 -(NSUInteger)getSkywalkingSeq{
+    [self.lock lock];
     NSUInteger seq =  _skywalkingSeq;
     _skywalkingSeq += 2 ;
     if (_skywalkingSeq > 9999) {
         _skywalkingSeq = 0;
     }
+    [self.lock unlock];
     return seq;
 }
 -(NSString *)getThreadNumber{
