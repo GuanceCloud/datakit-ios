@@ -29,8 +29,6 @@
 
 @interface FTAutoTrack()<NSXMLParserDelegate>
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, assign) long long preFlowTime;
-@property (nonatomic, copy)  NSString *preOpenName;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
 @property (nonatomic, assign) CFAbsoluteTime launchTime;
 @property (nonatomic, strong) NSMutableDictionary *pageDesc;
@@ -40,7 +38,6 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.preFlowTime = 0;
     }
     return self;
 }
