@@ -10,15 +10,7 @@
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
 #import <CoreMotion/CoreMotion.h>
-#define WAIT                                                                \
-do {                                                                        \
-[self expectationForNotification:@"LCUnitTest" object:nil handler:nil]; \
-[self waitForExpectationsWithTimeout:10 handler:nil];                   \
-} while(0);
-#define NOTIFY                                                                            \
-do {                                                                                      \
-[[NSNotificationCenter defaultCenter] postNotificationName:@"LCUnitTest" object:nil]; \
-} while(0);
+
 @interface FTMonitorManagerTest : XCTestCase
 
 @end
@@ -36,13 +28,16 @@ do {                                                                            
  测试 FTMonitorInfoType 是否按类型抓取
  */
 -(void)testFTMonitorInfoTypeAll{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    
     [[FTMonitorManager sharedInstance] setMonitorType:FTMonitorInfoTypeAll];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-           [self monitorInfoType:FTMonitorInfoTypeAll];
-           NOTIFY
-       });
-       WAIT
-}
+        [self monitorInfoType:FTMonitorInfoTypeAll];
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];}
 - (void)testFTMonitorInfoTypeMemory{
     [self monitorInfoType:FTMonitorInfoTypeMemory];
 }
@@ -71,12 +66,17 @@ do {                                                                            
     [self monitorInfoType:FTMonitorInfoTypeSensor];
 }
 - (void)testFTMonitorInfoTypeBluetooth{
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+    
     [[FTMonitorManager sharedInstance] setMonitorType:FTMonitorInfoTypeBluetooth];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self monitorInfoType:FTMonitorInfoTypeBluetooth];
-        NOTIFY
+        [expect fulfill];
     });
-    WAIT
+    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
 }
 - (void)testFTMonitorInfoTypeSensorBrightness{
     [self monitorInfoType:FTMonitorInfoTypeSensorBrightness];
