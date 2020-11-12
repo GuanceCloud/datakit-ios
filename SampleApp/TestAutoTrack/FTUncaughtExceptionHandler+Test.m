@@ -16,30 +16,15 @@
 #import <FTMobileAgent/FTBaseInfoHander.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
-    NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@\n", [exception reason], exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
+    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+    NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
         [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"crash"];
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
    __block BOOL testSuccess = NO;
-    UIWindow *window;
-    if (@available(iOS 13.0, *)) {
-        for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
-        {
-            if (windowScene.activationState == UISceneActivationStateForegroundActive)
-            {
-                window = windowScene.windows.firstObject;
-                break;
-            }
-        }
-    }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // 这部分使用到的过期api
-        window = [UIApplication sharedApplication].keyWindow;
-#pragma clang diagnostic pop
-    }
+    UIWindow *window = [FTBaseInfoHander ft_keyWindow];
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Crash" message:info preferredStyle:UIAlertControllerStyleAlert];
