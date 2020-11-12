@@ -9,7 +9,6 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTBaseInfoHander.h"
-#import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 #import <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
@@ -114,37 +113,9 @@
 }
 + (NSString *)ft_getCurrentPageName{
     __block UIViewController *result = nil;
-    __block UIWindow * window;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
         
-        if (@available(iOS 13.0, *)) {
-            for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
-            {
-                if (windowScene.activationState == UISceneActivationStateForegroundActive)
-                {
-                    window = windowScene.windows.firstObject;
-                    break;
-                }
-            }
-        }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            // 这部分使用到的过期api
-            window = [UIApplication sharedApplication].keyWindow;
-#pragma clang diagnostic pop
-        }
-        if (window.windowLevel != UIWindowLevelNormal)
-        {
-            NSArray *windows = [[UIApplication sharedApplication] windows];
-            for(UIWindow * tmpWin in windows)
-            {
-                if (tmpWin.windowLevel == UIWindowLevelNormal)
-                {
-                    window = tmpWin;
-                    break;
-                }
-            }
-        }
+        UIWindow * window = [FTBaseInfoHander ft_keyWindow];
         
         UIView *frontView = [[window subviews] objectAtIndex:0];
         id nextResponder = [frontView nextResponder];
@@ -159,8 +130,7 @@
             UIViewController  *tabSelectVC = ((UITabBarController*)result).selectedViewController;
             
             if ([tabSelectVC isKindOfClass:[UINavigationController class]]) {
-                
-              result=((UINavigationController*)tabSelectVC).viewControllers.lastObject ;
+                result=((UINavigationController*)tabSelectVC).viewControllers.lastObject ;
             }else{
                 result=  tabSelectVC;
             }
@@ -250,5 +220,15 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
             return 0;
     }
 }
-
++ (UIWindow *)ft_keyWindow{
+    UIWindow  *foundWindow = nil;
+    NSArray   *windows = [[UIApplication sharedApplication]windows];
+    for (UIWindow *window in windows) {
+        if (window.isKeyWindow) {
+            foundWindow = window;
+            break;
+        }
+    }
+    return foundWindow;
+}
 @end

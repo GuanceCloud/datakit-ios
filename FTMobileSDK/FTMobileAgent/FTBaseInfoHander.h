@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import <UIKit/UIKit.h>
 #import "FTTrackBean.h"
 NS_ASSUME_NONNULL_BEGIN
 
@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
 + (NSString *)ft_getCurrentPageName;
 + (NSString *)ft_getApplicationUUID;
++ (UIWindow *)ft_keyWindow;
 @end
 
 NS_ASSUME_NONNULL_END

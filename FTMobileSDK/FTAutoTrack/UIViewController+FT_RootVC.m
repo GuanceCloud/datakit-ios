@@ -22,26 +22,9 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
     return [objc_getAssociatedObject(self, &viewLoadStartTimeKey) doubleValue];
 }
 + (NSString *)ft_getRootViewController{
-    __block UIWindow* window = nil;
     __block NSString *name;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-        if (@available(iOS 13.0, *)) {
-            for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
-            {
-                if (windowScene.activationState == UISceneActivationStateForegroundActive)
-                {
-                    window = windowScene.windows.firstObject;
-                    break;
-                }
-            }
-        }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            // 这部分使用到的过期api
-            window = [UIApplication sharedApplication].keyWindow;
-#pragma clang diagnostic pop
-        }
-
+     UIWindow* window =[FTBaseInfoHander ft_keyWindow];
     name = NSStringFromClass([window.rootViewController class]);
     }];
     if( [name isKindOfClass:NSNull.class]
