@@ -292,9 +292,19 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
         [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"crash"];
-
-        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nException Stack:\n%@", [exception reason], exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@", [exception reason],slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
+}
++ (long)ft_calculateImageSlide{
+    long slide = -1;
+    for (uint32_t i = 0; i < _dyld_image_count(); i++) {
+        if (_dyld_get_image_header(i)->filetype == MH_EXECUTE) {
+            slide = _dyld_get_image_vmaddr_slide(i);
+            break;
+        }
+    }
+    return slide;
 }
 @end
