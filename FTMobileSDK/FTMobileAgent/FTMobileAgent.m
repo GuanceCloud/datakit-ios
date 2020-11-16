@@ -247,6 +247,37 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
+-(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
+    @try {
+        if (![groupIdentifier isKindOfClass:NSString.class] || (groupIdentifier.length == 0)) {
+            ZYLog(@"Group Identifier 数据格式有误");
+            return;
+        }
+        dispatch_block_t block = ^(){
+            NSString *pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
+            NSArray *array = [[NSArray alloc] initWithContentsOfFile:pathStr];
+            if (array.count>0) {
+                NSData *data= [NSPropertyListSerialization dataWithPropertyList:@[]
+                                                                         format:NSPropertyListBinaryFormat_v1_0
+                                                                        options:0
+                                                                          error:nil];
+                if (data.length) {
+                    BOOL result = [data  writeToFile:pathStr options:NSDataWritingAtomic error:nil];
+                }
+                [array enumerateObjectsUsingBlock:^(NSDictionary  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSString *content = [obj valueForKey:@"content"];
+                    NSNumber *tm = [obj valueForKey:@"tm"];
+                    if (content && content.length>0 && tm) {
+                        [self loggingExceptionOrANRInsertWithContent:content tm:tm.longLongValue];
+                    }
+                }];
+            }
+        };
+        dispatch_async(self.serialQueue, block);
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
 #pragma mark - logging
 -(void)logging:(NSString *)content status:(FTStatus)status{
     NSParameterAssert(content);

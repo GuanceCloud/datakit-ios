@@ -105,6 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @param type        监控类型 设置后会更改config中 monitorType的设置
 */
 -(void)startMonitorFlushWithInterval:(NSInteger)interval monitorType:(FTMonitorInfoType)type;
+
+-(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
 /**
  * 关闭监控同步
 */
