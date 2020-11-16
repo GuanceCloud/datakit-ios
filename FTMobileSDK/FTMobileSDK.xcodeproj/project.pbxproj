@@ -45,8 +45,15 @@
 		4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */; };
 		4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */; };
 		4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
+		4A6C542E255E6464009771B8 /* FTMobileExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6C5420255E6464009771B8 /* FTMobileExtension.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A6C5437255E68B7009771B8 /* FTExtensionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6C5435255E68B7009771B8 /* FTExtensionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A6C5438255E68B7009771B8 /* FTExtensionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6C5436255E68B7009771B8 /* FTExtensionManager.m */; };
 		4A6F891F2419E97700E05C36 /* FTTrackBean.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6F891D2419E97700E05C36 /* FTTrackBean.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6F89202419E97700E05C36 /* FTTrackBean.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6F891E2419E97700E05C36 /* FTTrackBean.m */; };
+		4A78B9B6256257E50021E0BC /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B4256257E40021E0BC /* FTLog.h */; };
+		4A78B9B72562585A0021E0BC /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B3256257E40021E0BC /* FTLog.m */; };
+		4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */; };
+		4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */; };
 		4A7F62E324976622000893C1 /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62E124976622000893C1 /* FTfishhook.c */; };
 		4A7F62E424976622000893C1 /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7F62E224976622000893C1 /* FTfishhook.h */; };
 		4A7F62EB24976804000893C1 /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7F62E924976804000893C1 /* FTLogHook.h */; };
@@ -132,8 +139,17 @@
 		4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewHandler.m; sourceTree = "<group>"; };
 		4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTTrace.h"; sourceTree = "<group>"; };
 		4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "WKWebView+FTTrace.m"; sourceTree = "<group>"; };
+		4A6C541E255E6464009771B8 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A6C5420255E6464009771B8 /* FTMobileExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMobileExtension.h; sourceTree = "<group>"; };
+		4A6C5421255E6464009771B8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A6C5435255E68B7009771B8 /* FTExtensionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionManager.h; sourceTree = "<group>"; };
+		4A6C5436255E68B7009771B8 /* FTExtensionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionManager.m; sourceTree = "<group>"; };
 		4A6F891D2419E97700E05C36 /* FTTrackBean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTrackBean.h; sourceTree = "<group>"; };
 		4A6F891E2419E97700E05C36 /* FTTrackBean.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTrackBean.m; sourceTree = "<group>"; };
+		4A78B9B3256257E40021E0BC /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTLog.m; path = FTMobileAgent/FTLog.m; sourceTree = SOURCE_ROOT; };
+		4A78B9B4256257E40021E0BC /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/FTLog.h; sourceTree = SOURCE_ROOT; };
+		4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionExceptionHandler.h; sourceTree = "<group>"; };
+		4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionExceptionHandler.m; sourceTree = "<group>"; };
 		4A7F62E124976622000893C1 /* FTfishhook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTfishhook.c; sourceTree = "<group>"; };
 		4A7F62E224976622000893C1 /* FTfishhook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTfishhook.h; sourceTree = "<group>"; };
 		4A7F62E924976804000893C1 /* FTLogHook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLogHook.h; sourceTree = "<group>"; };
@@ -188,6 +204,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4A6C541B255E6464009771B8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A852FC823A2408600B40B5D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -205,6 +228,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
+			isa = PBXGroup;
+			children = (
+				4A6C5420255E6464009771B8 /* FTMobileExtension.h */,
+				4A6C5421255E6464009771B8 /* Info.plist */,
+				4A6C5435255E68B7009771B8 /* FTExtensionManager.h */,
+				4A6C5436255E68B7009771B8 /* FTExtensionManager.m */,
+				4A78B9B4256257E40021E0BC /* FTLog.h */,
+				4A78B9B3256257E40021E0BC /* FTLog.m */,
+				4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */,
+				4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */,
+			);
+			path = FTMobileExtension;
+			sourceTree = "<group>";
+		};
 		4A852FB423A23B0600B40B5D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -235,6 +273,7 @@
 				CACC4E2623A72A67006BA378 /* BuildFramwork.sh */,
 				4A88425C239E5754001B44C3 /* FTMobileAgent */,
 				4A852FCC23A2408600B40B5D /* FTAutoTrack */,
+				4A6C541F255E6464009771B8 /* FTMobileExtension */,
 				4A88425B239E5754001B44C3 /* Products */,
 				4A852FB423A23B0600B40B5D /* Frameworks */,
 			);
@@ -245,6 +284,7 @@
 			children = (
 				4A88425A239E5754001B44C3 /* FTMobileAgent.framework */,
 				4A852FCB23A2408600B40B5D /* FTAutoTrack.framework */,
+				4A6C541E255E6464009771B8 /* FTMobileExtension.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -360,6 +400,17 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		4A6C5419255E6464009771B8 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A78B9B6256257E50021E0BC /* FTLog.h in Headers */,
+				4A6C5437255E68B7009771B8 /* FTExtensionManager.h in Headers */,
+				4A6C542E255E6464009771B8 /* FTMobileExtension.h in Headers */,
+				4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A852FC623A2408600B40B5D /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -421,6 +472,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		4A6C541D255E6464009771B8 /* FTMobileExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A6C542F255E6464009771B8 /* Build configuration list for PBXNativeTarget "FTMobileExtension" */;
+			buildPhases = (
+				4A6C5419255E6464009771B8 /* Headers */,
+				4A6C541A255E6464009771B8 /* Sources */,
+				4A6C541B255E6464009771B8 /* Frameworks */,
+				4A6C541C255E6464009771B8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FTMobileExtension;
+			productName = FTMobileExtension;
+			productReference = 4A6C541E255E6464009771B8 /* FTMobileExtension.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		4A852FCA23A2408600B40B5D /* FTAutoTrack */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A852FD023A2408600B40B5D /* Build configuration list for PBXNativeTarget "FTAutoTrack" */;
@@ -466,6 +535,9 @@
 				LastUpgradeCheck = 1110;
 				ORGANIZATIONNAME = hll;
 				TargetAttributes = {
+					4A6C541D255E6464009771B8 = {
+						CreatedOnToolsVersion = 11.4;
+					};
 					4A852FCA23A2408600B40B5D = {
 						CreatedOnToolsVersion = 11.1;
 					};
@@ -489,11 +561,19 @@
 			targets = (
 				4A884259239E5754001B44C3 /* FTMobileAgent */,
 				4A852FCA23A2408600B40B5D /* FTAutoTrack */,
+				4A6C541D255E6464009771B8 /* FTMobileExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		4A6C541C255E6464009771B8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A852FC923A2408600B40B5D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -511,6 +591,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4A6C541A255E6464009771B8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A78B9B72562585A0021E0BC /* FTLog.m in Sources */,
+				4A6C5438255E68B7009771B8 /* FTExtensionManager.m in Sources */,
+				4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A852FC723A2408600B40B5D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -569,6 +659,56 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		4A6C5430255E6464009771B8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = FDRMD28QMM;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = FTMobileExtension/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				PRODUCT_BUNDLE_IDENTIFIER = HLL.FTMobileExtension;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4A6C5431255E6464009771B8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = FDRMD28QMM;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = FTMobileExtension/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				PRODUCT_BUNDLE_IDENTIFIER = HLL.FTMobileExtension;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		4A852FD123A2408600B40B5D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -798,6 +938,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4A6C542F255E6464009771B8 /* Build configuration list for PBXNativeTarget "FTMobileExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A6C5430255E6464009771B8 /* Debug */,
+				4A6C5431255E6464009771B8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4A852FD023A2408600B40B5D /* Build configuration list for PBXNativeTarget "FTAutoTrack" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
