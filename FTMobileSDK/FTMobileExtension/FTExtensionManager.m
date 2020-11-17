@@ -18,10 +18,10 @@ static FTExtensionManager *sharedInstance = nil;
     NSAssert(sharedInstance, @"请先使用 startWithApplicationGroupIdentifier: 初始化");
     return sharedInstance;
 }
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifer{    NSAssert((identifer.length!=0 ), @"请填写Group Identifier");
++ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifer{    NSAssert((groupIdentifer.length!=0 ), @"请填写Group Identifier");
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTExtensionManager alloc]initWithGroupIdentifier:identifer];
+        sharedInstance = [[FTExtensionManager alloc]initWithGroupIdentifier:groupIdentifer];
     });
 
 }
@@ -52,6 +52,7 @@ static FTExtensionManager *sharedInstance = nil;
                 ZYLog(@"Create Group File Success!");
             }
         }
+        ZYDebug(@"writeCrash content :%@\n tm:%@",content,tm);
         NSDictionary *event = @{@"content":content,@"tm":tm};
         NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:self.pathStr];
         if (array.count) {

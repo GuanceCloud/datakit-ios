@@ -31,18 +31,19 @@ static SignalHandler previousPIPESignalHandler = NULL;
 static SignalHandler previousSEGVSignalHandler = NULL;
 static SignalHandler previousSYSSignalHandler = NULL;
 static SignalHandler previousTRAPSignalHandler = NULL;
+static FTExceptionHandlerBlock FTHandlerCallBack;
+
 //初始化的错误条数
 volatile int32_t UncaughtExceptionCount = 0;
 //错误最大的条数
 const int32_t UncaughtExceptionMaximum = 10;
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 @interface FTExtensionExceptionHandler ()
-@property (nonatomic, copy) FTExceptionHandlerBlock block;
 @end
 @implementation FTExtensionExceptionHandler
 
 - (void)hookWithBlock:(FTExceptionHandlerBlock)callBack{
-    self.block = callBack;
+    FTHandlerCallBack = callBack;
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&HandleException);
     struct sigaction old_action_abrt;
@@ -259,8 +260,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     long long time= (long long)([[NSDate date] timeIntervalSince1970]*1000*1000);
     
     NSNumber *tm = [NSNumber numberWithLong:time];
-    if (self.block) {
-        self.block(info, tm);
+    if (FTHandlerCallBack) {
+        FTHandlerCallBack(info, tm);
     }
 }
 @end
