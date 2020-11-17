@@ -253,7 +253,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYLog(@"Group Identifier 数据格式有误");
             return;
         }
-        dispatch_block_t block = ^(){
+        dispatch_block_t block = dispatch_block_create(DISPATCH_BLOCK_DETACHED, ^{
             NSString *pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
             NSArray *array = [[NSArray alloc] initWithContentsOfFile:pathStr];
             if (array.count>0) {
@@ -272,7 +272,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     }
                 }];
             }
-        };
+        });
         dispatch_async(self.serialQueue, block);
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
