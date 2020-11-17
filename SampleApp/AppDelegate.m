@@ -68,6 +68,7 @@
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
         [UITestManger sharedManger];
         [[FTMobileAgent sharedInstance] logout];
+        [[FTMobileAgent sharedInstance] startTrackExtensionCrashWithApplicationGroupIdentifier:@"group.hlltest.widget"];
     }
     return YES;
 }

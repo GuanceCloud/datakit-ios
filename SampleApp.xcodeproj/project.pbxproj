@@ -37,6 +37,11 @@
 		4A49E9312536E541009C44AD /* FTWKWebViewTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
 		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
+		4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */; };
+		4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9CC2563C43E0021E0BC /* TodayViewController.m */; };
+		4A78B9D02563C43E0021E0BC /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */; };
+		4A78B9D42563C43E0021E0BC /* TodayExtensionTest.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4A78B9DA2563CB200021E0BC /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
@@ -72,6 +77,20 @@
 			remoteGlobalIDString = 4A852FCB23A2408600B40B5D;
 			remoteInfo = FTAutoTrack;
 		};
+		4A78B9C12563C3A50021E0BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4A6C541E255E6464009771B8;
+			remoteInfo = FTMobileExtension;
+		};
+		4A78B9D22563C43E0021E0BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A78B9C62563C43E0021E0BC;
+			remoteInfo = TodayExtensionTest;
+		};
 		4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
@@ -82,6 +101,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4A78B9D82563C43E0021E0BC /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4A78B9D42563C43E0021E0BC /* TodayExtensionTest.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AB783AF23C2D660001FC994 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -143,6 +173,14 @@
 		4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
 		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
 		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
+		4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtensionTest.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
+		4A78B9CB2563C43E0021E0BC /* TodayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TodayViewController.h; sourceTree = "<group>"; };
+		4A78B9CC2563C43E0021E0BC /* TodayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TodayViewController.m; sourceTree = "<group>"; };
+		4A78B9CF2563C43E0021E0BC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
+		4A78B9D12563C43E0021E0BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4A78B9D92563C44A0021E0BC /* TodayExtensionTest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TodayExtensionTest.entitlements; sourceTree = "<group>"; };
+		4A78B9DB2563D0E60021E0BC /* SampleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SampleApp.entitlements; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -196,6 +234,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4A78B9C42563C43E0021E0BC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A78B9DA2563CB200021E0BC /* FTMobileExtension.framework in Frameworks */,
+				4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A85313323AB85FC00B40B5D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -214,6 +261,7 @@
 				4A116958239113B600C0BC4E /* SampleApp */,
 				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
+				4A78B9CA2563C43E0021E0BC /* TodayExtensionTest */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
@@ -229,6 +277,7 @@
 				4A116956239113B600C0BC4E /* SampleApp.app */,
 				4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */,
 				4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */,
+				4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -236,6 +285,7 @@
 		4A116958239113B600C0BC4E /* SampleApp */ = {
 			isa = PBXGroup;
 			children = (
+				4A78B9DB2563D0E60021E0BC /* SampleApp.entitlements */,
 				4A116959239113B600C0BC4E /* AppDelegate.h */,
 				4A11695A239113B600C0BC4E /* AppDelegate.m */,
 				4A11695C239113B600C0BC4E /* SceneDelegate.h */,
@@ -264,6 +314,7 @@
 			children = (
 				4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */,
 				4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */,
+				4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -310,8 +361,21 @@
 				4A89DD1B23D70C07006EB6BB /* IOKit.framework */,
 				F0D035494FA8F2716499977E /* Pods_SampleApp.framework */,
 				7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */,
+				4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4A78B9CA2563C43E0021E0BC /* TodayExtensionTest */ = {
+			isa = PBXGroup;
+			children = (
+				4A78B9D92563C44A0021E0BC /* TodayExtensionTest.entitlements */,
+				4A78B9CB2563C43E0021E0BC /* TodayViewController.h */,
+				4A78B9CC2563C43E0021E0BC /* TodayViewController.m */,
+				4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */,
+				4A78B9D12563C43E0021E0BC /* Info.plist */,
+			);
+			path = TodayExtensionTest;
 			sourceTree = "<group>";
 		};
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
@@ -392,10 +456,12 @@
 				4A116953239113B600C0BC4E /* Frameworks */,
 				4A116954239113B600C0BC4E /* Resources */,
 				4AB783AF23C2D660001FC994 /* CopyFiles */,
+				4A78B9D82563C43E0021E0BC /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4A78B9D32563C43E0021E0BC /* PBXTargetDependency */,
 			);
 			name = SampleApp;
 			productName = "ft-sdk-ios";
@@ -419,6 +485,23 @@
 			productName = "ft-sdk-iosTestUITests";
 			productReference = 4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		4A78B9C62563C43E0021E0BC /* TodayExtensionTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A78B9D52563C43E0021E0BC /* Build configuration list for PBXNativeTarget "TodayExtensionTest" */;
+			buildPhases = (
+				4A78B9C32563C43E0021E0BC /* Sources */,
+				4A78B9C42563C43E0021E0BC /* Frameworks */,
+				4A78B9C52563C43E0021E0BC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TodayExtensionTest;
+			productName = TodayExtensionTest;
+			productReference = 4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXNativeTarget;
@@ -457,6 +540,9 @@
 						CreatedOnToolsVersion = 11.1;
 						TestTargetID = 4A116955239113B600C0BC4E;
 					};
+					4A78B9C62563C43E0021E0BC = {
+						CreatedOnToolsVersion = 11.4;
+					};
 					4A85313523AB85FC00B40B5D = {
 						CreatedOnToolsVersion = 11.1;
 						TestTargetID = 4A116955239113B600C0BC4E;
@@ -485,6 +571,7 @@
 				4A116955239113B600C0BC4E /* SampleApp */,
 				4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */,
+				4A78B9C62563C43E0021E0BC /* TodayExtensionTest */,
 			);
 		};
 /* End PBXProject section */
@@ -502,6 +589,13 @@
 			fileType = wrapper.framework;
 			path = FTAutoTrack.framework;
 			remoteRef = 4A270E6B24FD0D7F0079F455 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = FTMobileExtension.framework;
+			remoteRef = 4A78B9C12563C3A50021E0BC /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -524,6 +618,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A78B9C52563C43E0021E0BC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A78B9D02563C43E0021E0BC /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -630,6 +732,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4A78B9C32563C43E0021E0BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A85313223AB85FC00B40B5D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -657,6 +767,11 @@
 			target = 4A116955239113B600C0BC4E /* SampleApp */;
 			targetProxy = 4A22527123B5AC7600B0ED41 /* PBXContainerItemProxy */;
 		};
+		4A78B9D32563C43E0021E0BC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A78B9C62563C43E0021E0BC /* TodayExtensionTest */;
+			targetProxy = 4A78B9D22563C43E0021E0BC /* PBXContainerItemProxy */;
+		};
 		4A85313C23AB85FC00B40B5D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4A116955239113B600C0BC4E /* SampleApp */;
@@ -679,6 +794,14 @@
 				4A116968239113B900C0BC4E /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4A78B9CF2563C43E0021E0BC /* Base */,
+			);
+			name = MainInterface.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -801,10 +924,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = SampleApp/SampleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = FDRMD28QMM;
+				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -824,7 +948,7 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest";
 				PRODUCT_NAME = SampleApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "SampleApp/TestAutoTrack/SampleApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -841,10 +965,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = SampleApp/SampleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = FDRMD28QMM;
+				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -864,7 +989,7 @@
 					"-all_load",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.ft-sdk-iosTest";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest";
 				PRODUCT_NAME = SampleApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "SampleApp/TestAutoTrack/SampleApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -912,6 +1037,52 @@
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SampleApp;
+			};
+			name = Release;
+		};
+		4A78B9D62563C43E0021E0BC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TodayExtensionTest/TodayExtensionTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BW62V33GLH;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"";
+				INFOPLIST_FILE = TodayExtensionTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.TodayExtensionTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4A78B9D72563C43E0021E0BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TodayExtensionTest/TodayExtensionTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BW62V33GLH;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"";
+				INFOPLIST_FILE = TodayExtensionTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.TodayExtensionTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1017,6 +1188,15 @@
 			buildConfigurations = (
 				4A22527423B5AC7600B0ED41 /* Debug */,
 				4A22527523B5AC7600B0ED41 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4A78B9D52563C43E0021E0BC /* Build configuration list for PBXNativeTarget "TodayExtensionTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A78B9D62563C43E0021E0BC /* Debug */,
+				4A78B9D72563C43E0021E0BC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
