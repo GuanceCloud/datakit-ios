@@ -47,10 +47,11 @@ static NSString * const FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER = @"applicatio
 static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 
 @interface FTPresetProperty ()
-@property (nonatomic, strong) NSMutableDictionary *automaticProperties;
-@property (nonatomic, strong) NSMutableDictionary *noUUIDProperties;
+@property (nonatomic, strong) NSMutableDictionary *automaticPropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *automaticPropertyFields;
 @property (nonatomic, strong) NSMutableDictionary *objectProperties;
-@property (nonatomic, strong) NSMutableDictionary *loggingProperties;
+@property (nonatomic, strong) NSMutableDictionary *loggingPropertyTags;
+
 @property (nonatomic, copy) NSString *sdkTrackVersion;
 @property (nonatomic, copy) NSString *serviceName;
 @property (nonatomic, copy) NSString *env;
@@ -581,8 +582,8 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         return mCarrier;
     }
 }
-- (NSDictionary *)automaticProperties{
-    if (!_automaticProperties) {
+- (NSDictionary *)automaticPropertyTags{
+    if (!_automaticPropertyTags) {
         NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
@@ -610,36 +611,36 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         }.mutableCopy;
         self.sdkTrackVersion.length>0?[tag setObject:self.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;
         
-        _automaticProperties = tag;
+        _automaticPropertyTags = tag;
     }
     
-    return _automaticProperties;
+    return _automaticPropertyTags;
 }
 
-
-- (NSDictionary *)noUUIDProperties{
-    if (!_noUUIDProperties) {
-        _noUUIDProperties =[self automaticProperties].mutableCopy;
-        [_noUUIDProperties removeObjectForKey:FT_COMMON_PROPERTY_DEVICE_UUID];
+-(NSDictionary *)automaticPropertyFields{
+   if (!_automaticPropertyFields) {
+        _automaticPropertyFields = @{FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString}.mutableCopy;
     }
-    return _noUUIDProperties;
+    return _automaticPropertyFields;
 }
+
 - (NSDictionary *)objectProperties{
     if (!_objectProperties) {
-        _objectProperties =[self automaticProperties].mutableCopy;
+        _objectProperties =[self automaticPropertyTags].mutableCopy;
         [_objectProperties setValue:FT_OBJECT_DEFAULT_CLASS forKey:FT_KEY_CLASS];
         [_objectProperties removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
     }
     return _objectProperties;
 }
-- (NSDictionary *)loggingProperties{
-    if (!_loggingProperties) {
-        _loggingProperties = [[NSMutableDictionary alloc]init];
-        [_loggingProperties setValue:self.serviceName forKey:FT_KEY_SERVICENAME];
-        [_loggingProperties setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
-        [_loggingProperties setValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] forKey:FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER];
-        [_loggingProperties setValue:self.env forKey:FT_KEY_ENV];
+- (NSDictionary *)loggingPropertyTags{
+    if (!_loggingPropertyTags) {
+        _loggingPropertyTags = [[NSMutableDictionary alloc]init];
+        [_loggingPropertyTags setValue:self.serviceName forKey:FT_KEY_SERVICENAME];
+        [_loggingPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
+        [_loggingPropertyTags setValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] forKey:FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER];
+        [_loggingPropertyTags setValue:self.env forKey:FT_KEY_ENV];
     }
-    return _loggingProperties;
+    return _loggingPropertyTags;
 }
+
 @end

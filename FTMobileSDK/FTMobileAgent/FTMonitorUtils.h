@@ -11,7 +11,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMonitorUtils : NSObject
-+ (NSDictionary *)ft_getDeviceInfo;
 /**
  * 获取开机时间
  */
