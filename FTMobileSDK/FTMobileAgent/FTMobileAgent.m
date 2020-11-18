@@ -142,7 +142,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             self.presetProperty = [[FTPresetProperty alloc]initWithTrackVersion:[self sdkTrackVersion] traceServiceName:self.config.traceServiceName env:self.config.env];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
-            [self uploadSDKObject];
             if (self.config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
@@ -330,7 +329,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *opdata = @{
         FT_AGENT_MEASUREMENT:@"mobile_monitor"}.mutableCopy;
-    NSMutableDictionary *tags = [self.presetProperty automaticProperties].mutableCopy;
+    NSMutableDictionary *tags = [self.presetProperty automaticPropertyTags].mutableCopy;
+    [opdata addEntriesFromDictionary:[self.presetProperty automaticPropertyFields]];
     if ([addDict objectForKey:FT_AGENT_TAGS]) {
         [tags addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
     }
@@ -443,22 +443,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [tagsDict addEntriesFromDictionary:tags];
     }
-    //METRICS  mobile_tracker 添加监控项 
+    //METRICS  mobile_tracker 添加监控项
     if ([type isEqualToString:FTNetworkingTypeMetrics]) {
-        if ([measurement isEqualToString:FT_AUTOTRACK_MEASUREMENT]) {
-            NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
-            if ([addDict objectForKey:FT_AGENT_TAGS]) {
-                [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
-            }
-            if ([addDict objectForKey:FT_AGENT_FIELD]) {
-                [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
-            }
-            [tagsDict addEntriesFromDictionary:[self.presetProperty automaticProperties]];
-        }else{
-            [tagsDict addEntriesFromDictionary:[self.presetProperty noUUIDProperties]];
+        NSDictionary *addDict = [[FTMonitorManager sharedInstance] getMonitorTagFiledDict];
+        if ([addDict objectForKey:FT_AGENT_TAGS]) {
+            [tagsDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_TAGS]];
         }
+        if ([addDict objectForKey:FT_AGENT_FIELD]) {
+            [fieldDict addEntriesFromDictionary:[addDict objectForKey:FT_AGENT_FIELD]];
+        }
+        [tagsDict addEntriesFromDictionary:[self.presetProperty automaticPropertyTags]];
+        [fieldDict addEntriesFromDictionary:[self.presetProperty automaticPropertyFields]];
     }else if([type isEqualToString:FTNetworkingTypeLogging]){
-        [tagsDict addEntriesFromDictionary:[self.presetProperty loggingProperties]];
+        [tagsDict addEntriesFromDictionary:[self.presetProperty loggingPropertyTags]];
+        [fieldDict addEntriesFromDictionary:[self.presetProperty automaticPropertyFields]];
     }
     NSMutableDictionary *opdata = @{
         FT_AGENT_MEASUREMENT:measurement,

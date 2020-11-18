@@ -23,10 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-- (NSDictionary *)automaticProperties;
-- (NSDictionary *)noUUIDProperties;
+- (NSDictionary *)automaticPropertyTags;
+- (NSDictionary *)automaticPropertyFields;
 - (NSDictionary *)objectProperties;
-- (NSDictionary *)loggingProperties;
+- (NSDictionary *)loggingPropertyTags;
 + (NSDictionary *)ft_getDeviceInfo;
 @end
 
