@@ -154,9 +154,7 @@ static dispatch_once_t onceToken;
     return NO;
     }
 }
--(void)delectLogoutUser{
-    
-}
+
 -(BOOL)insertItemWithItemData:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {

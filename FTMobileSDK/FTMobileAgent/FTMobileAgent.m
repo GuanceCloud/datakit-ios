@@ -252,7 +252,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYLog(@"Group Identifier 数据格式有误");
             return;
         }
-        dispatch_block_t block = dispatch_block_create(DISPATCH_BLOCK_DETACHED, ^{
+        dispatch_block_t block = ^{
             NSString *pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
             NSArray *array = [[NSArray alloc] initWithContentsOfFile:pathStr];
             if (array.count>0) {
@@ -262,16 +262,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                                                                           error:nil];
                 if (data.length) {
                     BOOL result = [data  writeToFile:pathStr options:NSDataWritingAtomic error:nil];
+                    ZYLog(@"Group file delete success");
                 }
                 [array enumerateObjectsUsingBlock:^(NSDictionary  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     NSString *content = [obj valueForKey:@"content"];
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (content && content.length>0 && tm) {
                         [self loggingExceptionOrANRInsertWithContent:content tm:tm.longLongValue];
+                    }else{
+                        ZYLog(@"extension 采集数据格式有误。")
                     }
                 }];
             }
-        });
+        };
         dispatch_async(self.serialQueue, block);
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
