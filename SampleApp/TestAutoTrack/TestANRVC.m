@@ -58,7 +58,7 @@
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identify];
     }
     if (indexPath.row % 10 == 0) {
-        usleep(1 * 1000 * 1000); // 1秒
+        usleep(5 * 1000 * 1000); // 1秒
         cell.textLabel.text = @"卡咯";
     }else{
         cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];

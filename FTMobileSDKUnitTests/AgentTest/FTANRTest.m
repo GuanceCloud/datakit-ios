@@ -75,8 +75,8 @@
         NSInteger anrLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
 
-        XCTAssertTrue(anrLogging - oldLogging == 1);
-        XCTAssertTrue(newCount-lastCount>=2);
+        XCTAssertTrue(anrLogging - oldLogging > 0);
+        XCTAssertTrue(newCount-lastCount>0);
         FTRecordModel *anrLog = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging] firstObject];
         NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:anrLog.data];
         NSDictionary *opdata = [dict valueForKey:@"opdata"];
