@@ -768,9 +768,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT
-                                               tags:@{
-                                                   FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName],
-                                               }field:@{
+                                               tags:nil field:@{
                                                    FT_KEY_EVENT:@"anr",
                                                } withTrackOP:@"anr"];
     if (slowStack.length>0) {

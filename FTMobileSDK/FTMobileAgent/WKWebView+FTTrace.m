@@ -97,7 +97,7 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     }
     [self fthook_dealloc];
 }
-- (void)fthook_setNavigationDelegate:(id<UIWebViewDelegate>)delegate {
+- (void)fthook_setNavigationDelegate:(id<WKNavigationDelegate>)delegate {
     // request
     Hook_Method([delegate class], @selector(webView:decidePolicyForNavigationAction:decisionHandler:), [self class], @selector(owner_webView:decidePolicyForNavigationAction:decisionHandler:), @selector(none_webView:decidePolicyForNavigationAction:decisionHandler:));
     //response

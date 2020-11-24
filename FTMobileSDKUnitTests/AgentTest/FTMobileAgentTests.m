@@ -156,28 +156,28 @@
 /**
  * SDK内部使用 无公开方法
  */
-- (void)testObjectMethod{
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self setRightSDKConfig];
-    NSString *uuid =[NSUUID UUID].UUIDString;
-    NSDictionary *tag = @{FT_KEY_CLASS:@"iOSTest"};
-    NSDictionary *dict = @{FT_KEY_NAME:uuid,
-                           FT_KEY_TAGS:tag,
-                           FT_AGENT_OP:FTNetworkingTypeObject
-    };
-    FTRecordModel *model = [FTRecordModel new];
-    model.op = FTNetworkingTypeObject;
-    model.data = [FTJSONUtil ft_convertToJsonData:dict];
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
-        [expect fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-    
-}
+//- (void)testObjectMethod{
+//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+//    [self setRightSDKConfig];
+//    NSString *uuid =[NSUUID UUID].UUIDString;
+//    NSDictionary *tag = @{FT_KEY_CLASS:@"iOSTest"};
+//    NSDictionary *dict = @{FT_KEY_NAME:uuid,
+//                           FT_KEY_TAGS:tag,
+//                           FT_AGENT_OP:FTNetworkingTypeObject
+//    };
+//    FTRecordModel *model = [FTRecordModel new];
+//    model.op = FTNetworkingTypeObject;
+//    model.data = [FTJSONUtil ft_convertToJsonData:dict];
+//    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+//        XCTAssertTrue(statusCode == 200);
+//        [expect fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [[FTMobileAgent sharedInstance] resetInstance];
+//    
+//}
 #pragma mark ========== 用户数据绑定 ==========
 /**
  * 测试 绑定用户

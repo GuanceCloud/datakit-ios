@@ -22,9 +22,9 @@
 static const NSInteger MXRMonitorRunloopMinOneStandstillMillisecond = 20;
 static const NSInteger MXRMonitorRunloopMinStandstillCount = 1;
 
-// default
+// default 5s 记录一次ANR
 // 超过多少毫秒为一次卡顿
-static const NSInteger MXRMonitorRunloopOneStandstillMillisecond = 50;
+static const NSInteger MXRMonitorRunloopOneStandstillMillisecond = 1000;
 // 多少次卡顿纪录为一次有效卡顿
 static const NSInteger MXRMonitorRunloopStandstillCount = 5;
 
