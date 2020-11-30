@@ -18,65 +18,20 @@ typedef enum FTError : NSInteger {
 } FTError;
 
 /**
- * @enum
- * AutoTrack 抓取信息
- *
- * @constant
- *   FTAutoTrackEventTypeAppLaunch      - 项目启动
- *   FTAutoTrackEventTypeAppClick       - 点击事件
- *   FTAutoTrackEventTypeAppViewScreen  - 页面的生命周期 open/close
- */
-typedef NS_OPTIONS(NSInteger, FTAutoTrackEventType) {
-    FTAutoTrackTypeNone          = 0,
-    FTAutoTrackEventTypeAppLaunch     = 1 << 0,
-    FTAutoTrackEventTypeAppClick      = 1 << 1,
-    FTAutoTrackEventTypeAppViewScreen = 1 << 2,
-};
-/**
  * @enum  TAG 中的设备信息
  *
  * @constant
- *   FTMonitorInfoTypeBattery  - 电池总量、使用量
  *   FTMonitorInfoTypeMemory   - 内存总量、使用率
- *   FTMonitorInfoTypeCpu      - CPU型号、占用率
- *   FTMonitorInfoTypeCpu      - GPU型号、占用率
- *   FTMonitorInfoTypeNetwork  - 网络的信号强度、网络速度、类型、代理
- *   FTMonitorInfoTypeCamera   - 前置/后置 像素
  *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
- *   FTMonitorInfoTypeSystem   - 开机时间、设备名
- *   FTMonitorInfoTypeSensor   - 屏幕亮度、当天步数、距离传感器、陀螺仪三轴旋转角速度、三轴线性加速度、三轴地磁强度
  *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
- *   FTMonitorInfoTypeSensorBrightness - 屏幕亮度
- *   FTMonitorInfoTypeSensorStep       - 当天步数
- *   FTMonitorInfoTypeSensorProximity  - 距离传感器
- *   FTMonitorInfoTypeSensorRotation   - 陀螺仪三轴旋转角速度
- *   FTMonitorInfoTypeSensorAcceleration - 三轴线性加速度
- *   FTMonitorInfoTypeSensorMagnetic   - 三轴地磁强度
- *   FTMonitorInfoTypeSensorLight      - 环境光感参数
- *   FTMonitorInfoTypeSensorTorch      - 手电筒亮度级别0-1
- *   FTMonitorInfoTypeFPS              - 每秒传输帧数
+ *   FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 0xFFFFFFFF,
-    FTMonitorInfoTypeBattery      = 1 << 1,
-    FTMonitorInfoTypeMemory       = 1 << 2,
-    FTMonitorInfoTypeCpu          = 1 << 3,
-    FTMonitorInfoTypeGpu          = 1 << 4,
-    FTMonitorInfoTypeNetwork      = 1 << 5,
-    FTMonitorInfoTypeCamera       = 1 << 6,
-    FTMonitorInfoTypeLocation     = 1 << 7,
-    FTMonitorInfoTypeSystem       = 1 << 8,
-    FTMonitorInfoTypeSensor       = 1 << 9,
-    FTMonitorInfoTypeBluetooth    = 1 << 10,
-    FTMonitorInfoTypeSensorBrightness   = 1 << 11,
-    FTMonitorInfoTypeSensorStep         = 1 << 12,
-    FTMonitorInfoTypeSensorProximity    = 1 << 13,
-    FTMonitorInfoTypeSensorRotation     = 1 << 14,
-    FTMonitorInfoTypeSensorAcceleration = 1 << 15,
-    FTMonitorInfoTypeSensorMagnetic     = 1 << 16,
-    FTMonitorInfoTypeSensorLight        = 1 << 17,
-    FTMonitorInfoTypeSensorTorch        = 1 << 18,
-    FTMonitorInfoTypeFPS                = 1 << 19,
+    FTMonitorInfoTypeMemory       = 1 << 1,
+    FTMonitorInfoTypeLocation     = 1 << 2,
+    FTMonitorInfoTypeBluetooth    = 1 << 3,
+    FTMonitorInfoTypeFPS          = 1 << 4,
 };
 /**
  * @enum
@@ -96,20 +51,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
 /**
- * @method 指定初始化方法，设置 metricsUrl
- * @param metricsUrl FT-GateWay metrics 写入地址
+ * @method 指定初始化方法，设置 datawayUrl
+ * @param datawayUrl FT-GateWay metrics 写入地址
  * @param akId       access key ID
  * @param akSecret   access key Secret
  * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
  * @return 配置对象
  */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
+- (instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
 /**
- * @method 指定初始化方法，设置 metricsUrl 配置是否不需要进行请求签名
- * @param metricsUrl FT-GateWay metrics 写入地址
+ * @method 指定初始化方法，设置 datawayUrl 配置是否不需要进行请求签名
+ * @param datawayUrl FT-GateWay metrics 写入地址
  * @return 配置对象
  */
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl datawayToken:(nullable NSString *)token;
+- (instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl datawayToken:(nullable NSString *)token;
 
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -117,8 +72,24 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 #pragma mark ========== 基本设置 ==========
-/*FT-GateWay metrics 写入地址*/
-@property (nonatomic, copy) NSString *metricsUrl;
+/**
+ * 数据上报地址，两种模式：
+ * ①使用Dataflux的数据网关，可在控制台获取对应网址；
+ * ②使用私有化部署的数据网关，填写对应网址即可。
+*/
+@property (nonatomic, copy) NSString *datawayUrl;
+/**
+ * 应用唯一ID，在DataFlux控制台上面创建监控时自动生成。
+ */
+@property (nonatomic, copy) NSString *appid;
+/**
+ * 应用名称。
+ */
+@property (nonatomic, copy) NSString *service;
+/**
+ * 应用版本号。
+ */
+@property (nonatomic, copy) NSString *version;
 
 @property (nonatomic, copy) NSString *datawayToken;
 
@@ -138,55 +109,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
 @property (nonatomic, copy) NSString *XDataKitUUID;
-#pragma mark ==========  FTAutoTrack 全埋点配置 ==========
-/**
- * 默认为NO   开启需要使用 FTAutoTrackSDK  总开关
- */
-@property (nonatomic, assign) BOOL enableAutoTrack;
-/**
- * @property
- *
- * @abstract
- * 打开 SDK 设置追踪事件类型, 默认只追踪 App 启动 / 关闭、进入页面、元素点击
- *
- * @discussion
- * 该功能自动追踪 App 的一些行为，例如 SDK 初始化、App 启动 / 关闭、进入页面 等等，具体信息请参考文档:
- * 该功能默认关闭   开启需要使用 FTAutoTrackSDK 且 enableAutoTrack = YES
- */
-@property (nonatomic) FTAutoTrackEventType autoTrackEventType;
-
-/**
- * @abstract
- *  抓取某一类型的 View
- *  与 黑名单  二选一使用  若都没有则为全抓取
- *  eg: @[UITableView.class];
- */
-@property (nonatomic, copy) NSArray<Class> *whiteViewClass;
-/**
- * @abstract
- *  忽略某一类型的 View
- *  与 白名单  二选一使用  若都没有则为全抓取
- */
-@property (nonatomic, copy) NSArray<Class> *blackViewClass;
-
-/**
- *  抓取界面（实例对象数组）  白名单 与 黑名单 二选一使用  若都没有则为全抓取
- * eg: @[@"HomeViewController"];  字符串类型
- */
-@property (nonatomic, copy) NSArray *whiteVCList;
-/**
- *  抓取界面（实例对象数组）  黑名单 与白名单  二选一使用  若都没有则为全抓取
- */
-@property (nonatomic, copy) NSArray *blackVCList;
-/**
- * 是否开启页面、视图树 描述 默认 NO
-*/
-@property (nonatomic, assign) BOOL enabledPageVtpDesc;
-#pragma mark ========== 日志相关 ==========
 /*设置是否允许打印日志*/
 @property (nonatomic, assign) BOOL enableLog;
-/*设置是否允许打印描述日志*/
-@property (nonatomic, assign) BOOL enableDescLog;
+/*设置日志所属业务或服务的名称*/
+@property (nonatomic, copy) NSString *traceServiceName;
+/*日志的来源 默认为：ft_mobile_sdk_ios*/
+@property (nonatomic, copy) NSString *source;
+/**
+ * 环境字段。属性值：prod/gray/pre/common/local。其中
+ * prod：线上环境
+ * gray：灰度环境
+ * pre：预发布环境
+ * common：日常环境
+ * local：本地环境
+ */
+@property (nonatomic, copy) NSString *env;
+/**
+ * 预留业务自定义字段，打好标后每一条日志都会带有此标记。（不限量）
+ */
+@property (nonatomic, copy) NSString *tags;
+/**
+ *  日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ */
+@property (nonatomic, assign) int samplerate;
 /*设置是否需要采集崩溃日志*/
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /**
@@ -199,31 +144,11 @@ NS_ASSUME_NONNULL_BEGIN
  * runloop采集主线程卡顿
 */
 @property (nonatomic, assign) BOOL enableTrackAppANR;
-/*设置日志所属业务或服务的名称*/
-@property (nonatomic, copy) NSString *traceServiceName;
-/*日志的来源 默认为：ft_mobile_sdk_ios*/
-@property (nonatomic, copy) NSString *source;
-/*日志的环境 默认为： release 、debug*/
-@property (nonatomic, copy) NSString *env;
-/**
- *设置是否需要采集控制台日志 默认为NO
- */
-@property (nonatomic, assign) BOOL traceConsoleLog;
-/**
- * 可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等等  默认为NO
- * 需 AutoTrack 开启 ，设置对应采集类型时生效
-*/
-@property (nonatomic, assign) BOOL eventFlowLog;
-
 #pragma mark - 网络请求信息采集
 /**
  * 设置网络请求信息采集 默认为NO
 */
 @property (nonatomic, assign) BOOL networkTrace;
-/**
- *  设置网络请求信息采集时 采样率 0-1 默认为 1
- */
-@property (nonatomic, assign) float traceSamplingRate;
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
 */

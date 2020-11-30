@@ -14,20 +14,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * 初始化方法
- * @param sdkTrackVersion SDK 版本
+ * @param appid   app_id
+ * @param version 应用版本号
+ * @param env     环境
  * @return 初始化对象
  */
-- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion traceServiceName:(NSString *)serviceName env:(NSString *)env; ;
+- (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-- (NSDictionary *)automaticPropertyTags;
-- (NSDictionary *)automaticPropertyFields;
-- (NSDictionary *)objectProperties;
-- (NSDictionary *)loggingPropertyTags;
-+ (NSDictionary *)ft_getDeviceInfo;
+
+- (NSDictionary *)getPropertyWithType:(NSString *)type;
 @end
 
 NS_ASSUME_NONNULL_END

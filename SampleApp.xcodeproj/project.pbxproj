@@ -25,7 +25,6 @@
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
 		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
-		4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
@@ -69,13 +68,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A88425A239E5754001B44C3;
 			remoteInfo = FTMobileAgent;
-		};
-		4A270E6B24FD0D7F0079F455 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A852FCB23A2408600B40B5D;
-			remoteInfo = FTAutoTrack;
 		};
 		4A78B9C12563C3A50021E0BC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -218,7 +210,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
-				4A270E8C24FF5F130079F455 /* FTAutoTrack.framework in Frameworks */,
 				4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
@@ -313,7 +304,6 @@
 			isa = PBXGroup;
 			children = (
 				4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */,
-				4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */,
 				4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */,
 			);
 			name = Products;
@@ -582,13 +572,6 @@
 			fileType = wrapper.framework;
 			path = FTMobileAgent.framework;
 			remoteRef = 4A270E6924FD0D7F0079F455 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4A270E6C24FD0D7F0079F455 /* FTAutoTrack.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = FTAutoTrack.framework;
-			remoteRef = 4A270E6B24FD0D7F0079F455 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */ = {

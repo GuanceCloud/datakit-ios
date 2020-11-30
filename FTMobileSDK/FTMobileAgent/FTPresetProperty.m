@@ -7,6 +7,7 @@
 //
 
 #import "FTPresetProperty.h"
+#import "FTBaseInfoHander.h"
 #import <UIKit/UIKit.h>
 #import "FTConstants.h"
 #import <sys/utsname.h>
@@ -18,10 +19,14 @@
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
 static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
+//是否是注册用户，属性值：True / False
+static NSString * const FT_IS_SIGNIN = @"is_signin";
+static NSString * const FT_USERID = @"userid";
+static NSString * const FT_ORIGIN_ID = @"origin_id";
 //操作系统
 static NSString * const FT_COMMON_PROPERTY_OS = @"os";
 //设备提供商
-static NSString * const FT_COMMON_PROPERTY_DEVICE_BAND = @"device_band";
+static NSString * const FT_COMMON_PROPERTY_DEVICE = @"device";
 //本地语言
 static NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
 //分辨率，格式 height * width，例子：1920*1080
@@ -33,38 +38,40 @@ static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
 //autotrack 版本号
 static NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
 //app 版本号
-static NSString *const FT_APP_VERSION_NAME = @"app_version_name";
+static NSString *const FT_APP_VERSION = @"app_version";
 //应用名称
-static NSString * const FT_COMMON_PROPERTY_APPLICATION_NAME = @"application_name";
+static NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
 //设备机型
-static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"device_model";
+static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"model";
+//屏幕宽度
+static NSString * const FT_SCREEN_SIZE = @"screen_size";
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
-static NSString * const FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER = @"application_identifier";
+static NSString * const FT_COMMON_PROPERTY_APP_IDENTIFIER = @"app_identifier";
 
-
+static NSString * const FT_IP  = @"ip";
+static NSString * const FT_ENV = @"env";
+static NSString * const FT_VERSION = @"version";
+static NSString * const FT_APP_ID = @"app_id";
 static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 
 @interface FTPresetProperty ()
-@property (nonatomic, strong) NSMutableDictionary *automaticPropertyTags;
-@property (nonatomic, strong) NSMutableDictionary *automaticPropertyFields;
-@property (nonatomic, strong) NSMutableDictionary *objectProperties;
-@property (nonatomic, strong) NSMutableDictionary *loggingPropertyTags;
-
-@property (nonatomic, copy) NSString *sdkTrackVersion;
-@property (nonatomic, copy) NSString *serviceName;
+@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *mobileCommonPropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *esCommonPropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *basePropertyTags;
+@property (nonatomic, copy) NSString *appid;
+@property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
-
-
+@property (nonatomic, copy) NSString *tags;
 @end
 @implementation FTPresetProperty
-
-- (instancetype)initWithTrackVersion:(NSString *)sdkTrackVersion traceServiceName:(NSString *)serviceName env:(NSString *)env{
+- (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
     self = [super init];
     if (self) {
-        self.sdkTrackVersion = sdkTrackVersion;
-        self.serviceName = serviceName;
+        self.appid = appid;
+        self.version = version;
         self.env = env;
     }
     return self;
@@ -582,65 +589,90 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         return mCarrier;
     }
 }
-- (NSDictionary *)automaticPropertyTags{
-    if (!_automaticPropertyTags) {
-        NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
-        NSString * uuid =[[UIDevice currentDevice] identifierForVendor].UUIDString;
-        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-        NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
-        CFShow((__bridge CFTypeRef)(infoDictionary));
-        NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+
+-(NSDictionary *)webCommonPropertyTags{
+    if (!_webCommonPropertyTags) {
         NSString *version = [UIDevice currentDevice].systemVersion;
-        NSString *appversion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+        CGRect rect = [[UIScreen mainScreen] bounds];
+        CGFloat scale = [[UIScreen mainScreen] scale];
+        _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
+        [_webCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_webCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
+        [_webCommonPropertyTags setValue:version forKey:FT_COMMON_PROPERTY_OS_VERSION];
+        [_webCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
+    }
+ 
+    return _webCommonPropertyTags;
+}
+- (NSDictionary *)mobileCommonPropertyTags{
+    if (!_mobileCommonPropertyTags) {
+        NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         CGFloat scale = [[UIScreen mainScreen] scale];
         CGRect rect = [[UIScreen mainScreen] bounds];
-        NSMutableDictionary *tag = @{FT_COMMON_PROPERTY_DEVICE_UUID:uuid,
-                                     FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER:identifier,
-                                     FT_COMMON_PROPERTY_APPLICATION_NAME:appName,
-                                     FT_COMMON_PROPERTY_OS:@"iOS",
-                                     FT_COMMON_PROPERTY_OS_VERSION:version,
-                                     FT_COMMON_PROPERTY_DEVICE_BAND:@"APPLE",
-                                     FT_COMMON_PROPERTY_LOCALE:preferredLanguage,
-                                     FT_COMMON_PROPERTY_DEVICE_MODEL:deviceInfo[FTBaseInfoHanderDeviceType],
-                                     FT_COMMON_PROPERTY_DISPLAY:[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale],
-                                     FT_COMMON_PROPERTY_CARRIER:[FTPresetProperty ft_getTelephonyInfo],
-                                     FT_COMMON_PROPERTY_AGENT:SDK_VERSION,
-                                     FT_APP_VERSION_NAME:appversion,
-                                     
-        }.mutableCopy;
-        self.sdkTrackVersion.length>0?[tag setObject:self.sdkTrackVersion forKey:FT_COMMON_PROPERTY_AUTOTRACK]:nil;
-        
-        _automaticPropertyTags = tag;
+        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+        NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
+        NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+        [_mobileCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_mobileCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
+        [_mobileCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
+        [_mobileCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
+        [_mobileCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
+        [_mobileCommonPropertyTags setValue:[NSNumber numberWithInt:rect.size.height*scale] forKey:FT_SCREEN_SIZE];
+        [_mobileCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
+        [_mobileCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
     }
-    
-    return _automaticPropertyTags;
+    return _mobileCommonPropertyTags;
 }
+-(NSDictionary *)esCommonPropertyTags{
+    if (!_esCommonPropertyTags) {
+        NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+        NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
+        NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+        CGFloat scale = [[UIScreen mainScreen] scale];
+        CGRect rect = [[UIScreen mainScreen] bounds];
+        NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
+        _esCommonPropertyTags = [NSMutableDictionary new];
+        [_esCommonPropertyTags setValue:@"FT_USERID" forKey:FT_USERID];
+        [_esCommonPropertyTags setValue:[FTBaseInfoHander ft_getApplicationUUID] forKey:FT_ORIGIN_ID];
+        [_esCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_esCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
+        [_esCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
+        [_esCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
+        [_esCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
+        [_esCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
+        [_esCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
+        [_esCommonPropertyTags setValue:[NSNumber numberWithInt:rect.size.height*scale] forKey:FT_SCREEN_SIZE];
+        [_esCommonPropertyTags setValue:@"" forKey:FT_IP];
+    }
+    return _esCommonPropertyTags;
+}
+-(NSDictionary *)basePropertyTags{
+    if (!_basePropertyTags) {
+        _basePropertyTags = [NSMutableDictionary new];
+        if (self.env) {
+            [_basePropertyTags setValue:self.env forKey:FT_ENV];
+        }
+        if (self.version) {
+            [_basePropertyTags setValue:self.version forKey:FT_VERSION];
+        }
+        if (self.appid) {
+            [_basePropertyTags setValue:self.appid forKey:FT_APP_ID];
 
--(NSDictionary *)automaticPropertyFields{
-   if (!_automaticPropertyFields) {
-        _automaticPropertyFields = @{FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString}.mutableCopy;
+        }
     }
-    return _automaticPropertyFields;
+    return _basePropertyTags;
 }
-
-- (NSDictionary *)objectProperties{
-    if (!_objectProperties) {
-        _objectProperties =[self automaticPropertyTags].mutableCopy;
-        [_objectProperties setValue:FT_OBJECT_DEFAULT_CLASS forKey:FT_KEY_CLASS];
-        [_objectProperties removeObjectForKey:FT_COMMON_PROPERTY_DISPLAY];
+- (NSDictionary *)getPropertyWithType:(NSString *)type{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
+    if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {
+        [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
+    }else if([type isEqualToString:FT_RUM_WEB_PAGE_PERFORMANCE] || [type isEqualToString:FT_RUM_WEB_RESOURCE_PERFORMANCE]){
+        [dict addEntriesFromDictionary:[self webCommonPropertyTags]];
+    }else{
+        [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
+        [dict addEntriesFromDictionary:@{FT_TYPE:type}];
     }
-    return _objectProperties;
+    return dict;
 }
-- (NSDictionary *)loggingPropertyTags{
-    if (!_loggingPropertyTags) {
-        _loggingPropertyTags = [[NSMutableDictionary alloc]init];
-        [_loggingPropertyTags setValue:self.serviceName forKey:FT_KEY_SERVICENAME];
-        [_loggingPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
-        [_loggingPropertyTags setValue:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] forKey:FT_COMMON_PROPERTY_APPLICATION_IDENTIFIER];
-        [_loggingPropertyTags setValue:self.env forKey:FT_KEY_ENV];
-    }
-    return _loggingPropertyTags;
-}
-
 @end
+

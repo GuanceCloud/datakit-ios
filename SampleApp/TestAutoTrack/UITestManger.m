@@ -42,23 +42,13 @@
     self.self.autoTrackClickCount = 0;
 }
 -(void)addTrackCount{
-    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppLaunch){
-        self.trackCount++;
-        NSLog(@"add == %ld",self.trackCount);
-    }
+   
 }
 - (void)addAutoTrackViewScreenCount{
-    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppViewScreen){
-        self.autoTrackViewScreenCount ++;
-        NSLog(@"add == %ld",self.autoTrackViewScreenCount);
-    }
+   
 }
 - (void)addAutoTrackClickCount{
-    if(self.config.autoTrackEventType & FTAutoTrackEventTypeAppClick){
-        self.autoTrackClickCount++;
-        NSLog(@"add == %ld",self.autoTrackClickCount);
-    }
-    
+   
 }
 
 @end

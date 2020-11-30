@@ -7,9 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <FTAutoTrack/FTAutoTrack.h>
 #import <FTMobileAgent/FTMobileAgent.h>
-
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 @property (nonatomic, strong)  FTMobileConfig *config;
 @end

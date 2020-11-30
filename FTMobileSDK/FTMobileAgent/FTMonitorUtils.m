@@ -67,13 +67,13 @@
 + (NSDictionary *)getWifiAccessAndIPAddress{
     if (@available(iOS 13.0, *)) {
         if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-            return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
+            return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],@"ip": [self getIPAddress]};
         }else{
             ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{FT_MONITOR_WITF_IP: [self getIPAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
+            return @{@"ip": [self getIPAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
         }
     }else{
-        return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],FT_MONITOR_WITF_IP: [self getIPAddress]};
+        return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],@"ip": [self getIPAddress]};
     }
 }
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
@@ -371,47 +371,5 @@
             break;
     }
     return @"";
-}
-+ (NSString *)ft_getFrontCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionFront];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-+ (NSString *)ft_getBackCameraPixel{
-    AVCaptureDevice *captureDevice = [self cameraWithPosition:AVCaptureDevicePositionBack];
-    NSArray* availFormat=captureDevice.formats;
-    AVCaptureDeviceFormat *format = [availFormat lastObject];
-    CMVideoDimensions dis = format.highResolutionStillImageDimensions;
-    return [NSString stringWithFormat:@"%d万像素",dis.width*dis.height/10000];
-}
-
-+ (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition) position
-{
-    NSArray *devices;
-    if (@available(iOS 10.0, *)) {
-        AVCaptureDeviceDiscoverySession *devicesIOS10 = [AVCaptureDeviceDiscoverySession  discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera] mediaType:AVMediaTypeVideo position:position];
-        devices  = devicesIOS10.devices;
-    } else {
-        devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];    }
-    
-    for (AVCaptureDevice *device in devices) {
-        if ([device position] == position) {
-            return device;
-        }
-    }
-    return nil;
-}
-+ (BOOL)getRoamingStates{
-    NSBundle *b = [NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/AppStoreDaemon.framework"];
-    BOOL state = NO;
-    if ([b load]) {
-        Class ASDCellularIdentity = NSClassFromString(@"ASDCellularIdentity");
-        id  asiden = [[ASDCellularIdentity alloc]init];
-        id is = [asiden valueForKey:@"roaming"];
-        state = [is boolValue];
-    }
-    return state;
 }
 @end

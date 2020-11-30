@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,assign) CFAbsoluteTime viewLoadStartTime;
 
 + (NSString *)ft_getRootViewController;
+-(NSString *)ft_getVCPath;
 @end
 
 NS_ASSUME_NONNULL_END

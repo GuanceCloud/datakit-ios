@@ -6,7 +6,7 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import <FTMobileAgent/FTUploadTool.h>
+#import <FTMobileAgent/Network/FTUploadTool.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -20,7 +20,7 @@
     NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
-        [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"crash"];
+       
         [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
     }
    __block BOOL testSuccess = NO;

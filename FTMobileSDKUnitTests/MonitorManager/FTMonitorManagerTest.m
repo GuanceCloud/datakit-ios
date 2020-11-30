@@ -134,7 +134,6 @@
     }
     if (type & FTMonitorInfoTypeSystem) {
         XCTAssertTrue([tag.allKeys containsObject:FT_MONITOR_DEVICE_NAME]);
-        XCTAssertTrue([field.allKeys containsObject:FT_MONITOR_DEVICE_OPEN_TIME]);
     }
     CMMotionManager *motionManager  = [[CMMotionManager alloc]init];
     if (type & FTMonitorInfoTypeSensor) {

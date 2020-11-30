@@ -14,7 +14,6 @@
 #include <CommonCrypto/CommonHMAC.h>
 #import "FTLog.h"
 #import "FTConstants.h"
-#import "FTTrackBean.h"
 #import "NSString+FTAdd.h"
 #import "FTJSONUtil.h"
 #include <mach-o/dyld.h>
@@ -230,5 +229,30 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         }
     }
     return foundWindow;
+}
++ (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder {
+    NSString *classString = NSStringFromClass(responder.class);
+
+    NSArray *subResponder = nil;
+    if ([responder isKindOfClass:UIView.class]) {
+        UIResponder *next = [responder nextResponder];
+        if ([next isKindOfClass:UIView.class]) {
+            subResponder = [(UIView *)next subviews];
+        }
+    } else if ([responder isKindOfClass:UIViewController.class]) {
+        subResponder = [(UIViewController *)responder parentViewController].childViewControllers;
+    }
+
+    NSInteger count = 0;
+    NSInteger index = -1;
+    for (UIResponder *res in subResponder) {
+        if ([classString isEqualToString:NSStringFromClass(res.class)]) {
+            count++;
+        }
+        if (res == responder) {
+            index = count - 1;
+        }
+    }
+    return count <= 1 ? classString : [NSString stringWithFormat:@"%@[%ld]", classString, (long)index];
 }
 @end

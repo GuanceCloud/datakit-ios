@@ -41,7 +41,6 @@
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
-    _mtableView.vtpAddIndexPath = YES;
     [self.view addSubview:_mtableView];
     
     [_mtableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
@@ -58,10 +57,8 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 - (void)testStartMonitorFlush{
-    [[FTMobileAgent sharedInstance] startMonitorFlushWithInterval:10 monitorType:FTMonitorInfoTypeAll];
 }
 - (void)testStopMonitorFlush{
-    [[FTMobileAgent sharedInstance] stopMonitorFlush];
 }
 - (void)testConnectBluetooth{
     NSString *uuid = [NSUUID UUID].UUIDString;

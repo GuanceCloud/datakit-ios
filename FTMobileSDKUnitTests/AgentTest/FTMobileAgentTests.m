@@ -107,26 +107,6 @@
     }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-- (void)testTrackImmediateListMethod{
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self setRightSDKConfig];
-    FTTrackBean *bean = [FTTrackBean new];
-    bean.measurement = @"iOSTest";
-    bean.field =@{@"test":@"testTrackImmediateListMethod"};
-    bean.tags = @{@"name":@"1"};
-    FTTrackBean *bean2 = [FTTrackBean new];
-    bean2.measurement = @"iOSTest";
-    bean2.field =@{@"test":@"testTrackImmediateListMethod"};
-    bean2.tags = @{@"name":@"2"};
-    [[FTMobileAgent sharedInstance] trackImmediateList:@[bean,bean2] callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        XCTAssertTrue(statusCode == 200);
-        [expect fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
 - (void)testLoggingMethod {
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
@@ -153,31 +133,6 @@
     }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-/**
- * SDK内部使用 无公开方法
- */
-//- (void)testObjectMethod{
-//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-//    [self setRightSDKConfig];
-//    NSString *uuid =[NSUUID UUID].UUIDString;
-//    NSDictionary *tag = @{FT_KEY_CLASS:@"iOSTest"};
-//    NSDictionary *dict = @{FT_KEY_NAME:uuid,
-//                           FT_KEY_TAGS:tag,
-//                           FT_AGENT_OP:FTNetworkingTypeObject
-//    };
-//    FTRecordModel *model = [FTRecordModel new];
-//    model.op = FTNetworkingTypeObject;
-//    model.data = [FTJSONUtil ft_convertToJsonData:dict];
-//    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-//        XCTAssertTrue(statusCode == 200);
-//        [expect fulfill];
-//    }];
-//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
-//    [[FTMobileAgent sharedInstance] resetInstance];
-//    
-//}
 #pragma mark ========== 用户数据绑定 ==========
 /**
  * 测试 绑定用户
@@ -188,7 +143,6 @@
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
     
-    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
@@ -236,14 +190,11 @@
  */
 -(void)testUserlogout{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSInteger oldCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] logout];
-    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
-    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
     [NSThread sleepForTimeInterval:2];
     NSArray *logoutArray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];

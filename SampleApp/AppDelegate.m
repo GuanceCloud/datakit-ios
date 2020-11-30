@@ -51,18 +51,13 @@
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
 
     if (akId && akSecret && url && !isUnitTests) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
         config.enableLog = YES;
-        config.enableDescLog = YES;
-        config.enableAutoTrack = YES;
-        config.enabledPageVtpDesc = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
 //        config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
 //        config.enableTrackAppANR = YES;
-        config.eventFlowLog = YES;
-        config.autoTrackEventType = FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppLaunch|FTAutoTrackEventTypeAppViewScreen;
         [FTMobileAgent startWithConfigOptions:config];
         self.config = config;
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];

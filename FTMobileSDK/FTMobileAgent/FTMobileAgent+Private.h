@@ -28,18 +28,10 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 @interface FTMobileAgent (Private)
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
-/**
- * autotrack  全埋点事件抓取 存储数据库
- */
-- (void)trackBackground:(NSString *)measurement tags:(NSDictionary*)tags field:(NSDictionary *)field withTrackOP:(NSString *)trackOP;
-/**
- * 提供给监控管理定时上传
-*/
--(void)trackUpload:(NSArray<FTRecordModel *> *)list callBack:(void (^)(NSInteger statusCode,  id responseObject))callBack;
-/**
- * logging 控制台日志 写入
-*/
-- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm;
+
+- (BOOL)judgeIsTraceSampling;
+- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 /**
  * eventFlowLog、networkTrace 写入
 */
@@ -48,15 +40,6 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * 崩溃日志写入
 */
 - (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm;
-/**
- * ANR日志写入
-*/
-- (void)_loggingANRInsertWithContent:(NSString *)content tm:(long long)tm;
-
-/**
- * 内存数据立即写入数据库
-*/
-- (void)_loggingArrayInsertDBImmediately;
 
 @end
 #endif /* FTMobileAgent_Private_h */

@@ -129,8 +129,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 - (void)flushQueue{
     @try {
-        [self flushWithType:FTNetworkingTypeLogging];
-        [self flushWithType:FTNetworkingTypeMetrics];
+        [self flushWithType:FT_DATA_TYPE_ES];
+        [self flushWithType:FT_DATA_TYPE_INFLUXDB];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);
@@ -138,7 +138,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(void)checkToken{
     self.checkTokenState = FTCheckTokenStateLoading;
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_CHECK_TOKEN,self.config.datawayToken]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.datawayUrl,FT_NETWORKING_API_CHECK_TOKEN,self.config.datawayToken]];
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
     mutableRequest.HTTPMethod = @"GET";
     NSURLSessionTask *task = [self dataTaskWithRequest:mutableRequest completionHandler:^(NSData * _Nullable data, NSHTTPURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -167,11 +167,11 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(BOOL)flushWithType:(NSString *)type{
     NSArray *events;
-    if (self.config.needBindUser && [type isEqualToString:FTNetworkingTypeMetrics]) {
-        events = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:kOnceUploadDefaultCount withType:type];
-    }else{
+//    if (self.config.needBindUser && [type isEqualToString:FTNetworkingTypeMetrics]) {
+//        events = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:kOnceUploadDefaultCount withType:type];
+//    }else{
         events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
-    }
+//    }
     if (events.count == 0 || ![self flushWithEvents:events]) {
         return NO;
     }
@@ -238,20 +238,16 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     NSString *api = nil;
     NSURLRequest *request;
     NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-    if ([model.op isEqualToString:FTNetworkingTypeObject]) {
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,FT_NETWORKING_API_OBJECT,token]];
-        NSString *requestData = [self getObjctRequestWithEventArray:modelList];
-        request = [self getRequestWithURL:url body:requestData contentType:@"application/json"];
-    }else{
-        if ([model.op isEqualToString:FTNetworkingTypeMetrics]){
-            api = FT_NETWORKING_API_METRICS;
-        }else if ([model.op isEqualToString:FTNetworkingTypeLogging]) {
-            api = FT_NETWORKING_API_LOGGING;
-        }
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.metricsUrl,api,token]];
-        NSString *requestData = [self getRequestDataWithEventArray:modelList];
-        request = [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
+    
+    if ([model.op isEqualToString:FT_DATA_TYPE_INFLUXDB]){
+        api = FT_NETWORKING_API_METRICS;
+    }else if ([model.op isEqualToString:FT_DATA_TYPE_ES]) {
+        api = FT_NETWORKING_API_LOGGING;
     }
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.datawayUrl,api,token]];
+    NSString *requestData = [self getRequestDataWithEventArray:modelList];
+    request = [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
+    
     //设置网络请求的返回接收器
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求

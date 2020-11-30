@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTConstants.h"
 #import <UIKit/UIKit.h>
-#import "FTTrackBean.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTBaseInfoHander : NSObject
@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_getCurrentPageName;
 + (NSString *)ft_getApplicationUUID;
 + (UIWindow *)ft_keyWindow;
++ (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -290,11 +290,14 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
     for (FTMobileAgent *instance in self.ftSDKInstances) {
-        NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
-        [instance trackBackground:FT_AUTOTRACK_MEASUREMENT tags:@{FT_AUTO_TRACK_CURRENT_PAGE_NAME:[FTBaseInfoHander ft_getCurrentPageName]} field:field withTrackOP:@"crash"];
+        if ([instance judgeIsTraceSampling]) {
         long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-        NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@", [exception reason],slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-        [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
+        NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+        NSDictionary *field =  @{@"crash_message":[exception reason],
+                                 @"crash_stack":info,
+        };
+        [instance track:@"crash" tags:@{@"crash_type":@"ios_crash"} fields:field tm:[[NSDate date] ft_dateTimestamp]];
+        }
     }
 }
 + (long)ft_calculateImageSlide{

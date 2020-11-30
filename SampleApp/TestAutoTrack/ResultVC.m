@@ -54,24 +54,9 @@
 }
 
 -(void)judjeSuccessWithCount:(NSInteger)count{
-    NSInteger realCount= [UITestManger sharedManger].lastCount;
-    if (self.config.enableAutoTrack) {
-        
-        realCount+=[UITestManger sharedManger].autoTrackClickCount;
-        
-        realCount+=[UITestManger sharedManger].autoTrackViewScreenCount;
-        
-        realCount +=[UITestManger sharedManger].trackCount;
-    }
+  
     
-    if(realCount-[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"] == count){
-        dispatch_async(dispatch_get_main_queue(), ^{
-            UILabel *lab = [[UILabel alloc]initWithFrame:CGRectMake(270, 100, 50, 50)];
-            lab.text = @"SUCCESS";
-            lab.backgroundColor = [UIColor redColor];
-            [self.view addSubview:lab];
-        });
-    }
+    
 }
 -(NSString *)login{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

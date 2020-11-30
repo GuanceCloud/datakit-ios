@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTMobileConfig.h"
+#import "FTConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -28,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取监控项的tag、field
 */
 -(NSDictionary *)getMonitorTagFiledDict;
+- (void)startMonitorFPS;
+- (void)stopMonitorFPS;
 - (BOOL)trackUrl:(NSURL *)url;
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler;
 - (void)resetInstance;
