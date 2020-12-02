@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)ft_getNetworkTraceingDatas:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler;
 - (NSURLRequest *)ft_NetworkTrace;
 - (BOOL)ft_isAllowedContentType;
+- (NSDictionary *)ft_getRequestHeaders;
 @end
 
 NS_ASSUME_NONNULL_END

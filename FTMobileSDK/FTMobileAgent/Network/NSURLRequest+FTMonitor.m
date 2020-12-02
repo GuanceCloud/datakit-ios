@@ -81,6 +81,17 @@
 
     return dict;
 }
+- (NSDictionary *)ft_getRequestHeaders{
+    NSDictionary<NSString *, NSString *> *headerFields = self.allHTTPHeaderFields;
+    NSDictionary<NSString *, NSString *> *cookiesHeader = [self dgm_getCookies];
+    [headerFields setValue:self.URL.host forKey:@"Host"];
+    if (cookiesHeader.count) {
+        NSMutableDictionary *headerFieldsWithCookies = [NSMutableDictionary dictionaryWithDictionary:headerFields];
+        [headerFieldsWithCookies addEntriesFromDictionary:cookiesHeader];
+        headerFields = [headerFieldsWithCookies copy];
+    }
+    return headerFields;
+}
 - (NSDictionary<NSString *, NSString *> *)dgm_getCookies {
     NSDictionary<NSString *, NSString *> *cookiesHeader;
     NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
