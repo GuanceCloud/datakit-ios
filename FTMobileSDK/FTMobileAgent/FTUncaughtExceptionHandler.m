@@ -296,7 +296,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         NSDictionary *field =  @{@"crash_message":[exception reason],
                                  @"crash_stack":info,
         };
-        [instance track:@"crash" tags:@{@"crash_type":@"ios_crash"} fields:field tm:[[NSDate date] ft_dateTimestamp]];
+        [instance trackES:@"crash" terminal:@"app" tags:@{@"crash_type":@"ios_crash"} fields:field tm:[[NSDate date] ft_dateTimestamp]];
         }
     }
 }
