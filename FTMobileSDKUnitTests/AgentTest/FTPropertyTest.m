@@ -50,42 +50,6 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
-- (void)testSetEmptyUUID{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
-    [FTMobileAgent startWithConfigOptions:config];
-    FTRecordModel *model = [FTRecordModel new];
-    model.op = FTNetworkingTypeMetrics;
-    
-    NSDictionary *data =@{FT_AGENT_OP:FT_TRACK_OP_CUSTOM,
-                          FT_AGENT_OPDATA:@{
-                                  FT_AGENT_MEASUREMENT:@"TestUnitTests",
-                                  FT_AGENT_FIELD:@{@"test":@"testSetUUID"},
-                          },
-    };
-    model.data = [FTJSONUtil ft_convertToJsonData:data];
-    NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        
-    }];
-    NSString *uuid = [request.allHTTPHeaderFields valueForKey:@"X-Datakit-UUID"];
-    XCTAssertTrue(uuid.length>0);
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
-- (void)testSetUUID{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
-    config.XDataKitUUID = @"testXDataKitUUID";
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTMobileAgent sharedInstance] trackBackground:@"TestUnitTests" field:@{@"test":@"testSetUUID"}];
-    [NSThread sleepForTimeInterval:2];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
-    NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        
-    }];
-    NSString *uuid = [request.allHTTPHeaderFields valueForKey:@"X-Datakit-UUID"];
-    XCTAssertTrue([uuid isEqualToString:@"testXDataKitUUID"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
-    
-}
 -(void)testSetEmptyServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
     config.enableTrackAppCrash = YES;

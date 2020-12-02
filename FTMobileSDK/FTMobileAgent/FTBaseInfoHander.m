@@ -71,27 +71,6 @@
     
 }
 
-+(NSString *)ft_getFTstatueStr:(FTStatus)status{
-    NSString *str = nil;
-    switch (status) {
-        case FTStatusInfo:
-            str = @"info";
-            break;
-        case FTStatusWarning:
-            str = @"warning";
-            break;
-        case FTStatusError:
-            str = @"error";
-            break;
-        case FTStatusCritical:
-            str = @"critical";
-            break;
-        case FTStatusOk:
-            str = @"ok";
-            break;
-    }
-    return str;
-}
 
 +(NSString *)ft_getNetworkTraceID{
     NSString *uuid = [NSUUID UUID].UUIDString;

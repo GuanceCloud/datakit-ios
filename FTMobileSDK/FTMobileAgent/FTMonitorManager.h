@@ -25,10 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置 监控类型 可不设置直接获取 FTMobileAgent.config
 */
 -(void)setMonitorType:(FTMonitorInfoType)type;
-/**
- * 获取监控项的tag、field
-*/
--(NSDictionary *)getMonitorTagFiledDict;
+
 - (void)startMonitorFPS;
 - (void)stopMonitorFPS;
 - (BOOL)trackUrl:(NSURL *)url;

@@ -94,65 +94,7 @@
 
     self.testVC = nil;
 }
-/**
- * loadRequest 方法发起请求
- * 验证： trace 到的数据 url与请求url一致 header中有trace数据
- * metrics 中采集到 请求状态（成功/失败）、请求时间（loading/loadCompleted）
- */
-- (void)testWKWebViewTrace{
-    [self setTraceConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
-    NSInteger lastMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
 
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-        NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
-        NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-        XCTAssertTrue(newLoggingCount-lastLoggingCount == 1);
-        XCTAssertTrue(newMetricsCount-lastMetricsCount >= 2);
-        NSArray *metricsArray =  [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType  :FTNetworkingTypeMetrics];
-        for (int i =0 ; i<metricsArray.count; i++) {
-            FTRecordModel *model = metricsArray[i];
-            NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-            NSDictionary *opdata = [dict valueForKey:@"opdata"];
-            NSString *measurement = [opdata valueForKey:@"measurement"];
-            NSMutableDictionary *tags = [opdata valueForKey:@"tags"];
-            NSMutableDictionary *field = [opdata valueForKey:@"field"];
-            if (i==0) {
-                XCTAssertTrue([measurement isEqualToString:FT_WEB_HTTP_MEASUREMENT]);
-                XCTAssertTrue([field.allKeys containsObject:FT_ISERROR]);
-                BOOL isError = [[field valueForKey:FT_ISERROR] boolValue];
-                if (isError) {
-                    XCTAssertTrue(metricsArray.count == 2);
-                }else{
-                    XCTAssertTrue(metricsArray.count == 3);
-                }
-            }else{
-                XCTAssertTrue([measurement isEqualToString:FT_WEB_TIMECOST_MEASUREMENT]);
-                XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"loading"] || [[field valueForKey:@"event"] isEqualToString:@"loadCompleted"]);
-                NSString *url = [tags valueForKey:@"url"];
-                XCTAssertTrue([url isEqualToString:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"]);
-                XCTAssertTrue([field.allKeys containsObject:@"duration"]);
-            }
-        }
-        FTRecordModel *loggingModel = [[[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging] lastObject];
-        [self getX_B3_SpanId:loggingModel completionHandler:^(NSString *spanID, NSString *urlStr) {
-            XCTAssertTrue(spanID.length>0);
-            XCTAssertTrue([urlStr isEqualToString:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"]);
-        }];
-       
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [self.testVC ft_stopLoading];
-    self.testVC = nil;
-}
 /**
  * 使用 loadRequest 方法发起请求 之后页面跳转 nextLink
  * 验证：nextLink logging数据不增加

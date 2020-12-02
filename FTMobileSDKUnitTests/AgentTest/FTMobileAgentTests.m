@@ -95,44 +95,6 @@
     }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-- (void)testTrackImmediateMethod{
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] trackImmediate:@"iOSTest" tags:@{@"name":@"test"} field:@{@"test":@"testTrackImmediateMethod"} callBack:^(NSInteger statusCode, id  _Nullable responseObject) {
-        XCTAssertTrue(statusCode == 200);
-        [expect fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
-- (void)testLoggingMethod {
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url datawayToken:self.token akId:self.akId akSecret:self.akSecret enableRequestSigning:YES];
-    config.source = @"iOSTest";
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSString *uuid = [NSUUID UUID].UUIDString;
-    [[FTMobileAgent sharedInstance] logging:uuid status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict =  [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
-    NSString *content = field[@"__content"];
-    XCTAssertTrue([content containsString:uuid]);
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
-        [expect fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
 #pragma mark ========== 用户数据绑定 ==========
 /**
  * 测试 绑定用户
@@ -282,69 +244,5 @@
     XCTAssertTrue(newHash == oldHash);
     XCTAssertFalse([dict isEqualToDictionary:dict2]);
     [[FTMobileAgent sharedInstance] resetInstance];
-}
-- (void)testTrackClientTimeCostResignActive{
-    [self setRightSDKConfig];
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [NSThread sleepForTimeInterval:2];
-    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-        XCTAssertTrue(newCount>oldCount);
-     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
-      FTRecordModel *model = [datas lastObject];
-        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-        NSString *op = [dict valueForKey:@"op"];
-        XCTAssertTrue([op isEqualToString:@"mobile_client_time_cost"]);
-        NSDictionary *opdata = [dict valueForKey:@"opdata"];
-        NSDictionary *field = [opdata valueForKey:@"field"];
-        NSDictionary *tags = [opdata valueForKey:@"tags"];
-        NSNumber *duration = [field valueForKey:@"duration"];
-        XCTAssertTrue(duration.intValue > 2*1000*1000);
-        XCTAssertTrue([[tags valueForKey:FT_AUTO_TRACK_EVENT_ID] isEqualToString:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]]);
-
-        XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"activated"]);
-        [expect fulfill];
-    });
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-
-}
-- (void)testTrackClientTimeCostTerminate{
-    [self setRightSDKConfig];
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [NSThread sleepForTimeInterval:2];
-    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification object:nil];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-        XCTAssertTrue(newCount>oldCount);
-     NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
-      FTRecordModel *model = [datas lastObject];
-        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-        NSString *op = [dict valueForKey:@"op"];
-        XCTAssertTrue([op isEqualToString:@"mobile_client_time_cost"]);
-        NSDictionary *opdata = [dict valueForKey:@"opdata"];
-        NSDictionary *field = [opdata valueForKey:@"field"];
-        NSDictionary *tags = [opdata valueForKey:@"tags"];
-        NSNumber *duration = [field valueForKey:@"duration"];
-        XCTAssertTrue(duration.intValue > 2*1000*1000);
-        XCTAssertTrue([[tags valueForKey:FT_AUTO_TRACK_EVENT_ID] isEqualToString:[FT_EVENT_ACTIVATED ft_md5HashToUpper32Bit]]);
-
-        XCTAssertTrue([[field valueForKey:@"event"] isEqualToString:@"activated"]);
-        [expect fulfill];
-    });
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-
 }
 @end

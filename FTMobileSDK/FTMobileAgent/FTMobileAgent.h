@@ -47,10 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 注销当前用户
 */
 - (void)logout;
-/**
- * 清空SDK
- */
-- (void)resetInstance;
+
 
 @end
 

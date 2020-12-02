@@ -34,10 +34,6 @@
     NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-    config.eventFlowLog = YES;
-    config.traceConsoleLog = YES;
-    config.enableAutoTrack = YES;
-    config.autoTrackEventType = FTAutoTrackEventTypeAppLaunch | FTAutoTrackEventTypeAppClick|FTAutoTrackEventTypeAppViewScreen;
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
@@ -63,26 +59,6 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-
-/**
- * 测试控制台日志抓取
- * 日志类型数据 由于缓存策略 累计20条 使用事务写入数据库
- * 验证：new - old = 20 并且 最近添加数据库的数据类型 为 logging 且 抓取__content 包含"testTrackConsoleLog19"
-*/
-- (void)testTrackConsoleLog{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSInteger old =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    for (int i = 0; i<21; i++) {
-        NSLog(@"testTrackConsoleLog%d",i);
-    }
-    [NSThread sleepForTimeInterval:2];
-    NSInteger new =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    FTRecordModel *model = [data lastObject];
-    XCTAssertTrue(new-old == 20);
-    XCTAssertTrue([model.op isEqualToString:@"logging"]);
-    XCTAssertTrue([model.data containsString:@"testTrackConsoleLog"]);
-}
 - (void)testTraceEventEnter{
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
@@ -97,38 +73,6 @@
     NSString *content = field[@"__content"];
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
-}
-- (void)testTraceEventLevae{
-    [self.testVC view];
-    [self.testVC viewWillAppear:NO];
-    [self.testVC viewDidAppear:NO];
-    [self.testVC viewDidDisappear:NO];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
-    FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
-}
-- (void)testTraceEventClick{
-    [self.testVC view];
-    [self.testVC viewWillAppear:NO];
-    [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
-    FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
 }
 - (void)testTraceEventLaunch{
     //模拟launch

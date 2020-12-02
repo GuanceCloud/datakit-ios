@@ -114,9 +114,7 @@
     if(type & FTMonitorInfoTypeMemory ){
         XCTAssertTrue([tag.allKeys containsObject:@"memory_total"]);
     }
-    if(type & FTMonitorInfoTypeBattery){
-        XCTAssertTrue([tag.allKeys containsObject:FT_MONITOR_BATTERY_TOTAL]&&[field.allKeys containsObject:FT_MONITOR_BATTERY_USE] && [tag.allKeys containsObject:FT_MONITOR_BATTERY_STATUS]);
-    }
+ 
     if(type & FTMonitorInfoTypeCpu ){
         XCTAssertTrue([tag.allKeys containsObject:@"cpu_no"]);
     }
