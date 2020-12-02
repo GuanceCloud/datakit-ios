@@ -37,10 +37,12 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 -(NSString *)ft_getVCPath{
     UIViewController *viewController =self;
     NSMutableString *viewPaths = [NSMutableString new];
-    do {
-        [viewPaths insertString:[FTBaseInfoHander itemHeatMapPathForResponder:viewController] atIndex:0];
+    [viewPaths insertString:[FTBaseInfoHander itemHeatMapPathForResponder:viewController] atIndex:0];
+    viewController = (UIViewController *)viewController.parentViewController;
+    while (viewController){
+        [viewPaths insertString:[NSString stringWithFormat:@"%@/",[FTBaseInfoHander itemHeatMapPathForResponder:viewController]] atIndex:0];
         viewController = (UIViewController *)viewController.parentViewController;
-    } while (viewController);
+    }
    return viewPaths;
 }
 @end
