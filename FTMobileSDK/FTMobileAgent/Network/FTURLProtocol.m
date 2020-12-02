@@ -19,10 +19,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
-@property (nonatomic, strong) NSDate *startDate;
-@property (nonatomic, strong) NSDate *endDate;
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
-@property (nonatomic, strong) NSData *data;
 @property (nonatomic, assign) BOOL trackUrl;
 @end
 @implementation FTURLProtocol
@@ -92,9 +89,6 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
     self.trackUrl = [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL];
-    if (self.trackUrl) {
-        self.startDate = [NSDate date];
-    }
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     
@@ -123,10 +117,6 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    if (self.trackUrl) {
-        self.data = data;
-        self.endDate = [NSDate date];
-    }
     [self.client URLProtocol:self didLoadData:data];
 }
 
@@ -139,38 +129,14 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     }
     id<FTHTTPProtocolDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didCompleteWithError:)]) {
-        [strongeDelegate ftHTTPProtocolWithTask:task didCompleteWithError:error];
-    }
     if (self.trackUrl) {
-        NSNumber *duration;
-        NSDate *start;
-        NSNumber *responseDate;
-        if (@available(iOS 10.0, *)) {
-            duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000*1000];
-            start = [self.metrics.transactionMetrics lastObject].requestStartDate;
-            NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
-
-            responseDate = [NSNumber numberWithInt:[taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000.0];
-        }else{
-            duration = [NSNumber numberWithInt:[self.endDate timeIntervalSinceDate:self.startDate]*1000*1000];
-            start = self.startDate;
-            responseDate = duration;
-        }
-        if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:taskDuration:requestStartDate:responseTime:responseData:didCompleteWithError:)]){
-            [strongeDelegate ftHTTPProtocolWithTask:task taskDuration:duration requestStartDate:start responseTime:responseDate responseData:self.data didCompleteWithError:error];
+        if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didFinishCollectingMetrics:didCompleteWithError:)]){
+            [strongeDelegate ftHTTPProtocolWithTask:task didFinishCollectingMetrics:self.metrics didCompleteWithError:error];
         }
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
-    id<FTHTTPProtocolDelegate> strongeDelegate;
-    strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didFinishCollectingMetrics:)]) {
-        if (@available(iOS 10.0, *)) {
-            [strongeDelegate ftHTTPProtocolWithTask:task didFinishCollectingMetrics:metrics];
-        }
-    }
     if (self.trackUrl) {
         self.metrics = metrics;
     }
