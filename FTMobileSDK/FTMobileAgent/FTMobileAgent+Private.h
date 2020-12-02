@@ -26,12 +26,26 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 };
 
 @interface FTMobileAgent (Private)
+@property (nonatomic, assign) BOOL running; //正在运行
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
-
+/**
+ * 采集判断
+ */
 - (BOOL)judgeIsTraceSampling;
+/**
+ * 数据采集
+ * type : InfluxDB指标集
+ */
 - (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+
 - (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+
+- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+
+- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+
+-(void)trackStartWithViewLoadTime:(CFTimeInterval)time;
 /**
  * eventFlowLog、networkTrace 写入
 */

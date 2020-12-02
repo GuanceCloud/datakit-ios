@@ -26,13 +26,10 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
+        _isLaunched = NO;
         [self startTrack];
     }
     return  self;
-}
--(void)setLaunchStartTime:(CFTimeInterval)launch{
-    _isLaunched = NO;
-    _launch = launch;
 }
 - (void)startTrack{
   id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
@@ -48,7 +45,7 @@
            vc.viewLoadStartTime = 0;
            [weakSelf trackOpenWithCpn:vc duration:loadTime];
            if (!weakSelf.isLaunched) {
-               [weakSelf trackStartWithDuration:(time-weakSelf.launch)];
+               [weakSelf trackStartWithTime:CFAbsoluteTimeGetCurrent()];
                weakSelf.isLaunched = YES;
            }
        }
@@ -79,15 +76,9 @@
     }];
     return isContains;
 }
--(void)trackStartWithDuration:(float)duration{
+-(void)trackStartWithTime:(CFTimeInterval)time{
     @try {
-        FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        if ([instance judgeIsTraceSampling]) {
-            NSDictionary *fields = @{
-                @"app_startup_duration":[NSNumber numberWithInt:duration*1000*1000],
-            };
-            [instance track:FT_RUM_APP_VIEW tags:nil fields:fields];
-        }
+        [[FTMobileAgent sharedInstance] trackStartWithViewLoadTime:time];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
@@ -107,6 +98,7 @@
                 @"view_load":[NSNumber numberWithInt:duration*1000*1000],
             };
             [instance track:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+            [instance trackES:@"view" terminal:@"app" tags:tags fields:fields];
         }
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);

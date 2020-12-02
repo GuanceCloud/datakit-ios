@@ -29,9 +29,9 @@
         _enableTrackAppCrash= NO;
         _samplerate = 100;
         _traceServiceName = FT_DEFAULT_SERVICE_NAME;
+        _source = FT_USER_AGENT;
         _networkTrace = NO;
         _networkTrace = FTNetworkTraceTypeZipkin;
-        _source = FT_USER_AGENT;
         _enableTrackAppUIBlock = NO;
         _enableTrackAppANR = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
@@ -56,10 +56,10 @@
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.samplerate = self.samplerate;
     options.traceServiceName = self.traceServiceName;
+    options.source = self.source;
     options.networkTrace = self.networkTrace;
     options.networkTraceType = self.networkTraceType;
     options.networkContentType = self.networkContentType;
-    options.source = self.source;
     options.env = self.env;
     options.enableTrackAppUIBlock = self.enableTrackAppUIBlock;
     options.enableTrackAppANR = self.enableTrackAppANR;

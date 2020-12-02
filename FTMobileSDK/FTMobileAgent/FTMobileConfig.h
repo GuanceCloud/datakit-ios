@@ -9,22 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-
-typedef enum FTError : NSInteger {
-  NetWorkException = 101,        //网络问题
-  InvalidParamsException = 102,  //参数问题
-  FileIOException = 103,         //文件 IO 问题
-  UnknownException = 104,        //未知问题
-} FTError;
-
 /**
  * @enum  TAG 中的设备信息
  *
  * @constant
- *   FTMonitorInfoTypeMemory   - 内存总量、使用率
- *   FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
- *   FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
- *   FTMonitorInfoTypeFPS      - 每秒传输帧数
+ *  FTMonitorInfoTypeMemory   - 内存总量、使用率
+ *  FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
+ *  FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
+ *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 0xFFFFFFFF,
@@ -38,8 +30,8 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  * 网络链路追踪使用类型
  *
  * @constant
- *   FTNetworkTrackTypeZipkin       - Zipkin
- *   FTNetworkTrackTypeJaeger       - Jaeger
+ *  FTNetworkTrackTypeZipkin       - Zipkin
+ *  FTNetworkTrackTypeJaeger       - Jaeger
  */
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     FTNetworkTraceTypeZipkin          = 0,
@@ -92,28 +84,41 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *version;
 
 @property (nonatomic, copy) NSString *datawayToken;
-
-/*配置是否需要进行请求签名*/
+/**
+ * 配置是否需要进行请求签名
+ */
 @property (nonatomic, assign) BOOL enableRequestSigning;
-/*access key ID*/
+/**
+ * access key ID
+ */
 @property (nonatomic, copy) NSString *akId;
-
-/*access key Secret*/
+/**
+ * access key Secret
+ */
 @property (nonatomic, copy) NSString *akSecret;
-
-/*TAG 中的设备信息*/
+/**
+ * TAG 中的设备信息
+ */
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
-
-/*是否开启绑定用户数据*/
+/**
+ * 是否开启绑定用户数据
+ */
 @property (nonatomic, assign) BOOL needBindUser;
-
-/*请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置 */
+/**
+ * 请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
+ */
 @property (nonatomic, copy) NSString *XDataKitUUID;
-/*设置是否允许打印日志*/
+/**
+ * 设置是否允许打印日志
+ */
 @property (nonatomic, assign) BOOL enableLog;
-/*设置日志所属业务或服务的名称*/
+/**
+ * 设置日志所属业务或服务的名称
+ */
 @property (nonatomic, copy) NSString *traceServiceName;
-/*日志的来源 默认为：ft_mobile_sdk_ios*/
+/**
+ * 日志的来源 默认为：ft_mobile_sdk_ios
+ */
 @property (nonatomic, copy) NSString *source;
 /**
  * 环境字段。属性值：prod/gray/pre/common/local。其中
@@ -129,10 +134,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *tags;
 /**
- *  日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ * 日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
-/*设置是否需要采集崩溃日志*/
+/**
+ * 设置是否需要采集崩溃日志
+ */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /**
  * 设置是否需要采集卡顿

@@ -50,7 +50,6 @@ static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
 static NSString * const FT_COMMON_PROPERTY_APP_IDENTIFIER = @"app_identifier";
 
-static NSString * const FT_IP  = @"ip";
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
 static NSString * const FT_APP_ID = @"app_id";
@@ -617,7 +616,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_mobileCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_mobileCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
         [_mobileCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
-        [_mobileCommonPropertyTags setValue:[NSNumber numberWithInt:rect.size.height*scale] forKey:FT_SCREEN_SIZE];
+        [_mobileCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
         [_mobileCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_mobileCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
     }
@@ -641,8 +640,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_esCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_esCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
         [_esCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
-        [_esCommonPropertyTags setValue:[NSNumber numberWithInt:rect.size.height*scale] forKey:FT_SCREEN_SIZE];
-        [_esCommonPropertyTags setValue:@"" forKey:FT_IP];
+        [_esCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
     }
     return _esCommonPropertyTags;
 }
@@ -668,10 +666,14 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
     }else if([type isEqualToString:FT_RUM_WEB_PAGE_PERFORMANCE] || [type isEqualToString:FT_RUM_WEB_RESOURCE_PERFORMANCE]){
         [dict addEntriesFromDictionary:[self webCommonPropertyTags]];
-    }else{
-        [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
-        [dict addEntriesFromDictionary:@{FT_TYPE:type}];
     }
+    return dict;
+}
+- (NSDictionary *)getESPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
+    [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
+    dict[FT_TYPE] = type;
+    dict[@"terminal"] = terminal;
     return dict;
 }
 @end

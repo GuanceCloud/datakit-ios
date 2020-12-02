@@ -39,11 +39,10 @@
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) FTTrack *track;
-
+@property (nonatomic, assign) BOOL running; //正在运行
 @end
 @implementation FTMobileAgent{
     BOOL _appRelaunched;          // App 从后台恢复
-    BOOL _run;                    // 正在运行
     //进入非活动状态，比如双击 home、系统授权弹框
     BOOL _applicationWillResignActive;
 }
@@ -110,9 +109,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 self.config = config;
             }
             _appRelaunched = NO;
-            _run = NO;
+            _running = NO;
             self.launchTime = CFAbsoluteTimeGetCurrent();
             [FTLog enableLog:config.enableLog];
+            self.track = [[FTTrack alloc]init];
             [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -156,7 +156,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     NSString *content = [obj valueForKey:@"content"];
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (content && content.length>0 && tm) {
-
+                     
                     }else{
                         ZYLog(@"extension 采集数据格式有误。");
                     }
@@ -176,18 +176,46 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
-    if ([type isEqualToString:@"crash"]) {
-        baseTags[@"crash_situation"] = _run?@"run":@"startup";
-        baseTags[@"locale"] = @"";
-    }else if([type isEqualToString:@"view"]){
-        
-    }
-    
-        
-        
-   
-}
+    if([type isEqualToString:@"rum_app_view"]){
+        if (self.config.monitorInfoType & FTMonitorInfoTypeFPS) {
 
+        }
+    }
+    if (tags) {
+        [baseTags addEntriesFromDictionary:tags];
+    }
+    [self insertDBWithItemData:[self getModelWithMeasurement:type op:FT_DATA_TYPE_INFLUXDB tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] crash:NO];
+}
+- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
+           return;
+       }
+    BOOL crash = NO;
+    NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
+    if ([type isEqualToString:@"crash"]) {
+        crash = YES;
+       NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+        baseTags[@"crash_situation"] = _running?@"run":@"startup";
+        baseTags[@"locale"] = preferredLanguage;
+    }
+    if (tags) {
+        [baseTags addEntriesFromDictionary:tags];
+    }
+    [self insertDBWithItemData:[self getModelWithMeasurement:self.config.source op:FT_DATA_TYPE_ES tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] crash:crash];
+}
+-(void)trackStartWithViewLoadTime:(CFTimeInterval)time{
+    self.running = YES;
+    if ([self judgeIsTraceSampling]) {
+        NSString *startType = _appRelaunched?@"hot":@"cold";
+        NSDictionary *fields = @{
+            @"app_startup_duration":[NSNumber numberWithInt:(time-self.launchTime)*1000*1000],
+            @"app_startup_type":startType,
+        };
+        [self track:FT_RUM_APP_STARTUP tags:nil fields:fields];
+    }
+    _appRelaunched = YES;
+
+}
 #pragma mark - 用户绑定与注销
 - (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
     NSParameterAssert(name);
@@ -200,20 +228,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [defatluts synchronize];
     ZYDebug(@"User logout");
 }
-- (void)resetInstance{
-    [[FTMonitorManager sharedInstance] resetInstance];
-    [[FTLocationManager sharedInstance] resetInstance];
-    [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
-    if (_reachability) {
-        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-    }
-    self.config = nil;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.upTool = nil;
-    onceToken = 0;
-    sharedInstance =nil;
-}
-- (FTRecordModel *)getInfluxDBModelWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+- (FTRecordModel *)getModelWithMeasurement:(NSString *)measurement op:(NSString *)op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     FTRecordModel *model = [FTRecordModel new];
     NSMutableDictionary *fieldDict = field.mutableCopy;
     NSMutableDictionary *tagsDict = [NSMutableDictionary new];
@@ -229,7 +244,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                           FT_AGENT_OPDATA:opdata,
     };
     ZYDebug(@"datas == %@",data);
-    model.op = FT_DATA_TYPE_INFLUXDB;
+    model.op = op;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     if (tm&&tm>0) {
         model.tm = tm;
@@ -320,14 +335,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
 }
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
-    _appRelaunched = YES;
-    _run = NO;
+    if (_appRelaunched){
+         self.launchTime = CFAbsoluteTimeGetCurrent();
+    }
+    _running = NO;
 }
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
+        if (_applicationWillResignActive) {
+            _applicationWillResignActive = NO;
+            return;
+        }
         [self uploadFlush];
         if (_appRelaunched) {
-            self.launchTime = CFAbsoluteTimeGetCurrent();
+            [self trackStartWithViewLoadTime:CFAbsoluteTimeGetCurrent()];
         }
         [[FTMonitorManager sharedInstance] startMonitorFPS];
     }
@@ -337,6 +358,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
+       _applicationWillResignActive = YES;
        [[FTMonitorManager sharedInstance] stopMonitorFPS];
     }
     @catch (NSException *exception) {
@@ -344,7 +366,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 - (void)applicationDidEnterBackground:(NSNotification *)notification{
-    
+    if (!_applicationWillResignActive) {
+           return;
+       }
+       _applicationWillResignActive = NO;
 }
 - (void)applicationWillTerminateNotification:(NSNotification *)notification{
     @try {
@@ -360,5 +385,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self.upTool upload];
         }
     });
+}
+- (void)resetInstance{
+    [[FTMonitorManager sharedInstance] resetInstance];
+    [[FTLocationManager sharedInstance] resetInstance];
+    [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
+    if (_reachability) {
+        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+    }
+    self.config = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    self.upTool = nil;
+    onceToken = 0;
+    sharedInstance =nil;
 }
 @end

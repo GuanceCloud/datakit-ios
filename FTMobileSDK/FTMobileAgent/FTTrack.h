@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTrack : NSObject
--(void)setLaunchStartTime:(CFTimeInterval)lunch;
+
 @end
 
 NS_ASSUME_NONNULL_END

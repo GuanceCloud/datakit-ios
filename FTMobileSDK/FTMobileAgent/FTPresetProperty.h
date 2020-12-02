@@ -25,8 +25,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-
+/**
+ * 获取 InfluxDB 公共Tag
+ * @param type 指标集名称类型
+ */
 - (NSDictionary *)getPropertyWithType:(NSString *)type;
+/**
+ * 获取 ES 公共Tag
+ * @param type 指标集名称类型
+*/
+- (NSDictionary *)getESPropertyWithType:(NSString *)type terminal:(NSString *)terminal;
 @end
 
 NS_ASSUME_NONNULL_END
