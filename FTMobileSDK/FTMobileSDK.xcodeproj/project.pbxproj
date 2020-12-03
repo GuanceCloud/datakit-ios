@@ -53,10 +53,6 @@
 		4A78B9B72562585A0021E0BC /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B3256257E40021E0BC /* FTLog.m */; };
 		4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */; };
 		4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */; };
-		4A7F62E324976622000893C1 /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62E124976622000893C1 /* FTfishhook.c */; };
-		4A7F62E424976622000893C1 /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7F62E224976622000893C1 /* FTfishhook.h */; };
-		4A7F62EB24976804000893C1 /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7F62E924976804000893C1 /* FTLogHook.h */; };
-		4A7F62EC24976804000893C1 /* FTLogHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7F62EA24976804000893C1 /* FTLogHook.m */; };
 		4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHander.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -138,10 +134,6 @@
 		4A78B9B4256257E40021E0BC /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/FTLog.h; sourceTree = SOURCE_ROOT; };
 		4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionExceptionHandler.h; sourceTree = "<group>"; };
 		4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionExceptionHandler.m; sourceTree = "<group>"; };
-		4A7F62E124976622000893C1 /* FTfishhook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTfishhook.c; sourceTree = "<group>"; };
-		4A7F62E224976622000893C1 /* FTfishhook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTfishhook.h; sourceTree = "<group>"; };
-		4A7F62E924976804000893C1 /* FTLogHook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLogHook.h; sourceTree = "<group>"; };
-		4A7F62EA24976804000893C1 /* FTLogHook.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLogHook.m; sourceTree = "<group>"; };
 		4A852FD323A240B300B40B5D /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
 		4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FT_CurrentController.m"; sourceTree = "<group>"; };
 		4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FT_RootVC.m"; sourceTree = "<group>"; };
@@ -278,10 +270,6 @@
 				4A37A93E2484CAE900E0381B /* FTUncaughtExceptionHandler.m */,
 				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
 				4AED6B252473AFEC00E04AE2 /* FTLog.m */,
-				4A7F62E924976804000893C1 /* FTLogHook.h */,
-				4A7F62EA24976804000893C1 /* FTLogHook.m */,
-				4A7F62E124976622000893C1 /* FTfishhook.c */,
-				4A7F62E224976622000893C1 /* FTfishhook.h */,
 				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
 				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4A299F8F2521F7F800400931 /* FTANRDetector.h */,
@@ -386,7 +374,6 @@
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
-				4A7F62E424976622000893C1 /* FTfishhook.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
 				4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */,
@@ -410,7 +397,6 @@
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
 				4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */,
 				4A2EFD8C253ECDC100F93B1E /* FTJsonWriter.h in Headers */,
-				4A7F62EB24976804000893C1 /* FTLogHook.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,7 +526,6 @@
 				4A88429E239E5768001B44C3 /* ZY_FMDatabaseQueue.m in Sources */,
 				4A884291239E5768001B44C3 /* FTBaseInfoHander.m in Sources */,
 				4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */,
-				4A7F62E324976622000893C1 /* FTfishhook.c in Sources */,
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				4A2EFD8D253ECDC100F93B1E /* FTJsonWriter.m in Sources */,
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
@@ -556,7 +541,6 @@
 				4A4B0C22253EAED900D903AB /* FTJSONUtil.m in Sources */,
 				4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */,
 				4A1FFA2824AB072D00049D9E /* NSString+FTAdd.m in Sources */,
-				4A7F62EC24976804000893C1 /* FTLogHook.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
 			);
