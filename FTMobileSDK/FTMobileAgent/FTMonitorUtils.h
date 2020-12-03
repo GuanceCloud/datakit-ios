@@ -64,21 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取当前内存使用率
  */
 + (double)ft_usedMemory;
-/**
- *  @abstract
- *  获取前置摄像头像素
- */
-+ (NSString *)ft_getFrontCameraPixel;
-/**
- *  @abstract
- *  获取后置摄像头像素
- */
-+ (NSString *)ft_getBackCameraPixel;
-/**
- *  @abstract
- *  获取蜂窝移动 数据漫游是否开启
- */
-+ (BOOL)getRoamingStates;
 + (NSString *)getCELLULARIPAddress:(BOOL)preferIPv4;
 
 @end
