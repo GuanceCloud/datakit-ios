@@ -16,6 +16,7 @@
 #import "FTMobileAgent+Private.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
+#import "FTMonitorManager.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 @interface FTTrack()
 @property (nonatomic,assign) BOOL isLaunched;
@@ -94,9 +95,12 @@
                                    @"view_name":name,
                                    @"view_path":path,
             };
-            NSDictionary *fields = @{
+            NSMutableDictionary *fields = @{
                 @"view_load":[NSNumber numberWithInt:duration*1000*1000],
-            };
+            }.mutableCopy;
+            if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
+                fields[@"view_fps"] = [[FTMonitorManager sharedInstance] getFPSValue];
+            }
             [instance track:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
             [instance trackES:@"view" terminal:@"app" tags:tags fields:fields];
         }

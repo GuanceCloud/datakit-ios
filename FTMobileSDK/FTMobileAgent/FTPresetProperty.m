@@ -64,6 +64,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @property (nonatomic, copy) NSString *tags;
+@property (nonatomic, assign) BOOL isSignin;
 @end
 @implementation FTPresetProperty
 - (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
@@ -588,14 +589,13 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         return mCarrier;
     }
 }
-
 -(NSDictionary *)webCommonPropertyTags{
     if (!_webCommonPropertyTags) {
         NSString *version = [UIDevice currentDevice].systemVersion;
         CGRect rect = [[UIScreen mainScreen] bounds];
         CGFloat scale = [[UIScreen mainScreen] scale];
         _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-        [_webCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_webCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_webCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
         [_webCommonPropertyTags setValue:version forKey:FT_COMMON_PROPERTY_OS_VERSION];
         [_webCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
@@ -611,7 +611,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
         NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        [_mobileCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_mobileCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_mobileCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
         [_mobileCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_mobileCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
@@ -633,7 +633,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         _esCommonPropertyTags = [NSMutableDictionary new];
         [_esCommonPropertyTags setValue:@"FT_USERID" forKey:FT_USERID];
         [_esCommonPropertyTags setValue:[FTBaseInfoHander ft_getApplicationUUID] forKey:FT_ORIGIN_ID];
-        [_esCommonPropertyTags setValue:@"" forKey:FT_IS_SIGNIN];
+        [_esCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_esCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_esCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
         [_esCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
@@ -655,7 +655,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         }
         if (self.appid) {
             [_basePropertyTags setValue:self.appid forKey:FT_APP_ID];
-
         }
     }
     return _basePropertyTags;
@@ -674,6 +673,11 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_TYPE] = type;
     dict[@"terminal"] = terminal;
+    if ([type isEqualToString:@"crash"]) {
+        dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];
+        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+        dict[FT_COMMON_PROPERTY_LOCALE] = preferredLanguage;
+    }
     return dict;
 }
 @end
