@@ -256,12 +256,15 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
     long slide_address = [FTExtensionExceptionHandler ft_calculateImageSlide];
-    NSString *info =[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@", [exception reason],slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+   NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+    NSDictionary *field =  @{@"crash_message":[exception reason],
+                                  @"crash_stack":info,
+         };
     long long time= (long long)([[NSDate date] timeIntervalSince1970]*1000*1000);
     
     NSNumber *tm = [NSNumber numberWithLong:time];
     if (FTHandlerCallBack) {
-        FTHandlerCallBack(info, tm);
+        FTHandlerCallBack(field, tm);
     }
 }
 @end

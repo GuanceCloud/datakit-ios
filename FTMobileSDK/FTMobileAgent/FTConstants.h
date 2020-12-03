@@ -102,3 +102,8 @@ extern NSString *  const FT_NETWORK_ERROR;
 extern NSString *  const FT_SPANTYPE_ENTRY;
 extern NSUInteger  const FT_LOGGING_CONTENT_SIZE;
 extern NSUInteger  const FT_DB_CONTENT_MAX_COUNT;
+// default 5s 记录一次ANR
+// 超过多少毫秒为一次卡顿
+extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
+// 多少次卡顿纪录为一次有效卡顿
+extern NSUInteger const  MXRMonitorRunloopStandstillCount;

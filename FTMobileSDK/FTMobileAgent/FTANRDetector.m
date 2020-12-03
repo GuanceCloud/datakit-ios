@@ -11,7 +11,7 @@
 #import "FTANRDetector.h"
 #import "FTLog.h"
 #import "FTCallStack.h"
-
+#import "FTConstants.h"
 #include <signal.h>
 #include <pthread.h>
 
@@ -21,12 +21,6 @@
 // minimum
 static const NSInteger MXRMonitorRunloopMinOneStandstillMillisecond = 20;
 static const NSInteger MXRMonitorRunloopMinStandstillCount = 1;
-
-// default 5s 记录一次ANR
-// 超过多少毫秒为一次卡顿
-static const NSInteger MXRMonitorRunloopOneStandstillMillisecond = 1000;
-// 多少次卡顿纪录为一次有效卡顿
-static const NSInteger MXRMonitorRunloopStandstillCount = 5;
 
 @interface FTANRDetector (){
     CFRunLoopObserverRef _observer;  // 观察者
@@ -52,14 +46,14 @@ static const NSInteger MXRMonitorRunloopStandstillCount = 5;
     
     return instance;
 }
-- (void)setLimitMillisecond:(int)limitMillisecond
+- (void)setLimitMillisecond:(NSUInteger)limitMillisecond
 {
     [self willChangeValueForKey:@"limitMillisecond"];
     _limitMillisecond = limitMillisecond >= MXRMonitorRunloopMinOneStandstillMillisecond ? limitMillisecond : MXRMonitorRunloopMinOneStandstillMillisecond;
     [self didChangeValueForKey:@"limitMillisecond"];
 }
 
-- (void)setStandstillCount:(int)standstillCount
+- (void)setStandstillCount:(NSUInteger)standstillCount
 {
     [self willChangeValueForKey:@"standstillCount"];
     _standstillCount = standstillCount >= MXRMonitorRunloopMinStandstillCount ? standstillCount : MXRMonitorRunloopMinStandstillCount;

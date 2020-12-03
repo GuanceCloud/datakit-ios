@@ -91,3 +91,5 @@ NSString *const FT_KET_FALSE = @"false";
 NSString *const FT_SPANTYPE_ENTRY = @"entry";
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
+NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
+NSUInteger const  MXRMonitorRunloopStandstillCount = 5;

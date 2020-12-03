@@ -36,14 +36,14 @@ static FTExtensionManager *sharedInstance = nil;
 - (void)startTrackCrash{
     FTExtensionExceptionHandler *handler = [[FTExtensionExceptionHandler alloc]init];
     __weak typeof(self) weakSelf = self;
-    [handler hookWithBlock:^(NSString * _Nonnull content, NSNumber * _Nonnull tm) {
+    [handler hookWithBlock:^(NSDictionary * _Nonnull content, NSNumber * _Nonnull tm) {
         //主线程 即将crash
         [weakSelf writeCrash:content tm:tm];
     }];
 }
-- (BOOL)writeCrash:(NSString *)content tm:(NSNumber *)tm{
+- (BOOL)writeCrash:(NSDictionary *)field tm:(NSNumber *)tm{
     @try {
-        if (![content isKindOfClass:NSString.class] || !content.length) {
+        if (![field isKindOfClass:NSDictionary.class] || !field) {
             return NO;
         }
         if(![[NSFileManager defaultManager] fileExistsAtPath:self.pathStr]) {
@@ -52,8 +52,8 @@ static FTExtensionManager *sharedInstance = nil;
                 ZYLog(@"Create Group File Success!");
             }
         }
-        ZYDebug(@"writeCrash content :%@\n tm:%@",content,tm);
-        NSDictionary *event = @{@"content":content,@"tm":tm};
+        ZYDebug(@"writeCrash content :%@\n tm:%@",field,tm);
+        NSDictionary *event = @{@"field":field,@"tm":tm};
         NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:self.pathStr];
         if (array.count) {
             [array addObject:event];

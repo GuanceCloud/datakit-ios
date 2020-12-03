@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSSet *netContentType;
+@property (nonatomic, assign) BOOL isBlueOn;
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
@@ -27,7 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setMonitorType:(FTMonitorInfoType)type;
 
 - (void)startMonitorFPS;
-- (void)stopMonitorFPS;
+- (void)pauseMonitorFPS;
+- (NSNumber *)getFPSValue;
 - (BOOL)trackUrl:(NSURL *)url;
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler;
 - (void)resetInstance;

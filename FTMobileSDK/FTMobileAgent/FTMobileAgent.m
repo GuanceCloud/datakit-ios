@@ -27,6 +27,7 @@
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
 #import "FTTrack.h"
+#import "FTMonitorUtils.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -153,10 +154,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     ZYLog(@"Group file delete success %@",result);
                 }
                 [array enumerateObjectsUsingBlock:^(NSDictionary  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    NSString *content = [obj valueForKey:@"content"];
+                    NSDictionary *field = [obj valueForKey:@"field"];
                     NSNumber *tm = [obj valueForKey:@"tm"];
-                    if (content && content.length>0 && tm) {
-                     
+                    if (field && field.allKeys.count>0 && tm) {
+                        [self trackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                     }else{
                         ZYLog(@"extension 采集数据格式有误。");
                     }
@@ -176,11 +177,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
-    if([type isEqualToString:@"rum_app_view"]){
-        if (self.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-
-        }
-    }
     if (tags) {
         [baseTags addEntriesFromDictionary:tags];
     }
@@ -194,9 +190,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
     if ([type isEqualToString:@"crash"]) {
         crash = YES;
-       NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-        baseTags[@"crash_situation"] = _running?@"run":@"startup";
-        baseTags[@"locale"] = preferredLanguage;
+        if ([terminal isEqualToString:@""]) {
+            baseTags[@"crash_situation"] = _running?@"run":@"startup";
+            if (self.config.monitorInfoType & FTMonitorInfoTypeBluetooth) {
+                baseTags[FT_MONITOR_BT_OPEN] = [NSNumber numberWithBool:[FTMonitorManager sharedInstance].isBlueOn];
+            }
+            if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+                baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils ft_getTotalMemorySize];
+            }
+            if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
+                baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
+            }
+        }else{
+            baseTags[@"crash_situation"] = @"run";
+        }
     }
     if (tags) {
         [baseTags addEntriesFromDictionary:tags];
@@ -350,7 +357,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (_appRelaunched) {
             [self trackStartWithViewLoadTime:CFAbsoluteTimeGetCurrent()];
         }
-        [[FTMonitorManager sharedInstance] startMonitorFPS];
+        if (self.config.monitorInfoType & FTMonitorInfoTypeFPS || self.config.enableTrackAppUIBlock) {
+            [[FTMonitorManager sharedInstance] startMonitorFPS];
+        }
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -359,7 +368,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
        _applicationWillResignActive = YES;
-       [[FTMonitorManager sharedInstance] stopMonitorFPS];
+       [[FTMonitorManager sharedInstance] pauseMonitorFPS];
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);

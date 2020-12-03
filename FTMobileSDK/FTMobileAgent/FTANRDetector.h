@@ -16,10 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sharedInstance;
 /// 超过多少毫秒为一次卡顿 400毫秒
-@property (nonatomic, assign) int limitMillisecond;
+@property (nonatomic, assign) NSUInteger limitMillisecond;
 
 /// 多少次卡顿纪录为一次有效，默认为5次
-@property (nonatomic, assign) int standstillCount;
+@property (nonatomic, assign) NSUInteger standstillCount;
 
 @property (nonatomic, weak) id<FTANRDetectorDelegate> delegate;
 

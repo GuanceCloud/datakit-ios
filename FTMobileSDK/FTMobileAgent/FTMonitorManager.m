@@ -16,7 +16,6 @@
 #import "FTBaseInfoHander.h"
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
-#import "FTRecordModel.h"
 #import "FTMobileAgent.h"
 #import "FTURLProtocol.h"
 #import "FTLog.h"
@@ -33,16 +32,14 @@
 #import "FTANRDetector.h"
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
+#import "FTCallStack.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
-
-static NSString * const FTUELSessionLockName = @"com.ft.networking.session.manager.lock";
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
-@property (nonatomic, strong) NSDictionary *monitorTagDict;
+
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
-@property (nonatomic, copy) NSString *isBlueOn;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
 @property (nonatomic, strong) NSLock *lock;
@@ -75,18 +72,14 @@ static dispatch_once_t onceToken;
 }
 -(void)setMobileConfig:(FTMobileConfig *)config{
     self.config = config;
-        [self dealNetworkContentType:config.networkContentType];
-        [FTWKWebViewHandler sharedInstance].trace = YES;
-        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
-        [FTURLProtocol startMonitor];
-        [FTURLProtocol setDelegate:self];
-   
-    if (_monitorType & FTMonitorInfoTypeFPS) {
-        [self setMonitorFPS];
+    [self dealNetworkContentType:config.networkContentType];
+    [FTURLProtocol startMonitor];
+    [FTURLProtocol setDelegate:self];
+    if (self.monitorType & FTMonitorInfoTypeFPS || self.config.enableTrackAppUIBlock) {
+        [self startMonitorFPS];
     }else{
-        [self endMonitorFPS];
+        [self stopMonitorFPS];
     }
-    
     if (config.enableTrackAppANR) {
         [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
             [FTANRDetector sharedInstance].delegate = self;
@@ -96,7 +89,12 @@ static dispatch_once_t onceToken;
         [FTANRDetector sharedInstance].delegate = nil;
         [[FTANRDetector sharedInstance] stopDetecting];
     }
-    [self setMonitorType:config.monitorInfoType];
+    //位置信息  国家、省、市、经纬度
+    (_monitorType & FTMonitorInfoTypeLocation)?[[FTLocationManager sharedInstance] startUpdatingLocation]:[[FTLocationManager sharedInstance] stopUpdatingLocation];
+    
+    if (_monitorType & FTMonitorInfoTypeBluetooth) {
+        [self bluteeh];
+    }
 }
 -(void)dealNetworkContentType:(NSArray *)array{
     if (array && array.count>0) {
@@ -105,48 +103,35 @@ static dispatch_once_t onceToken;
         self.netContentType = [NSSet setWithArray:@[@"application/json",@"application/xml",@"application/javascript",@"text/html",@"text/xml",@"text/plain",@"application/x-www-form-urlencoded",@"multipart/form-data"]];
     }
 }
--(void)setMonitorType:(FTMonitorInfoType)type{
-    _monitorType = type;
-    if (type == 0) {
-        [self stopMonitor];
-        return;
-    }
-    //位置信息  国家、省、市、经纬度
-    (_monitorType & FTMonitorInfoTypeLocation)?[[FTLocationManager sharedInstance] startUpdatingLocation]:[[FTLocationManager sharedInstance] stopUpdatingLocation];
-
-    if (_monitorType & FTMonitorInfoTypeBluetooth) {
-        [self bluteeh];
-    }
-}
 -(void)stopMonitor{
-    [self endMonitorFPS];
+    [self stopMonitorFPS];
     [[FTLocationManager sharedInstance] stopUpdatingLocation];
 }
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
     [FTURLProtocol setDelegate:self];
 }
+- (NSNumber *)getFPSValue{
+    return [NSNumber numberWithFloat:_fps];
+}
 #pragma mark ========== FPS ==========
-- (void)setMonitorFPS{
-    if (!_displayLink) {
+- (void)startMonitorFPS{
+    if (_displayLink) {
+        [_displayLink setPaused:NO];
+    }else{
         _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
 }
-- (void)endMonitorFPS{
+- (void)pauseMonitorFPS{
     if (_displayLink) {
         [_displayLink setPaused:YES];
-        _displayLink = nil;
-    }
-}
-- (void)startMonitorFPS{
-    if (_displayLink) {
-        [_displayLink setPaused:NO];
     }
 }
 - (void)stopMonitorFPS{
     if (_displayLink) {
         [_displayLink setPaused:YES];
+        _displayLink = nil;
     }
 }
 - (void)tick:(CADisplayLink *)link {
@@ -159,10 +144,10 @@ static dispatch_once_t onceToken;
     if (delta < 1) return;
     _lastTime = link.timestamp;
     _fps = _count / delta;
-    if(_fps<10){
-      
-    }
     _count = 0;
+    if(_fps<10){
+        [self trackAppFreeze];
+    }
 }
 #pragma mark ========== 蓝牙 ==========
 - (void)bluteeh{
@@ -173,7 +158,7 @@ static dispatch_once_t onceToken;
 }
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
     if (@available(iOS 10.0, *)) {
-        self.isBlueOn = (central.state ==CBManagerStatePoweredOn)? FT_KEY_TRUE:FT_KET_FALSE;
+        self.isBlueOn = central.state ==CBManagerStatePoweredOn;
     }
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
@@ -224,17 +209,37 @@ static dispatch_once_t onceToken;
     [agent trackES:@"resource" terminal:@"app" tags:tags fields:fields];
     
 }
-
+- (void)trackAppFreeze{
+    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
+    if (![agent judgeIsTraceSampling]) {
+        return;
+    }
+    NSString  *freeze_stack = [FTCallStack ft_backtraceOfMainThread];
+    NSString *currentPage = [FTBaseInfoHander ft_getCurrentPageName];
+    long long time = [[NSDate date] ft_dateTimestamp];
+    NSDictionary *tag = @{@"freeze_type":@"Freeze"};
+    NSMutableDictionary *fields = [NSMutableDictionary new];
+    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    fields[@"freeze_stack"] = freeze_stack;
+    fields[@"freeze_message"] = currentPage;
+    [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+}
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-//    [[FTMobileAgent sharedInstance] trackBackground:FT_AUTOTRACK_MEASUREMENT
-//                                               tags:nil field:@{
-//                                                   FT_KEY_EVENT:@"anr",
-//                                               } withTrackOP:@"anr"];
-//    if (slowStack.length>0) {
-//        NSString *info =[NSString stringWithFormat:@"ANR Stack:\n%@", slowStack];
-//        [[FTMobileAgent sharedInstance] _loggingANRInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
-//    }
+    // freeze_message : ?
+    if (slowStack.length==0) {
+        return;
+    }
+    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
+    if (![agent judgeIsTraceSampling]) {
+        return;
+    }
+    long long time = [[NSDate date] ft_dateTimestamp];
+    NSDictionary *tag = @{@"freeze_type":@"ANR"};
+    NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000]};
+    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    fields[@"freeze_stack"] = slowStack;
+    [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
 }
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)trackUrl:(NSURL *)url{
@@ -326,7 +331,6 @@ static dispatch_once_t onceToken;
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;
-    self.monitorTagDict = nil;
     onceToken = 0;
     sharedInstance =nil;
     [FTWKWebViewHandler sharedInstance].trace = NO;
