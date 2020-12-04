@@ -42,10 +42,27 @@ extern NSString * const FT_TYPE_VIEW;
 #pragma mark ========== api ==========
 extern NSString *  const FT_DATA_TYPE_ES;
 extern NSString *  const FT_DATA_TYPE_INFLUXDB;
+extern NSString *  const FT_DATA_TYPE_LOGGING;
+extern NSString *  const FT_DATA_TYPE_OBJECT;
 
 extern NSString *  const FT_NETWORKING_API_METRICS;
 extern NSString *  const FT_NETWORKING_API_LOGGING;
+extern NSString *  const FT_NETWORKING_API_ES;
+extern NSString *  const FT_NETWORKING_API_OBJECT;
 extern NSString *  const FT_NETWORKING_API_CHECK_TOKEN;
+
+#pragma mark ========== logging key ==========
+extern NSString * const FT_KEY_STATUS;
+extern NSString * const FT_KEY_SOURCE;
+extern NSString * const FT_KEY_SERVICENAME;
+extern NSString * const FT_KEY_CONTENT;
+extern NSString * const FT_KEY_OPERATIONNAME;
+extern NSString * const FT_KEY_CLASS;
+extern NSString * const FT_KEY_ISERROR;
+extern NSString * const FT_KEY_SPANTYPE;
+extern NSString * const FT_KEY_DURATION;
+extern NSString * const FT_FLOW_TRACEID;
+extern NSString * const FT_KEY_SPANID;
 
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_KEY_EVENT;
@@ -61,7 +78,6 @@ extern NSString * const FT_MONITOR_CITY;
 extern NSString * const FT_MONITOR_COUNTRY;
 extern NSString * const FT_MONITOR_LATITUDE;
 extern NSString * const FT_MONITOR_LONGITUDE;
-
 #pragma mark ------ NETWORK -------
 extern NSString * const FT_MONITOR_WITF_SSID;
 extern NSString * const FT_MONITOR_NETWORK_STRENGTH;
@@ -82,8 +98,7 @@ extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
 extern NSString *  const FTBaseInfoHanderBatteryTotal;
 extern NSString *  const FTBaseInfoHanderDeviceGPUType;
 
-
-extern NSString *  const FT_KEY_SERVICENAME;
+#pragma mark ========== logging network trace key ==========
 extern NSString *  const FT_APPLICATION_UUID;
 extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString *  const FT_NETWORK_ZIPKIN_SPANID;
@@ -91,6 +106,8 @@ extern NSString *  const FT_NETWORK_ZIPKIN_SAMPLED;
 extern NSString *  const FT_NETWORK_SKYWALKING_V3;
 extern NSString *  const FT_NETWORK_SKYWALKING_V2;
 extern NSString *  const FT_NETWORK_JAEGER_TRACEID;
+extern NSString * const FT_NETWORK_REQUEST_CONTENT;
+extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
 
 extern NSString *  const FT_NETWORK_HEADERS;
 extern NSString *  const FT_NETWORK_BODY;

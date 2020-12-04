@@ -234,4 +234,27 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return count <= 1 ? classString : [NSString stringWithFormat:@"%@[%ld]", classString, (long)index];
 }
++(NSString *)ft_getFTstatueStr:(FTStatus)status{
+    NSString *str = nil;
+    switch (status) {
+        case FTStatusInfo:
+            str = @"info";
+            break;
+        case FTStatusWarning:
+            str = @"warning";
+            break;
+        case FTStatusError:
+            str = @"error";
+            break;
+        case FTStatusCritical:
+            str = @"critical";
+            break;
+        case FTStatusOk:
+            str = @"ok";
+            break;
+    }
+    return str;
+    
+}
+
 @end

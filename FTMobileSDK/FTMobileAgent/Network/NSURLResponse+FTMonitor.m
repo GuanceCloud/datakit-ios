@@ -42,6 +42,17 @@
     }
     return dict;
 }
+- (NSDictionary *)ft_getResponseDict{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    if ([self isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+        NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
+        [dict setValue:headerFields forKey:FT_NETWORK_HEADERS];
+        [dict setValue:[self ft_getResponseStatusCode] forKey:FT_NETWORK_CODE];
+        
+    }
+    return dict;
+}
 - (BOOL)isAllowedContentType{
     NSString *mime = self.MIMEType;
     __block BOOL allow = NO;

@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "FTConstants.h"
 #import <UIKit/UIKit.h>
+#import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-
 @interface FTBaseInfoHander : NSObject
 
 /**
@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_getApplicationUUID;
 + (UIWindow *)ft_keyWindow;
 + (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
++ (NSString *)ft_getFTstatueStr:(FTStatus)status;
 @end
 
 NS_ASSUME_NONNULL_END

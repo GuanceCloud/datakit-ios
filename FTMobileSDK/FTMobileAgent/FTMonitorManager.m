@@ -165,6 +165,55 @@ static dispatch_once_t onceToken;
 // 网络请求信息采集 链路追踪
 - (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics didCompleteWithError:(NSError *)error{
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
+    NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
+    if (self.config.networkTrace) {
+        BOOL iserror;
+        NSDictionary *responseDict = @{};
+        if (error) {
+            iserror = YES;
+            NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
+            NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
+            
+            responseDict = @{FT_NETWORK_HEADERS:@{},
+                             FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                                
+                                                @"errorDomain":error.domain,
+                                                
+                                                @"errorDescription":errorDescription,
+                                                
+                             },
+                             FT_NETWORK_CODE:errorCode,
+            };
+        }else{
+            iserror = [[task.response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
+            responseDict = task.response?[task.response ft_getResponseDict]:@{};
+        }
+        NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
+        [request setValue:[task.originalRequest ft_getBodyData:[task.currentRequest ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
+        NSDictionary *response = responseDict?responseDict:@{};
+        NSDictionary *content = @{
+            FT_NETWORK_RESPONSE_CONTENT:response,
+            FT_NETWORK_REQUEST_CONTENT:request
+        };
+        NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[task.originalRequest ft_getOperationName],
+                                      FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
+                                      FT_KEY_ISERROR:[NSNumber numberWithBool:iserror],
+                                      FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+        }.mutableCopy;
+        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000*1000]};
+        __block NSString *trace,*span;
+        __block BOOL sampling;
+        [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+            trace = traceId;
+            span = spanID;
+            sampling = sampled;
+        }];
+        if(trace&&span&&sampling){
+            [tags setValue:trace forKey:FT_FLOW_TRACEID];
+            [tags setValue:span forKey:FT_KEY_SPANID];
+            [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+        }
+    }
     if (![agent judgeIsTraceSampling]) {
         return;
     }
@@ -186,7 +235,6 @@ static dispatch_once_t onceToken;
     tags[@"resource_method"] = task.originalRequest.HTTPMethod;
     tags[@"resource_status"] = error? [NSNumber numberWithInteger:error.code]: [response ft_getResponseStatusCode];
     
-    NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
     NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
     NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
     NSTimeInterval tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate timeIntervalSinceDate:taskMes.secureConnectionStartDate]*1000:0;
@@ -202,6 +250,10 @@ static dispatch_once_t onceToken;
     fields[@"resource_trans"] = [NSNumber numberWithInt:transTime];
     
     [agent track:@"rum_app_resource_performance" tags:tags fields:fields];
+    //ES resource 采集
+    if (![agent judgeESTraceOpen]) {
+        return;
+    }
     if (response) {
         fields[@"response_header"] = response.allHeaderFields;
         fields[@"request_header"] = [task.currentRequest ft_getRequestHeaders];
@@ -227,7 +279,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     // freeze_message : ?
-    if (slowStack.length==0) {
+    if (!self.config.enableTrackAppANR || slowStack.length==0) {
         return;
     }
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
@@ -236,10 +288,15 @@ static dispatch_once_t onceToken;
     }
     long long time = [[NSDate date] ft_dateTimestamp];
     NSDictionary *tag = @{@"freeze_type":@"ANR"};
-    NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000]};
+    int duration = (int)(MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000);
+    NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:duration]}.mutableCopy;
     [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = slowStack;
-    [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+    if ([agent judgeESTraceOpen]) {
+        [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+    }else{
+    [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:nil tm:time];
+    }
 }
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)trackUrl:(NSURL *)url{
