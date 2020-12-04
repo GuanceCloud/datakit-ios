@@ -131,6 +131,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     @try {
         [self flushWithType:FT_DATA_TYPE_ES];
         [self flushWithType:FT_DATA_TYPE_INFLUXDB];
+        [self flushWithType:FT_DATA_TYPE_LOGGING];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);
@@ -167,11 +168,11 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(BOOL)flushWithType:(NSString *)type{
     NSArray *events;
-//    if (self.config.needBindUser && [type isEqualToString:FTNetworkingTypeMetrics]) {
-//        events = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:kOnceUploadDefaultCount withType:type];
-//    }else{
+    if (self.config.needBindUser && [type isEqualToString:FT_DATA_TYPE_INFLUXDB]) {
+        events = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:kOnceUploadDefaultCount withType:type];
+    }else{
         events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
-//    }
+    }
     if (events.count == 0 || ![self flushWithEvents:events]) {
         return NO;
     }
@@ -238,16 +239,27 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     NSString *api = nil;
     NSURLRequest *request;
     NSString *token = self.config.datawayToken?[NSString stringWithFormat:@"?token=%@",self.config.datawayToken]:@"";
-    
+    NSString *requestData;
+    NSString *contentType;
     if ([model.op isEqualToString:FT_DATA_TYPE_INFLUXDB]){
         api = FT_NETWORKING_API_METRICS;
-    }else if ([model.op isEqualToString:FT_DATA_TYPE_ES]) {
+        requestData = [self getRequestDataWithEventArray:modelList type:FT_AGENT_MEASUREMENT];
+        contentType = @"text/plain";
+    }else if ([model.op isEqualToString:FT_DATA_TYPE_LOGGING]) {
         api = FT_NETWORKING_API_LOGGING;
+        requestData = [self getRequestDataWithEventArray:modelList type:FT_KEY_SOURCE];
+        contentType = @"text/plain";
+    }else if([model.op isEqualToString:FT_DATA_TYPE_ES]){
+        api = FT_NETWORKING_API_ES;
+//        requestData = [self getRequestDataWithEventArray:modelList type:(NSString *)];
+        contentType = @"text/plain";
+    }else if([model.op isEqualToString:FT_DATA_TYPE_OBJECT]){
+        api = FT_NETWORKING_API_OBJECT;
+        requestData = [self getObjctRequestWithEventArray:modelList];
+        contentType = @"application/json";
     }
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",self.config.datawayUrl,api,token]];
-    NSString *requestData = [self getRequestDataWithEventArray:modelList];
-    request = [self getRequestWithURL:url body:requestData contentType:@"text/plain"];
-    
+    request = [self getRequestWithURL:url body:requestData contentType:contentType];
     //设置网络请求的返回接收器
     NSURLSessionTask *dataTask = [self dataTaskWithRequest:request completionHandler:callBack];
     //开始请求
@@ -315,14 +327,14 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     ZYLog(@"requestData = %@",requestData);
     return  requestData;
 }
-- (NSString *)getRequestDataWithEventArray:(NSArray *)events{
+- (NSString *)getRequestDataWithEventArray:(NSArray *)events type:(NSString *)type{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data];
         NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:obj.userdata];
         NSString *field = @"";
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
-        NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_AGENT_MEASUREMENT]];
+        NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:type]];
         NSDictionary *tagDict = opdata[FT_AGENT_TAGS];
         if ([[opdata allKeys] containsObject:FT_AGENT_FIELD]) {
             field=FTQueryStringFromParameters(opdata[FT_AGENT_FIELD],FTParameterTypeField);

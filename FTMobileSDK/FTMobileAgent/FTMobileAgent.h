@@ -31,6 +31,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param configOptions     配置参数
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
+/**
+ * 日志上报
+ * @param content  日志内容，可为json字符串
+ * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+
+ */
+-(void)logging:(NSString *)content status:(FTStatus)status;
 
 /**
  * 绑定用户信息

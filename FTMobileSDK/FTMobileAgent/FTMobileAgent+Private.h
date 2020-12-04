@@ -15,14 +15,19 @@
 #import <UIKit/UIKit.h>
 @class FTRecordModel,FTUploadTool;
 /**
- 埋点方式
-
- - FTTrackTypeCode: 主动埋点
- - FTTrackTypeAuto: SDK埋点
+ - FTAddDataNormal: 异步写入数据库
+ - FTAddDataCache:  事务写入数据库
+ - FTAddDataImmediate: 同步写入数据库
  */
-typedef NS_ENUM(NSInteger, FTTrackType) {
-    FTTrackTypeCode,
-    FTTrackTypeAuto,
+typedef NS_ENUM(NSInteger, FTAddDataType) {
+    FTAddDataNormal,
+    FTAddDataCache,
+    FTAddDataImmediate,
+};
+typedef NS_ENUM(NSInteger, FTDataType) {
+    FTDataTypeES,
+    FTDataTypeLOGGING,
+    FTDataTypeINFLUXDB,
 };
 
 @interface FTMobileAgent (Private)
@@ -33,6 +38,8 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
  * 采集判断
  */
 - (BOOL)judgeIsTraceSampling;
+- (BOOL)judgeESTraceOpen;
+
 /**
  * 数据采集
  * type : InfluxDB指标集
@@ -49,11 +56,8 @@ typedef NS_ENUM(NSInteger, FTTrackType) {
 /**
  * eventFlowLog、networkTrace 写入
 */
-- (void)_loggingBackgroundInsertWithOP:(NSString *)op status:(NSString *)status content:(NSString *)content tm:(long long)tm tags:(NSDictionary *)tags field:(NSDictionary *)field;
-/**
- * 崩溃日志写入
-*/
-- (void)_loggingExceptionInsertWithContent:(NSString *)content tm:(long long)tm;
+-(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
+
 
 @end
 #endif /* FTMobileAgent_Private_h */
