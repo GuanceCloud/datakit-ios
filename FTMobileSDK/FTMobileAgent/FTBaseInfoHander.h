@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIWindow *)ft_keyWindow;
 + (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
 + (NSString *)ft_getFTstatueStr:(FTStatus)status;
++ (NSString *)ft_getFTEnvStr:(FTEnv)env;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -121,7 +121,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             self.concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             [self setUpListeners];
-            self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:self.config.env];
+            self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             if (self.config.traceConsoleLog) {
@@ -241,7 +241,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
                                  FT_KEY_SERVICENAME:self.config.traceServiceName,
                                  @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                 @"env":self.config.env,
+                                 @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
     }.mutableCopy;
     if (tags) {
         [tagDict addEntriesFromDictionary:tags];

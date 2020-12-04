@@ -49,6 +49,13 @@ typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     FTNetworkTraceTypeSKYWALKING_V2   = 2,
     FTNetworkTraceTypeSKYWALKING_V3   = 3,
 };
+typedef NS_ENUM(NSInteger, FTEnv) {
+    FTEnvProd         = 0,
+    FTEnvGray,
+    FTEnvPre,
+    FTEnvCommon,
+    FTEnvLocal,
+};
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
@@ -114,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
  * common：日常环境
  * local：本地环境
  */
-@property (nonatomic, copy) NSString *env;
+@property (nonatomic, assign) FTEnv env;
 /**
  * 日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */

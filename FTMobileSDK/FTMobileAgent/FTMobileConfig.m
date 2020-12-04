@@ -37,6 +37,7 @@
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        _env = FTEnvProd;
     }
       return self;
 }
@@ -67,6 +68,7 @@
     options.version = self.version;
     options.traceConsoleLog = self.traceConsoleLog;
     options.eventFlowLog = self.eventFlowLog;
+    options.env = self.env;
     return options;
 }
 - (NSString *)ft_defaultUUID {

@@ -256,5 +256,25 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return str;
     
 }
-
++ (NSString *)ft_getFTEnvStr:(FTEnv)env{
+   NSString *str = nil;
+    switch (env) {
+        case FTEnvProd:
+            str = @"prod";
+            break;
+        case FTEnvGray:
+            str = @"gray";
+            break;
+        case FTEnvPre:
+            str = @"pre";
+            break;
+        case FTEnvCommon:
+            str = @"common";
+            break;
+        case FTEnvLocal:
+            str = @"local";
+            break;
+    }
+   return str;
+}
 @end
