@@ -49,6 +49,10 @@
 		4A7135A52570D73E00444C3D /* UIViewController+FT_RootVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */; };
 		4A7135A62570DA2300444C3D /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */; };
 		4A7135A72574FE1F00444C3D /* UIView+FT_CurrentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */; };
+		4A7135B22579E82A00444C3D /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7135AE2579E82800444C3D /* FTfishhook.h */; };
+		4A7135B32579E82A00444C3D /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A7135AF2579E82900444C3D /* FTfishhook.c */; };
+		4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7135B02579E82900444C3D /* FTLogHook.m */; };
+		4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7135B12579E82900444C3D /* FTLogHook.h */; };
 		4A78B9B6256257E50021E0BC /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B4256257E40021E0BC /* FTLog.h */; };
 		4A78B9B72562585A0021E0BC /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B3256257E40021E0BC /* FTLog.m */; };
 		4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */; };
@@ -130,6 +134,10 @@
 		4A6C5436255E68B7009771B8 /* FTExtensionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionManager.m; sourceTree = "<group>"; };
 		4A7135A1257096FF00444C3D /* FTTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTrack.h; sourceTree = "<group>"; };
 		4A7135A2257096FF00444C3D /* FTTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTrack.m; sourceTree = "<group>"; };
+		4A7135AE2579E82800444C3D /* FTfishhook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTfishhook.h; sourceTree = "<group>"; };
+		4A7135AF2579E82900444C3D /* FTfishhook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTfishhook.c; sourceTree = "<group>"; };
+		4A7135B02579E82900444C3D /* FTLogHook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLogHook.m; sourceTree = "<group>"; };
+		4A7135B12579E82900444C3D /* FTLogHook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTLogHook.h; sourceTree = "<group>"; };
 		4A78B9B3256257E40021E0BC /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTLog.m; path = FTMobileAgent/FTLog.m; sourceTree = SOURCE_ROOT; };
 		4A78B9B4256257E40021E0BC /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/FTLog.h; sourceTree = SOURCE_ROOT; };
 		4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionExceptionHandler.h; sourceTree = "<group>"; };
@@ -254,6 +262,10 @@
 				4A2D57EE2458141300478547 /* FTMonitorUtils.m */,
 				4A297BD8246BBF340028645B /* FTConstants.h */,
 				4A297BD9246BBF340028645B /* FTConstants.m */,
+				4A7135AF2579E82900444C3D /* FTfishhook.c */,
+				4A7135AE2579E82800444C3D /* FTfishhook.h */,
+				4A7135B12579E82900444C3D /* FTLogHook.h */,
+				4A7135B02579E82900444C3D /* FTLogHook.m */,
 				4A2EFD9A254278DE00F93B1E /* FTPresetProperty.h */,
 				4A2EFD9B254278DE00F93B1E /* FTPresetProperty.m */,
 				4A88426D239E5768001B44C3 /* FTRecordModel.h */,
@@ -373,6 +385,7 @@
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
 				4A31E75423CDA69C0077531B /* FTNetworkInfo.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
+				4A7135B22579E82A00444C3D /* FTfishhook.h in Headers */,
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
@@ -380,6 +393,7 @@
 				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
+				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A01160C24C966C200AECC1C /* NSDate+FTAdd.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
@@ -510,6 +524,7 @@
 				4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */,
 				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
 				4A299F922521F7F800400931 /* FTANRDetector.m in Sources */,
+				4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
 				4A7135A72574FE1F00444C3D /* UIView+FT_CurrentController.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
@@ -526,6 +541,7 @@
 				4A88429E239E5768001B44C3 /* ZY_FMDatabaseQueue.m in Sources */,
 				4A884291239E5768001B44C3 /* FTBaseInfoHander.m in Sources */,
 				4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */,
+				4A7135B32579E82A00444C3D /* FTfishhook.c in Sources */,
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				4A2EFD8D253ECDC100F93B1E /* FTJsonWriter.m in Sources */,
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
