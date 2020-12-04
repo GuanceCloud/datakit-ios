@@ -52,12 +52,13 @@
 
     if (akId && akSecret && url && !isUnitTests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-        config.enableLog = YES;
+        config.enableSDKDebugLog = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
-//        config.traceConsoleLog = YES;
+        config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
-//        config.enableTrackAppANR = YES;
+        config.enableTrackAppANR = YES;
+        config.eventFlowLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         self.config = config;
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];

@@ -14,14 +14,14 @@
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
+#import <FTMobileAgent/NSDate+FTAdd.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
     NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
-       
-        [instance _loggingExceptionInsertWithContent:info tm:[[NSDate date] ft_dateTimestamp]];
+        [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
     }
    __block BOOL testSuccess = NO;
     UIWindow *window = [FTBaseInfoHander ft_keyWindow];
