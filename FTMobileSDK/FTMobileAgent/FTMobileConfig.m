@@ -23,7 +23,7 @@
         _akId = akId;
         _akSecret = akSecret;
         _enableRequestSigning = enableRequestSigning;
-        _enableLog = NO;
+        _enableSDKDebugLog = NO;
         _needBindUser = NO;
         _XDataKitUUID = [self ft_defaultUUID];
         _enableTrackAppCrash= NO;
@@ -34,6 +34,8 @@
         _networkTrace = FTNetworkTraceTypeZipkin;
         _enableTrackAppUIBlock = NO;
         _enableTrackAppANR = NO;
+        _traceConsoleLog = NO;
+        _eventFlowLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 #if DEBUG
                 _env = @"local";
@@ -54,7 +56,7 @@
     options.akId = self.akId;
     options.akSecret = self.akSecret;
     options.enableRequestSigning = self.enableRequestSigning;
-    options.enableLog = self.enableLog;
+    options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.needBindUser = self.needBindUser;
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
@@ -68,6 +70,8 @@
     options.enableTrackAppUIBlock = self.enableTrackAppUIBlock;
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.version = self.version;
+    options.traceConsoleLog = self.traceConsoleLog;
+    options.eventFlowLog = self.eventFlowLog;
     return options;
 }
 - (NSString *)ft_defaultUUID {

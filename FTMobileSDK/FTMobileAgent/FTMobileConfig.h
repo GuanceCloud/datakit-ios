@@ -8,22 +8,32 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-
+///事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+typedef NS_ENUM(NSInteger, FTStatus) {
+    FTStatusInfo         = 0,
+    FTStatusWarning,
+    FTStatusError,
+    FTStatusCritical,
+    FTStatusOk,
+};
 /**
  * @enum  TAG 中的设备信息
  *
  * @constant
+ *  FTMonitorInfoTypeBattery  - 电池使用率
  *  FTMonitorInfoTypeMemory   - 内存总量、使用率
- *  FTMonitorInfoTypeLocation - 位置信息  国家、省、市、经纬度
+ *  FTMonitorInfoTypeCpu      - CPU 占用率
  *  FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
  *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 0xFFFFFFFF,
-    FTMonitorInfoTypeMemory       = 1 << 1,
-    FTMonitorInfoTypeLocation     = 1 << 2,
-    FTMonitorInfoTypeBluetooth    = 1 << 3,
-    FTMonitorInfoTypeFPS          = 1 << 4,
+    FTMonitorInfoTypeBattery      = 1 << 1,
+    FTMonitorInfoTypeMemory       = 1 << 2,
+    FTMonitorInfoTypeCpu          = 1 << 3,
+    FTMonitorInfoTypeBluetooth    = 1 << 4,
+    FTMonitorInfoTypeLocation     = 1 << 5,
+    FTMonitorInfoTypeFPS          = 1 << 6,
 };
 /**
  * @enum
@@ -101,26 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
 /**
- * 是否开启绑定用户数据
- */
-@property (nonatomic, assign) BOOL needBindUser;
-/**
- * 请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
- */
-@property (nonatomic, copy) NSString *XDataKitUUID;
-/**
- * 设置是否允许打印日志
- */
-@property (nonatomic, assign) BOOL enableLog;
-/**
- * 设置日志所属业务或服务的名称
- */
-@property (nonatomic, copy) NSString *traceServiceName;
-/**
- * 日志的来源 默认为：ft_mobile_sdk_ios
- */
-@property (nonatomic, copy) NSString *source;
-/**
  * 环境字段。属性值：prod/gray/pre/common/local。其中
  * prod：线上环境
  * gray：灰度环境
@@ -138,6 +128,28 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) int samplerate;
 /**
+ * 是否开启绑定用户数据
+ */
+@property (nonatomic, assign) BOOL needBindUser;
+/**
+ * 请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
+ */
+@property (nonatomic, copy) NSString *XDataKitUUID;
+/**
+ * 设置是否允许 SDK 打印 Debug
+ * 日志
+ */
+@property (nonatomic, assign) BOOL enableSDKDebugLog;
+#pragma mark ========== 日志相关 ==========
+/**
+ * 日志的来源 默认为：ft_mobile_sdk_ios
+ */
+@property (nonatomic, copy) NSString *source;
+/**
+ * 设置日志所属业务或服务的名称
+ */
+@property (nonatomic, copy) NSString *traceServiceName;
+/**
  * 设置是否需要采集崩溃日志
  */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
@@ -151,7 +163,14 @@ NS_ASSUME_NONNULL_BEGIN
  * runloop采集主线程卡顿
 */
 @property (nonatomic, assign) BOOL enableTrackAppANR;
-#pragma mark - 网络请求信息采集
+/**
+ * 设置是否需要采集控制台日志 默认为NO
+ */
+@property (nonatomic, assign) BOOL traceConsoleLog;
+/**
+ * 可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等等  默认为NO
+*/
+@property (nonatomic, assign) BOOL eventFlowLog;
 /**
  * 设置网络请求信息采集 默认为NO
 */
