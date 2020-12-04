@@ -111,6 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
  
 *  @return 数据数量
 */
--(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts;
+-(BOOL)insertUserDataWithUserID:(NSString *)Id;
 @end
 NS_ASSUME_NONNULL_END

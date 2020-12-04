@@ -125,13 +125,10 @@ static dispatch_once_t onceToken;
               }
        }];
 }
--(BOOL)insertUserDataWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    NSMutableDictionary *data = [@{@"name":name,
+-(BOOL)insertUserDataWithUserID:(NSString *)Id{
+    NSMutableDictionary *data = [@{
                            @"id":Id,
     } mutableCopy];
-    if (exts) {
-        [data addEntriesFromDictionary:@{@"exts":exts}];
-    }
     
     NSError *parseError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];

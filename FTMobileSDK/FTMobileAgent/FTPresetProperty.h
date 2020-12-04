@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTPresetProperty : NSObject
+@property (nonatomic, assign) BOOL isSignin;
 
 /**
  * 初始化方法

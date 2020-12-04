@@ -64,7 +64,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @property (nonatomic, copy) NSString *tags;
-@property (nonatomic, assign) BOOL isSignin;
 @end
 @implementation FTPresetProperty
 - (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{

@@ -286,12 +286,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 #pragma mark - 用户绑定与注销
-- (void)bindUserWithName:(NSString *)name Id:(NSString *)Id exts:(NSDictionary *)exts{
-    NSParameterAssert(name);
+- (void)bindUserWithUserID:(NSString *)Id{
     NSParameterAssert(Id);
-    [[FTTrackerEventDBTool sharedManger] insertUserDataWithName:name Id:Id exts:exts];
+    self.presetProperty.isSignin = YES;
+    [[FTTrackerEventDBTool sharedManger] insertUserDataWithUserID:Id];
 }
 - (void)logout{
+    self.presetProperty.isSignin = NO;
     NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
     [defatluts removeObjectForKey:FT_SESSIONID];
     [defatluts synchronize];
