@@ -85,10 +85,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *appid;
 /**
- * 应用名称。
- */
-@property (nonatomic, copy) NSString *service;
-/**
  * 应用版本号。
  */
 @property (nonatomic, copy) NSString *version;
@@ -119,10 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
  * local：本地环境
  */
 @property (nonatomic, copy) NSString *env;
-/**
- * 预留业务自定义字段，打好标后每一条日志都会带有此标记。（不限量）
- */
-@property (nonatomic, copy) NSString *tags;
 /**
  * 日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */

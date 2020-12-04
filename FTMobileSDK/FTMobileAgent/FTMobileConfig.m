@@ -37,11 +37,6 @@
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
-#if DEBUG
-                _env = @"local";
-#else
-                _env = @"prod";
-#endif
     }
       return self;
 }
