@@ -35,7 +35,7 @@
 #import "FTCallStack.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
-@interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate>
+@interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
 
@@ -72,9 +72,14 @@ static dispatch_once_t onceToken;
 }
 -(void)setMobileConfig:(FTMobileConfig *)config{
     self.config = config;
-    [self dealNetworkContentType:config.networkContentType];
-    [FTURLProtocol startMonitor];
-    [FTURLProtocol setDelegate:self];
+    if (config.networkTrace) {
+        [self dealNetworkContentType:config.networkContentType];
+        [FTWKWebViewHandler sharedInstance].trace = YES;
+        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    }else{
+        [FTWKWebViewHandler sharedInstance].trace = NO;
+        [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
+    }
     if (self.monitorType & FTMonitorInfoTypeFPS || self.config.enableTrackAppUIBlock) {
         [self startMonitorFPS];
     }else{
@@ -260,6 +265,56 @@ static dispatch_once_t onceToken;
     }
     [agent trackES:@"resource" terminal:@"app" tags:tags fields:fields];
     
+}
+#pragma mark == FTWKWebViewDelegate ==
+/**
+ * KWebView  网络请求信息采集
+ * wkwebview 使用loadRequest 与 reload 发起的请求
+ */
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
+    BOOL iserror = NO;
+    NSDictionary *responseDict = @{};
+    if (error) {
+        iserror = YES;
+        NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
+        NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
+        responseDict = @{FT_NETWORK_HEADERS:@{},
+                         FT_NETWORK_BODY:@{},
+                         FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                            @"errorDomain":error.domain,
+                                            @"errorDescription":errorDescription,
+                         },
+                         FT_NETWORK_CODE:errorCode,
+        };
+    }else{
+        iserror = [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
+    }
+    responseDict = response?[response ft_getResponseContentDictWithData:nil]:responseDict;
+    NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
+    [requestDict setValue:[request ft_getBodyData:[request ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
+    NSDictionary *responseDic = responseDict?responseDict:@{};
+    NSDictionary *content = @{
+        FT_NETWORK_RESPONSE_CONTENT:responseDic,
+        FT_NETWORK_REQUEST_CONTENT:requestDict
+    };
+    NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[request ft_getOperationName],
+                                  FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
+                                  FT_KEY_ISERROR:[NSNumber numberWithBool:iserror],
+                                  FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+    }.mutableCopy;
+    NSDictionary *field = @{FT_KEY_DURATION:duration};
+    __block NSString *trace,*span;
+    __block BOOL sampling;
+    [request ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+        trace = traceId;
+        span = spanID;
+        sampling = sampled;
+    }];
+    if(trace&&span&&sampling){
+        [tags setValue:trace forKey:FT_FLOW_TRACEID];
+        [tags setValue:span forKey:FT_KEY_SPANID];
+    }
+    [[FTMobileAgent sharedInstance] loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
 }
 - (void)trackAppFreeze{
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
