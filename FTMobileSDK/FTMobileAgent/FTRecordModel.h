@@ -9,9 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-#define FT_SESSIONID  @"ft_sessionid"
-#define set_ft_sessionid(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:FT_SESSIONID]
-#define get_ft_sessionid      [[NSUserDefaults standardUserDefaults] valueForKey:FT_SESSIONID]
+
 @interface FTRecordModel : NSObject
 //数据库自增id
 @property (nonatomic, assign) long _id;

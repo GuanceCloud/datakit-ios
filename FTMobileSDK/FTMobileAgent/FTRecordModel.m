@@ -16,14 +16,7 @@
    self = [super init];
     if (self) {
         self.tm = [[NSDate date] ft_dateTimestamp];
-        NSString *sessionid;
-           sessionid =get_ft_sessionid;
-           if (!sessionid) {
-               sessionid = [[NSUUID UUID] UUIDString];
-               set_ft_sessionid(sessionid);
-               [[NSUserDefaults standardUserDefaults] synchronize];
-           }
-        self.sessionid = sessionid;
+        self.sessionid = [FTBaseInfoHander ft_getSessionid];
         self.op = @"";
     }
     return self;

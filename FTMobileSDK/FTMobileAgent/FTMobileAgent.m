@@ -205,8 +205,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
            return;
-       }
-    FTDataType dataType = FTAddDataNormal;
+    }
+    FTAddDataType dataType = FTAddDataNormal;
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
     if ([type isEqualToString:@"crash"]) {
         dataType = FTAddDataImmediate;
@@ -239,9 +239,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
-                                 FT_KEY_SERVICENAME:self.config.traceServiceName,
-                                 @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                 @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                     FT_KEY_SERVICENAME:self.config.traceServiceName,
+                                     @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                     @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
     }.mutableCopy;
     if (tags) {
         [tagDict addEntriesFromDictionary:tags];
@@ -254,7 +254,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     FTRecordModel *model = [self getModelWithMeasurement:self.config.source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
     [self insertDBWithItemData:model type:type];
-    
 }
 -(void)trackStartWithViewLoadTime:(CFTimeInterval)time{
     self.running = YES;
@@ -269,9 +268,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
     NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",@"launch",FT_KEY_EVENT]};
-    [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:@"launch"}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
     }
-
 }
 //控制台日志采集
 - (void)_traceConsoleLog{
@@ -293,9 +291,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)logout{
     self.presetProperty.isSignin = NO;
-    NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
-    [defatluts removeObjectForKey:FT_SESSIONID];
-    [defatluts synchronize];
+    [FTBaseInfoHander ft_removeSessionid];
     ZYDebug(@"User logout");
 }
 - (FTRecordModel *)getModelWithMeasurement:(NSString *)measurement op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{

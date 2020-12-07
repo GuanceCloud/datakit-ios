@@ -105,11 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
 *  @abstract
 *  添加用户
-*  @param name 用户名
 *  @param Id 用户Id
-*  @param exts 用户额外的数据
- 
-*  @return 数据数量
+*  @return 添加是否成功
 */
 -(BOOL)insertUserDataWithUserID:(NSString *)Id;
 @end

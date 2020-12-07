@@ -11,6 +11,7 @@
 #import "ZY_FMDB.h"
 #import "FTLog.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHander.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
@@ -134,16 +135,12 @@ static dispatch_once_t onceToken;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
     
     NSString *userdata = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    if (!get_ft_sessionid) {
-        NSString *sessionid = [[NSUUID UUID] UUIDString];
-        set_ft_sessionid(sessionid);
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
+    NSString *sessionid = [FTBaseInfoHander ft_getSessionid];
     if([self isOpenDatabese:self.db]) {
         __block BOOL  is = NO;
         [self zy_inDatabase:^{
             NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES ( ? , ? );",FT_DB_USERSESSION_TABLE_NAME];
-           is=  [self.db executeUpdate:sqlStr,get_ft_sessionid,userdata];
+           is=  [self.db executeUpdate:sqlStr,sessionid,userdata];
             ZYDebug(@"bind user success == %ld \n userData = %@",is,userdata);
         }];
         return is;
