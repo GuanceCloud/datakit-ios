@@ -241,13 +241,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
                                      FT_KEY_SERVICENAME:self.config.traceServiceName,
                                      @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                     @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                     @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                     @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                     @"version":self.config.version
     }.mutableCopy;
     if (tags) {
         [tagDict addEntriesFromDictionary:tags];
     }
     NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
-                                       @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
     }.mutableCopy;
     if (field) {
         [filedDict addEntriesFromDictionary:field];
@@ -267,7 +268,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
-    NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",@"launch",FT_KEY_EVENT]};
+        NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",@"launch",FT_KEY_EVENT]};
         [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:@"launch"}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
     }
 }

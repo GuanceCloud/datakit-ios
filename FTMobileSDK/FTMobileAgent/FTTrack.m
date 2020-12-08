@@ -52,11 +52,15 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     [self logTargetAction];
 }
 - (void)logViewControllerLifeCycle{
+    WeakSelf
     id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
+        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
+            [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
+        }
     } error:nil];
-    WeakSelf
+    
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
@@ -119,7 +123,6 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         
     }error:nil];
     [self.aspectTokenAry addObject:collectionToken];
-    
 }
 - (void)logTargetAction{
     WeakSelf
@@ -137,10 +140,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                         return;
                     }
                     [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
-                    
                 } error:nil];
             }
-            
         }
     };
     id<ZY_AspectToken> gesToken =  [UITapGestureRecognizer aspect_hookSelector:@selector(addTarget:action:)
