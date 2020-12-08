@@ -34,6 +34,16 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
         return  name;
     }
 }
+-(NSString *)ft_getParentVC{
+    UIViewController *viewController =[self parentViewController];
+    if (viewController == nil) {
+        viewController = self.presentingViewController;
+    }
+    if (viewController == nil) {
+        return FT_NULL_VALUE;
+    }
+    return NSStringFromClass(viewController.class);
+}
 -(NSString *)ft_getVCPath{
     UIViewController *viewController =self;
     NSMutableString *viewPaths = [NSMutableString new];

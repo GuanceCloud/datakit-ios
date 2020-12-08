@@ -52,24 +52,24 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     [self logTargetAction];
 }
 - (void)logViewControllerLifeCycle{
-  id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
-       UIViewController * vc = [info instance];
-       vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
-   } error:nil];
-   WeakSelf
-   id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
-       UIViewController * vc = [info instance];
-       if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-           CFTimeInterval time = CFAbsoluteTimeGetCurrent();
-           float loadTime = (time - vc.viewLoadStartTime);
-           vc.viewLoadStartTime = 0;
-           [weakSelf trackOpenWithCpn:vc duration:loadTime];
-           if (!weakSelf.isLaunched) {
-               [weakSelf trackStartWithTime:CFAbsoluteTimeGetCurrent()];
-               weakSelf.isLaunched = YES;
-           }
-       }
-   } error:nil];
+    id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
+        UIViewController * vc = [info instance];
+        vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
+    } error:nil];
+    WeakSelf
+    id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
+        UIViewController * vc = [info instance];
+        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
+            CFTimeInterval time = CFAbsoluteTimeGetCurrent();
+            float loadTime = (time - vc.viewLoadStartTime);
+            vc.viewLoadStartTime = 0;
+            [weakSelf trackOpenWithCpn:vc duration:loadTime];
+            if (!weakSelf.isLaunched) {
+                [weakSelf trackStartWithTime:CFAbsoluteTimeGetCurrent()];
+                weakSelf.isLaunched = YES;
+            }
+        }
+    } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController *tempVC = (UIViewController *)info.instance;
         if([weakSelf isBlackListContainsViewController:tempVC]){
@@ -251,10 +251,10 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if ([instance judgeIsTraceSampling]) {
             NSString *name = NSStringFromClass([cpn class]);
             NSString *view_id = [name ft_md5HashToUpper32Bit];
-            NSString *path = [(UIViewController *)cpn ft_getVCPath];
+            NSString *parent = [(UIViewController *)cpn ft_getParentVC];
             NSDictionary *tags = @{@"view_id":view_id,
                                    @"view_name":name,
-                                   @"view_path":path,
+                                   @"view_parent":parent,
             };
             NSMutableDictionary *fields = @{
                 @"view_load":[NSNumber numberWithInt:duration*1000*1000],
@@ -265,7 +265,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             [instance track:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
             [instance trackES:@"view" terminal:@"app" tags:tags fields:fields];
             if (instance.config.eventFlowLog) {
-                NSMutableDictionary *content = @{FT_TYPE:FT_AUTO_TRACK_OP_VIEW}.mutableCopy;
+                NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
                 [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
                 NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
                 NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]};

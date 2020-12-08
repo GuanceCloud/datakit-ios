@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)ft_getRootViewController;
 -(NSString *)ft_getVCPath;
+-(NSString *)ft_getParentVC;
 @end
 
 NS_ASSUME_NONNULL_END
