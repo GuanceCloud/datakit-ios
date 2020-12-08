@@ -296,7 +296,9 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             NSDictionary *field =  @{@"crash_message":[exception reason],
                                      @"crash_stack":info,
             };
-            [instance trackES:@"crash" terminal:@"app" tags:@{@"crash_type":@"ios_crash"} fields:field tm:[[NSDate date] ft_dateTimestamp]];
+            [instance trackES:@"crash" terminal:@"app" tags:@{@"crash_type":@"ios_crash",
+                                                              FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
+            } fields:field tm:[[NSDate date] ft_dateTimestamp]];
         }else if(instance.config.enableTrackAppCrash){
             NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
             NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];

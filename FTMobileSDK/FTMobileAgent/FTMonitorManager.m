@@ -231,8 +231,9 @@ static dispatch_once_t onceToken;
     if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
         tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
     }
-//    tags[@"resource_type"] = task.networkServiceType;
+//    tags[@"resource_type"] = response.MIMEType;
 //    @"response_server";
+    response.se
     tags[@"response_content_type"] =response.MIMEType;
     if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
         tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
@@ -322,13 +323,11 @@ static dispatch_once_t onceToken;
         return;
     }
     NSString  *freeze_stack = [FTCallStack ft_backtraceOfMainThread];
-    NSString *currentPage = [FTBaseInfoHander ft_getCurrentPageName];
     long long time = [[NSDate date] ft_dateTimestamp];
     NSDictionary *tag = @{@"freeze_type":@"Freeze"};
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    [agent  track:@"rum_app_freeze" tags:@{@"freeze_duration":@"-1"} fields:fields tm:time];
     fields[@"freeze_stack"] = freeze_stack;
-    fields[@"freeze_message"] = currentPage;
     [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========

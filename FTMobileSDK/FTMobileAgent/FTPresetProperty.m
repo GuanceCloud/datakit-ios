@@ -594,7 +594,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         CGRect rect = [[UIScreen mainScreen] bounds];
         CGFloat scale = [[UIScreen mainScreen] scale];
         _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-        [_webCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_webCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
         [_webCommonPropertyTags setValue:version forKey:FT_COMMON_PROPERTY_OS_VERSION];
         [_webCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
@@ -610,7 +609,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
         NSString *appName =  [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
         NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-        [_mobileCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_mobileCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
         [_mobileCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_mobileCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
@@ -630,16 +628,16 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         CGRect rect = [[UIScreen mainScreen] bounds];
         NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         _esCommonPropertyTags = [NSMutableDictionary new];
-        [_esCommonPropertyTags setValue:@"FT_USERID" forKey:FT_USERID];
-        [_esCommonPropertyTags setValue:[FTBaseInfoHander ft_getApplicationUUID] forKey:FT_ORIGIN_ID];
-        [_esCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
+        [_esCommonPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_ORIGIN_ID];
         [_esCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_esCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
         [_esCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
         [_esCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_esCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
         [_esCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
+        [_esCommonPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_COMMON_PROPERTY_DEVICE_UUID];
         [_esCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
+        
     }
     return _esCommonPropertyTags;
 }
