@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataImmediate,
 };
 typedef NS_ENUM(NSInteger, FTDataType) {
-    FTDataTypeES,
+    FTDataTypeRUM,
     FTDataTypeLOGGING,
     FTDataTypeINFLUXDB,
 };
@@ -58,6 +58,6 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 */
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
 
-
+-(void)resetInstance;
 @end
 #endif /* FTMobileAgent_Private_h */

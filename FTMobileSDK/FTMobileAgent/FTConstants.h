@@ -40,6 +40,7 @@ extern NSString * const FT_TYPE_FREEZE;
 extern NSString * const FT_TYPE_VIEW;
 
 #pragma mark ========== api ==========
+extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString *  const FT_DATA_TYPE_ES;
 extern NSString *  const FT_DATA_TYPE_INFLUXDB;
 extern NSString *  const FT_DATA_TYPE_LOGGING;
@@ -47,7 +48,7 @@ extern NSString *  const FT_DATA_TYPE_OBJECT;
 
 extern NSString *  const FT_NETWORKING_API_METRICS;
 extern NSString *  const FT_NETWORKING_API_LOGGING;
-extern NSString *  const FT_NETWORKING_API_ES;
+extern NSString *  const FT_NETWORKING_API_RUM;
 extern NSString *  const FT_NETWORKING_API_OBJECT;
 extern NSString *  const FT_NETWORKING_API_CHECK_TOKEN;
 

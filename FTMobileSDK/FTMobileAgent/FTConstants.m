@@ -64,15 +64,15 @@ NSString *const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
 NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
 
 #pragma mark ========== API ==========
+NSString *const FT_DATA_TYPE_RUM = @"RUM";
 NSString *const FT_DATA_TYPE_ES = @"ES";
 NSString *const FT_DATA_TYPE_INFLUXDB = @"InfluxDB";
 NSString *const FT_DATA_TYPE_LOGGING = @"Logging";
 NSString *const FT_DATA_TYPE_OBJECT = @"Object";
-
-NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metrics";
+NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
 NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
 NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
-NSString *const FT_NETWORKING_API_ES = @"";
+NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
 NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
 
 #pragma mark ========== logging key ==========
@@ -109,4 +109,4 @@ NSString *const FT_KET_FALSE = @"false";
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
-NSUInteger const  MXRMonitorRunloopStandstillCount = 5;
+NSUInteger const MXRMonitorRunloopStandstillCount = 5;
