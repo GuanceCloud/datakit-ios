@@ -94,38 +94,38 @@
  * metrics 中也能采集到 nextLink 请求状态（成功/失败）、请求时间（loading/loadCompleted）
  *
 */
-- (void)testWKWebViewNextLink{
-    [self setTraceConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    __block  NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
-    __block NSInteger lastMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
-        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
-        
-        XCTAssertTrue(count>lastMetricsCount);
-        XCTAssertTrue(loggingcount>lastLoggingCount);
-        lastMetricsCount = count;
-        lastLoggingCount = loggingcount;
-        [self.testVC ft_testNextLink];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                 [expectation fulfill];
-             });
-    });
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    
-    NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
-    XCTAssertTrue(newMetricsCount>lastMetricsCount);
-    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
-    XCTAssertTrue(newLoggingCount == lastLoggingCount);
-    [self.testVC ft_stopLoading];
-    self.testVC = nil;
-}
+//- (void)testWKWebViewNextLink{
+//    [self setTraceConfig];
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    
+//    __block  NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+//    __block NSInteger lastMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
+//    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+//    
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
+//        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+//        
+//        XCTAssertTrue(count>lastMetricsCount);
+//        XCTAssertTrue(loggingcount>lastLoggingCount);
+//        lastMetricsCount = count;
+//        lastLoggingCount = loggingcount;
+//        [self.testVC ft_testNextLink];
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                 [expectation fulfill];
+//             });
+//    });
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    
+//    NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
+//    XCTAssertTrue(newMetricsCount>lastMetricsCount);
+//    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+//    XCTAssertTrue(newLoggingCount == lastLoggingCount);
+//    [self.testVC ft_stopLoading];
+//    self.testVC = nil;
+//}
 /**
  * 使用 loadRequest 方法发起请求 之后页面跳转 nextLink 再进行reload
  * 验证：reload 时 发起的请求 能新增trace数据，header中都添加数据

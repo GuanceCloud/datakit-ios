@@ -166,158 +166,157 @@
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
     }];
 }
-- (void)testTimeOut{
-    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V3];
-    [self setBadNetOHHTTPStubs];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
-    NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
-    NSDictionary *responseContent = content[@"responseContent"];
-    NSDictionary *error = responseContent[@"error"];
-    NSNumber *errorCode = error[@"errorCode"];
-    XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
-    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
-    FTRecordModel *metricsModel = [metricsData lastObject];
-    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
-    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
-    NSDictionary *metricsField = metricsOpdata[@"field"];
-    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
-    XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
-    BOOL metricsIsError = [metricsField[FT_ISERROR] boolValue];
-    XCTAssertTrue(metricsIsError == YES);
-    [self uploadModel:model];
-}
-- (void)testRightRequest{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
-    [self networkUpload:@"testRightRequest" handler:^(NSDictionary *header) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
+//- (void)testTimeOut{
+//    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V3];
+//    [self setBadNetOHHTTPStubs];
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
+//        [expectation fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [NSThread sleepForTimeInterval:2];
+//    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+//    FTRecordModel *model = [data lastObject];
+//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+//    NSDictionary *opdata = dict[@"opdata"];
+//    NSDictionary *field = opdata[@"field"];
+//    NSDictionary *tags = opdata[@"tags"];
+//    BOOL isError = [tags[@"__isError"] boolValue];
+//    XCTAssertTrue(isError == YES);
+//    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
+//    NSDictionary *responseContent = content[@"responseContent"];
+//    NSDictionary *error = responseContent[@"error"];
+//    NSNumber *errorCode = error[@"errorCode"];
+//    XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
+//    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
+//    FTRecordModel *metricsModel = [metricsData lastObject];
+//    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
+//    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
+//    NSDictionary *metricsField = metricsOpdata[@"field"];
+//    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
+//    BOOL metricsIsError = [metricsField[FT_ISERROR] boolValue];
+//    XCTAssertTrue(metricsIsError == YES);
+//    [self uploadModel:model];
+//}
+//- (void)testRightRequest{
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//
+//    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
+//    [self networkUpload:@"testRightRequest" handler:^(NSDictionary *header) {
+//        [expectation fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [NSThread sleepForTimeInterval:2];
+//    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+//    FTRecordModel *model = [data lastObject];
+//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+//    NSDictionary *opdata = dict[@"opdata"];
+//    NSDictionary *tags = opdata[@"tags"];
+//    BOOL isError = [tags[@"__isError"] boolValue];
+//    XCTAssertTrue(isError == NO);
+//
+//    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
+//    FTRecordModel *metricsModel = [metricsData lastObject];
+//    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
+//    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
+//    NSDictionary *metricsTags = metricsOpdata[@"tags"];
+//    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
+//    XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
+//    BOOL metricsIsError = [metricsTags[@"isError"] boolValue];
+//    XCTAssertTrue(metricsIsError == NO);
+//    [self uploadModel:model];
+//
+//}
+//- (void)testNewThread{
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V2];
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
+//            [expectation fulfill];
+//        }];
+//    });
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [NSThread sleepForTimeInterval:2];
+//    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+//    FTRecordModel *model = [data lastObject];
+//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+//    NSDictionary *opdata = dict[@"opdata"];
+//    NSDictionary *tags = opdata[@"tags"];
+//    BOOL isError = [tags[@"__isError"] boolValue];
+//    XCTAssertTrue(isError == NO);
+//
+//    [self uploadModel:model];
+//}
 
-    NSArray *metricsData = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
-    FTRecordModel *metricsModel = [metricsData lastObject];
-    NSDictionary *metricsDict = [FTJSONUtil ft_dictionaryWithJsonString:metricsModel.data];
-    NSDictionary *metricsOpdata = metricsDict[@"opdata"];
-    NSDictionary *metricsTags = metricsOpdata[@"tags"];
-    NSString *measurement = [metricsOpdata valueForKey:@"measurement"];
-    XCTAssertTrue([measurement isEqualToString:@"mobile_client_http"]);
-    BOOL metricsIsError = [metricsTags[@"isError"] boolValue];
-    XCTAssertTrue(metricsIsError == NO);
-    [self uploadModel:model];
-    
-}
-- (void)testNewThread{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeSKYWALKING_V2];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
-            [expectation fulfill];
-        }];
-    });
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
-
-    [self uploadModel:model];
-}
-
-- (void)testBadResponse{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
-    NSString *uuid = [NSUUID UUID].UUIDString;
-    
-    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
-    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
-    NSString *urlStr = @"http://api.qingyunke.com/api.php1";
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
-    request.HTTPMethod = @"POST";
-    
-    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
-    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        [expectation fulfill];
-    }];
-    
-    [task resume];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
-    NSDictionary *tags = opdata[@"tags"];
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
-    NSDictionary *requestContent = content[@"requestContent"];
-    NSString *body = requestContent[@"body"];
-    XCTAssertTrue([body containsString:uuid]);
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
-    [self uploadModel:model];
-}
-- (void)testNSURLConnection{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
-    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
-
-    [self uploadModel:model];
-}
+//- (void)testBadResponse{
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
+//    NSString *uuid = [NSUUID UUID].UUIDString;
+//
+//    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+//    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
+//    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
+//    NSString *urlStr = @"http://api.qingyunke.com/api.php1";
+//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+//
+//    request.HTTPMethod = @"POST";
+//
+//    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
+//    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+//        [expectation fulfill];
+//    }];
+//
+//    [task resume];
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [NSThread sleepForTimeInterval:2];
+//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+//
+//    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+//    FTRecordModel *model = [data lastObject];
+//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+//    NSDictionary *opdata = dict[@"opdata"];
+//    NSDictionary *field = opdata[@"field"];
+//    NSDictionary *tags = opdata[@"tags"];
+//    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
+//    NSDictionary *requestContent = content[@"requestContent"];
+//    NSString *body = requestContent[@"body"];
+//    XCTAssertTrue([body containsString:uuid]);
+//    BOOL isError = [tags[@"__isError"] boolValue];
+//    XCTAssertTrue(isError == YES);
+//    [self uploadModel:model];
+//}
+//- (void)testNSURLConnection{
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
+//    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+//    
+//    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+//        [expectation fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    [NSThread sleepForTimeInterval:2];
+//
+//    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+//    FTRecordModel *model = [data lastObject];
+//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+//    NSDictionary *opdata = dict[@"opdata"];
+//    NSDictionary *tags = opdata[@"tags"];
+//    BOOL isError = [tags[@"__isError"] boolValue];
+//    XCTAssertTrue(isError == NO);
+//
+//    [self uploadModel:model];
+//}
 - (void)uploadModel:(FTRecordModel *)model{
     XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
     [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {

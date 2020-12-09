@@ -37,29 +37,29 @@
     
     XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
 }
-- (void)testLineProtocol{
-    NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
-        FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
-    FTUploadTool *tool =  [FTUploadTool new];
-    NSString *line = [tool getRequestDataWithEventArray:@[model]];
-    NSArray *array = [line componentsSeparatedByString:@" "];
-    XCTAssertTrue(array.count == 3);
-    
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
-    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
-    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm*1000];
-    XCTAssertEqualObjects([array lastObject],tm);
-}
+//- (void)testLineProtocol{
+//    NSDictionary *dict = @{
+//        FT_AGENT_MEASUREMENT:@"iOSTest",
+//        FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
+//        FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
+//    };
+//    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
+//                          FT_AGENT_OPDATA:dict,
+//    };
+//    
+//    FTRecordModel *model = [FTRecordModel new];
+//    model.op =FT_DATA_TYPE_INFLUXDB;
+//    model.data =[FTJSONUtil ft_convertToJsonData:data];
+//    FTUploadTool *tool =  [FTUploadTool new];
+//    NSString *line = [tool getRequestDataWithEventArray:@[model]];
+//    NSArray *array = [line componentsSeparatedByString:@" "];
+//    XCTAssertTrue(array.count == 3);
+//    
+//    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
+//    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
+//    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm*1000];
+//    XCTAssertEqualObjects([array lastObject],tm);
+//}
 - (void)testJSONSerializeDictObject{
     NSDictionary *dict =@{@"key1":@"value1",
                           @"key2":@{@"key11":@1,
