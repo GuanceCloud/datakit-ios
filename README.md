@@ -204,7 +204,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 
  - enableTrackAppUIBlock 采集UI卡顿事件
 
-     通过 **fps** 采集 **fps** 小于 10 的事件； 
+   通过 **fps** 采集 **fps** 小于 10 的事件； 
      
    ```
    /**
@@ -212,8 +212,8 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
    * 设置是否需要采集卡顿
    * 采集fps小于10
    */
-  @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
-  ```
+   @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
+   ```
      
 - enableTrackAppANR  采集ANR卡顿无响应事件
 
@@ -225,11 +225,13 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
    * 设置是否需要采集卡顿
    * runloop采集主线程卡顿
    */
-  @property (nonatomic, assign) BOOL enableTrackAppANR;
-  ```
+   @property (nonatomic, assign) BOOL enableTrackAppANR;
+   ```
  
    
+   
 ## 四、参数
+
 ### 1. FTMobileConfig  可配置参数：
 
 |          字段          |     类型     |            说明             |                是否必须                |
