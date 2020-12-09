@@ -52,7 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_getFTstatueStr:(FTStatus)status;
 + (NSString *)ft_getFTEnvStr:(FTEnv)env;
 + (NSString *)ft_getSessionid;
-+ (void)ft_removeSessionid;
++ (NSString *)ft_getUserid;
++ (void)ft_setUserid:(NSString *)userid;
 @end
 
 NS_ASSUME_NONNULL_END

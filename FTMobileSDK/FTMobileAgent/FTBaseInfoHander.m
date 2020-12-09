@@ -286,9 +286,12 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return sessionid;
 }
-+ (void)ft_removeSessionid{
-    NSUserDefaults *defatluts = [NSUserDefaults standardUserDefaults];
-    [defatluts removeObjectForKey:@"ft_sessionid"];
-    [defatluts synchronize];
++ (NSString *)ft_getUserid{
+    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
+    return sessionid;
+}
++ (void)ft_setUserid:(NSString *)userid{
+        [[NSUserDefaults standardUserDefaults] setValue:userid forKey:@"ft_userid"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
 }
 @end

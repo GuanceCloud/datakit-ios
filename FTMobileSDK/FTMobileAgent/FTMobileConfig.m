@@ -16,15 +16,10 @@
 #define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 
 @implementation FTMobileConfig
--(instancetype)initWithDatawayUrl:(NSString *)datawayUrl datawayToken:(NSString *)token akId:(NSString *)akId akSecret:(NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning{
+-(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
     if (self = [super init]) {
-        _datawayUrl = datawayUrl;
-        _datawayToken = token;
-        _akId = akId;
-        _akSecret = akSecret;
-        _enableRequestSigning = enableRequestSigning;
+        _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
-        _needBindUser = NO;
         _XDataKitUUID = [self ft_defaultUUID];
         _enableTrackAppCrash= NO;
         _samplerate = 100;
@@ -41,19 +36,11 @@
     }
       return self;
 }
--(instancetype)initWithDatawayUrl:(NSString *)datawayUrl datawayToken:(NSString *)token{
-  return [self initWithDatawayUrl:datawayUrl datawayToken:token akId:nil akSecret:nil enableRequestSigning:NO];
-}
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
-    options.datawayUrl = self.datawayUrl;
-    options.datawayToken = self.datawayToken;
-    options.akId = self.akId;
-    options.akSecret = self.akSecret;
-    options.enableRequestSigning = self.enableRequestSigning;
+    options.metricsUrl = self.metricsUrl;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
-    options.needBindUser = self.needBindUser;
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.samplerate = self.samplerate;

@@ -85,11 +85,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
-    NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 lunch 事件）。");
-    if (configOptions.enableRequestSigning) {
-        NSAssert((configOptions.akSecret.length!=0 && configOptions.akId.length != 0), @"设置需要进行请求签名 必须要填akId与akSecret");
-    }
-    NSAssert((configOptions.datawayUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
+    NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
+    
+    NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
     }
@@ -161,7 +159,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     NSDictionary *field = [obj valueForKey:@"field"];
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (field && field.allKeys.count>0 && tm) {
-                        [self trackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
+                        if ([self judgeESTraceOpen]) {
+                            if (![self judgeIsTraceSampling]) {
+                                return;
+                            }
+                            [self trackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
+                        }else{
+                            NSString *crash_message = field[@"crash_message"];
+                            NSString *crash_stack = field[@"crash_stack"];
+                            if (crash_stack && crash_message) {
+                                NSString *info = [NSString stringWithFormat:@"Exception Reason:%@\n%@",crash_message,crash_stack];
+                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:tm.longLongValue];
+                            }
+                        }
                     }else{
                         ZYLog(@"extension 采集数据格式有误。");
                     }
@@ -196,7 +206,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [baseTags addEntriesFromDictionary:tags];
     }
-    [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeINFLUXDB tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
+    [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
 }
 //FT_DATA_TYPE_ES
 - (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -204,10 +214,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
-           return;
+        return;
     }
     FTAddDataType dataType = FTAddDataNormal;
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
+    NSString *userid = [FTBaseInfoHander ft_getUserid];
+    if (!userid) {
+        userid = [FTBaseInfoHander ft_getSessionid];
+    }
+    baseTags[@"userid"] = userid;
     if ([type isEqualToString:@"crash"]) {
         dataType = FTAddDataImmediate;
         if ([terminal isEqualToString:@"app"]) {
@@ -228,8 +243,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (tags) {
         [baseTags addEntriesFromDictionary:tags];
     }
-  // 暂时不知数据格式
-  //  [self insertDBWithItemData:[self getModelWithMeasurement:self.config.source op:FTNetworkAPITypeES tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:dataType];
+    FTRecordModel *model = [self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
+    [self insertDBWithItemData:model type:FTAddDataNormal];
 }
 
 // FT_DATA_TYPE_LOGGING
@@ -260,11 +275,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     self.running = YES;
     if ([self judgeIsTraceSampling]) {
         NSString *startType = _appRelaunched?@"hot":@"cold";
-        NSDictionary *fields = @{
-            @"app_startup_duration":[NSNumber numberWithInt:(time-self.launchTime)*1000*1000],
-            @"app_startup_type":startType,
+        int duration = (time-self.launchTime);
+        NSNumber *durationTime = [NSNumber numberWithInt:(time-self.launchTime)*1000*1000];
+        if (duration>9) {
+            duration = 9;
+        }
+        NSDictionary *tags = @{@"app_startup_type":startType,
+                               @"app_apdex_level":[NSNumber numberWithInt:duration],
         };
-        [self track:FT_RUM_APP_STARTUP tags:nil fields:fields];
+        NSDictionary *fields = @{
+            @"app_startup_duration":durationTime,
+        };
+        [self track:FT_RUM_APP_STARTUP tags:tags fields:fields];
     }
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
@@ -288,11 +310,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)bindUserWithUserID:(NSString *)Id{
     NSParameterAssert(Id);
     self.presetProperty.isSignin = YES;
-    [[FTTrackerEventDBTool sharedManger] insertUserDataWithUserID:Id];
+    [FTBaseInfoHander ft_setUserid:Id];
 }
 - (void)logout{
     self.presetProperty.isSignin = NO;
-    [FTBaseInfoHander ft_removeSessionid];
+    [FTBaseInfoHander ft_setUserid:nil];
     ZYDebug(@"User logout");
 }
 - (FTRecordModel *)getModelWithMeasurement:(NSString *)measurement op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
@@ -304,9 +326,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     NSString *opStr,*key;
     switch (op) {
-        case FTDataTypeES:
-            key = @"ES";
-            opStr = FT_DATA_TYPE_ES;
+        case FTDataTypeRUM:
+            opStr = FT_DATA_TYPE_RUM;
+            key = FT_AGENT_MEASUREMENT;
             break;
         case FTDataTypeINFLUXDB:
             opStr = FT_DATA_TYPE_INFLUXDB;

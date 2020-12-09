@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  *  FTMonitorInfoTypeMemory   - 内存总量、使用率
  *  FTMonitorInfoTypeCpu      - CPU 占用率
  *  FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
+ *  FTMonitorInfoTypeLocation - 地理位置信息
  *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
@@ -60,20 +61,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileConfig : NSObject
 /**
- * @method 指定初始化方法，设置 datawayUrl
- * @param datawayUrl FT-GateWay metrics 写入地址
- * @param akId       access key ID
- * @param akSecret   access key Secret
- * @param enableRequestSigning 配置是否需要进行请求签名 为YES 时akId与akSecret 不能为空
+ * @method 指定初始化方法，设置 metricsUrl
+ * @param metricsUrl FT-GateWay metrics 写入地址
  * @return 配置对象
  */
-- (instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl datawayToken:(nullable NSString *)token akId:(nullable NSString *)akId akSecret:(nullable NSString *)akSecret enableRequestSigning:(BOOL)enableRequestSigning;
-/**
- * @method 指定初始化方法，设置 datawayUrl 配置是否不需要进行请求签名
- * @param datawayUrl FT-GateWay metrics 写入地址
- * @return 配置对象
- */
-- (instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl datawayToken:(nullable NSString *)token;
+- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
 
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -86,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
  * ①使用Dataflux的数据网关，可在控制台获取对应网址；
  * ②使用私有化部署的数据网关，填写对应网址即可。
 */
-@property (nonatomic, copy) NSString *datawayUrl;
+@property (nonatomic, copy) NSString *metricsUrl;
 /**
  * 应用唯一ID，在DataFlux控制台上面创建监控时自动生成。
  */
@@ -95,20 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 应用版本号。
  */
 @property (nonatomic, copy) NSString *version;
-
-@property (nonatomic, copy) NSString *datawayToken;
-/**
- * 配置是否需要进行请求签名
- */
-@property (nonatomic, assign) BOOL enableRequestSigning;
-/**
- * access key ID
- */
-@property (nonatomic, copy) NSString *akId;
-/**
- * access key Secret
- */
-@property (nonatomic, copy) NSString *akSecret;
 /**
  * TAG 中的设备信息
  */
@@ -126,10 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
-/**
- * 是否开启绑定用户数据
- */
-@property (nonatomic, assign) BOOL needBindUser;
 /**
  * 请求HTTP请求头X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
  */
