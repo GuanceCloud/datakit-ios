@@ -65,4 +65,14 @@
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
     return [NSNumber numberWithInteger:httpResponse.statusCode];
 }
+- (NSString *)ft_getResourceStatusGroup{
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+    NSInteger statusCode = httpResponse.statusCode;
+    NSString *group = nil;
+    if (statusCode>=0 && statusCode<1000) {
+        NSInteger a = statusCode/100;
+        group = [NSString stringWithFormat:@"%ldxx",(long)a];
+    }
+    return group;
+}
 @end

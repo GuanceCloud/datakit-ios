@@ -72,6 +72,7 @@ static dispatch_once_t onceToken;
 }
 -(void)setMobileConfig:(FTMobileConfig *)config{
     self.config = config;
+    [self startMonitorNetwork];
     if (config.networkTrace) {
         [self dealNetworkContentType:config.networkContentType];
         [FTWKWebViewHandler sharedInstance].trace = YES;
@@ -219,7 +220,7 @@ static dispatch_once_t onceToken;
             [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
         }
     }
-    if (![agent judgeIsTraceSampling]) {
+    if (![agent judgeIsTraceSampling] || error) {
         return;
     }
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
@@ -231,16 +232,18 @@ static dispatch_once_t onceToken;
     if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
         tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
     }
-//    tags[@"resource_type"] = response.MIMEType;
+    tags[@"resource_type"] = response.MIMEType;
 //    @"response_server";
-    response.se
     tags[@"response_content_type"] =response.MIMEType;
     if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
         tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
     }
     tags[@"resource_method"] = task.originalRequest.HTTPMethod;
-    tags[@"resource_status"] = error? [NSNumber numberWithInteger:error.code]: [response ft_getResponseStatusCode];
-    
+    tags[@"resource_status"] = [response ft_getResponseStatusCode];
+    NSString *group =  [response ft_getResourceStatusGroup];
+    if (group) {
+        tags[@"resource_status_group"] = group;
+    }
     NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
     NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
     NSTimeInterval tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate timeIntervalSinceDate:taskMes.secureConnectionStartDate]*1000:0;
@@ -256,10 +259,6 @@ static dispatch_once_t onceToken;
     fields[@"resource_trans"] = [NSNumber numberWithInt:transTime];
     
     [agent track:@"rum_app_resource_performance" tags:tags fields:fields];
-    //ES resource 采集
-    if (![agent judgeESTraceOpen]) {
-        return;
-    }
     if (response) {
         fields[@"response_header"] = response.allHeaderFields;
         fields[@"request_header"] = [task.currentRequest ft_getRequestHeaders];
@@ -325,14 +324,13 @@ static dispatch_once_t onceToken;
     NSString  *freeze_stack = [FTCallStack ft_backtraceOfMainThread];
     long long time = [[NSDate date] ft_dateTimestamp];
     NSDictionary *tag = @{@"freeze_type":@"Freeze"};
-    NSMutableDictionary *fields = [NSMutableDictionary new];
-    [agent  track:@"rum_app_freeze" tags:@{@"freeze_duration":@"-1"} fields:fields tm:time];
+    NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
+    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = freeze_stack;
     [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    // freeze_message : ?
     if (!self.config.enableTrackAppANR || slowStack.length==0) {
         return;
     }
@@ -354,8 +352,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)trackUrl:(NSURL *)url{
-    if (self.config.datawayUrl) {
-        return ![url.host isEqualToString:[NSURL URLWithString:self.config.datawayUrl].host]&&self.config.networkTrace;
+    if (self.config.metricsUrl) {
+        return ![url.host isEqualToString:[NSURL URLWithString:self.config.metricsUrl].host]&&self.config.networkTrace;
     }
     return NO;
 }
