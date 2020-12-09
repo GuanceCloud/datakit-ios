@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) FTEnv env;
 /**
- * 日志采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
 /**
