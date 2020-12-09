@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTUploadTool.h>
+#import <Network/FTUploadTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTRecordModel.h>
@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[[NSDate now] ft_dateTimestamp];
+    long  tm =[[NSDate new] ft_dateTimestamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
 }
 - (FTUploadTool *)setRightConfigWithTestType:(FTNetworkTestsType)type{
@@ -114,22 +114,16 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         }
         
     }];
-    if (akId && akSecret && urlStr) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
-        config.enableLog = YES;
+    if (urlStr) {
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
+        config.enableSDKDebugLog = YES;
         return  [[FTUploadTool alloc]initWithConfig:config];
     }
     return nil;
 }
 -(FTUploadTool *)setBadMetricsUrl{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://162.215.252.78" datawayToken:nil akId:akId akSecret:akSecret enableRequestSigning:YES];
-    
-    
-    config.enableLog = YES;
-    config.enableAutoTrack = YES;
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://162.215.252.78"];
+    config.enableSDKDebugLog = YES;
     return  [[FTUploadTool alloc]initWithConfig:config];
 }
 /**
@@ -145,12 +139,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
@@ -173,12 +167,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
@@ -201,12 +195,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
@@ -230,12 +224,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
@@ -258,12 +252,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(response.bytes == 0);
@@ -284,12 +278,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
@@ -310,12 +304,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
@@ -336,12 +330,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
         FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeMetrics,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeMetrics;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);

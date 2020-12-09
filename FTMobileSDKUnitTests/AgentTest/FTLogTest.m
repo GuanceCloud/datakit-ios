@@ -29,11 +29,8 @@
 
 - (void)setUp {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
@@ -63,9 +60,8 @@
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -78,9 +74,8 @@
     //模拟launch
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
@@ -95,9 +90,8 @@
     [self.testVC viewDidAppear:NO];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
     
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];

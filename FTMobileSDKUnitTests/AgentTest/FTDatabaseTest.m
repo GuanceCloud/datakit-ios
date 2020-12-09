@@ -59,9 +59,9 @@
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [array addObject:model];
     }
-     [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
-     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-     XCTAssertTrue(newCount-oldCount == 30);
+    [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount-oldCount == 30);
     
 }
 - (void)testDelete{

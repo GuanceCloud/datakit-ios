@@ -51,7 +51,7 @@
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
 
     if (akId && akSecret && url && !isUnitTests) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.traceConsoleLog = YES;

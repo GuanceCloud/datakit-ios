@@ -156,7 +156,6 @@
 		4A299F832520A77800400931 /* TestCCrash.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TestCCrash.cpp; sourceTree = "<group>"; };
 		4A299F842520A77800400931 /* TestCCrash.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TestCCrash.hpp; sourceTree = "<group>"; };
 		4A2C826424F3597F006D4FC6 /* FTMonitorManagerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorManagerTest.m; sourceTree = "<group>"; };
-		4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTAutoTrack+Test.h"; sourceTree = "<group>"; };
 		4A2C826D24F39D14006D4FC6 /* FTUploadTool+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTUploadTool+Test.h"; sourceTree = "<group>"; };
 		4A3931532531C26300BC2134 /* TestANRVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
 		4A3931542531C26300BC2134 /* TestANRVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestANRVC.m; sourceTree = "<group>"; };
@@ -313,7 +312,6 @@
 			isa = PBXGroup;
 			children = (
 				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
-				4A2C826724F38990006D4FC6 /* FTAutoTrack+Test.h */,
 			);
 			path = AutoTrack;
 			sourceTree = "<group>";
@@ -1079,17 +1077,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;
@@ -1117,17 +1111,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTAutoTrack\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/Interceptor\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;

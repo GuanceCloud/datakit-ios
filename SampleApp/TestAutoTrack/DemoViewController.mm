@@ -28,16 +28,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    UIBarButtonItem *rightBarItem = [[UIBarButtonItem alloc] initWithTitle:@"确认" style:UIBarButtonItemStylePlain target:self action:@selector(onClickedOKbtn)];
-    self.navigationItem.rightBarButtonItem = rightBarItem;
-    self.dataSource = @[@"Test_autoTrack",@"Test_startMonitorFlush",@"Test_stopMonitorFlush",@"Test_getConnectBluetooth",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_webview",@"Test_CLIENT_HTTP"];
+    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp"];
     [self createUI];
 }
-- (void)onClickedOKbtn {
-    NSLog(@"onClickedOKbtn");
-}  
 -(void)createUI{
-    
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
@@ -56,32 +50,6 @@
     [alert addAction:commit];
     [self presentViewController:alert animated:YES completion:nil];
 }
-- (void)testStartMonitorFlush{
-}
-- (void)testStopMonitorFlush{
-}
-- (void)testConnectBluetooth{
-    NSString *uuid = [NSUUID UUID].UUIDString;
-    
-    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
-    NSString *urlStr = @"http://api.qingyunke.com/api.php";
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
-    request.HTTPMethod = @"POST";
-    
-    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
-    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-    }];
-    
-    [task resume];
-
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[TestBluetoothList new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
-
 - (void)testCrashLog{
     //在子线程测试崩溃时 crash alert才能显示出来
     [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
@@ -153,39 +121,29 @@
             [self testAutoTrack];
             break;
         case 1:
-            [self testStartMonitorFlush];
-            break;
-        case 2:
-            [self testStopMonitorFlush];
-            break;
-        case 3:
-            [self testConnectBluetooth];
-            break;
-        case 4:
             [self testCrashLog];
             break;
-        case 5:
+        case 2:
             [self testSIGSEGVCrash];
             break;
-        case 6:
+        case 3:
             [self testSIGBUSCrash];
             break;
-        case 7:
+        case 4:
             [self testCCrash];
             break;
-        case 8:
+        case 5:
             [self Test_ANR];
             break;
-            case 9:
+        case 6:
             [self test_webview];
             break;
-            case 10:
+        case 7:
             [self test_client_http];
             break;
         default:
             break;
     }
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 

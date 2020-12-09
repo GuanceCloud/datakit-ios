@@ -43,12 +43,12 @@
         FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
         FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FTNetworkingTypeLogging,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
     
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FTNetworkingTypeLogging;
+    model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil ft_convertToJsonData:data];
     FTUploadTool *tool =  [FTUploadTool new];
     NSString *line = [tool getRequestDataWithEventArray:@[model]];

@@ -48,16 +48,13 @@
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     if (enable) {
         config.enableTrackAppANR = YES;
         config.enableTrackAppUIBlock = YES;
     }
-    config.enableLog = YES;
+    config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
@@ -65,19 +62,18 @@
 - (void)testTraceAnrBlock{
     [self initSDKWithEnableTrackAppANR:YES];
     [NSThread sleepForTimeInterval:2];
-     NSInteger oldLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+     NSInteger oldLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
 
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
     [self.testVC testAnrBlock];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-        NSInteger anrLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+        NSInteger anrLogging = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
 
         XCTAssertTrue(anrLogging - oldLogging > 0);
         XCTAssertTrue(newCount-lastCount>0);
-        FTRecordModel *anrLog = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging] firstObject];
+        FTRecordModel *anrLog = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING] firstObject];
         NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:anrLog.data];
         NSDictionary *opdata = [dict valueForKey:@"opdata"];
         NSDictionary *field = [opdata valueForKey:@"field"];
@@ -86,7 +82,7 @@
         XCTAssertTrue([content containsString:@"ANR Stack:"]);
         XCTAssertTrue([op isEqualToString:@"exception"]);
 
-        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeMetrics];
+        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
         BOOL hasBlock = NO;
         BOOL hasANR = NO;
         for (NSInteger i=0; i<datas.count; i++) {

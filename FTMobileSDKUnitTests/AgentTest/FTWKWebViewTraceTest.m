@@ -51,27 +51,21 @@
 }
 - (void)setTraceConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-       NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-       NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-       NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-       NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-       FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-       config.networkTrace = YES;
-       [FTMobileAgent startWithConfigOptions:config];
-       [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-       [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    config.networkTrace = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
 - (void)setNoTraceConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-       NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-       NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-       NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-       NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-       FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url datawayToken:token akId:akId akSecret:akSecret enableRequestSigning:YES];
-       config.networkTrace = NO;
-       [FTMobileAgent startWithConfigOptions:config];
-       [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-       [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    config.networkTrace = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
 
 - (void)testNoTrace{
@@ -82,7 +76,6 @@
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
         XCTAssertTrue(newCount-lastCount == 0);
         [expectation fulfill];
@@ -105,14 +98,13 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    __block  NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
-    __block NSInteger lastMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+    __block  NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    __block NSInteger lastMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-        NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
-        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+        NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
+        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
         
         XCTAssertTrue(count>lastMetricsCount);
         XCTAssertTrue(loggingcount>lastLoggingCount);
@@ -127,9 +119,9 @@
         XCTAssertNil(error);
     }];
     
-    NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeMetrics];
+    NSInteger newMetricsCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_INFLUXDB];
     XCTAssertTrue(newMetricsCount>lastMetricsCount);
-    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newLoggingCount == lastLoggingCount);
     [self.testVC ft_stopLoading];
     self.testVC = nil;
@@ -143,7 +135,7 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
@@ -152,10 +144,9 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -178,17 +169,16 @@
 - (void)testWKWebViewReloadTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setTraceConfig];
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
    
     [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:4];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -213,7 +203,7 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
@@ -225,10 +215,9 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] _loggingArrayInsertDBImmediately];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FTNetworkingTypeLogging];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FTNetworkingTypeLogging];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
