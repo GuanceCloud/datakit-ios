@@ -72,6 +72,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         self.appid = appid;
         self.version = version;
         self.env = env;
+        _isSignin = [FTBaseInfoHander ft_getUserid]?YES:NO;
     }
     return self;
 }
@@ -598,7 +599,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_webCommonPropertyTags setValue:version forKey:FT_COMMON_PROPERTY_OS_VERSION];
         [_webCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
     }
- 
     return _webCommonPropertyTags;
 }
 - (NSDictionary *)mobileCommonPropertyTags{
@@ -616,6 +616,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_mobileCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
         [_mobileCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_mobileCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
+        [_mobileCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
     }
     return _mobileCommonPropertyTags;
 }
@@ -629,6 +630,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         _esCommonPropertyTags = [NSMutableDictionary new];
         [_esCommonPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_ORIGIN_ID];
+        [_esCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
         [_esCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_esCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
         [_esCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
@@ -676,6 +678,11 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         dict[FT_COMMON_PROPERTY_LOCALE] = preferredLanguage;
     }
     return dict;
+}
+-(void)setIsSignin:(BOOL)isSignin{
+    _isSignin = isSignin;
+    self.esCommonPropertyTags[FT_IS_SIGNIN] = [NSNumber numberWithBool:_isSignin];
+    self.mobileCommonPropertyTags[FT_IS_SIGNIN] = [NSNumber numberWithBool:_isSignin];
 }
 @end
 

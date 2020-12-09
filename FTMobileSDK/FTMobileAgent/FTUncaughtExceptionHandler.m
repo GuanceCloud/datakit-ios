@@ -291,7 +291,10 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 - (void)handleException:(NSException *)exception {
     for (FTMobileAgent *instance in self.ftSDKInstances) {
         long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-        if ([instance judgeIsTraceSampling]) {
+        if ([instance judgeESTraceOpen]) {
+            if (![instance judgeIsTraceSampling]) {
+                return;
+            }
             NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
             NSDictionary *field =  @{@"crash_message":[exception reason],
                                      @"crash_stack":info,

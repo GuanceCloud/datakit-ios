@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSDate (FTAdd)
 /**
  *  @abstract
- *  获取当前时间戳
+ *  获取当前时间戳 毫秒级
  *
  *  @return 时间戳
 */
