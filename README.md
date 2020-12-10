@@ -71,8 +71,26 @@
     */
    - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;  
   ```
+ 
+### 2.配置 app_id 开启 RUM
  	
-### 2.设置日志相关    
+  1. 设置 appid
+   
+   **dataflux rum** 应用唯一 ID 标识，在 DataFlux 控制台上面创建监控时自动生成。设置**appid**后，RUM 才能开启。
+   
+  
+  2. RUM 设置采集率
+ 
+ ``` objective-c
+ /**
+ * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。默认：100
+ */
+ @property (nonatomic, assign) int samplerate;
+ ```   
+
+ **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。
+
+### 3.设置日志相关    
 - enableSDKDebugLog 打印日志    
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
@@ -81,16 +99,17 @@
     config.enableSDKDebugLog = YES; //打印日志
    ```
 
-
    
 - enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志分析)） 
-
+ 
   ```objective-c 
   /**
    *设置是否需要采集崩溃日志 默认为NO
    */
    @property (nonatomic, assign) BOOL enableTrackAppCrash;
-  ``` 
+  ```    
+   **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。
+
      
 - traceConsoleLog 采集控制台日志    
 
@@ -114,24 +133,42 @@
    */
    @property (nonatomic, assign) BOOL eventFlowLog; 
   ```
-     
-### 3. 设置X-Datakit-UUID
+-  networkTrace 设置网络追踪
+   
+ - 设置网络追踪，开启网络请求信息采集
+   
+ ``` objective-c   
+ /**
+ * 设置网络请求信息采集 默认为NO
+ */
+@property (nonatomic, assign) BOOL networkTrace;
+
+ ```    
+          
+ - 设置网络请求信息采集时 使用链路追踪类型 
+   
+ ``` objective-c   
+/**
+ *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
+ *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、FTNetworkTrackTypeSKYWALKING_V3
+ */
+@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
+/**
+ *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
+ *  @param  type   链路追踪类型 默认为 Zipkin
+ */
+-(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
+
+ ``` 
+           
+### 4. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
   ```objective-c
    [config setXDataKitUUID:@"YOUR UUID"];
   ```
-### 4. 设置采集率
- 
- ``` objective-c
- /**
- * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。默认：100
- */
- @property (nonatomic, assign) int samplerate;
- ```    
    
-
 ### 5. 采集数据配置
 
    配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
@@ -159,47 +196,9 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 };
       
  ```
-   
-  
-### 6.设置网络追踪
--  开启网络请求信息采集
-  
- ``` objective-c   
-/**
- * 设置网络请求信息采集 默认为NO
- */
-@property (nonatomic, assign) BOOL networkTrace;
 
- ```    
-          
--  设置网络请求信息采集时 使用链路追踪类型 
-   
- ``` objective-c   
-/**
- *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
- *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、FTNetworkTrackTypeSKYWALKING_V3
- */
-@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
-/**
- *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
- *  @param  type   链路追踪类型 默认为 Zipkin
- */
--(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
-
- ```      
--  设置网络请求采集 Content-Type 类型     
-   
-  采集的 **__content** 大小限制在 30k 。 
   
-  ``` objective-c   
- /**
- *  设置 网络请求采集 支持的 contentType
- *  默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data）
-*/
-@property (nonatomic, strong) NSArray <NSString *> *networkContentType;
-  ```   
-  
-### 7.设置 UI 卡顿、ANR 事件采集
+### 6.设置 UI 卡顿、ANR 事件采集
 
 
  - enableTrackAppUIBlock 采集UI卡顿事件
@@ -228,7 +227,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
    @property (nonatomic, assign) BOOL enableTrackAppANR;
    ```
  
-   
+ 采集的数据会上传到 **RUM** 与日志中。  
    
 ## 四、参数
 
@@ -237,6 +236,8 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |          字段          |     类型     |            说明             |                是否必须                |
 | :------------------: | :--------: | :-----------------------: | :--------------------------------: |
 |      metricsUrl      |  NSString  |  FT-GateWay metrics 写入地址  |                 是                  |
+|      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）                  |
+
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
 |    enableDescLog     |    BOOL    |       设置是否允许打印描述日志        |              否（默认NO）               |
 |   monitorInfoType    | NS_OPTIONS |     [采集数据](#5-采集数据配置)     |                 否                  |
@@ -249,8 +250,6 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
 | samplerate |float|采样采集率|否（默认100）|
 |   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
-|networkContentType|NSArray|设置 网络请求采集 支持的 contentType|否（默认采集  Content-Type（application/json、application/xml、application/javascript、text/html、text/xml、text/plain、application/x-www-form-urlencoded、multipart/form-data））|
-
 
 
 ## 五、主动上报日志方法
