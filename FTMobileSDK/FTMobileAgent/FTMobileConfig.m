@@ -48,7 +48,6 @@
     options.source = self.source;
     options.networkTrace = self.networkTrace;
     options.networkTraceType = self.networkTraceType;
-    options.networkContentType = self.networkContentType;
     options.env = self.env;
     options.enableTrackAppUIBlock = self.enableTrackAppUIBlock;
     options.enableTrackAppANR = self.enableTrackAppANR;
