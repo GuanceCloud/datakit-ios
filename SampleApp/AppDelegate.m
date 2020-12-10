@@ -28,14 +28,8 @@
 
     // Override point for customization after application launch.
     /**
-      测试时 请在scheme 中配置  Environment Variables 键值
-      测试 DataFlux账号
-      FTTestAccount  = @"Your Test Account";
-      FTTestPassword  = @"Your Test Password";
-
       测试 SDK config
-      ACCESS_KEY_ID  = @"Your App akId";
-      ACCESS_KEY_SECRET  = @"Your App akSecret";
+      APP_ID  = @"Your AppId";
       ACCESS_SERVER_URL  = @"Your App metricsUrl";
      
       进行单元测试时 在FTMobileSDKUnitTests 的 scheme 中添加
@@ -43,15 +37,12 @@
       防止 SDK 在 AppDelegate 启动 对单元测试造成影响
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-
+    NSString *appid = [processInfo environment][@"APP_ID"];
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
-
-    if (akId && akSecret && url && !isUnitTests) {
+    if ( url && !isUnitTests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+        config.appid = appid;
         config.enableSDKDebugLog = YES;
         config.monitorInfoType = FTMonitorInfoTypeAll;
         config.traceConsoleLog = YES;
@@ -61,10 +52,6 @@
         config.eventFlowLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         self.config = config;
-        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-        [UITestManger sharedManger];
-        [[FTMobileAgent sharedInstance] logout];
-        [[FTMobileAgent sharedInstance] startTrackExtensionCrashWithApplicationGroupIdentifier:@"group.hlltest.widget"];
     }
     return YES;
 }
