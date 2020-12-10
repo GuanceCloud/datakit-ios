@@ -23,6 +23,7 @@
 #import "FTMonitorUtils.h"
 #import "NSDate+FTAdd.h"
 #import "FTJSONUtil.h"
+#import "FTMobileAgentVersion.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypetTag          = 1,
     FTParameterTypeField     = 2 ,
@@ -220,7 +221,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
      //设置请求参数
      [mutableRequest setValue:self.config.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-     [mutableRequest setValue:FT_USER_AGENT forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",SDK_VERSION] forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
      return mutableRequest;
