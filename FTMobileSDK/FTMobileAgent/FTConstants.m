@@ -17,6 +17,10 @@ NSString * const FT_USER_AGENT = @"ft_mobile_sdk_ios";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"dataflux sdk";
 NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
+NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
+
+NSString * const FT_TERMINAL_APP = @"app";
+NSString * const FT_TERMINAL_MINIPROGRA = @"miniprogram";
 #pragma mark ========== InfluxDB 指标集==========
 NSString * const FT_RUM_WEB_PAGE_PERFORMANCE = @"rum_web_page_performance";
 NSString * const FT_RUM_WEB_RESOURCE_PERFORMANCE = @"rum_web_resource_performance";

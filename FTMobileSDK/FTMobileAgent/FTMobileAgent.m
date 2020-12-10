@@ -163,7 +163,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                             if (![self judgeIsTraceSampling]) {
                                 return;
                             }
-                            [self rumTrackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
+                            [self rumTrackES:FT_TYPE_CRASH terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                         }else{
                             NSString *crash_message = field[@"crash_message"];
                             NSString *crash_stack = field[@"crash_stack"];
@@ -194,7 +194,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 #pragma mark ========== private method ==========
-//  FT_DATA_TYPE_INFLUXDB
+//RUM FT_DATA_TYPE_INFLUXDB
 - (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumTrack:type tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }
@@ -205,13 +205,17 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (![type isKindOfClass:NSString.class] || type.length == 0) {
         return;
     }
+    @try {
     NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
     if (tags) {
         [baseTags addEntriesFromDictionary:tags];
     }
     [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
-//FT_DATA_TYPE_ES
+//RUM FT_DATA_TYPE_ES
 - (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumTrackES:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }
@@ -222,35 +226,39 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
         return;
     }
-    FTAddDataType dataType = FTAddDataNormal;
-    NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
-    NSString *userid = [FTBaseInfoHander ft_getUserid];
-    if (!userid) {
-        userid = [FTBaseInfoHander ft_getSessionid];
-    }
-    baseTags[@"userid"] = userid;
-    if ([type isEqualToString:@"crash"]) {
-        dataType = FTAddDataImmediate;
-        if ([terminal isEqualToString:@"app"]) {
-            baseTags[@"crash_situation"] = _running?@"run":@"startup";
-            if (self.config.monitorInfoType & FTMonitorInfoTypeBluetooth) {
-                baseTags[FT_MONITOR_BT_OPEN] = [NSNumber numberWithBool:[FTMonitorManager sharedInstance].isBlueOn];
-            }
-            if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
-                baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils ft_getTotalMemorySize];
-            }
-            if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
-                baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
-            }
-        }else{
-            baseTags[@"crash_situation"] = @"run";
+    @try {
+        FTAddDataType dataType = FTAddDataNormal;
+        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
+        NSString *userid = [FTBaseInfoHander ft_getUserid];
+        if (!userid) {
+            userid = [FTBaseInfoHander ft_getSessionid];
         }
+        baseTags[@"userid"] = userid;
+        if ([type isEqualToString:FT_TYPE_CRASH]) {
+            dataType = FTAddDataImmediate;
+            if ([terminal isEqualToString:FT_TERMINAL_APP]) {
+                baseTags[@"crash_situation"] = _running?@"run":@"startup";
+                if (self.config.monitorInfoType & FTMonitorInfoTypeBluetooth) {
+                    baseTags[FT_MONITOR_BT_OPEN] = [NSNumber numberWithBool:[FTMonitorManager sharedInstance].isBlueOn];
+                }
+                if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+                    baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils ft_getTotalMemorySize];
+                }
+                if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
+                    baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
+                }
+            }else{
+                baseTags[@"crash_situation"] = @"run";
+            }
+        }
+        if (tags) {
+            [baseTags addEntriesFromDictionary:tags];
+        }
+        FTRecordModel *model = [self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
+        [self insertDBWithItemData:model type:FTAddDataNormal];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
     }
-    if (tags) {
-        [baseTags addEntriesFromDictionary:tags];
-    }
-    FTRecordModel *model = [self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
-    [self insertDBWithItemData:model type:FTAddDataNormal];
 }
 
 // FT_DATA_TYPE_LOGGING
@@ -259,23 +267,27 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }
-    NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
-                                     FT_KEY_SERVICENAME:self.config.traceServiceName,
-                                     @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                     @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
-                                     @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
-                                     @"version":self.config.version
-    }.mutableCopy;
-    if (tags) {
-        [tagDict addEntriesFromDictionary:tags];
+    @try {
+        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
+                                         FT_KEY_SERVICENAME:self.config.traceServiceName,
+                                         @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                         @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                         @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                         @"version":self.config.version
+        }.mutableCopy;
+        if (tags) {
+            [tagDict addEntriesFromDictionary:tags];
+        }
+        NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
+        }.mutableCopy;
+        if (field) {
+            [filedDict addEntriesFromDictionary:field];
+        }
+        FTRecordModel *model = [self getModelWithMeasurement:self.config.source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
+        [self insertDBWithItemData:model type:type];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
     }
-    NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
-    }.mutableCopy;
-    if (field) {
-        [filedDict addEntriesFromDictionary:field];
-    }
-    FTRecordModel *model = [self getModelWithMeasurement:self.config.source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
-    [self insertDBWithItemData:model type:type];
 }
 -(void)trackStartWithViewLoadTime:(CFTimeInterval)time{
     self.running = YES;
@@ -296,8 +308,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
-        NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",@"launch",FT_KEY_EVENT]};
-        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:@"launch"}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+        NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
+        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
 //控制台日志采集

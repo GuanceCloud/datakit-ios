@@ -261,7 +261,7 @@ static dispatch_once_t onceToken;
         fields[@"response_header"] =[FTBaseInfoHander ft_getDictStr:response.allHeaderFields];
         fields[@"request_header"] = [FTBaseInfoHander ft_getDictStr:[task.currentRequest ft_getRequestHeaders]];
     }
-    [agent rumTrackES:@"resource" terminal:@"app" tags:tags fields:fields];
+    [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
     
 }
 #pragma mark == FTWKWebViewDelegate ==
@@ -324,7 +324,7 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
     [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = freeze_stack;
-    [agent rumTrackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+    [agent rumTrackES:FT_TYPE_FREEZE terminal:@"app" tags:tag fields:fields tm:time];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
@@ -342,7 +342,7 @@ static dispatch_once_t onceToken;
     [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = slowStack;
     if ([agent judgeRUMTraceOpen]) {
-        [agent rumTrackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+        [agent rumTrackES:FT_TYPE_FREEZE terminal:FT_TERMINAL_APP tags:tag fields:fields tm:time];
     }else{
     [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:nil tm:time];
     }

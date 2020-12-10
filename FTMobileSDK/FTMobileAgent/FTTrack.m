@@ -23,8 +23,6 @@
 static NSString * const FT_AUTO_TRACK_OP_ENTER  = @"enter";
 static NSString * const FT_AUTO_TRACK_OP_LEAVE  = @"leave";
 static NSString * const FT_AUTO_TRACK_OP_CLICK  = @"click";
-static NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
-static NSString * const FT_AUTO_TRACK_OP_VIEW = @"view";
 static NSString * const FT_AUTO_TRACK_ROOT_PAGE_NAME = @"root_page_name";
 static NSString * const FT_AUTO_TRACK_CURRENT_PAGE_NAME = @"current_page_name";
 static NSString * const FT_AUTO_TRACK_VTP = @"vtp";
@@ -264,7 +262,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 fields[@"view_fps"] = [[FTMonitorManager sharedInstance] getFPSValue];
             }
             [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
-            [instance rumTrackES:@"view" terminal:@"app" tags:tags fields:fields];
+            [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
             if (instance.config.eventFlowLog) {
                 NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
                 [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];

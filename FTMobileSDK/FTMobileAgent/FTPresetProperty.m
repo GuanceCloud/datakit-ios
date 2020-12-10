@@ -672,7 +672,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_TYPE] = type;
     dict[@"terminal"] = terminal;
-    if ([type isEqualToString:@"crash"]) {
+    if ([type isEqualToString:FT_TYPE_CRASH]) {
         dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         dict[FT_COMMON_PROPERTY_LOCALE] = preferredLanguage;

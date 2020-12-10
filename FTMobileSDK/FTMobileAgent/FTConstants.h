@@ -24,7 +24,7 @@ extern NSString * const FT_USER_AGENT;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
 extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
-
+extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
 
 extern NSString * const FT_RUM_WEB_PAGE_PERFORMANCE;
 extern NSString * const FT_RUM_WEB_RESOURCE_PERFORMANCE;
@@ -38,7 +38,8 @@ extern NSString * const FT_TYPE_RESOURCE;
 extern NSString * const FT_TYPE_CRASH;
 extern NSString * const FT_TYPE_FREEZE;
 extern NSString * const FT_TYPE_VIEW;
-
+extern NSString * const FT_TERMINAL_APP;
+extern NSString * const FT_TERMINAL_MINIPROGRA;
 #pragma mark ========== api ==========
 extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString *  const FT_DATA_TYPE_ES;

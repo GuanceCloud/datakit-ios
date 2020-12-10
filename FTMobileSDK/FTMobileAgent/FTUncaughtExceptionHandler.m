@@ -299,7 +299,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             NSDictionary *field =  @{@"crash_message":[exception reason],
                                      @"crash_stack":info,
             };
-            [instance rumTrackES:@"crash" terminal:@"app" tags:@{@"crash_type":@"ios_crash",
+            [instance rumTrackES:@"crash" terminal:FT_TERMINAL_APP tags:@{@"crash_type":@"ios_crash",
                                                               FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
             } fields:field tm:[[NSDate date] ft_dateTimestamp]];
         }else if(instance.config.enableTrackAppCrash){
