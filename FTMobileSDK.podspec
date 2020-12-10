@@ -40,9 +40,4 @@ Pod::Spec.new do |s|
        agent.library = "resolv.9"
    end
 
-   s.subspec  'FTAutoTrack' do | autotrack |
-       autotrack.source_files = 'FTMobileSDK/FTAutoTrack/**/*'
-       autotrack.dependency  "FTMobileSDK/FTMobileAgent"
-   end
-
 end
