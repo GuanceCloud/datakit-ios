@@ -159,11 +159,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     NSDictionary *field = [obj valueForKey:@"field"];
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (field && field.allKeys.count>0 && tm) {
-                        if ([self judgeESTraceOpen]) {
+                        if ([self judgeRUMTraceOpen]) {
                             if (![self judgeIsTraceSampling]) {
                                 return;
                             }
-                            [self trackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
+                            [self rumTrackES:@"crash" terminal:@"miniprogram" tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                         }else{
                             NSString *crash_message = field[@"crash_message"];
                             NSString *crash_stack = field[@"crash_stack"];
@@ -195,10 +195,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark ========== private method ==========
 //  FT_DATA_TYPE_INFLUXDB
-- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self track:type tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    [self rumTrack:type tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }
-- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    if (![self judgeRUMTraceOpen]) {
+        return;
+    }
     if (![type isKindOfClass:NSString.class] || type.length == 0) {
         return;
     }
@@ -209,10 +212,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
 }
 //FT_DATA_TYPE_ES
-- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self trackES:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    [self rumTrackES:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }
-- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    if (![self judgeRUMTraceOpen]) {
+        return;
+    }
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
         return;
     }
@@ -286,7 +292,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSDictionary *fields = @{
             @"app_startup_duration":durationTime,
         };
-        [self track:FT_RUM_APP_STARTUP tags:tags fields:fields];
+        [self rumTrack:FT_RUM_APP_STARTUP tags:tags fields:fields];
     }
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
@@ -407,7 +413,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     return YES;
 }
-- (BOOL)judgeESTraceOpen{
+- (BOOL)judgeRUMTraceOpen{
     if (self.config.appid.length>0) {
         return YES;
     }

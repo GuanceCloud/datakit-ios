@@ -38,19 +38,19 @@ typedef NS_ENUM(NSInteger, FTDataType) {
  * 采集判断
  */
 - (BOOL)judgeIsTraceSampling;
-- (BOOL)judgeESTraceOpen;
+- (BOOL)judgeRUMTraceOpen;
 
 /**
  * 数据采集
  * type : InfluxDB指标集
  */
-- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
-- (void)track:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
-- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
-- (void)trackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 -(void)trackStartWithViewLoadTime:(CFTimeInterval)time;
 /**
@@ -59,5 +59,8 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
 
 -(void)resetInstance;
+
+-(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
+
 @end
 #endif /* FTMobileAgent_Private_h */

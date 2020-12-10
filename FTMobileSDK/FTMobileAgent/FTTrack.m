@@ -263,8 +263,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
                 fields[@"view_fps"] = [[FTMonitorManager sharedInstance] getFPSValue];
             }
-            [instance track:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
-            [instance trackES:@"view" terminal:@"app" tags:tags fields:fields];
+            [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+            [instance rumTrackES:@"view" terminal:@"app" tags:tags fields:fields];
             if (instance.config.eventFlowLog) {
                 NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
                 [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];

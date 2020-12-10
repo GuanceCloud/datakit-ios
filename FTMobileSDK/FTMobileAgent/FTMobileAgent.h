@@ -44,10 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param Id        用户Id
 */
 - (void)bindUserWithUserID:(NSString *)Id;
-
-
--(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
-
 /**
  * 注销当前用户
 */
