@@ -294,4 +294,17 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         [[NSUserDefaults standardUserDefaults] setValue:userid forKey:@"ft_userid"];
         [[NSUserDefaults standardUserDefaults] synchronize];
 }
++ (NSString *)ft_getDictStr:(NSDictionary *)dict{
+    __block NSString *str = @"";
+    if (dict) {
+        [dict.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (idx == dict.allKeys.count) {
+                str = [str stringByAppendingFormat:@"%@:%@",obj,dict[obj]];
+            }else{
+                str = [str stringByAppendingFormat:@"%@:%@\n",obj,dict[obj]];
+            }
+        }];
+    }
+    return str;
+}
 @end

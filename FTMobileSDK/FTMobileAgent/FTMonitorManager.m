@@ -74,7 +74,6 @@ static dispatch_once_t onceToken;
     self.config = config;
     [self startMonitorNetwork];
     if (config.networkTrace) {
-        [self dealNetworkContentType:config.networkContentType];
         [FTWKWebViewHandler sharedInstance].trace = YES;
         [FTWKWebViewHandler sharedInstance].traceDelegate = self;
     }else{
@@ -195,7 +194,6 @@ static dispatch_once_t onceToken;
             responseDict = task.response?[task.response ft_getResponseDict]:@{};
         }
         NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
-        [request setValue:[task.originalRequest ft_getBodyData:[task.currentRequest ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
         NSDictionary *response = responseDict?responseDict:@{};
         NSDictionary *content = @{
             FT_NETWORK_RESPONSE_CONTENT:response,
@@ -258,12 +256,12 @@ static dispatch_once_t onceToken;
     fields[@"resource_ttfb"] = [NSNumber numberWithInt:ttfbTime];
     fields[@"resource_trans"] = [NSNumber numberWithInt:transTime];
     
-    [agent track:@"rum_app_resource_performance" tags:tags fields:fields];
+    [agent rumTrack:@"rum_app_resource_performance" tags:tags fields:fields];
     if (response) {
-        fields[@"response_header"] = response.allHeaderFields;
-        fields[@"request_header"] = [task.currentRequest ft_getRequestHeaders];
+        fields[@"response_header"] =[FTBaseInfoHander ft_getDictStr:response.allHeaderFields];
+        fields[@"request_header"] = [FTBaseInfoHander ft_getDictStr:[task.currentRequest ft_getRequestHeaders]];
     }
-    [agent trackES:@"resource" terminal:@"app" tags:tags fields:fields];
+    [agent rumTrackES:@"resource" terminal:@"app" tags:tags fields:fields];
     
 }
 #pragma mark == FTWKWebViewDelegate ==
@@ -289,9 +287,8 @@ static dispatch_once_t onceToken;
     }else{
         iserror = [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
     }
-    responseDict = response?[response ft_getResponseContentDictWithData:nil]:responseDict;
+    responseDict = response?[response ft_getResponseDict]:responseDict;
     NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
-    [requestDict setValue:[request ft_getBodyData:[request ft_isAllowedContentType]] forKey:FT_NETWORK_BODY];
     NSDictionary *responseDic = responseDict?responseDict:@{};
     NSDictionary *content = @{
         FT_NETWORK_RESPONSE_CONTENT:responseDic,
@@ -325,9 +322,9 @@ static dispatch_once_t onceToken;
     long long time = [[NSDate date] ft_dateTimestamp];
     NSDictionary *tag = @{@"freeze_type":@"Freeze"};
     NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
-    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = freeze_stack;
-    [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+    [agent rumTrackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
@@ -342,10 +339,10 @@ static dispatch_once_t onceToken;
     NSDictionary *tag = @{@"freeze_type":@"ANR"};
     int duration = (int)(MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000);
     NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:duration]}.mutableCopy;
-    [agent  track:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
     fields[@"freeze_stack"] = slowStack;
-    if ([agent judgeESTraceOpen]) {
-        [agent trackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
+    if ([agent judgeRUMTraceOpen]) {
+        [agent rumTrackES:@"freeze" terminal:@"app" tags:tag fields:fields tm:time];
     }else{
     [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:nil tm:time];
     }
