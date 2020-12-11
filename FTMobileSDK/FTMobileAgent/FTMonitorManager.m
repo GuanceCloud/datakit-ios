@@ -33,6 +33,9 @@
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
 #import "FTCallStack.h"
+#include <netdb.h>
+#include <arpa/inet.h>
+
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
@@ -231,7 +234,11 @@ static dispatch_once_t onceToken;
         tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
     }
     tags[@"resource_type"] = response.MIMEType;
-//    @"response_server";
+    NSString *response_server = [self getIPWithHostName:task.originalRequest.URL.host];
+    if (response_server) {
+        tags[@"response_server"] = response_server;
+    }
+    
     tags[@"response_content_type"] =response.MIMEType;
     if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
         tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
@@ -434,6 +441,23 @@ static dispatch_once_t onceToken;
     }
     return _parentInstance;
 }
+-(NSString *)getIPWithHostName:(const NSString *)hostName{
+    const char *hostN= [hostName UTF8String];
+    struct hostent* phot;
+    @try {
+        phot = gethostbyname(hostN);
+    }
+    @catch (NSException *exception) {
+        return nil;
+    }
+    struct in_addr ip_addr;
+    memcpy(&ip_addr, phot->h_addr_list[0], 4);
+    char ip[20] = {0};
+    inet_ntop(AF_INET, &ip_addr, ip, sizeof(ip));
+    NSString* strIPAddress = [NSString stringWithUTF8String:ip];
+    return strIPAddress;
+}
+
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;
