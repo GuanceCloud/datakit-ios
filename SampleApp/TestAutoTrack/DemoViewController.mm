@@ -28,7 +28,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout"];
+    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash"];
     [self createUI];
 }
 -(void)createUI{
@@ -110,6 +110,17 @@
 - (void)test_userLogout{
     [[FTMobileAgent sharedInstance] logout];
 }
+- (void)test_mainthreadLockCrash{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [NSThread sleepForTimeInterval:2];
+            NSLog(@"test");
+        });
+         NSLog(@"test2");
+    });
+    
+}
+
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -152,6 +163,9 @@
             break;
         case 9:
             [self test_userLogout];
+            break;
+        case 10:
+            [self test_mainthreadLockCrash];
             break;
         default:
             break;

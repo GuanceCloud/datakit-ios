@@ -29,7 +29,7 @@
         NSDictionary *field =  @{@"crash_message":[exception reason],
                                  @"crash_stack":info,
         };
-        [instance rumTrackES:@"crash" terminal:@"app" tags:@{@"crash_type":@"ios_crash",
+        [instance rumTrackES:@"crash" terminal:@"app" tags:@{@"crash_type":[exception name],
                                                           FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
         } fields:field tm:[[NSDate date] ft_dateTimestamp]];
     }else if(instance.config.enableTrackAppCrash){
