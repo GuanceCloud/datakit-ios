@@ -255,7 +255,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [baseTags addEntriesFromDictionary:tags];
         }
         FTRecordModel *model = [self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
-        [self insertDBWithItemData:model type:FTAddDataNormal];
+        [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
