@@ -28,7 +28,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp"];
+    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout"];
     [self createUI];
 }
 -(void)createUI{
@@ -104,6 +104,12 @@
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
     }];
 }
+-(void)test_bindUesr{
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1"];
+}
+- (void)test_userLogout{
+    [[FTMobileAgent sharedInstance] logout];
+}
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.dataSource.count;
@@ -140,6 +146,12 @@
             break;
         case 7:
             [self test_client_http];
+            break;
+        case 8:
+            [self test_bindUesr];
+            break;
+        case 9:
+            [self test_userLogout];
             break;
         default:
             break;
