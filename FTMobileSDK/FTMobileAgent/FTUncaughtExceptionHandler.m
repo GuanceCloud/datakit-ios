@@ -68,7 +68,7 @@ void HandleException(NSException *exception) {
         [[FTUncaughtExceptionHandler sharedHandler]
          performSelectorOnMainThread:@selector(handleException:)
          withObject:
-         [NSException exceptionWithName:[exception name]
+         [NSException exceptionWithName:@"ios_crash"
                                  reason:[exception reason]
                                userInfo:userInfo]
          waitUntilDone:YES];
@@ -82,8 +82,11 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
     if (exceptionCount <= UncaughtExceptionMaximum) {
         NSString* description = nil;
+        NSString *name = @"ios_crash";
+        //info->si_code == 0x8badf00d ? @"abort":@"ios_crash";
         switch (signal) {
             case SIGABRT:
+                name = @"abort";
                 description = [NSString stringWithFormat:@"Signal SIGABRT was raised!\n"];
                 break;
             case SIGILL:
@@ -113,7 +116,7 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
         @try {
             [[FTUncaughtExceptionHandler sharedHandler]
              performSelectorOnMainThread:@selector(handleException:) withObject:
-             [NSException exceptionWithName:UncaughtExceptionHandlerSignalExceptionName reason:description userInfo:userInfo]
+             [NSException exceptionWithName:name reason:description userInfo:userInfo]
              waitUntilDone:YES];
         } @catch (NSException *exception) {
         }
@@ -295,11 +298,11 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             if (![instance judgeIsTraceSampling]) {
                 return;
             }
-            NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+            NSString *info =[NSString stringWithFormat:@"code:%@\nSlide_Address:%ld\nException Stack:\n%@",[exception userInfo][@"code"], slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
             NSDictionary *field =  @{@"crash_message":[exception reason],
                                      @"crash_stack":info,
             };
-            [instance rumTrackES:@"crash" terminal:FT_TERMINAL_APP tags:@{@"crash_type":@"ios_crash",
+            [instance rumTrackES:@"crash" terminal:FT_TERMINAL_APP tags:@{@"crash_type":[exception name],
                                                               FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
             } fields:field tm:[[NSDate date] ft_dateTimestamp]];
         }else if(instance.config.enableTrackAppCrash){
