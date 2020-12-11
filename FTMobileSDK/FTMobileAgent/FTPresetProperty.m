@@ -616,7 +616,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_mobileCommonPropertyTags setValue:[NSNumber numberWithDouble:rect.size.height*scale*rect.size.width*scale] forKey:FT_SCREEN_SIZE];
         [_mobileCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_mobileCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
-        [_mobileCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
+        [_mobileCommonPropertyTags setValue:_isSignin?@"T":@"F" forKey:FT_IS_SIGNIN];
     }
     return _mobileCommonPropertyTags;
 }
@@ -630,7 +630,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         NSDictionary *deviceInfo = [FTPresetProperty ft_getDeviceInfo];
         _esCommonPropertyTags = [NSMutableDictionary new];
         [_esCommonPropertyTags setValue:[[UIDevice currentDevice] identifierForVendor].UUIDString forKey:FT_ORIGIN_ID];
-        [_esCommonPropertyTags setValue:[NSNumber numberWithBool:self.isSignin] forKey:FT_IS_SIGNIN];
+        [_esCommonPropertyTags setValue:_isSignin?@"T":@"F" forKey:FT_IS_SIGNIN];
         [_esCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_esCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
         [_esCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
@@ -681,8 +681,8 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
 }
 -(void)setIsSignin:(BOOL)isSignin{
     _isSignin = isSignin;
-    self.esCommonPropertyTags[FT_IS_SIGNIN] = [NSNumber numberWithBool:_isSignin];
-    self.mobileCommonPropertyTags[FT_IS_SIGNIN] = [NSNumber numberWithBool:_isSignin];
+    self.esCommonPropertyTags[FT_IS_SIGNIN] = _isSignin?@"T":@"F";
+    self.mobileCommonPropertyTags[FT_IS_SIGNIN] = _isSignin?@"T":@"F";;
 }
 @end
 

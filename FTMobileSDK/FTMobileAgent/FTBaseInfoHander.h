@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_getFTEnvStr:(FTEnv)env;
 + (NSString *)ft_getSessionid;
 + (NSString *)ft_getUserid;
-+ (void)ft_setUserid:(NSString *)userid;
++ (void)ft_setUserid:(nullable NSString *)userid;
 + (NSString *)ft_getDictStr:(NSDictionary *)dict;
 @end
 
