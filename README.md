@@ -12,7 +12,7 @@
  
 **iOS 10.0**及以上 
   
-## 一、 导入SDK
+## 一、导入SDK
    你可以使用下面方法进行导入：
 ### 1. 直接下载下来安装
 1. 从 [GitHub](https://github.com/CloudCare/dataflux-sdk-ios) 获取 SDK 的源代码。	 
@@ -90,26 +90,26 @@
 
  **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。
 
-### 3.设置日志相关    
-- enableSDKDebugLog 打印日志    
+### 3.设置日志相关  
+- source 日志来源  
 
-   在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
-   
-   ```objective-c
-    config.enableSDKDebugLog = YES; //打印日志
-   ```
+ ```
+ /**
+ * 日志的来源 默认为：ft_mobile_sdk_ios
+ */
+@property (nonatomic, copy) NSString *source;
 
-   
-- enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志分析)） 
- 
-  ```objective-c 
+ ```   
+
+- traceServiceName  日志所属业务或服务的名称
+
+  ``` 
   /**
-   *设置是否需要采集崩溃日志 默认为NO
-   */
-   @property (nonatomic, assign) BOOL enableTrackAppCrash;
-  ```    
-   **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。
-
+ * 设置日志所属业务或服务的名称
+ */
+@property (nonatomic, copy) NSString *traceServiceName;
+ 
+  ```
      
 - traceConsoleLog 采集控制台日志    
 
@@ -159,9 +159,32 @@
  */
 -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
- ``` 
+ ```    
+ 
+### 4. 开启崩溃 Crash 采集
+
+enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志分析)） 
+ 
+  ```objective-c 
+  /**
+   *设置是否需要采集崩溃日志 默认为NO
+   */
+   @property (nonatomic, assign) BOOL enableTrackAppCrash;
+  ```    
+   **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。 
+   
+   
+### 5. SDK 内部 DebugLog 打印
+  
+   enableSDKDebugLog 打印日志    
+
+   在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
+   
+   ```objective-c
+    config.enableSDKDebugLog = YES; //打印日志
+   ```   
            
-### 4. 设置X-Datakit-UUID
+### 6. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
@@ -169,7 +192,7 @@
    [config setXDataKitUUID:@"YOUR UUID"];
   ```
    
-### 5. 采集数据配置
+### 7. 采集数据配置
 
    配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
 
@@ -195,10 +218,9 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeFPS          = 1 << 6,
 };
       
- ```
-
+ ``` 
   
-### 6.设置 UI 卡顿、ANR 事件采集
+### 8.设置 UI 卡顿、ANR 事件采集
 
 
  - enableTrackAppUIBlock 采集UI卡顿事件
@@ -236,8 +258,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |          字段          |     类型     |            说明             |                是否必须                |
 | :------------------: | :--------: | :-----------------------: | :--------------------------------: |
 |      metricsUrl      |  NSString  |  FT-GateWay metrics 写入地址  |                 是                  |
-|      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）                  |
-
+|      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  |        
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
 |    enableDescLog     |    BOOL    |       设置是否允许打印描述日志        |              否（默认NO）               |
 |   monitorInfoType    | NS_OPTIONS |     [采集数据](#5-采集数据配置)     |                 否                  |
