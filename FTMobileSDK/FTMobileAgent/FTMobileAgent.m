@@ -29,6 +29,7 @@
 #import "FTTrack.h"
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
+#import "FTNetworkInfo.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -108,6 +109,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (config) {
                 self.config = config;
             }
+            _net = @"unknown";
             _appRelaunched = NO;
             _running = NO;
             self.launchTime = CFAbsoluteTimeGetCurrent();
@@ -206,11 +208,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-    NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
-    if (tags) {
-        [baseTags addEntriesFromDictionary:tags];
-    }
-    [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
+        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
+        baseTags[@"network_type"] = self.net;
+        if (tags) {
+            [baseTags addEntriesFromDictionary:tags];
+        }
+        [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -234,6 +237,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             userid = [FTBaseInfoHander ft_getSessionid];
         }
         baseTags[@"userid"] = userid;
+        baseTags[@"network_type"] = self.net;
         if ([type isEqualToString:FT_TYPE_CRASH]) {
             dataType = FTAddDataImmediate;
             if ([terminal isEqualToString:FT_TERMINAL_APP]) {
@@ -472,15 +476,15 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
     if (flags & kSCNetworkReachabilityFlagsReachable) {
         if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
-            self.net = @"0";//2G/3G/4G
+            self.net = [FTNetworkInfo getNetworkType];//2G/3G/4G/5G
         } else {
-            self.net = @"4";//WIFI
+            self.net = @"wifi";//WIFI
         }
          [self uploadFlush];
     } else {
-        self.net = @"-1";//未知
+        self.net = @"unreachable";//未知
     }
-    ZYDebug(@"联网状态: %@", [@"-1" isEqualToString:self.net]?@"未知":[@"0" isEqualToString:self.net]?@"移动网络":@"WIFI");
+    ZYDebug(@"联网状态: %@", [@"unreachable" isEqualToString:self.net]?@"未知":[@"wifi" isEqualToString:self.net]?@"WIFI":@"移动网络");
 }
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     
@@ -535,7 +539,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - 上报策略
 - (void)uploadFlush{
     dispatch_async(self.serialQueue, ^{
-        if (![self.net isEqualToString:@"-1"]) {
+        if (![self.net isEqualToString:@"unreachable"]) {
             [self.upTool upload];
         }
     });
