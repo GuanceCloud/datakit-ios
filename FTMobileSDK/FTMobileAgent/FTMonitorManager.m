@@ -244,19 +244,19 @@ static dispatch_once_t onceToken;
     if (group) {
         tags[@"resource_status_group"] = group;
     }
-    NSTimeInterval dnsTime = [taskMes.domainLookupEndDate timeIntervalSinceDate:taskMes.domainLookupStartDate]*1000;
-    NSTimeInterval tcpTime = [taskMes.connectEndDate timeIntervalSinceDate:taskMes.connectStartDate]*1000;
-    NSTimeInterval tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate timeIntervalSinceDate:taskMes.secureConnectionStartDate]*1000:0;
-    NSTimeInterval ttfbTime = [taskMes.responseStartDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
-    NSTimeInterval transTime =[taskMes.responseEndDate timeIntervalSinceDate:taskMes.requestStartDate]*1000;
-    NSTimeInterval durationTime = [taskMes.requestEndDate timeIntervalSinceDate:taskMes.fetchStartDate]*1000;
+    NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_timeIntervalSinceDate:taskMes.domainLookupStartDate];
+    NSNumber *tcpTime = [taskMes.connectEndDate ft_timeIntervalSinceDate:taskMes.connectStartDate];
+    NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_timeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
+    NSNumber *ttfbTime = [taskMes.responseStartDate ft_timeIntervalSinceDate:taskMes.requestStartDate];
+    NSNumber *transTime =[taskMes.responseEndDate ft_timeIntervalSinceDate:taskMes.requestStartDate];
+    NSNumber *durationTime = [taskMes.requestEndDate ft_timeIntervalSinceDate:taskMes.fetchStartDate];
     fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
-    fields[@"resource_load"] =[NSNumber numberWithInt:durationTime];
-    fields[@"resource_dns"] = [NSNumber numberWithInt:dnsTime];
-    fields[@"resource_tcp"] = [NSNumber numberWithInt:tcpTime];
-    fields[@"resource_ssl"] = [NSNumber numberWithInt:tlsTime];
-    fields[@"resource_ttfb"] = [NSNumber numberWithInt:ttfbTime];
-    fields[@"resource_trans"] = [NSNumber numberWithInt:transTime];
+    fields[@"resource_load"] =durationTime;
+    fields[@"resource_dns"] = dnsTime;
+    fields[@"resource_tcp"] = tcpTime;
+    fields[@"resource_ssl"] = tlsTime;
+    fields[@"resource_ttfb"] = ttfbTime;
+    fields[@"resource_trans"] = transTime;
     
     [agent rumTrack:@"rum_app_resource_performance" tags:tags fields:fields];
     if (response) {

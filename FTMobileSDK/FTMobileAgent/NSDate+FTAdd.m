@@ -29,4 +29,7 @@
     
     return [iosDateFormater stringFromDate:self];
 }
+-(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate{
+    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000];
+}
 @end

@@ -25,6 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return GMT格式的时间
 */
 -(NSString *)ft_dateGMT;
+/**
+ *  @abstract
+ *  获取时间间隔 纳秒级
+ *
+ *  @return 时间间隔
+*/
+-(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate;
 @end
 
 NS_ASSUME_NONNULL_END
