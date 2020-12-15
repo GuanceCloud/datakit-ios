@@ -251,10 +251,10 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             NSString *name = NSStringFromClass([cpn class]);
             NSString *view_id = [name ft_md5HashToUpper32Bit];
             NSString *parent = [(UIViewController *)cpn ft_getParentVC];
-            NSDictionary *tags = @{@"view_id":view_id,
+            NSMutableDictionary *tags = @{@"view_id":view_id,
                                    @"view_name":name,
                                    @"view_parent":parent,
-            };
+            }.mutableCopy;
             NSMutableDictionary *fields = @{
                 @"view_load":[NSNumber numberWithInt:duration*1000*1000],
             }.mutableCopy;
@@ -264,6 +264,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                     fields[@"view_fps"] =fps;
                 }
             }
+            int apdexlevel = duration > 9 ? 9 : duration;
+            tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
             [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
             [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
             if (instance.config.eventFlowLog) {
