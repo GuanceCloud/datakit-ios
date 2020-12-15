@@ -135,7 +135,7 @@
  ```
 -  networkTrace 设置网络追踪
    
-   设置网络追踪，开启网络请求信息采集
+  设置网络追踪，开启网络请求信息采集
    
   ``` objective-c   
   /**
@@ -145,7 +145,7 @@
  
   ```    
           
-   设置网络请求信息采集时 使用链路追踪类型 
+  设置网络请求信息采集时 使用链路追踪类型 
    
   ``` objective-c   
   /**
@@ -175,22 +175,20 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
    
    
 ### 5. SDK 内部 DebugLog 打印
-  
-   enableSDKDebugLog 打印日志    
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
    
-  ```objective-c
-  config.enableSDKDebugLog = YES; //打印日志
-  ```   
+```objective-c
+config.enableSDKDebugLog = YES; //打印日志
+```   
            
 ### 6. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
- ```objective-c
- [config setXDataKitUUID:@"YOUR UUID"];
- ```
+```objective-c
+[config setXDataKitUUID:@"YOUR UUID"];
+```
 ### 7. 设置 env 环境
 
 ```
@@ -207,9 +205,9 @@ typedef NS_ENUM(NSInteger, FTEnv) {
    
 ### 8. 采集数据配置
 
-   配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
+ 配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
 
- ```objective-c
+```objective-c
 /**
  *
  * @constant
@@ -227,7 +225,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeBluetooth    = 1 << 4,
     FTMonitorInfoTypeFPS          = 1 << 5,
 };
- ``` 
+``` 
   
 ### 9.设置 UI 卡顿、ANR 事件采集
 
@@ -236,20 +234,17 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 ```
 /**
  * 默认为NO
- * 设置是否需要采集卡顿
+ * 设置是否需要采集UI卡顿
  */
  @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
 ```
      
 - enableTrackAppANR  采集ANR卡顿无响应事件
 
- 通过 **runloop** 采集主线程卡顿事件。
-
 ```
 /**
  * 默认为NO
- * 设置是否需要采集卡顿
- * runloop采集主线程卡顿
+ * 设置是否需要采集卡顿无响应事件
  */
  @property (nonatomic, assign) BOOL enableTrackAppANR;
 ```
@@ -263,7 +258,8 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |          字段          |     类型     |            说明             |                是否必须                |
 | :------------------: | :--------: | :-----------------------: | :--------------------------------: |
 |      metricsUrl      |  NSString  |  FT-GateWay metrics 写入地址  |                 是                  |
-|      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  |        
+|      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  | 
+| samplerate |int|RUM采样采集率|否（默认100）|       
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
 |   monitorInfoType    | NS_OPTIONS |     [采集数据](#8-采集数据配置)     |                 否                  |
 |   env    | NS_ENUM |     [环境](#7-设置-env-环境)     |                 否  （默认FTEnvProd）                |
@@ -274,7 +270,6 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
 |   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
 |   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
-| samplerate |float|采样采集率|否（默认100）|
 |   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
 
 
