@@ -101,13 +101,13 @@
 
  ```   
 
-- traceServiceName  日志所属业务或服务的名称
+- serviceName  日志所属业务或服务的名称
 
   ``` 
   /**
  * 设置日志所属业务或服务的名称
  */
-@property (nonatomic, copy) NSString *traceServiceName;
+@property (nonatomic, copy) NSString *serviceName;
  
   ```
      
@@ -135,31 +135,31 @@
   ```
 -  networkTrace 设置网络追踪
    
- - 设置网络追踪，开启网络请求信息采集
+  - 设置网络追踪，开启网络请求信息采集
    
- ``` objective-c   
- /**
- * 设置网络请求信息采集 默认为NO
- */
-@property (nonatomic, assign) BOOL networkTrace;
-
- ```    
+  ``` objective-c   
+  /**
+   * 设置网络请求信息采集 默认为NO
+   */
+  @property (nonatomic, assign) BOOL networkTrace;
+ 
+  ```    
           
- - 设置网络请求信息采集时 使用链路追踪类型 
+  - 设置网络请求信息采集时 使用链路追踪类型 
    
- ``` objective-c   
-/**
- *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
- *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、FTNetworkTrackTypeSKYWALKING_V3
- */
-@property (nonatomic, assign) FTNetworkTrackType networkTraceType;
-/**
- *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
- *  @param  type   链路追踪类型 默认为 Zipkin
- */
--(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
+  ``` objective-c   
+  /**
+   *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
+   *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、  FTNetworkTrackTypeSKYWALKING_V3
+   */
+   @property (nonatomic, assign) FTNetworkTrackType networkTraceType;
+  /**
+   *  开启网络请求信息采集 并设置链路追踪类型 type 默认为 Zipkin
+   *  @param  type   链路追踪类型 默认为 Zipkin
+   */
+  -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
- ```    
+  ```    
  
 ### 4. 开启崩溃 Crash 采集
 
@@ -191,21 +191,32 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
   ```objective-c
    [config setXDataKitUUID:@"YOUR UUID"];
   ```
+### 7. 设置 env 环境
+
+```
+/**
+ * 环境字段。属性值：prod/gray/pre/common/local。其中
+ * prod：线上环境
+ * gray：灰度环境
+ * pre：预发布环境
+ * common：日常环境
+ * local：本地环境
+ */
+@property (nonatomic, assign) FTEnv env;
+```
    
-### 7. 采集数据配置
+### 8. 采集数据配置
 
    配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
 
  ```objective-c
 /**
- * @enum  TAG 中的设备信息
  *
  * @constant
- *  FTMonitorInfoTypeBattery  - 电池使用率
- *  FTMonitorInfoTypeMemory   - 内存总量、使用率
- *  FTMonitorInfoTypeCpu      - CPU 占用率
- *  FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
- *  FTMonitorInfoTypeLocation - 地理位置信息
+ *  FTMonitorInfoTypeBattery  - 电池电量
+ *  FTMonitorInfoTypeMemory   - 内存总量、内存使用率
+ *  FTMonitorInfoTypeCpu      - CPU使用率
+ *  FTMonitorInfoTypeBluetooth- 蓝牙是否开启
  *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
@@ -214,24 +225,20 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeMemory       = 1 << 2,
     FTMonitorInfoTypeCpu          = 1 << 3,
     FTMonitorInfoTypeBluetooth    = 1 << 4,
-    FTMonitorInfoTypeLocation     = 1 << 5,
-    FTMonitorInfoTypeFPS          = 1 << 6,
+    FTMonitorInfoTypeFPS          = 1 << 5,
 };
       
  ``` 
   
-### 8.设置 UI 卡顿、ANR 事件采集
+### 9.设置 UI 卡顿、ANR 事件采集
 
 
- - enableTrackAppUIBlock 采集UI卡顿事件
-
-   通过 **fps** 采集 **fps** 小于 10 的事件； 
-     
+- enableTrackAppUIBlock 采集UI卡顿事件
+    
    ```
    /**
    * 默认为NO
    * 设置是否需要采集卡顿
-   * 采集fps小于10
    */
    @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
    ```
@@ -260,12 +267,13 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |      metricsUrl      |  NSString  |  FT-GateWay metrics 写入地址  |                 是                  |
 |      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  |        
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
-|    enableDescLog     |    BOOL    |       设置是否允许打印描述日志        |              否（默认NO）               |
-|   monitorInfoType    | NS_OPTIONS |     [采集数据](#5-采集数据配置)     |                 否                  |
+|   monitorInfoType    | NS_OPTIONS |     [采集数据](#8-采集数据配置)     |                 否                  |
+|   env    | NS_ENUM |     [环境](#7-设置-env-环境)     |                 否                  |
+
 |   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
 |   enableTrackAppANR   |    BOOL    |       采集ANR卡顿无响应事件      |              否（默认NO）              |
 |   enableTrackAppUIBlock   |    BOOL    |       采集UI卡顿事件      |              否（默认NO）              |
-|   traceServiceName   |    NSString    |       设置日志所属业务或服务的名称      |              否（默认dataflux sdk）              |
+|   serviceName   |    NSString    |       设置日志所属业务或服务的名称      |              否（默认dataflux sdk）              |
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
 |   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
 |   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
