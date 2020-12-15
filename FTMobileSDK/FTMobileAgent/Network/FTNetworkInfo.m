@@ -36,7 +36,7 @@ isPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.bo
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
         CTTelephonyNetworkInfo *teleInfo= [[CTTelephonyNetworkInfo alloc] init];
         NSString *accessString = teleInfo.currentRadioAccessTechnology;
-        if (@available(iOS 14.0, *)) {
+        if (@available(iOS 14.1, *)) {
             NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
                                        CTRadioAccessTechnologyNR];
             if ([typeStrings5G containsObject:accessString]) {
