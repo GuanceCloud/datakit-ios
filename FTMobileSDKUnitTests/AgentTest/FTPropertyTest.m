@@ -70,7 +70,7 @@
 
 -(void)testSetServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.traceServiceName = @"testSetServiceName";
+    config.serviceName = @"testSetServiceName";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
@@ -195,26 +195,6 @@
 }
 
 
-/**
- * token\url\akid\aksecret 正确
- */
-//- (void)testConfigSetRight{
-//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-//    
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-//    [[FTMobileAgent sharedInstance] logging:@"testConfigSetRight" status:FTStatusInfo];
-//    [NSThread sleepForTimeInterval:2];
-//    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
-//    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-//        XCTAssertTrue(statusCode == 200);
-//        [expect fulfill];
-//    }];
-//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
-//    [[FTMobileAgent sharedInstance] resetInstance];
-//}
+
 
 @end

@@ -32,6 +32,7 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     config.source = @"iOSTest";
+    config.eventFlowLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
@@ -56,22 +57,25 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-//- (void)testTraceEventEnter{
+- (void)testTraceEventEnter{
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
+
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array firstObject];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
+}
+//- (void)testTraceEventLaunch{
 //    [self.testVC view];
 //    [self.testVC viewWillAppear:NO];
 //    [self.testVC viewDidAppear:NO];
-//
-//    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-//    FTRecordModel *model = [array lastObject];
-//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-//    NSDictionary *op = dict[@"opdata"];
-//    NSDictionary *field = op[@"field"];
-//    NSString *content = field[@"__content"];
-//    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-//    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
-//}
-//- (void)testTraceEventLaunch{
-//    //模拟launch
+    //模拟launch
 //    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
 //
 //

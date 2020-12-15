@@ -36,8 +36,6 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 }
 - (FTUploadTool *)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *akId =[processInfo environment][@"ACCESS_KEY_ID"];
-    NSString *akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
     NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
     switch (type) {
         case FTNetworkTest:

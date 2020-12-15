@@ -45,7 +45,7 @@
     config.source = @"iOSTest";
     config.networkTrace = YES;
     config.networkTraceType = type;
-    config.traceServiceName = @"iOSTestService";
+    config.serviceName = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
@@ -265,7 +265,6 @@
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == YES);
     [self uploadModel:model];
