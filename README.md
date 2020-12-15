@@ -113,26 +113,26 @@
      
 - traceConsoleLog 采集控制台日志    
 
-   一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出App里的保密数据， 所以在发布正式版时会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用 [日志写入接口](#主动上报日志方法) 来上传想查看的日志。
+   一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出App里的保密数据， 所以在发布正式版时会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用 [日志写入接口](#-主动上报日志方法) 来上传想查看的日志。
  
-  ```objective-c 
-  /**
-   *设置是否需要采集控制台日志 默认为NO
-   */
-   @property (nonatomic, assign) BOOL traceConsoleLog;
-  ```    
+ ```objective-c 
+ /**
+  *设置是否需要采集控制台日志 默认为NO
+  */
+  @property (nonatomic, assign) BOOL traceConsoleLog;
+ ```    
     
 - eventFlowLog 采集页面事件日志
     
   设置后，可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等。  
       
-  ```objective-c
-  /**
-   * 默认为NO
-   * 需 AutoTrack 开启 ，设置对应采集类型时生效
-   */
-   @property (nonatomic, assign) BOOL eventFlowLog; 
-  ```
+ ```objective-c
+ /**
+  * 默认为NO
+  * 需 AutoTrack 开启 ，设置对应采集类型时生效
+  */
+  @property (nonatomic, assign) BOOL eventFlowLog; 
+ ```
 -  networkTrace 设置网络追踪
    
    设置网络追踪，开启网络请求信息采集
@@ -235,26 +235,26 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 
 - enableTrackAppUIBlock 采集UI卡顿事件
     
-   ```
-   /**
+  ```
+  /**
    * 默认为NO
    * 设置是否需要采集卡顿
    */
-   @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
-   ```
+  @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
+  ```
      
 - enableTrackAppANR  采集ANR卡顿无响应事件
 
      通过 **runloop** 采集主线程卡顿事件。
    
-   ```
-   /**
+  ```
+  /**
    * 默认为NO
    * 设置是否需要采集卡顿
    * runloop采集主线程卡顿
    */
-   @property (nonatomic, assign) BOOL enableTrackAppANR;
-   ```
+  @property (nonatomic, assign) BOOL enableTrackAppANR;
+  ```
  
  采集的数据会上传到 **RUM** 与日志中。  
    
