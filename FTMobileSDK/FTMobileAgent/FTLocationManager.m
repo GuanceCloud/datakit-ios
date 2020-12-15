@@ -124,7 +124,11 @@ static dispatch_once_t onceToken;
     [self.locationManager stopUpdatingLocation];
 }
 - (BOOL)gpsServicesEnabled{
-    return [CLLocationManager locationServicesEnabled];
+        if (([CLLocationManager locationServicesEnabled]) && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways || [CLLocationManager authorizationStatus] ==  kCLAuthorizationStatusAuthorizedWhenInUse)) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
 {

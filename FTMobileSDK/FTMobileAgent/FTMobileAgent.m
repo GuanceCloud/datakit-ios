@@ -30,6 +30,7 @@
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
 #import "FTNetworkInfo.h"
+#import "FTMonitorUtils.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -59,29 +60,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             FTMobileAgent *zy = (__bridge FTMobileAgent *)info;
             [zy reachabilityChanged:flags];
         }
-    }
-}
-+ (void)startLocation:(nullable void (^)(NSInteger errorCode,NSString * _Nullable errorMessage))callBack{
-    if ([[FTLocationManager sharedInstance].location.country isEqualToString:FT_NULL_VALUE]) {
-    [[FTLocationManager sharedInstance] startUpdatingLocation];
-    __block BOOL isUpdate = NO;
-    [FTLocationManager sharedInstance].updateLocationBlock = ^(FTLocationInfo * _Nonnull locInfo, NSError * _Nullable error) {
-        if (error) {
-            NSString *message =error.domain;
-            if(error.code == 104){
-                message = [error.userInfo objectForKey:NSLocalizedDescriptionKey];
-            }
-            (callBack&&isUpdate==NO)?callBack(UnknownException,message):nil;
-            ZYDebug(@"Location Error : %@",error);
-        }else{
-            ZYDebug(@"Location Success");
-            (callBack&&isUpdate==NO)?callBack(0,nil):nil;
-        }
-        isUpdate = YES;
-    };
-    }else{
-        ZYDebug(@"Location Success");
-        callBack?callBack(0,nil):nil;
     }
 }
 #pragma mark --------- 初始化 config 设置 ----------
@@ -248,8 +226,16 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
                     baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils ft_getTotalMemorySize];
                 }
-                if (self.config.monitorInfoType & FTMonitorInfoTypeLocation) {
-                    baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
+                baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
+                
+                if (self.config.monitorInfoType & FTMonitorInfoTypeCpu) {
+                    baseTags[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils ft_cpuUsage]];
+                }
+                if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
+                    baseTags[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils ft_usedMemory]];
+                }
+                if (self.config.monitorInfoType & FTMonitorInfoTypeBattery) {
+                    baseTags[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils ft_getBatteryUse]];
                 }
             }else{
                 baseTags[@"crash_situation"] = @"run";
@@ -273,7 +259,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     @try {
         NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
-                                         FT_KEY_SERVICENAME:self.config.traceServiceName,
+                                         FT_KEY_SERVICENAME:self.config.serviceName,
                                          @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
                                          @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
                                          @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
@@ -546,7 +532,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
-    [[FTLocationManager sharedInstance] resetInstance];
     [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
     if (_reachability) {
         SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);

@@ -12,7 +12,6 @@
 #import <CoreLocation/CLLocationManager.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <SystemConfiguration/CaptiveNetwork.h>
-#import "FTLocationManager.h"
 #import "FTBaseInfoHander.h"
 #import "FTMobileConfig.h"
 #import "FTNetworkInfo.h"
@@ -97,9 +96,6 @@ static dispatch_once_t onceToken;
         [FTANRDetector sharedInstance].delegate = nil;
         [[FTANRDetector sharedInstance] stopDetecting];
     }
-    //位置信息  国家、省、市、经纬度
-    (_monitorType & FTMonitorInfoTypeLocation)?[[FTLocationManager sharedInstance] startUpdatingLocation]:[[FTLocationManager sharedInstance] stopUpdatingLocation];
-    
     if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
     }
@@ -113,7 +109,6 @@ static dispatch_once_t onceToken;
 }
 -(void)stopMonitor{
     [self stopMonitorFPS];
-    [[FTLocationManager sharedInstance] stopUpdatingLocation];
 }
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
@@ -402,7 +397,7 @@ static dispatch_once_t onceToken;
     NSUInteger seq = [self getSkywalkingSeq];
     NSString *parentTraceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq] ft_base64Encode];
     NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq+1] ft_base64Encode];
-    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[self.config.traceServiceName ft_base64Encode],parentServiceInstance,urlPath,urlStr];
+    return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[self.config.serviceName ft_base64Encode],parentServiceInstance,urlPath,urlStr];
 }
 -(NSUInteger)getSkywalkingSeq{
     [self.lock lock];

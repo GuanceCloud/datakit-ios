@@ -17,14 +17,12 @@ typedef NS_ENUM(NSInteger, FTStatus) {
     FTStatusOk,
 };
 /**
- * @enum  TAG 中的设备信息
  *
  * @constant
- *  FTMonitorInfoTypeBattery  - 电池使用率
- *  FTMonitorInfoTypeMemory   - 内存总量、使用率
- *  FTMonitorInfoTypeCpu      - CPU 占用率
- *  FTMonitorInfoTypeBluetooth- 蓝牙对外显示名称
- *  FTMonitorInfoTypeLocation - 地理位置信息
+ *  FTMonitorInfoTypeBattery  - 电池电量
+ *  FTMonitorInfoTypeMemory   - 内存总量、内存使用率
+ *  FTMonitorInfoTypeCpu      - CPU使用率
+ *  FTMonitorInfoTypeBluetooth- 蓝牙是否开启
  *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
@@ -33,8 +31,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeMemory       = 1 << 2,
     FTMonitorInfoTypeCpu          = 1 << 3,
     FTMonitorInfoTypeBluetooth    = 1 << 4,
-    FTMonitorInfoTypeLocation     = 1 << 5,
-    FTMonitorInfoTypeFPS          = 1 << 6,
+    FTMonitorInfoTypeFPS          = 1 << 5,
 };
 /**
  * @enum
@@ -121,14 +118,13 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置日志所属业务或服务的名称
  */
-@property (nonatomic, copy) NSString *traceServiceName;
+@property (nonatomic, copy) NSString *serviceName;
 /**
  * 设置是否需要采集崩溃日志
  */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /**
  * 设置是否需要采集卡顿
- * 采集fps小于10
  */
 @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
 /**

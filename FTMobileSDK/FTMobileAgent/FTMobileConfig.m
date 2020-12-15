@@ -23,7 +23,7 @@
         _XDataKitUUID = [self ft_defaultUUID];
         _enableTrackAppCrash= NO;
         _samplerate = 100;
-        _traceServiceName = FT_DEFAULT_SERVICE_NAME;
+        _serviceName = FT_DEFAULT_SERVICE_NAME;
         _source = FT_USER_AGENT;
         _networkTrace = NO;
         _networkTrace = FTNetworkTraceTypeZipkin;
@@ -44,7 +44,7 @@
     options.XDataKitUUID = self.XDataKitUUID;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.samplerate = self.samplerate;
-    options.traceServiceName = self.traceServiceName;
+    options.serviceName = self.serviceName;
     options.source = self.source;
     options.networkTrace = self.networkTrace;
     options.networkTraceType = self.networkTraceType;
