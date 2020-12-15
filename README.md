@@ -103,13 +103,13 @@
 
 - serviceName  日志所属业务或服务的名称
 
-  ``` 
+ ``` 
   /**
  * 设置日志所属业务或服务的名称
  */
 @property (nonatomic, copy) NSString *serviceName;
  
-  ```
+ ```
      
 - traceConsoleLog 采集控制台日志    
 
@@ -135,7 +135,7 @@
   ```
 -  networkTrace 设置网络追踪
    
-  - 设置网络追踪，开启网络请求信息采集
+   设置网络追踪，开启网络请求信息采集
    
   ``` objective-c   
   /**
@@ -145,7 +145,7 @@
  
   ```    
           
-  - 设置网络请求信息采集时 使用链路追踪类型 
+   设置网络请求信息采集时 使用链路追踪类型 
    
   ``` objective-c   
   /**
@@ -194,14 +194,14 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
 ### 7. 设置 env 环境
 
 ```
-/**
- * 环境字段。属性值：prod/gray/pre/common/local。其中
- * prod：线上环境
- * gray：灰度环境
- * pre：预发布环境
- * common：日常环境
- * local：本地环境
- */
+typedef NS_ENUM(NSInteger, FTEnv) {
+    FTEnvProd         = 0, //线上环境
+    FTEnvGray,             //灰度环境
+    FTEnvPre,              //预发布环境
+    FTEnvCommon,           //日常环境
+    FTEnvLocal,            //本地环境
+};
+
 @property (nonatomic, assign) FTEnv env;
 ```
    
@@ -268,8 +268,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  |        
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
 |   monitorInfoType    | NS_OPTIONS |     [采集数据](#8-采集数据配置)     |                 否                  |
-|   env    | NS_ENUM |     [环境](#7-设置-env-环境)     |                 否                  |
-
+|   env    | NS_ENUM |     [环境](#7-设置-env-环境)     |                 否  （默认FTEnvProd）                |
 |   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
 |   enableTrackAppANR   |    BOOL    |       采集ANR卡顿无响应事件      |              否（默认NO）              |
 |   enableTrackAppUIBlock   |    BOOL    |       采集UI卡顿事件      |              否（默认NO）              |
