@@ -93,7 +93,7 @@
 ### 3.设置日志相关  
 - source 日志来源  
 
- ```
+ ```objective-c   
  /**
  * 日志的来源 默认为：ft_mobile_sdk_ios
  */
@@ -103,7 +103,7 @@
 
 - serviceName  日志所属业务或服务的名称
 
- ``` 
+ ```objective-c    
   /**
  * 设置日志所属业务或服务的名称
  */
@@ -165,12 +165,12 @@
 
 enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志分析)） 
  
-  ```objective-c 
-  /**
-   *设置是否需要采集崩溃日志 默认为NO
-   */
-   @property (nonatomic, assign) BOOL enableTrackAppCrash;
-  ```    
+```objective-c 
+/**
+ *设置是否需要采集崩溃日志 默认为NO
+ */
+ @property (nonatomic, assign) BOOL enableTrackAppCrash;
+```    
    **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。 
    
    
@@ -180,17 +180,17 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
    
-   ```objective-c
-    config.enableSDKDebugLog = YES; //打印日志
-   ```   
+  ```objective-c
+  config.enableSDKDebugLog = YES; //打印日志
+  ```   
            
 ### 6. 设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
-  ```objective-c
-   [config setXDataKitUUID:@"YOUR UUID"];
-  ```
+ ```objective-c
+ [config setXDataKitUUID:@"YOUR UUID"];
+ ```
 ### 7. 设置 env 环境
 
 ```
@@ -227,34 +227,32 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeBluetooth    = 1 << 4,
     FTMonitorInfoTypeFPS          = 1 << 5,
 };
-      
  ``` 
   
 ### 9.设置 UI 卡顿、ANR 事件采集
 
-
 - enableTrackAppUIBlock 采集UI卡顿事件
-    
-  ```
-  /**
-   * 默认为NO
-   * 设置是否需要采集卡顿
-   */
-  @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
-  ```
+   
+```
+/**
+ * 默认为NO
+ * 设置是否需要采集卡顿
+ */
+ @property (nonatomic, assign) BOOL enableTrackAppUIBlock;
+```
      
 - enableTrackAppANR  采集ANR卡顿无响应事件
 
-     通过 **runloop** 采集主线程卡顿事件。
-   
-  ```
-  /**
-   * 默认为NO
-   * 设置是否需要采集卡顿
-   * runloop采集主线程卡顿
-   */
-  @property (nonatomic, assign) BOOL enableTrackAppANR;
-  ```
+ 通过 **runloop** 采集主线程卡顿事件。
+
+```
+/**
+ * 默认为NO
+ * 设置是否需要采集卡顿
+ * runloop采集主线程卡顿
+ */
+ @property (nonatomic, assign) BOOL enableTrackAppANR;
+```
  
  采集的数据会上传到 **RUM** 与日志中。  
    
@@ -309,7 +307,6 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  
 ```objective-c
     [[FTMobileAgent sharedInstance] logging:@"TestLoggingBackground" status:FTStatusInfo];
-
 ```       
 
 
