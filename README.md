@@ -150,7 +150,7 @@
   ``` objective-c   
   /**
    *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin 
-   *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 、  FTNetworkTrackTypeSKYWALKING_V3
+   *  FTNetworkTrackTypeZipkin 、FTNetworkTrackTypeJaeger 
    */
    @property (nonatomic, assign) FTNetworkTrackType networkTraceType;
   /**
@@ -270,7 +270,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |   traceConsoleLog   |    BOOL    |       设置是否需要采集控制台日志      |              否（默认NO）              |
 |   eventFlowLog   |    BOOL    |       设置是否采集页面事件日志  |              否（默认NO）              |
 |   networkTrace   |    BOOL    |       设置网络请求信息采集  |              否（默认NO）              |
-|   networkTraceType   |    FTNetworkTrackType    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
+|   networkTraceType   |    NS_ENUM    |   设置网络请求信息采集时 使用链路追踪类型 | 否（默认Zipkin）         |
 
 
 ## 五、主动上报日志方法
@@ -301,7 +301,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  * 方法使用示例
  
 ```objective-c
-    [[FTMobileAgent sharedInstance] logging:@"TestLoggingBackground" status:FTStatusInfo];
+[[FTMobileAgent sharedInstance] logging:@"TestLoggingBackground" status:FTStatusInfo];
 ```       
 
 
