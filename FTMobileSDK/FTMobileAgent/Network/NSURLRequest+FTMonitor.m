@@ -220,18 +220,18 @@
                       [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
                   }
                       break;
-                  case FTNetworkTraceTypeSKYWALKING_V2:{
-                      if (skyStr) {
-                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
-                      }
-                  }
-                      break;
-                  case FTNetworkTraceTypeSKYWALKING_V3:{
-                      if (skyStr) {
-                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
-                      }
-                  }
-                      break;
+//                  case FTNetworkTraceTypeSKYWALKING_V2:{
+//                      if (skyStr) {
+//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
+//                      }
+//                  }
+//                      break;
+//                  case FTNetworkTraceTypeSKYWALKING_V3:{
+//                      if (skyStr) {
+//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
+//                      }
+//                  }
+//                      break;
               }
           }
       }];

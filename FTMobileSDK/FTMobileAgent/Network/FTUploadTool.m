@@ -114,6 +114,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     @try {
         [self flushWithType:FT_DATA_TYPE_RUM];
         [self flushWithType:FT_DATA_TYPE_LOGGING];
+        [self flushWithType:FT_DATA_TYPE_TRACING];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);
@@ -200,6 +201,10 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         api = FT_NETWORKING_API_OBJECT;
         requestData = [self getObjctRequestWithEventArray:modelList];
         contentType = @"application/json";
+    }else if([model.op isEqualToString:FT_DATA_TYPE_TRACING]){
+        api = FT_NETWORKING_API_TRACING;
+        requestData = [self getRequestDataWithEventArray:modelList type:FT_KEY_SOURCE];
+        contentType = @"text/plain";
     }
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",self.config.metricsUrl,api]];
     request = [self getRequestWithURL:url body:requestData contentType:contentType];

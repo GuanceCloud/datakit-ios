@@ -44,6 +44,7 @@
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) BOOL running; //正在运行
+@property (nonatomic, copy) NSString *netTraceStr;
 @end
 @implementation FTMobileAgent{
     BOOL _appRelaunched;          // App 从后台恢复
@@ -92,6 +93,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _running = NO;
             self.launchTime = CFAbsoluteTimeGetCurrent();
             [FTLog enableLog:config.enableSDKDebugLog];
+            _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:FTNetworkTraceTypeZipkin];
             self.track = [[FTTrack alloc]init];
             [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
@@ -253,6 +255,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // FT_DATA_TYPE_LOGGING
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+    [self loggingWithType:type source:self.config.source status:status content:content tags:tags field:field tm:tm];
+}
+-(void)loggingWithType:(FTAddDataType)type source:(NSString *)source status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     if (!content || content.length == 0 || [content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
@@ -273,11 +278,39 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [self getModelWithMeasurement:self.config.source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [self getModelWithMeasurement:source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:type];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
+}
+-(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+    if (!content || content.length == 0 || [content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
+        return;
+    }
+    @try {
+        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo],
+                                         FT_KEY_SERVICENAME:self.config.serviceName,
+                                         @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                         @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                         @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                         @"version":self.config.version
+        }.mutableCopy;
+        if (tags) {
+            [tagDict addEntriesFromDictionary:tags];
+        }
+        NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
+        }.mutableCopy;
+        if (field) {
+            [filedDict addEntriesFromDictionary:field];
+        }
+        FTRecordModel *model = [self getModelWithMeasurement:[FTBaseInfoHander ft_getNetworkTraceTypeStr:self.config.networkTraceType] op:FTDataTypeTRACING tags:tagDict field:filedDict tm:tm];
+        [self insertDBWithItemData:model type:FTAddDataNormal];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+    
 }
 -(void)trackStartWithViewLoadTime:(CFTimeInterval)time{
     self.running = YES;
@@ -342,9 +375,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             opStr = FT_DATA_TYPE_INFLUXDB;
             key = FT_AGENT_MEASUREMENT;
             break;
-            case FTDataTypeLOGGING:
+        case FTDataTypeLOGGING:
             key = FT_KEY_SOURCE;
             opStr = FT_DATA_TYPE_LOGGING;
+            break;
+        case FTDataTypeTRACING:
+            key = FT_KEY_SOURCE;
+            opStr = FT_DATA_TYPE_TRACING;
             break;
     }
     NSMutableDictionary *opdata = @{

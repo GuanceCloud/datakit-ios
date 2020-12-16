@@ -213,7 +213,7 @@ static dispatch_once_t onceToken;
         if(trace&&span&&sampling){
             [tags setValue:trace forKey:FT_FLOW_TRACEID];
             [tags setValue:span forKey:FT_KEY_SPANID];
-            [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+            [agent tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
         }
     }
     if (![agent judgeIsTraceSampling] || error) {
@@ -313,7 +313,7 @@ static dispatch_once_t onceToken;
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
     }
-    [[FTMobileAgent sharedInstance] loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
 }
 - (void)trackAppFreeze{
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
@@ -360,11 +360,11 @@ static dispatch_once_t onceToken;
     if ([self trackUrl:url]) {
         NSString *skyStr = nil;
         BOOL sample = [[FTMobileAgent sharedInstance] judgeIsTraceSampling];
-        if (self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V3) {
-            skyStr = [self getSkyWalking_V3Str:sample url:url];
-        }else if(self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V2){
-            skyStr = [self getSkyWalking_V2Str:sample url:url];
-        }
+//        if (self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V3) {
+//            skyStr = [self getSkyWalking_V3Str:sample url:url];
+//        }else if(self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V2){
+//            skyStr = [self getSkyWalking_V2Str:sample url:url];
+//        }
         if (completionHandler) {
             completionHandler(YES,sample,self.config.networkTraceType,skyStr);
         }

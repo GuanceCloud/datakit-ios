@@ -76,11 +76,13 @@ NSString *const FT_DATA_TYPE_ES = @"ES";
 NSString *const FT_DATA_TYPE_INFLUXDB = @"InfluxDB";
 NSString *const FT_DATA_TYPE_LOGGING = @"Logging";
 NSString *const FT_DATA_TYPE_OBJECT = @"Object";
+NSString *const FT_DATA_TYPE_TRACING = @"Tracing";
 NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
 NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
 NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
 NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
 NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
+NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 
 #pragma mark ========== logging key ==========
 NSString *const FT_KEY_SOURCE = @"__source";

@@ -277,6 +277,18 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
    return str;
 }
++ (NSString *)ft_getNetworkTraceTypeStr:(FTNetworkTraceType)type{
+    NSString *str = nil;
+    switch (type) {
+        case FTNetworkTraceTypeJaeger:
+            str = @"jaeger";
+            break;
+        case FTNetworkTraceTypeZipkin:
+            str = @"zipkin";
+            break;
+    }
+    return  str;
+}
 + (NSString *)ft_getSessionid{
     NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
     if (!sessionid) {
