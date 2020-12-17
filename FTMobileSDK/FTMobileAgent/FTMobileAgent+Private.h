@@ -55,11 +55,12 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 
 -(void)trackStartWithViewLoadTime:(CFTimeInterval)time;
 /**
- * eventFlowLog、networkTrace 写入
+ * eventFlowLog
 */
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
--(void)loggingWithType:(FTAddDataType)type source:(NSString *)source status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
-
+/**
+ * networkTrace 写入
+ */
 -(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
 -(void)resetInstance;
 
