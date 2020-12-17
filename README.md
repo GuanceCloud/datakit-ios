@@ -14,14 +14,14 @@
   
 ## 一、导入SDK
    你可以使用下面方法进行导入：
-### 1. 直接下载下来安装
+### 1.直接下载下来安装
 1. 从 [GitHub](https://github.com/CloudCare/dataflux-sdk-ios) 获取 SDK 的源代码。	 
 2. 将 SDK 源代码导入 App 项目，并选中 `Copy items if needed`。    
     直接将 **FTMobileSDK** 整个文件夹导入项目。
 3. 添加依赖库：项目设置 `Build Phase` -> `Link Binary With Libraries` 添加：`UIKit` 、 `Foundation` 、`libz.tbd`，如果监控项开启且抓取网络数据，则需要添加 `libresolv.9.tbd`。
 
 
-### 2. 通过 CocoaPods 导入
+### 2.通过 CocoaPods 导入
 
 1. 配置 `Podfile` 文件。    
     
@@ -37,13 +37,13 @@
 2. 在 `Podfile` 目录下执行 `pod install` 安装 SDK。
 
 ## 二、初始化 SDK
-### 1. 添加头文件
+### 1.添加头文件
 请将 `#import <FTMobileAgent/FTMobileAgent.h>
 ` 添加到 `AppDelegate.m` 引用头文件的位置。    
 
 
 
-### 2. 添加初始化代码
+### 2.添加初始化代码
   示例：
 
 ```objective-c
@@ -60,7 +60,7 @@
 
 ## 三、FTMobileConfig 配置
 
-### 1. FTMobileConfig 初始化方法   
+### 1.FTMobileConfig 初始化方法   
 
 
   ```objective-c  
@@ -133,9 +133,10 @@
   */
   @property (nonatomic, assign) BOOL eventFlowLog; 
  ```
--  networkTrace 设置网络追踪
+ 
+### 4.设置网络链路追踪
    
-  设置网络追踪，开启网络请求信息采集
+  - networkTrace 设置网络追踪，开启网络请求信息采集
    
   ``` objective-c   
   /**
@@ -145,7 +146,7 @@
  
   ```    
           
-  设置网络请求信息采集时 使用链路追踪类型 
+ - networkTraceType 设置网络请求信息采集时 使用链路追踪类型 
    
   ``` objective-c   
   /**
@@ -160,8 +161,9 @@
   -(void)networkTraceWithTraceType:(FTNetworkTrackType)type;
 
   ```    
+
  
-### 4. 开启崩溃 Crash 采集
+### 5.开启崩溃 Crash 采集
 
 enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志分析)） 
  
@@ -174,7 +176,7 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
    **注意**： 开启 **RUM** 后，日志中将不采集 Crash 信息，Crash 信息会采集到 **RUM** 中。 
    
    
-### 5. SDK 内部 DebugLog 打印
+### 6.SDK 内部 DebugLog 打印
 
    在 **debug** 环境下，设置 `FTMobileConfig` 的 `enableSDKDebugLog` 属性。
    
@@ -182,14 +184,14 @@ enableTrackAppCrash 采集崩溃日志 （[崩溃分析](#1-关于崩溃日志�
 config.enableSDKDebugLog = YES; //打印日志
 ```   
            
-### 6. 设置X-Datakit-UUID
+### 7.设置X-Datakit-UUID
  `X-Datakit-UUID` 是 SDK 初始化生成的 UUID, 应用清理缓存后(包括应用删除)，会重新生成。
  `FTMobileConfig` 配置中，开发者可以强制更改。更改方法：
 
 ```objective-c
 [config setXDataKitUUID:@"YOUR UUID"];
 ```
-### 7. 设置 env 环境
+### 8.设置 env 环境
 
 ```
 typedef NS_ENUM(NSInteger, FTEnv) {
@@ -203,7 +205,7 @@ typedef NS_ENUM(NSInteger, FTEnv) {
 @property (nonatomic, assign) FTEnv env;
 ```
    
-### 8. 采集数据配置
+### 9.采集数据配置
 
  配置 `FTMobileConfig` 的 `FTMonitorInfoType` 属性。可采集的类型如下：    
 
@@ -227,7 +229,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 };
 ``` 
   
-### 9.设置 UI 卡顿、ANR 事件采集
+### 10.设置 UI 卡顿、ANR 事件采集
 
 - enableTrackAppUIBlock 采集UI卡顿事件
    
@@ -253,7 +255,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
    
 ## 四、参数
 
-### 1. FTMobileConfig  可配置参数：
+### 1.FTMobileConfig 可配置参数：
 
 |          字段          |     类型     |            说明             |                是否必须                |
 | :------------------: | :--------: | :-----------------------: | :--------------------------------: |
@@ -261,8 +263,8 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 |      appid      |  NSString  |  dataflux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。  |                 否（开启RUM 必选）  | 
 | samplerate |int|RUM采样采集率|否（默认100）|       
 |      enableSDKDebugLog       |    BOOL    |        设置是否允许打印日志         |              否（默认NO）               |
-|   monitorInfoType    | NS_OPTIONS |     [采集数据](#8-采集数据配置)     |                 否                  |
-|   env    | NS_ENUM |     [环境](#7-设置-env-环境)     |                 否  （默认FTEnvProd）                |
+|   monitorInfoType    | NS_OPTIONS |     [采集数据](#9采集数据配置)     |                 否                  |
+|   env    | NS_ENUM |     [环境](#8设置-env-环境)     |                 否  （默认FTEnvProd）                |
 |   enableTrackAppCrash   |    BOOL    |       设置是否需要采集崩溃日志      |              否（默认NO）              |
 |   enableTrackAppANR   |    BOOL    |       采集ANR卡顿无响应事件      |              否（默认NO）              |
 |   enableTrackAppUIBlock   |    BOOL    |       采集UI卡顿事件      |              否（默认NO）              |
@@ -307,7 +309,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 
 ## 六、用户的绑定与注销 
 
-### 1. 用户绑定：
+### 1.用户绑定：
 
 ```objective-c
   /**
@@ -317,7 +319,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 - (void)bindUserWithUserID:(NSString *)Id;
 ```
 
-### 2. 用户注销：
+### 2.用户注销：
 
 ```objective-c
 /**
@@ -326,7 +328,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 - (void)logout;
 ```
 
-### 3. 方法使用示例
+### 3.方法使用示例
 
 ```objective-c
 //登录后 绑定用户信息
@@ -342,7 +344,7 @@ typedef NS_ENUM(NSInteger, FTStatus) {
 
 ## 七、常见问题
 
-### 1. 关于崩溃日志分析
+### 1.关于崩溃日志分析
 在开发时的 **Debug** 和 **Release** 模式下，**Crash** 时捕获的线程回溯是被符号化的。
 而发布包没带符号表，异常线程的关键回溯，会显示镜像的名字，不会转化为有效的代码符号，获取到的 **crash log** 中的相关信息都是 16 进制的内存地址，并不能定位崩溃的代码，所以需要将 16 进制的内存地址解析为对应的类及方法。
 
