@@ -177,7 +177,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 #pragma mark ========== private method ==========
-//RUM FT_DATA_TYPE_INFLUXDB
+//RUM INFLUXDB
 - (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumTrack:type tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }
@@ -199,7 +199,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
-//RUM FT_DATA_TYPE_ES
+//RUM  ES
 - (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumTrackES:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
 }

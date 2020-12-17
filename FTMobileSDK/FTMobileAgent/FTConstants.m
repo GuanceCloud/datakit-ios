@@ -72,7 +72,6 @@ NSString *const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType"
 
 #pragma mark ========== API ==========
 NSString *const FT_DATA_TYPE_RUM = @"RUM";
-NSString *const FT_DATA_TYPE_ES = @"ES";
 NSString *const FT_DATA_TYPE_INFLUXDB = @"InfluxDB";
 NSString *const FT_DATA_TYPE_LOGGING = @"Logging";
 NSString *const FT_DATA_TYPE_OBJECT = @"Object";

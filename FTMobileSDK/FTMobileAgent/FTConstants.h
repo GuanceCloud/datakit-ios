@@ -42,7 +42,6 @@ extern NSString * const FT_TERMINAL_APP;
 extern NSString * const FT_TERMINAL_MINIPROGRA;
 #pragma mark ========== api ==========
 extern NSString * const FT_DATA_TYPE_RUM;
-extern NSString * const FT_DATA_TYPE_ES;
 extern NSString * const FT_DATA_TYPE_INFLUXDB;
 extern NSString * const FT_DATA_TYPE_LOGGING;
 extern NSString * const FT_DATA_TYPE_OBJECT;
