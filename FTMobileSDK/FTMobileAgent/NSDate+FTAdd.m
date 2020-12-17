@@ -32,4 +32,7 @@
 -(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate{
     return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000];
 }
+-(NSNumber *)ft_miltimeIntervalSinceDate:(NSDate *)anotherDate{
+    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000];
+}
 @end

@@ -32,6 +32,13 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 时间间隔
 */
 -(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate;
+/**
+ *  @abstract
+ *  获取时间间隔 微秒级
+ *
+ *  @return 时间间隔
+*/
+-(NSNumber *)ft_miltimeIntervalSinceDate:(NSDate *)anotherDate;
 @end
 
 NS_ASSUME_NONNULL_END
