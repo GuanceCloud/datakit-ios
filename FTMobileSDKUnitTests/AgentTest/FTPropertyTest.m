@@ -12,7 +12,6 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTLocationManager.h>
-#import "AppDelegate.h"
 #import <Network/FTUploadTool.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTMobileAgent+Private.h>
@@ -22,28 +21,25 @@
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
 #import <FTMobileAgent/FTJSONUtil.h>
+#import "NSString+FTAdd.h"
 
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
-@property (nonatomic, copy) NSString *akId;
-@property (nonatomic, copy) NSString *akSecret;
-@property (nonatomic, copy) NSString *token;
+@property (nonatomic, copy) NSString *appid;
 @end
 
 @implementation FTPropertyTest
 
 - (void)setUp {
-      /**
-       * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
-       * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
-       */
-      NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-      self.akId =[processInfo environment][@"ACCESS_KEY_ID"];
-      self.akSecret = [processInfo environment][@"ACCESS_KEY_SECRET"];
-      self.token = [processInfo environment][@"ACCESS_DATAWAY_TOKEN"];
-      self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
-      [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    /**
+     * 设置 ft-sdk-iosTestUnitTests 的 Environment Variables
+     * 额外 添加 isUnitTests = 1 防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     */
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    self.appid = [processInfo environment][@"APP_ID"];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
 
 - (void)tearDown {
@@ -52,7 +48,6 @@
 
 -(void)testSetEmptyServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.enableTrackAppCrash = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
@@ -193,8 +188,51 @@
     }];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-
-
+/**
+ * 设置 appid 后 ES 开启
+ * 验证： ES 数据能正常写入
+ */
+- (void)testSetAppid{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.appid = self.appid;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self addESData];
+    [NSThread sleepForTimeInterval:2];
+    NSUInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>count);
+}
+/**
+ * 未设置 appid  ES 关闭
+ * 验证： ES 数据不能正常写入
+ */
+-(void)testSetEmptyAppid{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self addESData];
+    [NSThread sleepForTimeInterval:2];
+    NSUInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == count);
+}
+- (void)addESData{
+    NSString *name = @"TestBindUser";
+    NSString *view_id = [name ft_md5HashToUpper32Bit];
+    NSString *parent = FT_NULL_VALUE;
+    NSDictionary *tags = @{@"view_id":view_id,
+                           @"view_name":name,
+                           @"view_parent":parent,
+                                  @"app_apdex_level":@0,
+    };
+    NSDictionary *fields = @{
+        @"view_load":@100,
+    }.mutableCopy;
+    [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
+}
 
 
 @end

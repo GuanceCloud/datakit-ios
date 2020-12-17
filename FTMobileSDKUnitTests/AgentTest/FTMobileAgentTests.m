@@ -117,7 +117,7 @@
 }
 /**
  * 用户解绑
- * 验证：
+ * 验证：登出后 userid 改变 is_signin 为 F
  */
 -(void)testUserlogout{
     [self setRightSDKConfig];
