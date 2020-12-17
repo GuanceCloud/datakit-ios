@@ -46,7 +46,6 @@
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
-    config.traceConsoleLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
 //    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
@@ -64,7 +63,7 @@
 //#pragma mark ========== 用户数据绑定 ==========
 ///**
 // * 测试 绑定用户
-// * 验证：从数据库取出新数据 验证数据绑定的用户信息 是否与绑定的一致
+// * 验证：获取 RUM ES 数据 判断 userid 是否与设置一致
 // */
 //- (void)testBindUser{
 //    [self setRightSDKConfig];
@@ -72,7 +71,7 @@
 //    [[FTMobileAgent sharedInstance] bindUserWithUserID:@""];
 //
 //    [NSThread sleepForTimeInterval:2];
-//    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+//    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
 //    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FT_DATA_TYPE_INFLUXDB];
 //    FTRecordModel *model = [data lastObject];
 //    NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
@@ -87,52 +86,29 @@
 // */
 //-(void)testChangeUser{
 //    [self setRightSDKConfig];
-//    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
-//    [NSThread sleepForTimeInterval:2];
-//    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-//    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
-//    NSDictionary *lastUserData;
-//    if (array.count>0) {
-//        FTRecordModel *model = [array lastObject];
-//        lastUserData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
-//    }
 //
-//    [[FTMobileAgent sharedInstance] logout];
-//    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindNewUser" Id:@"bindNewUserId" exts:nil];
 //
-//    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
-//    [[FTMobileAgent sharedInstance] trackBackground:@"testTrack" field:@{@"event":@"testTrack"}];
-//    [NSThread sleepForTimeInterval:2];
-//    NSArray *newarray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FT_DATA_TYPE_LOGGING];
-//    NSDictionary *userData;
-//    if (newarray.count>0) {
-//        FTRecordModel *model = [newarray lastObject];
-//        userData = [FTJSONUtil ft_dictionaryWithJsonString:model.userdata];
-//
-//    }
-//    XCTAssertTrue(userData.allKeys.count>0 && lastUserData.allKeys.count>0 && [userData[@"name"] isEqualToString:@"bindNewUser"] && [lastUserData[@"name"] isEqualToString:@"bindUser"]);
 //    [[FTMobileAgent sharedInstance] resetInstance];
 //}
 ///**
 // * 用户解绑
+// * 验证：
 // */
 //-(void)testUserlogout{
 //    [self setRightSDKConfig];
 //    [NSThread sleepForTimeInterval:2];
-//    [[FTMobileAgent sharedInstance] bindUserWithName:@"bindUser" Id:@"bindUserId" exts:nil];
-//    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
-//    NSInteger oldCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+//    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
+//
 //    [[FTMobileAgent sharedInstance] logout];
 //    [NSThread sleepForTimeInterval:2];
-//    NSArray *logoutArray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FTNetworkingTypeMetrics];
+//    NSArray *logoutArray = [[FTTrackerEventDBTool sharedManger] getFirstBindUserRecords:10 withType:FT_DATA_TYPE_RUM];
 //    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
 //
 //    //用户登出后 获取
-//    XCTAssertTrue(logoutArray.count == array.count && newCount > oldCount);
 //    [[FTMobileAgent sharedInstance] resetInstance];
 //}
-#pragma mark ========== SDK 生命周期 ==========
-
+//#pragma mark ========== SDK 生命周期 ==========
+//
 //- (void)testSDKStart{
 //    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
 //    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -152,7 +128,7 @@
 //    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
 //                          FT_AGENT_OPDATA:dict,
 //    };
-//    
+//
 //    FTRecordModel *model = [FTRecordModel new];
 //    model.op =FTNetworkingTypeMetrics;
 //    model.data =[FTJSONUtil ft_convertToJsonData:data];
@@ -164,9 +140,9 @@
 //    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
 //        XCTAssertNil(error);
 //    }];
-//    
+//
 //    NSInteger old = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-//    
+//
 //    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
 //    [NSThread sleepForTimeInterval:1];
 //    NSInteger new = [[FTTrackerEventDBTool sharedManger] getDatasCount];

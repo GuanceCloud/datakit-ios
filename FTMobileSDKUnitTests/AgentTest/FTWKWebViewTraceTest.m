@@ -98,11 +98,11 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    __block NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    __block NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+        NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
         
         XCTAssertTrue(loggingcount>lastLoggingCount);
         lastLoggingCount = loggingcount;
@@ -115,7 +115,7 @@
         XCTAssertNil(error);
     }];
     
-    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger newLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newLoggingCount == lastLoggingCount);
     [self.testVC ft_stopLoading];
     self.testVC = nil;
@@ -129,7 +129,7 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
@@ -138,9 +138,9 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger]getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -163,16 +163,16 @@
 - (void)testWKWebViewReloadTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setTraceConfig];
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
    
-    [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:4];
+    [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:8];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;
@@ -197,7 +197,7 @@
     [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
@@ -209,9 +209,9 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newCount-lastCount == 2);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *reloadModel = [array lastObject];
     FTRecordModel *model = [array objectAtIndex:array.count-2];
     __block NSString *reloadUrl;

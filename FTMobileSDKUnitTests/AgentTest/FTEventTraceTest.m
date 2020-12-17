@@ -1,5 +1,5 @@
 //
-//  FTLogTest.m
+//  FTEventTraceTest.m
 //  ft-sdk-iosTestUnitTests
 //
 //  Created by 胡蕾蕾 on 2020/8/28.
@@ -18,14 +18,14 @@
 #import "UITestVC.h"
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTJSONUtil.h>
-@interface FTLogTest : XCTestCase
+@interface FTEventTraceTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
 @property (nonatomic, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UITabBarController *tabBarController;
 @end
 
-@implementation FTLogTest
+@implementation FTEventTraceTest
 
 - (void)setUp {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -71,46 +71,22 @@
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
 }
-//- (void)testTraceEventLaunch{
-//    [self.testVC view];
-//    [self.testVC viewWillAppear:NO];
-//    [self.testVC viewDidAppear:NO];
-    //模拟launch
-//    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+//- (void)testTraceEventLeave{
 //
-//
-//    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-//    FTRecordModel *model = [array lastObject];
-//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-//    NSDictionary *op = dict[@"opdata"];
-//    NSDictionary *field = op[@"field"];
-//    NSString *content = field[@"__content"];
-//    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-//    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
 //}
-//- (void)testTraceUploadingMethod{
+//- (void)testTraceEventOpen{
+//
+//}
+//- (void)testTraceEventClick{
 //    [self.testVC view];
 //    [self.testVC viewWillAppear:NO];
 //    [self.testVC viewDidAppear:NO];
 //    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 //    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+//  //
+//}
+//- (void)testTraceEventLaunch{
 //
-//    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-//    FTRecordModel *model = [array lastObject];
-//    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-//    NSDictionary *op = dict[@"opdata"];
-//    NSDictionary *field = op[@"field"];
-//    NSString *content = field[@"__content"];
-//    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-//    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
-//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-//    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable respox/nse) {
-//        XCTAssertTrue(statusCode == 200);
-//        [expectation fulfill];
-//    }];
-//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
 //}
 
 
