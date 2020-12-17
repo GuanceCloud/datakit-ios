@@ -117,7 +117,7 @@ extern NSString *  const FT_NETWORK_HEADERS;
 extern NSString *  const FT_NETWORK_BODY;
 extern NSString *  const FT_LOGGING_CLASS_TRACING;
 extern NSString *  const FT_KEY_TRUE;
-extern NSString *  const FT_KET_FALSE;
+extern NSString *  const FT_KEY_FALSE;
 extern NSString *  const FT_NETWORK_CODE;
 extern NSString *  const FT_NETWORK_ERROR;
 extern NSString *  const FT_SPANTYPE_ENTRY;

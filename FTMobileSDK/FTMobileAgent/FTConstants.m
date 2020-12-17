@@ -113,7 +113,7 @@ NSString *const FT_NETWORK_RESPONSE_CONTENT = @"responseContent";
 NSString *const FT_NETWORK_CODE = @"code";
 NSString *const FT_NETWORK_ERROR = @"error";
 NSString *const FT_KEY_TRUE = @"true";
-NSString *const FT_KET_FALSE = @"false";
+NSString *const FT_KEY_FALSE = @"false";
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
