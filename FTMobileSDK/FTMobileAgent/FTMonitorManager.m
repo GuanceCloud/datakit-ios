@@ -224,7 +224,6 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     tags[@"resource_url_host"] = task.originalRequest.URL.host;
-    tags[@"resource_url_path"] = task.originalRequest.URL.path;
     if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
         tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
     }
@@ -263,6 +262,7 @@ static dispatch_once_t onceToken;
         fields[@"response_header"] =[FTBaseInfoHander ft_getDictStr:response.allHeaderFields];
         fields[@"request_header"] = [FTBaseInfoHander ft_getDictStr:[task.currentRequest ft_getRequestHeaders]];
     }
+    tags[@"resource_url_path"] = task.originalRequest.URL.path;
     [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
     
 }
@@ -360,11 +360,6 @@ static dispatch_once_t onceToken;
     if ([self trackUrl:url]) {
         NSString *skyStr = nil;
         BOOL sample = [[FTMobileAgent sharedInstance] judgeIsTraceSampling];
-//        if (self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V3) {
-//            skyStr = [self getSkyWalking_V3Str:sample url:url];
-//        }else if(self.config.networkTraceType == FTNetworkTraceTypeSKYWALKING_V2){
-//            skyStr = [self getSkyWalking_V2Str:sample url:url];
-//        }
         if (completionHandler) {
             completionHandler(YES,sample,self.config.networkTraceType,skyStr);
         }

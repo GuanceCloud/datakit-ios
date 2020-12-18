@@ -613,7 +613,6 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
         [_mobileCommonPropertyTags setValue:@"APPLE" forKey:FT_COMMON_PROPERTY_DEVICE];
         [_mobileCommonPropertyTags setValue:deviceInfo[FTBaseInfoHanderDeviceType] forKey:FT_COMMON_PROPERTY_DEVICE_MODEL];
         [_mobileCommonPropertyTags setValue:@"iOS" forKey:FT_COMMON_PROPERTY_OS];
-        [_mobileCommonPropertyTags setValue:self.version forKey:FT_COMMON_PROPERTY_OS_VERSION];
         [_mobileCommonPropertyTags setValue:[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale] forKey:FT_SCREEN_SIZE];
         [_mobileCommonPropertyTags setValue:appName forKey:FT_COMMON_PROPERTY_APP_NAME];
         [_mobileCommonPropertyTags setValue:identifier forKey:FT_COMMON_PROPERTY_APP_IDENTIFIER];
