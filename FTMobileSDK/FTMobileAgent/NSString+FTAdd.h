@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString *)ft_md5HashToLower16Bit;
 -(NSString *)ft_md5HashToUpper32Bit;
 -(NSString *)ft_md5HashToUpper16Bit;
-- (NSUInteger)charactorNumber;
+-(NSUInteger)ft_charactorNumber;
 -(NSString *)ft_base64Encode;
 -(NSString *)ft_base64Decode;
 /**

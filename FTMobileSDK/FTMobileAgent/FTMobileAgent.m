@@ -256,7 +256,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // FT_DATA_TYPE_LOGGING
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+    if (!content || content.length == 0 || [content ft_charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }
@@ -283,7 +283,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 }
 -(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+    if (!content || content.length == 0 || [content ft_charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }

@@ -63,7 +63,7 @@
     //2、把二进制数据转换成字符串
     return [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
 }
-- (NSUInteger)charactorNumber
+- (NSUInteger)ft_charactorNumber
 {
     NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
     return [self lengthOfBytesUsingEncoding:encoding];
