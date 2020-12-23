@@ -12,7 +12,7 @@
 
 @implementation NSDate (FTAdd)
 -(long long)ft_dateTimestamp{
-    long long time= (long long)([self timeIntervalSince1970]*1000*1000);
+    long long time= (long long)([self timeIntervalSince1970]*1000*1000*1000);
     return  time;
 }
 -(long long)ft_msDateTimestamp{

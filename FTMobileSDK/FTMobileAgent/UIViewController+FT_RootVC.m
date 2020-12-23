@@ -15,11 +15,11 @@
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 
 @implementation UIViewController (FT_RootVC)
--(void)setViewLoadStartTime:(CFAbsoluteTime)viewLoadStartTime{
-    objc_setAssociatedObject(self, &viewLoadStartTimeKey, @(viewLoadStartTime), OBJC_ASSOCIATION_COPY);
+-(void)setViewLoadStartTime:(NSDate*)viewLoadStartTime{
+    objc_setAssociatedObject(self, &viewLoadStartTimeKey, viewLoadStartTime, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(CFAbsoluteTime)viewLoadStartTime{
-    return [objc_getAssociatedObject(self, &viewLoadStartTimeKey) doubleValue];
+-(NSDate *)viewLoadStartTime{
+    return objc_getAssociatedObject(self, &viewLoadStartTimeKey);
 }
 + (NSString *)ft_getRootViewController{
     __block NSString *name;

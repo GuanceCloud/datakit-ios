@@ -39,7 +39,7 @@
 @property (nonatomic, copy)   NSString *net;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTMobileConfig *config;
-@property (nonatomic, assign) CFAbsoluteTime launchTime;
+@property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) FTTrack *track;
@@ -91,7 +91,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _net = @"unknown";
             _appRelaunched = NO;
             _running = NO;
-            self.launchTime = CFAbsoluteTimeGetCurrent();
+            self.launchTime = [NSDate date];
             [FTLog enableLog:config.enableSDKDebugLog];
             _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:config.networkTraceType];
             self.track = [[FTTrack alloc]init];
@@ -213,11 +213,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         FTAddDataType dataType = FTAddDataNormal;
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
-        NSString *userid = [FTBaseInfoHander ft_getUserid];
-        if (!userid) {
-            userid = [FTBaseInfoHander ft_getSessionid];
-        }
-        baseTags[@"userid"] = userid;
         baseTags[@"network_type"] = self.net;
         if ([type isEqualToString:FT_TYPE_CRASH]) {
             dataType = FTAddDataImmediate;
@@ -290,9 +285,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo],
                                          FT_KEY_SERVICENAME:self.config.serviceName,
-                                         @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                         @"app_identifier":[FTPresetProperty appIdentifier],
                                          @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
-                                         @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                                         @"device_uuid":[FTPresetProperty deviceUUID],
                                          @"version":self.config.version
         }.mutableCopy;
         if (tags) {
@@ -310,12 +305,12 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     
 }
--(void)trackStartWithViewLoadTime:(CFTimeInterval)time{
+-(void)trackStartWithViewLoadTime:(NSDate *)time{
     self.running = YES;
     if ([self judgeIsTraceSampling]) {
         NSString *startType = _appRelaunched?@"hot":@"cold";
-        int duration = (time-self.launchTime);
-        NSNumber *durationTime = [NSNumber numberWithInt:(time-self.launchTime)*1000*1000];
+        NSTimeInterval duration = [time timeIntervalSinceDate:self.launchTime];
+        NSNumber *durationTime = [time ft_nanotimeIntervalSinceDate:self.launchTime];
         if (duration>9) {
             duration = 9;
         }
@@ -512,7 +507,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
     if (_appRelaunched){
-         self.launchTime = CFAbsoluteTimeGetCurrent();
+         self.launchTime = [NSDate date];
     }
     _running = NO;
 }
@@ -524,7 +519,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
         [self uploadFlush];
         if (_appRelaunched) {
-            [self trackStartWithViewLoadTime:CFAbsoluteTimeGetCurrent()];
+            [self trackStartWithViewLoadTime:[NSDate date]];
         }
         if (self.config.monitorInfoType & FTMonitorInfoTypeFPS || self.config.enableTrackAppUIBlock) {
             [[FTMonitorManager sharedInstance] startMonitorFPS];

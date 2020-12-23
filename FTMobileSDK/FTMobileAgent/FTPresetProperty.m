@@ -713,6 +713,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_TYPE] = type;
     dict[@"terminal"] = terminal;
+    dict[@"userid"] = [FTPresetProperty userid];
     if ([type isEqualToString:FT_TYPE_CRASH]) {
         dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
@@ -756,6 +757,13 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
 }
 + (NSString *)device{
     return  @"APPLE";
+}
++ (NSString *)userid{
+    NSString *useridStr = [FTBaseInfoHander ft_getUserid];
+    if (!useridStr) {
+        useridStr = [FTBaseInfoHander ft_getSessionid];
+    }
+    return  useridStr;
 }
 @end
 

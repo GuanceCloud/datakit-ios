@@ -53,7 +53,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     WeakSelf
     id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        vc.viewLoadStartTime =CFAbsoluteTimeGetCurrent();
+        vc.viewLoadStartTime =[NSDate date];
         if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
             [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
         }
@@ -62,12 +62,11 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-            CFTimeInterval time = CFAbsoluteTimeGetCurrent();
-            float loadTime = (time - vc.viewLoadStartTime);
-            vc.viewLoadStartTime = 0;
+            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.viewLoadStartTime];
+            vc.viewLoadStartTime = nil;
             [weakSelf trackOpenWithCpn:vc duration:loadTime];
             if (!weakSelf.isLaunched) {
-                [weakSelf trackStartWithTime:CFAbsoluteTimeGetCurrent()];
+                [weakSelf trackStartWithTime:[NSDate date]];
                 weakSelf.isLaunched = YES;
             }
         }
@@ -237,14 +236,14 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     }];
     return isContains;
 }
--(void)trackStartWithTime:(CFTimeInterval)time{
+-(void)trackStartWithTime:(NSDate *)time{
     @try {
         [[FTMobileAgent sharedInstance] trackStartWithViewLoadTime:time];
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
 }
--(void)trackOpenWithCpn:(id)cpn duration:(float)duration{
+-(void)trackOpenWithCpn:(id)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
         if ([instance judgeIsTraceSampling]) {
@@ -256,7 +255,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                                    @"view_parent":parent,
             }.mutableCopy;
             NSMutableDictionary *fields = @{
-                @"view_load":[NSNumber numberWithInt:duration*1000*1000*1000],
+                @"view_load":duration,
             }.mutableCopy;
             if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
                 NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
@@ -264,7 +263,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                     fields[@"view_fps"] =fps;
                 }
             }
-            int apdexlevel = duration > 9 ? 9 : duration;
+            int apdexlevel = duration.intValue/1000/1000/1000 <=9 ? : 9;
             tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
             [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
             [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
@@ -272,7 +271,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
                 [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
                 NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
-                NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000*1000]};
+                NSDictionary *field = @{FT_KEY_DURATION:duration};
                 [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
             }
         }

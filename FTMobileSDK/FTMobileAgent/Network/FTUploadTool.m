@@ -287,7 +287,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             NSString *userStr =  FTQueryStringFromParameters(userData, FTParameterTypeUser);
             field = field.length>0?[field stringByAppendingFormat:@",%@",userStr]:userStr;
         }
-        NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm*1000]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm*1000];
+        NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",measurement,tagsStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",measurement,field,obj.tm];
         if (idx==0) {
             [requestDatas appendString:requestStr];
         }else{

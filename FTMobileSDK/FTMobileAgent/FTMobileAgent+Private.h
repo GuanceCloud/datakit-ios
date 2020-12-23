@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 
 - (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
--(void)trackStartWithViewLoadTime:(CFTimeInterval)time;
+-(void)trackStartWithViewLoadTime:(NSDate *)time;
 /**
  * eventFlowLog
 */
