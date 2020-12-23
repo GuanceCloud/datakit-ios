@@ -202,7 +202,7 @@ static dispatch_once_t onceToken;
                                       FT_KEY_ISERROR:iserror,
                                       FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
         }.mutableCopy;
-        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000]};
+        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000*1000]};
         __block NSString *trace,*span;
         __block BOOL sampling;
         [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
@@ -243,12 +243,12 @@ static dispatch_once_t onceToken;
     if (group) {
         tags[@"resource_status_group"] = group;
     }
-    NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_timeIntervalSinceDate:taskMes.domainLookupStartDate];
-    NSNumber *tcpTime = [taskMes.connectEndDate ft_timeIntervalSinceDate:taskMes.connectStartDate];
-    NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_timeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
-    NSNumber *ttfbTime = [taskMes.responseStartDate ft_timeIntervalSinceDate:taskMes.requestStartDate];
-    NSNumber *transTime =[taskMes.responseEndDate ft_timeIntervalSinceDate:taskMes.requestStartDate];
-    NSNumber *durationTime = [taskMes.requestEndDate ft_timeIntervalSinceDate:taskMes.fetchStartDate];
+    NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
+    NSNumber *tcpTime = [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.connectStartDate];
+    NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
+    NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
+    NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
+    NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
     fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
     fields[@"resource_load"] =durationTime;
     fields[@"resource_dns"] = dnsTime;
@@ -373,7 +373,7 @@ static dispatch_once_t onceToken;
     [self.lock lock];
     NSInteger v2 =  _skywalkingv2 ++;
     [self.lock unlock];
-    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
+    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[[NSDate date] ft_msDateTimestamp]];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
     urlStr = [urlStr ft_base64Encode];
     NSUInteger seq = [self getSkywalkingSeq];
@@ -383,7 +383,7 @@ static dispatch_once_t onceToken;
     return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:v2],[NSNumber numberWithInteger:v2],urlStr,endPoint,endPoint];
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
-    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_dateTimestamp]];
+    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_msDateTimestamp]];
     NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";

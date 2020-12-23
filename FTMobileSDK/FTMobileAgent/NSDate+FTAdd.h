@@ -13,7 +13,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSDate (FTAdd)
 /**
  *  @abstract
- *  获取当前时间戳 毫秒级
+ *  获取当前时间戳 豪秒级
+ *
+ *  @return 时间戳
+*/
+-(long long)ft_msDateTimestamp;
+/**
+ *  @abstract
+ *  获取当前时间戳 微秒级
  *
  *  @return 时间戳
 */
@@ -31,14 +38,14 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 时间间隔
 */
--(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate;
+-(NSNumber *)ft_nanotimeIntervalSinceDate:(NSDate *)anotherDate;
 /**
  *  @abstract
  *  获取时间间隔 微秒级
  *
  *  @return 时间间隔
 */
--(NSNumber *)ft_miltimeIntervalSinceDate:(NSDate *)anotherDate;
+-(NSNumber *)ft_microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate;
 @end
 
 NS_ASSUME_NONNULL_END

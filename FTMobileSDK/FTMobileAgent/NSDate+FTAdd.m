@@ -15,6 +15,10 @@
     long long time= (long long)([self timeIntervalSince1970]*1000*1000);
     return  time;
 }
+-(long long)ft_msDateTimestamp{
+    long long time= (long long)([self timeIntervalSince1970]*1000);
+    return  time;
+}
 -(NSString *)ft_dateGMT{
         
     NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
@@ -29,10 +33,10 @@
     
     return [iosDateFormater stringFromDate:self];
 }
--(NSNumber *)ft_timeIntervalSinceDate:(NSDate *)anotherDate{
+-(NSNumber *)ft_microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate{
     return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000];
 }
--(NSNumber *)ft_miltimeIntervalSinceDate:(NSDate *)anotherDate{
-    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000];
+-(NSNumber *)ft_nanotimeIntervalSinceDate:(NSDate *)anotherDate{
+    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000*1000];
 }
 @end

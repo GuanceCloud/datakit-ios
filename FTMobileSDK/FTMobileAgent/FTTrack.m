@@ -256,7 +256,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                                    @"view_parent":parent,
             }.mutableCopy;
             NSMutableDictionary *fields = @{
-                @"view_load":[NSNumber numberWithInt:duration*1000*1000],
+                @"view_load":[NSNumber numberWithInt:duration*1000*1000*1000],
             }.mutableCopy;
             if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
                 NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
@@ -272,7 +272,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
                 [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
                 NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
-                NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000]};
+                NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:duration*1000*1000*1000]};
                 [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
             }
         }
