@@ -12,7 +12,7 @@
 
 @implementation NSDate (FTAdd)
 -(long long)ft_dateTimestamp{
-    long long time= (long long)([self timeIntervalSince1970]*1000*1000*1000);
+    long long time= (long long)([self timeIntervalSince1970]*1000000000);
     return  time;
 }
 -(long long)ft_msDateTimestamp{
@@ -34,9 +34,9 @@
     return [iosDateFormater stringFromDate:self];
 }
 -(NSNumber *)ft_microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate{
-    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000];
+    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000000];
 }
 -(NSNumber *)ft_nanotimeIntervalSinceDate:(NSDate *)anotherDate{
-    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000*1000*1000];
+    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000000000];
 }
 @end

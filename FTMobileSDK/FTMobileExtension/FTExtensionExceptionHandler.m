@@ -260,7 +260,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     NSDictionary *field =  @{@"crash_message":[exception reason],
                                   @"crash_stack":info,
          };
-    long long time= (long long)([[NSDate date] timeIntervalSince1970]*1000*1000);
+    long long time= (long long)([[NSDate date] timeIntervalSince1970]*1000000);
     
     NSNumber *tm = [NSNumber numberWithLong:time];
     if (FTHandlerCallBack) {

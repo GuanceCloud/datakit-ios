@@ -202,7 +202,7 @@ static dispatch_once_t onceToken;
                                       FT_KEY_ISERROR:iserror,
                                       FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
         }.mutableCopy;
-        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000*1000]};
+        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000000]};
         __block NSString *trace,*span;
         __block BOOL sampling;
         [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
