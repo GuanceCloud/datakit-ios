@@ -10,8 +10,6 @@
 #endif
 #import "FTUploadTool.h"
 #import <UIKit/UIKit.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
 #import "FTBaseInfoHander.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTLog.h"
@@ -20,7 +18,6 @@
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
-#import "FTMonitorUtils.h"
 #import "NSDate+FTAdd.h"
 #import "FTJSONUtil.h"
 #import "FTMobileAgentVersion.h"
