@@ -34,9 +34,9 @@
     return [iosDateFormater stringFromDate:self];
 }
 -(NSNumber *)ft_microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate{
-    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000000];
+    return  [NSNumber numberWithLong:[self timeIntervalSinceDate:anotherDate]*1000000];
 }
 -(NSNumber *)ft_nanotimeIntervalSinceDate:(NSDate *)anotherDate{
-    return  [NSNumber numberWithInt:[self timeIntervalSinceDate:anotherDate]*1000000000];
+    return  [NSNumber numberWithLong:[self timeIntervalSinceDate:anotherDate]*1000000000];
 }
 @end
