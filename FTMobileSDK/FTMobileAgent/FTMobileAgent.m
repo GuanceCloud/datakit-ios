@@ -114,10 +114,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return self;
 }
 -(void)resetConfig:(FTMobileConfig *)config{
+    if (!_track) {
+        self.track = [[FTTrack alloc]init];
+    }
     _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:config.networkTraceType];
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
+    self.config = config;
+    if (_presetProperty) {
+        [self.presetProperty resetWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
+    }else{
+        self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
+    }
     self.upTool.config = config;
+    
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
@@ -211,7 +221,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        FTAddDataType dataType = FTAddDataNormal;
+        FTAddDataType dataType = FTAddDataImmediate;
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
         baseTags[@"network_type"] = self.net;
         if ([type isEqualToString:FT_TYPE_CRASH]) {
@@ -566,7 +576,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (_reachability) {
         SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
     }
+    _presetProperty = nil;
     self.config = nil;
+    self.track = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.upTool = nil;
     onceToken = 0;

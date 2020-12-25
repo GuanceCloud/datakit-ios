@@ -55,6 +55,7 @@
     options.traceConsoleLog = self.traceConsoleLog;
     options.eventFlowLog = self.eventFlowLog;
     options.env = self.env;
+    options.appid = self.appid;
     return options;
 }
 - (NSString *)ft_defaultUUID {

@@ -699,6 +699,13 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
     }
     return _basePropertyTags;
 }
+- (void)resetWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
+    self.appid = appid;
+    self.version = version;
+    self.env = env;
+    _isSignin = [FTBaseInfoHander ft_getUserid]?YES:NO;
+    _basePropertyTags = nil;
+}
 - (NSDictionary *)getPropertyWithType:(NSString *)type{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {

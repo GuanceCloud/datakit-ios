@@ -39,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
  * @param type 指标集名称类型
 */
 - (NSDictionary *)getESPropertyWithType:(NSString *)type terminal:(NSString *)terminal;
+/**
+ *  重新设置
+ */
+- (void)resetWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env;
 @end
 
 NS_ASSUME_NONNULL_END
