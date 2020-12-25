@@ -108,6 +108,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)stopMonitor{
+    [FTURLProtocol stopMonitor];
     [self stopMonitorFPS];
 }
 - (void)startMonitorNetwork{
@@ -262,6 +263,7 @@ static dispatch_once_t onceToken;
         fields[@"response_header"] =[FTBaseInfoHander ft_getDictStr:response.allHeaderFields];
         fields[@"request_header"] = [FTBaseInfoHander ft_getDictStr:[task.currentRequest ft_getRequestHeaders]];
     }
+    tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
     tags[@"resource_url_path"] = task.originalRequest.URL.path;
     [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
     
@@ -352,12 +354,12 @@ static dispatch_once_t onceToken;
 #pragma mark ========== FTNetworkTrack ==========
 - (BOOL)trackUrl:(NSURL *)url{
     if (self.config.metricsUrl) {
-        return ![url.host isEqualToString:[NSURL URLWithString:self.config.metricsUrl].host]&&self.config.networkTrace;
+        return ![url.host isEqualToString:[NSURL URLWithString:self.config.metricsUrl].host];
     }
     return NO;
 }
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler{
-    if ([self trackUrl:url]) {
+    if ([self trackUrl:url] && self.config.networkTrace) {
         NSString *skyStr = nil;
         BOOL sample = [[FTMobileAgent sharedInstance] judgeIsTraceSampling];
         if (completionHandler) {

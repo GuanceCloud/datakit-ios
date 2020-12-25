@@ -40,6 +40,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     self = [super init];
     if (self) {
         _isLaunched = NO;
+        _aspectTokenAry = [NSMutableArray new];
         [self startHook];
     }
     return  self;
@@ -246,35 +247,36 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 -(void)trackOpenWithCpn:(id)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        if ([instance judgeIsTraceSampling]) {
-            NSString *name = NSStringFromClass([cpn class]);
-            NSString *view_id = [name ft_md5HashToUpper32Bit];
-            NSString *parent = [(UIViewController *)cpn ft_getParentVC];
-            NSMutableDictionary *tags = @{@"view_id":view_id,
-                                   @"view_name":name,
-                                   @"view_parent":parent,
-            }.mutableCopy;
-            NSMutableDictionary *fields = @{
-                @"view_load":duration,
-            }.mutableCopy;
-            if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-                NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
-                if (fps.intValue != 0) {
-                    fields[@"view_fps"] =fps;
-                }
-            }
-            int apdexlevel = duration.intValue/1000/1000/1000 <=9 ? : 9;
-            tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
-            [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
-            [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
-            if (instance.config.eventFlowLog) {
-                NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
-                [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-                NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
-                NSDictionary *field = @{FT_KEY_DURATION:duration};
-                [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
+        NSString *name = NSStringFromClass([cpn class]);
+        NSString *view_id = [name ft_md5HashToUpper32Bit];
+        NSString *parent = [(UIViewController *)cpn ft_getParentVC];
+        NSMutableDictionary *tags = @{@"view_id":view_id,
+                                      @"view_name":name,
+                                      @"view_parent":parent,
+        }.mutableCopy;
+        NSMutableDictionary *fields = @{
+            @"view_load":duration,
+        }.mutableCopy;
+        if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
+            NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
+            if (fps.intValue != 0) {
+                fields[@"view_fps"] =fps;
             }
         }
+        int apdexlevel = duration.intValue/1000/1000/1000 <=9 ? : 9;
+        tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
+        if ([instance judgeIsTraceSampling]) {
+            [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+            [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
+        }
+        if (instance.config.eventFlowLog) {
+            NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
+            [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
+            NSDictionary *tag = @{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
+            NSDictionary *field = @{FT_KEY_DURATION:duration};
+            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
+        }
+        
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
