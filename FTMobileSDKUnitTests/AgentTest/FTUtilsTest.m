@@ -57,7 +57,7 @@
     
     XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
     XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
-    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm*1000];
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
 - (void)testJSONSerializeDictObject{

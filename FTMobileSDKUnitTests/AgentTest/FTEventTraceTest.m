@@ -28,6 +28,13 @@
 @implementation FTEventTraceTest
 
 - (void)setUp {
+   
+}
+
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+- (void)setConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -53,84 +60,8 @@
     self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
     self.window.rootViewController = self.tabBarController;
 }
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-}
-- (void)testTraceEventEnter{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
-
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array firstObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
-}
-
-- (void)testTraceEventLeave{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-
-    [self.testVC viewDidDisappear:NO];
-    [NSThread sleepForTimeInterval:2];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount>count);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
-}
-- (void)testTraceEventOpen{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
-
-    [NSThread sleepForTimeInterval:2];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount>0);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = array[1];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"open"]);
-}
-- (void)testTraceEventClick{
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
-    [NSThread sleepForTimeInterval:2];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [NSThread sleepForTimeInterval:2];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount>count);
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array firstObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
-}
 - (void)testTraceEventLaunch{
+    [self setConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
@@ -160,8 +91,96 @@
     NSString *content2 = field2[@"__content"];
     NSDictionary *contentDict2 =[FTJSONUtil ft_dictionaryWithJsonString:content2];
     XCTAssertTrue([[contentDict2 valueForKey:@"event"] isEqualToString:@"launch"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
     
 }
+- (void)testTraceEventEnter{
+    [self setConfig];
 
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array firstObject];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+
+}
+
+- (void)testTraceEventLeave{
+    [self setConfig];
+
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>count);
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+
+}
+- (void)testTraceEventOpen{
+    [self setConfig];
+
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+
+    [NSThread sleepForTimeInterval:2];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>0);
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = array[1];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"open"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+
+}
+- (void)testTraceEventClick{
+    [self setConfig];
+
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [NSThread sleepForTimeInterval:2];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [NSThread sleepForTimeInterval:2];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>count);
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array firstObject];
+    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *field = op[@"field"];
+    NSString *content = field[@"__content"];
+    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
 
 @end
