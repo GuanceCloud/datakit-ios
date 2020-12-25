@@ -149,13 +149,19 @@
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount>0);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = array[1];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"open"]);
+    __block BOOL open = NO;
+    [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[@"opdata"];
+        NSDictionary *field = op[@"field"];
+        NSString *content = field[@"__content"];
+        NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+        if ([[contentDict valueForKey:@"event"] isEqualToString:@"open"]) {
+            open = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(open == YES);
     [[FTMobileAgent sharedInstance] resetInstance];
 
 }
