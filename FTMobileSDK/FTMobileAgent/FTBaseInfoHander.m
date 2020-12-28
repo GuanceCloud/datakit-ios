@@ -42,7 +42,8 @@
 #pragma mark ========== 字符串处理  前后空格移除、特殊字符转换、校验合法 ==========
 + (id)repleacingSpecialCharacters:(id )str{
     if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+        reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
         reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
         reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
         return reStr;
@@ -53,7 +54,8 @@
 }
 + (id)repleacingSpecialCharactersField:(id )str{
     if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+        reStr = [reStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
         return reStr;
     }else{
         return str;
@@ -62,7 +64,8 @@
 }
 + (id)repleacingSpecialCharactersMeasurement:(id )str{
     if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+        reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
         reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
         return reStr;
     }else{
