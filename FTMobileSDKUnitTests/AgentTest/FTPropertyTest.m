@@ -142,7 +142,7 @@
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.source = @"iOSTest";
+    config.source = @"iOSTest\\";
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
@@ -154,8 +154,13 @@
     
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     NSURLRequest *request =  [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        
+        XCTAssertTrue(statusCode == 200);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
     }];
     NSString *body = [request ft_getBodyData:YES];
     NSString *env = @"__env=pre";

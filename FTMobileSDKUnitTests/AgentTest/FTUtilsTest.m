@@ -7,6 +7,9 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <FTMobileAgent/FTMobileAgent.h>
+#import <FTMobileAgent/FTMobileAgent+Private.h>
+#import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTRecordModel.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
@@ -84,5 +87,50 @@
     XCTAssertTrue(strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0);
 }
 
-
+- (void)testFieldValueHasTransliteration1{
+    [self transliteration:@"\\"];
+}
+- (void)testFieldValueHasTransliteration2{
+    [self transliteration:@"\\\\"];
+}
+- (void)testFieldValueHasTransliteration3{
+    [self transliteration:@"\\\\\\"];
+}
+- (void)testFieldValueJsonStr{
+    NSDictionary *json = @{@"json":@"1",
+                           @"json2":@"2"
+    };
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:json options:NSJSONWritingPrettyPrinted error:&error];
+    if (!error) {
+        NSString *str  = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self transliteration:str];
+    }
+    
+}
+- (void)transliteration:(NSString *)str{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    config.appid = appid;
+    config.enableSDKDebugLog = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+     
+    [[FTMobileAgent sharedInstance] logging:str status:FTStatusInfo];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+        XCTAssertTrue(statusCode == 200);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
 @end
