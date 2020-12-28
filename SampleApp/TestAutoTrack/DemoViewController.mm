@@ -28,7 +28,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"Test_eventFlowLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash"];
+    self.dataSource = @[@"Test_eventFlowLog",@"test_traceConsoleLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash"];
     [self createUI];
 }
 -(void)createUI{
@@ -43,6 +43,9 @@
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[UITestVC new] animated:YES];
     self.hidesBottomBarWhenPushed = NO;
+}
+- (void)testLogTrack{
+    NSLog(@"Test_traceConsoleLog");
 }
 -(void)showResult:(NSString *)title{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -138,33 +141,36 @@
             [self testAutoTrack];
             break;
         case 1:
-            [self testCrashLog];
+            [self testLogTrack];
             break;
         case 2:
-            [self testSIGSEGVCrash];
+            [self testCrashLog];
             break;
         case 3:
-            [self testSIGBUSCrash];
+            [self testSIGSEGVCrash];
             break;
         case 4:
-            [self testCCrash];
+            [self testSIGBUSCrash];
             break;
         case 5:
-            [self Test_ANR];
+            [self testCCrash];
             break;
         case 6:
-            [self test_webview];
+            [self Test_ANR];
             break;
         case 7:
-            [self test_client_http];
+            [self test_webview];
             break;
         case 8:
-            [self test_bindUesr];
+            [self test_client_http];
             break;
         case 9:
-            [self test_userLogout];
+            [self test_bindUesr];
             break;
         case 10:
+            [self test_userLogout];
+            break;
+        case  11:
             [self test_mainthreadLockCrash];
             break;
         default:
