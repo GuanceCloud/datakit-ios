@@ -19,6 +19,12 @@
 		4A299F912521F7F800400931 /* FTANRDetector.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A299F8F2521F7F800400931 /* FTANRDetector.h */; };
 		4A299F922521F7F800400931 /* FTANRDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299F902521F7F800400931 /* FTANRDetector.m */; };
 		4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A37A94E24862A8000E0381B /* NSURLResponse+FTMonitor.m */; };
+		4A2D281125A4612200A86433 /* FTWKWebViewJavascriptBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D280F25A4612200A86433 /* FTWKWebViewJavascriptBridge.h */; };
+		4A2D281225A4612200A86433 /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D281025A4612200A86433 /* FTWKWebViewJavascriptBridge.m */; };
+		4A2D281925A472E600A86433 /* FTWebViewJavascriptBridgeBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D281725A472E600A86433 /* FTWebViewJavascriptBridgeBase.h */; };
+		4A2D281A25A472E600A86433 /* FTWebViewJavascriptBridgeBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D281825A472E600A86433 /* FTWebViewJavascriptBridgeBase.m */; };
+		4A2D282B25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D282925A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.h */; };
+		4A2D282C25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D282A25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.m */; };
 		4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2D57ED2458141300478547 /* FTMonitorUtils.h */; };
 		4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D57EE2458141300478547 /* FTMonitorUtils.m */; };
 		4A2EFD8C253ECDC100F93B1E /* FTJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */; };
@@ -103,6 +109,12 @@
 		4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Private.h"; sourceTree = "<group>"; };
 		4A299F8F2521F7F800400931 /* FTANRDetector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTANRDetector.h; sourceTree = "<group>"; };
 		4A299F902521F7F800400931 /* FTANRDetector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTANRDetector.m; sourceTree = "<group>"; };
+		4A2D280F25A4612200A86433 /* FTWKWebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewJavascriptBridge.h; sourceTree = "<group>"; };
+		4A2D281025A4612200A86433 /* FTWKWebViewJavascriptBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewJavascriptBridge.m; sourceTree = "<group>"; };
+		4A2D281725A472E600A86433 /* FTWebViewJavascriptBridgeBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWebViewJavascriptBridgeBase.h; sourceTree = "<group>"; };
+		4A2D281825A472E600A86433 /* FTWebViewJavascriptBridgeBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWebViewJavascriptBridgeBase.m; sourceTree = "<group>"; };
+		4A2D282925A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWebViewJavascriptLeakAvoider.h; sourceTree = "<group>"; };
+		4A2D282A25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWebViewJavascriptLeakAvoider.m; sourceTree = "<group>"; };
 		4A2D57ED2458141300478547 /* FTMonitorUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorUtils.h; sourceTree = "<group>"; };
 		4A2D57EE2458141300478547 /* FTMonitorUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorUtils.m; sourceTree = "<group>"; };
 		4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTJsonWriter.h; sourceTree = "<group>"; };
@@ -203,6 +215,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A2D282525A5AE9D00A86433 /* JSBridge */ = {
+			isa = PBXGroup;
+			children = (
+				4A2D280F25A4612200A86433 /* FTWKWebViewJavascriptBridge.h */,
+				4A2D281025A4612200A86433 /* FTWKWebViewJavascriptBridge.m */,
+				4A2D281725A472E600A86433 /* FTWebViewJavascriptBridgeBase.h */,
+				4A2D281825A472E600A86433 /* FTWebViewJavascriptBridgeBase.m */,
+				4A2D282925A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.h */,
+				4A2D282A25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.m */,
+			);
+			path = JSBridge;
+			sourceTree = "<group>";
+		};
 		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -302,6 +327,7 @@
 				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 				4A852FD623A240B300B40B5D /* UIView+FT_CurrentController.h */,
 				4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */,
+				4A2D282525A5AE9D00A86433 /* JSBridge */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
@@ -379,6 +405,7 @@
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
 				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
+				4A2D281925A472E600A86433 /* FTWebViewJavascriptBridgeBase.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				4AECBCED244EE8450023DEF7 /* FTURLProtocol.h in Headers */,
 				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,
@@ -388,12 +415,14 @@
 				4A7135B22579E82A00444C3D /* FTfishhook.h in Headers */,
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
+				4A2D281125A4612200A86433 /* FTWKWebViewJavascriptBridge.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
 				4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */,
 				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
+				4A2D282B25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A01160C24C966C200AECC1C /* NSDate+FTAdd.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
@@ -535,6 +564,7 @@
 				4A7135A62570DA2300444C3D /* BlacklistedVCClassNames.m in Sources */,
 				4A7135A4257096FF00444C3D /* FTTrack.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
+				4A2D281225A4612200A86433 /* FTWKWebViewJavascriptBridge.m in Sources */,
 				4A37A9402484CAEA00E0381B /* FTUncaughtExceptionHandler.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
 				4AB783CA23C5B802001FC994 /* FTLocationManager.m in Sources */,
@@ -556,7 +586,9 @@
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
 				4A4B0C22253EAED900D903AB /* FTJSONUtil.m in Sources */,
 				4AECBCF2244EEB100023DEF7 /* FTSessionConfiguration.m in Sources */,
+				4A2D281A25A472E600A86433 /* FTWebViewJavascriptBridgeBase.m in Sources */,
 				4A1FFA2824AB072D00049D9E /* NSString+FTAdd.m in Sources */,
+				4A2D282C25A5C16C00A86433 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				4A88428E239E5768001B44C3 /* FTUploadTool.m in Sources */,
 				4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */,
 			);
