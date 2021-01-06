@@ -34,7 +34,7 @@
 #import "FTCallStack.h"
 #include <netdb.h>
 #include <arpa/inet.h>
-
+#import "FTWKWebViewJavascriptBridge.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
@@ -316,6 +316,52 @@ static dispatch_once_t onceToken;
         [tags setValue:span forKey:FT_KEY_SPANID];
     }
     [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
+}
+-(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
+    if (![webView isKindOfClass:[WKWebView class]]) {
+        return;
+    }
+    FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+    [bridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
+        [self dealReceiveScriptMessage:data callBack:responseCallback];
+    }];
+}
+- (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
+      @try {
+
+        NSDictionary *messageDic = message;
+        if (![messageDic isKindOfClass:[NSDictionary class]]) {
+            ZYErrorLog(@"Message body is formatted failure from JS SDK");
+            return;
+        }
+        NSString *name = messageDic[@"name"];
+        if([name isEqualToString:@"serverVerify"]){
+            
+            
+        }else if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
+            NSString *measurement = messageDic[@"measurement"];
+            NSDictionary *tags = messageDic[@"tags"];
+            NSDictionary *fields = messageDic[@"fields"];
+            if (measurement && fields.count>0) {
+                if ([name isEqualToString:@"rum"]) {
+                    [[FTMobileAgent sharedInstance] rumTrackES:measurement terminal:@"web" tags:tags fields:fields];
+                }else if([name isEqualToString:@"track"]){
+                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields];
+                }else if([name isEqualToString:@"log"]){
+                    //数据格式需要调整
+                }else if([name isEqualToString:@"trace"]){
+                    [[FTMobileAgent sharedInstance] tracing:measurement tags:tags field:fields tm:[[NSDate date] ft_dateTimestamp]];
+
+                }
+            }
+        }
+        
+      
+          
+        
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"%@ error: %@", self, exception);
+    }
 }
 - (void)trackAppFreeze{
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];

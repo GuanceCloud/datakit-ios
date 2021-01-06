@@ -65,30 +65,53 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     Method originalLoadRequest= class_getInstanceMethod([WKWebView class], @selector(loadRequest:));
     Method ownerreLoadRequest = class_getInstanceMethod([WKWebView class], @selector(fthook_loadRequest:));
     method_exchangeImplementations(originalLoadRequest, ownerreLoadRequest);
+    
+    Method originalLoadHTMLString= class_getInstanceMethod([WKWebView class], @selector(loadHTMLString:baseURL:));
+    Method ownerLoadHTMLString = class_getInstanceMethod([WKWebView class], @selector(fthook_loadHTMLString:baseURL:));
+    method_exchangeImplementations(originalLoadHTMLString, ownerLoadHTMLString);
+    
+    Method oriloadFileURL = class_getInstanceMethod([WKWebView class], @selector(loadFileURL:allowingReadAccessToURL:));
+    Method newloadFileURL = class_getInstanceMethod([WKWebView class], @selector(fthook_loadFileURL:allowingReadAccessToURL:));
+    method_exchangeImplementations(oriloadFileURL, newloadFileURL);
+    
 }
-- (void)fthook_loadRequest:(NSURLRequest *)request{
+- (WKNavigation *)fthook_loadRequest:(NSURLRequest *)request{
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].trace) {
         NSURLRequest *newrequest = [request ft_NetworkTrace];
         if (!self.navigationDelegate) {
             self.navigationDelegate = [FTWKWebViewHandler sharedInstance];
         }
         [[FTWKWebViewHandler sharedInstance] addWebView:self];
-        [self fthook_loadRequest:newrequest];
+        return  [self fthook_loadRequest:newrequest];
     }else{
-        [self fthook_loadRequest:request];
+        return [self fthook_loadRequest:request];
     }
 }
-- (void)fthook_reload{
+- (WKNavigation *)fthook_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL {
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
+    return [self fthook_loadHTMLString:string baseURL:baseURL];
+}
+- (WKNavigation *)fthook_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL {
+    [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
+    return [self fthook_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
+}
+- (WKNavigation *)fthook_reload{
     if ([FTWKWebViewHandler sharedInstance].trace) {
+        dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+        __block BOOL trace = NO;
+        __block NSURLRequest *newRequest = nil;
         [[FTWKWebViewHandler sharedInstance] reloadWebView:self completionHandler:^(NSURLRequest * _Nonnull request, BOOL needTrace) {
+            dispatch_semaphore_signal(signal);
             if (needTrace && request) {
-                [self loadRequest:request];
-            }else{
-                [self fthook_reload];
+                trace = YES;
+                newRequest = request;
             }
         }];
+        dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+        return  trace?[self loadRequest:newRequest]:[self fthook_reload];
     }else{
-        [self fthook_reload];
+        return [self fthook_reload];
     }
 }
 - (void)fthook_dealloc{

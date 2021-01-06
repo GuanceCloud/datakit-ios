@@ -31,6 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
  * ⻚面开始 - 资源加载完毕
 */
 -(void)ftWKWebViewLoadCompletedWithURL:(NSURL *)url duration:(NSNumber *)duration;
+
+-(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView;
+
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL trace;
@@ -41,10 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
 - (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
 - (void)removeWebView:(WKWebView *)webView;
-- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webview;
+- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webView;
 - (void)loadingWebView:(WKWebView *)webView;
-- (void)didFinishWithWebview:(WKWebView *)webview;
+- (void)didFinishWithWebview:(WKWebView *)webView;
 
+- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView;
 @end
 
 NS_ASSUME_NONNULL_END

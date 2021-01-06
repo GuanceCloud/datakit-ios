@@ -14,6 +14,8 @@
 #import "FTLog.h"
 #import "NSDate+FTAdd.h"
 #import "NSURLResponse+FTMonitor.h"
+#import "FTWKWebViewJavascriptBridge.h"
+#import "FTMobileAgent+Private.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成
@@ -162,5 +164,10 @@ static dispatch_once_t onceToken;
         [self.traceDelegate ftWKWebViewTraceRequest:request isError:YES];
     }
 }
-
+#pragma mark -
+- (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
+    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
+        [self.traceDelegate ftAddScriptMessageHandlerWithWebView:webView];
+    }
+}
 @end
