@@ -18,6 +18,7 @@
 #import "TestCCrash.hpp"
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"
+#import "TestJsbridgeData.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSArray *dataSource;
@@ -28,7 +29,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"Test_eventFlowLog",@"test_traceConsoleLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash"];
+    self.dataSource = @[@"Test_eventFlowLog",@"test_traceConsoleLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash",@"Test_jsBridgeTrace"];
     [self createUI];
 }
 -(void)createUI{
@@ -107,6 +108,11 @@
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
     }];
 }
+- (void)test_jsBridgeTrace{
+    self.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:[TestJsbridgeData new] animated:YES];
+    self.hidesBottomBarWhenPushed = NO;
+}
 -(void)test_bindUesr{
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1"];
 }
@@ -172,6 +178,9 @@
             break;
         case  11:
             [self test_mainthreadLockCrash];
+            break;
+        case  12:
+            [self test_jsBridgeTrace];
             break;
         default:
             break;
