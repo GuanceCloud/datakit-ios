@@ -40,7 +40,7 @@
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, assign) FTMonitorInfoType monitorType;
-
+@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
@@ -321,15 +321,15 @@ static dispatch_once_t onceToken;
     if (![webView isKindOfClass:[WKWebView class]]) {
         return;
     }
-    FTWKWebViewJavascriptBridge *bridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
-    [bridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
+    self.jsBridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+    [self.jsBridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
         [self dealReceiveScriptMessage:data callBack:responseCallback];
     }];
 }
 - (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
       @try {
-
-        NSDictionary *messageDic = message;
+       
+        NSDictionary *messageDic = [FTJSONUtil ft_dictionaryWithJsonString:message];
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
             ZYErrorLog(@"Message body is formatted failure from JS SDK");
             return;
@@ -342,15 +342,17 @@ static dispatch_once_t onceToken;
             NSString *measurement = messageDic[@"measurement"];
             NSDictionary *tags = messageDic[@"tags"];
             NSDictionary *fields = messageDic[@"fields"];
+            long long time = [messageDic[@"time"] longLongValue];
+            time = time>0?:[[NSDate date] ft_dateTimestamp];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    [[FTMobileAgent sharedInstance] rumTrackES:measurement terminal:@"web" tags:tags fields:fields];
+                    [[FTMobileAgent sharedInstance] rumTrackES:measurement terminal:@"web" tags:tags fields:fields tm:time];
                 }else if([name isEqualToString:@"track"]){
-                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields];
+                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields tm:time];
                 }else if([name isEqualToString:@"log"]){
                     //数据格式需要调整
                 }else if([name isEqualToString:@"trace"]){
-                    [[FTMobileAgent sharedInstance] tracing:measurement tags:tags field:fields tm:[[NSDate date] ft_dateTimestamp]];
+                    [[FTMobileAgent sharedInstance] tracing:measurement tags:tags field:fields tm:time];
 
                 }
             }
