@@ -8,10 +8,8 @@
 
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTWebViewJavascriptLeakAvoider.h"
+#import "FTConstants.h"
 
-@interface FTWKWebViewJavascriptBridge()<FTWebViewJavascriptBridgeBaseDelegate>
-@property (nonatomic, strong) NSMutableArray *handleEvent;
-@end
 @implementation FTWKWebViewJavascriptBridge{
     WKWebView* _webView;
     long _uniqueId;
@@ -23,6 +21,25 @@
     return bridge;
 }
 
+- (void)callHandler:(NSString *)handlerName {
+    [self callHandler:handlerName data:nil responseCallback:nil];
+}
+
+- (void)callHandler:(NSString *)handlerName data:(id)data {
+    [self callHandler:handlerName data:data responseCallback:nil];
+}
+
+- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
+    [_base sendData:data responseCallback:responseCallback handlerName:handlerName];
+}
+
+- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
+    _base.messageHandlers[handlerName] = [handler copy];
+}
+
+- (void)removeHandler:(NSString *)handlerName {
+    [_base.messageHandlers removeObjectForKey:handlerName];
+}
 - (void)_setupInstance:(WKWebView*)webView{
     _webView = webView;
     _base = [[FTWebViewJavascriptBridgeBase alloc] init];
@@ -31,38 +48,31 @@
     [self addScriptMessageHandler];
     [self _injectJavascriptFile];
 }
-- (void)addScriptMessageHandler{
-    [_webView.configuration.userContentController addScriptMessageHandler:[[FTWebViewJavascriptLeakAvoider alloc]initWithDelegate:self] name:@"ftMobileSdk"];
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    if (![message.name isEqualToString:FT_SCRIPT_MESSAGE_HANDLER_NAME]) {
+        return;
+    }
+    NSString * body = (NSString * )message.body;
+    if (body && [body isKindOfClass:[NSString class]]){
+        [_base flushMessageQueue:body];
+    }
 }
-- (void)removeScriptMessageHandler {
-    [_webView.configuration.userContentController removeScriptMessageHandlerForName:@"ftMobileSdk"];
-}
-- (void)_injectJavascriptFile{
-    NSString *bridge_js = WebViewJavascriptBridge_js();
+- (void)_injectJavascriptFile {
+    NSString *bridge_js = FTWebViewJavascriptBridge_js();
     //injected the method when H5 starts to create the DOM tree
     WKUserScript * bridge_userScript = [[WKUserScript alloc]initWithSource:bridge_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
     [_webView.configuration.userContentController addUserScript:bridge_userScript];
+ 
 }
-- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
-    _base.messageHandlers[handlerName] = [handler copy];
-}
-- (void)removeHandler:( NSString* )handlerName{
-    [_base.messageHandlers removeObjectForKey:handlerName];
-}
-- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
-  
-    if (![message.name isEqualToString:@"ftMobileSdk"]){
-        return;
-    }
-
-    NSString * body = (NSString * )message.body;
-    if (body && [body isKindOfClass:[NSString class]]) {
-        NSMutableString *mstr = [NSMutableString stringWithString:body];
-        [_base flushMessageQueue:mstr];
-    }
+- (void) addScriptMessageHandler {
+    [_webView.configuration.userContentController addScriptMessageHandler:[[FTWebViewJavascriptLeakAvoider alloc]initWithDelegate:self] name:FT_SCRIPT_MESSAGE_HANDLER_NAME];
 }
 
-- (NSString *)_evaluateJavascript:(nonnull NSString *)javascriptCommand {
+- (void)removeScriptMessageHandler {
+    [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
+}
+
+- (NSString*) _evaluateJavascript:(NSString*)javascriptCommand {
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
     return NULL;
 }
@@ -70,47 +80,48 @@
 -(void)dealloc{
     [self removeScriptMessageHandler];
 }
-NSString * WebViewJavascriptBridge_js() {
+
+NSString * FTWebViewJavascriptBridge_js() {
 #define __WVJB_js_func__(x) #x
-    
+
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {
                
-        window.WebViewJavascriptBridge = {
-        registerHandler: registerHandler,
-        callHandler: callHandler,
-        _handleMessageFromObjC: _handleMessageFromObjC
+        window.FTWKebViewJSBridge = {
+        registerHandler: ftRegisterHandler,
+        callHandler: ftCallHandler,
+        _handleMessageFromObjC: _ftHandleMessageFromObjC
         };
         
-        var sendMessageQueue = [];
-        var messageHandlers = {};
-        var responseCallbacks = {};
+        var ftSendMessageQueue = [];
+        var ftMessageHandlers = {};
+        var ftResponseCallbacks = {};
         var uniqueId = 1;
         
-        function registerHandler(handlerName, handler) {
-            messageHandlers[handlerName] = handler;
+        function ftRegisterHandler(handlerName, handler) {
+            ftMessageHandlers[handlerName] = handler;
         }
         
-        function callHandler(handlerName, data, responseCallback) {
+        function ftCallHandler(handlerName, data, responseCallback) {
             if (arguments.length === 2 && typeof data == 'function') {
                 responseCallback = data;
                 data = null;
             }
-            _doSend({ handlerName:handlerName, data:data }, responseCallback);
+            _ftDoSend({ handlerName:handlerName, data:data }, responseCallback);
         }
-        function _doSend(message, responseCallback) {
+        function _ftDoSend(message, responseCallback) {
             if (responseCallback) {
                 var callbackId = 'cb_'+(uniqueId++)+'_'+new Date().getTime();
-                responseCallbacks[callbackId] = responseCallback;
+                ftResponseCallbacks[callbackId] = responseCallback;
                 message['callbackId'] = callbackId;
             }
-            sendMessageQueue.push(message);
-            window.webkit.messageHandlers.ftMobileSdk.postMessage('__bridge__'+ JSON.stringify(sendMessageQueue));
-            sendMessageQueue = [];
+            ftSendMessageQueue.push(message);
+            window.webkit.messageHandlers.ftMobileSdk.postMessage(JSON.stringify(ftSendMessageQueue));
+            ftSendMessageQueue = [];
         }
         
-        function _dispatchMessageFromObjC(messageJSON) {
+        function _ftDispatchMessageFromObjC(messageJSON) {
             _doDispatchMessageFromObjC();
             
             function _doDispatchMessageFromObjC() {
@@ -119,14 +130,14 @@ NSString * WebViewJavascriptBridge_js() {
                 var responseCallback;
                 
                 if (message.responseId) {
-                    responseCallback = responseCallbacks[message.responseId];
+                    responseCallback = ftResponseCallbacks[message.responseId];
                     if (!responseCallback) {
                        
                         return;
                     }
                     
                     responseCallback(message.responseData);
-                    delete responseCallbacks[message.responseId];
+                    delete ftResponseCallbacks[message.responseId];
                 } else {
                     if (message.callbackId) {
                         var callbackResponseId = message.callbackId;
@@ -134,7 +145,7 @@ NSString * WebViewJavascriptBridge_js() {
                             _doSend({ handlerName:message.handlerName, responseId:callbackResponseId, responseData:responseData });
                         };
                     }
-                    var handler = messageHandlers[message.handlerName];
+                    var handler = ftMessageHandlers[message.handlerName];
                     if (!handler) {
                         console.log("WebViewJavascriptBridge: WARNING: no handler for message from ObjC:", message);
                     } else {
@@ -143,8 +154,8 @@ NSString * WebViewJavascriptBridge_js() {
                 }
             }
         }
-        function _handleMessageFromObjC(messageJSON) {
-            _dispatchMessageFromObjC(messageJSON);
+        function _ftHandleMessageFromObjC(messageJSON) {
+            _ftDispatchMessageFromObjC(messageJSON);
         }
     })(window);
                                                              ); // END preprocessorJSCode

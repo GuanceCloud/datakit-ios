@@ -127,3 +127,4 @@ extern NSUInteger  const FT_DB_CONTENT_MAX_COUNT;
 extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
 // 多少次卡顿纪录为一次有效卡顿
 extern NSUInteger const  MXRMonitorRunloopStandstillCount;
+extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;

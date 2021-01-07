@@ -20,6 +20,7 @@ typedef void (^WVJBHandler)(id data, WVJBResponseCallback responseCallback);
 @property (nonatomic, strong) NSMutableDictionary *responseCallbacks;
 @property (nonatomic, strong) NSMutableDictionary *messageHandlers;
 - (void)flushMessageQueue:(NSString *)messageQueueString;
+- (void)sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName;
 
 @end
 
