@@ -85,13 +85,9 @@ NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 
 #pragma mark ========== logging key ==========
 NSString *const FT_KEY_SOURCE = @"source";
-NSString *const FT_KEY_SERVICENAME = @"__serviceName";
-NSString *const FT_KEY_STATUS = @"__status";
+NSString *const FT_KEY_STATUS = @"status";
 NSString *const FT_KEY_CONTENT = @"conent";
 NSString *const FT_KEY_MESSAGE = @"message";
-NSString *const FT_KEY_OPERATIONNAME = @"__operationName";
-NSString *const FT_KEY_CLASS = @"__class";
-NSString *const FT_KEY_ISERROR = @"__isError";
 NSString *const FT_KEY_SPANTYPE = @"span_type";
 NSString *const FT_KEY_DURATION  = @"duration";
 NSString *const FT_FLOW_TRACEID  = @"trace_id";
