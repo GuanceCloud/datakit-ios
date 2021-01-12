@@ -57,6 +57,7 @@ extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_SOURCE;
 extern NSString * const FT_KEY_SERVICENAME;
 extern NSString * const FT_KEY_CONTENT;
+extern NSString * const FT_KEY_MESSAGE;
 extern NSString * const FT_KEY_OPERATIONNAME;
 extern NSString * const FT_KEY_CLASS;
 extern NSString * const FT_KEY_ISERROR;
@@ -64,7 +65,6 @@ extern NSString * const FT_KEY_SPANTYPE;
 extern NSString * const FT_KEY_DURATION;
 extern NSString * const FT_FLOW_TRACEID;
 extern NSString * const FT_KEY_SPANID;
-
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_KEY_EVENT;
 
@@ -86,7 +86,9 @@ extern NSString * const FT_MONITOR_WITF_SSID;
 extern NSString * const FT_MONITOR_NETWORK_STRENGTH;
 extern NSString * const FT_MONITOR_NETWORK_ERROR_RATE;
 extern NSString * const FT_MONITOR_NETWORK_PROXY;
-
+extern NSString * const FT_TRACING_STATUS;
+extern NSString * const FT_KEY_SERVICE;
+extern NSString * const FT_KEY_OPERATION;
 extern NSString * const FT_NETWORK_REQUEST_URL;
 extern NSString * const FT_NETWORK_CONNECT_TIME;
 extern NSString * const FT_DURATION_TIME;

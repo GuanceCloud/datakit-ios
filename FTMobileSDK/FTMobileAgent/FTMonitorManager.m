@@ -171,10 +171,10 @@ static dispatch_once_t onceToken;
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
     if (self.config.networkTrace) {
-        NSString *iserror = FT_KEY_FALSE;
+        NSString *statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusOk];
         NSDictionary *responseDict = @{};
         if (error) {
-            iserror = FT_KEY_TRUE;
+            statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
             NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
             NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
             
@@ -189,7 +189,9 @@ static dispatch_once_t onceToken;
                              FT_NETWORK_CODE:errorCode,
             };
         }else{
-            iserror = [[task.response ft_getResponseStatusCode] integerValue] >=400? FT_KEY_TRUE:FT_KEY_FALSE;
+            if( [[task.response ft_getResponseStatusCode] integerValue] >=400){
+                statusStr =[FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+            }
             responseDict = task.response?[task.response ft_getResponseDict]:@{};
         }
         NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
@@ -198,9 +200,8 @@ static dispatch_once_t onceToken;
             FT_NETWORK_RESPONSE_CONTENT:response,
             FT_NETWORK_REQUEST_CONTENT:request
         };
-        NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[task.originalRequest ft_getOperationName],
-                                      FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
-                                      FT_KEY_ISERROR:iserror,
+        NSMutableDictionary *tags = @{FT_KEY_OPERATION:[task.originalRequest ft_getOperationName],
+                                      FT_TRACING_STATUS:statusStr,
                                       FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
         }.mutableCopy;
         NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000000]};
@@ -274,10 +275,10 @@ static dispatch_once_t onceToken;
  * wkwebview 使用loadRequest 与 reload 发起的请求
  */
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
-    NSString *iserror = FT_KEY_FALSE;
+    NSString *statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusOk];
     NSDictionary *responseDict = @{};
     if (error) {
-        iserror = FT_KEY_TRUE;
+        statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
         NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
         NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
         responseDict = @{FT_NETWORK_HEADERS:@{},
@@ -289,18 +290,19 @@ static dispatch_once_t onceToken;
                          FT_NETWORK_CODE:errorCode,
         };
     }else{
-        iserror = [[response ft_getResponseStatusCode] integerValue] >=400? FT_KEY_TRUE:FT_KEY_FALSE;
+        if( [[response ft_getResponseStatusCode] integerValue] >=400){
+            statusStr =[FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+        }
+        responseDict = response?[response ft_getResponseDict]:responseDict;
     }
-    responseDict = response?[response ft_getResponseDict]:responseDict;
     NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
     NSDictionary *responseDic = responseDict?responseDict:@{};
     NSDictionary *content = @{
         FT_NETWORK_RESPONSE_CONTENT:responseDic,
         FT_NETWORK_REQUEST_CONTENT:requestDict
     };
-    NSMutableDictionary *tags = @{FT_KEY_OPERATIONNAME:[request ft_getOperationName],
-                                  FT_KEY_CLASS:FT_LOGGING_CLASS_TRACING,
-                                  FT_KEY_ISERROR:iserror,
+    NSMutableDictionary *tags = @{FT_KEY_OPERATION:[request ft_getOperationName],
+                                  FT_TRACING_STATUS:statusStr,
                                   FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
     }.mutableCopy;
     NSDictionary *field = @{FT_KEY_DURATION:duration};

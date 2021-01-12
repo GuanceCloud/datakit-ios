@@ -718,7 +718,7 @@ static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType
 - (NSDictionary *)getESPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
-    dict[FT_TYPE] = type;
+    dict[FT_KEY_SOURCE] = type;
     dict[@"terminal"] = terminal;
     dict[@"userid"] = [FTPresetProperty userid];
     if ([type isEqualToString:FT_TYPE_CRASH]) {

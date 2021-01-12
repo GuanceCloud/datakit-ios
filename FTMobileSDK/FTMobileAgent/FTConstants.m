@@ -84,18 +84,22 @@ NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
 NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 
 #pragma mark ========== logging key ==========
-NSString *const FT_KEY_SOURCE = @"__source";
+NSString *const FT_KEY_SOURCE = @"source";
 NSString *const FT_KEY_SERVICENAME = @"__serviceName";
 NSString *const FT_KEY_STATUS = @"__status";
-NSString *const FT_KEY_CONTENT = @"__content";
+NSString *const FT_KEY_CONTENT = @"conent";
+NSString *const FT_KEY_MESSAGE = @"message";
 NSString *const FT_KEY_OPERATIONNAME = @"__operationName";
 NSString *const FT_KEY_CLASS = @"__class";
 NSString *const FT_KEY_ISERROR = @"__isError";
-NSString *const FT_KEY_SPANTYPE = @"__spanType";
-NSString *const FT_KEY_DURATION  = @"__duration";
-NSString *const FT_FLOW_TRACEID  = @"__traceID";
-NSString *const FT_KEY_SPANID = @"__spanID";
-#pragma mark ========== logging network trace key==========
+NSString *const FT_KEY_SPANTYPE = @"span_type";
+NSString *const FT_KEY_DURATION  = @"duration";
+NSString *const FT_FLOW_TRACEID  = @"trace_id";
+NSString *const FT_KEY_SPANID = @"span_id";
+NSString *const FT_KEY_ENDPOINT = @"endpoint";
+#pragma mark ==========  network trace key==========
+NSString *const FT_KEY_SERVICE = @"service";
+NSString *const FT_KEY_OPERATION = @"operation";
 NSString *const FT_APPLICATION_UUID = @"application_UUID";
 NSString *const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString *const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
@@ -113,6 +117,7 @@ NSString *const FT_NETWORK_CODE = @"code";
 NSString *const FT_NETWORK_ERROR = @"error";
 NSString *const FT_KEY_TRUE = @"true";
 NSString *const FT_KEY_FALSE = @"false";
+NSString *const FT_TRACING_STATUS = @"status";
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
