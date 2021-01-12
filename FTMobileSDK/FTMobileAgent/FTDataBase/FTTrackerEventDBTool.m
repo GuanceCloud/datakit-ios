@@ -17,6 +17,7 @@
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong) ZY_FMDatabase *db;
 @property (nonatomic, strong) NSMutableArray<FTRecordModel *> *messageCaches;
+@property (nonatomic, strong) NSLock *lock;
 
 @end
 @implementation FTTrackerEventDBTool
@@ -56,6 +57,7 @@ static dispatch_once_t onceToken;
 }
 - (void)createTable{
     @try {
+        self.lock = [[NSLock alloc]init];
         [self createEventTable];
         [self createUserTable];
     } @catch (NSException *exception) {
@@ -190,17 +192,26 @@ static dispatch_once_t onceToken;
     if (!data) {
         return;
     }
+    [self.lock lock];
     [self.messageCaches addObject:data];
     if (self.messageCaches.count>20) {
         NSArray *array = [self.messageCaches subarrayWithRange:NSMakeRange(0, 20)];
-        [self insertItemWithItemDatas:array];
         [self.messageCaches removeObjectsInArray:array];
+        [self.lock unlock];
+        [self insertItemWithItemDatas:array];
+    }else{
+        [self.lock unlock];
     }
 }
 -(void)insertCacheToDB{
+    [self.lock lock];
     if (self.messageCaches.count > 0) {
-        [self insertItemWithItemDatas:[self.messageCaches copy]];
+        NSArray *array = [self.messageCaches copy];
         self.messageCaches = nil;
+        [self.lock unlock];
+        [self insertItemWithItemDatas:array];
+    }else{
+        [self.lock unlock];
     }
 }
 -(NSArray *)getAllDatas{

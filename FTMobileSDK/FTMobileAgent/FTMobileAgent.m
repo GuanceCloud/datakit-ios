@@ -171,7 +171,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                 }];
             }
         };
-        dispatch_async(self.serialQueue, block);
+        dispatch_async(self.concurrentLabel, block);
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -276,7 +276,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
-        NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
+        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
@@ -293,17 +293,17 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:FTStatusInfo],
-                                         FT_KEY_SERVICENAME:self.config.serviceName,
-                                         @"app_identifier":[FTPresetProperty appIdentifier],
-                                         @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
-                                         @"device_uuid":[FTPresetProperty deviceUUID],
-                                         @"version":self.config.version
+        NSMutableDictionary *tagDict = @{
+            FT_KEY_SERVICE:self.config.serviceName,
+            @"app_identifier":[FTPresetProperty appIdentifier],
+            @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+            @"device_uuid":[FTPresetProperty deviceUUID],
+            @"version":self.config.version
         }.mutableCopy;
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
-        NSMutableDictionary *filedDict = @{FT_KEY_CONTENT:content,
+        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
@@ -406,20 +406,21 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     switch (type) {
         case FTAddDataNormal:{
-            dispatch_async(self.serialQueue, ^{
+            dispatch_async(self.concurrentLabel, ^{
                 [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
             });
         }
             break;
         case FTAddDataCache:{
-            dispatch_async(self.serialQueue, ^{
+            dispatch_async(self.concurrentLabel, ^{
                 [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
             });
         }
             break;
         case FTAddDataImmediate:{
             [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-            [self loggingArrayInsertDBImmediately];
+            [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+
         }
             break;
      
@@ -435,11 +436,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }else{
         self.lastAddDBDate = [NSDate date];
     }
-}
-- (void)loggingArrayInsertDBImmediately{
-    dispatch_sync(self.serialQueue, ^{
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    });
 }
 /**
  * 采集率判断 判断当前数据是否被采集
@@ -467,7 +463,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
         SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
         if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
-            if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.serialQueue)) {
+            if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.concurrentLabel)) {
                 reachabilityOk = YES;
             } else {
                 SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
@@ -543,7 +539,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
        _applicationWillResignActive = YES;
        [[FTMonitorManager sharedInstance] pauseMonitorFPS];
-       [self loggingArrayInsertDBImmediately];
+       [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
@@ -557,7 +553,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 - (void)applicationWillTerminateNotification:(NSNotification *)notification{
     @try {
-       [self loggingArrayInsertDBImmediately];
+        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
