@@ -55,12 +55,8 @@ extern NSString * const FT_NETWORKING_API_TRACING;
 #pragma mark ========== logging key ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_SOURCE;
-extern NSString * const FT_KEY_SERVICENAME;
 extern NSString * const FT_KEY_CONTENT;
 extern NSString * const FT_KEY_MESSAGE;
-extern NSString * const FT_KEY_OPERATIONNAME;
-extern NSString * const FT_KEY_CLASS;
-extern NSString * const FT_KEY_ISERROR;
 extern NSString * const FT_KEY_SPANTYPE;
 extern NSString * const FT_KEY_DURATION;
 extern NSString * const FT_FLOW_TRACEID;

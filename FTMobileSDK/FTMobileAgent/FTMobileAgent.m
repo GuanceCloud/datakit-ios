@@ -267,9 +267,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     @try {
         NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
-                                         FT_KEY_SERVICENAME:self.config.serviceName,
-                                         @"app_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                         @"__env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+                                         FT_KEY_SERVICE:self.config.serviceName,
+                                         @"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
                                          @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
                                          @"version":self.config.version
         }.mutableCopy;
@@ -295,7 +294,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     @try {
         NSMutableDictionary *tagDict = @{
             FT_KEY_SERVICE:self.config.serviceName,
-            @"app_identifier":[FTPresetProperty appIdentifier],
+            @"application_identifier":[FTPresetProperty appIdentifier],
             @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
             @"device_uuid":[FTPresetProperty deviceUUID],
             @"version":self.config.version
@@ -334,7 +333,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
-        NSDictionary *tag =@{FT_KEY_OPERATIONNAME:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
+        NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
         [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
