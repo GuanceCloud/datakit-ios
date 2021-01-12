@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(long long)ft_msDateTimestamp;
 /**
  *  @abstract
- *  获取当前时间戳 微秒级
+ *  获取当前时间戳 纳秒级
  *
  *  @return 时间戳
 */
