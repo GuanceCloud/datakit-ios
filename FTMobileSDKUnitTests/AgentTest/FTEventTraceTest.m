@@ -74,7 +74,7 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
+    NSString *content = field[@"message"];
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
     
@@ -88,7 +88,7 @@
     NSDictionary *dict2 = [FTJSONUtil ft_dictionaryWithJsonString:model2.data];
     NSDictionary *op2 = dict2[@"opdata"];
     NSDictionary *field2 = op2[@"field"];
-    NSString *content2 = field2[@"__content"];
+    NSString *content2 = field2[@"message"];
     NSDictionary *contentDict2 =[FTJSONUtil ft_dictionaryWithJsonString:content2];
     XCTAssertTrue([[contentDict2 valueForKey:@"event"] isEqualToString:@"launch"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -107,7 +107,7 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
+    NSString *content = field[@"message"];
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -132,7 +132,7 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
+    NSString *content = field[@"message"];
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -154,7 +154,7 @@
         NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
         NSDictionary *op = dict[@"opdata"];
         NSDictionary *field = op[@"field"];
-        NSString *content = field[@"__content"];
+        NSString *content = field[@"message"];
         NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
         if ([[contentDict valueForKey:@"event"] isEqualToString:@"open"]) {
             open = YES;
@@ -183,7 +183,7 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
+    NSString *content = field[@"message"];
     NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
     [[FTMobileAgent sharedInstance] resetInstance];

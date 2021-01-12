@@ -128,9 +128,9 @@
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"error"]);
+    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"message"]];
     NSDictionary *responseContent = content[@"responseContent"];
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
@@ -174,8 +174,8 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"ok"]);
 
     [self uploadModel:model];
 }
@@ -210,8 +210,8 @@
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"error"]);
     [self uploadModel:model];
 }
 - (void)testNSURLConnection{
@@ -233,8 +233,8 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"ok"]);
 
     [self uploadModel:model];
 }

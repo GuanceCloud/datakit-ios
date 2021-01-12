@@ -237,7 +237,7 @@
     NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
     NSDictionary *opdata = [dict valueForKey:@"opdata"];
     NSDictionary *field = [opdata valueForKey:@"field"];
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:[field valueForKey:@"__content"]];
+    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:[field valueForKey:@"message"]];
     NSDictionary *requestContent = [content valueForKey:@"requestContent"];
     NSDictionary *headers = [requestContent valueForKey:@"headers"];
     completionHandler?completionHandler([headers valueForKey:@"X-B3-SpanId"],[requestContent valueForKey:@"url"]):nil;
