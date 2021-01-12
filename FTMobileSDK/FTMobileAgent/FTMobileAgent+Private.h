@@ -13,7 +13,7 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class FTRecordModel,FTUploadTool;
+@class FTRecordModel,FTUploadTool,FTPresetProperty;
 /**
  - FTAddDataNormal: 异步写入数据库
  - FTAddDataCache:  事务写入数据库
@@ -35,6 +35,8 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 @property (nonatomic, assign) BOOL running; //正在运行
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
+@property (nonatomic, strong) FTPresetProperty *presetProperty;
+
 /**
  * 采集判断
  */
