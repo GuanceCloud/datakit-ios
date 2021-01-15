@@ -11,7 +11,7 @@
 
 DataFlux 应用监测能够通过收集各个iOS应用的指标数据，以可视化的方式分析各个iOS应用端的性能。
 
-## 示范
+## 示例
 
  [Dataflux-SDK-iOS Demo](https://help.dataflux.cn)   
 
