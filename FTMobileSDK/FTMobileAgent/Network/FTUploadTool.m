@@ -290,10 +290,9 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         }else{
             [requestDatas appendFormat:@"\n%@",requestStr];
         }
-        ZYDebug(@"-------%d-------",idx);
-        
-        ZYDebug(@"%@",item);
     }];
+    FTRecordModel *model = [events firstObject];
+    ZYDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return requestDatas;
 }
 
