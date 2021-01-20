@@ -95,7 +95,7 @@
     NSDictionary *tags = @{@"view_id":view_id,
                            @"view_name":name,
                            @"view_parent":parent,
-                                  @"app_apdex_level":@0,
+                           @"app_apdex_level":@0,
     };
     NSDictionary *fields = @{
         @"view_load":@100,
@@ -156,11 +156,11 @@
             NSDictionary *field = opdata[@"field"];
             if ([measurement isEqualToString:@"rum_app_resource_performance"]) {
                 [self rumInfluxDBtags:tags];
-                XCTAssertTrue([tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"response_content_encoding"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
+                XCTAssertTrue([tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
                 XCTAssertTrue([field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"resource_load"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
             }else if([measurement isEqualToString:@"resource"]){
                 [self rumEStags:tags];
-                XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"response_content_encoding"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
+                XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
                 XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"resource_load"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
             
         }
@@ -186,10 +186,38 @@
     [task resume];
 }
 - (void)rumInfluxDBtags:(NSDictionary *)tags{
-    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&[tags.allKeys containsObject:@"app_identifier"]&&[tags.allKeys containsObject:@"app_name"]&&[tags.allKeys containsObject:@"device"]&&[tags.allKeys containsObject:@"env"]&&[tags.allKeys containsObject:@"is_signin"]&&[tags.allKeys containsObject:@"model"]&&[tags.allKeys containsObject:@"network_type"]&&[tags.allKeys containsObject:@"os"]&&[tags.allKeys containsObject:@"screen_size"]&&[tags.allKeys containsObject:@"version"]);
+    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&
+                  [tags.allKeys containsObject:@"env"]&&
+                  [tags.allKeys containsObject:@"version"]&&
+                  [tags.allKeys containsObject:@"is_signin"]&&
+                  [tags.allKeys containsObject:@"device"]&&
+                  [tags.allKeys containsObject:@"model"]&&
+                  [tags.allKeys containsObject:@"os"]&&
+                  [tags.allKeys containsObject:@"screen_size"]&&
+                  [tags.allKeys containsObject:@"app_name"]&&
+                  [tags.allKeys containsObject:@"app_identifiedid"]&&
+                  [tags.allKeys containsObject:@"network_type"]
+                  );
 }
 - (void)rumEStags:(NSDictionary *)tags{
-    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&[tags.allKeys containsObject:@"app_identifier"]&&[tags.allKeys containsObject:@"app_name"]&&[tags.allKeys containsObject:@"device"]&&[tags.allKeys containsObject:@"env"]&&[tags.allKeys containsObject:@"model"]&&[tags.allKeys containsObject:@"network_type"]&&[tags.allKeys containsObject:@"os"]&&[tags.allKeys containsObject:@"screen_size"]&&[tags.allKeys containsObject:@"version"]&&[tags.allKeys containsObject:@"terminal"]&&[tags.allKeys containsObject:@"device_uuid"]&&[tags.allKeys containsObject:@"source"]&&[tags.allKeys containsObject:@"userid"]&&[tags.allKeys containsObject:@"is_signin"]&&[tags.allKeys containsObject:@"origin_id"]);
+    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&
+                  [tags.allKeys containsObject:@"env"]&&
+                  [tags.allKeys containsObject:@"version"]&&
+                  [tags.allKeys containsObject:@"terminal"]&&
+                  [tags.allKeys containsObject:@"source"]&&
+                  [tags.allKeys containsObject:@"userid"]&&
+                  [tags.allKeys containsObject:@"origin_id"]&&
+                  [tags.allKeys containsObject:@"is_signin"]&&
+                  [tags.allKeys containsObject:@"app_name"]&&
+                  [tags.allKeys containsObject:@"app_identifiedid"]&&
+                  [tags.allKeys containsObject:@"device"]&&
+                  [tags.allKeys containsObject:@"model"]&&
+                  [tags.allKeys containsObject:@"os"]&&
+                  [tags.allKeys containsObject:@"os_version"]&&
+                  [tags.allKeys containsObject:@"network_type"]&&
+                  [tags.allKeys containsObject:@"device_uuid"]&&
+                  [tags.allKeys containsObject:@"screen_size"]
+                  );
 }
 - (void)setESConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];

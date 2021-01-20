@@ -1,3 +1,8 @@
+# 1.0.4-alpha.11
+1.tag app_identified 改为 app_identifiedid
+2.freeze 采集，避免一次卡顿多次写入
+---
+
 # 1.0.4-alpha.10
 1.tag、filed keys调整
 ---

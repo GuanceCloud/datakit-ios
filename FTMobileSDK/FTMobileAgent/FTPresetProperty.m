@@ -37,8 +37,6 @@ static NSString * const FT_COMMON_PROPERTY_CARRIER = @"carrier";
 static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
 //autotrack 版本号
 static NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
-//app 版本号
-static NSString *const FT_APP_VERSION = @"app_version";
 //应用名称
 static NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
 //设备机型
@@ -48,12 +46,12 @@ static NSString * const FT_SCREEN_SIZE = @"screen_size";
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
-static NSString * const FT_COMMON_PROPERTY_APP_IDENTIFIER = @"app_identifier";
+static NSString * const FT_COMMON_PROPERTY_APP_IDENTIFIER = @"app_identifiedid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
 static NSString * const FT_APP_ID = @"app_id";
-static NSString *const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
+static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 
 @interface FTPresetProperty ()
 @property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
