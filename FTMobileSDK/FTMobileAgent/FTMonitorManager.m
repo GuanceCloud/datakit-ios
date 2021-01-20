@@ -52,6 +52,7 @@
     CADisplayLink *_displayLink;
     NSTimeInterval _lastTime;
     NSUInteger _count;
+    NSUInteger _freezeCount;
     float _fps;
     NSUInteger _skywalkingSeq;
     NSUInteger _skywalkingv2;
@@ -149,8 +150,11 @@ static dispatch_once_t onceToken;
     _lastTime = link.timestamp;
     _fps = _count / delta;
     _count = 0;
-    if(_fps<10){
+    if(_fps<10&&_freezeCount==0){
+        _freezeCount++;
         [self trackAppFreeze];
+    }else{
+        _freezeCount = 0;
     }
 }
 #pragma mark ========== 蓝牙 ==========
