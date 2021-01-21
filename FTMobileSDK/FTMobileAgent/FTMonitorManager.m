@@ -34,6 +34,7 @@
 #import "FTCallStack.h"
 #include <netdb.h>
 #include <arpa/inet.h>
+#import "FTWeakProxy.h"
 
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
@@ -124,7 +125,7 @@ static dispatch_once_t onceToken;
     if (_displayLink) {
         [_displayLink setPaused:NO];
     }else{
-        _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(tick:)];
+        _displayLink = [CADisplayLink displayLinkWithTarget:[FTWeakProxy proxyWithTarget:self] selector:@selector(tick:)];
         [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
 }
@@ -136,7 +137,7 @@ static dispatch_once_t onceToken;
 - (void)stopMonitorFPS{
     if (_displayLink) {
         [_displayLink setPaused:YES];
-        _displayLink = nil;
+        [_displayLink invalidate];
     }
 }
 - (void)tick:(CADisplayLink *)link {
