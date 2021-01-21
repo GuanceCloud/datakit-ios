@@ -57,6 +57,8 @@
 		4A78B9B72562585A0021E0BC /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B3256257E40021E0BC /* FTLog.m */; };
 		4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */; };
 		4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */; };
+		4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */; };
+		4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */; };
 		4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHander.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -142,6 +144,8 @@
 		4A78B9B4256257E40021E0BC /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/FTLog.h; sourceTree = SOURCE_ROOT; };
 		4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionExceptionHandler.h; sourceTree = "<group>"; };
 		4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionExceptionHandler.m; sourceTree = "<group>"; };
+		4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakProxy.h; sourceTree = "<group>"; };
+		4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakProxy.m; sourceTree = "<group>"; };
 		4A852FD323A240B300B40B5D /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
 		4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FT_CurrentController.m"; sourceTree = "<group>"; };
 		4A852FD523A240B300B40B5D /* UIViewController+FT_RootVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FT_RootVC.m"; sourceTree = "<group>"; };
@@ -302,6 +306,8 @@
 				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 				4A852FD623A240B300B40B5D /* UIView+FT_CurrentController.h */,
 				4A852FD423A240B300B40B5D /* UIView+FT_CurrentController.m */,
+				4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */,
+				4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
@@ -377,6 +383,7 @@
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
+				4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
 				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
@@ -532,6 +539,7 @@
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A01160D24C966C200AECC1C /* NSDate+FTAdd.m in Sources */,
 				4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */,
+				4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */,
 				4A7135A62570DA2300444C3D /* BlacklistedVCClassNames.m in Sources */,
 				4A7135A4257096FF00444C3D /* FTTrack.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
