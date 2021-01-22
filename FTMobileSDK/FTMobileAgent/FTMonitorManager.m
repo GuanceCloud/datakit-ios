@@ -115,7 +115,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
-    [FTURLProtocol setDelegate:self];
+    [FTURLProtocol setDelegate:[FTWeakProxy proxyWithTarget:self]];
 }
 - (NSNumber *)getFPSValue{
     return [NSNumber numberWithFloat:_fps];
