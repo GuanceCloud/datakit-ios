@@ -35,7 +35,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #import "FTWeakProxy.h"
-
+#import "FTPingThread.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
@@ -46,14 +46,13 @@
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
 @property (nonatomic, strong) NSLock *lock;
-
+@property (nonatomic, strong) FTPingThread *pingThread;
 @end
 
 @implementation FTMonitorManager{
     CADisplayLink *_displayLink;
     NSTimeInterval _lastTime;
     NSUInteger _count;
-    NSUInteger _freezeCount;
     float _fps;
     NSUInteger _skywalkingSeq;
     NSUInteger _skywalkingv2;
@@ -84,7 +83,12 @@ static dispatch_once_t onceToken;
         [FTWKWebViewHandler sharedInstance].trace = NO;
         [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
     }
-    if (self.monitorType & FTMonitorInfoTypeFPS || self.config.enableTrackAppUIBlock) {
+    if (config.enableTrackAppFreeze) {
+        [self startPingThread];
+    }else{
+        [self stopPingThread];
+    }
+    if (self.monitorType & FTMonitorInfoTypeFPS) {
         [self startMonitorFPS];
     }else{
         [self stopMonitorFPS];
@@ -101,6 +105,37 @@ static dispatch_once_t onceToken;
     if (_monitorType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
     }
+}
+-(FTPingThread *)pingThread{
+    if (!_pingThread || _pingThread.isCancelled) {
+        _pingThread = [[FTPingThread alloc]init];
+        WeakSelf
+        _pingThread.block = ^(NSString * _Nonnull stackStr) {
+            [weakSelf trackAppFreeze:stackStr];
+        };
+    }
+    return _pingThread;
+}
+-(void)startPingThread{
+    [self.pingThread start];
+}
+-(void)stopPingThread{
+    if (_pingThread) {
+        [self.pingThread cancel];
+    }
+}
+- (void)trackAppFreeze:(NSString *)stack{
+    long long time = [[NSDate date] ft_dateTimestamp];
+    
+    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
+    if (!self.config.enableTrackAppFreeze || ![agent judgeIsTraceSampling]) {
+        return;
+    }
+    NSDictionary *tag = @{@"freeze_type":@"Freeze"};
+    NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
+    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    fields[@"freeze_stack"] = stack;
+    [agent rumTrackES:FT_TYPE_FREEZE terminal:@"app" tags:tag fields:fields tm:time];
 }
 -(void)dealNetworkContentType:(NSArray *)array{
     if (array && array.count>0) {
@@ -151,12 +186,6 @@ static dispatch_once_t onceToken;
     _lastTime = link.timestamp;
     _fps = _count / delta;
     _count = 0;
-    if(_fps<10&&_freezeCount==0){
-        _freezeCount++;
-        [self trackAppFreeze];
-    }else{
-        _freezeCount = 0;
-    }
 }
 #pragma mark ========== 蓝牙 ==========
 - (void)bluteeh{
@@ -324,19 +353,7 @@ static dispatch_once_t onceToken;
     }
     [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
 }
-- (void)trackAppFreeze{
-    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
-    if (![agent judgeIsTraceSampling]) {
-        return;
-    }
-    NSString  *freeze_stack = [FTCallStack ft_backtraceOfMainThread];
-    long long time = [[NSDate date] ft_dateTimestamp];
-    NSDictionary *tag = @{@"freeze_type":@"Freeze"};
-    NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
-    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
-    fields[@"freeze_stack"] = freeze_stack;
-    [agent rumTrackES:FT_TYPE_FREEZE terminal:@"app" tags:tag fields:fields tm:time];
-}
+
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     if (!self.config.enableTrackAppANR || slowStack.length==0) {

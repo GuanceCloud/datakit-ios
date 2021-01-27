@@ -57,6 +57,8 @@
 		4A78B9B72562585A0021E0BC /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B3256257E40021E0BC /* FTLog.m */; };
 		4A78B9BA25625B160021E0BC /* FTExtensionExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */; };
 		4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */; };
+		4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7C739525C0318D003936A0 /* FTPingThread.h */; };
+		4A7C739825C0318D003936A0 /* FTPingThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7C739625C0318D003936A0 /* FTPingThread.m */; };
 		4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */; };
 		4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */; };
 		4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHander.h */; };
@@ -144,6 +146,8 @@
 		4A78B9B4256257E40021E0BC /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/FTLog.h; sourceTree = SOURCE_ROOT; };
 		4A78B9B825625B160021E0BC /* FTExtensionExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionExceptionHandler.h; sourceTree = "<group>"; };
 		4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionExceptionHandler.m; sourceTree = "<group>"; };
+		4A7C739525C0318D003936A0 /* FTPingThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTPingThread.h; sourceTree = "<group>"; };
+		4A7C739625C0318D003936A0 /* FTPingThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPingThread.m; sourceTree = "<group>"; };
 		4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakProxy.h; sourceTree = "<group>"; };
 		4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakProxy.m; sourceTree = "<group>"; };
 		4A852FD323A240B300B40B5D /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
@@ -292,6 +296,8 @@
 				4A299F902521F7F800400931 /* FTANRDetector.m */,
 				4A39314C25300D2100BC2134 /* FTCallStack.h */,
 				4A39314B25300D2100BC2134 /* FTCallStack.m */,
+				4A7C739525C0318D003936A0 /* FTPingThread.h */,
+				4A7C739625C0318D003936A0 /* FTPingThread.m */,
 				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
 				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
 				4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */,
@@ -401,6 +407,7 @@
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
 				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
+				4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
 				4A01160C24C966C200AECC1C /* NSDate+FTAdd.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
@@ -553,6 +560,7 @@
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				4A2EFD8D253ECDC100F93B1E /* FTJsonWriter.m in Sources */,
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
+				4A7C739825C0318D003936A0 /* FTPingThread.m in Sources */,
 				4A88429F239E5768001B44C3 /* ZY_FMDatabase.m in Sources */,
 				4A297BDB246BBF340028645B /* FTConstants.m in Sources */,
 				4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */,
