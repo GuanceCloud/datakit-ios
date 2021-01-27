@@ -48,6 +48,7 @@
         config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
+        config.enableTrackAppFreeze = YES;
         config.enableTrackAppANR = YES;
         config.eventFlowLog = YES;
         [FTMobileAgent startWithConfigOptions:config];

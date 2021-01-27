@@ -27,7 +27,7 @@
         _source = FT_USER_AGENT;
         _networkTrace = NO;
         _networkTrace = FTNetworkTraceTypeZipkin;
-        _enableTrackAppUIBlock = NO;
+        _enableTrackAppFreeze = NO;
         _enableTrackAppANR = NO;
         _traceConsoleLog = NO;
         _eventFlowLog = NO;
@@ -49,7 +49,7 @@
     options.networkTrace = self.networkTrace;
     options.networkTraceType = self.networkTraceType;
     options.env = self.env;
-    options.enableTrackAppUIBlock = self.enableTrackAppUIBlock;
+    options.enableTrackAppFreeze = self.enableTrackAppFreeze;
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.version = self.version;
     options.traceConsoleLog = self.traceConsoleLog;
