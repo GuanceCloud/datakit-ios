@@ -65,7 +65,7 @@
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
     return [NSNumber numberWithInteger:httpResponse.statusCode];
 }
-- (NSString *)ft_getResourceStatusGroup{
+- (nullable NSString *)ft_getResourceStatusGroup{
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
     NSInteger statusCode = httpResponse.statusCode;
     NSString *group = nil;

@@ -458,12 +458,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 网络与App的生命周期
 - (void)setUpListeners{
-    BOOL reachabilityOk = NO;
     if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
         SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
         if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
             if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.concurrentLabel)) {
-                reachabilityOk = YES;
             } else {
                 SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
             }

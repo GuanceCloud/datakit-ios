@@ -190,7 +190,6 @@
         }else{
             for (NSInteger i = 0; i<array.count; i++) {
                 NSString *mime = array[i];
-                allow = NO;
                 if ([mime containsString:@"/"]) {
                     allow = [[FTMonitorManager sharedInstance].netContentType containsObject:[array firstObject]];
                 }else{
