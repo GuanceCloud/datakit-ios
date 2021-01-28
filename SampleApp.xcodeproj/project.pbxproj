@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		394F78BFBB0FE6E999DDE9E1 /* Pods_SampleApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F0D035494FA8F2716499977E /* Pods_SampleApp.framework */; };
 		4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */; };
 		4A037EFA24F791CB007B2104 /* FTNetworkTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */; };
 		4A037EFE24F8DB32007B2104 /* FTEventTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EFD24F8DB32007B2104 /* FTEventTraceTest.m */; };
@@ -35,7 +34,6 @@
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A49E9312536E541009C44AD /* FTWKWebViewTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
-		4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */; };
 		4A51AE6025957B9A0061ACF7 /* FTRUMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A51AE5F25957B9A0061ACF7 /* FTRUMTests.m */; };
 		4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */; };
 		4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9CC2563C43E0021E0BC /* TodayViewController.m */; };
@@ -163,8 +161,6 @@
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWKWebViewVC.h; sourceTree = "<group>"; };
 		4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
-		4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestBluetoothList.h; sourceTree = "<group>"; };
-		4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestBluetoothList.m; sourceTree = "<group>"; };
 		4A51AE5F25957B9A0061ACF7 /* FTRUMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTests.m; sourceTree = "<group>"; };
 		4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtensionTest.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
@@ -215,7 +211,6 @@
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
 				4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */,
-				394F78BFBB0FE6E999DDE9E1 /* Pods_SampleApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,8 +390,6 @@
 				4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */,
 				4A85314423AC6B2700B40B5D /* UITestVC.h */,
 				4A85314523AC6B2700B40B5D /* UITestVC.m */,
-				4A4F0DCD247E7A23000A2A76 /* TestBluetoothList.h */,
-				4A4F0DCE247E7A23000A2A76 /* TestBluetoothList.m */,
 				4A1169852391146600C0BC4E /* ResultVC.h */,
 				4A1169872391146600C0BC4E /* ResultVC.m */,
 				4AAF0E7023B5E75900817C52 /* UITestManger.h */,
@@ -703,7 +696,6 @@
 				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,
 				4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
-				4A4F0DCF247E7A23000A2A76 /* TestBluetoothList.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 				4A299F852520A77800400931 /* TestCCrash.cpp in Sources */,
 			);
@@ -907,7 +899,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 74CC6CC4479FC4E5FAC65FCF /* Pods-SampleApp.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = SampleApp/SampleApp.entitlements;
@@ -948,7 +939,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A7C2BAF1B667F5A8064AE281 /* Pods-SampleApp.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = SampleApp/SampleApp.entitlements;
