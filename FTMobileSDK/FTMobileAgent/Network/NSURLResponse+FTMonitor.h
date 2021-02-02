@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)ft_getResponseDict;
 - (NSDictionary *)ft_getResponseContentDictWithData:(nullable NSData *)data;
 - (NSNumber *)ft_getResponseStatusCode;
-- (NSString *)ft_getResourceStatusGroup;
+- (nullable NSString *)ft_getResourceStatusGroup;
 @end
 
 NS_ASSUME_NONNULL_END

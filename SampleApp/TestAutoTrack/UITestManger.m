@@ -23,7 +23,7 @@
     return sharedInstance;
 }
 -(instancetype)init{
-    if ([super init]) {
+    if (self = [super init]) {
         self.lastCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"];
         NSLog(@"lastCount == %ld",self.lastCount);
         self.trackCount = 1;//lunch

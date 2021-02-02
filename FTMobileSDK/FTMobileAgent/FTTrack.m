@@ -189,7 +189,6 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:view];
             return;
         }else if ([from isKindOfClass:UIView.class]) {
-            NSString *className = NSStringFromClass([to class]);
             //因为UITabBar点击会调用 _buttonDown：\ _buttonUp:\_sendAction:withEvent: 三个方法，会产生重复数据 所以只抓取UITabBar 的_buttonDown：方法 来记录一次UITabBar点击
             if ([to isKindOfClass:[UITabBar class]] && ![NSStringFromSelector(action) isEqualToString:@"_buttonDown:"]) {
                 return;
@@ -200,7 +199,6 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
                 vc = [to ft_getCurrentViewController];
-                className = NSStringFromClass([vc class]);
             }else{
                 vc = to;
             }

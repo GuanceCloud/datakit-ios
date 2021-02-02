@@ -54,7 +54,7 @@
     config.appid =appid;
     if (enable) {
         config.enableTrackAppANR = YES;
-        config.enableTrackAppUIBlock = YES;
+        config.enableTrackAppFreeze = YES;
     }
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];

@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置是否需要采集卡顿
  */
-@property (nonatomic, assign) BOOL enableTrackAppUIBlock;
+@property (nonatomic, assign) BOOL enableTrackAppFreeze;
 /**
  * 设置是否需要采集卡顿
  * runloop采集主线程卡顿
