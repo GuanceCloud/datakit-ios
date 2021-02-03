@@ -95,7 +95,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [FTLog enableLog:config.enableSDKDebugLog];
             _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:config.networkTraceType];
             self.track = [[FTTrack alloc]init];
-            [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
@@ -105,8 +104,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
             if (self.config.traceConsoleLog) {
-                   [self _traceConsoleLog];
+                [self _traceConsoleLog];
             }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
+            });
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);

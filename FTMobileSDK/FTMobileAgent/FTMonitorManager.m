@@ -117,10 +117,12 @@ static dispatch_once_t onceToken;
     return _pingThread;
 }
 -(void)startPingThread{
-    [self.pingThread start];
+    if (!self.pingThread.isExecuting) {
+        [self.pingThread start];
+    }
 }
 -(void)stopPingThread{
-    if (_pingThread) {
+    if (_pingThread && _pingThread.isExecuting) {
         [self.pingThread cancel];
     }
 }
