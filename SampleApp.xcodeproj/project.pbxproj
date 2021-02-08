@@ -23,7 +23,6 @@
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
 		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
-		4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
@@ -143,7 +142,6 @@
 		4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileSDKUITests.m; sourceTree = "<group>"; };
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4A270E6124FD0D520079F455 /* FTAutoTrack.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTAutoTrack.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
 		4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionConfiguration+Test.h"; sourceTree = "<group>"; };
 		4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTSessionConfiguration+Test.m"; sourceTree = "<group>"; };
@@ -184,7 +182,6 @@
 		4AAF2B4D240FB19C00552B6D /* RootVController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootVController.m; sourceTree = "<group>"; };
 		4AB1FFA62546D74900CB36CF /* FTANRTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTANRTest.m; sourceTree = "<group>"; };
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.9.tbd; path = usr/lib/libresolv.9.tbd; sourceTree = SDKROOT; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
@@ -338,8 +335,6 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4A270E6124FD0D520079F455 /* FTAutoTrack.framework */,
-				4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */,
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
 				4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */,
 				4A89DD1B23D70C07006EB6BB /* IOKit.framework */,
@@ -593,7 +588,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A270E8924FF572B0079F455 /* libresolv.9.tbd in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
