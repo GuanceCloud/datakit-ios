@@ -48,7 +48,6 @@
 		4AAF2B4E240FB19C00552B6D /* RootVController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AAF2B4D240FB19C00552B6D /* RootVController.m */; };
 		4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB1FFA62546D74900CB36CF /* FTANRTest.m */; };
 		4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */; };
-		4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCE3244D4F9B0023DEF7 /* libresolv.9.tbd */; };
 		4E953B54CC64EBC979926072 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 /* End PBXBuildFile section */
@@ -207,7 +206,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
-				4AECBCE8244D4F9B0023DEF7 /* libresolv.9.tbd in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
 				4A89DD2023D70C07006EB6BB /* IOKit.framework in Frameworks */,
