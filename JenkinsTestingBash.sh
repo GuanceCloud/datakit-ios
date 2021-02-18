@@ -37,10 +37,10 @@ set -- "${POSITIONAL[@]}" # restore positional parametersCERT_FILE
 
 cd "SampleApp.xcodeproj/xcshareddata/xcschemes/"
 
-sed -i -e 's/$ACCESS_KEY_ID/'"$ACCESS_KEY_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
-sed -i -e 's/$ACCESS_KEY_SECRET/'"$ACCESS_KEY_SECRET"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
-sed -i -e 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
-sed -i -e 's/$ACCESS_DATAWAY_TOKEN/'"$ACCESS_DATAWAY_TOKEN"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's/$ACCESS_KEY_ID/'"$ACCESS_KEY_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's/$ACCESS_KEY_SECRET/'"$ACCESS_KEY_SECRET"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's/$ACCESS_DATAWAY_TOKEN/'"$ACCESS_DATAWAY_TOKEN"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 
 cd ../../..
 pod install

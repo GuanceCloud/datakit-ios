@@ -16,10 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (NSString *)getLaunchSystemTime;
 /**
- * 获取网络dns
- */
-+ (NSDictionary *)getDNSInfo;
-/**
  * 获取WiFi的 Access 与 IPAddress
  * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
  * iOS 13 之后需要定位开启 才能获取到信息
