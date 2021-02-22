@@ -38,8 +38,16 @@
         [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
     }
     }
-
-   __block BOOL testSuccess = NO;
+    NSSetUncaughtExceptionHandler(NULL);
+    signal(SIGSEGV,SIG_DFL);
+    signal(SIGFPE,SIG_DFL);
+    signal(SIGBUS,SIG_DFL);
+    signal(SIGTRAP,SIG_DFL);
+    signal(SIGABRT,SIG_DFL);
+    signal(SIGILL,SIG_DFL);
+    signal(SIGPIPE,SIG_DFL);
+    signal(SIGSYS,SIG_DFL);
+    __block BOOL testSuccess = NO;
     UIWindow *window = [FTBaseInfoHander ft_keyWindow];
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;

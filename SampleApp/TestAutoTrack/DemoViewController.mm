@@ -9,17 +9,17 @@
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import "UITestManger.h"
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 //测试崩溃采集
 #import "FTUncaughtExceptionHandler+Test.h"
-#import "TestCCrash.hpp"
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"
+#import "CrashVC.h"
+#import "TableViewCellItem.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
-@property (nonatomic, strong) NSArray *dataSource;
+@property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
 
 @end
 
@@ -27,10 +27,47 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.dataSource = @[@"Test_eventFlowLog",@"test_traceConsoleLog",@"Test_crashLog",@"test_SIGSEGVCrash",@"test_SIGBUSCrash",@"test_CCrash",@"Test_ANR",@"Test_networkTrace_webview",@"Test_networkTrace_clienthttp",@"Test_BindUser",@"Test_UserLogout",@"test_mainthreadLockCrash"];
+    self.view.backgroundColor = [UIColor whiteColor];
     [self createUI];
 }
+-(NSMutableArray<TableViewCellItem *> *)dataSource{
+    if (!_dataSource) {
+        _dataSource = [[NSMutableArray alloc]init];
+    }
+    return _dataSource;
+}
 -(void)createUI{
+    __weak typeof(self) weakSelf = self;
+    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"EventFlowLog" handler:^{
+        [weakSelf.navigationController pushViewController:[UITestVC new] animated:YES];
+    }];
+    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"BindUser" handler:^{
+        [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1"];
+    }];
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
+        [[FTMobileAgent sharedInstance] logout];
+    }];
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_clienthttp" handler:^{
+        NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+        
+        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        }];
+    }];
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_webview" handler:^{
+        [weakSelf.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
+    }];
+    TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"TraceConsoleLog" handler:^{
+        NSLog(@"Test_traceConsoleLog");
+    }];
+    TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppFreezeAndANR" handler:^{
+        [weakSelf.navigationController pushViewController:[TestANRVC new] animated:YES];
+    }];
+    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
+        [weakSelf.navigationController pushViewController:[CrashVC new] animated:YES];
+    }];
+ 
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
@@ -38,89 +75,11 @@
     
     [_mtableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
 }
-- (void)testAutoTrack{
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[UITestVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
-- (void)testLogTrack{
-    NSLog(@"Test_traceConsoleLog");
-}
 -(void)showResult:(NSString *)title{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *commit = [UIAlertAction actionWithTitle:@"ok" style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:commit];
     [self presentViewController:alert animated:YES completion:nil];
-}
-- (void)testCrashLog{
-    //在子线程测试崩溃时 crash alert才能显示出来
-    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSString *value = nil;
-        NSDictionary *dict = @{@"11":value};
-    });
-}
-/**
- *SignalHandler不要在debug环境下测试。因为系统的debug会优先去拦截。在模拟器上运行一次后，关闭debug状态，然后直接在模拟器上点击我们build上去的app去运行
- */
-- (void)testSIGSEGVCrash{
-    
-    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        id x_id = [self performSelector:@selector(createNum)];
-    });
-}
-/**
- *SignalHandler不要在debug环境下测试。因为系统的debug会优先去拦截。在模拟器上运行一次后，关闭debug状态，然后直接在模拟器上点击我们build上去的app去运行
- */
-- (void)testSIGBUSCrash{
-    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        char *s = "hello world";
-        *s = 'H';
-    });
-}
-- (int)createNum {
-    return 10;
-}
-- (void)testCCrash{
-    [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        MyCppClass::testCrash();
-    });
-}
-- (void)Test_ANR{
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[TestANRVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
-- (void)test_webview{
-    self.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = NO;
-}
-- (void)test_client_http{
-    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-    }];
-}
--(void)test_bindUesr{
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1"];
-}
-- (void)test_userLogout{
-    [[FTMobileAgent sharedInstance] logout];
-}
-- (void)test_mainthreadLockCrash{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            [NSThread sleepForTimeInterval:2];
-            NSLog(@"test");
-        });
-         NSLog(@"test2");
-    });
-    
 }
 
 #pragma mark ========== UITableViewDataSource ==========
@@ -130,54 +89,24 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell" forIndexPath:indexPath];
-    cell.textLabel.text = self.dataSource[indexPath.row];
+    cell.textLabel.text = self.dataSource[indexPath.row].title;
     return cell;
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    NSUInteger row = [indexPath row];
-    switch (row) {
-        case 0:
-            [self testAutoTrack];
-            break;
-        case 1:
-            [self testLogTrack];
-            break;
-        case 2:
-            [self testCrashLog];
-            break;
-        case 3:
-            [self testSIGSEGVCrash];
-            break;
-        case 4:
-            [self testSIGBUSCrash];
-            break;
-        case 5:
-            [self testCCrash];
-            break;
-        case 6:
-            [self Test_ANR];
-            break;
-        case 7:
-            [self test_webview];
-            break;
-        case 8:
-            [self test_client_http];
-            break;
-        case 9:
-            [self test_bindUesr];
-            break;
-        case 10:
-            [self test_userLogout];
-            break;
-        case  11:
-            [self test_mainthreadLockCrash];
-            break;
-        default:
-            break;
+    TableViewCellItem *item = self.dataSource[indexPath.row];
+    if (item.handler) {
+        item.handler();
     }
 }
 
-
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    self.tabBarController.tabBar.hidden = NO;
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    self.tabBarController.tabBar.hidden = YES;
+}
 /*
  #pragma mark - Navigation
  

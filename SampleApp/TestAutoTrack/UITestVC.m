@@ -7,7 +7,6 @@
 //
 
 #import "UITestVC.h"
-#import "UITestManger.h"
 #import "AppDelegate.h"
 #import "ResultVC.h"
 @interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
@@ -113,16 +112,13 @@
 
 - (void)firstAction:(UIButton *)sender {
     
-    [[UITestManger sharedManger] addAutoTrackClickCount];
     
 }
 
 - (void)secondAction:(UIButton *)sender {
     NSLog(@"%@ Touch Up Inside", sender.currentTitle);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 - (void)resultAction:(UIButton *)sender{
-    [[UITestManger sharedManger] addAutoTrackClickCount];
     
     self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
@@ -130,38 +126,28 @@
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)switchAction:(UISwitch *)sender {
     NSLog(@"UISwitch on:%d", sender.isOn);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)segmentedAction:(UISegmentedControl *)sender {
     NSLog(@"UISwitch on:%ld", sender.selectedSegmentIndex);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 
 - (void)labelTouchUpInside:(UITapGestureRecognizer *)recognizer {
     UILabel *label = (UILabel *)recognizer.view;
     NSLog(@"%@被点击了", label.text);
-    [[UITestManger sharedManger] addAutoTrackClickCount];
 }
 - (void)tap1Action:(UIGestureRecognizer *)sender {
     UILabel *label = (UILabel *)sender.view;
     NSLog(@"%@被点击了", label.text);
-    
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-    
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
     
     NSLog(@"UIImageView被点击了");
-    
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-    
 }
 #pragma mark -
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -176,9 +162,6 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"%@", indexPath);
-    
-    [[UITestManger sharedManger] addAutoTrackClickCount];
-    
     
 }
 
