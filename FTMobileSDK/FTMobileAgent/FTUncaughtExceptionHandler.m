@@ -83,7 +83,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     if (exceptionCount <= UncaughtExceptionMaximum) {
         NSString* description = nil;
         NSString *name = @"ios_crash";
-        //info->si_code == 0x8badf00d ? @"abort":@"ios_crash";
         switch (signal) {
             case SIGABRT:
                 name = @"abort";
@@ -122,7 +121,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
         }
         
     }
-    FTClearSignalRegister();
     // 调用之前崩溃的回调函数
     // 在自己handler处理完后自觉把别人的handler注册回去，规规矩矩的传递
     previousSignalHandler(signal, info, context);
@@ -311,6 +309,9 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
         }
     }
+    NSSetUncaughtExceptionHandler(NULL);
+    FTClearSignalRegister();
+
 }
 + (long)ft_calculateImageSlide{
     long slide = -1;
