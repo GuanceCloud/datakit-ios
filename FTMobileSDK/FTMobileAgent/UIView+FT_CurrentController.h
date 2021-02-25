@@ -16,11 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  获取当前控制器
 */
--(UIViewController *)ft_getCurrentViewController;
+-(UIViewController *)ft_currentViewController;
 /**
  *  获取当前控件的视图树
 */
--(NSString *)ft_getParentsView;
+-(NSString *)ft_parentsView;
 @end
 
 NS_ASSUME_NONNULL_END

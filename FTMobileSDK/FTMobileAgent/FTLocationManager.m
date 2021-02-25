@@ -18,9 +18,9 @@
 @implementation FTLocationInfo
 -(instancetype)init{
     if(self = [super init]){
-        self.city = FT_NULL_VALUE;
-        self.country = FT_NULL_VALUE;
-        self.province = FT_NULL_VALUE;
+        _city = FT_NULL_VALUE;
+        _country = FT_NULL_VALUE;
+        _province = FT_NULL_VALUE;
     }
     return self;
 }
@@ -36,12 +36,12 @@ static dispatch_once_t onceToken;
 }
 - (instancetype)init {
     if (self = [super init]) {
-        self.locationManager = [[CLLocationManager alloc] init];
-        self.locationManager.delegate = self;
-        self.locationManager.distanceFilter = 200.0;
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        self.location = [[FTLocationInfo alloc]init];
-        self.isUpdatingLocation = NO;
+        _locationManager = [[CLLocationManager alloc] init];
+        _locationManager.delegate = self;
+        _locationManager.distanceFilter = 200.0;
+        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+        _location = [[FTLocationInfo alloc]init];
+        _isUpdatingLocation = NO;
     }
     return self;
 }

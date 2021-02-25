@@ -256,19 +256,15 @@ static volatile int counter = 0; // To prevent recursion optimization
     });
     
 }
-
+// ANR
 - (void) deadlock
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self.lock lock];
         [NSThread sleepForTimeInterval:0.2f];
         dispatch_async(dispatch_get_main_queue(), ^
                        {
                            [self.lock lock];
                        });
-
-    });
-   
 }
 
 - (void) pthreadAPICrash

@@ -67,10 +67,10 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
 - (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
     self = [super init];
     if (self) {
-        self.appid = appid;
-        self.version = version;
-        self.env = env;
-        _isSignin = [FTBaseInfoHander ft_getUserid]?YES:NO;
+        _appid = appid;
+        _version = version;
+        _env = env;
+        _isSignin = [FTBaseInfoHander userId]?YES:NO;
     }
     return self;
 }
@@ -662,7 +662,7 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
         _mobileCommonPropertyTags[FT_SCREEN_SIZE] = [FTPresetProperty screenSize];
         _mobileCommonPropertyTags[FT_COMMON_PROPERTY_APP_NAME] = [FTPresetProperty appName];
         _mobileCommonPropertyTags[FT_COMMON_PROPERTY_APP_IDENTIFIER] = [FTPresetProperty appIdentifier];
-        _mobileCommonPropertyTags[FT_IS_SIGNIN] = [self getIsSigninStr];
+        _mobileCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
     }
     return _mobileCommonPropertyTags;
 }
@@ -678,7 +678,7 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
         _esCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = [FTPresetProperty osVersion];
         _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = [FTPresetProperty deviceUUID];
         _esCommonPropertyTags[FT_SCREEN_SIZE] = [FTPresetProperty screenSize];
-        _esCommonPropertyTags[FT_IS_SIGNIN] = [self getIsSigninStr];
+        _esCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
     }
     return _esCommonPropertyTags;
 }
@@ -701,10 +701,10 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
     self.appid = appid;
     self.version = version;
     self.env = env;
-    _isSignin = [FTBaseInfoHander ft_getUserid]?YES:NO;
+    _isSignin = [FTBaseInfoHander userId]?YES:NO;
     _basePropertyTags = nil;
 }
-- (NSDictionary *)getPropertyWithType:(NSString *)type{
+- (NSDictionary *)propertyWithType:(NSString *)type{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {
         [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
@@ -713,7 +713,7 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
     }
     return dict;
 }
-- (NSDictionary *)getESPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
+- (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_KEY_SOURCE] = type;
@@ -728,11 +728,11 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
 }
 -(void)setIsSignin:(BOOL)isSignin{
     _isSignin = isSignin;
-    NSString *str = [self getIsSigninStr];
+    NSString *str = [self isSigninStr];
     self.esCommonPropertyTags[FT_IS_SIGNIN] = str;
     self.mobileCommonPropertyTags[FT_IS_SIGNIN] = str;
 }
-- (NSString *)getIsSigninStr{
+- (NSString *)isSigninStr{
     return _isSignin?@"T":@"F";
 }
 + (NSString *)appName{
@@ -764,9 +764,9 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
     return  @"APPLE";
 }
 + (NSString *)userid{
-    NSString *useridStr = [FTBaseInfoHander ft_getUserid];
+    NSString *useridStr = [FTBaseInfoHander userId];
     if (!useridStr) {
-        useridStr = [FTBaseInfoHander ft_getSessionid];
+        useridStr = [FTBaseInfoHander sessionId];
     }
     return  useridStr;
 }

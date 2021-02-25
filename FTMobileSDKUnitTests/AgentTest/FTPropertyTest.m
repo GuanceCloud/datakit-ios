@@ -123,7 +123,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty getPropertyWithType:FT_RUM_APP_STARTUP];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty propertyWithType:FT_RUM_APP_STARTUP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -133,7 +133,7 @@
     config.source = @"iOSTest\\";
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty getPropertyWithType:FT_RUM_APP_STARTUP];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty propertyWithType:FT_RUM_APP_STARTUP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] resetInstance];

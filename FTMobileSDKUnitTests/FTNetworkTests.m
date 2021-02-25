@@ -67,14 +67,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         switch (type) {
             case FTNetworkTest:{
-                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
             }
                 break;
                 
             case FTNetworkTestBad:{
-                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
@@ -88,7 +88,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             }
                 break;
             case FTNetworkTestWrongJsonResponse:{
-                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+                NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
                 data = [data stringByAppendingString:@"/n/t"];
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
@@ -99,7 +99,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             }
                 break;
             case FTNetworkTestErrorResponse:{
-                NSString *data  =[FTJSONUtil ft_convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
+                NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@500}];
                 NSData* requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 return [OHHTTPStubsResponse responseWithData:requestData statusCode:500 headers:nil];
             }
@@ -143,7 +143,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expectation fulfill];
@@ -171,7 +171,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode == 200);
         [expectation fulfill];

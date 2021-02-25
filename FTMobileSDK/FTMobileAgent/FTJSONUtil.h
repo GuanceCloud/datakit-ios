@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 转化后得到的字符串
  */
-+ (NSString *)ft_convertToJsonData:(NSDictionary *)dict;
++ (NSString *)convertToJsonData:(NSDictionary *)dict;
 /**
  *  @abstract
  *  把一个 Json字符串 转成 dict

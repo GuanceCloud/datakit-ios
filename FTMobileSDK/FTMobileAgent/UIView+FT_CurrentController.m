@@ -12,7 +12,7 @@
 #import "FTBaseInfoHander.h"
 
 @implementation UIView (FT_CurrentController)
--(UIViewController *)ft_getCurrentViewController{
+-(UIViewController *)ft_currentViewController{
     __block UIResponder *next = nil;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
         next = [self nextResponder];
@@ -27,7 +27,7 @@
     }
     return nil;
 }
--(NSString *)ft_getParentsView{
+-(NSString *)ft_parentsView{
     NSMutableString *str = [NSMutableString new];
     [str appendString:NSStringFromClass([self class])];
     UIView *currentView = self;
@@ -49,7 +49,7 @@
         [str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass([currentView class])] atIndex:0];
     }
     //让视图树唯一
-    UIViewController *vc = [self ft_getCurrentViewController];
+    UIViewController *vc = [self ft_currentViewController];
     if ([vc isKindOfClass:UINavigationController.class]) {
         UINavigationController *nav =(UINavigationController *)vc;
         vc = [nav.viewControllers lastObject];

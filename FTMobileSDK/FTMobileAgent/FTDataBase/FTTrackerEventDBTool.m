@@ -137,7 +137,7 @@ static dispatch_once_t onceToken;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
     
     NSString *userdata = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    NSString *sessionid = [FTBaseInfoHander ft_getSessionid];
+    NSString *sessionid = [FTBaseInfoHander sessionId];
     if([self isOpenDatabese:self.db]) {
         __block BOOL  is = NO;
         [self zy_inDatabase:^{

@@ -44,8 +44,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self) {
         return nil;
     }
-    self.field = field;
-    self.value = value;
+    _field = field;
+    _value = value;
     return self;
 }
 - (instancetype)initWithUserField:(id)field value:(id)value{
@@ -53,8 +53,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self) {
         return nil;
     }
-    self.field = [NSString stringWithFormat:@"ud_%@",field];
-    self.value = value;
+    _field = [NSString stringWithFormat:@"ud_%@",field];
+    _value = value;
     return self;
 }
 - (NSString *)URLEncodedTagsStringValue{

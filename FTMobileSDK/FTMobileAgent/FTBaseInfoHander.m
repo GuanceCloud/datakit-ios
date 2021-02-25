@@ -21,7 +21,7 @@
 @implementation FTBaseInfoHander : NSObject
 
 #pragma mark ========== 请求加密 ==========
-+(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
++(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
 {
     NSMutableString *signString = [[NSMutableString alloc] init];
     [signString appendString:method];
@@ -75,12 +75,12 @@
 }
 
 
-+(NSString *)ft_getNetworkTraceID{
++(NSString *)networkTraceID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [uuid lowercaseString];
 }
-+(NSString *)ft_getNetworkSpanID{
++(NSString *)networkSpanID{
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
@@ -92,11 +92,11 @@
         dispatch_sync(dispatch_get_main_queue(), block);
     }
 }
-+ (NSString *)ft_getCurrentPageName{
++ (NSString *)currentPageName{
     __block UIViewController *result = nil;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
         
-        UIWindow * window = [FTBaseInfoHander ft_keyWindow];
+        UIWindow * window = [FTBaseInfoHander keyWindow];
         
         UIView *frontView = [[window subviews] objectAtIndex:0];
         id nextResponder = [frontView nextResponder];
@@ -125,7 +125,7 @@
     }
     return FT_NULL_VALUE;
 }
-+ (NSString *)ft_getApplicationUUID{
++ (NSString *)applicationUUID{
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();
     
@@ -201,7 +201,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
             return 0;
     }
 }
-+ (UIWindow *)ft_keyWindow{
++ (UIWindow *)keyWindow{
     UIWindow  *foundWindow = nil;
     NSArray   *windows = [[UIApplication sharedApplication]windows];
     for (UIWindow *window in windows) {
@@ -237,7 +237,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return count <= 1 ? classString : [NSString stringWithFormat:@"%@[%ld]", classString, (long)index];
 }
-+(NSString *)ft_getFTstatueStr:(FTStatus)status{
++(NSString *)statusStrWithStatus:(FTStatus)status{
     NSString *str = nil;
     switch (status) {
         case FTStatusInfo:
@@ -259,7 +259,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return str;
     
 }
-+ (NSString *)ft_getFTEnvStr:(FTEnv)env{
++ (NSString *)envStrWithEnv:(FTEnv)env{
    NSString *str = nil;
     switch (env) {
         case FTEnvProd:
@@ -280,7 +280,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
    return str;
 }
-+ (NSString *)ft_getNetworkTraceTypeStr:(FTNetworkTraceType)type{
++ (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type{
     NSString *str = nil;
     switch (type) {
         case FTNetworkTraceTypeJaeger:
@@ -292,7 +292,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return  str;
 }
-+ (NSString *)ft_getSessionid{
++ (NSString *)sessionId{
     NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
     if (!sessionid) {
         sessionid = [[NSUUID UUID] UUIDString];
@@ -301,15 +301,15 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return sessionid;
 }
-+ (NSString *)ft_getUserid{
++ (NSString *)userId{
     NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
     return sessionid;
 }
-+ (void)ft_setUserid:(NSString *)userid{
++ (void)setUserId:(NSString *)userid{
         [[NSUserDefaults standardUserDefaults] setValue:userid forKey:@"ft_userid"];
         [[NSUserDefaults standardUserDefaults] synchronize];
 }
-+ (NSString *)ft_getDictStr:(NSDictionary *)dict{
++ (NSString *)convertToStringData:(NSDictionary *)dict{
     __block NSString *str = @"";
     if (dict) {
         [dict.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {

@@ -30,12 +30,12 @@
                                  @"crash_stack":info,
         };
         [instance rumTrackES:@"crash" terminal:@"app" tags:@{@"crash_type":[exception name],
-                                                          FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
+                                                          FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID],
         } fields:field tm:[[NSDate date] ft_dateTimestamp]];
     }else if(instance.config.enableTrackAppCrash){
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
         NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-        [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
+        [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
     }
     }
     NSSetUncaughtExceptionHandler(NULL);
@@ -48,7 +48,7 @@
     signal(SIGPIPE,SIG_DFL);
     signal(SIGSYS,SIG_DFL);
     __block BOOL testSuccess = NO;
-    UIWindow *window = [FTBaseInfoHander ft_keyWindow];
+    UIWindow *window = [FTBaseInfoHander keyWindow];
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Crash" message:info preferredStyle:UIAlertControllerStyleAlert];

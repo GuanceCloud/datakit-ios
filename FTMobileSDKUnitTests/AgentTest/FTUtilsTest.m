@@ -36,7 +36,7 @@
 }
 - (void)testSignature{
     NSString *date =@"Wed, 02 Sep 2020 09:41:24 GMT";
-    NSString *signature = [FTBaseInfoHander ft_getSignatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
+    NSString *signature = [FTBaseInfoHander signatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
     
     XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
 }
@@ -52,7 +52,7 @@
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     FTUploadTool *tool =  [FTUploadTool new];
     NSString *line = [tool getRequestDataWithEventArray:@[model] type:FT_AGENT_MEASUREMENT];
     NSArray *array = [line componentsSeparatedByString:@" "];

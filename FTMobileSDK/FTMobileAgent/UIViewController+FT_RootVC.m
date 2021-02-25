@@ -24,7 +24,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 + (NSString *)ft_getRootViewController{
     __block NSString *name;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-     UIWindow* window =[FTBaseInfoHander ft_keyWindow];
+     UIWindow* window =[FTBaseInfoHander keyWindow];
     name = NSStringFromClass([window.rootViewController class]);
     }];
     if( [name isKindOfClass:NSNull.class]
@@ -34,7 +34,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
         return  name;
     }
 }
--(NSString *)ft_getParentVC{
+-(NSString *)ft_parentVC{
     UIViewController *viewController =[self parentViewController];
     if (viewController == nil) {
         viewController = self.presentingViewController;
@@ -44,7 +44,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
     }
     return NSStringFromClass(viewController.class);
 }
--(NSString *)ft_getVCPath{
+-(NSString *)ft_VCPath{
     UIViewController *viewController =self;
     NSMutableString *viewPaths = [NSMutableString new];
     [viewPaths insertString:[FTBaseInfoHander itemHeatMapPathForResponder:viewController] atIndex:0];

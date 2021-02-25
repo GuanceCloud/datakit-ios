@@ -69,7 +69,7 @@ static dispatch_once_t onceToken;
     self = [super init];
     if (self) {
         _skywalkingSeq = 0;
-        self.lock = [NSLock new];
+        _lock = [NSLock new];
     }
     return self;
 }
@@ -207,10 +207,10 @@ static dispatch_once_t onceToken;
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
     if (self.config.networkTrace) {
-        NSString *statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusOk];
+        FTStatus status = FTStatusOk;
         NSDictionary *responseDict = @{};
         if (error) {
-            statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+            status = FTStatusError;
             NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
             NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
             
@@ -226,10 +226,12 @@ static dispatch_once_t onceToken;
             };
         }else{
             if( [[task.response ft_getResponseStatusCode] integerValue] >=400){
-                statusStr =[FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+                status = FTStatusError;
             }
             responseDict = task.response?[task.response ft_getResponseDict]:@{};
         }
+        NSString *statusStr = [FTBaseInfoHander statusStrWithStatus:status];
+
         NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
         NSDictionary *response = responseDict?responseDict:@{};
         NSDictionary *content = @{
@@ -251,7 +253,7 @@ static dispatch_once_t onceToken;
         if(trace&&span&&sampling){
             [tags setValue:trace forKey:FT_FLOW_TRACEID];
             [tags setValue:span forKey:FT_KEY_SPANID];
-            [agent tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+            [agent tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
         }
     }
     if (![agent judgeIsTraceSampling] || error) {
@@ -297,8 +299,8 @@ static dispatch_once_t onceToken;
     
     [agent rumTrack:@"rum_app_resource_performance" tags:tags fields:fields];
     if (response) {
-        fields[@"response_header"] =[FTBaseInfoHander ft_getDictStr:response.allHeaderFields];
-        fields[@"request_header"] = [FTBaseInfoHander ft_getDictStr:[task.currentRequest ft_getRequestHeaders]];
+        fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
+        fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[task.currentRequest ft_getRequestHeaders]];
     }
     tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
     tags[@"resource_url_path"] = task.originalRequest.URL.path;
@@ -311,10 +313,10 @@ static dispatch_once_t onceToken;
  * wkwebview 使用loadRequest 与 reload 发起的请求
  */
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
-    NSString *statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusOk];
+    FTStatus status = FTStatusOk;
     NSDictionary *responseDict = @{};
     if (error) {
-        statusStr = [FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+        status = FTStatusError;
         NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
         NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
         responseDict = @{FT_NETWORK_HEADERS:@{},
@@ -327,10 +329,11 @@ static dispatch_once_t onceToken;
         };
     }else{
         if( [[response ft_getResponseStatusCode] integerValue] >=400){
-            statusStr =[FTBaseInfoHander ft_getFTstatueStr:FTStatusError];
+            status = FTStatusError;
         }
         responseDict = response?[response ft_getResponseDict]:responseDict;
     }
+    NSString *statusStr = [FTBaseInfoHander statusStrWithStatus:status];
     NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
     NSDictionary *responseDic = responseDict?responseDict:@{};
     NSDictionary *content = @{
@@ -353,7 +356,7 @@ static dispatch_once_t onceToken;
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
     }
-    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil ft_convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
 }
 
 #pragma mark ========== FTANRDetectorDelegate ==========
@@ -374,7 +377,7 @@ static dispatch_once_t onceToken;
     if ([agent judgeRUMTraceOpen]) {
         [agent rumTrackES:FT_TYPE_FREEZE terminal:FT_TERMINAL_APP tags:tag fields:fields tm:time];
     }else{
-    [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:nil tm:time];
+    [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:nil tm:time];
     }
 }
 #pragma mark ========== FTNetworkTrack ==========
@@ -412,7 +415,7 @@ static dispatch_once_t onceToken;
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_msDateTimestamp]];
-    NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.parentInstance,[FTMonitorUtils getCELLULARIPAddress:YES]] ft_base64Encode];
+    NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.parentInstance,[FTMonitorUtils cellularIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
     urlPath = [urlPath ft_base64Encode];
@@ -449,13 +452,13 @@ static dispatch_once_t onceToken;
 }
 -(NSString *)traceId{
     if (!_traceId) {
-        _traceId = [FTBaseInfoHander ft_getNetworkTraceID];
+        _traceId = [FTBaseInfoHander networkTraceID];
     }
     return _traceId;
 }
 -(NSString *)parentInstance{
     if (!_parentInstance) {
-        _parentInstance = [FTBaseInfoHander ft_getNetworkTraceID];
+        _parentInstance = [FTBaseInfoHander networkTraceID];
     }
     return _parentInstance;
 }

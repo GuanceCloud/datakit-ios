@@ -210,12 +210,12 @@
           if (track) {
               switch (type) {
                   case FTNetworkTraceTypeZipkin:
-                      [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-                      [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
+                      [mutableReqeust setValue:[FTBaseInfoHander networkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
+                      [mutableReqeust setValue:[FTBaseInfoHander networkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
                       [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
                       break;
                   case FTNetworkTraceTypeJaeger:{
-                      NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID],[NSNumber numberWithBool:sampled]];
+                      NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander networkTraceID],[FTBaseInfoHander networkSpanID],[NSNumber numberWithBool:sampled]];
                       [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
                   }
                       break;

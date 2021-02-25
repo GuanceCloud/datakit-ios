@@ -24,7 +24,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.isExchanged = NO;
+        _isExchanged = NO;
     }
     return self;
 }

@@ -42,7 +42,7 @@
 - (void)writer:(FTJsonWriter *)writer appendBytes:(const void *)bytes length:(NSUInteger)length {
     [self.acc appendBytes:bytes length:length];
 }
-+ (NSString *)ft_convertToJsonData:(NSDictionary *)dict
++ (NSString *)convertToJsonData:(NSDictionary *)dict
 {
     FTJSONUtil *util = [FTJSONUtil new];
     NSData *jsonData = [util JSONSerializeDictObject:dict];

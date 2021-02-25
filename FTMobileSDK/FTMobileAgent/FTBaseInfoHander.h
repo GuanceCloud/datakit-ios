@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 签名后字符串
  */
-+(NSString*)ft_getSignatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
++(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
 /**
  *  @abstract
  *  tags key、value 替换特殊字符 '"'
@@ -39,23 +39,23 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  FTStatus 字符串转换
 */
-+(NSString *)ft_getNetworkSpanID;
-+(NSString *)ft_getNetworkTraceID;
++(NSString *)networkSpanID;
++(NSString *)networkTraceID;
 /**
  * 主线程同步执行
  */
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
-+ (NSString *)ft_getCurrentPageName;
-+ (NSString *)ft_getApplicationUUID;
-+ (UIWindow *)ft_keyWindow;
++ (NSString *)currentPageName;
++ (NSString *)applicationUUID;
++ (UIWindow *)keyWindow;
 + (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
-+ (NSString *)ft_getFTstatueStr:(FTStatus)status;
-+ (NSString *)ft_getFTEnvStr:(FTEnv)env;
-+ (NSString *)ft_getNetworkTraceTypeStr:(FTNetworkTraceType)type;
-+ (NSString *)ft_getSessionid;
-+ (NSString *)ft_getUserid;
-+ (void)ft_setUserid:(nullable NSString *)userid;
-+ (NSString *)ft_getDictStr:(NSDictionary *)dict;
++ (NSString *)statusStrWithStatus:(FTStatus)status;
++ (NSString *)envStrWithEnv:(FTEnv)env;
++ (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type;
++ (NSString *)sessionId;
++ (NSString *)userId;
++ (void)setUserId:(nullable NSString *)userid;
++ (NSString *)convertToStringData:(NSDictionary *)dict;
 @end
 
 NS_ASSUME_NONNULL_END

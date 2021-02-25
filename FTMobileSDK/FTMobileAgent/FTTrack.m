@@ -169,7 +169,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if (ges.state != UIGestureRecognizerStateEnded) {
                 return;
             }
-            UIViewController *vc = [ges.view ft_getCurrentViewController];
+            UIViewController *vc = [ges.view ft_currentViewController];
             if ([weakSelf isBlackListContainsViewController:vc]) {
                 return;
             }
@@ -178,7 +178,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         }else if([from isKindOfClass:NSClassFromString(@"_UIButtonBarButton")]){
             //UIBarButtonItem 点击
             UIView *view = from;
-            UIViewController *vc =[view ft_getCurrentViewController];
+            UIViewController *vc =[view ft_currentViewController];
             if ([vc isKindOfClass:UINavigationController.class]) {
                 UINavigationController *nav =(UINavigationController *)vc;
                 vc = [nav.viewControllers firstObject];
@@ -198,7 +198,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             }
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
-                vc = [to ft_getCurrentViewController];
+                vc = [to ft_currentViewController];
             }else{
                 vc = to;
             }
@@ -247,7 +247,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
         NSString *name = NSStringFromClass([cpn class]);
         NSString *view_id = [name ft_md5HashToUpper32Bit];
-        NSString *parent = [(UIViewController *)cpn ft_getParentVC];
+        NSString *parent = [(UIViewController *)cpn ft_parentVC];
         NSMutableDictionary *tags = @{@"view_id":view_id,
                                       @"view_name":name,
                                       @"view_parent":parent,
@@ -272,7 +272,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             NSDictionary *tag = @{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
             NSDictionary *field = @{FT_KEY_DURATION:duration};
-            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
+            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
         }
         
     } @catch (NSException *exception) {
@@ -293,20 +293,20 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             NSString *current = nil;
             if ([cpn isKindOfClass:UIView.class]) {
-                current = NSStringFromClass([cpn ft_getCurrentViewController].class);
+                current = NSStringFromClass([cpn ft_currentViewController].class);
             }else if ([cpn isKindOfClass:UIViewController.class]){
                 current = NSStringFromClass([cpn class]);
             }
             [content setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             //点击事件 添加视图树
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                NSString *vtp =[view ft_getParentsView];
+                NSString *vtp =[view ft_parentsView];
                 [content setValue:vtp forKey:FT_AUTO_TRACK_VTP_TREE_PATH];
             }
         }
         [content setValue:op forKey:FT_KEY_EVENT];
         NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
-        [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+        [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
         
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);

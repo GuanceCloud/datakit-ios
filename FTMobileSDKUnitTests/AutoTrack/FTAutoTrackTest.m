@@ -70,7 +70,7 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     __block UIViewController *currentVC;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        currentVC = [self.testVC.firstButton ft_getCurrentViewController];
+        currentVC = [self.testVC.firstButton ft_currentViewController];
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
