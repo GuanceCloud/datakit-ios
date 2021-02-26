@@ -186,6 +186,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
+//用户绑定
+- (void)bindUserWithUserID:(NSString *)Id{
+    NSParameterAssert(Id);
+    self.presetProperty.isSignin = YES;
+    [FTBaseInfoHander setUserId:Id];
+}
+//用户注销
+- (void)logout{
+    self.presetProperty.isSignin = NO;
+    [FTBaseInfoHander setUserId:nil];
+    ZYDebug(@"User logout");
+}
 #pragma mark ========== private method ==========
 //RUM INFLUXDB
 - (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -347,18 +359,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         });
     }];
-}
-
-#pragma mark - 用户绑定与注销
-- (void)bindUserWithUserID:(NSString *)Id{
-    NSParameterAssert(Id);
-    self.presetProperty.isSignin = YES;
-    [FTBaseInfoHander setUserId:Id];
-}
-- (void)logout{
-    self.presetProperty.isSignin = NO;
-    [FTBaseInfoHander setUserId:nil];
-    ZYDebug(@"User logout");
 }
 - (FTRecordModel *)getModelWithMeasurement:(NSString *)measurement op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     FTRecordModel *model = [FTRecordModel new];
@@ -567,17 +567,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
+#pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
     if (_reachability) {
         SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+        SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
+        _reachability = nil;
     }
     _presetProperty = nil;
-    self.config = nil;
-    self.track = nil;
+    _config = nil;
+    _track = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.upTool = nil;
+    _upTool = nil;
     onceToken = 0;
     sharedInstance =nil;
 }

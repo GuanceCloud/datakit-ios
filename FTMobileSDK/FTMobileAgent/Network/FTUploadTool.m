@@ -327,7 +327,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
     return mutableQueryStringComponents;
 }
 -(void)dealloc{
-    [self.session invalidateAndCancel];
+    [_session invalidateAndCancel];
 }
 
 @end
