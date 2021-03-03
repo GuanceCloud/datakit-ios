@@ -292,6 +292,16 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return  str;
 }
++ (NSString *)XDataKitUUID{
+    NSString *deviceId;
+    deviceId = [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"];
+    if (!deviceId) {
+        deviceId = [[NSUUID UUID] UUIDString];
+        [[NSUserDefaults standardUserDefaults] setValue:deviceId forKey:@"FTSDKUUID"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    return deviceId;
+}
 + (NSString *)sessionId{
     NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
     if (!sessionid) {

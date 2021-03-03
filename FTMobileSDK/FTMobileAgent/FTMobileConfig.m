@@ -12,15 +12,13 @@
 #import "FTBaseInfoHander.h"
 #import "FTLog.h"
 #import "FTConstants.h"
-#define setUUID(uuid) [[NSUserDefaults standardUserDefaults] setValue:uuid forKey:@"FTSDKUUID"]
-#define getUUID        [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"]
 
 @implementation FTMobileConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
     if (self = [super init]) {
         _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
-        _XDataKitUUID = [self ft_defaultUUID];
+        _XDataKitUUID = [FTBaseInfoHander XDataKitUUID];
         _enableTrackAppCrash= NO;
         _samplerate = 100;
         _serviceName = FT_DEFAULT_SERVICE_NAME;
@@ -57,16 +55,6 @@
     options.env = self.env;
     options.appid = self.appid;
     return options;
-}
-- (NSString *)ft_defaultUUID {
-    NSString *deviceId;
-    deviceId =getUUID;
-    if (!deviceId) {
-        deviceId = [[NSUUID UUID] UUIDString];
-        setUUID(deviceId);
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-    return deviceId;
 }
 -(void)networkTraceWithTraceType:(FTNetworkTraceType)type{
     self.networkTrace = YES;

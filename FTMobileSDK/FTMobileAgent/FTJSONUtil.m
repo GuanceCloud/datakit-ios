@@ -53,7 +53,7 @@
     NSMutableString *mutStr = [NSMutableString stringWithString:jsonString];
     return mutStr;
 }
-+ (NSDictionary *)ft_dictionaryWithJsonString:(NSString *)jsonString
++ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString
 {
     if (jsonString == nil) {
         return nil;

@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)statusStrWithStatus:(FTStatus)status;
 + (NSString *)envStrWithEnv:(FTEnv)env;
 + (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type;
++ (NSString *)XDataKitUUID;
 + (NSString *)sessionId;
 + (NSString *)userId;
 + (void)setUserId:(nullable NSString *)userid;

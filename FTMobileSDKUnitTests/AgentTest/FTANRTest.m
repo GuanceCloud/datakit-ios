@@ -76,7 +76,7 @@
         BOOL hasANR = NO;
         for (NSInteger i=0; i<datas.count; i++) {
            FTRecordModel *model = datas[i];
-           NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+           NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
             NSDictionary *field = [opdata valueForKey:@"field"];
             NSDictionary *tags = opdata[@"tags"];

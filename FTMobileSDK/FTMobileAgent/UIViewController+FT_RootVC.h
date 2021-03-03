@@ -11,9 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (FT_RootVC)
-@property(nonatomic,strong) NSDate *viewLoadStartTime;
+@property(nonatomic,strong) NSDate *__nullable viewLoadStartTime;
 
-+ (NSString *)ft_rootViewController;
 -(NSString *)ft_VCPath;
 -(NSString *)ft_parentVC;
 @end

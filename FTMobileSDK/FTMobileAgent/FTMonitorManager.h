@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)startMonitorFPS;
 - (void)pauseMonitorFPS;
--(void)startPingThread;
--(void)stopPingThread;
+- (void)startPingThread;
+- (void)stopPingThread;
 - (NSNumber *)getFPSValue;
 - (BOOL)trackUrl:(NSURL *)url;
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler;

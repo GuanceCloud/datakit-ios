@@ -128,7 +128,6 @@ static dispatch_once_t onceToken;
 }
 - (void)trackAppFreeze:(NSString *)stack{
     long long time = [[NSDate date] ft_dateTimestamp];
-    
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     if (!self.config.enableTrackAppFreeze || ![agent judgeIsTraceSampling]) {
         return;

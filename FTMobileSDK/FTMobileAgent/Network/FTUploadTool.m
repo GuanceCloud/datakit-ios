@@ -257,7 +257,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 - (NSString *)getObjctRequestWithEventArray:(NSArray *)events{
     NSMutableArray *list = [NSMutableArray new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data].mutableCopy;
+        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data].mutableCopy;
         [list addObject:item];
     }];
     // 待处理 object 类型
@@ -270,8 +270,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events type:(NSString *)type{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data];
-        NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:obj.userdata];
+        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *userData = [FTJSONUtil dictionaryWithJsonString:obj.userdata];
         NSString *field = @"";
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
         NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:type]];
