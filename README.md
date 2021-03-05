@@ -6,7 +6,7 @@
 ![Cocoapods](https://img.shields.io/cocoapods/l/FTMobileSDK)
 
 
-[![](https://img.shields.io/badge/iOS-api%20%3E%20iOS%2010-brightgreen)]() [![](https://img.shields.io/badge/Demo-click%20here-blue)](https://github.com/CloudCare/dataflux-sdk-ios-demo)
+[![](https://img.shields.io/badge/iOS-api%20%3E=%20iOS%2010-brightgreen)]() [![](https://img.shields.io/badge/Demo-click%20here-blue)](https://github.com/CloudCare/dataflux-sdk-ios-demo)
 ## 简介
 
 DataFlux 应用监测能够通过收集各个iOS应用的指标数据，以可视化的方式分析各个iOS应用端的性能。
