@@ -6,7 +6,7 @@ replaceVersion(){
 
   PRODUCT_NAME=$1
 
-  cd "FTMobileSDK/$PRODUCT_NAME"
+  cd "FTMobileSDK/$PRODUCT_NAME" || exit
 
   sed  -i '' 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
 
