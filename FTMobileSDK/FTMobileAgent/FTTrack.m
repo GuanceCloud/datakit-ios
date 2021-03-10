@@ -261,7 +261,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 fields[@"view_fps"] =fps;
             }
         }
-        int apdexlevel = duration.intValue/1000/1000/1000 <=9 ? : 9;
+        int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
         tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
         if ([instance judgeIsTraceSampling]) {
             [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];

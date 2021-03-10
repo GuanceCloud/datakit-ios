@@ -191,12 +191,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSParameterAssert(Id);
     self.presetProperty.isSignin = YES;
     [FTBaseInfoHander setUserId:Id];
+    ZYDebug(@"Bind User ID : %@",Id);
 }
 //用户注销
 - (void)logout{
     self.presetProperty.isSignin = NO;
     [FTBaseInfoHander setUserId:nil];
-    ZYDebug(@"User logout");
+    ZYDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
 //RUM INFLUXDB

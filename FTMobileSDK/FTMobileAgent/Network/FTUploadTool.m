@@ -26,7 +26,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeField     = 2 ,
     FTParameterTypeUser      = 3 ,
 };
-
+NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
+NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
+NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
+NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
+NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
+NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 #pragma mark ========== 参数处理 ==========
 
 @interface FTQueryStringPair : NSObject
@@ -93,7 +98,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
     self = [super init];
     if (self) {
-        self.config = config;
+        _config = config;
         _operationQueue = [[NSOperationQueue alloc] init];
         _operationQueue.maxConcurrentOperationCount = 1;
     }
