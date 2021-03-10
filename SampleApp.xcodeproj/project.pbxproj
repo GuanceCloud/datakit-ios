@@ -49,6 +49,7 @@
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
+		7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -189,6 +190,8 @@
 		7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TableViewCellItem.m; sourceTree = "<group>"; };
 		7C6E925225E35E9700D12C12 /* Crasher.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Crasher.mm; sourceTree = "<group>"; };
 		7C6E925325E35E9800D12C12 /* Crasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Crasher.h; sourceTree = "<group>"; };
+		7C8CE50125F8DCB00043B213 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SampleApp-Bridging-Header.h"; path = "../SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintHookTest.swift; sourceTree = "<group>"; };
 		84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		A7C2BAF1B667F5A8064AE281 /* Pods-SampleApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SampleApp.release.xcconfig"; path = "Target Support Files/Pods-SampleApp/Pods-SampleApp.release.xcconfig"; sourceTree = "<group>"; };
@@ -398,6 +401,8 @@
 				4A3931542531C26300BC2134 /* TestANRVC.m */,
 				4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */,
 				4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */,
+				7C8CE50125F8DCB00043B213 /* SampleApp-Bridging-Header.h */,
+				7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */,
 			);
 			path = TestAutoTrack;
 			sourceTree = "<group>";
@@ -687,6 +692,7 @@
 				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,
 				4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
+				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 				7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */,
 				7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */,
@@ -969,6 +975,7 @@
 		4A22527423B5AC7600B0ED41 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -990,6 +997,7 @@
 		4A22527523B5AC7600B0ED41 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FDRMD28QMM;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -1058,6 +1066,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -1096,6 +1105,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
