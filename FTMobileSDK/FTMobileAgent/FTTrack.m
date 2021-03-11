@@ -10,13 +10,13 @@
 #import "FTConstants.h"
 #import <UIKit/UIKit.h>
 #import "ZYAspects.h"
-#import "UIViewController+FT_RootVC.h"
+#import "UIViewController+FTAutoTrack.h"
 #import "FTLog.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTMobileAgent+Private.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
-#import "UIView+FT_CurrentController.h"
+#import "UIView+FTAutoTrack.h"
 #import "FTMonitorManager.h"
 #import "FTJSONUtil.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
@@ -34,6 +34,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 @property (nonatomic,assign) BOOL isLaunched;
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
+@property (nonatomic, weak) UIViewController *previousTrackViewController;
+
 @end
 @implementation FTTrack
 -(instancetype)init{
@@ -54,21 +56,24 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     WeakSelf
     id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        vc.viewLoadStartTime =[NSDate date];
-        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-            [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
-        }
+        vc.ft_viewLoadStartTime =[NSDate date];
     } error:nil];
     
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.viewLoadStartTime];
-            vc.viewLoadStartTime = nil;
+        if (!weakSelf.isLaunched) {
+            [weakSelf trackStartWithTime:[NSDate date]];
+            weakSelf.isLaunched = YES;
+        }
+        if(![weakSelf isBlackListContainsViewController:vc]){
+            if(vc.ft_viewLoadStartTime){
+            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
+            vc.ft_viewLoadStartTime = nil;
             [weakSelf trackOpenWithCpn:vc duration:loadTime];
-            if (!weakSelf.isLaunched) {
-                [weakSelf trackStartWithTime:[NSDate date]];
-                weakSelf.isLaunched = YES;
+            }
+            if(self.previousTrackViewController != vc){
+                self.previousTrackViewController = vc;
+                [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
             }
         }
     } error:nil];
@@ -242,12 +247,12 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         ZYErrorLog(@" error: %@", exception);
     }
 }
--(void)trackOpenWithCpn:(id)cpn duration:(NSNumber *)duration{
+-(void)trackOpenWithCpn:(id<FTAutoTrackViewControllerProperty>)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        NSString *name = NSStringFromClass([cpn class]);
-        NSString *view_id = [name ft_md5HashToUpper32Bit];
-        NSString *parent = [(UIViewController *)cpn ft_parentVC];
+        NSString *name = cpn.ft_viewControllerName;
+        NSString *view_id = cpn.ft_viewControllerId;
+        NSString *parent = cpn.ft_parentVC;
         NSMutableDictionary *tags = @{@"view_id":view_id,
                                       @"view_name":name,
                                       @"view_parent":parent,
