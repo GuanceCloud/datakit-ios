@@ -306,15 +306,6 @@
 				4A2EFD8B253ECDC100F93B1E /* FTJsonWriter.m */,
 				4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */,
 				4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */,
-				7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */,
-				4A7135A1257096FF00444C3D /* FTTrack.h */,
-				4A7135A2257096FF00444C3D /* FTTrack.m */,
-				4A852FD623A240B300B40B5D /* UIView+FTAutoTrack.h */,
-				4A852FD423A240B300B40B5D /* UIView+FTAutoTrack.m */,
-				4A852FD923A240B400B40B5D /* UIViewController+FTAutoTrack.h */,
-				4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */,
-				4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */,
-				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
@@ -373,6 +364,15 @@
 		7C2DD69625F9C2BA00BFF757 /* AutoTrack */ = {
 			isa = PBXGroup;
 			children = (
+				7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */,
+				4A7135A1257096FF00444C3D /* FTTrack.h */,
+				4A7135A2257096FF00444C3D /* FTTrack.m */,
+				4A852FD623A240B300B40B5D /* UIView+FTAutoTrack.h */,
+				4A852FD423A240B300B40B5D /* UIView+FTAutoTrack.m */,
+				4A852FD923A240B400B40B5D /* UIViewController+FTAutoTrack.h */,
+				4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */,
+				4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */,
+				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 			);
 			path = AutoTrack;
 			sourceTree = "<group>";
