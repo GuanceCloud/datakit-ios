@@ -7,14 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-
+#import "FTAutoTrackProperty.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIViewController (FT_RootVC)
-@property(nonatomic,strong) NSDate *__nullable viewLoadStartTime;
+@interface UIViewController (FTAutoTrack)<FTAutoTrackViewControllerProperty>
 
--(NSString *)ft_VCPath;
--(NSString *)ft_parentVC;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1,5 +1,5 @@
 //
-//  UIView+FT_CurrentController.m
+//  UIView+FTAutoTrack.m
 //  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2019/11/29.
@@ -8,10 +8,10 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
-#import "UIView+FT_CurrentController.h"
+#import "UIView+FTAutoTrack.h"
 #import "FTBaseInfoHander.h"
 
-@implementation UIView (FT_CurrentController)
+@implementation UIView (FTAutoTrack)
 -(UIViewController *)ft_currentViewController{
     __block UIResponder *next = nil;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
