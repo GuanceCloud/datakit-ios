@@ -26,12 +26,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeField     = 2 ,
     FTParameterTypeUser      = 3 ,
 };
-NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
-NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
-NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
-NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
-NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
-NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
+static NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
+static NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
+static NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
+static NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
+static NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
+static NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 #pragma mark ========== 参数处理 ==========
 
 @interface FTQueryStringPair : NSObject
