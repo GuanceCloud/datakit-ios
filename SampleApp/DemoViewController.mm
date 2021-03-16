@@ -60,6 +60,8 @@
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"TraceConsoleLog" handler:^{
         NSLog(@"Test_traceConsoleLog");
+        PrintHookTest *test = [[PrintHookTest alloc]init];
+        [test show];
     }];
     TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppFreezeAndANR" handler:^{
         [weakSelf.navigationController pushViewController:[TestANRVC new] animated:YES];
@@ -67,7 +69,7 @@
     TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
         [weakSelf.navigationController pushViewController:[CrashVC new] animated:YES];
     }];
- 
+   
     [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;

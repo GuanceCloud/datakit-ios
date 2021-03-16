@@ -1,8 +1,4 @@
 //
-//  SampleApp-Bridging-Header.h
-//  SampleApp
-//
-//  Created by 胡蕾蕾 on 2021/3/10.
-//  Copyright © 2021 hll. All rights reserved.
+//  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
