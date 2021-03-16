@@ -525,12 +525,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (_appRelaunched) {
             [self trackStartWithViewLoadTime:[NSDate date]];
         }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeFPS ) {
-            [[FTMonitorManager sharedInstance] startMonitorFPS];
-        }
-        if (self.config.enableTrackAppFreeze) {
-            [[FTMonitorManager sharedInstance] startPingThread];
-        }
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -539,8 +533,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
        _applicationWillResignActive = YES;
-       [[FTMonitorManager sharedInstance] pauseMonitorFPS];
-       [[FTMonitorManager sharedInstance] stopPingThread];
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {

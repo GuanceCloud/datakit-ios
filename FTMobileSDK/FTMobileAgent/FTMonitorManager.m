@@ -40,8 +40,6 @@
 
 @interface FTMonitorManager ()<CBCentralManagerDelegate,FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
 @property (nonatomic, strong) CBCentralManager *centralManager;
-@property (nonatomic, assign) FTMonitorInfoType monitorType;
-
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
@@ -88,7 +86,7 @@ static dispatch_once_t onceToken;
     }else{
         [self stopPingThread];
     }
-    if (self.monitorType & FTMonitorInfoTypeFPS) {
+    if (config.monitorInfoType & FTMonitorInfoTypeFPS) {
         [self startMonitorFPS];
     }else{
         [self stopMonitorFPS];
@@ -102,7 +100,7 @@ static dispatch_once_t onceToken;
         [FTANRDetector sharedInstance].delegate = nil;
         [[FTANRDetector sharedInstance] stopDetecting];
     }
-    if (_monitorType & FTMonitorInfoTypeBluetooth) {
+    if (config.monitorInfoType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
     }
 }
