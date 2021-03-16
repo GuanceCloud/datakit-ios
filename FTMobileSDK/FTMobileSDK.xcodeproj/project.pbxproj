@@ -268,8 +268,6 @@
 				4A2D57EE2458141300478547 /* FTMonitorUtils.m */,
 				4A297BD8246BBF340028645B /* FTConstants.h */,
 				4A297BD9246BBF340028645B /* FTConstants.m */,
-				4A7135AF2579E82900444C3D /* FTfishhook.c */,
-				4A7135AE2579E82800444C3D /* FTfishhook.h */,
 				4A7135B12579E82900444C3D /* FTLogHook.h */,
 				4A7135B02579E82900444C3D /* FTLogHook.m */,
 				4A2EFD9A254278DE00F93B1E /* FTPresetProperty.h */,
@@ -282,14 +280,10 @@
 				4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */,
 				4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */,
 				4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */,
-				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
-				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
 				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
 				7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */,
 				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
 				4AED6B252473AFEC00E04AE2 /* FTLog.m */,
-				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
-				4A852FD323A240B300B40B5D /* ZYAspects.m */,
 				4A299F8F2521F7F800400931 /* FTANRDetector.h */,
 				4A299F902521F7F800400931 /* FTANRDetector.m */,
 				4A39314C25300D2100BC2134 /* FTCallStack.h */,
@@ -300,15 +294,11 @@
 				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
 				4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */,
 				4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */,
-				4A4B0C1F253EAED900D903AB /* FTJSONUtil.h */,
-				4A4B0C20253EAED900D903AB /* FTJSONUtil.m */,
-				4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */,
-				4A2EFD8B253ECDC100F93B1E /* FTJsonWriter.m */,
-				4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */,
-				4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */,
+				7C2DD6B825FEF88100BFF757 /* Utils */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
 				4AECBCEA244EE7F70023DEF7 /* Network */,
 				4A884279239E5768001B44C3 /* FTDataBase */,
+				7C2DD6BF25FEF99100BFF757 /* Location */,
 				4AACF9072429B7AC0079BD2F /* FTMobileAgentVersion.h */,
 			);
 			path = FTMobileAgent;
@@ -375,6 +365,32 @@
 				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
 			);
 			path = AutoTrack;
+			sourceTree = "<group>";
+		};
+		7C2DD6B825FEF88100BFF757 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4A7135AF2579E82900444C3D /* FTfishhook.c */,
+				4A7135AE2579E82800444C3D /* FTfishhook.h */,
+				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
+				4A852FD323A240B300B40B5D /* ZYAspects.m */,
+				4A4B0C1F253EAED900D903AB /* FTJSONUtil.h */,
+				4A4B0C20253EAED900D903AB /* FTJSONUtil.m */,
+				4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */,
+				4A2EFD8B253ECDC100F93B1E /* FTJsonWriter.m */,
+				4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */,
+				4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		7C2DD6BF25FEF99100BFF757 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				4AB783C723C5B802001FC994 /* FTLocationManager.h */,
+				4AB783C823C5B802001FC994 /* FTLocationManager.m */,
+			);
+			path = Location;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
