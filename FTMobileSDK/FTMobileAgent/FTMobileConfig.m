@@ -52,8 +52,8 @@
     options.version = self.version;
     options.traceConsoleLog = self.traceConsoleLog;
     options.eventFlowLog = self.eventFlowLog;
-    options.env = self.env;
     options.appid = self.appid;
+    options.monitorInfoType = self.monitorInfoType;
     return options;
 }
 -(void)networkTraceWithTraceType:(FTNetworkTraceType)type{
