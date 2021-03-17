@@ -75,16 +75,7 @@
 }
 
 
-+(NSString *)networkTraceID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
-    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    return [uuid lowercaseString];
-}
-+(NSString *)networkSpanID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
-    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    return [[uuid lowercaseString] ft_md5HashToLower16Bit];
-}
+
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block{
     if (NSThread.isMainThread) {
         block();

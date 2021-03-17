@@ -206,34 +206,15 @@
 }
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTraceType type ,NSString *skyStr) {
-          if (track) {
-              switch (type) {
-                  case FTNetworkTraceTypeZipkin:
-                      [mutableReqeust setValue:[FTBaseInfoHander networkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-                      [mutableReqeust setValue:[FTBaseInfoHander networkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-                      [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-                      break;
-                  case FTNetworkTraceTypeJaeger:{
-                      NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander networkTraceID],[FTBaseInfoHander networkSpanID],[NSNumber numberWithBool:sampled]];
-                      [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
-                  }
-                      break;
-//                  case FTNetworkTraceTypeSKYWALKING_V2:{
-//                      if (skyStr) {
-//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
-//                      }
-//                  }
-//                      break;
-//                  case FTNetworkTraceTypeSKYWALKING_V3:{
-//                      if (skyStr) {
-//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
-//                      }
-//                  }
-//                      break;
-              }
-          }
-      }];
+    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
+        if (traceHeader && traceHeader.allKeys.count>0) {
+            [traceHeader.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                if ([traceHeader[obj] isKindOfClass:NSString.class]) {
+                    [mutableReqeust setValue:traceHeader[obj] forHTTPHeaderField:obj];
+                }
+            }];
+        }
+    }];
     return mutableReqeust;
 }
 @end

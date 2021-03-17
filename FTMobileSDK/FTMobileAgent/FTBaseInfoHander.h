@@ -36,12 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 */
 + (id)repleacingSpecialCharactersMeasurement:(id )str;
 /**
- *  @abstract
- *  FTStatus 字符串转换
-*/
-+(NSString *)networkSpanID;
-+(NSString *)networkTraceID;
-/**
  * 主线程同步执行
  */
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
@@ -49,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)applicationUUID;
 + (UIWindow *)keyWindow;
 + (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
+/**
+ *  @abstract
+ *  FTStatus 字符串转换
+*/
 + (NSString *)statusStrWithStatus:(FTStatus)status;
 + (NSString *)envStrWithEnv:(FTEnv)env;
 + (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type;
