@@ -261,7 +261,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             @"view_load":duration,
         }.mutableCopy;
         if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-            NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
+            NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
             if (fps.intValue != 0) {
                 fields[@"view_fps"] =fps;
             }
