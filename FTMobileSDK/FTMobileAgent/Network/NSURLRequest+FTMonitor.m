@@ -208,11 +208,11 @@
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
     [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
         if (traceHeader && traceHeader.allKeys.count>0) {
-            [traceHeader.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                if ([traceHeader[obj] isKindOfClass:NSString.class]) {
-                    [mutableReqeust setValue:traceHeader[obj] forHTTPHeaderField:obj];
+            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                if (![self valueForHTTPHeaderField:field]) {
+                    [mutableReqeust setValue:value forHTTPHeaderField:field];
                 }
-            }];
+            }];;
         }
     }];
     return mutableReqeust;
