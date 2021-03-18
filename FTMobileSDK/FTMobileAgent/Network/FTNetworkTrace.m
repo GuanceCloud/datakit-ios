@@ -37,7 +37,7 @@
         case FTNetworkTraceTypeZipkin:
             return @{FT_NETWORK_ZIPKIN_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
                      FT_NETWORK_ZIPKIN_SPANID:[FTNetworkTrace networkSpanID],
-                     FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTrace networkSpanID],
+                     FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTrace networkTraceID],
             };
             break;
     }
