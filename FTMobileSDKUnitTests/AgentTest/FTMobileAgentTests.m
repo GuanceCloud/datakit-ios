@@ -20,7 +20,7 @@
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
 #import "NSString+FTAdd.h"
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import "FTUploadTool+Test.h"
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;

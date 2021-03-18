@@ -15,7 +15,7 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import <NSString+FTAdd.h>
 @interface FTUtilsTest : XCTestCase
 

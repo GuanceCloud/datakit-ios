@@ -20,7 +20,7 @@
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import <FTMobileAgent/FTPresetProperty.h>
 @interface FTPropertyTest : XCTestCase

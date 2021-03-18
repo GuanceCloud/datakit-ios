@@ -14,7 +14,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTMobileAgent/FTRecordModel.h>
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 
 @interface FTANRTest : XCTestCase

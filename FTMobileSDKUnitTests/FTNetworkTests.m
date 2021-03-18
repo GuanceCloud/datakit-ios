@@ -14,7 +14,7 @@
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -59,7 +59,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             urlStr = [urlStr stringByAppendingString:@"TestErrorNet"];
             break;
     }
-    NSString *newUrl = [urlStr stringByAppendingString:FT_NETWORKING_API_METRICS];
+    NSString *newUrl = [urlStr stringByAppendingString:@"/v1/write/metric"];
     
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         NSString *str =  request.URL.absoluteString;
@@ -199,7 +199,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
@@ -228,7 +228,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         NSError *errors;
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
@@ -256,7 +256,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(response.bytes == 0);
         [expectation fulfill];
@@ -282,7 +282,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];
@@ -308,7 +308,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];
@@ -334,7 +334,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
         XCTAssertTrue(statusCode != 200);
         [expectation fulfill];

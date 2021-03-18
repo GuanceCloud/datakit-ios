@@ -1072,10 +1072,8 @@
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"",
+					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1111,10 +1109,8 @@
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"",
+					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(inherited)",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
-					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
 				);
 				INFOPLIST_FILE = FTMobileSDKUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
