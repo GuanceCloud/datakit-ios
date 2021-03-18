@@ -134,6 +134,7 @@ static dispatch_once_t onceToken;
 -(void)stopMonitor{
     [FTURLProtocol stopMonitor];
     [self stopMonitorFPS];
+    [self stopPingThread];
 }
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
