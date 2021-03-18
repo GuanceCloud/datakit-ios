@@ -61,20 +61,21 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        if (!weakSelf.isLaunched) {
-            [weakSelf trackStartWithTime:[NSDate date]];
-            weakSelf.isLaunched = YES;
-        }
         if(![weakSelf isBlackListContainsViewController:vc]){
             if(vc.ft_viewLoadStartTime){
             NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
             vc.ft_viewLoadStartTime = nil;
             [weakSelf trackOpenWithCpn:vc duration:loadTime];
             }
-            if(self.previousTrackViewController != vc){
-                self.previousTrackViewController = vc;
+            if(weakSelf.previousTrackViewController != vc){
+                weakSelf.previousTrackViewController = vc;
                 [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
             }
+            if (!weakSelf.isLaunched) {
+                [weakSelf trackStartWithTime:[NSDate date]];
+                weakSelf.isLaunched = YES;
+            }
+
         }
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
