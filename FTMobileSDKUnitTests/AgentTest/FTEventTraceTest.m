@@ -103,13 +103,19 @@
     [self.testVC viewDidAppear:NO];
 
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array firstObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"message"];
-    NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
+    __block BOOL enter = NO;
+    [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[@"opdata"];
+        NSDictionary *field = op[@"field"];
+        NSString *content = field[@"message"];
+        NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
+        if ([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]) {
+            enter = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(enter == YES);
     [[FTMobileAgent sharedInstance] resetInstance];
 
 }
