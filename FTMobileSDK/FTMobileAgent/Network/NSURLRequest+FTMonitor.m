@@ -209,9 +209,7 @@
     [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
         if (traceHeader && traceHeader.allKeys.count>0) {
             [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-                if (![self valueForHTTPHeaderField:field]) {
                     [mutableReqeust setValue:value forHTTPHeaderField:field];
-                }
             }];;
         }
     }];
