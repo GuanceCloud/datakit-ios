@@ -12,7 +12,6 @@
 #import "FTConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSSet *netContentType;
 @property (nonatomic, assign) BOOL isBlueOn;
 /**

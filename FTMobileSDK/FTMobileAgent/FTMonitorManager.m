@@ -42,6 +42,7 @@
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTNetworkTrace *trace;
+@property (nonatomic, strong) FTMobileConfig *config;
 
 @end
 
