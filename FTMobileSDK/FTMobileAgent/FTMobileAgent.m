@@ -104,9 +104,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[FTMonitorManager sharedInstance] setMobileConfig:config];
-            });
+            [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);

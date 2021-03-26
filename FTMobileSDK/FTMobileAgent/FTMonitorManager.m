@@ -76,25 +76,22 @@ static dispatch_once_t onceToken;
         [FTWKWebViewHandler sharedInstance].trace = NO;
         [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
     }
-    if (config.enableTrackAppFreeze) {
-        [self startPingThread];
-    }else{
-        [self stopPingThread];
-    }
-    if (config.monitorInfoType & FTMonitorInfoTypeFPS) {
-        [self startMonitorFPS];
-    }else{
-        [self stopMonitorFPS];
-    }
-    if (config.enableTrackAppANR) {
-        [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (config.enableTrackAppFreeze) {
+            [self startPingThread];
+        }else{
+            [self stopPingThread];
+        }
+        if (config.monitorInfoType & FTMonitorInfoTypeFPS) {
+            [self startMonitorFPS];
+        }else{
+            [self stopMonitorFPS];
+        }
+        if (config.enableTrackAppANR) {
             [FTANRDetector sharedInstance].delegate = self;
             [[FTANRDetector sharedInstance] startDetecting];
-        }];
-    }else{
-        [FTANRDetector sharedInstance].delegate = nil;
-        [[FTANRDetector sharedInstance] stopDetecting];
-    }
+        }
+    });
     if (config.monitorInfoType & FTMonitorInfoTypeBluetooth) {
         [self bluteeh];
     }
