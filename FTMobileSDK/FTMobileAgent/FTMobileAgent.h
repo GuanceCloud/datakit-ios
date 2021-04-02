@@ -11,6 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileAgent : NSObject
+
+-(instancetype) init __attribute__((unavailable("请使用 sharedInstance 进行访问")));
+
 #pragma mark ========== init instance ==========
 /**
  * @abstract
