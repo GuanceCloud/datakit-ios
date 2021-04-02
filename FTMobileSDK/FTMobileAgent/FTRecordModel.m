@@ -15,9 +15,9 @@
 -(instancetype)init{
    self = [super init];
     if (self) {
-        self.tm = [[NSDate date] ft_dateTimestamp];
-        self.sessionid = [FTBaseInfoHander ft_getSessionid];
-        self.op = @"";
+        _tm = [[NSDate date] ft_dateTimestamp];
+        _sessionid = [FTBaseInfoHander sessionId];
+        _op = @"";
     }
     return self;
 }

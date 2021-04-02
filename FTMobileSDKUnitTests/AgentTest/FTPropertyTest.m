@@ -20,7 +20,7 @@
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import <FTMobileAgent/FTPresetProperty.h>
 @interface FTPropertyTest : XCTestCase
@@ -55,7 +55,7 @@
     [NSThread sleepForTimeInterval:1];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
@@ -73,7 +73,7 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[@"tags"];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
@@ -123,7 +123,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty getPropertyWithType:FT_RUM_APP_STARTUP];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty propertyWithType:FT_RUM_APP_STARTUP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -133,7 +133,7 @@
     config.source = @"iOSTest\\";
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty getPropertyWithType:FT_RUM_APP_STARTUP];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty propertyWithType:FT_RUM_APP_STARTUP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] resetInstance];

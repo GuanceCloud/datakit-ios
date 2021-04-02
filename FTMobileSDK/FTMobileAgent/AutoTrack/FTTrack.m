@@ -10,13 +10,13 @@
 #import "FTConstants.h"
 #import <UIKit/UIKit.h>
 #import "ZYAspects.h"
-#import "UIViewController+FT_RootVC.h"
+#import "UIViewController+FTAutoTrack.h"
 #import "FTLog.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTMobileAgent+Private.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
-#import "UIView+FT_CurrentController.h"
+#import "UIView+FTAutoTrack.h"
 #import "FTMonitorManager.h"
 #import "FTJSONUtil.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
@@ -34,6 +34,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 @property (nonatomic,assign) BOOL isLaunched;
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
+@property (nonatomic, weak) UIViewController *previousTrackViewController;
+
 @end
 @implementation FTTrack
 -(instancetype)init{
@@ -54,22 +56,26 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     WeakSelf
     id<ZY_AspectToken> viewLoad = [UIViewController aspect_hookSelector:@selector(viewDidLoad) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        vc.viewLoadStartTime =[NSDate date];
-        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-            [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
-        }
+        vc.ft_viewLoadStartTime =[NSDate date];
     } error:nil];
     
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
-        if(![weakSelf isBlackListContainsViewController:vc]&&vc.viewLoadStartTime){
-            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.viewLoadStartTime];
-            vc.viewLoadStartTime = nil;
+        if(![weakSelf isBlackListContainsViewController:vc]){
+            if(vc.ft_viewLoadStartTime){
+            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
+            vc.ft_viewLoadStartTime = nil;
             [weakSelf trackOpenWithCpn:vc duration:loadTime];
+            }
+            if(weakSelf.previousTrackViewController != vc){
+                weakSelf.previousTrackViewController = vc;
+                [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
+            }
             if (!weakSelf.isLaunched) {
                 [weakSelf trackStartWithTime:[NSDate date]];
                 weakSelf.isLaunched = YES;
             }
+
         }
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
@@ -169,7 +175,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if (ges.state != UIGestureRecognizerStateEnded) {
                 return;
             }
-            UIViewController *vc = [ges.view ft_getCurrentViewController];
+            UIViewController *vc = [ges.view ft_currentViewController];
             if ([weakSelf isBlackListContainsViewController:vc]) {
                 return;
             }
@@ -178,7 +184,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         }else if([from isKindOfClass:NSClassFromString(@"_UIButtonBarButton")]){
             //UIBarButtonItem 点击
             UIView *view = from;
-            UIViewController *vc =[view ft_getCurrentViewController];
+            UIViewController *vc =[view ft_currentViewController];
             if ([vc isKindOfClass:UINavigationController.class]) {
                 UINavigationController *nav =(UINavigationController *)vc;
                 vc = [nav.viewControllers firstObject];
@@ -198,7 +204,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             }
             UIViewController *vc;
             if (![to isKindOfClass:UIViewController.class]) {
-                vc = [to ft_getCurrentViewController];
+                vc = [to ft_currentViewController];
             }else{
                 vc = to;
             }
@@ -242,12 +248,12 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         ZYErrorLog(@" error: %@", exception);
     }
 }
--(void)trackOpenWithCpn:(id)cpn duration:(NSNumber *)duration{
+-(void)trackOpenWithCpn:(id<FTAutoTrackViewControllerProperty>)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        NSString *name = NSStringFromClass([cpn class]);
-        NSString *view_id = [name ft_md5HashToUpper32Bit];
-        NSString *parent = [(UIViewController *)cpn ft_getParentVC];
+        NSString *name = cpn.ft_viewControllerName;
+        NSString *view_id = cpn.ft_viewControllerId;
+        NSString *parent = cpn.ft_parentVC;
         NSMutableDictionary *tags = @{@"view_id":view_id,
                                       @"view_name":name,
                                       @"view_parent":parent,
@@ -256,12 +262,12 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             @"view_load":duration,
         }.mutableCopy;
         if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-            NSNumber *fps = [[FTMonitorManager sharedInstance] getFPSValue];
+            NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
             if (fps.intValue != 0) {
                 fields[@"view_fps"] =fps;
             }
         }
-        int apdexlevel = duration.intValue/1000/1000/1000 <=9 ? : 9;
+        int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
         tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
         if ([instance judgeIsTraceSampling]) {
             [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
@@ -272,7 +278,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             NSDictionary *tag = @{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
             NSDictionary *field = @{FT_KEY_DURATION:duration};
-            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
+            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
         }
         
     } @catch (NSException *exception) {
@@ -293,27 +299,27 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
             NSString *current = nil;
             if ([cpn isKindOfClass:UIView.class]) {
-                current = NSStringFromClass([cpn ft_getCurrentViewController].class);
+                current = NSStringFromClass([cpn ft_currentViewController].class);
             }else if ([cpn isKindOfClass:UIViewController.class]){
                 current = NSStringFromClass([cpn class]);
             }
             [content setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             //点击事件 添加视图树
             if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                NSString *vtp =[view ft_getParentsView];
+                NSString *vtp =[view ft_parentsView];
                 [content setValue:vtp forKey:FT_AUTO_TRACK_VTP_TREE_PATH];
             }
         }
         [content setValue:op forKey:FT_KEY_EVENT];
         NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
-        [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:content] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+        [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
         
     } @catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
 }
 -(void)dealloc{
-    [self.aspectTokenAry enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [_aspectTokenAry enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         id<ZY_AspectToken> token = obj;
         [token remove];
     }];

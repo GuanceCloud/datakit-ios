@@ -26,7 +26,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeField     = 2 ,
     FTParameterTypeUser      = 3 ,
 };
-
+static NSString *const FT_NETWORKING_API_METRICS = @"/v1/write/metric";
+static NSString *const FT_NETWORKING_API_LOGGING = @"/v1/write/logging";
+static NSString *const FT_NETWORKING_API_CHECK_TOKEN  = @"/v1/check/token/";
+static NSString *const FT_NETWORKING_API_RUM = @"/v1/write/rum";
+static NSString *const FT_NETWORKING_API_OBJECT = @"/v1/write/object";
+static NSString *const FT_NETWORKING_API_TRACING = @"/v1/write/tracing";
 #pragma mark ========== 参数处理 ==========
 
 @interface FTQueryStringPair : NSObject
@@ -44,8 +49,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self) {
         return nil;
     }
-    self.field = field;
-    self.value = value;
+    _field = field;
+    _value = value;
     return self;
 }
 - (instancetype)initWithUserField:(id)field value:(id)value{
@@ -53,8 +58,8 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     if (!self) {
         return nil;
     }
-    self.field = [NSString stringWithFormat:@"ud_%@",field];
-    self.value = value;
+    _field = [NSString stringWithFormat:@"ud_%@",field];
+    _value = value;
     return self;
 }
 - (NSString *)URLEncodedTagsStringValue{
@@ -93,7 +98,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 -(instancetype)initWithConfig:(FTMobileConfig *)config{
     self = [super init];
     if (self) {
-        self.config = config;
+        _config = config;
         _operationQueue = [[NSOperationQueue alloc] init];
         _operationQueue.maxConcurrentOperationCount = 1;
     }
@@ -257,7 +262,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 - (NSString *)getObjctRequestWithEventArray:(NSArray *)events{
     NSMutableArray *list = [NSMutableArray new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data].mutableCopy;
+        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data].mutableCopy;
         [list addObject:item];
     }];
     // 待处理 object 类型
@@ -270,8 +275,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 - (NSString *)getRequestDataWithEventArray:(NSArray *)events type:(NSString *)type{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil ft_dictionaryWithJsonString:obj.data];
-        NSDictionary *userData = [FTJSONUtil ft_dictionaryWithJsonString:obj.userdata];
+        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *userData = [FTJSONUtil dictionaryWithJsonString:obj.userdata];
         NSString *field = @"";
         NSDictionary *opdata =item[FT_AGENT_OPDATA];
         NSString *measurement =[FTBaseInfoHander repleacingSpecialCharactersMeasurement:[opdata valueForKey:type]];
@@ -327,7 +332,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
     return mutableQueryStringComponents;
 }
 -(void)dealloc{
-    [self.session invalidateAndCancel];
+    [_session invalidateAndCancel];
 }
 
 @end

@@ -114,7 +114,7 @@
     XCTAssertTrue(array.count == 3);
   
     [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
@@ -147,7 +147,7 @@
         NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         XCTAssertTrue(array.count == 2);
         [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSString *op = dict[@"op"];
             XCTAssertTrue([op isEqualToString:@"RUM"]);
             NSDictionary *opdata = dict[@"opdata"];

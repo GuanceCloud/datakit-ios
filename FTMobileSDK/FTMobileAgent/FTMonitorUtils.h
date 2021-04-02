@@ -14,15 +14,15 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 获取开机时间
  */
-+ (NSString *)getLaunchSystemTime;
++ (NSString *)launchSystemTime;
 /**
  * 获取WiFi的 Access 与 IPAddress
  * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
  * iOS 13 之后需要定位开启 才能获取到信息
  */
-+ (NSDictionary *)getWifiAccessAndIPAddress;
-+ (NSString *)getCurrentWifiSSID;
-+ (NSString *)getIPAddress;
++ (NSDictionary *)wifiAccessAndIPAddress;
++ (NSString *)currentWifiSSID;
++ (NSString *)ipAddress;
 /**
  * 获取设备屏幕亮度
  */
@@ -30,37 +30,37 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 检测是否有物品靠近
  */
-+ (BOOL)getProximityState;
++ (BOOL)proximityState;
 /**
  * 获取APP内调用闪光灯亮度Level
  */
-+ (float)getTorchLevel;
++ (float)torchLevel;
 /**
  *  @abstract
  *  获取当前设备CPU使用率
  */
-+ (long )ft_cpuUsage;
++ (long )cpuUsage;
 /**
  *  @abstract
  *  获取当前电池电量使用率
  */
-+ (double)ft_getBatteryUse;
++ (double)batteryUse;
 /**
  *  @abstract
  *  电池是否充电中
  */
-+ (NSString *)ft_batteryStatus;
++ (NSString *)batteryStatus;
 /**
  *  @abstract
  *  获取设备总内存
  */
-+ (NSString *)ft_getTotalMemorySize;
++ (NSString *)totalMemorySize;
 /**
  *  @abstract
  *  获取当前内存使用率
  */
-+ (double)ft_usedMemory;
-+ (NSString *)getCELLULARIPAddress:(BOOL)preferIPv4;
++ (double)usedMemory;
++ (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 
 @end
 

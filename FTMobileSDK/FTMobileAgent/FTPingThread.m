@@ -10,7 +10,7 @@
 #import "FTCallStack.h"
 
 @interface FTPingThread ()
-@property (nonatomic, strong) NSRecursiveLock *lock;
+@property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL isResponse;
 @property (nonatomic, strong) dispatch_semaphore_t semaphore;
 @end
@@ -25,9 +25,9 @@
     }
     return _semaphore;
 }
--(NSRecursiveLock *)lock{
+-(NSLock *)lock{
     if (!_lock) {
-        _lock = [[NSRecursiveLock alloc]init];
+        _lock = [[NSLock alloc]init];
     }
     return _lock;
 }

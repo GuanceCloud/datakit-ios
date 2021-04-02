@@ -85,30 +85,26 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         self = [super init];
         if (self) {
             //基础类型的记录
-            if (config) {
-                self.config = config;
-            }
+            _config = [config copy];
             _net = @"unknown";
             _appRelaunched = NO;
             _running = NO;
-            self.launchTime = [NSDate date];
+            _launchTime = [NSDate date];
             [FTLog enableLog:config.enableSDKDebugLog];
-            _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:config.networkTraceType];
-            self.track = [[FTTrack alloc]init];
+            _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:config.networkTraceType];
+            _track = [[FTTrack alloc]init];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
-            self.serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
+            _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
-            self.concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
+            _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             [self setUpListeners];
-            self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
+            _presetProperty = [[FTPresetProperty alloc]initWithAppid:config.appid version:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
-            self.upTool = [[FTUploadTool alloc]initWithConfig:self.config];
-            if (self.config.traceConsoleLog) {
+            _upTool = [[FTUploadTool alloc]initWithConfig:config];
+            if (config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[FTMonitorManager sharedInstance] setMobileConfig:self.config];
-            });
+            [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -119,14 +115,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_track) {
         self.track = [[FTTrack alloc]init];
     }
-    _netTraceStr = [FTBaseInfoHander ft_getNetworkTraceTypeStr:config.networkTraceType];
+    _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:config.networkTraceType];
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
     self.config = config;
     if (_presetProperty) {
-        [self.presetProperty resetWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
+        [self.presetProperty resetWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander envStrWithEnv:self.config.env]];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander ft_getFTEnvStr:self.config.env]];
+        self.presetProperty = [[FTPresetProperty alloc]initWithAppid:self.config.appid version:self.config.version env:[FTBaseInfoHander envStrWithEnv:self.config.env]];
     }
     self.upTool.config = config;
     
@@ -164,7 +160,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                             NSString *crash_stack = field[@"crash_stack"];
                             if (crash_stack && crash_message) {
                                 NSString *info = [NSString stringWithFormat:@"Exception Reason:%@\n%@",crash_message,crash_stack];
-                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:tm.longLongValue];
+                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:tm.longLongValue];
                             }
                         }
                     }else{
@@ -188,6 +184,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"exception %@",exception);
     }
 }
+//用户绑定
+- (void)bindUserWithUserID:(NSString *)Id{
+    NSParameterAssert(Id);
+    self.presetProperty.isSignin = YES;
+    [FTBaseInfoHander setUserId:Id];
+    ZYDebug(@"Bind User ID : %@",Id);
+}
+//用户注销
+- (void)logout{
+    self.presetProperty.isSignin = NO;
+    [FTBaseInfoHander setUserId:nil];
+    ZYDebug(@"User Logout");
+}
 #pragma mark ========== private method ==========
 //RUM INFLUXDB
 - (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -201,7 +210,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getPropertyWithType:type]];
+        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty propertyWithType:type]];
         baseTags[@"network_type"] = self.net;
         if (tags) {
             [baseTags addEntriesFromDictionary:tags];
@@ -224,7 +233,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     @try {
         FTAddDataType dataType = FTAddDataImmediate;
-        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty getESPropertyWithType:type terminal:terminal]];
+        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty esPropertyWithType:type terminal:terminal]];
         baseTags[@"network_type"] = self.net;
         if ([type isEqualToString:FT_TYPE_CRASH]) {
             dataType = FTAddDataImmediate;
@@ -234,18 +243,18 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                     baseTags[FT_MONITOR_BT_OPEN] = [NSNumber numberWithBool:[FTMonitorManager sharedInstance].isBlueOn];
                 }
                 if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
-                    baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils ft_getTotalMemorySize];
+                    baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils totalMemorySize];
                 }
                 baseTags[FT_MONITOR_GPS_OPEN] = [NSNumber numberWithBool:[[FTLocationManager sharedInstance] gpsServicesEnabled]];
                 
                 if (self.config.monitorInfoType & FTMonitorInfoTypeCpu) {
-                    baseTags[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils ft_cpuUsage]];
+                    baseTags[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
                 }
                 if (self.config.monitorInfoType & FTMonitorInfoTypeMemory) {
-                    baseTags[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils ft_usedMemory]];
+                    baseTags[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils usedMemory]];
                 }
                 if (self.config.monitorInfoType & FTMonitorInfoTypeBattery) {
-                    baseTags[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils ft_getBatteryUse]];
+                    baseTags[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
                 }
             }else{
                 baseTags[@"crash_situation"] = @"run";
@@ -268,7 +277,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander ft_getFTstatueStr:status],
+        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander statusStrWithStatus:status],
                                          FT_KEY_SERVICE:self.config.serviceName,
                                          @"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
                                          @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
@@ -297,7 +306,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSMutableDictionary *tagDict = @{
             FT_KEY_SERVICE:self.config.serviceName,
             @"application_identifier":[FTPresetProperty appIdentifier],
-            @"env":[FTBaseInfoHander ft_getFTEnvStr: self.config.env],
+            @"env":[FTBaseInfoHander envStrWithEnv: self.config.env],
             @"device_uuid":[FTPresetProperty deviceUUID],
             @"version":self.config.version
         }.mutableCopy;
@@ -336,7 +345,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     _appRelaunched = YES;
     if (self.config.eventFlowLog) {
         NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
-        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil ft_convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
     }
 }
 //控制台日志采集
@@ -349,18 +358,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         });
     }];
-}
-
-#pragma mark - 用户绑定与注销
-- (void)bindUserWithUserID:(NSString *)Id{
-    NSParameterAssert(Id);
-    self.presetProperty.isSignin = YES;
-    [FTBaseInfoHander ft_setUserid:Id];
-}
-- (void)logout{
-    self.presetProperty.isSignin = NO;
-    [FTBaseInfoHander ft_setUserid:nil];
-    ZYDebug(@"User logout");
 }
 - (FTRecordModel *)getModelWithMeasurement:(NSString *)measurement op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     FTRecordModel *model = [FTRecordModel new];
@@ -398,7 +395,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     };
     ZYDebug(@"datas == %@",data);
     model.op = opStr;
-    model.data =[FTJSONUtil ft_convertToJsonData:data];
+    model.data =[FTJSONUtil convertToJsonData:data];
     if (tm&&tm>0) {
         model.tm = tm;
     }
@@ -526,12 +523,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (_appRelaunched) {
             [self trackStartWithViewLoadTime:[NSDate date]];
         }
-        if (self.config.monitorInfoType & FTMonitorInfoTypeFPS ) {
-            [[FTMonitorManager sharedInstance] startMonitorFPS];
-        }
-        if (self.config.enableTrackAppFreeze) {
-            [[FTMonitorManager sharedInstance] startPingThread];
-        }
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -540,8 +531,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
        _applicationWillResignActive = YES;
-       [[FTMonitorManager sharedInstance] pauseMonitorFPS];
-       [[FTMonitorManager sharedInstance] stopPingThread];
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {
@@ -569,17 +558,20 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         }
     });
 }
+#pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
     if (_reachability) {
         SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+        SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
+        _reachability = nil;
     }
     _presetProperty = nil;
-    self.config = nil;
-    self.track = nil;
+    _config = nil;
+    _track = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.upTool = nil;
+    _upTool = nil;
     onceToken = 0;
     sharedInstance =nil;
 }

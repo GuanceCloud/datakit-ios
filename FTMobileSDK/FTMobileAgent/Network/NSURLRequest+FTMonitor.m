@@ -206,34 +206,13 @@
 }
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(BOOL track, BOOL sampled, FTNetworkTraceType type ,NSString *skyStr) {
-          if (track) {
-              switch (type) {
-                  case FTNetworkTraceTypeZipkin:
-                      [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkTraceID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_TRACEID];
-                      [mutableReqeust setValue:[FTBaseInfoHander ft_getNetworkSpanID] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SPANID];
-                      [mutableReqeust setValue:[NSString stringWithFormat:@"%d",sampled] forHTTPHeaderField:FT_NETWORK_ZIPKIN_SAMPLED];
-                      break;
-                  case FTNetworkTraceTypeJaeger:{
-                      NSString *value = [NSString stringWithFormat:@"%@:%@:0:%@",[FTBaseInfoHander ft_getNetworkTraceID],[FTBaseInfoHander ft_getNetworkSpanID],[NSNumber numberWithBool:sampled]];
-                      [mutableReqeust setValue:value forHTTPHeaderField:FT_NETWORK_JAEGER_TRACEID];
-                  }
-                      break;
-//                  case FTNetworkTraceTypeSKYWALKING_V2:{
-//                      if (skyStr) {
-//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V2];
-//                      }
-//                  }
-//                      break;
-//                  case FTNetworkTraceTypeSKYWALKING_V3:{
-//                      if (skyStr) {
-//                          [mutableReqeust setValue:skyStr forHTTPHeaderField:FT_NETWORK_SKYWALKING_V3];
-//                      }
-//                  }
-//                      break;
-              }
-          }
-      }];
+    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
+        if (traceHeader && traceHeader.allKeys.count>0) {
+            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                    [mutableReqeust setValue:value forHTTPHeaderField:field];
+            }];;
+        }
+    }];
     return mutableReqeust;
 }
 @end
