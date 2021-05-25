@@ -31,6 +31,7 @@
 #import "FTLogHook.h"
 #import "FTNetworkInfo.h"
 #import "FTMonitorUtils.h"
+#import "FTSessionManger.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -45,6 +46,7 @@
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) BOOL running; //正在运行
 @property (nonatomic, copy) NSString *netTraceStr;
+@property (nonatomic, weak) id<FTRUMSessionActionDelegate> rumActionDelegate;
 @end
 @implementation FTMobileAgent{
     BOOL _appRelaunched;          // App 从后台恢复
@@ -91,7 +93,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _running = NO;
             _launchTime = [NSDate date];
             [FTLog enableLog:config.enableSDKDebugLog];
-            _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:config.networkTraceType];
             _track = [[FTTrack alloc]init];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -104,6 +105,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             if (config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
+        
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
@@ -115,7 +117,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (!_track) {
         self.track = [[FTTrack alloc]init];
     }
-    _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:config.networkTraceType];
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
     self.config = config;
@@ -307,7 +308,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             FT_KEY_SERVICE:self.config.serviceName,
             @"application_identifier":[FTPresetProperty appIdentifier],
             @"env":[FTBaseInfoHander envStrWithEnv: self.config.env],
-            @"device_uuid":[FTPresetProperty deviceUUID],
+            @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
             @"version":self.config.version
         }.mutableCopy;
         if (tags) {
@@ -325,29 +326,34 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     
 }
--(void)trackStartWithViewLoadTime:(NSDate *)time{
-    self.running = YES;
-    if ([self judgeIsTraceSampling]) {
-        NSString *startType = _appRelaunched?@"hot":@"cold";
-        NSTimeInterval duration = [time timeIntervalSinceDate:self.launchTime];
-        NSNumber *durationTime = [time ft_nanotimeIntervalSinceDate:self.launchTime];
-        if (duration>9) {
-            duration = 9;
-        }
-        NSDictionary *tags = @{@"app_startup_type":startType,
-                               @"app_apdex_level":[NSNumber numberWithInt:duration],
-        };
-        NSDictionary *fields = @{
-            @"app_startup_duration":durationTime,
-        };
-        [self rumTrack:FT_RUM_APP_STARTUP tags:tags fields:fields];
-    }
-    _appRelaunched = YES;
-    if (self.config.eventFlowLog) {
-        NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
-        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
-    }
-}
+//-(void)trackStartWithViewLoadTime:(NSDate *)time{
+//    self.running = YES;
+//    if ([self judgeIsTraceSampling]) {
+//        NSTimeInterval duration = [time timeIntervalSinceDate:self.launchTime];
+//        NSNumber *durationTime = [time ft_nanotimeIntervalSinceDate:self.launchTime];
+//        if (duration>9) {
+//            duration = 9;
+//        }
+//        /**
+//         NSString *startType = _appRelaunched?@"hot":@"cold";
+//         @"app_startup_type":startType,
+//         */
+//        NSDictionary *tags = @{
+//                               @"app_apdex_level":[NSNumber numberWithInt:duration],
+//        };
+//        NSDictionary *fields = @{
+//            @"app_startup_duration":durationTime,
+//        };
+//
+//
+//
+//    }
+//    _appRelaunched = YES;
+//    if (self.config.eventFlowLog) {
+//        NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
+//        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
+//    }
+//}
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
@@ -520,9 +526,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             return;
         }
         [self uploadFlush];
-        if (_appRelaunched) {
-            [self trackStartWithViewLoadTime:[NSDate date]];
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)]) {
+            [self.rumActionDelegate applicationDidBecomeActive:_appRelaunched];
         }
+        _appRelaunched = YES;
+
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -531,6 +539,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
        _applicationWillResignActive = YES;
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(applicationWillResignActive)]) {
+            [self.rumActionDelegate applicationWillResignActive];
+        }
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {

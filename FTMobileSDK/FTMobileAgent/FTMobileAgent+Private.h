@@ -43,13 +43,6 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 - (BOOL)judgeIsTraceSampling;
 - (BOOL)judgeRUMTraceOpen;
 
-/**
- * 数据采集
- * type : InfluxDB指标集
- */
-- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
-
-- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
 - (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
