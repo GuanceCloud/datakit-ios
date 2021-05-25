@@ -35,6 +35,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
 @property (nonatomic, weak) UIViewController *previousTrackViewController;
+@property (nonatomic,copy,readwrite) NSString *currentViewid;
 
 @end
 @implementation FTTrack
@@ -251,15 +252,15 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 -(void)trackOpenWithCpn:(id<FTAutoTrackViewControllerProperty>)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        NSString *name = cpn.ft_viewControllerName;
+        NSString *name = cpn.ft_viewUUID;
         NSString *view_id = cpn.ft_viewControllerId;
         NSString *parent = cpn.ft_parentVC;
         NSMutableDictionary *tags = @{@"view_id":view_id,
                                       @"view_name":name,
-                                      @"view_parent":parent,
+                                      @"view_referrer":parent,
         }.mutableCopy;
         NSMutableDictionary *fields = @{
-            @"view_load":duration,
+            @"duration":duration,
         }.mutableCopy;
         if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
             NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
@@ -270,7 +271,6 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
         tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
         if ([instance judgeIsTraceSampling]) {
-            [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
             [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
         }
         if (instance.config.eventFlowLog) {

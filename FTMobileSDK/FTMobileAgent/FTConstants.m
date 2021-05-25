@@ -35,6 +35,10 @@ NSString * const FT_TYPE_RESOURCE = @"resource";
 NSString * const FT_TYPE_CRASH = @"crash";
 NSString * const FT_TYPE_FREEZE = @"freeze";
 NSString * const FT_TYPE_VIEW = @"view";
+NSString * const FT_TYPE_ERROR = @"error";
+NSString * const FT_TYPE_ACTION = @"action";
+NSString * const FT_TYPE_LONG_TASK = @"long_task";
+
 #pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";
 NSString * const FT_KEY_EVENT = @"event";
