@@ -323,4 +323,13 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return str;
 }
++ (NSString *)urlPathGroup:(NSURL *)url{
+    NSString *relativePath = [url relativePath];
+    relativePath = [relativePath stringByDeletingLastPathComponent];
+    if ([relativePath isEqualToString:@"/"]) {
+        return  relativePath;
+    }else{
+        return [relativePath stringByAppendingString:@"/"];
+    }
+}
 @end

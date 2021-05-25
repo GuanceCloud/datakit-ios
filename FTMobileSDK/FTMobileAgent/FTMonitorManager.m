@@ -125,7 +125,7 @@ static dispatch_once_t onceToken;
     }
     NSDictionary *tag = @{@"freeze_type":@"Freeze"};
     NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
-    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
+   
     fields[@"freeze_stack"] = stack;
     [agent rumTrackES:FT_TYPE_FREEZE terminal:@"app" tags:tag fields:fields tm:time];
 }
@@ -235,14 +235,26 @@ static dispatch_once_t onceToken;
             [agent tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
         }
     }
-    if (![agent judgeIsTraceSampling] || error) {
+    if (![agent judgeIsTraceSampling]) {
         return;
     }
-    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
-    NSDictionary *responseHeader = response.allHeaderFields;
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *fields = [NSMutableDictionary new];
+    NSString *url_path_group = [FTBaseInfoHander urlPathGroup:task.originalRequest.URL];
+    tags[@"resource_url_path_group"] =url_path_group;
+    tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
     tags[@"resource_url_host"] = task.originalRequest.URL.host;
+    tags[@"resource_url_path"] = task.originalRequest.URL.path;
+    tags[@"resource_method"] = task.originalRequest.HTTPMethod;
+    tags[@"resource_status"] = error ?[NSNumber numberWithInteger:error.code] : [task.response ft_getResponseStatusCode];
+    if(error || [[task.response ft_getResponseStatusCode] integerValue] >=400){
+       
+        [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
+
+    }else{
+    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
+    NSDictionary *responseHeader = response.allHeaderFields;
+    NSString *url_path_group =task.originalRequest.URL.relativePath ;
     if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
         tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
     }
@@ -256,8 +268,6 @@ static dispatch_once_t onceToken;
     if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
         tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
     }
-    tags[@"resource_method"] = task.originalRequest.HTTPMethod;
-    tags[@"resource_status"] = [response ft_getResponseStatusCode];
     NSString *group =  [response ft_getResourceStatusGroup];
     if (group) {
         tags[@"resource_status_group"] = group;
@@ -268,23 +278,27 @@ static dispatch_once_t onceToken;
     NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
     NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
     NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
+    NSNumber *resourceFirstByteTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
+    fields[@"resource_first_byte"] = resourceFirstByteTime;
     fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
-    fields[@"resource_load"] =durationTime;
+    fields[@"duration"] =durationTime;
     fields[@"resource_dns"] = dnsTime;
     fields[@"resource_tcp"] = tcpTime;
     fields[@"resource_ssl"] = tlsTime;
     fields[@"resource_ttfb"] = ttfbTime;
     fields[@"resource_trans"] = transTime;
     
-    [agent rumTrack:@"rum_app_resource_performance" tags:tags fields:fields];
+
     if (response) {
         fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
         fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[task.currentRequest ft_getRequestHeaders]];
     }
     tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
-    tags[@"resource_url_path"] = task.originalRequest.URL.path;
+    tags[@"resource_url_query"] =[task.originalRequest.URL query];
+        NSArray *pathGroups = [task.originalRequest.URL.path componentsSeparatedByString:@"/"];
+    tags[@"resource_url_path_group"] =task.originalRequest.URL.path;
     [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
-    
+    }
 }
 #pragma mark == FTWKWebViewDelegate ==
 /**
@@ -351,7 +365,7 @@ static dispatch_once_t onceToken;
     NSDictionary *tag = @{@"freeze_type":@"ANR"};
     int duration = (int)(MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000);
     NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:duration]}.mutableCopy;
-    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
+    
     fields[@"freeze_stack"] = slowStack;
     if ([agent judgeRUMTraceOpen]) {
         [agent rumTrackES:FT_TYPE_FREEZE terminal:FT_TERMINAL_APP tags:tag fields:fields tm:time];

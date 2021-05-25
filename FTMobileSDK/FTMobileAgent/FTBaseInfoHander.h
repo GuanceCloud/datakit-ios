@@ -55,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)userId;
 + (void)setUserId:(nullable NSString *)userid;
 + (NSString *)convertToStringData:(NSDictionary *)dict;
+
++ (NSString *)urlPathGroup:(NSURL *)url;
 @end
 
 NS_ASSUME_NONNULL_END
