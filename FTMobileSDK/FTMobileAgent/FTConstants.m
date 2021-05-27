@@ -32,10 +32,10 @@ NSString * const FT_RUM_APP_RESOURCE_PERFORMANCE = @"rum_app_resource_performanc
 NSString * const FT_TYPE_JS = @"js";
 NSString * const FT_TYPE_PAGE = @"page";
 NSString * const FT_TYPE_RESOURCE = @"resource";
-NSString * const FT_TYPE_CRASH = @"crash";
+NSString * const FT_TYPE_ERROR = @"error";
 NSString * const FT_TYPE_FREEZE = @"freeze";
 NSString * const FT_TYPE_VIEW = @"view";
-NSString * const FT_TYPE_ERROR = @"error";
+//NSString * const FT_TYPE_ERROR = @"error";
 NSString * const FT_TYPE_ACTION = @"action";
 NSString * const FT_TYPE_LONG_TASK = @"long_task";
 
