@@ -7,7 +7,6 @@
 #import "Crasher.h"
 #import <pthread.h>
 #import <exception>
-#import "FTUncaughtExceptionHandler+Test.h"
 class MyException: public std::exception
 {
 public:
@@ -75,7 +74,6 @@ public:
     if((self = [super init]))
     {
         self.lock = [[NSLock alloc] init];
-        [FTUncaughtExceptionHandler sharedHandler];//仅测试崩溃使用
     }
     return self;
 }

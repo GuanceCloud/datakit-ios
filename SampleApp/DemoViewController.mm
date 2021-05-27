@@ -12,7 +12,6 @@
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 //测试崩溃采集
-#import "FTUncaughtExceptionHandler+Test.h"
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"
 #import "CrashVC.h"
@@ -53,6 +52,7 @@
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
         
         [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+            
         }];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_webview" handler:^{
