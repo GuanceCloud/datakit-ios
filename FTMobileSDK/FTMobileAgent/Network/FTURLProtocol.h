@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTTaskInterceptionModel;
 @protocol FTHTTPProtocolDelegate;
 @interface FTURLProtocol : NSURLProtocol
 
@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol FTHTTPProtocolDelegate <NSObject>
 @optional
-- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics didCompleteWithError:(NSError *)error;
+- (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel;
+- (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel;
 @end
 NS_ASSUME_NONNULL_END

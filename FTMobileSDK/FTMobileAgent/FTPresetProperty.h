@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取 Rum InfluxDB 公共Tag
  * @param type 指标集名称类型
  */
-- (NSDictionary *)propertyWithType:(NSString *)type;
+//- (NSDictionary *)propertyWithType:(NSString *)type;
 /**
  * 获取 Rum ES 公共Tag
  * @param type 指标集名称类型
