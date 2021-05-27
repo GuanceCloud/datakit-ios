@@ -55,6 +55,8 @@ static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
 static NSString * const FT_APP_ID = @"app_id";
 static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
+static NSString * const FT_SDK_NAME = @"sdk_name";
+
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
 @property (nonatomic,copy,readonly) NSString *device;
@@ -709,6 +711,7 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
         _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
         _esCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
         _esCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
+        _esCommonPropertyTags[FT_SDK_NAME] = @"df_ios_rum_sdk";
     }
     return _esCommonPropertyTags;
 }
@@ -734,22 +737,22 @@ static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceTyp
     _isSignin = [FTBaseInfoHander userId]?YES:NO;
     _basePropertyTags = nil;
 }
-- (NSDictionary *)propertyWithType:(NSString *)type{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
-    if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {
-        [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
-    }else if([type isEqualToString:FT_RUM_WEB_PAGE_PERFORMANCE] || [type isEqualToString:FT_RUM_WEB_RESOURCE_PERFORMANCE]){
-        [dict addEntriesFromDictionary:[self webCommonPropertyTags]];
-    }
-    return dict;
-}
+//- (NSDictionary *)propertyWithType:(NSString *)type{
+//    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
+//    if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {
+//        [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
+//    }else if([type isEqualToString:FT_RUM_WEB_PAGE_PERFORMANCE] || [type isEqualToString:FT_RUM_WEB_RESOURCE_PERFORMANCE]){
+//        [dict addEntriesFromDictionary:[self webCommonPropertyTags]];
+//    }
+//    return dict;
+//}
 - (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_KEY_SOURCE] = type;
     dict[@"terminal"] = terminal;
     dict[@"userid"] = [FTPresetProperty userid];
-    if ([type isEqualToString:FT_TYPE_CRASH]) {
+    if ([type isEqualToString:FT_TYPE_ERROR]) {
         dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];
         NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
         dict[FT_COMMON_PROPERTY_LOCALE] = preferredLanguage;
