@@ -7,14 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTRUMModel.h"
+#import "FTRUMCommand.h"
 
 @class FTRUMScope;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTRUMScopeProtocol <NSObject>
-- (BOOL)process:(FTRUMModel *)commond;
+- (BOOL)process:(FTRUMCommand *)command;
 @optional
-- (NSMutableArray<FTRUMScope*>*)manage:(NSMutableArray<FTRUMScope*> *)childScopes byPropagatingCommand:(FTRUMModel *)command;
+- (NSMutableArray<FTRUMScope*>*)manageChildScopes:(NSMutableArray<FTRUMScope*> *)childScopes byPropagatingCommand:(FTRUMCommand *)command;
+- (FTRUMScope *)manage:(FTRUMScope *)childScope byPropagatingCommand:(FTRUMCommand *)command;
+
 @end
 @interface FTRUMScope : NSObject
 @property (nonatomic, weak) id<FTRUMScopeProtocol> assistant;

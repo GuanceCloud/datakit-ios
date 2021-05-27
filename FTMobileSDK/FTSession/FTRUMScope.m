@@ -9,7 +9,7 @@
 #import "FTRUMScope.h"
 
 @implementation FTRUMScope
-- (NSMutableArray<FTRUMScope*>*)manage:(NSMutableArray<FTRUMScope*> *)childScopes byPropagatingCommand:(FTRUMModel *)command{
+- (NSMutableArray<FTRUMScope*>*)manageChildScopes:(NSMutableArray<FTRUMScope*> *)childScopes byPropagatingCommand:(FTRUMCommand *)command{
     NSMutableArray *newChildScopes = [NSMutableArray new];
     [[childScopes copy] enumerateObjectsUsingBlock:^(FTRUMScope *obj, NSUInteger idx, BOOL * _Nonnull stop) {
        BOOL success = [obj.assistant process:command];
@@ -20,4 +20,12 @@
     
     return newChildScopes;
 }
+- (FTRUMScope*)manage:(FTRUMScope *)childScope byPropagatingCommand:(FTRUMCommand *)command{
+    BOOL success = [childScope.assistant process:command];
+     if (success) {
+         return childScope;
+     }
+    return nil;
+}
+
 @end

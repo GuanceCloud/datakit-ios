@@ -6,12 +6,12 @@
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "FTRUMScope.h"
 #import "FTRUMSessionProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTSessionManger : NSObject
+@interface FTSessionManger : FTRUMScope<FTRUMSessionErrorDelegate,FTRUMSessionActionDelegate,FTRUMSessionResourceDelegate>
 
 @end
 

@@ -7,14 +7,17 @@
 //
 
 #import "FTRUMScope.h"
-
+@class  FTRUMViewScope;
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^FTHandler)(void);
+typedef void(^FTActionEventSent)(void);
 
 @interface FTRUMActionScope : FTRUMScope
+@property (nonatomic, strong,readonly) FTRUMCommand *command;
 
-@property (nonatomic, copy) FTHandler handler;
--(void)end;
+@property (nonatomic, copy) FTActionEventSent handler;
+
+-(instancetype)initWithCommand:(FTRUMCommand *)command parent:(FTRUMViewScope *)parent;
+-(void)writeActionData;
 @end
 
 NS_ASSUME_NONNULL_END

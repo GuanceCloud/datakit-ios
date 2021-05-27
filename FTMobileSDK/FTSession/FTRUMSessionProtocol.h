@@ -8,27 +8,25 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+@class FTTaskInterceptionModel;
 @protocol FTRUMSessionActionDelegate <NSObject>
-- (void)applicationDidBecomeActive:(BOOL)isHot;
-- (void)applicationWillResignActive;
+- (void)notify_applicationDidBecomeActive:(BOOL)isHot;
+- (void)notify_applicationWillResignActive;
 - (void)notify_viewDidAppear:(UIViewController *)viewController;
 - (void)notify_viewDidDisappear:(UIViewController *)viewController;
-
+- (void)notify_clickView:(UIView *)clickView;
 @end
 
-@protocol FTRUMSessionSourceDelegate <NSObject>
-
+@protocol FTRUMSessionResourceDelegate <NSObject>
+- (void)notify_resourceCreate:(FTTaskInterceptionModel *)resourceModel;
+- (void)notify_resourceCompleted:(FTTaskInterceptionModel *)resourceModel;
 
 @end
 
 @protocol FTRUMSessionErrorDelegate <NSObject>
 
-
-
-@end
-
-@protocol FTRUMSessionViewDelegate <NSObject>
-
-
+- (void)notify_errorWithtags:(NSDictionary *)tags field:(NSDictionary *)field;
+- (void)notify_longTaskWithtags:(NSDictionary *)tags field:(NSDictionary *)field;
 
 @end
+

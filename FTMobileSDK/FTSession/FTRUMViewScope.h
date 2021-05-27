@@ -10,7 +10,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMViewScope : FTRUMScope
+@property (nonatomic, assign,readonly) BOOL isActiveView;
 
+-(instancetype)initWithModel:(FTRUMCommand *)model;
 @end
 
 NS_ASSUME_NONNULL_END
