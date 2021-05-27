@@ -44,6 +44,7 @@ static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
         self.actionStartTime = command.time;
         self.command = command;
         self.lastActivityTime = command.time;
+        self.parent = parent;
     }
     return  self;
 }
