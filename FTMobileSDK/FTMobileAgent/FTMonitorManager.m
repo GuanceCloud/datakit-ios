@@ -30,8 +30,6 @@
 #import "FTANRDetector.h"
 #import "FTJSONUtil.h"
 #import "FTCallStack.h"
-#include <netdb.h>
-#include <arpa/inet.h>
 #import "FTWeakProxy.h"
 #import "FTPingThread.h"
 #import "FTNetworkTrace.h"
@@ -349,23 +347,6 @@ static dispatch_once_t onceToken;
         }
     }
 }
--(NSString *)getIPWithHostName:(const NSString *)hostName{
-    const char *hostN= [hostName UTF8String];
-    struct hostent* phot;
-    @try {
-        phot = gethostbyname(hostN);
-    }
-    @catch (NSException *exception) {
-        return nil;
-    }
-    struct in_addr ip_addr;
-    memcpy(&ip_addr, phot->h_addr_list[0], 4);
-    char ip[20] = {0};
-    inet_ntop(AF_INET, &ip_addr, ip, sizeof(ip));
-    NSString* strIPAddress = [NSString stringWithUTF8String:ip];
-    return strIPAddress;
-}
-
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;
