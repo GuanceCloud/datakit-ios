@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
 + (NSString *)urlPathGroup:(NSURL *)url;
++ (NSString *)getIPWithHostName:(const NSString *)hostName;
 @end
 
 NS_ASSUME_NONNULL_END
