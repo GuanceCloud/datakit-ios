@@ -1,12 +1,12 @@
 //
-//  FTRUMModel.m
+//  FTRUMDataModel.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/25.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTRUMCommand.h"
+#import "FTRUMDataModel.h"
 
 
 @implementation FTRUMSessionModel
@@ -21,7 +21,7 @@
 }
 
 @end
-@implementation FTRUMCommand
+@implementation FTRUMDataModel
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time{
     self = [super init];
     if (self) {
@@ -56,7 +56,7 @@
 }
 
 @end
-@implementation FTRUMResourceCommand
+@implementation FTRUMResourceDataModel
 
 -(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier{
     self = [super initWithType:type time:[NSDate date]];

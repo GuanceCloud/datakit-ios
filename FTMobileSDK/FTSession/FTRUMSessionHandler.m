@@ -1,33 +1,32 @@
 //
-//  FTRUMSessionScope.m
+//  FTRUMsessionHandler.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTRUMSessionScope.h"
+#import "FTRUMSessionHandler.h"
 #import <UIKit/UIKit.h>
-#import "FTRUMViewScope.h"
+#import "FTRUMViewHandler.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
-/// Maximum duration of a session. If it gets exceeded, a new session is started.
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
-@interface FTRUMSessionScope()<FTRUMScopeProtocol>
+@interface FTRUMSessionHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) NSDate *sessionStartTime;
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, copy,readwrite) NSString *sessionUUID;
-@property (nonatomic, strong) NSMutableArray<FTRUMScope*> *viewScopes;
+@property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, weak) UIViewController *currentViewController;
 @property (nonatomic, strong) FTRUMSessionModel *sessionModel;
 @end
-@implementation FTRUMSessionScope
--(instancetype)initWithModel:(FTRUMCommand *)model{
+@implementation FTRUMSessionHandler
+-(instancetype)initWithModel:(FTRUMDataModel *)model{
     self = [super init];
     if (self) {
         self.sessionUUID = [[NSUUID UUID] UUIDString];
         self.assistant = self;
         self.sessionStartTime = model.time;
-        self.viewScopes = [NSMutableArray new];
+        self.viewHandlers = [NSMutableArray new];
         self.sessionModel = [[FTRUMSessionModel alloc]initWithSessionID:self.sessionUUID];
     }
     return  self;
@@ -36,34 +35,34 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     self.sessionStartTime = date;
     self.sessionUUID = [[NSUUID UUID] UUIDString];
 }
-- (BOOL)process:(FTRUMCommand *)commond {
+- (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
     }
     _lastInteractionTime = [NSDate date];
     //数据与session绑定
-    commond.baseSessionData = self.sessionModel;
+    model.baseSessionData = self.sessionModel;
   
-    switch (commond.type) {
+    switch (model.type) {
         case FTRUMDataViewStart:
-            [self startView:commond];
+            [self startView:model];
             break;
         case FTRUMDataLaunchCold:
             if (!self.currentViewController) {
-                [self startView:commond];
+                [self startView:model];
             }
             break;
         
         default:
             break;
     }
-    self.viewScopes = [self.assistant manageChildScopes:self.viewScopes byPropagatingCommand:commond];
+    self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
     return  YES;
 }
--(void)startView:(FTRUMCommand *)commond{
+-(void)startView:(FTRUMDataModel *)model{
     
-    FTRUMViewScope *viewScope = [[FTRUMViewScope alloc]initWithModel:commond];
-    [self.viewScopes addObject:viewScope];
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:model];
+    [self.viewHandlers addObject:viewHandler];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];

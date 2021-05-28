@@ -1,64 +1,51 @@
 //
-//  FTRUMActionScope.m
+//  FTRUMActionHandler.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTRUMActionScope.h"
+#import "FTRUMActionHandler.h"
 #import "NSDate+FTAdd.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "FTRUMViewScope.h"
+#import "FTRUMViewHandler.h"
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1; // 100 milliseconds
-/// Maximum duration of a continuous User Action. If it gets exceeded, a new session is started.
 static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
 
-@interface FTRUMActionScope ()<FTRUMScopeProtocol>
-@property (nonatomic, strong,readwrite) FTRUMCommand *command;
-@property (nonatomic, weak) FTRUMViewScope *parent;
+@interface FTRUMActionHandler ()<FTRUMSessionProtocol>
+@property (nonatomic, strong,readwrite) FTRUMDataModel *model;
+@property (nonatomic, weak) FTRUMViewHandler *parent;
 //field
 @property (nonatomic, strong) NSDate *actionStartTime;
-@property (nonatomic, strong) NSDate *lastActivityTime;
 @property (nonatomic, strong) NSNumber *duration;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-//tag
-@property (nonatomic, copy) NSString *actionid;
-@property (nonatomic, copy) NSString *actionName;
-@property (nonatomic, copy) NSString *actionType;
 
 //private
-@property (nonatomic, strong) NSDate *startDate;
-@property (nonatomic, strong) NSMutableArray *sourceArray;
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @end
-@implementation FTRUMActionScope
+@implementation FTRUMActionHandler
 
--(instancetype)initWithCommand:(FTRUMCommand *)command parent:(FTRUMViewScope *)parent{
+-(instancetype)initWithModel:(FTRUMDataModel *)model parent:(FTRUMViewHandler *)parent{
     self = [super init];
     if (self) {
         self.assistant = self;
-        self.actionStartTime = command.time;
-        self.command = command;
-        self.lastActivityTime = command.time;
+        self.actionStartTime = model.time;
+        self.model = model;
         self.parent = parent;
     }
     return  self;
 }
-- (BOOL)process:(FTRUMCommand *)command{
-    if ([self timedOutOrExpired:command.time]&&[self allResourcesCompletedLoading]){
-        [self writeActionData];
+- (BOOL)process:(FTRUMDataModel *)model{
+    if ([self timedOutOrExpired:model.time]&&[self allResourcesCompletedLoading]){
+        [self writeActionData:model.time];
         return NO;
     }
-    self.lastActivityTime = command.time;
     
-    switch (command.type) {
-        case FTRUMDataViewStop:
-            
-            break;
+    switch (model.type) {
         case FTRUMDataError:
             self.actionErrorCount++;
             break;
@@ -95,20 +82,20 @@ static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
 -(BOOL)allResourcesCompletedLoading{
     return self.activeResourcesCount<=0;
 }
--(void)writeActionData{
-    self.duration = [self.lastActivityTime ft_nanotimeIntervalSinceDate:self.actionStartTime];
-    NSDictionary *sessionTag = @{@"session_id":self.command.baseSessionData.session_id,
-                                 @"session_type":self.command.baseSessionData.session_type,
+-(void)writeActionData:(NSDate *)endDate{
+    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= continuousActionMaxDuration?@(continuousActionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
+
+    NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
+                                 @"session_type":self.model.baseSessionData.session_type,
     };
-    //
-    NSDictionary *viewTag = self.command.baseViewData?@{@"view_id":self.command.baseViewData.view_id,
-                                                        @"view_name":self.command.baseViewData.view_name,
-                                                        @"view_referrer":self.command.baseViewData.view_referrer,
+    NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
+                                                        @"view_name":self.model.baseViewData.view_name,
+                                                        @"view_referrer":self.model.baseViewData.view_referrer,
                                                         @"is_active":@(self.parent.isActiveView),
     }:@{};
-    NSDictionary *actiontags = @{@"action_id":self.command.baseActionData.action_id,
-                           @"action_name":self.command.baseActionData.action_name,
-                           @"action_type":self.command.baseActionData.action_type
+    NSDictionary *actiontags = @{@"action_id":self.model.baseActionData.action_id,
+                           @"action_name":self.model.baseActionData.action_name,
+                           @"action_type":self.model.baseActionData.action_type
     };
     NSDictionary *fields = @{@"duration":self.duration,
                              @"action_long_task_count":[NSNumber numberWithInteger:self.actionLongTaskCount],

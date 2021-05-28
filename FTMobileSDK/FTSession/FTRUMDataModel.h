@@ -1,5 +1,5 @@
 //
-//  FTRUMModel.h
+//  FTRUMDataModel.h
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/25.
@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
+@property (nonatomic, strong) NSNumber *loading_time;
 -(instancetype)initWithViewID:(NSString *)viewid viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer;
 @end
 //tags
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *session_type;
 -(instancetype)initWithSessionID:(NSString *)sessionid;
 @end
-@interface FTRUMCommand : NSObject
+@interface FTRUMDataModel : NSObject
 
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) FTRUMDataType type;
@@ -55,18 +56,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMSessionModel *baseSessionData;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
-@interface FTRUMActionCommand : FTRUMCommand
 
-@end
-@interface FTRUMErrorCommand : FTRUMCommand
-
-@end
-@interface FTRUMResourceCommand : FTRUMCommand
+@interface FTRUMResourceDataModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *identifier;
 
 -(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier;
 @end
-@interface FTRUMWebViewData : FTRUMCommand
+@interface FTRUMWebViewData : FTRUMDataModel
 @property (nonatomic, assign) long long tm;
 @property (nonatomic, copy) NSString *measurement;
 -(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm;

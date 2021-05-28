@@ -1,17 +1,17 @@
 //
-//  FTRUMSessionScope.h
+//  FTRUMsessionHandler.h
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/26.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTRUMScope.h"
+#import "FTRUMHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMSessionScope : FTRUMScope
--(instancetype)initWithModel:(FTRUMCommand *)model;
+@interface FTRUMSessionHandler : FTRUMHandler
+-(instancetype)initWithModel:(FTRUMDataModel *)model;
 
 -(void)refreshWithDate:(NSDate *)date;
 @end
