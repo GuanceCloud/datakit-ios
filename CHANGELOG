@@ -1,3 +1,7 @@
+# 1.1.0-alpha.1
+1.RUM 数据调整
+---
+
 # 1.0.4-alpha.12
 1.子线程ping 检测卡顿，进行 freeze 采集
 2.config 采集卡顿配置项改为 enableTrackAppFreeze
