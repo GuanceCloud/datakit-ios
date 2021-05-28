@@ -20,7 +20,7 @@
 #import <objc/runtime.h>
 #import "FTMonitorManager+Test.h"
 #import "NSString+FTAdd.h"
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import "FTUploadTool+Test.h"
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -76,7 +76,7 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *esData = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = esData[@"opdata"];
     NSDictionary *tags =opdata[@"tags"];
     NSString *userid = tags[@"userid"];
@@ -99,14 +99,14 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [data firstObject];
-    NSDictionary *esData = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = esData[@"opdata"];
     NSDictionary *tags =opdata[@"tags"];
     NSString *userid = tags[@"userid"];
     NSString *is_signin= tags[@"is_signin"];
     XCTAssertTrue([userid isEqualToString:@"testChangeUser1"] && [is_signin isEqualToString:@"T"]);
     FTRecordModel *model2 = [data lastObject];
-    NSDictionary *esData2 = [FTJSONUtil ft_dictionaryWithJsonString:model2.data];
+    NSDictionary *esData2 = [FTJSONUtil dictionaryWithJsonString:model2.data];
     NSDictionary *opdata2 = esData2[@"opdata"];
     NSDictionary *tags2 =opdata2[@"tags"];
     NSString *userid2 = tags2[@"userid"];
@@ -129,14 +129,14 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRecordModel *model = [data firstObject];
-    NSDictionary *esData = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = esData[@"opdata"];
     NSDictionary *tags =opdata[@"tags"];
     NSString *userid = tags[@"userid"];
     NSString *is_signin= tags[@"is_signin"];
     XCTAssertTrue([userid isEqualToString:@"testUserlogout"] && [is_signin isEqualToString:@"T"]);
     FTRecordModel *model2 = [data lastObject];
-    NSDictionary *esData2 = [FTJSONUtil ft_dictionaryWithJsonString:model2.data];
+    NSDictionary *esData2 = [FTJSONUtil dictionaryWithJsonString:model2.data];
     NSDictionary *opdata2 = esData2[@"opdata"];
     NSDictionary *tags2 =opdata2[@"tags"];
     NSString *userid2 = tags2[@"userid"];

@@ -7,7 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import "UITestManger.h"
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/FTMonitorManager.h>
@@ -48,6 +47,7 @@
         config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
+        config.enableTrackAppFreeze = YES;
         config.enableTrackAppANR = YES;
         config.eventFlowLog = YES;
         [FTMobileAgent startWithConfigOptions:config];

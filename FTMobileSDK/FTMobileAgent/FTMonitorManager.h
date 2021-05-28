@@ -12,7 +12,6 @@
 #import "FTConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) NSSet *netContentType;
 @property (nonatomic, assign) BOOL isBlueOn;
 /**
@@ -22,16 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 -(void)setMobileConfig:(FTMobileConfig *)config;
-/**
- * 设置 监控类型 可不设置直接获取 FTMobileAgent.config
-*/
--(void)setMonitorType:(FTMonitorInfoType)type;
 
-- (void)startMonitorFPS;
-- (void)pauseMonitorFPS;
-- (NSNumber *)getFPSValue;
+- (NSNumber *)fpsValue;
 - (BOOL)trackUrl:(NSURL *)url;
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(BOOL track,BOOL sampled, FTNetworkTraceType type,NSString *skyStr))completionHandler;
+- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler;
 - (void)resetInstance;
 @end
 

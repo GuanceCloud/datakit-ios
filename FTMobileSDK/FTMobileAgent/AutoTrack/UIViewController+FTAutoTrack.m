@@ -8,23 +8,30 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
-#import "UIViewController+FT_RootVC.h"
+#import "UIViewController+FTAutoTrack.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
+#import "NSString+FTAdd.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 
-@implementation UIViewController (FT_RootVC)
--(void)setViewLoadStartTime:(NSDate*)viewLoadStartTime{
+@implementation UIViewController (FTAutoTrack)
+-(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
     objc_setAssociatedObject(self, &viewLoadStartTimeKey, viewLoadStartTime, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSDate *)viewLoadStartTime{
+-(NSDate *)ft_viewLoadStartTime{
     return objc_getAssociatedObject(self, &viewLoadStartTimeKey);
+}
+- (NSString *)ft_viewControllerName{
+    return NSStringFromClass([self class]);
+}
+-(NSString *)ft_viewControllerId{
+    return [self.ft_viewControllerName ft_md5HashToUpper32Bit];
 }
 + (NSString *)ft_getRootViewController{
     __block NSString *name;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-     UIWindow* window =[FTBaseInfoHander ft_keyWindow];
+     UIWindow* window =[FTBaseInfoHander keyWindow];
     name = NSStringFromClass([window.rootViewController class]);
     }];
     if( [name isKindOfClass:NSNull.class]
@@ -34,7 +41,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
         return  name;
     }
 }
--(NSString *)ft_getParentVC{
+-(NSString *)ft_parentVC{
     UIViewController *viewController =[self parentViewController];
     if (viewController == nil) {
         viewController = self.presentingViewController;
@@ -44,7 +51,7 @@ static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
     }
     return NSStringFromClass(viewController.class);
 }
--(NSString *)ft_getVCPath{
+-(NSString *)ft_VCPath{
     UIViewController *viewController =self;
     NSMutableString *viewPaths = [NSMutableString new];
     [viewPaths insertString:[FTBaseInfoHander itemHeatMapPathForResponder:viewController] atIndex:0];

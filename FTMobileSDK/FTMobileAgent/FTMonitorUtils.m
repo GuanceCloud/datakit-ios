@@ -33,7 +33,7 @@
 @implementation FTMonitorUtils
 #pragma mark ========== 开机时间/自定义手机名称 ==========
 //系统开机时间获取
-+(NSString *)getLaunchSystemTime{
++(NSString *)launchSystemTime{
     struct timeval t;
     size_t len=sizeof(struct timeval);
     if(sysctlbyname("kern.boottime",&t,&len,0,0)!=0)
@@ -43,41 +43,25 @@
     NSString *timeStr = [NSString stringWithFormat:@"%d-%02d-%02d %02d:%02d:%02d",time->tm_year + 1900,time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min, time->tm_sec];
     return timeStr;
 }
-#pragma mark ==========  dns ==========
-+ (NSDictionary *)getDNSInfo{
-    NSMutableDictionary *dnsDict = [NSMutableDictionary new];
-    res_state res = malloc(sizeof(struct __res_state));
-    int result = res_ninit(res);
-    if (result == 0) {
-        for (int i=0;i<res->nscount;i++) {
-            NSString *s = [NSString stringWithUTF8String:inet_ntoa(res->nsaddr_list[i].sin_addr)];
-            [dnsDict setValue:s forKey:[NSString stringWithFormat:@"dns%d",i+1]];
-        }
-    }
-    res_nclose(res);
-    res_ndestroy(res);
-    free(res);
-    return dnsDict;
-}
 #pragma mark ========== WIFI的SSID 与 IP ==========
 /**
  * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
  * iOS 13 之后需要定位开启 才能获取到信息
  */
-+ (NSDictionary *)getWifiAccessAndIPAddress{
++ (NSDictionary *)wifiAccessAndIPAddress{
     if (@available(iOS 13.0, *)) {
         if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-            return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],@"ip": [self getIPAddress]};
+            return @{FT_MONITOR_WITF_SSID: [self currentWifiSSID],@"ip": [self ipAddress]};
         }else{
             ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{@"ip": [self getIPAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
+            return @{@"ip": [self ipAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
         }
     }else{
-        return @{FT_MONITOR_WITF_SSID: [self getCurrentWifiSSID],@"ip": [self getIPAddress]};
+        return @{FT_MONITOR_WITF_SSID: [self currentWifiSSID],@"ip": [self ipAddress]};
     }
 }
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
-+ (NSString *)getCurrentWifiSSID{
++ (NSString *)currentWifiSSID{
     NSString * wifiName = FT_NULL_VALUE;
     CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
     if (!wifiInterfaces) {
@@ -95,7 +79,7 @@
     return wifiName;
 }
 // - 获取当前Wi-Fi的IP
-+ (NSString *)getIPAddress{
++ (NSString *)ipAddress{
     NSString *address = FT_NULL_VALUE;
     struct ifaddrs *interfaces = NULL;
     struct ifaddrs *temp_addr = NULL;
@@ -120,13 +104,13 @@
     freeifaddrs(interfaces);
     return address;
 }
-+ (NSString *)getCELLULARIPAddress:(BOOL)preferIPv4
++ (NSString *)cellularIPAddress:(BOOL)preferIPv4
 {
     NSArray *searchArray = preferIPv4 ?
     @[ IOS_VPN @"/" IP_ADDR_IPv4, IOS_VPN @"/" IP_ADDR_IPv6, IOS_WIFI @"/" IP_ADDR_IPv4, IOS_WIFI @"/" IP_ADDR_IPv6, IOS_CELLULAR @"/" IP_ADDR_IPv4, IOS_CELLULAR @"/" IP_ADDR_IPv6 ] :
     @[ IOS_VPN @"/" IP_ADDR_IPv6, IOS_VPN @"/" IP_ADDR_IPv4, IOS_WIFI @"/" IP_ADDR_IPv6, IOS_WIFI @"/" IP_ADDR_IPv4, IOS_CELLULAR @"/" IP_ADDR_IPv6, IOS_CELLULAR @"/" IP_ADDR_IPv4 ] ;
     
-    NSDictionary *addresses = [self getIPAddresses];
+    NSDictionary *addresses = [self ipAddresses];
     
     __block NSString *address;
     [searchArray enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop)
@@ -162,7 +146,7 @@
     }
     return NO;
 }
-+ (NSDictionary *)getIPAddresses{
++ (NSDictionary *)ipAddresses{
     NSMutableDictionary *addresses = [NSMutableDictionary dictionaryWithCapacity:8];
     
     // retrieve the current interfaces - returns 0 on success
@@ -203,19 +187,19 @@
 + (CGFloat)screenBrightness{
     return [UIScreen mainScreen].brightness;
 }
-+(BOOL)getProximityState{
++(BOOL)proximityState{
     if ([UIDevice currentDevice].proximityMonitoringEnabled == NO) {
         [UIDevice currentDevice].proximityMonitoringEnabled = YES;
     }
     return [UIDevice currentDevice].proximityState;
 }
-+ (float)getTorchLevel{
++ (float)torchLevel{
    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
       return device.torchLevel;
 }
 #pragma mark ========== 电池 ==========
 //电池电量
-+(double)ft_getBatteryUse{
++(double)batteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
     if (deviceLevel == -1) {
@@ -225,7 +209,7 @@
     }
 }
 //电池是否在充电
-+ (NSString *)ft_batteryStatus{
++ (NSString *)batteryStatus{
     switch ([UIDevice currentDevice].batteryState) {
         case UIDeviceBatteryStateUnknown:
             return @"unknown";
@@ -243,7 +227,7 @@
 }
 #pragma mark ========== 内存 ==========
 //当前设备可用内存
-+ (double)ft_availableMemory
++ (double)availableMemory
 {
     vm_statistics_data_t vmStats;
     mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
@@ -259,7 +243,7 @@
     return ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
 }
 //当前任务所占用的内存
-+ (double)ft_usedMemory
++ (double)usedMemory
 {
     vm_statistics_data_t vmStats;
     mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
@@ -278,13 +262,13 @@
     return numFloat*100;
 }
 //总内存
-+(NSString *)ft_getTotalMemorySize{
++(NSString *)totalMemorySize{
     return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];
     
 }
 
 #pragma mark ========== cpu ==========
-+ (long )ft_cpuUsage{
++ (long )cpuUsage{
     kern_return_t kr;
     task_info_data_t tinfo;
     mach_msg_type_number_t task_info_count;
@@ -344,7 +328,7 @@
     
     return tot_cpu;
 }
-+ (NSString *)ft_getCPUType{
++ (NSString *)cpuType{
     host_basic_info_data_t hostInfo;
     mach_msg_type_number_t infoCount;
     

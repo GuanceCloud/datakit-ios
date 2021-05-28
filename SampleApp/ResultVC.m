@@ -10,7 +10,6 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
-#import "UITestManger.h"
 
 @interface ResultVC ()
 @property (nonatomic ,strong) FTMobileConfig *config;
@@ -35,7 +34,7 @@
     lable.backgroundColor = [UIColor whiteColor];
     lable.textColor = [UIColor blackColor];
     lable.numberOfLines = 0;
-    lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"]];
+    lable.text = [NSString stringWithFormat:@"数据库原有数据 0 条\n 数据库增加：\nlunch:1\nopen、close：4 \nclick:5 \n数据库现有数据： %ld 条 \n",[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"]];
     
     self.lable = lable;
     [self.view addSubview:lable];
@@ -47,7 +46,7 @@
             [self judjeSuccessWithCount:count];
             dispatch_async(dispatch_get_main_queue(), ^{
                 // 追加在主线程中执行的任务
-                self.lable.text = [NSString stringWithFormat:@"数据库原有数据 %ld 条\n 数据库增加：\nlunch:%ld\nopen、close：%ld \nclick:%ld \n数据库现有数据： %ld 条 \n上传：%ld条",[UITestManger sharedManger].lastCount,[UITestManger sharedManger].trackCount,[UITestManger sharedManger].autoTrackViewScreenCount,[UITestManger sharedManger].autoTrackClickCount,[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"],(long)count];
+                self.lable.text = [NSString stringWithFormat:@"数据库现有数据： %ld 条 \n上传：%ld条",[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"],(long)count];
             });
         });
     });

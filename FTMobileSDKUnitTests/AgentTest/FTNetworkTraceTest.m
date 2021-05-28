@@ -124,13 +124,13 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:field[@"__content"]];
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"error"]);
+    NSDictionary *content = [FTJSONUtil dictionaryWithJsonString:field[@"message"]];
     NSDictionary *responseContent = content[@"responseContent"];
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
@@ -150,7 +150,7 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
     BOOL isError = [tags[@"__isError"] boolValue];
@@ -171,11 +171,11 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"ok"]);
 
     [self uploadModel:model];
 }
@@ -206,12 +206,12 @@
 
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *field = opdata[@"field"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == YES);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"error"]);
     [self uploadModel:model];
 }
 - (void)testNSURLConnection{
@@ -230,11 +230,11 @@
 
     NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
     FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[@"tags"];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
+    NSString *status = tags[@"status"];
+    XCTAssertTrue([status isEqualToString:@"ok"]);
 
     [self uploadModel:model];
 }

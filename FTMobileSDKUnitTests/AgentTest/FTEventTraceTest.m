@@ -71,11 +71,11 @@
     XCTAssertTrue(newCount>0);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    NSString *content = field[@"message"];
+    NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"launch"]);
     
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
@@ -85,11 +85,11 @@
     XCTAssertTrue(newCount2>0);
     NSArray *array2 = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model2 = [array2 lastObject];
-    NSDictionary *dict2 = [FTJSONUtil ft_dictionaryWithJsonString:model2.data];
+    NSDictionary *dict2 = [FTJSONUtil dictionaryWithJsonString:model2.data];
     NSDictionary *op2 = dict2[@"opdata"];
     NSDictionary *field2 = op2[@"field"];
-    NSString *content2 = field2[@"__content"];
-    NSDictionary *contentDict2 =[FTJSONUtil ft_dictionaryWithJsonString:content2];
+    NSString *content2 = field2[@"message"];
+    NSDictionary *contentDict2 =[FTJSONUtil dictionaryWithJsonString:content2];
     XCTAssertTrue([[contentDict2 valueForKey:@"event"] isEqualToString:@"launch"]);
     [[FTMobileAgent sharedInstance] resetInstance];
     
@@ -103,13 +103,19 @@
     [self.testVC viewDidAppear:NO];
 
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array firstObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
-    XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]);
+    __block BOOL enter = NO;
+    [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[@"opdata"];
+        NSDictionary *field = op[@"field"];
+        NSString *content = field[@"message"];
+        NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
+        if ([[contentDict valueForKey:@"event"] isEqualToString:@"enter"]) {
+            enter = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(enter == YES);
     [[FTMobileAgent sharedInstance] resetInstance];
 
 }
@@ -129,11 +135,11 @@
     XCTAssertTrue(newCount>count);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    NSString *content = field[@"message"];
+    NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"leave"]);
     [[FTMobileAgent sharedInstance] resetInstance];
 
@@ -151,11 +157,11 @@
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     __block BOOL open = NO;
     [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
         NSDictionary *op = dict[@"opdata"];
         NSDictionary *field = op[@"field"];
-        NSString *content = field[@"__content"];
-        NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+        NSString *content = field[@"message"];
+        NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
         if ([[contentDict valueForKey:@"event"] isEqualToString:@"open"]) {
             open = YES;
             *stop = YES;
@@ -180,11 +186,11 @@
     XCTAssertTrue(newCount>count);
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array firstObject];
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *field = op[@"field"];
-    NSString *content = field[@"__content"];
-    NSDictionary *contentDict =[FTJSONUtil ft_dictionaryWithJsonString:content];
+    NSString *content = field[@"message"];
+    NSDictionary *contentDict =[FTJSONUtil dictionaryWithJsonString:content];
     XCTAssertTrue([[contentDict valueForKey:@"event"] isEqualToString:@"click"]);
     [[FTMobileAgent sharedInstance] resetInstance];
 }

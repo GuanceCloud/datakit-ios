@@ -7,11 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "RootVController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UITestVC : RootVController
+@interface UITestVC : UIViewController
 @property (nonatomic, strong) UIButton *firstButton;
 @property (nonatomic, strong) UIButton *secondButton;
 @property (nonatomic, strong) UIStepper *stepper;

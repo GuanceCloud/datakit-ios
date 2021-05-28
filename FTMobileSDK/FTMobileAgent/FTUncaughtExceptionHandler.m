@@ -83,7 +83,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     if (exceptionCount <= UncaughtExceptionMaximum) {
         NSString* description = nil;
         NSString *name = @"ios_crash";
-        //info->si_code == 0x8badf00d ? @"abort":@"ios_crash";
         switch (signal) {
             case SIGABRT:
                 name = @"abort";
@@ -122,7 +121,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
         }
         
     }
-    FTClearSignalRegister();
     // 调用之前崩溃的回调函数
     // 在自己handler处理完后自觉把别人的handler注册回去，规规矩矩的传递
     previousSignalHandler(signal, info, context);
@@ -303,14 +301,17 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
                                      @"crash_stack":info,
             };
             [instance rumTrackES:@"crash" terminal:FT_TERMINAL_APP tags:@{@"crash_type":[exception name],
-                                                              FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID],
+                                                              FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID],
             } fields:field tm:[[NSDate date] ft_dateTimestamp]];
         }else if(instance.config.enableTrackAppCrash){
             NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
             NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-            [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander ft_getApplicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
+            [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
         }
     }
+    NSSetUncaughtExceptionHandler(NULL);
+    FTClearSignalRegister();
+
 }
 + (long)ft_calculateImageSlide{
     long slide = -1;

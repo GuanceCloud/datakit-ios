@@ -11,6 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileAgent : NSObject
+
+-(instancetype) init __attribute__((unavailable("请使用 sharedInstance 进行访问")));
+
 #pragma mark ========== init instance ==========
 /**
  * @abstract
@@ -28,7 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
 /**
+ * @abstract
  * 日志上报
+ *
  * @param content  日志内容，可为json字符串
  * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
 
@@ -36,11 +41,14 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)logging:(NSString *)content status:(FTStatus)status;
 
 /**
+ * @abstract
  * 绑定用户信息
+ * 
  * @param Id        用户Id
 */
 - (void)bindUserWithUserID:(NSString *)Id;
 /**
+ * @abstract
  * 注销当前用户
 */
 - (void)logout;

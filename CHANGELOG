@@ -1,3 +1,16 @@
+# 1.0.4-alpha.12
+1.子线程ping 检测卡顿，进行 freeze 采集
+2.config 采集卡顿配置项改为 enableTrackAppFreeze
+---
+# 1.0.4-alpha.11
+1.tag app_identified 改为 app_identifiedid
+2.freeze 采集，避免一次卡顿多次写入
+---
+
+# 1.0.4-alpha.10
+1.tag、filed keys调整
+---
+
 # 1.0.4-alpha.9
 1.tag、field、measurement值 添加转译字符处理
 

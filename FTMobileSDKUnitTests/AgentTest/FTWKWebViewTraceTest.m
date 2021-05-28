@@ -16,6 +16,7 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
+#import <FTMonitorManager.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTJSONUtil.h>
 @interface FTWKWebViewTraceTest : XCTestCase
@@ -28,6 +29,9 @@
 @implementation FTWKWebViewTraceTest
 
 - (void)setUp {
+   
+}
+- (void)setWKWebview{
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     if (!_testVC) {
@@ -38,12 +42,7 @@
     
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
     self.navigationController.tabBarItem.title = @"UITestVC";
-    
-    UITableViewController *firstViewController = [[UITableViewController alloc] init];
-    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
-    
-    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
-    self.window.rootViewController = self.tabBarController;
+    self.window.rootViewController = self.navigationController;
     
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
@@ -55,8 +54,10 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     config.networkTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMonitorManager sharedInstance] setMobileConfig:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [self setWKWebview];
 }
 - (void)setNoTraceConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -64,8 +65,10 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     config.networkTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMonitorManager sharedInstance] setMobileConfig:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [self setWKWebview];
 }
 
 - (void)testNoTrace{
@@ -234,10 +237,10 @@
       });
 }
 - (void)getX_B3_SpanId:(FTRecordModel *)model completionHandler:(void (^)(NSString *spanID,NSString *urlStr))completionHandler{
-    NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = [dict valueForKey:@"opdata"];
     NSDictionary *field = [opdata valueForKey:@"field"];
-    NSDictionary *content = [FTJSONUtil ft_dictionaryWithJsonString:[field valueForKey:@"__content"]];
+    NSDictionary *content = [FTJSONUtil dictionaryWithJsonString:[field valueForKey:@"message"]];
     NSDictionary *requestContent = [content valueForKey:@"requestContent"];
     NSDictionary *headers = [requestContent valueForKey:@"headers"];
     completionHandler?completionHandler([headers valueForKey:@"X-B3-SpanId"],[requestContent valueForKey:@"url"]):nil;

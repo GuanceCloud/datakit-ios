@@ -98,4 +98,18 @@
     XCTAssertTrue(newCount == 5000);
 }
 
+- (void)testCache{
+    for (int i = 0; i<101; i++) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        FTRecordModel *model = [FTRecordModel new];
+        model.op = [NSString stringWithFormat:@"test%d",i];
+        model.data = [NSString stringWithFormat:@"testData%d",i];
+        [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
+    });
+    }
+    [NSThread sleepForTimeInterval:2];
+    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 101);
+}
 @end

@@ -46,25 +46,15 @@ extern NSString * const FT_DATA_TYPE_INFLUXDB;
 extern NSString * const FT_DATA_TYPE_LOGGING;
 extern NSString * const FT_DATA_TYPE_OBJECT;
 extern NSString * const FT_DATA_TYPE_TRACING;
-extern NSString * const FT_NETWORKING_API_METRICS;
-extern NSString * const FT_NETWORKING_API_LOGGING;
-extern NSString * const FT_NETWORKING_API_RUM;
-extern NSString * const FT_NETWORKING_API_OBJECT;
-extern NSString * const FT_NETWORKING_API_CHECK_TOKEN;
-extern NSString * const FT_NETWORKING_API_TRACING;
 #pragma mark ========== logging key ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_SOURCE;
-extern NSString * const FT_KEY_SERVICENAME;
 extern NSString * const FT_KEY_CONTENT;
-extern NSString * const FT_KEY_OPERATIONNAME;
-extern NSString * const FT_KEY_CLASS;
-extern NSString * const FT_KEY_ISERROR;
+extern NSString * const FT_KEY_MESSAGE;
 extern NSString * const FT_KEY_SPANTYPE;
 extern NSString * const FT_KEY_DURATION;
 extern NSString * const FT_FLOW_TRACEID;
 extern NSString * const FT_KEY_SPANID;
-
 extern NSString * const FT_AUTOTRACK_MEASUREMENT;
 extern NSString * const FT_KEY_EVENT;
 
@@ -86,7 +76,9 @@ extern NSString * const FT_MONITOR_WITF_SSID;
 extern NSString * const FT_MONITOR_NETWORK_STRENGTH;
 extern NSString * const FT_MONITOR_NETWORK_ERROR_RATE;
 extern NSString * const FT_MONITOR_NETWORK_PROXY;
-
+extern NSString * const FT_TRACING_STATUS;
+extern NSString * const FT_KEY_SERVICE;
+extern NSString * const FT_KEY_OPERATION;
 extern NSString * const FT_NETWORK_REQUEST_URL;
 extern NSString * const FT_NETWORK_CONNECT_TIME;
 extern NSString * const FT_DURATION_TIME;
@@ -96,32 +88,32 @@ extern NSString * const FT_MONITOR_GPS_OPEN;
 extern NSString * const FT_MONITOR_FPS;
 extern NSString * const FT_MONITOR_BT_OPEN;
 #pragma mark ========== device info ==========
-extern NSString *  const FTBaseInfoHanderDeviceCPUType;
-extern NSString *  const FTBaseInfoHanderDeviceCPUClock;
-extern NSString *  const FTBaseInfoHanderBatteryTotal;
-extern NSString *  const FTBaseInfoHanderDeviceGPUType;
+extern NSString * const FTBaseInfoHanderDeviceCPUType;
+extern NSString * const FTBaseInfoHanderDeviceCPUClock;
+extern NSString * const FTBaseInfoHanderBatteryTotal;
+extern NSString * const FTBaseInfoHanderDeviceGPUType;
 
 #pragma mark ========== logging network trace key ==========
-extern NSString *  const FT_APPLICATION_UUID;
-extern NSString *  const FT_NETWORK_ZIPKIN_TRACEID;
-extern NSString *  const FT_NETWORK_ZIPKIN_SPANID;
-extern NSString *  const FT_NETWORK_ZIPKIN_SAMPLED;
-extern NSString *  const FT_NETWORK_SKYWALKING_V3;
-extern NSString *  const FT_NETWORK_SKYWALKING_V2;
-extern NSString *  const FT_NETWORK_JAEGER_TRACEID;
+extern NSString * const FT_APPLICATION_UUID;
+extern NSString * const FT_NETWORK_ZIPKIN_TRACEID;
+extern NSString * const FT_NETWORK_ZIPKIN_SPANID;
+extern NSString * const FT_NETWORK_ZIPKIN_SAMPLED;
+extern NSString * const FT_NETWORK_SKYWALKING_V3;
+extern NSString * const FT_NETWORK_SKYWALKING_V2;
+extern NSString * const FT_NETWORK_JAEGER_TRACEID;
 extern NSString * const FT_NETWORK_REQUEST_CONTENT;
 extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
 
-extern NSString *  const FT_NETWORK_HEADERS;
-extern NSString *  const FT_NETWORK_BODY;
-extern NSString *  const FT_LOGGING_CLASS_TRACING;
-extern NSString *  const FT_KEY_TRUE;
-extern NSString *  const FT_KEY_FALSE;
-extern NSString *  const FT_NETWORK_CODE;
-extern NSString *  const FT_NETWORK_ERROR;
-extern NSString *  const FT_SPANTYPE_ENTRY;
-extern NSUInteger  const FT_LOGGING_CONTENT_SIZE;
-extern NSUInteger  const FT_DB_CONTENT_MAX_COUNT;
+extern NSString * const FT_NETWORK_HEADERS;
+extern NSString * const FT_NETWORK_BODY;
+extern NSString * const FT_LOGGING_CLASS_TRACING;
+extern NSString * const FT_KEY_TRUE;
+extern NSString * const FT_KEY_FALSE;
+extern NSString * const FT_NETWORK_CODE;
+extern NSString * const FT_NETWORK_ERROR;
+extern NSString * const FT_SPANTYPE_ENTRY;
+extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
+extern NSUInteger const FT_DB_CONTENT_MAX_COUNT;
 // default 5s 记录一次ANR
 // 超过多少毫秒为一次卡顿
 extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;

@@ -14,7 +14,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTMobileAgent/FTRecordModel.h>
-#import <FTMobileAgent/FTJSONUtil.h>
+#import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 
 @interface FTANRTest : XCTestCase
@@ -54,7 +54,7 @@
     config.appid =appid;
     if (enable) {
         config.enableTrackAppANR = YES;
-        config.enableTrackAppUIBlock = YES;
+        config.enableTrackAppFreeze = YES;
     }
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
@@ -76,7 +76,7 @@
         BOOL hasANR = NO;
         for (NSInteger i=0; i<datas.count; i++) {
            FTRecordModel *model = datas[i];
-           NSDictionary *dict = [FTJSONUtil ft_dictionaryWithJsonString:model.data];
+           NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
             NSDictionary *field = [opdata valueForKey:@"field"];
             NSDictionary *tags = opdata[@"tags"];
