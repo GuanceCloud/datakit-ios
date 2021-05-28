@@ -14,6 +14,8 @@
 #import "NSURLResponse+FTMonitor.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "NSDate+FTAdd.h"
+#import "FTLog.h"
+#import "FTJSONUtil.h"
 @interface FTSessionManger()<FTRUMScopeProtocol>
 @property (nonatomic, strong) FTRUMSessionScope *sessionScope;
 @property (nonatomic, weak) UIViewController *currentViewController;

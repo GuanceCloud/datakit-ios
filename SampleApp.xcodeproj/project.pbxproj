@@ -48,6 +48,7 @@
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
+		7C28B8B62660B29500CECBA6 /* sample1.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B8B52660B29400CECBA6 /* sample1.html */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
@@ -189,6 +190,7 @@
 		7C28B870266098B800CECBA6 /* TestJsbridgeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestJsbridgeData.h; sourceTree = "<group>"; };
 		7C28B871266098B800CECBA6 /* TestJsbridgeData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestJsbridgeData.m; sourceTree = "<group>"; };
 		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
+		7C28B8B52660B29400CECBA6 /* sample1.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample1.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
 		7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashVC.m; sourceTree = "<group>"; };
@@ -306,6 +308,7 @@
 				4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */,
 				7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */,
 				7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */,
+				7C28B8B52660B29400CECBA6 /* sample1.html */,
 				7C28B877266098E700CECBA6 /* sample.html */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
@@ -589,6 +592,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C28B8B62660B29500CECBA6 /* sample1.html in Resources */,
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,

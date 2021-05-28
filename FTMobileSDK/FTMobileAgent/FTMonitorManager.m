@@ -43,7 +43,7 @@
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTNetworkTrace *trace;
 @property (nonatomic, strong) FTMobileConfig *config;
-
+@property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @end
 
 @implementation FTMonitorManager{
@@ -306,7 +306,55 @@ static dispatch_once_t onceToken;
     }
     [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
 }
+#pragma mark - jsBridge -
+-(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
+    if (![webView isKindOfClass:[WKWebView class]]) {
+        return;
+    }
+    self.jsBridge = [FTWKWebViewJavascriptBridge bridgeForWebView:webView];
+    [self.jsBridge registerHandler:@"sendEvent" handler:^(id data, WVJBResponseCallback responseCallback) {
+        [self dealReceiveScriptMessage:data callBack:responseCallback];
+    }];
+}
+- (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
+      @try {
+       
+        NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
+        if (![messageDic isKindOfClass:[NSDictionary class]]) {
+            ZYErrorLog(@"Message body is formatted failure from JS SDK");
+            return;
+        }
+        NSString *name = messageDic[@"name"];
+        if([name isEqualToString:@"serverVerify"]){
+            
+            
+        }else if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
+            NSString *measurement = messageDic[@"measurement"];
+            NSDictionary *tags = messageDic[@"tags"];
+            NSDictionary *fields = messageDic[@"fields"];
+            long long time = [messageDic[@"time"] longLongValue];
+            time = time>0?:[[NSDate date] ft_dateTimestamp];
+            if (measurement && fields.count>0) {
+                if ([name isEqualToString:@"rum"]) {
+//                    [[FTMobileAgent sharedInstance] rumTrackES:measurement terminal:@"web" tags:tags fields:fields tm:time];
+                }else if([name isEqualToString:@"track"]){
+//                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields tm:time];
+                }else if([name isEqualToString:@"log"]){
+                    //数据格式需要调整
+                }else if([name isEqualToString:@"trace"]){
+//                    [[FTMobileAgent sharedInstance] tracing:measurement tags:tags field:fields tm:time];
 
+                }
+            }
+        }
+        
+      
+          
+        
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"%@ error: %@", self, exception);
+    }
+}
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     if (!self.config.enableTrackAppANR || slowStack.length==0) {

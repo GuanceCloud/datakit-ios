@@ -17,6 +17,7 @@
 #import "CrashVC.h"
 #import "TableViewCellItem.h"
 #import "SampleApp-Swift.h"
+#import "TestJsbridgeData.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -69,8 +70,12 @@
     TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
         [weakSelf.navigationController pushViewController:[CrashVC new] animated:YES];
     }];
+    TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"WebViewBridge" handler:^{
+        [weakSelf.navigationController pushViewController:[TestJsbridgeData new] animated:YES];
+    }];
+
    
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;

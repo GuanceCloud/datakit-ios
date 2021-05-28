@@ -43,7 +43,7 @@
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.appid = appid;
         config.enableSDKDebugLog = YES;
-        config.monitorInfoType = FTMonitorInfoTypeAll;
+//        config.monitorInfoType = FTMonitorInfoTypeAll;
         config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;

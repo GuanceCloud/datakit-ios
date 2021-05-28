@@ -101,7 +101,7 @@
                 handler.bridge.sendEvent(JSON.stringify(params), "webViewCallBackMap")
             }else{
                 handler.bridge.sendEvent(JSON.stringify(params))
-            }
+            } 
         }
 
     }
@@ -114,7 +114,7 @@
         if(isIOS()){
             handler.bridge.callHandler('addEventListener', JSON.stringify(params), 'mapWebViewCallBack')
         }else{
-           handler.bridge.addEventListener(JSON.stringify(params), "webViewCallBackMap")
+           handler.bridge.addEventListener(JSON.stringify(params), "webViewCallBackMap") 
         }
     }
 
