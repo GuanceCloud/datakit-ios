@@ -37,8 +37,8 @@
                                @"error_type":[exception name]
         };
         
-        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(notify_errorWithtags:field:)]) {
-            [self.errorDelegate notify_errorWithtags:tags field:@{}];
+        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
+            [self.errorDelegate ftErrorWithtags:tags field:@{}];
         }
     }else if(instance.config.enableTrackAppCrash){
         NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};

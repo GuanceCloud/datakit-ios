@@ -125,8 +125,8 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *fields = @{@"duration":@"-1"}.mutableCopy;
    
     fields[@"long_task_stack"] = stack;
-    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_longTaskWithtags:field:)]) {
-        [self.sessionSourceDelegate notify_longTaskWithtags:@{} field:fields];
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
+        [self.sessionSourceDelegate ftLongTaskWithtags:@{} field:fields];
     }}
 -(void)stopMonitor{
     [FTURLProtocol stopMonitor];
@@ -181,8 +181,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
 - (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel{
-    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_resourceCreate:)]) {
-        [self.sessionSourceDelegate notify_resourceCreate:taskModel];
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCreate:)]) {
+        [self.sessionSourceDelegate ftResourceCreate:taskModel];
     }
 
 }
@@ -195,8 +195,8 @@ static dispatch_once_t onceToken;
         return;
     }
     
-    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_resourceCompleted:)]) {
-        [self.sessionSourceDelegate notify_resourceCompleted:taskModel];
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
+        [self.sessionSourceDelegate ftResourceCompleted:taskModel];
     }
 }
 // 网络请求信息采集 链路追踪
@@ -336,8 +336,8 @@ static dispatch_once_t onceToken;
             time = time>0?:[[NSDate date] ft_dateTimestamp];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(webviewDataWithMeasurement:tags:fields:tm:)]) {
-                        [self.sessionSourceDelegate webviewDataWithMeasurement:measurement tags:tags fields:fields tm:time];
+                    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftWebviewDataWithMeasurement:tags:fields:tm:)]) {
+                        [self.sessionSourceDelegate ftWebviewDataWithMeasurement:measurement tags:tags fields:fields tm:time];
                     }
                 }else if([name isEqualToString:@"track"]){
 //                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields tm:time];
@@ -371,8 +371,8 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithInt:duration]}.mutableCopy;
     fields[@"long_task_stack"] = slowStack;
     if ([agent judgeRUMTraceOpen]) {
-        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_longTaskWithtags:field:)]) {
-            [self.sessionSourceDelegate notify_longTaskWithtags:@{} field:fields];
+        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
+            [self.sessionSourceDelegate ftLongTaskWithtags:@{} field:fields];
         }
     }else{
     [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:nil tm:time];

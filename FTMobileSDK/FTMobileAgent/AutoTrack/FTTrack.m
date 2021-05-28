@@ -90,8 +90,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             _applicationWillResignActive = NO;
             return;
         }
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_applicationDidBecomeActive:)]) {
-            [self.rumActionDelegate notify_applicationDidBecomeActive:_appRelaunched];
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:)]) {
+            [self.rumActionDelegate ftApplicationDidBecomeActive:_appRelaunched];
         }
         _appRelaunched = YES;
     }
@@ -108,8 +108,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         _applicationWillResignActive = YES;
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_applicationWillResignActive)]) {
-            [self.rumActionDelegate notify_applicationWillResignActive];
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationWillResignActive)]) {
+            [self.rumActionDelegate ftApplicationWillResignActive];
         }
     }
     @catch (NSException *exception) {
@@ -140,8 +140,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
             }
 
-            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(notify_viewDidAppear:)]) {
-                [self.rumActionDelegate notify_viewDidAppear:vc];
+            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+                [self.rumActionDelegate ftViewDidAppear:vc];
             }
             
         }
@@ -151,8 +151,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if([weakSelf isBlackListContainsViewController:tempVC]){
             return;
         }
-        if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(notify_viewDidAppear:)]) {
-            [self.rumActionDelegate notify_viewDidDisappear:tempVC];
+        if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+            [self.rumActionDelegate ftViewDidDisappear:tempVC];
         }
         [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
@@ -357,8 +357,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 }
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
     if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]) {
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_clickView:)]) {
-            [self.rumActionDelegate notify_clickView:view];
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftClickView:)]) {
+            [self.rumActionDelegate ftClickView:view];
         }
     }
     
