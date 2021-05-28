@@ -53,6 +53,7 @@ static NSString * const FT_COMMON_PROPERTY_APP_IDENTIFIER = @"app_identifiedid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
+static NSString * const FT_SDK_VERSION = @"sdk_version";
 static NSString * const FT_APP_ID = @"app_id";
 static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 static NSString * const FT_SDK_NAME = @"sdk_name";
@@ -701,9 +702,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 -(NSDictionary *)esCommonPropertyTags{
     if (!_esCommonPropertyTags) {
         _esCommonPropertyTags = [NSMutableDictionary new];
-        _esCommonPropertyTags[FT_ORIGIN_ID] = [FTPresetProperty originID];
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_APP_NAME] = [FTPresetProperty appName];
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_APP_IDENTIFIER] = [FTPresetProperty appIdentifier];
         _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
         _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
         _esCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
@@ -718,15 +716,10 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 -(NSDictionary *)basePropertyTags{
     if (!_basePropertyTags) {
         _basePropertyTags = [NSMutableDictionary new];
-        if (self.env) {
-            [_basePropertyTags setValue:self.env forKey:FT_ENV];
-        }
-        if (self.version) {
-            [_basePropertyTags setValue:self.version forKey:FT_VERSION];
-        }
-        if (self.appid) {
-            [_basePropertyTags setValue:self.appid forKey:FT_APP_ID];
-        }
+        [_basePropertyTags setValue:self.env forKey:FT_ENV];
+        [_basePropertyTags setValue:self.version forKey:FT_VERSION];
+        [_basePropertyTags setValue:self.appid forKey:FT_APP_ID];
+        [_basePropertyTags setValue:SDK_VERSION forKey:FT_SDK_VERSION];
     }
     return _basePropertyTags;
 }
