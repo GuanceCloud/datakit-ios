@@ -83,12 +83,12 @@
 
 NSString * FTWebViewJavascriptBridge_js() {
 #define __WVJB_js_func__(x) #x
-    //FTWKebViewJSBridge
+    //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {
                
-        window.WebViewJavascriptBridge = {
+        window.FTWebViewJavascriptBridge = {
         registerHandler: ftRegisterHandler,
         callHandler: ftCallHandler,
         _handleMessageFromObjC: _ftHandleMessageFromObjC
