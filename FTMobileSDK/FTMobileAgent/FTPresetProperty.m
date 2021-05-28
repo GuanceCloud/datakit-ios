@@ -712,7 +712,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
         _esCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
         _esCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
-        _esCommonPropertyTags[FT_SDK_NAME] = @"df_ios_rum_sdk";
     }
     return _esCommonPropertyTags;
 }
@@ -738,20 +737,11 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     _isSignin = [FTBaseInfoHander userId]?YES:NO;
     _basePropertyTags = nil;
 }
-//- (NSDictionary *)propertyWithType:(NSString *)type{
-//    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
-//    if ([type isEqualToString:FT_RUM_APP_STARTUP] || [type isEqualToString:FT_RUM_APP_VIEW] ||[type isEqualToString:FT_RUM_APP_FREEZE] || [type isEqualToString:FT_RUM_APP_RESOURCE_PERFORMANCE]) {
-//        [dict addEntriesFromDictionary:[self mobileCommonPropertyTags]];
-//    }else if([type isEqualToString:FT_RUM_WEB_PAGE_PERFORMANCE] || [type isEqualToString:FT_RUM_WEB_RESOURCE_PERFORMANCE]){
-//        [dict addEntriesFromDictionary:[self webCommonPropertyTags]];
-//    }
-//    return dict;
-//}
 - (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
     dict[FT_KEY_SOURCE] = type;
-    dict[@"terminal"] = terminal;
+    dict[FT_SDK_NAME] = [terminal isEqualToString:@"app"]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
     if ([type isEqualToString:FT_TYPE_ERROR]) {
         dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];

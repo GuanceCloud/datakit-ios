@@ -197,28 +197,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
-////RUM INFLUXDB
-//- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-//    [self rumTrack:type tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
-//}
-//- (void)rumTrack:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
-//    if (![self judgeRUMTraceOpen]) {
-//        return;
-//    }
-//    if (![type isKindOfClass:NSString.class] || type.length == 0) {
-//        return;
-//    }
-//    @try {
-//        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty propertyWithType:type]];
-//        baseTags[@"network_type"] = self.net;
-//        if (tags) {
-//            [baseTags addEntriesFromDictionary:tags];
-//        }
-//        [self insertDBWithItemData:[self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]] type:FTAddDataNormal];
-//    } @catch (NSException *exception) {
-//        ZYErrorLog(@"exception %@",exception);
-//    }
-//}
 //RUM  ES
 - (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumTrackES:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
@@ -232,8 +210,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
     @try {
         FTAddDataType dataType = FTAddDataImmediate;
-        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:[self.presetProperty esPropertyWithType:type terminal:terminal]];
+        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
         baseTags[@"network_type"] = self.net;
+        [baseTags addEntriesFromDictionary:[self.presetProperty esPropertyWithType:type terminal:terminal]];
         if ([type isEqualToString:FT_TYPE_ERROR]) {
             dataType = FTAddDataImmediate;
             if ([terminal isEqualToString:FT_TERMINAL_APP]) {
@@ -258,9 +237,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }else{
                 baseTags[@"crash_situation"] = @"run";
             }
-        }
-        if (tags) {
-            [baseTags addEntriesFromDictionary:tags];
         }
         FTRecordModel *model = [self getModelWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
         [self insertDBWithItemData:model type:dataType];
@@ -322,36 +298,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
-    
 }
-//-(void)trackStartWithViewLoadTime:(NSDate *)time{
-//    self.running = YES;
-//    if ([self judgeIsTraceSampling]) {
-//        NSTimeInterval duration = [time timeIntervalSinceDate:self.launchTime];
-//        NSNumber *durationTime = [time ft_nanotimeIntervalSinceDate:self.launchTime];
-//        if (duration>9) {
-//            duration = 9;
-//        }
-//        /**
-//         NSString *startType = _appRelaunched?@"hot":@"cold";
-//         @"app_startup_type":startType,
-//         */
-//        NSDictionary *tags = @{
-//                               @"app_apdex_level":[NSNumber numberWithInt:duration],
-//        };
-//        NSDictionary *fields = @{
-//            @"app_startup_duration":durationTime,
-//        };
-//
-//
-//
-//    }
-//    _appRelaunched = YES;
-//    if (self.config.eventFlowLog) {
-//        NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_LAUNCH,FT_KEY_EVENT]};
-//        [self loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:@{FT_KEY_EVENT:FT_AUTO_TRACK_OP_LAUNCH}] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
-//    }
-//}
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
