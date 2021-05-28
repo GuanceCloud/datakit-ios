@@ -155,7 +155,7 @@
                                   @"app_apdex_level":@0,
     };
     NSDictionary *fields = @{
-        @"view_load":@100,
+        @"duration":@100,
     }.mutableCopy;
     [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
 }

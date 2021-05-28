@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTPresetProperty : NSObject
 @property (nonatomic, assign) BOOL isSignin;
-+ (NSString *)deviceUUID;
++ (NSDictionary *)ft_getDeviceInfo;
 + (NSString *)appIdentifier;
 + (NSString *)userid;
 
@@ -30,12 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /**
- * 获取 InfluxDB 公共Tag
+ * 获取 Rum InfluxDB 公共Tag
  * @param type 指标集名称类型
  */
-- (NSDictionary *)propertyWithType:(NSString *)type;
+//- (NSDictionary *)propertyWithType:(NSString *)type;
 /**
- * 获取 ES 公共Tag
+ * 获取 Rum ES 公共Tag
  * @param type 指标集名称类型
 */
 - (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal;

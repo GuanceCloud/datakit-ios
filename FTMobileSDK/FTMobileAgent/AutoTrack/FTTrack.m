@@ -30,27 +30,91 @@ static NSString * const FT_AUTO_TRACK_OP_OPEN  = @"open";
 static NSString * const FT_AUTO_TRACK_EVENT_ID = @"event_id";
 static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 
-@interface FTTrack()
-@property (nonatomic,assign) BOOL isLaunched;
+@interface FTTrack(){
+    BOOL _appRelaunched;          // App 从后台恢复
+    //进入非活动状态，比如双击 home、系统授权弹框
+    BOOL _applicationWillResignActive;
+}
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
 @property (nonatomic, weak) UIViewController *previousTrackViewController;
+@property (nonatomic,copy,readwrite) NSString *currentViewid;
+@property (nonatomic, strong) NSDate *launchTime;
 
 @end
 @implementation FTTrack
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _isLaunched = NO;
+        _appRelaunched = NO;
+        _launchTime = [NSDate date];
         _aspectTokenAry = [NSMutableArray new];
         [self startHook];
     }
     return  self;
 }
 - (void)startHook{
+    [self applicationLaunch];
     [self logViewControllerLifeCycle];
     [self logTableViewCollectionView];
     [self logTargetAction];
+}
+- (void)applicationLaunch{
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    // 应用生命周期通知
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillEnterForeground:)
+                               name:UIApplicationWillEnterForegroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActive:)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActive:)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackground:)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
+}
+- (void)applicationWillEnterForeground:(NSNotification *)notification{
+    if (_appRelaunched){
+        self.launchTime = [NSDate date];
+    }
+}
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    @try {
+        if (_applicationWillResignActive) {
+            _applicationWillResignActive = NO;
+            return;
+        }
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_applicationDidBecomeActive:)]) {
+            [self.rumActionDelegate notify_applicationDidBecomeActive:_appRelaunched];
+        }
+        _appRelaunched = YES;
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
+- (void)applicationDidEnterBackground:(NSNotification *)notification{
+    if (!_applicationWillResignActive) {
+        return;
+    }
+    _applicationWillResignActive = NO;
+}
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    @try {
+        _applicationWillResignActive = YES;
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_applicationWillResignActive)]) {
+            [self.rumActionDelegate notify_applicationWillResignActive];
+        }
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+    }
 }
 - (void)logViewControllerLifeCycle{
     WeakSelf
@@ -63,25 +127,32 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         UIViewController * vc = [info instance];
         if(![weakSelf isBlackListContainsViewController:vc]){
             if(vc.ft_viewLoadStartTime){
-            NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
-            vc.ft_viewLoadStartTime = nil;
-            [weakSelf trackOpenWithCpn:vc duration:loadTime];
+                NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
+                vc.ft_loadDuration = loadTime;
+                vc.ft_viewLoadStartTime = nil;
+                [weakSelf trackOpenWithCpn:vc duration:loadTime];
+            }else{
+                NSNumber *loadTime = @0;
+                vc.ft_loadDuration = loadTime;
             }
             if(weakSelf.previousTrackViewController != vc){
                 weakSelf.previousTrackViewController = vc;
                 [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
             }
-            if (!weakSelf.isLaunched) {
-                [weakSelf trackStartWithTime:[NSDate date]];
-                weakSelf.isLaunched = YES;
-            }
 
+            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(notify_viewDidAppear:)]) {
+                [self.rumActionDelegate notify_viewDidAppear:vc];
+            }
+            
         }
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController *tempVC = (UIViewController *)info.instance;
         if([weakSelf isBlackListContainsViewController:tempVC]){
             return;
+        }
+        if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(notify_viewDidAppear:)]) {
+            [self.rumActionDelegate notify_viewDidDisappear:tempVC];
         }
         [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
@@ -241,39 +312,35 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     }];
     return isContains;
 }
--(void)trackStartWithTime:(NSDate *)time{
-    @try {
-        [[FTMobileAgent sharedInstance] trackStartWithViewLoadTime:time];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@" error: %@", exception);
-    }
-}
+//-(void)trackStartWithTime:(NSDate *)time{
+//    @try {
+//        [[FTMobileAgent sharedInstance] trackStartWithViewLoadTime:time];
+//    } @catch (NSException *exception) {
+//        ZYErrorLog(@" error: %@", exception);
+//    }
+//}
 -(void)trackOpenWithCpn:(id<FTAutoTrackViewControllerProperty>)cpn duration:(NSNumber *)duration{
     @try {
         FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        NSString *name = cpn.ft_viewControllerName;
-        NSString *view_id = cpn.ft_viewControllerId;
-        NSString *parent = cpn.ft_parentVC;
-        NSMutableDictionary *tags = @{@"view_id":view_id,
-                                      @"view_name":name,
-                                      @"view_parent":parent,
-        }.mutableCopy;
-        NSMutableDictionary *fields = @{
-            @"view_load":duration,
-        }.mutableCopy;
-        if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-            NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
-            if (fps.intValue != 0) {
-                fields[@"view_fps"] =fps;
-            }
-        }
-        int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
-        tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
-        if ([instance judgeIsTraceSampling]) {
-            [instance rumTrack:FT_RUM_APP_VIEW tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
-            [instance rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
-        }
         if (instance.config.eventFlowLog) {
+            NSString *name = NSStringFromClass(cpn.class);
+            NSString *view_id = cpn.ft_viewControllerId;
+            NSString *parent = cpn.ft_parentVC;
+            NSMutableDictionary *tags = @{@"view_id":view_id,
+                                          @"view_name":name,
+                                          @"view_referrer":parent,
+            }.mutableCopy;
+            NSMutableDictionary *fields = @{
+                @"duration":duration,
+            }.mutableCopy;
+            if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
+                NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
+                if (fps.intValue != 0) {
+                    fields[@"view_fps"] =fps;
+                }
+            }
+            int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
+            tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
             NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
             [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
             NSDictionary *tag = @{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
@@ -289,6 +356,12 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     [self track:op withCpn:cpn WithClickView:view index:nil];
 }
 -(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
+    if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]) {
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(notify_clickView:)]) {
+            [self.rumActionDelegate notify_clickView:view];
+        }
+    }
+    
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     if(!agent.config.eventFlowLog){
         return;

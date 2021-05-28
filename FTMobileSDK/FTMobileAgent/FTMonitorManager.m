@@ -30,11 +30,10 @@
 #import "FTANRDetector.h"
 #import "FTJSONUtil.h"
 #import "FTCallStack.h"
-#include <netdb.h>
-#include <arpa/inet.h>
 #import "FTWeakProxy.h"
 #import "FTPingThread.h"
 #import "FTNetworkTrace.h"
+#import "FTTaskInterceptionModel.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
@@ -119,17 +118,16 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackAppFreeze:(NSString *)stack{
-    long long time = [[NSDate date] ft_dateTimestamp];
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     if (!self.config.enableTrackAppFreeze || ![agent judgeIsTraceSampling]) {
         return;
     }
-    NSDictionary *tag = @{@"freeze_type":@"Freeze"};
-    NSMutableDictionary *fields = @{@"freeze_duration":@"-1"}.mutableCopy;
-    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
-    fields[@"freeze_stack"] = stack;
-    [agent rumTrackES:FT_TYPE_FREEZE terminal:@"app" tags:tag fields:fields tm:time];
-}
+    NSMutableDictionary *fields = @{@"duration":@"-1"}.mutableCopy;
+   
+    fields[@"long_task_stack"] = stack;
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_longTaskWithtags:field:)]) {
+        [self.sessionSourceDelegate notify_longTaskWithtags:@{} field:fields];
+    }}
 -(void)stopMonitor{
     [FTURLProtocol stopMonitor];
     [self stopMonitorFPS];
@@ -182,8 +180,27 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
+- (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel{
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_resourceCreate:)]) {
+        [self.sessionSourceDelegate notify_resourceCreate:taskModel];
+    }
+
+}
+- (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
+    // network trace
+    [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
+    
+    // rum resourc
+    if (![[FTMobileAgent sharedInstance] judgeIsTraceSampling]) {
+        return;
+    }
+    
+    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_resourceCompleted:)]) {
+        [self.sessionSourceDelegate notify_resourceCompleted:taskModel];
+    }
+}
 // 网络请求信息采集 链路追踪
-- (void)ftHTTPProtocolWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics didCompleteWithError:(NSError *)error{
+- (void)networkTraceWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics didCompleteWithError:(NSError *)error{
     FTMobileAgent *agent = [FTMobileAgent sharedInstance];
     NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
     if (self.config.networkTrace) {
@@ -236,56 +253,7 @@ static dispatch_once_t onceToken;
             [agent tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
         }
     }
-    if (![agent judgeIsTraceSampling] || error) {
-        return;
-    }
-    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
-    NSDictionary *responseHeader = response.allHeaderFields;
-    NSMutableDictionary *tags = [NSMutableDictionary new];
-    NSMutableDictionary *fields = [NSMutableDictionary new];
-    tags[@"resource_url_host"] = task.originalRequest.URL.host;
-    if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
-        tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
-    }
-    tags[@"resource_type"] = response.MIMEType;
-    NSString *response_server = [self getIPWithHostName:task.originalRequest.URL.host];
-    if (response_server) {
-        tags[@"response_server"] = response_server;
-    }
-    
-    tags[@"response_content_type"] =response.MIMEType;
-    if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
-        tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
-    }
-    tags[@"resource_method"] = task.originalRequest.HTTPMethod;
-    tags[@"resource_status"] = [response ft_getResponseStatusCode];
-    NSString *group =  [response ft_getResourceStatusGroup];
-    if (group) {
-        tags[@"resource_status_group"] = group;
-    }
-    NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
-    NSNumber *tcpTime = [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.connectStartDate];
-    NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
-    NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-    NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-    NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
-    fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
-    fields[@"resource_load"] =durationTime;
-    fields[@"resource_dns"] = dnsTime;
-    fields[@"resource_tcp"] = tcpTime;
-    fields[@"resource_ssl"] = tlsTime;
-    fields[@"resource_ttfb"] = ttfbTime;
-    fields[@"resource_trans"] = transTime;
-    
-    [agent rumTrack:@"rum_app_resource_performance" tags:tags fields:fields];
-    if (response) {
-        fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
-        fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[task.currentRequest ft_getRequestHeaders]];
-    }
-    tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
-    tags[@"resource_url_path"] = task.originalRequest.URL.path;
-    [agent rumTrackES:FT_TYPE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields];
-    
+
 }
 #pragma mark == FTWKWebViewDelegate ==
 /**
@@ -349,13 +317,13 @@ static dispatch_once_t onceToken;
         return;
     }
     long long time = [[NSDate date] ft_dateTimestamp];
-    NSDictionary *tag = @{@"freeze_type":@"ANR"};
     int duration = (int)(MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000);
-    NSMutableDictionary *fields = @{@"freeze_duration":[NSNumber numberWithInt:duration]}.mutableCopy;
-    [agent  rumTrack:@"rum_app_freeze" tags:tag fields:fields tm:time];
-    fields[@"freeze_stack"] = slowStack;
+    NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithInt:duration]}.mutableCopy;
+    fields[@"long_task_stack"] = slowStack;
     if ([agent judgeRUMTraceOpen]) {
-        [agent rumTrackES:FT_TYPE_FREEZE terminal:FT_TERMINAL_APP tags:tag fields:fields tm:time];
+        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(notify_longTaskWithtags:field:)]) {
+            [self.sessionSourceDelegate notify_longTaskWithtags:@{} field:fields];
+        }
     }else{
     [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:nil tm:time];
     }
@@ -380,23 +348,6 @@ static dispatch_once_t onceToken;
         }
     }
 }
--(NSString *)getIPWithHostName:(const NSString *)hostName{
-    const char *hostN= [hostName UTF8String];
-    struct hostent* phot;
-    @try {
-        phot = gethostbyname(hostN);
-    }
-    @catch (NSException *exception) {
-        return nil;
-    }
-    struct in_addr ip_addr;
-    memcpy(&ip_addr, phot->h_addr_list[0], 4);
-    char ip[20] = {0};
-    inet_ntop(AF_INET, &ip_addr, ip, sizeof(ip));
-    NSString* strIPAddress = [NSString stringWithUTF8String:ip];
-    return strIPAddress;
-}
-
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;

@@ -300,9 +300,17 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             NSDictionary *field =  @{@"crash_message":[exception reason],
                                      @"crash_stack":info,
             };
-            [instance rumTrackES:@"crash" terminal:FT_TERMINAL_APP tags:@{@"crash_type":[exception name],
-                                                              FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID],
-            } fields:field tm:[[NSDate date] ft_dateTimestamp]];
+            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
+            NSDictionary *tags = @{@"error_starttime":crashDate,
+                                   @"error_message":[exception reason],
+                                   @"error_stack":info,
+                                   @"error_source":@"logger",
+                                   @"error_type":[exception name]
+            };
+            
+            if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(notify_errorWithtags:field:)]) {
+                [self.errorDelegate notify_errorWithtags:tags field:@{}];
+            }
         }else if(instance.config.enableTrackAppCrash){
             NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
             NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[UncaughtExceptionHandlerAddressesKey]];

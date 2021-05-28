@@ -98,7 +98,7 @@
                            @"app_apdex_level":@0,
     };
     NSDictionary *fields = @{
-        @"view_load":@100,
+        @"duration":@100,
     }.mutableCopy;
     [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
 }
@@ -123,12 +123,12 @@
         NSDictionary *field = opdata[@"field"];
         if ([measurement isEqualToString:@"rum_app_view"]) {
             [self rumInfluxDBtags:tags];
-            XCTAssertTrue([field.allKeys containsObject:@"view_load"]);
+            XCTAssertTrue([field.allKeys containsObject:@"duration"]);
             XCTAssertTrue([tags.allKeys containsObject:@"app_apdex_level"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_name"]&&[tags.allKeys containsObject:@"view_parent"]);
         }else if([measurement isEqualToString:@"view"]){
             [self rumEStags:tags];
             XCTAssertTrue([tags.allKeys containsObject:@"app_apdex_level"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_name"]&&[tags.allKeys containsObject:@"view_parent"]);
-            XCTAssertTrue([field.allKeys containsObject:@"view_load"]);
+            XCTAssertTrue([field.allKeys containsObject:@"duration"]);
         }else if([measurement isEqualToString:@"rum_app_startup"]){
             XCTAssertTrue([tags.allKeys containsObject:@"app_startup_type"]);
             XCTAssertTrue([field.allKeys containsObject:@"app_startup_duration"]);
@@ -157,11 +157,11 @@
             if ([measurement isEqualToString:@"rum_app_resource_performance"]) {
                 [self rumInfluxDBtags:tags];
                 XCTAssertTrue([tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
-                XCTAssertTrue([field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"resource_load"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
+                XCTAssertTrue([field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
             }else if([measurement isEqualToString:@"resource"]){
                 [self rumEStags:tags];
                 XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
-                XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"resource_load"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
+                XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
             
         }
         }];

@@ -14,6 +14,7 @@
 #import "FTBaseInfoHander.h"
 #import "FTConstants.h"
 #import "NSURLRequest+FTMonitor.h"
+#import "FTTaskInterceptionModel.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -21,6 +22,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
 @property (nonatomic, assign) BOOL trackUrl;
+@property (nonatomic, strong) FTTaskInterceptionModel *taskModel;
 @end
 @implementation FTURLProtocol
 static id<FTHTTPProtocolDelegate> sDelegate;
@@ -100,6 +102,14 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
+    if (self.trackUrl) {
+        id<FTHTTPProtocolDelegate> strongeDelegate;
+        strongeDelegate = [[self class] delegate];
+        if ([strongeDelegate respondsToSelector:@selector(ftTaskCreateWith:)]) {
+            self.taskModel = [[FTTaskInterceptionModel alloc]init];
+            [strongeDelegate ftTaskCreateWith:self.taskModel];
+        }
+    }
     [task resume];
 }
 
@@ -130,15 +140,17 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     id<FTHTTPProtocolDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (self.trackUrl) {
-        if ([strongeDelegate respondsToSelector:@selector(ftHTTPProtocolWithTask:didFinishCollectingMetrics:didCompleteWithError:)]){
-            [strongeDelegate ftHTTPProtocolWithTask:task didFinishCollectingMetrics:self.metrics didCompleteWithError:error];
+        if ([strongeDelegate respondsToSelector:@selector(ftTaskInterceptionCompleted:)]){
+            self.taskModel.error = error;
+            self.taskModel.task = task;
+            [strongeDelegate ftTaskInterceptionCompleted:self.taskModel];
         }
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
     if (self.trackUrl) {
-        self.metrics = metrics;
+        self.taskModel.metrics = metrics;
     }
     
 }
