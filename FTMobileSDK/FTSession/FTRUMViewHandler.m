@@ -194,12 +194,13 @@
                            @"view_name":self.viewModel.view_name,
                            @"session_id":self.sessionModel.session_id,
                            @"session_type":self.sessionModel.session_type,
-                           @"time_spent":[self.viewStopTime ft_nanotimeIntervalSinceDate:self.viewStartTime],
     };
     NSMutableDictionary *field = @{@"view_error_count":@(self.viewErrorCount),
-                            @"view_resource_count":@(self.viewResourceCount),
-                            @"view_long_task_count":@(self.viewLongTaskCount),
-                            @"view_action_count":@(self.viewActionCount),
+                                   @"view_resource_count":@(self.viewResourceCount),
+                                   @"view_long_task_count":@(self.viewLongTaskCount),
+                                   @"view_action_count":@(self.viewActionCount),
+                                   @"time_spent":[self.viewStopTime ft_nanotimeIntervalSinceDate:self.viewStartTime],
+                                   
     }.mutableCopy;
     if (![self.viewModel.loading_time isEqual:@0]) {
         [field setValue:self.viewModel.loading_time forKey:@"loading_time"];
