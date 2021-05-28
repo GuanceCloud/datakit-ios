@@ -82,29 +82,35 @@
             }
         }
             break;
-        case FTRUMDataViewError:
+        case FTRUMDataError:
             if (self.isActiveView) {
                 command.baseActionData = self.actionScope.command.baseActionData;
                 self.viewErrorCount++;
                 [self writeErrorData:command];
             }
             break;
-        case FTRUMDataViewResourceStart:
+        case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceCommand *)command];
             }
             break;
-        case FTRUMDataViewLongTask:{
+        case FTRUMDataLongTask:{
             if (self.isActiveView) {
                 command.baseActionData = self.actionScope.command.baseActionData;
                 self.viewLongTaskCount++;
                 [self writeErrorData:command];
             }
         }
+            break;
+        case FTRUMDataWebViewJSBData:{
+            if (self.isActiveView) {
+                [self writeWebViewJSBData:command];
+            }
+        }
         default:
             break;
     }
-    if (command.type == FTRUMDataViewResourceError || command.type == FTRUMDataViewResourceSuccess||command.type ==FTRUMDataViewResourceStart) {
+    if (command.type == FTRUMDataResourceError || command.type == FTRUMDataResourceSuccess||command.type ==FTRUMDataResourceStart) {
         FTRUMResourceCommand *reCommand = (FTRUMResourceCommand *)command;
         
         FTRUMResourceScope *scope =  self.resourceScopes[reCommand.identifier];
@@ -137,7 +143,13 @@
     };
     self.resourceScopes[command.identifier] =scope;
 }
-
+- (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
+    NSDictionary *sessionTag = @{@"session_id":self.sessionModel.session_id,
+                                 @"session_type":self.sessionModel.session_type};
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    [tags addEntriesFromDictionary:data.tags];
+    [[FTMobileAgent sharedInstance] rumTrackES:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
+}
 - (void)writeErrorData:(FTRUMCommand *)command{
     //判断冷启动 冷启动可能没有viewModel
     NSDictionary *viewTag = self.viewModel?@{@"view_id":self.viewModel.view_id,
@@ -156,7 +168,7 @@
     [tags addEntriesFromDictionary:viewTag];
     [tags addEntriesFromDictionary:actionTag];
     [tags addEntriesFromDictionary:command.tags];
-    NSString *error = command.type == FTRUMDataViewLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
+    NSString *error = command.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
     
     [[FTMobileAgent sharedInstance] rumTrackES:error terminal:@"app" tags:tags fields:command.fields];
 }

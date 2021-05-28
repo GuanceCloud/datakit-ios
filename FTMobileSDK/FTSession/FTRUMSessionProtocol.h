@@ -30,3 +30,9 @@
 
 @end
 
+@protocol FTRUMWebViewJSBridgeDataDelegate <NSObject>
+
+- (void)webviewDataWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+
+@end
+

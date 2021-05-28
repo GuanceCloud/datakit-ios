@@ -134,7 +134,7 @@
 
         FT_JS_Bridge.sendEvent({})
 
-        FT_JS_Bridge.sendEvent({}, function (ret, err) {
+        FT_JS_Bridge.sendEvent({"name":"rum"}, function (ret, err) {
            console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
 
@@ -146,14 +146,7 @@
 
     //这是必须要写的，用来初始化一些设置
     function setupWebViewJavascriptBridge(callback) {
-        if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
-        if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
-        window.WVJBCallbacks = [callback];
-        var WVJBIframe = document.createElement('iframe');
-        WVJBIframe.style.display = 'none';
-        WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
-        document.documentElement.appendChild(WVJBIframe);
-        setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
+        return callback(FTWKebViewJSBridge);
     }
 
 

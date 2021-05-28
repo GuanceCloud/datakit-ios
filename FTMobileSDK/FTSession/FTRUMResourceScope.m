@@ -32,7 +32,7 @@
         FTRUMResourceCommand *newCommand = (FTRUMResourceCommand *)command;
         if (newCommand.identifier == self.command.identifier) {
             switch (command.type) {
-                case FTRUMDataViewResourceError:{
+                case FTRUMDataResourceError:{
                     [self writeErrorEvent:command];
                     if (self.errorHandler) {
                         self.errorHandler();
@@ -40,7 +40,7 @@
                     return NO;
                 }
                     break;
-                case FTRUMDataViewResourceSuccess:{
+                case FTRUMDataResourceSuccess:{
                     [self writeResourceEvent:command];
                     if (self.resourceHandler) {
                         self.resourceHandler();

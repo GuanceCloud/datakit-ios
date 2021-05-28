@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) NSSet *netContentType;
 @property (nonatomic, assign) BOOL isBlueOn;
-@property (nonatomic, weak) id<FTRUMSessionResourceDelegate,FTRUMSessionErrorDelegate> sessionSourceDelegate;
+@property (nonatomic, weak) id<FTRUMSessionResourceDelegate,FTRUMSessionErrorDelegate,FTRUMWebViewJSBridgeDataDelegate> sessionSourceDelegate;
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例

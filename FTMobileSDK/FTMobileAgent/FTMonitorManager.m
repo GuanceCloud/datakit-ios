@@ -318,7 +318,6 @@ static dispatch_once_t onceToken;
 }
 - (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
       @try {
-       
         NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
             ZYErrorLog(@"Message body is formatted failure from JS SDK");
@@ -329,14 +328,17 @@ static dispatch_once_t onceToken;
             
             
         }else if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
-            NSString *measurement = messageDic[@"measurement"];
-            NSDictionary *tags = messageDic[@"tags"];
-            NSDictionary *fields = messageDic[@"fields"];
-            long long time = [messageDic[@"time"] longLongValue];
+            NSDictionary *data = messageDic[@"data"];
+            NSString *measurement = data[@"measurement"];
+            NSDictionary *tags = data[@"tags"];
+            NSDictionary *fields = data[@"fields"];
+            long long time = [data[@"time"] longLongValue];
             time = time>0?:[[NSDate date] ft_dateTimestamp];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-//                    [[FTMobileAgent sharedInstance] rumTrackES:measurement terminal:@"web" tags:tags fields:fields tm:time];
+                    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(webviewDataWithMeasurement:tags:fields:tm:)]) {
+                        [self.sessionSourceDelegate webviewDataWithMeasurement:measurement tags:tags fields:fields tm:time];
+                    }
                 }else if([name isEqualToString:@"track"]){
 //                    [[FTMobileAgent sharedInstance] rumTrack:measurement tags:tags fields:fields tm:time];
                 }else if([name isEqualToString:@"log"]){

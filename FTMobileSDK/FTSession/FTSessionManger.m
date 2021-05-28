@@ -33,13 +33,13 @@
 
 #pragma mark - FTRUMSessionErrorDelegate -
 - (void)notify_errorWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
-    FTRUMCommand *model = [[FTRUMCommand alloc]initWithType:FTRUMDataViewError time:[NSDate date]];
+    FTRUMCommand *model = [[FTRUMCommand alloc]initWithType:FTRUMDataError time:[NSDate date]];
     model.tags = tags;
     model.fields = field;
     [self process:model];
 }
 - (void)notify_longTaskWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
-    FTRUMCommand *model = [[FTRUMCommand alloc]initWithType:FTRUMDataViewLongTask time:[NSDate date]];
+    FTRUMCommand *model = [[FTRUMCommand alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
     model.tags = tags;
     model.fields = field;
     [self process:model];
@@ -107,7 +107,7 @@
     NSString *actionType = isHot?@"app_hot_start":@"app_cold_start";
     NSString *actionName = isHot?@"launch_hot":@"launch_cold";
     FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
-    FTRUMCommandType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
+    FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
     FTRUMCommand *launchModel = [[FTRUMCommand alloc]initWithType:type time:time];
     launchModel.baseActionData =actionModel;
     [self process:launchModel];
@@ -128,7 +128,7 @@
 
 #pragma mark - FTRUMSessionSourceDelegate -
 - (void)notify_resourceCreate:(FTTaskInterceptionModel *)resourceModel{
-    FTRUMResourceCommand *resourceStrat = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataViewResourceStart identifier:resourceModel.identifier];
+    FTRUMResourceCommand *resourceStrat = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataResourceStart identifier:resourceModel.identifier];
     
     [self process:resourceStrat];
 }
@@ -153,7 +153,7 @@
         tags[@"error_stack"] = @"error";
         tags[@"error_source"] = @"network";
         tags[@"error_type"] = @"network";
-        FTRUMResourceCommand *resourceError = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataViewResourceError identifier:resourceModel.identifier];
+        FTRUMResourceCommand *resourceError = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
         resourceError.tags = tags;
         [self process:resourceError];
 
@@ -200,12 +200,20 @@
     tags[@"resource_url_query"] =[task.originalRequest.URL query];
     tags[@"resource_url_path_group"] = url_path_group;
         
-        FTRUMResourceCommand *resourceSuccess = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataViewResourceSuccess identifier:resourceModel.identifier];
+        FTRUMResourceCommand *resourceSuccess = [[FTRUMResourceCommand alloc]initWithType:FTRUMDataResourceSuccess identifier:resourceModel.identifier];
         resourceSuccess.tags = tags;
         resourceSuccess.fields = fields;
         [self process:resourceSuccess];
     }
 
+}
+#pragma mark - FTRUMWebViewJSBridgeDataDelegate -
+
+- (void)webviewDataWithMeasurement:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
+    webModel.tags = tags;
+    webModel.fields = fields;
+    [self process:webModel];
 }
 #pragma mark - FTRUMScopeProtocol -
 -(BOOL)process:(FTRUMCommand *)commond{

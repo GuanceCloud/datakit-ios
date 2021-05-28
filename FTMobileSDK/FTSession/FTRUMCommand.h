@@ -8,27 +8,20 @@
 
 #import <Foundation/Foundation.h>
 @class FTTaskInterceptionModel;
-typedef NS_ENUM(NSUInteger, FTRUMCommandType) {
+typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataLaunchHot,
     FTRUMDataLaunchCold,
     FTRUMDataClick,
     FTRUMDataViewStart,
     FTRUMDataViewStop,
-    FTRUMDataViewLongTask,
-    FTRUMDataViewError,
-    FTRUMDataViewResourceStart,
-    FTRUMDataViewResourceSuccess,
-    FTRUMDataViewResourceError
+    FTRUMDataLongTask,
+    FTRUMDataError,
+    FTRUMDataResourceStart,
+    FTRUMDataResourceSuccess,
+    FTRUMDataResourceError,
+    FTRUMDataWebViewJSBData,
 };
-/**
- NSString * const FT_TYPE_RESOURCE = @"resource";
- NSString * const FT_TYPE_CRASH = @"crash";
- NSString * const FT_TYPE_FREEZE = @"freeze";
- NSString * const FT_TYPE_VIEW = @"view";
- NSString * const FT_TYPE_ERROR = @"error";
- NSString * const FT_TYPE_ACTION = @"action";
- NSString * const FT_TYPE_LONG_TASK = @"long_task";
- */
+
 NS_ASSUME_NONNULL_BEGIN
 //tags
 @interface FTRUMActionModel : NSObject
@@ -53,14 +46,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRUMCommand : NSObject
 
 @property (nonatomic, strong) NSDate *time;
-@property (nonatomic, assign) FTRUMCommandType type;
+@property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) NSDictionary *tags;
 @property (nonatomic, strong) NSDictionary *fields;
 
 @property (nonatomic, strong) FTRUMViewModel *baseViewData;
 @property (nonatomic, strong) FTRUMActionModel *baseActionData;
 @property (nonatomic, strong) FTRUMSessionModel *baseSessionData;
--(instancetype)initWithType:(FTRUMCommandType)type time:(NSDate *)time;
+-(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
 @interface FTRUMActionCommand : FTRUMCommand
 
@@ -71,7 +64,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRUMResourceCommand : FTRUMCommand
 @property (nonatomic, copy) NSString *identifier;
 
--(instancetype)initWithType:(FTRUMCommandType)type identifier:(NSString *)identifier;
+-(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier;
 @end
+@interface FTRUMWebViewData : FTRUMCommand
+@property (nonatomic, assign) long long tm;
+@property (nonatomic, copy) NSString *measurement;
+-(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm;
+@end
+
 
 NS_ASSUME_NONNULL_END

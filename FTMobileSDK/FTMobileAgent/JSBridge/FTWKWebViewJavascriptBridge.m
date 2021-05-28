@@ -83,7 +83,7 @@
 
 NSString * FTWebViewJavascriptBridge_js() {
 #define __WVJB_js_func__(x) #x
-
+    //FTWKebViewJSBridge
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {

@@ -22,7 +22,7 @@
 
 @end
 @implementation FTRUMCommand
--(instancetype)initWithType:(FTRUMCommandType)type time:(NSDate *)time{
+-(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time{
     self = [super init];
     if (self) {
         self.time = time;
@@ -58,7 +58,7 @@
 @end
 @implementation FTRUMResourceCommand
 
--(instancetype)initWithType:(FTRUMCommandType)type identifier:(NSString *)identifier{
+-(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier{
     self = [super initWithType:type time:[NSDate date]];
     if (self) {
         self.identifier = identifier;
@@ -66,4 +66,16 @@
     return self;
 }
     
+@end
+@implementation FTRUMWebViewData
+
+-(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm{
+    self = [super initWithType:FTRUMDataWebViewJSBData time:[NSDate date]];
+    if (self) {
+        self.measurement = measurement;
+        self.tm = tm;
+    }
+    return self;
+}
+
 @end
