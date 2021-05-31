@@ -297,9 +297,6 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
                 return;
             }
             NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-            NSDictionary *field =  @{@"crash_message":[exception reason],
-                                     @"crash_stack":info,
-            };
             NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
             NSDictionary *tags = @{@"error_starttime":crashDate,
                                    @"error_message":[exception reason],
