@@ -12,6 +12,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "NSDate+FTAdd.h"
+#import "FTBaseInfoHander.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
@@ -88,13 +89,17 @@
             }
         }
             break;
-        case FTRUMDataError:
+        case FTRUMDataError:{
             if (self.isActiveView) {
-                model.baseActionData = self.actionHandler.model.baseActionData;
+                self.viewStopTime = [NSDate date];
                 self.viewErrorCount++;
+                model.baseActionData = self.actionHandler.model.baseActionData;
                 [self writeErrorData:model];
             }
+            [self writeViewData];
+            return NO;
             break;
+        }
         case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceDataModel *)model];
@@ -159,7 +164,7 @@
 - (void)writeErrorData:(FTRUMDataModel *)model{
     //判断冷启动 冷启动可能没有viewModel
     NSDictionary *viewTag = self.viewModel?@{@"view_id":self.viewModel.view_id,
-                                             @"is_active":@(self.isActiveView),
+                                             @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
                                              @"view_referrer":self.viewModel.view_referrer,
                                              @"view_name":self.viewModel.view_name,
     }:@{};
@@ -187,9 +192,9 @@
     if (!self.viewModel) {
         return;
     }
-    
+    NSNumber *timeSpend = [self.viewStopTime ft_nanotimeIntervalSinceDate:self.viewStartTime];
     NSDictionary *tags = @{@"view_id":self.viewModel.view_id,
-                           @"is_active":@(self.isActiveView),
+                           @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
                            @"view_referrer":self.viewModel.view_referrer,
                            @"view_name":self.viewModel.view_name,
                            @"session_id":self.sessionModel.session_id,
@@ -199,7 +204,7 @@
                                    @"view_resource_count":@(self.viewResourceCount),
                                    @"view_long_task_count":@(self.viewLongTaskCount),
                                    @"view_action_count":@(self.viewActionCount),
-                                   @"time_spent":[self.viewStopTime ft_nanotimeIntervalSinceDate:self.viewStartTime],
+                                   @"time_spent":timeSpend,
                                    
     }.mutableCopy;
     if (![self.viewModel.loading_time isEqual:@0]) {

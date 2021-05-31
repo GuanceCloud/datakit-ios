@@ -11,6 +11,7 @@
 #import "FTRUMDataModel.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHander.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) FTRUMResourceDataModel *model;
@@ -64,7 +65,7 @@
     NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
                                                         @"view_name":self.model.baseViewData.view_name,
                                                         @"view_referrer":self.model.baseViewData.view_referrer,
-                                                        @"is_active":@(self.parent.isActiveView),
+                                                        @"is_active":[FTBaseInfoHander boolStr:self.parent.isActiveView],
     }:@{};
     NSDictionary *actiontags =self.model.baseActionData? @{@"action_id":self.model.baseActionData.action_id,
                            @"action_name":self.model.baseActionData.action_name,
@@ -84,7 +85,7 @@
     NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
                                                         @"view_name":self.model.baseViewData.view_name,
                                                         @"view_referrer":self.model.baseViewData.view_referrer,
-                                                        @"is_active":@(self.parent.isActiveView),
+                                                        @"is_active":[FTBaseInfoHander boolStr:self.parent.isActiveView],
     }:@{};
     NSDictionary *actiontags =self.model.baseActionData? @{@"action_id":self.model.baseActionData.action_id,
                            @"action_name":self.model.baseActionData.action_name,
