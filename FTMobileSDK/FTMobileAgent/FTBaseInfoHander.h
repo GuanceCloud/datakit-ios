@@ -56,8 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setUserId:(nullable NSString *)userid;
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
-+ (NSString *)urlPathGroup:(NSURL *)url;
++ (NSString *)replaceNumberCharByUrl:(NSURL *)url;
 + (NSString *)getIPWithHostName:(const NSString *)hostName;
++ (NSString *)boolStr:(BOOL)isTrue;
 @end
 
 NS_ASSUME_NONNULL_END

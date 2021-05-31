@@ -131,7 +131,7 @@
     
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    NSString *url_path_group = [FTBaseInfoHander urlPathGroup:task.originalRequest.URL];
+    NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:task.originalRequest.URL];
     tags[@"resource_url_path_group"] =url_path_group;
     tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
     tags[@"resource_url_host"] = task.originalRequest.URL.host;
@@ -146,6 +146,7 @@
         tags[@"error_type"] = @"network";
         FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
         resourceError.tags = tags;
+        resourceError.fields = @{};
         [self process:resourceError];
         
     }else{
