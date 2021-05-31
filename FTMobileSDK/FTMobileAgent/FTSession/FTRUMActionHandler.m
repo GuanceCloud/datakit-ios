@@ -11,8 +11,9 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTRUMViewHandler.h"
-static const NSTimeInterval discreteActionTimeoutDuration = 0.1; // 100 milliseconds
-static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
+#import "FTBaseInfoHander.h"
+static const NSTimeInterval actionTimeoutDuration = 0.1; // 100 milliseconds
+static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong,readwrite) FTRUMDataModel *model;
@@ -71,10 +72,10 @@ static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
 
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval timeElapsedSinceStartTime = [currentTime timeIntervalSinceDate:_actionStartTime];
-    BOOL timedOut = timeElapsedSinceStartTime >= discreteActionTimeoutDuration;
+    BOOL timedOut = timeElapsedSinceStartTime >= actionTimeoutDuration;
     
     NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
-    BOOL expired = sessionDuration >= continuousActionMaxDuration;
+    BOOL expired = sessionDuration >= actionMaxDuration;
     
     return timedOut || expired;
 }
@@ -83,7 +84,7 @@ static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
     return self.activeResourcesCount<=0;
 }
 -(void)writeActionData:(NSDate *)endDate{
-    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= continuousActionMaxDuration?@(continuousActionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
+    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
 
     NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
                                  @"session_type":self.model.baseSessionData.session_type,
@@ -91,7 +92,7 @@ static const NSTimeInterval continuousActionMaxDuration = 10; // 10 seconds
     NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
                                                         @"view_name":self.model.baseViewData.view_name,
                                                         @"view_referrer":self.model.baseViewData.view_referrer,
-                                                        @"is_active":@(self.parent.isActiveView),
+                                                        @"is_active":[FTBaseInfoHander boolStr:self.parent.isActiveView],
     }:@{};
     NSDictionary *actiontags = @{@"action_id":self.model.baseActionData.action_id,
                            @"action_name":self.model.baseActionData.action_name,

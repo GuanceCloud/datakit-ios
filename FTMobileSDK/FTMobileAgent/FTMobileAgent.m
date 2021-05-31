@@ -31,7 +31,7 @@
 #import "FTLogHook.h"
 #import "FTNetworkInfo.h"
 #import "FTMonitorUtils.h"
-#import "FTSessionManger.h"
+#import "FTRUMManger.h"
 @interface FTMobileAgent ()
 @property (nonatomic, assign) SCNetworkReachabilityRef reachability;
 @property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
@@ -45,7 +45,7 @@
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) BOOL running; //正在运行
 @property (nonatomic, copy) NSString *netTraceStr;
-@property (nonatomic, strong) FTSessionManger *sessionManger;
+@property (nonatomic, strong) FTRUMManger *rumManger;
 @end
 @implementation FTMobileAgent
 
@@ -87,9 +87,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _running = NO;
             _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:config.networkTraceType];
             [FTLog enableLog:config.enableSDKDebugLog];
-            _sessionManger = [[FTSessionManger alloc]init];
+            _rumManger = [[FTRUMManger alloc]init];
             _track = [[FTTrack alloc]init];
-            _track.rumActionDelegate = _sessionManger;
+            _track.rumActionDelegate = _rumManger;
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
@@ -97,14 +97,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             [self setUpListeners];
             _presetProperty = [[FTPresetProperty alloc]initWithAppid:config.appid version:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
             [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
-            [FTUncaughtExceptionHandler sharedHandler].errorDelegate = _sessionManger;
+            [FTUncaughtExceptionHandler sharedHandler].errorDelegate = _rumManger;
             _upTool = [[FTUploadTool alloc]initWithConfig:config];
             if (config.traceConsoleLog) {
                 [self _traceConsoleLog];
             }
         
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
-            [FTMonitorManager sharedInstance].sessionSourceDelegate = _sessionManger;
+            [FTMonitorManager sharedInstance].sessionSourceDelegate = _rumManger;
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -214,7 +214,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         baseTags[@"network_type"] = self.net;
         [baseTags addEntriesFromDictionary:[self.presetProperty esPropertyWithType:type terminal:terminal]];
         if ([type isEqualToString:FT_TYPE_ERROR]) {
-            dataType = FTAddDataImmediate;
             if ([terminal isEqualToString:FT_TERMINAL_APP]) {
                 baseTags[@"crash_situation"] = _running?@"run":@"startup";
                 if (self.config.monitorInfoType & FTMonitorInfoTypeBluetooth) {

@@ -1,11 +1,11 @@
 //
-//  FTSessionManger.m
+//  FTRUMManger.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/5/21.
 //  Copyright © 2021 hll. All rights reserved.
 //
-#import "FTSessionManger.h"
+#import "FTRUMManger.h"
 #import "FTBaseInfoHander.h"
 #import "FTRUMSessionHandler.h"
 #import "UIViewController+FTAutoTrack.h"
@@ -15,17 +15,19 @@
 #import "NSDate+FTAdd.h"
 #import "FTLog.h"
 #import "FTJSONUtil.h"
-@interface FTSessionManger()<FTRUMSessionProtocol>
+@interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, weak) UIViewController *currentViewController;
+@property (nonatomic, strong) dispatch_queue_t concurrentQueue;
 
 @end
-@implementation FTSessionManger
+@implementation FTRUMManger
 
 -(instancetype)init{
     self = [super init];
     if (self) {
         self.assistant = self;
+        self.concurrentQueue= dispatch_queue_create([@"io.concurrentQueue.rum" UTF8String], DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
@@ -72,9 +74,9 @@
         UIButton *btn =(UIButton *)clickView;
         viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
     }
-    NSString *actionType = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
+    NSString *actionName = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
     
-    FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"click" actionType:actionType];
+    FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
     FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:time];
     model.baseActionData = actionModel;
     [self process:model];
@@ -93,8 +95,8 @@
         startModel.baseViewData = viewModel;
         [self process:startModel];
     }
-    NSString *actionType = isHot?@"app_hot_start":@"app_cold_start";
-    NSString *actionName = isHot?@"launch_hot":@"launch_cold";
+    NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
+    NSString *actionType = isHot?@"launch_hot":@"launch_cold";
     FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
     FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
     FTRUMDataModel *launchModel = [[FTRUMDataModel alloc]initWithType:type time:time];
@@ -148,7 +150,6 @@
         
     }else{
         NSDictionary *responseHeader = response.allHeaderFields;
-        NSString *url_path_group =task.originalRequest.URL.relativePath ;
         if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
             tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
         }

@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
-#import "FTSessionManger.h"
+#import "FTRUMManger.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) NSSet *netContentType;
