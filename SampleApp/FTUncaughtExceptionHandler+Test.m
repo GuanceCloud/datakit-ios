@@ -17,34 +17,31 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
-    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-    NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
+    NSString *info = @"";
     for (FTMobileAgent *instance in self.ftSDKInstances) {
-    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-    if ([instance judgeRUMTraceOpen]) {
-        if (![instance judgeIsTraceSampling]) {
-            return;
+        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+        if ([instance judgeRUMTraceOpen]) {
+            if (![instance judgeIsTraceSampling]) {
+                return;
+            }
+            info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
+            //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
+            NSDictionary *field = @{ @"error_message":[exception reason],
+                                     @"error_stack":info,
+            };
+            NSDictionary *tags = @{
+                @"error_type":[exception name],
+                @"error_source":@"logger",
+            };
+            
+            if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
+                [self.errorDelegate ftErrorWithtags:tags field:field];
+            }
+        }else if(instance.config.enableTrackAppCrash){
+            NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
+            info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
+            [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
         }
-        NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-        NSDictionary *field =  @{@"crash_message":[exception reason],
-                                 @"crash_stack":info,
-        };
-        NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
-        NSDictionary *tags = @{@"error_starttime":crashDate,
-                               @"error_message":[exception reason],
-                               @"error_stack":info,
-                               @"error_source":@"logger",
-                               @"error_type":[exception name]
-        };
-        
-        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-            [self.errorDelegate ftErrorWithtags:tags field:@{}];
-        }
-    }else if(instance.config.enableTrackAppCrash){
-        NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
-        NSString *info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-        [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
-    }
     }
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

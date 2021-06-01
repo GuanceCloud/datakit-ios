@@ -49,7 +49,7 @@
         config.enableTrackAppCrash = YES;
         config.enableTrackAppFreeze = YES;
         config.enableTrackAppANR = YES;
-        config.eventFlowLog = YES;
+        config.enableTraceUserAction = YES;
         [FTMobileAgent startWithConfigOptions:config];
         self.config = config;
     }
