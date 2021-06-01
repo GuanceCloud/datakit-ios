@@ -9,7 +9,11 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
+typedef NS_ENUM(NSInteger, FTDataType) {
+    FTDataTypeRUM,
+    FTDataTypeLOGGING,
+    FTDataTypeTRACING,
+};
 @interface FTRecordModel : NSObject
 //数据库自增id
 @property (nonatomic, assign) long _id;
@@ -23,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 //上传时的API类型
 @property (nonatomic, strong) NSString *op;
 
+-(instancetype)initWithMeasurement:(NSString *)measurement op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
 @end
 
 NS_ASSUME_NONNULL_END
