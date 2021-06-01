@@ -14,7 +14,6 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) NSSet *netContentType;
-@property (nonatomic, assign) BOOL isBlueOn;
 @property (nonatomic, weak) id<FTRUMSessionResourceDelegate,FTRUMSessionErrorDelegate,FTRUMWebViewJSBridgeDataDelegate> sessionSourceDelegate;
 /**
  * 获取 FTMonitorManager 单例
@@ -24,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)setMobileConfig:(FTMobileConfig *)config;
 
-- (NSNumber *)fpsValue;
 - (BOOL)trackUrl:(NSURL *)url;
 - (void)trackUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler;
 - (void)resetInstance;

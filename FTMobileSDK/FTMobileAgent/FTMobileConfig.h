@@ -22,16 +22,12 @@ typedef NS_ENUM(NSInteger, FTStatus) {
  *  FTMonitorInfoTypeBattery  - 电池电量
  *  FTMonitorInfoTypeMemory   - 内存总量、内存使用率
  *  FTMonitorInfoTypeCpu      - CPU使用率
- *  FTMonitorInfoTypeBluetooth- 蓝牙是否开启
- *  FTMonitorInfoTypeFPS      - 每秒传输帧数
  */
 typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
     FTMonitorInfoTypeAll          = 0xFFFFFFFF,
     FTMonitorInfoTypeBattery      = 1 << 1,
     FTMonitorInfoTypeMemory       = 1 << 2,
     FTMonitorInfoTypeCpu          = 1 << 3,
-    FTMonitorInfoTypeBluetooth    = 1 << 4,
-    FTMonitorInfoTypeFPS          = 1 << 5,
 };
 /**
  * @enum
@@ -118,6 +114,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *serviceName;
 /**
+ * 设置是否追踪用户操作，目前支持应用启动和点击操作
+ */
+@property (nonatomic, assign) BOOL enableTraceUserAction;
+/**
  * 设置是否需要采集崩溃日志
  */
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
@@ -134,10 +134,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置是否需要采集控制台日志 默认为NO
  */
 @property (nonatomic, assign) BOOL traceConsoleLog;
-/**
- * 可以在 web 版本日志中，查看到对应上报的日志，事件支持启动应用，进入页面，离开页面，事件点击等等  默认为NO
-*/
-@property (nonatomic, assign) BOOL eventFlowLog;
 /**
  * 设置网络请求信息采集 默认为NO
 */

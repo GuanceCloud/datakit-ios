@@ -15,17 +15,19 @@
 #import "NSDate+FTAdd.h"
 #import "FTLog.h"
 #import "FTJSONUtil.h"
+#import "FTMobileConfig.h"
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, weak) UIViewController *currentViewController;
 @property (nonatomic, strong) dispatch_queue_t concurrentQueue;
-
+@property (nonatomic, strong) FTMobileConfig *config;
 @end
 @implementation FTRUMManger
 
--(instancetype)init{
+-(instancetype)initWithConfig:(FTMobileConfig *)config{
     self = [super init];
     if (self) {
+        self.config = config;
         self.assistant = self;
         self.concurrentQueue= dispatch_queue_create([@"io.concurrentQueue.rum" UTF8String], DISPATCH_QUEUE_CONCURRENT);
     }
@@ -50,7 +52,6 @@
     NSDate *time = [NSDate date];
     self.currentViewController = viewController;
     NSString *className = NSStringFromClass(viewController.class);
-
     //viewModel
     FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewController.ft_parentVC];
     viewModel.loading_time = viewController.ft_loadDuration;
@@ -61,12 +62,14 @@
 }
 -(void)ftViewDidDisappear:(UIViewController *)viewController{
     NSDate *time = [NSDate date];
-
     FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
     [self process:model];
     
 }
 - (void)ftClickView:(UIView *)clickView{
+    if (!self.config.enableTraceUserAction) {
+        return;
+    }
     NSDate *time = [NSDate date];
     NSString *className = NSStringFromClass(clickView.class);
     NSString *viewTitle = @"";
@@ -94,6 +97,9 @@
         startModel.baseActionData = startActionModel;
         startModel.baseViewData = viewModel;
         [self process:startModel];
+    }
+    if (!self.config.enableTraceUserAction) {
+        return;
     }
     NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
     NSString *actionType = isHot?@"launch_hot":@"launch_cold";
@@ -125,10 +131,9 @@
 }
 - (void)ftResourceCompleted:(FTTaskInterceptionModel *)resourceModel{
     NSURLSessionTask *task = resourceModel.task;
-    NSError *error = resourceModel.error;
     NSURLSessionTaskTransactionMetrics *taskMes = [resourceModel.metrics.transactionMetrics lastObject];
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
-    
+    NSError *error = resourceModel.error?resourceModel.error:response.ft_getResponseError;
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *fields = [NSMutableDictionary new];
     NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:task.originalRequest.URL];
@@ -138,15 +143,16 @@
     tags[@"resource_url_path"] = task.originalRequest.URL.path;
     tags[@"resource_method"] = task.originalRequest.HTTPMethod;
     tags[@"resource_status"] = error ?[NSNumber numberWithInteger:error.code] : [task.response ft_getResponseStatusCode];
-    if(error || [[task.response ft_getResponseStatusCode] integerValue] >=400){
-        tags[@"error_starttime"] = @([taskMes.requestEndDate ft_dateTimestamp]);
-        tags[@"error_message"] = error?[NSString stringWithFormat:@"%@-%ld",error.domain,(long)error.code]:@(response.statusCode);
-        tags[@"error_stack"] = @"error";
+    if(error){
         tags[@"error_source"] = @"network";
-        tags[@"error_type"] = @"network";
+        tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
+        NSDictionary *field = @{@"error_message":error.localizedDescription,
+                                @"error_stack":error,
+        };
         FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
+        resourceError.time = taskMes.requestEndDate;
         resourceError.tags = tags;
-        resourceError.fields = @{};
+        resourceError.fields = field;
         [self process:resourceError];
         
     }else{

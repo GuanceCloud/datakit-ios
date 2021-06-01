@@ -28,9 +28,9 @@
         _enableTrackAppFreeze = NO;
         _enableTrackAppANR = NO;
         _traceConsoleLog = NO;
-        _eventFlowLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _env = FTEnvProd;
+        _enableTraceUserAction = NO;
     }
       return self;
 }
@@ -51,9 +51,9 @@
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.version = self.version;
     options.traceConsoleLog = self.traceConsoleLog;
-    options.eventFlowLog = self.eventFlowLog;
     options.appid = self.appid;
     options.monitorInfoType = self.monitorInfoType;
+    options.enableTraceUserAction = self.enableTraceUserAction;
     return options;
 }
 -(void)networkTraceWithTraceType:(FTNetworkTraceType)type{
