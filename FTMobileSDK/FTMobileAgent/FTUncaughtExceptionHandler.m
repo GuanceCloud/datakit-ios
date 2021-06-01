@@ -43,10 +43,7 @@ static SignalHandler previousPIPESignalHandler = NULL;
 static SignalHandler previousSEGVSignalHandler = NULL;
 static SignalHandler previousSYSSignalHandler = NULL;
 static SignalHandler previousTRAPSignalHandler = NULL;
-//初始化的错误条数
-volatile int32_t UncaughtExceptionCount = 0;
-//错误最大的条数
-const int32_t UncaughtExceptionMaximum = 10;
+
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 @interface FTUncaughtExceptionHandler()
@@ -55,72 +52,68 @@ static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 @implementation FTUncaughtExceptionHandler
 
 void HandleException(NSException *exception) {
+ 
+    //获取调用堆栈
+    NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
+    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
     
-    int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
-    // 如果太多不用处理
-    if (exceptionCount <= UncaughtExceptionMaximum) {
-        //获取调用堆栈
-        NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
-        [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
-        
-        //在主线程中，执行制定的方法, withObject是执行方法传入的参数
-        [[FTUncaughtExceptionHandler sharedHandler]
-         performSelectorOnMainThread:@selector(handleException:)
-         withObject:
-         [NSException exceptionWithName:@"ios_crash"
-                                 reason:[exception reason]
-                               userInfo:userInfo]
-         waitUntilDone:YES];
-    }
+    //在主线程中，执行制定的方法, withObject是执行方法传入的参数
+    [[FTUncaughtExceptionHandler sharedHandler]
+     performSelectorOnMainThread:@selector(handleException:)
+     withObject:
+     [NSException exceptionWithName:@"ios_crash"
+                             reason:[exception reason]
+                           userInfo:userInfo]
+     waitUntilDone:YES];
+    
     if (previousUncaughtExceptionHandler) {
         previousUncaughtExceptionHandler(exception);
     }
 }
 ////2.2、signal报错处理
 static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
-    int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
-    if (exceptionCount <= UncaughtExceptionMaximum) {
-        NSString* description = nil;
-        NSString *name = @"ios_crash";
-        switch (signal) {
-            case SIGABRT:
-                name = @"abort";
-                description = [NSString stringWithFormat:@"Signal SIGABRT was raised!\n"];
-                break;
-            case SIGILL:
-                description = [NSString stringWithFormat:@"Signal SIGILL was raised!\n"];
-                break;
-            case SIGSEGV:
-                description = [NSString stringWithFormat:@"Signal SIGSEGV was raised!\n"];
-                break;
-            case SIGFPE:
-                description = [NSString stringWithFormat:@"Signal SIGFPE was raised!\n"];
-                break;
-            case SIGBUS:
-                description = [NSString stringWithFormat:@"Signal SIGBUS was raised!\n"];
-                break;
-            case SIGPIPE:
-                description = [NSString stringWithFormat:@"Signal SIGPIPE was raised!\n"];
-                break;
-            default:
-                description = [NSString stringWithFormat:@"Signal %d was raised!",signal];
-        }
-        // 保存崩溃日志
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        NSArray *callStack = [FTUncaughtExceptionHandler backtrace];
-        NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
-        [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
-        [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
-        @try {
-            [[FTUncaughtExceptionHandler sharedHandler]
-             performSelectorOnMainThread:@selector(handleException:) withObject:
-             [NSException exceptionWithName:name reason:description userInfo:userInfo]
-             waitUntilDone:YES];
-        } @catch (NSException *exception) {
-        }
-        
+    
+    NSString* description = nil;
+    NSString *name = @"ios_crash";
+    switch (signal) {
+        case SIGABRT:
+            name = @"abort";
+            description = [NSString stringWithFormat:@"Signal SIGABRT was raised!\n"];
+            break;
+        case SIGILL:
+            description = [NSString stringWithFormat:@"Signal SIGILL was raised!\n"];
+            break;
+        case SIGSEGV:
+            description = [NSString stringWithFormat:@"Signal SIGSEGV was raised!\n"];
+            break;
+        case SIGFPE:
+            description = [NSString stringWithFormat:@"Signal SIGFPE was raised!\n"];
+            break;
+        case SIGBUS:
+            description = [NSString stringWithFormat:@"Signal SIGBUS was raised!\n"];
+            break;
+        case SIGPIPE:
+            description = [NSString stringWithFormat:@"Signal SIGPIPE was raised!\n"];
+            break;
+        default:
+            description = [NSString stringWithFormat:@"Signal %d was raised!",signal];
     }
+    // 保存崩溃日志
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    NSArray *callStack = [FTUncaughtExceptionHandler backtrace];
+    NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
+    [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
+    [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
+    @try {
+        [[FTUncaughtExceptionHandler sharedHandler]
+         performSelectorOnMainThread:@selector(handleException:) withObject:
+         [NSException exceptionWithName:name reason:description userInfo:userInfo]
+         waitUntilDone:YES];
+    } @catch (NSException *exception) {
+    }
+    
+    
     // 调用之前崩溃的回调函数
     // 在自己handler处理完后自觉把别人的handler注册回去，规规矩矩的传递
     previousSignalHandler(signal, info, context);
@@ -297,16 +290,17 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
                 return;
             }
             NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
-            NSDictionary *tags = @{@"error_starttime":crashDate,
-                                   @"error_message":[exception reason],
-                                   @"error_stack":info,
-                                   @"error_source":@"logger",
-                                   @"error_type":[exception name]
+            //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
+            NSDictionary *field = @{ @"error_message":[exception reason],
+                                     @"error_stack":info,
+            };
+            NSDictionary *tags = @{
+                @"error_type":[exception name],
+                @"error_source":@"logger",
             };
             
             if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-                [self.errorDelegate ftErrorWithtags:tags field:@{}];
+                [self.errorDelegate ftErrorWithtags:tags field:field];
             }
         }else if(instance.config.enableTrackAppCrash){
             NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
@@ -316,7 +310,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     }
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
-
+    
 }
 + (long)ft_calculateImageSlide{
     long slide = -1;
