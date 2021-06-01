@@ -130,16 +130,10 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
                 vc.ft_loadDuration = loadTime;
                 vc.ft_viewLoadStartTime = nil;
-                [weakSelf trackOpenWithCpn:vc duration:loadTime];
             }else{
                 NSNumber *loadTime = @0;
                 vc.ft_loadDuration = loadTime;
             }
-            if(weakSelf.previousTrackViewController != vc){
-                weakSelf.previousTrackViewController = vc;
-                [weakSelf track:FT_AUTO_TRACK_OP_ENTER withCpn:vc WithClickView:nil];
-            }
-
             if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
                 [self.rumActionDelegate ftViewDidAppear:vc];
             }
@@ -154,7 +148,6 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
             [self.rumActionDelegate ftViewDidDisappear:tempVC];
         }
-        [weakSelf track:FT_AUTO_TRACK_OP_LEAVE withCpn:tempVC WithClickView:nil];
     } error:nil];
     [self.aspectTokenAry addObjectsFromArray:@[viewLoad,viewAppear,lifeClose]];
 }
@@ -172,7 +165,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         [target aspect_hookSelector:@selector(tableView:didSelectRowAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UITableView *tableView, NSIndexPath *indexPath) {
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:tableView index:indexPath];
+            [weakSelf trackClickWithCpn:aspectInfo.instance WithClickView:tableView index:indexPath];
         } error:NULL];
         
     }error:nil];
@@ -193,7 +186,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         [target aspect_hookSelector:@selector(collectionView:didSelectItemAtIndexPath:)
                         withOptions:ZY_AspectPositionBefore
                          usingBlock:^(id<ZY_AspectInfo> aspectInfo, UICollectionView *collectionView, NSIndexPath *indexPath) {
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:collectionView index:indexPath];
+            [weakSelf trackClickWithCpn:aspectInfo.instance WithClickView:collectionView index:indexPath];
         } error:NULL];
         
     }error:nil];
@@ -214,7 +207,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                     if (ges.state != UIGestureRecognizerStateEnded) {
                         return;
                     }
-                    [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:aspectInfo.instance WithClickView:ges.view];
+                    [weakSelf trackClickWithCpn:aspectInfo.instance WithClickView:ges.view];
                 } error:nil];
             }
         }
@@ -250,7 +243,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if ([weakSelf isBlackListContainsViewController:vc]) {
                 return;
             }
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:ges.view];
+            [weakSelf trackClickWithCpn:vc WithClickView:ges.view];
             return;
         }else if([from isKindOfClass:NSClassFromString(@"_UIButtonBarButton")]){
             //UIBarButtonItem 点击
@@ -263,7 +256,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if ([weakSelf isBlackListContainsViewController:vc]) {
                 return;
             }
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:view];
+            [weakSelf trackClickWithCpn:vc WithClickView:view];
             return;
         }else if ([from isKindOfClass:UIView.class]) {
             //因为UITabBar点击会调用 _buttonDown：\ _buttonUp:\_sendAction:withEvent: 三个方法，会产生重复数据 所以只抓取UITabBar 的_buttonDown：方法 来记录一次UITabBar点击
@@ -282,7 +275,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             if ([weakSelf isBlackListContainsViewController:vc]) {
                 return;
             }
-            [weakSelf track:FT_AUTO_TRACK_OP_CLICK withCpn:vc WithClickView:from];
+            [weakSelf trackClickWithCpn:vc WithClickView:from];
             
         }
     } error:NULL];
@@ -312,82 +305,17 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     }];
     return isContains;
 }
-//-(void)trackStartWithTime:(NSDate *)time{
-//    @try {
-//        [[FTMobileAgent sharedInstance] trackStartWithViewLoadTime:time];
-//    } @catch (NSException *exception) {
-//        ZYErrorLog(@" error: %@", exception);
-//    }
-//}
--(void)trackOpenWithCpn:(id<FTAutoTrackViewControllerProperty>)cpn duration:(NSNumber *)duration{
-    @try {
-        FTMobileAgent *instance = [FTMobileAgent sharedInstance];
-        if (instance.config.eventFlowLog) {
-            NSString *name = NSStringFromClass(cpn.class);
-            NSString *view_id = cpn.ft_viewControllerId;
-            NSString *parent = cpn.ft_parentVC;
-            NSMutableDictionary *tags = @{@"view_id":view_id,
-                                          @"view_name":name,
-                                          @"view_referrer":parent,
-            }.mutableCopy;
-            NSMutableDictionary *fields = @{
-                @"duration":duration,
-            }.mutableCopy;
-            if (instance.config.monitorInfoType & FTMonitorInfoTypeFPS) {
-                NSNumber *fps = [[FTMonitorManager sharedInstance] fpsValue];
-                if (fps.intValue != 0) {
-                    fields[@"view_fps"] =fps;
-                }
-            }
-            int apdexlevel = duration.intValue/1000000000 <=9 ? : 9;
-            tags[@"app_apdex_level"] = [NSNumber numberWithInt:apdexlevel];
-            NSMutableDictionary *content = @{FT_KEY_EVENT:FT_AUTO_TRACK_OP_OPEN}.mutableCopy;
-            [content setValue:NSStringFromClass([cpn class]) forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-            NSDictionary *tag = @{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",FT_AUTO_TRACK_OP_OPEN,FT_KEY_EVENT]};
-            NSDictionary *field = @{FT_KEY_DURATION:duration};
-            [instance loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:field tm:[[NSDate date] ft_dateTimestamp]];
-        }
-        
-    } @catch (NSException *exception) {
-        ZYErrorLog(@" error: %@", exception);
-    }
+
+-(void)trackClickWithCpn:( id)cpn WithClickView:( id)view{
+    [self trackClickWithCpn:cpn WithClickView:view index:nil];
 }
--(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view{
-    [self track:op withCpn:cpn WithClickView:view index:nil];
-}
--(void)track:(NSString *)op withCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
-    if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]) {
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftClickView:)]) {
-            [self.rumActionDelegate ftClickView:view];
-        }
-    }
-    
-    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
-    if(!agent.config.eventFlowLog){
-        return;
-    }
+-(void)trackClickWithCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
     @try {
-        //事件日志
-        NSMutableDictionary *content = [NSMutableDictionary new];
-        if (![op isEqualToString:FT_AUTO_TRACK_OP_LAUNCH]) {
-            NSString *current = nil;
-            if ([cpn isKindOfClass:UIView.class]) {
-                current = NSStringFromClass([cpn ft_currentViewController].class);
-            }else if ([cpn isKindOfClass:UIViewController.class]){
-                current = NSStringFromClass([cpn class]);
+       
+            if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftClickView:)]) {
+                [self.rumActionDelegate ftClickView:view];
             }
-            [content setValue:current forKey:FT_AUTO_TRACK_CURRENT_PAGE_NAME];
-            //点击事件 添加视图树
-            if ([op isEqualToString:FT_AUTO_TRACK_OP_CLICK]&&[view isKindOfClass:UIView.class]) {
-                NSString *vtp =[view ft_parentsView];
-                [content setValue:vtp forKey:FT_AUTO_TRACK_VTP_TREE_PATH];
-            }
-        }
-        [content setValue:op forKey:FT_KEY_EVENT];
-        NSDictionary *tag =@{FT_KEY_OPERATION:[NSString stringWithFormat:@"%@/%@",op,FT_KEY_EVENT]};
-        [agent loggingWithType:FTAddDataNormal status:FTStatusInfo content:[FTJSONUtil convertToJsonData:content] tags:tag field:nil tm:[[NSDate date] ft_dateTimestamp]];
-        
-    } @catch (NSException *exception) {
+    }@catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }
 }
