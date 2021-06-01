@@ -102,7 +102,7 @@
     return cookiesHeader;
 }
 - (NSString *)ft_getOperationName{
-    return [NSString stringWithFormat:@"%@/http",self.HTTPMethod];
+    return [NSString stringWithFormat:@"%@ %@",self.HTTPMethod,self.URL.path];
 }
 - (NSString *)ft_getNetworkTraceId{
     NSDictionary *header = self.allHTTPHeaderFields;
