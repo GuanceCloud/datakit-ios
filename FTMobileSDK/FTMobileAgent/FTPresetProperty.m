@@ -733,7 +733,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 - (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
     [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
-    dict[FT_KEY_SOURCE] = type;
     dict[FT_SDK_NAME] = [terminal isEqualToString:@"app"]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
     if ([type isEqualToString:FT_TYPE_ERROR]) {
