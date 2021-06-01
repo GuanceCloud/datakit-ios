@@ -75,14 +75,14 @@
         return;
     }
     NSDate *time = [NSDate date];
-    dispatch_async(self.serialQueue, ^{
-
-    NSString *className = NSStringFromClass(clickView.class);
     NSString *viewTitle = @"";
     if ([clickView isKindOfClass:UIButton.class]) {
         UIButton *btn =(UIButton *)clickView;
         viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
     }
+    dispatch_async(self.serialQueue, ^{
+    NSString *className = NSStringFromClass(clickView.class);
+   
     NSString *actionName = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
     
     FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
@@ -94,11 +94,11 @@
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot{
     NSDate *time = [NSDate date];
     NSString *viewReferrer = _currentViewController.ft_parentVC;
+    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
     dispatch_async(self.serialQueue, ^{
     //热启动时 如果有viewController 开启view
         if (isHot&&self->_currentViewController) {
         NSString *className = NSStringFromClass(self.currentViewController.class);
-        NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
         NSString *startActionType = [NSString stringWithFormat:@"[%@]%@start",className,vcTitle];
         FTRUMActionModel *startActionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"view" actionType:startActionType];
         FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewReferrer];
@@ -119,12 +119,12 @@
     [self process:launchModel];
     });
 }
-- (void)ftApplicationWillResignActive{
+- (void)ftApplicationWillTerminate{
     NSDate *time = [NSDate date];
-    dispatch_async(self.serialQueue, ^{
-        if (self->_currentViewController) {
-        NSString *className = NSStringFromClass(_currentViewController.class);
-        NSString *vcTitle = _currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",_currentViewController.title]:@"";
+    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
+    dispatch_sync(self.serialQueue, ^{
+        if (self.currentViewController) {
+        NSString *className = NSStringFromClass(self.currentViewController.class);
         NSString *actionType = [NSString stringWithFormat:@"[%@]%@stop",className,vcTitle];
         FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"view" actionType:actionType];
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
