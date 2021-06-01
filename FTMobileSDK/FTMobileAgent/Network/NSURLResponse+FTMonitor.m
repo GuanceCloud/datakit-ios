@@ -75,4 +75,12 @@
     }
     return group;
 }
+- (nullable NSError *)ft_getResponseError{
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+    if (httpResponse.statusCode<400) {
+        return nil;
+    }
+    NSString *message = [NSString stringWithFormat:@"%ld-%@",(long)httpResponse.statusCode,[NSHTTPURLResponse localizedStringForStatusCode:httpResponse.statusCode]];
+    return [NSError errorWithDomain:@"NSHTTPURLResponse" code:httpResponse.statusCode userInfo:@{NSLocalizedDescriptionKey: message}];
+}
 @end
