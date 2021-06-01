@@ -13,6 +13,8 @@
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) BOOL isResponse;
 @property (nonatomic, strong) dispatch_semaphore_t semaphore;
+@property (nonatomic, strong) NSDate *freezeStartDate;
+@property (nonatomic, copy) NSString *callSymbols;
 @end
 @implementation FTPingThread
 
@@ -31,6 +33,12 @@
     }
     return _lock;
 }
+-(NSDate *)getFreezeStartDate{
+    [self.lock lock];
+    NSDate *freezeStartDate = _freezeStartDate;
+    [self.lock unlock];
+    return freezeStartDate;
+}
 -(BOOL)getIsResponse{
     [self.lock lock];
     BOOL result = _isResponse;
@@ -42,21 +50,38 @@
     _isResponse = isResponse;
     [self.lock unlock];
 }
-
+-(void)setFreezeStartDate:(NSDate *)freezeStartDate{
+    [self.lock lock];
+    _freezeStartDate = freezeStartDate;
+    [self.lock unlock];
+}
+-(void)setCallSymbols:(NSString *)callSymbols{
+    [self.lock lock];
+    _callSymbols = callSymbols;
+    [self.lock unlock];
+}
+-(NSString *)getCallSymbols{
+    [self.lock lock];
+    NSString *callSymbols = _callSymbols;
+    [self.lock unlock];
+    return  callSymbols;
+}
 - (void)pingMainThread {
     while (!self.cancelled) {
         @autoreleasepool {
             self.isResponse = NO;
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.isResponse = YES;
+                if (self.freezeStartDate) {
+                    self.block(self.callSymbols,self.freezeStartDate,[NSDate date]);
+                    self.freezeStartDate = nil;
+                }
                 dispatch_semaphore_signal(self.semaphore);
             });
             [NSThread sleepForTimeInterval: 0.5];
             if (self.isResponse == NO){
-                NSString *callSymbols = [FTCallStack ft_backtraceOfMainThread];
-                if (self.block) {
-                    self.block(callSymbols);
-                }
+                self.freezeStartDate = [NSDate date];
+                self.callSymbols = [FTCallStack ft_backtraceOfMainThread];
             }
             dispatch_semaphore_wait(self.semaphore, DISPATCH_TIME_FOREVER);
         }

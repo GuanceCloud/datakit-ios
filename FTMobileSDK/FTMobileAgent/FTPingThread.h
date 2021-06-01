@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^FTPingBlock)(NSString *stackStr);
+typedef void(^FTPingBlock)(NSString *stackStr,NSDate *startDate,NSDate *endDate);
 
 @interface FTPingThread : NSThread
 @property (nonatomic, copy) FTPingBlock block;
