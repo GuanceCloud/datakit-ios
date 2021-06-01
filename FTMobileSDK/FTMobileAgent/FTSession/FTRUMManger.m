@@ -19,7 +19,7 @@
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, weak) UIViewController *currentViewController;
-@property (nonatomic, strong) dispatch_queue_t concurrentQueue;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
 @implementation FTRUMManger
@@ -29,7 +29,7 @@
     if (self) {
         self.config = config;
         self.assistant = self;
-        self.concurrentQueue= dispatch_queue_create([@"io.concurrentQueue.rum" UTF8String], DISPATCH_QUEUE_CONCURRENT);
+        self.serialQueue= dispatch_queue_create([@"io.serialQueue.rum" UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -50,20 +50,24 @@
 #pragma mark - FTRUMSessionActionDelegate -
 -(void)ftViewDidAppear:(UIViewController *)viewController{
     NSDate *time = [NSDate date];
-    self.currentViewController = viewController;
-    NSString *className = NSStringFromClass(viewController.class);
-    //viewModel
-    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewController.ft_parentVC];
-    viewModel.loading_time = viewController.ft_loadDuration;
-    FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:time];
-    model.baseViewData = viewModel;
-    [self process:model];
-    
+    NSString *viewReferrer = viewController.ft_parentVC;
+    dispatch_async(self.serialQueue, ^{
+        self.currentViewController = viewController;
+        NSString *className = NSStringFromClass(viewController.class);
+        //viewModel
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewReferrer];
+        viewModel.loading_time = viewController.ft_loadDuration;
+        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:time];
+        model.baseViewData = viewModel;
+        [self process:model];
+    });
 }
 -(void)ftViewDidDisappear:(UIViewController *)viewController{
     NSDate *time = [NSDate date];
+    dispatch_async(self.serialQueue, ^{
     FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
-    [self process:model];
+        [self process:model];
+    });
     
 }
 - (void)ftClickView:(UIView *)clickView{
@@ -71,6 +75,8 @@
         return;
     }
     NSDate *time = [NSDate date];
+    dispatch_async(self.serialQueue, ^{
+
     NSString *className = NSStringFromClass(clickView.class);
     NSString *viewTitle = @"";
     if ([clickView isKindOfClass:UIButton.class]) {
@@ -83,16 +89,19 @@
     FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:time];
     model.baseActionData = actionModel;
     [self process:model];
+    });
 }
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot{
     NSDate *time = [NSDate date];
+    NSString *viewReferrer = _currentViewController.ft_parentVC;
+    dispatch_async(self.serialQueue, ^{
     //热启动时 如果有viewController 开启view
-    if (isHot&&_currentViewController) {
-        NSString *className = NSStringFromClass(_currentViewController.class);
-        NSString *vcTitle = _currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",_currentViewController.title]:@"";
+        if (isHot&&self->_currentViewController) {
+        NSString *className = NSStringFromClass(self.currentViewController.class);
+        NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
         NSString *startActionType = [NSString stringWithFormat:@"[%@]%@start",className,vcTitle];
         FTRUMActionModel *startActionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"view" actionType:startActionType];
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:_currentViewController.ft_parentVC];
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewReferrer];
         FTRUMDataModel *startModel = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:time];
         startModel.baseActionData = startActionModel;
         startModel.baseViewData = viewModel;
@@ -108,10 +117,12 @@
     FTRUMDataModel *launchModel = [[FTRUMDataModel alloc]initWithType:type time:time];
     launchModel.baseActionData =actionModel;
     [self process:launchModel];
+    });
 }
 - (void)ftApplicationWillResignActive{
     NSDate *time = [NSDate date];
-    if (_currentViewController) {
+    dispatch_async(self.serialQueue, ^{
+        if (self->_currentViewController) {
         NSString *className = NSStringFromClass(_currentViewController.class);
         NSString *vcTitle = _currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",_currentViewController.title]:@"";
         NSString *actionType = [NSString stringWithFormat:@"[%@]%@stop",className,vcTitle];
@@ -120,16 +131,20 @@
         model.baseActionData = actionModel;
         [self process:model];
     }
-    
+    });
 }
 
 #pragma mark - FTRUMSessionSourceDelegate -
 - (void)ftResourceCreate:(FTTaskInterceptionModel *)resourceModel{
-    FTRUMResourceDataModel *resourceStrat = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:resourceModel.identifier];
-    
-    [self process:resourceStrat];
+    dispatch_async(self.serialQueue, ^{
+        FTRUMResourceDataModel *resourceStrat = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:resourceModel.identifier];
+        
+        [self process:resourceStrat];
+    });
 }
 - (void)ftResourceCompleted:(FTTaskInterceptionModel *)resourceModel{
+    dispatch_async(self.serialQueue, ^{
+
     NSURLSessionTask *task = resourceModel.task;
     NSURLSessionTaskTransactionMetrics *taskMes = [resourceModel.metrics.transactionMetrics lastObject];
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
@@ -202,6 +217,7 @@
         resourceSuccess.fields = fields;
         [self process:resourceSuccess];
     }
+    });
     
 }
 #pragma mark - FTRUMWebViewJSBridgeDataDelegate -
