@@ -24,12 +24,7 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataCache,
     FTAddDataImmediate,
 };
-typedef NS_ENUM(NSInteger, FTDataType) {
-    FTDataTypeRUM,
-    FTDataTypeLOGGING,
-    FTDataTypeINFLUXDB,
-    FTDataTypeTRACING,
-};
+
 
 @interface FTMobileAgent (Private)
 @property (nonatomic, assign) BOOL running; //正在运行
@@ -44,11 +39,10 @@ typedef NS_ENUM(NSInteger, FTDataType) {
 - (BOOL)judgeRUMTraceOpen;
 
 
-- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
-- (void)rumTrackES:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
--(void)trackStartWithViewLoadTime:(NSDate *)time;
 /**
  * eventFlowLog
 */
@@ -57,9 +51,10 @@ typedef NS_ENUM(NSInteger, FTDataType) {
  * networkTrace 写入
  */
 -(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
+
+
 -(void)resetInstance;
 
--(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
 
 @end
 #endif /* FTMobileAgent_Private_h */

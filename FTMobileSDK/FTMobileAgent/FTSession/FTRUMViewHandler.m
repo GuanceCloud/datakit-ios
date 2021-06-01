@@ -159,7 +159,7 @@
                                  @"session_type":self.sessionModel.session_type};
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumTrackES:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
+    [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
     //判断冷启动 冷启动可能没有viewModel
@@ -181,7 +181,7 @@
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
     
-    [[FTMobileAgent sharedInstance] rumTrackES:error terminal:@"app" tags:tags fields:model.fields];
+    [[FTMobileAgent sharedInstance] rumWrite:error terminal:@"app" tags:tags fields:model.fields];
 }
 - (void)writeViewData{
     if (self.actionHandler) {
@@ -210,7 +210,7 @@
     if (![self.viewModel.loading_time isEqual:@0]) {
         [field setValue:self.viewModel.loading_time forKey:@"loading_time"];
     }
-    [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_VIEW terminal:@"app" tags:tags fields:field];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:@"app" tags:tags fields:field];
 }
 
 @end

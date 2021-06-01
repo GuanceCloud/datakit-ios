@@ -100,7 +100,7 @@
     NSDictionary *fields = @{
         @"duration":@100,
     }.mutableCopy;
-    [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
 }
 
 - (void)testViewData{

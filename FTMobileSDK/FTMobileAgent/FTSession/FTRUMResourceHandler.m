@@ -75,7 +75,7 @@
     [tags addEntriesFromDictionary:viewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)data{
@@ -95,6 +95,6 @@
     [tags addEntriesFromDictionary:viewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumTrackES:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields];
 }
 @end
