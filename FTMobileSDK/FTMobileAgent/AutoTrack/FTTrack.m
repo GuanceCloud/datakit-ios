@@ -78,6 +78,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                            selector:@selector(applicationDidEnterBackground:)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+    [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
 }
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
     if (_appRelaunched){
@@ -108,11 +109,18 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 - (void)applicationWillResignActive:(NSNotification *)notification {
     @try {
         _applicationWillResignActive = YES;
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationWillResignActive)]) {
-            [self.rumActionDelegate ftApplicationWillResignActive];
-        }
     }
     @catch (NSException *exception) {
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+    }
+}
+- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+    @try {
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
+            [self.rumActionDelegate ftApplicationWillTerminate];
+        }
+        
+    }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }

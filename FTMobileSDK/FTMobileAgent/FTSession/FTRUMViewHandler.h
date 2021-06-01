@@ -10,7 +10,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMViewHandler : FTRUMHandler
-@property (nonatomic, assign,readonly) BOOL isActiveView;
 
 -(instancetype)initWithModel:(FTRUMDataModel *)model;
 @end

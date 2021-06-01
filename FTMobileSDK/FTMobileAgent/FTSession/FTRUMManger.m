@@ -92,24 +92,14 @@
     });
 }
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot{
-    NSDate *time = [NSDate date];
-    NSString *viewReferrer = _currentViewController.ft_parentVC;
-    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
-    dispatch_async(self.serialQueue, ^{
-    //热启动时 如果有viewController 开启view
-        if (isHot&&self->_currentViewController) {
-        NSString *className = NSStringFromClass(self.currentViewController.class);
-        NSString *startActionType = [NSString stringWithFormat:@"[%@]%@start",className,vcTitle];
-        FTRUMActionModel *startActionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"view" actionType:startActionType];
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewReferrer];
-        FTRUMDataModel *startModel = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:time];
-        startModel.baseActionData = startActionModel;
-        startModel.baseViewData = viewModel;
-        [self process:startModel];
-    }
     if (!self.config.enableTraceUserAction) {
         return;
     }
+    NSDate *time = [NSDate date];
+    NSString *viewReferrer = _currentViewController.ft_parentVC;
+    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
+    
+    dispatch_async(self.serialQueue, ^{
     NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
     NSString *actionType = isHot?@"launch_hot":@"launch_cold";
     FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];

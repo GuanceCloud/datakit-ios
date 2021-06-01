@@ -11,7 +11,7 @@
 @class FTTaskInterceptionModel;
 @protocol FTRUMSessionActionDelegate <NSObject>
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot;
-- (void)ftApplicationWillResignActive;
+- (void)ftApplicationWillTerminate;
 - (void)ftViewDidAppear:(UIViewController *)viewController;
 - (void)ftViewDidDisappear:(UIViewController *)viewController;
 - (void)ftClickView:(UIView *)clickView;

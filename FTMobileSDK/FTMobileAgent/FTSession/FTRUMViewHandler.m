@@ -27,7 +27,6 @@
 @property (nonatomic, assign) NSInteger viewErrorCount;
 @property (nonatomic, assign) NSInteger viewActionCount;
 @property (nonatomic, assign) BOOL didReceiveStartData;
-@property (nonatomic, strong) NSDate *viewStopTime;
 @property (nonatomic, strong) NSDate *viewStartTime;
 
 @end
@@ -49,49 +48,49 @@
 
 - (BOOL)process:(FTRUMDataModel *)model{
     model.baseViewData = self.viewModel;
+    BOOL needUpdateView = NO;
     self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model];
     switch (model.type) {
         case FTRUMDataViewStart:
             if (self.viewid && [self.viewid isEqualToString:model.baseViewData.view_id]) {
                 if (self.didReceiveStartData ) {
                     self.isActiveView = NO;
-                    self.viewStopTime = model.time;
                 }
                 self.didReceiveStartData = YES;
             }else{
-                if(!self.viewStopTime){
-                    self.viewStopTime = model.time;
-                }
+                needUpdateView = YES;
                 self.isActiveView = NO;
             }
             break;
         case FTRUMDataViewStop:
             if (self.isActiveView) {
-                self.viewStopTime = model.time;
+                needUpdateView = YES;
                 self.isActiveView = NO;
             }
             break;
         case FTRUMDataClick:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
+                needUpdateView = YES;
             }
         }
             break;
         case FTRUMDataLaunchCold:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
+                needUpdateView = YES;
             }
         }
             break;
         case FTRUMDataLaunchHot:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
+                needUpdateView = YES;
             }
         }
             break;
         case FTRUMDataError:{
             if (self.isActiveView) {
-                self.viewStopTime = [NSDate date];
                 self.viewErrorCount++;
                 model.baseActionData = self.actionHandler.model.baseActionData;
                 [self writeErrorData:model];
@@ -110,6 +109,7 @@
                 model.baseActionData = self.actionHandler.model.baseActionData;
                 self.viewLongTaskCount++;
                 [self writeErrorData:model];
+                needUpdateView = YES;
             }
         }
             break;
@@ -121,7 +121,7 @@
         default:
             break;
     }
-    if (model.type == FTRUMDataResourceError || model.type == FTRUMDataResourceSuccess||model.type ==FTRUMDataResourceStart) {
+    if (model.type == FTRUMDataResourceError || model.type == FTRUMDataResourceSuccess) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
@@ -130,7 +130,7 @@
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
     BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
-    if (shouldComplete) {
+    if (shouldComplete||needUpdateView) {
         [self writeViewData];
     }
     return !shouldComplete;
@@ -148,9 +148,11 @@
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc]initWithModel:model parent:self];
     resourceHandler.errorHandler = ^(){
         weakSelf.viewErrorCount +=1;
+        [weakSelf writeViewData];
     };
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
+        [weakSelf writeViewData];
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
@@ -192,9 +194,14 @@
     if (!self.viewModel) {
         return;
     }
-    NSNumber *timeSpend = [self.viewStopTime ft_nanotimeIntervalSinceDate:self.viewStartTime];
+    __block BOOL isActive;
+
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        isActive = [UIApplication sharedApplication].applicationState == UIApplicationStateActive;
+    }];
+    NSNumber *timeSpend = [[NSDate date] ft_nanotimeIntervalSinceDate:self.viewStartTime];
     NSDictionary *tags = @{@"view_id":self.viewModel.view_id,
-                           @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
+                           @"is_active":[FTBaseInfoHander boolStr:isActive],
                            @"view_referrer":self.viewModel.view_referrer,
                            @"view_name":self.viewModel.view_name,
                            @"session_id":self.sessionModel.session_id,

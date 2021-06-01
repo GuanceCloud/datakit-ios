@@ -92,7 +92,6 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
                                                         @"view_name":self.model.baseViewData.view_name,
                                                         @"view_referrer":self.model.baseViewData.view_referrer,
-                                                        @"is_active":[FTBaseInfoHander boolStr:self.parent.isActiveView],
     }:@{};
     NSDictionary *actiontags = @{@"action_id":self.model.baseActionData.action_id,
                            @"action_name":self.model.baseActionData.action_name,
