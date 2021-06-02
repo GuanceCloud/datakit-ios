@@ -14,6 +14,7 @@
 #import "FTBaseInfoHander.h"
 #import "NSString+FTAdd.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
+static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
 
 @implementation UIViewController (FTAutoTrack)
@@ -35,7 +36,12 @@ static char *viewLoadDuration = "viewLoadDuration";
 - (NSString *)ft_viewControllerName{
     return NSStringFromClass([self class]);
 }
-
+-(NSString *)ft_viewUUID{
+    return objc_getAssociatedObject(self, &viewControllerUUID);
+}
+-(void)setFt_viewUUID:(NSString *)ft_viewUUID{
+    objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
 + (NSString *)ft_getRootViewController{
     __block NSString *name;
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{

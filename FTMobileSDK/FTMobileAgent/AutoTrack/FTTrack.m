@@ -37,8 +37,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 }
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
-@property (nonatomic, weak) UIViewController *previousTrackViewController;
-@property (nonatomic,copy,readwrite) NSString *currentViewid;
+@property (nonatomic, weak) UIViewController *currentController;
 @property (nonatomic, strong) NSDate *launchTime;
 
 @end
@@ -94,6 +93,11 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:)]) {
             [self.rumActionDelegate ftApplicationDidBecomeActive:_appRelaunched];
         }
+        if (self.currentController && self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+            NSString *viewid = [NSUUID UUID].UUIDString;
+            self.currentController.ft_viewUUID = viewid;
+            [self.rumActionDelegate ftViewDidAppear:self.currentController];
+        }
         _appRelaunched = YES;
     }
     @catch (NSException *exception) {
@@ -103,6 +107,9 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 - (void)applicationDidEnterBackground:(NSNotification *)notification{
     if (!_applicationWillResignActive) {
         return;
+    }
+    if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+        [self.rumActionDelegate ftViewDidDisappear:self.currentController];
     }
     _applicationWillResignActive = NO;
 }
@@ -116,10 +123,16 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 }
 - (void)applicationWillTerminateNotification:(NSNotification *)notification{
     @try {
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
-            [self.rumActionDelegate ftApplicationWillTerminate];
+        if(self.rumActionDelegate){
+            if (self.currentController &&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+                NSString *viewid = [NSUUID UUID].UUIDString;
+                self.currentController.ft_viewUUID = viewid;
+                [self.rumActionDelegate ftViewDidAppear:self.currentController];
+            }
+            if ([self.rumActionDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
+                [self.rumActionDelegate ftApplicationWillTerminate];
+            }
         }
-        
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
@@ -142,6 +155,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                 NSNumber *loadTime = @0;
                 vc.ft_loadDuration = loadTime;
             }
+            vc.ft_viewUUID = [NSUUID UUID].UUIDString;
+            self.currentController = vc;
             if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
                 [self.rumActionDelegate ftViewDidAppear:vc];
             }
@@ -319,10 +334,10 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
 }
 -(void)trackClickWithCpn:( id)cpn WithClickView:( id)view index:(NSIndexPath *)indexPath{
     @try {
-       
-            if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftClickView:)]) {
-                [self.rumActionDelegate ftClickView:view];
-            }
+        
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftClickView:)]) {
+            [self.rumActionDelegate ftClickView:view];
+        }
     }@catch (NSException *exception) {
         ZYErrorLog(@" error: %@", exception);
     }

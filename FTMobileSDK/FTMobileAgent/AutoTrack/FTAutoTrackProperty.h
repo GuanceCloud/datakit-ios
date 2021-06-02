@@ -12,6 +12,7 @@
 @property (nonatomic, copy, readonly) NSString *ft_viewControllerId;
 @property (nonatomic, copy, readonly) NSString *ft_parentVC;
 @property (nonatomic,strong) NSNumber *ft_loadDuration;
+@property (nonatomic, copy) NSString *ft_viewUUID;
 @end
 
 @protocol FTAutoTrackViewProperty <NSObject>
