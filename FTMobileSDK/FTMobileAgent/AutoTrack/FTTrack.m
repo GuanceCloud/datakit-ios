@@ -147,20 +147,22 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     id<ZY_AspectToken> viewAppear = [UIViewController aspect_hookSelector:@selector(viewDidAppear:) withOptions:ZY_AspectPositionAfter usingBlock:^(id<ZY_AspectInfo> info){
         UIViewController * vc = [info instance];
         if(![weakSelf isBlackListContainsViewController:vc]){
-            if(vc.ft_viewLoadStartTime){
-                NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
-                vc.ft_loadDuration = loadTime;
-                vc.ft_viewLoadStartTime = nil;
-            }else{
-                NSNumber *loadTime = @0;
-                vc.ft_loadDuration = loadTime;
+            // 预防撤回侧滑
+            if (self.currentController != vc) {
+                if(vc.ft_viewLoadStartTime){
+                    NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
+                    vc.ft_loadDuration = loadTime;
+                    vc.ft_viewLoadStartTime = nil;
+                }else{
+                    NSNumber *loadTime = @0;
+                    vc.ft_loadDuration = loadTime;
+                }
+                vc.ft_viewUUID = [NSUUID UUID].UUIDString;
+                self.currentController = vc;
+                if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+                    [self.rumActionDelegate ftViewDidAppear:vc];
+                }
             }
-            vc.ft_viewUUID = [NSUUID UUID].UUIDString;
-            self.currentController = vc;
-            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-                [self.rumActionDelegate ftViewDidAppear:vc];
-            }
-            
         }
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
@@ -168,9 +170,12 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if([weakSelf isBlackListContainsViewController:tempVC]){
             return;
         }
-        if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
-            [self.rumActionDelegate ftViewDidDisappear:tempVC];
+        if (self.currentController == tempVC) {
+            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+                [self.rumActionDelegate ftViewDidDisappear:tempVC];
+            }
         }
+        
     } error:nil];
     [self.aspectTokenAry addObjectsFromArray:@[viewLoad,viewAppear,lifeClose]];
 }
