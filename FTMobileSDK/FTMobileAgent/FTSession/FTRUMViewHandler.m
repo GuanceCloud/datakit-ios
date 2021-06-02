@@ -157,8 +157,9 @@
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
     NSDictionary *sessionTag = @{@"session_id":self.sessionModel.session_id,
                                  @"session_type":self.sessionModel.session_type};
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
+    [tags addEntriesFromDictionary:sessionTag];
     [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
