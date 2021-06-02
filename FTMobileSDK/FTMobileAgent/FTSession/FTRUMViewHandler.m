@@ -28,7 +28,7 @@
 @property (nonatomic, assign) NSInteger viewActionCount;
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
-
+@property (nonatomic, assign) BOOL needUpdateView;
 @end
 @implementation FTRUMViewHandler
 -(instancetype)initWithModel:(FTRUMDataModel *)model{
@@ -48,7 +48,7 @@
 
 - (BOOL)process:(FTRUMDataModel *)model{
     model.baseViewData = self.viewModel;
-    BOOL needUpdateView = NO;
+    self.needUpdateView = NO;
     self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model];
     switch (model.type) {
         case FTRUMDataViewStart:
@@ -58,34 +58,31 @@
                 }
                 self.didReceiveStartData = YES;
             }else{
-                needUpdateView = YES;
+                self.needUpdateView = YES;
                 self.isActiveView = NO;
             }
             break;
         case FTRUMDataViewStop:
-            if (self.isActiveView) {
-                needUpdateView = YES;
+            if (self.viewid && [self.viewid isEqualToString:model.baseViewData.view_id]) {
+                self.needUpdateView = YES;
                 self.isActiveView = NO;
             }
             break;
         case FTRUMDataClick:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
-                needUpdateView = YES;
             }
         }
             break;
         case FTRUMDataLaunchCold:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
-                needUpdateView = YES;
             }
         }
             break;
         case FTRUMDataLaunchHot:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
-                needUpdateView = YES;
             }
         }
             break;
@@ -109,7 +106,7 @@
                 model.baseActionData = self.actionHandler.model.baseActionData;
                 self.viewLongTaskCount++;
                 [self writeErrorData:model];
-                needUpdateView = YES;
+                self.needUpdateView = YES;
             }
         }
             break;
@@ -130,7 +127,7 @@
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
     BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
-    if (shouldComplete||needUpdateView) {
+    if (shouldComplete||self.needUpdateView) {
         [self writeViewData];
     }
     return !shouldComplete;
@@ -140,6 +137,7 @@
     FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:model parent:self];
     actionHandler.handler = ^{
         weakSelf.viewActionCount +=1;
+        weakSelf.needUpdateView = YES;
     };
     self.actionHandler = actionHandler;
 }
@@ -148,11 +146,11 @@
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc]initWithModel:model parent:self];
     resourceHandler.errorHandler = ^(){
         weakSelf.viewErrorCount +=1;
-        [weakSelf writeViewData];
+        weakSelf.needUpdateView = YES;
     };
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
-        [weakSelf writeViewData];
+        weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
@@ -166,7 +164,6 @@
 - (void)writeErrorData:(FTRUMDataModel *)model{
     //判断冷启动 冷启动可能没有viewModel
     NSDictionary *viewTag = self.viewModel?@{@"view_id":self.viewModel.view_id,
-                                             @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
                                              @"view_referrer":self.viewModel.view_referrer,
                                              @"view_name":self.viewModel.view_name,
     }:@{};
@@ -186,22 +183,13 @@
     [[FTMobileAgent sharedInstance] rumWrite:error terminal:@"app" tags:tags fields:model.fields];
 }
 - (void)writeViewData{
-    if (self.actionHandler) {
-        [self.actionHandler writeActionData:[NSDate date]];
-        self.actionHandler = nil;
-    }
     //判断冷启动 冷启动可能没有viewModel
     if (!self.viewModel) {
         return;
     }
-    __block BOOL isActive;
-
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-        isActive = [UIApplication sharedApplication].applicationState == UIApplicationStateActive;
-    }];
     NSNumber *timeSpend = [[NSDate date] ft_nanotimeIntervalSinceDate:self.viewStartTime];
     NSDictionary *tags = @{@"view_id":self.viewModel.view_id,
-                           @"is_active":[FTBaseInfoHander boolStr:isActive],
+                           @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
                            @"view_referrer":self.viewModel.view_referrer,
                            @"view_name":self.viewModel.view_name,
                            @"session_id":self.sessionModel.session_id,

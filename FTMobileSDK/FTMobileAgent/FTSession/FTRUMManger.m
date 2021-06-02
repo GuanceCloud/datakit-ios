@@ -18,7 +18,6 @@
 #import "FTMobileConfig.h"
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
-@property (nonatomic, weak) UIViewController *currentViewController;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTMobileConfig *config;
 @end
@@ -51,11 +50,11 @@
 -(void)ftViewDidAppear:(UIViewController *)viewController{
     NSDate *time = [NSDate date];
     NSString *viewReferrer = viewController.ft_parentVC;
+    NSString *viewID = viewController.ft_viewUUID;
     dispatch_async(self.serialQueue, ^{
-        self.currentViewController = viewController;
         NSString *className = NSStringFromClass(viewController.class);
         //viewModel
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString viewName:className viewReferrer:viewReferrer];
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:className viewReferrer:viewReferrer];
         viewModel.loading_time = viewController.ft_loadDuration;
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:time];
         model.baseViewData = viewModel;
@@ -64,8 +63,13 @@
 }
 -(void)ftViewDidDisappear:(UIViewController *)viewController{
     NSDate *time = [NSDate date];
+    NSString *viewReferrer = viewController.ft_parentVC;
+    NSString *viewID = viewController.ft_viewUUID;
     dispatch_async(self.serialQueue, ^{
-    FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
+        NSString *className = NSStringFromClass(viewController.class);
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:className viewReferrer:viewReferrer];
+        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
+        model.baseViewData = viewModel;
         [self process:model];
     });
     
@@ -81,14 +85,14 @@
         viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
     }
     dispatch_async(self.serialQueue, ^{
-    NSString *className = NSStringFromClass(clickView.class);
-   
-    NSString *actionName = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
-    
-    FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
-    FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:time];
-    model.baseActionData = actionModel;
-    [self process:model];
+        NSString *className = NSStringFromClass(clickView.class);
+        
+        NSString *actionName = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
+        
+        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
+        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:time];
+        model.baseActionData = actionModel;
+        [self process:model];
     });
 }
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot{
@@ -96,31 +100,18 @@
         return;
     }
     NSDate *time = [NSDate date];
-    NSString *viewReferrer = _currentViewController.ft_parentVC;
-    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
-    
     dispatch_async(self.serialQueue, ^{
-    NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
-    NSString *actionType = isHot?@"launch_hot":@"launch_cold";
-    FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
-    FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
-    FTRUMDataModel *launchModel = [[FTRUMDataModel alloc]initWithType:type time:time];
-    launchModel.baseActionData =actionModel;
-    [self process:launchModel];
+        NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
+        NSString *actionType = isHot?@"launch_hot":@"launch_cold";
+        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
+        FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
+        FTRUMDataModel *launchModel = [[FTRUMDataModel alloc]initWithType:type time:time];
+        launchModel.baseActionData =actionModel;
+        [self process:launchModel];
     });
 }
 - (void)ftApplicationWillTerminate{
-    NSDate *time = [NSDate date];
-    NSString *vcTitle = self.currentViewController.title.length>0?[NSString stringWithFormat:@"[%@]",self.currentViewController.title]:@"";
     dispatch_sync(self.serialQueue, ^{
-        if (self.currentViewController) {
-        NSString *className = NSStringFromClass(self.currentViewController.class);
-        NSString *actionType = [NSString stringWithFormat:@"[%@]%@stop",className,vcTitle];
-        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:@"view" actionType:actionType];
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:time];
-        model.baseActionData = actionModel;
-        [self process:model];
-    }
     });
 }
 
@@ -134,79 +125,78 @@
 }
 - (void)ftResourceCompleted:(FTTaskInterceptionModel *)resourceModel{
     dispatch_async(self.serialQueue, ^{
-
-    NSURLSessionTask *task = resourceModel.task;
-    NSURLSessionTaskTransactionMetrics *taskMes = [resourceModel.metrics.transactionMetrics lastObject];
-    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
-    NSError *error = resourceModel.error?resourceModel.error:response.ft_getResponseError;
-    NSMutableDictionary *tags = [NSMutableDictionary new];
-    NSMutableDictionary *fields = [NSMutableDictionary new];
-    NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:task.originalRequest.URL];
-    tags[@"resource_url_path_group"] =url_path_group;
-    tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
-    tags[@"resource_url_host"] = task.originalRequest.URL.host;
-    tags[@"resource_url_path"] = task.originalRequest.URL.path;
-    tags[@"resource_method"] = task.originalRequest.HTTPMethod;
-    tags[@"resource_status"] = error ?[NSNumber numberWithInteger:error.code] : [task.response ft_getResponseStatusCode];
-    if(error){
-        tags[@"error_source"] = @"network";
-        tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
-        NSDictionary *field = @{@"error_message":error.localizedDescription,
-                                @"error_stack":error,
-        };
-        FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
-        resourceError.time = taskMes.requestEndDate;
-        resourceError.tags = tags;
-        resourceError.fields = field;
-        [self process:resourceError];
-        
-    }else{
-        NSDictionary *responseHeader = response.allHeaderFields;
-        if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
-            tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
-        }
-        tags[@"resource_type"] = response.MIMEType;
-        NSString *response_server = [FTBaseInfoHander getIPWithHostName:task.originalRequest.URL.host];
-        if (response_server) {
-            tags[@"response_server"] = response_server;
-        }
-        
-        tags[@"response_content_type"] =response.MIMEType;
-        if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
-            tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
-        }
-        NSString *group =  [response ft_getResourceStatusGroup];
-        if (group) {
-            tags[@"resource_status_group"] = group;
-        }
-        NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
-        NSNumber *tcpTime = [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.connectStartDate];
-        NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
-        NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-        NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-        NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
-        NSNumber *resourceFirstByteTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
-        fields[@"resource_first_byte"] = resourceFirstByteTime;
-        fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
-        fields[@"duration"] =durationTime;
-        fields[@"resource_dns"] = dnsTime;
-        fields[@"resource_tcp"] = tcpTime;
-        fields[@"resource_ssl"] = tlsTime;
-        fields[@"resource_ttfb"] = ttfbTime;
-        fields[@"resource_trans"] = transTime;
-        if (response) {
-            fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
-            fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[task.currentRequest ft_getRequestHeaders]];
-        }
+        NSURLSessionTask *task = resourceModel.task;
+        NSURLSessionTaskTransactionMetrics *taskMes = [resourceModel.metrics.transactionMetrics lastObject];
+        NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
+        NSError *error = resourceModel.error?resourceModel.error:response.ft_getResponseError;
+        NSMutableDictionary *tags = [NSMutableDictionary new];
+        NSMutableDictionary *fields = [NSMutableDictionary new];
+        NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:task.originalRequest.URL];
+        tags[@"resource_url_path_group"] =url_path_group;
         tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
-        tags[@"resource_url_query"] =[task.originalRequest.URL query];
-        tags[@"resource_url_path_group"] = url_path_group;
-        
-        FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:resourceModel.identifier];
-        resourceSuccess.tags = tags;
-        resourceSuccess.fields = fields;
-        [self process:resourceSuccess];
-    }
+        tags[@"resource_url_host"] = task.originalRequest.URL.host;
+        tags[@"resource_url_path"] = task.originalRequest.URL.path;
+        tags[@"resource_method"] = task.originalRequest.HTTPMethod;
+        tags[@"resource_status"] = error ?[NSNumber numberWithInteger:error.code] : [task.response ft_getResponseStatusCode];
+        if(error){
+            tags[@"error_source"] = @"network";
+            tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
+            NSDictionary *field = @{@"error_message":error.localizedDescription,
+                                    @"error_stack":error,
+            };
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
+            resourceError.time = taskMes.requestEndDate;
+            resourceError.tags = tags;
+            resourceError.fields = field;
+            [self process:resourceError];
+            
+        }else{
+            NSDictionary *responseHeader = response.allHeaderFields;
+            if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
+                tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
+            }
+            tags[@"resource_type"] = response.MIMEType;
+            NSString *response_server = [FTBaseInfoHander getIPWithHostName:task.originalRequest.URL.host];
+            if (response_server) {
+                tags[@"response_server"] = response_server;
+            }
+            
+            tags[@"response_content_type"] =response.MIMEType;
+            if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
+                tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
+            }
+            NSString *group =  [response ft_getResourceStatusGroup];
+            if (group) {
+                tags[@"resource_status_group"] = group;
+            }
+            NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
+            NSNumber *tcpTime = [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.connectStartDate];
+            NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
+            NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
+            NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
+            NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
+            NSNumber *resourceFirstByteTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
+            fields[@"resource_first_byte"] = resourceFirstByteTime;
+            fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
+            fields[@"duration"] =durationTime;
+            fields[@"resource_dns"] = dnsTime;
+            fields[@"resource_tcp"] = tcpTime;
+            fields[@"resource_ssl"] = tlsTime;
+            fields[@"resource_ttfb"] = ttfbTime;
+            fields[@"resource_trans"] = transTime;
+            if (response) {
+                fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
+                fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[task.currentRequest ft_getRequestHeaders]];
+            }
+            tags[@"resource_url"] = task.originalRequest.URL.absoluteString;
+            tags[@"resource_url_query"] =[task.originalRequest.URL query];
+            tags[@"resource_url_path_group"] = url_path_group;
+            
+            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:resourceModel.identifier];
+            resourceSuccess.tags = tags;
+            resourceSuccess.fields = fields;
+            [self process:resourceSuccess];
+        }
     });
     
 }
