@@ -87,57 +87,59 @@
     NSUInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
 }
-
 - (void)addESData{
-    NSString *name = @"TestBindUser";
-    NSString *view_id = [name ft_md5HashToUpper32Bit];
-    NSString *parent = FT_NULL_VALUE;
-    NSDictionary *tags = @{@"view_id":view_id,
-                           @"view_name":name,
-                           @"view_parent":parent,
-                           @"app_apdex_level":@0,
+    NSDictionary *field = @{@"action_error_count":@0,
+                            @"action_long_task_count":@0,
+                            @"action_resource_count":@0,
+                            @"duration":@103492975,
     };
-    NSDictionary *fields = @{
-        @"duration":@100,
-    }.mutableCopy;
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
+    NSDictionary *tags = @{@"action_id":[NSUUID UUID].UUIDString,
+                           @"action_name":@"app_cold_start",
+                           @"action_type":@"launch_cold",
+                           @"session_id":[NSUUID UUID].UUIDString,
+                           @"session_type":@"user",
+    };
+    [[FTMobileAgent sharedInstance] rumWrite:@"action" terminal:@"app" tags:tags fields:field];
 }
-
-- (void)testViewData{
+- (void)testViewDataFormatChecks{
     
     [self setESConfig];
     
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [NSThread sleepForTimeInterval:3];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(array.count == 3);
-  
-    [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
-        NSDictionary *tags = opdata[@"tags"];
-        NSDictionary *field = opdata[@"field"];
-        if ([measurement isEqualToString:@"rum_app_view"]) {
-            [self rumInfluxDBtags:tags];
-            XCTAssertTrue([field.allKeys containsObject:@"duration"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"app_apdex_level"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_name"]&&[tags.allKeys containsObject:@"view_parent"]);
-        }else if([measurement isEqualToString:@"view"]){
-            [self rumEStags:tags];
-            XCTAssertTrue([tags.allKeys containsObject:@"app_apdex_level"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_name"]&&[tags.allKeys containsObject:@"view_parent"]);
-            XCTAssertTrue([field.allKeys containsObject:@"duration"]);
-        }else if([measurement isEqualToString:@"rum_app_startup"]){
-            XCTAssertTrue([tags.allKeys containsObject:@"app_startup_type"]);
-            XCTAssertTrue([field.allKeys containsObject:@"app_startup_duration"]);
-        }
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [NSThread sleepForTimeInterval:2];
 
+        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        __block BOOL hasView = NO;
+        [array enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            NSString *op = dict[@"op"];
+            XCTAssertTrue([op isEqualToString:@"RUM"]);
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"measurement"];
+            if ([measurement isEqualToString:@"view"]) {
+                NSDictionary *tags = opdata[@"tags"];
+                NSDictionary *field = opdata[@"field"];
+                XCTAssertTrue([field.allKeys containsObject:@"view_resource_count"]&&[field.allKeys containsObject:@"view_action_count"]&&[field.allKeys containsObject:@"view_long_task_count"]&&[field.allKeys containsObject:@"view_error_count"]);
+                XCTAssertTrue([tags.allKeys containsObject:@"is_active"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_referrer"]&&[tags.allKeys containsObject:@"view_name"]);
+                hasView = YES;
+                *stop = YES;
+            }
+        }];
+        XCTAssertTrue(hasView);
+        [[FTMobileAgent sharedInstance] resetInstance];
+        [expectation fulfill];
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-
+   
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
+  
 }
+
 - (void)testRumResourceData{
     [self setESConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -145,7 +147,6 @@
         [NSThread sleepForTimeInterval:3];
         if (!error) {
         NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-        XCTAssertTrue(array.count == 2);
         [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
             NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSString *op = dict[@"op"];
@@ -154,12 +155,76 @@
             NSString *measurement = opdata[@"measurement"];
             NSDictionary *tags = opdata[@"tags"];
             NSDictionary *field = opdata[@"field"];
-            if ([measurement isEqualToString:@"rum_app_resource_performance"]) {
-                [self rumInfluxDBtags:tags];
-                XCTAssertTrue([tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
-                XCTAssertTrue([field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
-            }else if([measurement isEqualToString:@"resource"]){
-                [self rumEStags:tags];
+            if([measurement isEqualToString:@"resource"]){
+                [self rumTags:tags];
+                XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
+                XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
+            
+        }
+        }];
+        }
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
+- (void)testResourceDataFormatChecks{
+    NSArray *resourceTag = @[@"resource_url",
+                             @"resource_url_host",
+    ];
+    [self setESConfig];
+    
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [NSThread sleepForTimeInterval:2];
+
+        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        __block BOOL hasView = NO;
+        [array enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            NSString *op = dict[@"op"];
+            XCTAssertTrue([op isEqualToString:@"RUM"]);
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"measurement"];
+            if ([measurement isEqualToString:@"resource"]) {
+               
+                hasView = YES;
+                *stop = YES;
+            }
+        }];
+        XCTAssertTrue(hasView);
+        [[FTMobileAgent sharedInstance] resetInstance];
+        [expectation fulfill];
+    }];
+   
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
+  
+}
+
+- (void)testRumResourceData{
+    [self setESConfig];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [NSThread sleepForTimeInterval:3];
+        if (!error) {
+        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+            NSString *op = dict[@"op"];
+            XCTAssertTrue([op isEqualToString:@"RUM"]);
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"measurement"];
+            NSDictionary *tags = opdata[@"tags"];
+            NSDictionary *field = opdata[@"field"];
+            if([measurement isEqualToString:@"resource"]){
+                [self rumTags:tags];
                 XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
                 XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
             
@@ -185,42 +250,32 @@
     
     [task resume];
 }
-- (void)rumInfluxDBtags:(NSDictionary *)tags{
-    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&
-                  [tags.allKeys containsObject:@"env"]&&
-                  [tags.allKeys containsObject:@"version"]&&
-                  [tags.allKeys containsObject:@"is_signin"]&&
-                  [tags.allKeys containsObject:@"device"]&&
-                  [tags.allKeys containsObject:@"model"]&&
-                  [tags.allKeys containsObject:@"os"]&&
-                  [tags.allKeys containsObject:@"screen_size"]&&
-                  [tags.allKeys containsObject:@"app_name"]&&
-                  [tags.allKeys containsObject:@"app_identifiedid"]&&
-                  [tags.allKeys containsObject:@"network_type"]
-                  );
-}
-- (void)rumEStags:(NSDictionary *)tags{
-    XCTAssertTrue([tags.allKeys containsObject:@"app_id"]&&
-                  [tags.allKeys containsObject:@"env"]&&
-                  [tags.allKeys containsObject:@"version"]&&
-                  [tags.allKeys containsObject:@"terminal"]&&
-                  [tags.allKeys containsObject:@"source"]&&
-                  [tags.allKeys containsObject:@"userid"]&&
-                  [tags.allKeys containsObject:@"origin_id"]&&
-                  [tags.allKeys containsObject:@"is_signin"]&&
-                  [tags.allKeys containsObject:@"app_name"]&&
-                  [tags.allKeys containsObject:@"app_identifiedid"]&&
-                  [tags.allKeys containsObject:@"device"]&&
-                  [tags.allKeys containsObject:@"model"]&&
-                  [tags.allKeys containsObject:@"os"]&&
-                  [tags.allKeys containsObject:@"os_version"]&&
-                  [tags.allKeys containsObject:@"network_type"]&&
-                  [tags.allKeys containsObject:@"device_uuid"]&&
-                  [tags.allKeys containsObject:@"screen_size"]
-                  );
+- (void)rumTags:(NSDictionary *)tags{
+    NSArray *tagAry = @[@"sdk_name",
+                        @"sdk_version",
+                        @"app_id",
+                        @"env",
+                        @"version",
+                        @"source",
+                        @"userid",
+                        @"session_id",
+                        @"session_type",
+                        @"is_signin",
+                        @"device",
+                        @"model",
+                        @"device_uuid",
+                        @"os",
+                        @"os_version",
+                        @"os_version_major",
+                        @"screen_size",
+    ];
+    [tagAry enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        XCTAssertTrue([tags.allKeys containsObject:obj]);
+    }];
 }
 - (void)setESConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableTraceUserAction = YES;
     config.appid = self.appid;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
