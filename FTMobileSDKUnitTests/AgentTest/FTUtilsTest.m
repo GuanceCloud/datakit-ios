@@ -17,6 +17,7 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
 #import <NSString+FTAdd.h>
+#import "FTBaseInfoHander.h"
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -132,5 +133,10 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+}
+- (void)testReplaceUrlGroupNumberChar{
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+    NSString *replace = [FTBaseInfoHander replaceNumberCharByUrl:[NSURL URLWithString:urlStr]];
+    XCTAssertTrue([replace isEqualToString:@"/data/sk/?"]);
 }
 @end
