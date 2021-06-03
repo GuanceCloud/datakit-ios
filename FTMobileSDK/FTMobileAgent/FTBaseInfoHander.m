@@ -325,22 +325,14 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return str;
 }
-/**
- replaceNumberCharByPath(path) {
-  if (path) {
-    return path.replace(/\/([^\/]*)\d([^\/]*)/g, '/?')
-  } else {
-    return ''
-  }
-}
- */
+
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url{
     NSString *relativePath = [url path];
     if (relativePath.length==0 || !relativePath) {
            return @"";
        }
        NSError *error = nil;
-       NSString *pattern = @"/\\/([^\\/]*)\\d([^\\/]*)/g";
+       NSString *pattern = @"\\/([^\\/]*)\\d([^\\/]*)";
        NSRegularExpression *regularExpress = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
        NSString *string = [regularExpress stringByReplacingMatchesInString:relativePath options:0 range:NSMakeRange(0, [relativePath length]) withTemplate:@"/?"];
        
