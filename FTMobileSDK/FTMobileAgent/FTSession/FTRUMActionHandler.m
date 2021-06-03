@@ -12,7 +12,7 @@
 #import "FTConstants.h"
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHander.h"
-static const NSTimeInterval actionTimeoutDuration = 0.1; // 100 milliseconds
+
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
@@ -41,11 +41,18 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     return  self;
 }
 - (BOOL)process:(FTRUMDataModel *)model{
+   
     if ([self timedOutOrExpired:model.time]&&[self allResourcesCompletedLoading]){
         [self writeActionData:model.time];
         return NO;
     }
-    
+    if (model.type ==  FTRUMDataLaunchHot|| model.type == FTRUMDataLaunchCold||
+        model.type == FTRUMDataClick) {
+        if ([self allResourcesCompletedLoading]) {
+            [self writeActionData:model.time];
+            return NO;
+        }
+    }
     switch (model.type) {
         case FTRUMDataError:
             self.actionErrorCount++;
@@ -71,13 +78,9 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 }
 
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
-    NSTimeInterval timeElapsedSinceStartTime = [currentTime timeIntervalSinceDate:_actionStartTime];
-    BOOL timedOut = timeElapsedSinceStartTime >= actionTimeoutDuration;
-    
     NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
     BOOL expired = sessionDuration >= actionMaxDuration;
-    
-    return timedOut || expired;
+    return  expired;
 }
 
 -(BOOL)allResourcesCompletedLoading{
@@ -99,7 +102,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     };
     NSDictionary *fields = @{@"duration":self.duration,
                              @"action_long_task_count":[NSNumber numberWithInteger:self.actionLongTaskCount],
-                             @"action_resources_count":[NSNumber numberWithInteger:self.actionResourcesCount],
+                             @"action_resource_count":[NSNumber numberWithInteger:self.actionResourcesCount],
                              @"action_error_count":[NSNumber numberWithInteger:self.actionErrorCount],
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];

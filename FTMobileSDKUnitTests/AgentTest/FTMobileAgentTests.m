@@ -22,6 +22,7 @@
 #import "NSString+FTAdd.h"
 #import <FTJSONUtil.h>
 #import "FTUploadTool+Test.h"
+#import "FTPresetProperty.h"
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -61,7 +62,6 @@
     [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:1];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount>count);
 }
 #pragma mark ========== 用户数据绑定 ==========
@@ -71,19 +71,11 @@
  */
 - (void)testBindUser{
     [self setRightSDKConfig];
+   
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = esData[@"opdata"];
-    NSDictionary *tags =opdata[@"tags"];
-    NSString *userid = tags[@"userid"];
-    NSString *is_signin= tags[@"is_signin"];
-
-    XCTAssertTrue([userid isEqualToString:@"testBindUser"] && [is_signin isEqualToString:@"T"]);
-    [[FTMobileAgent sharedInstance] resetInstance];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+    NSString *userid = dict[@"userid"];
+    XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
 /**
  * 测试 切换用户
@@ -92,26 +84,14 @@
 -(void)testChangeUser{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser1"];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
+     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+     NSString *userid = dict[@"userid"];
+    XCTAssertTrue([userid isEqualToString:@"testChangeUser1"]);
+
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser2"];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [data firstObject];
-    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = esData[@"opdata"];
-    NSDictionary *tags =opdata[@"tags"];
-    NSString *userid = tags[@"userid"];
-    NSString *is_signin= tags[@"is_signin"];
-    XCTAssertTrue([userid isEqualToString:@"testChangeUser1"] && [is_signin isEqualToString:@"T"]);
-    FTRecordModel *model2 = [data lastObject];
-    NSDictionary *esData2 = [FTJSONUtil dictionaryWithJsonString:model2.data];
-    NSDictionary *opdata2 = esData2[@"opdata"];
-    NSDictionary *tags2 =opdata2[@"tags"];
-    NSString *userid2 = tags2[@"userid"];
-    NSString *is_signin2= tags2[@"is_signin"];
-    XCTAssertTrue([userid2 isEqualToString:@"testChangeUser2"] && [is_signin2 isEqualToString:@"T"]);
+    NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+    NSString *newUserid = newDict[@"userid"];
+   XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 
     [[FTMobileAgent sharedInstance] resetInstance];
 }
@@ -122,41 +102,11 @@
 -(void)testUserlogout{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
+    
     [[FTMobileAgent sharedInstance] logout];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [data firstObject];
-    NSDictionary *esData = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = esData[@"opdata"];
-    NSDictionary *tags =opdata[@"tags"];
-    NSString *userid = tags[@"userid"];
-    NSString *is_signin= tags[@"is_signin"];
-    XCTAssertTrue([userid isEqualToString:@"testUserlogout"] && [is_signin isEqualToString:@"T"]);
-    FTRecordModel *model2 = [data lastObject];
-    NSDictionary *esData2 = [FTJSONUtil dictionaryWithJsonString:model2.data];
-    NSDictionary *opdata2 = esData2[@"opdata"];
-    NSDictionary *tags2 =opdata2[@"tags"];
-    NSString *userid2 = tags2[@"userid"];
-    NSString *is_signin2= tags2[@"is_signin"];
-    XCTAssertTrue(![userid2 isEqualToString:@"testChangeUser2"] && [is_signin2 isEqualToString:@"F"]);
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+    NSString *userid = dict[@"userid"];
+   XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
+}
 
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
-- (void)addESData{
-    NSString *name = @"TestBindUser";
-    NSString *view_id = [name ft_md5HashToUpper32Bit];
-    NSString *parent = FT_NULL_VALUE;
-    NSDictionary *tags = @{@"view_id":view_id,
-                           @"view_name":name,
-                           @"view_parent":parent,
-                                  @"app_apdex_level":@0,
-    };
-    NSDictionary *fields = @{
-        @"duration":@100,
-    }.mutableCopy;
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:FT_TERMINAL_APP tags:tags fields:fields];
-}
 @end
