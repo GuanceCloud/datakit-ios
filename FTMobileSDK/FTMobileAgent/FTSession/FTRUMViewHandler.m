@@ -127,11 +127,11 @@
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
     BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
-    if (self.needUpdateView) {
-        [self writeViewData];
-    }
     if (shouldComplete) {
         [self.actionHandler writeActionData:[NSDate date]];
+    }
+    if (self.needUpdateView) {
+        [self writeViewData];
     }
     return !shouldComplete;
 }
