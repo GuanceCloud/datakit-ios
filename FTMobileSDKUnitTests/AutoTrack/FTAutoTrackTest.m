@@ -78,20 +78,6 @@
     }];
     XCTAssertEqualObjects(self.testVC, currentVC);
 }
-///**
-//  测试根视图是否正确
-//*/
-//- (void)testRootViewControllerOfTheView{
-//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-//    __block NSString *rootStr;
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        rootStr = [UIViewController ft_getRootViewController];
-//        XCTAssertTrue([rootStr isEqualToString:@"UITabBarController"]);
-//        [expect fulfill];
-//    });
-//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-//         XCTAssertNil(error);
-//     }];
-//}
+
 
 @end
