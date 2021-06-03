@@ -15,7 +15,7 @@
 #import "FTBaseInfoHander.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
-@property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
+@property (nonatomic, strong) NSMutableDictionary<FTRUMResourceHandler *,id> *resourceHandlers;
 
 @property (nonatomic, copy) NSString *viewid;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
