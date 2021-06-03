@@ -177,7 +177,7 @@
             NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
             NSNumber *resourceFirstByteTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
             fields[@"resource_first_byte"] = resourceFirstByteTime;
-            fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived];
+            fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]];
             fields[@"duration"] =durationTime;
             fields[@"resource_dns"] = dnsTime;
             fields[@"resource_tcp"] = tcpTime;

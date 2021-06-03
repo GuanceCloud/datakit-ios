@@ -121,6 +121,7 @@
             NSString *measurement = opdata[@"measurement"];
             if ([measurement isEqualToString:@"view"]) {
                 NSDictionary *tags = opdata[@"tags"];
+                [self rumTags:tags];
                 NSDictionary *field = opdata[@"field"];
                 XCTAssertTrue([field.allKeys containsObject:@"view_resource_count"]&&[field.allKeys containsObject:@"view_action_count"]&&[field.allKeys containsObject:@"view_long_task_count"]&&[field.allKeys containsObject:@"view_error_count"]);
                 XCTAssertTrue([tags.allKeys containsObject:@"is_active"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_referrer"]&&[tags.allKeys containsObject:@"view_name"]);
@@ -173,6 +174,22 @@
 - (void)testResourceDataFormatChecks{
     NSArray *resourceTag = @[@"resource_url",
                              @"resource_url_host",
+                             @"resource_url_path",
+//                             @"resource_url_query",
+                             @"resource_url_path_group",
+                             @"resource_type",
+                             @"resource_method",
+                             @"resource_status",
+                             @"resource_status_group",
+    ];
+    NSArray *resourceField = @[@"duration",
+                               @"resource_size",
+                               @"resource_dns",
+                               @"resource_tcp",
+                               @"resource_ssl",
+                               @"resource_ttfb",
+                               @"resource_trans",
+                               @"resource_first_byte",
     ];
     [self setESConfig];
     
@@ -191,7 +208,15 @@
             NSDictionary *opdata = dict[@"opdata"];
             NSString *measurement = opdata[@"measurement"];
             if ([measurement isEqualToString:@"resource"]) {
-               
+                NSDictionary *tags = opdata[@"tags"];
+                NSDictionary *field = opdata[@"field"];
+                [self rumTags:tags];
+                [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    XCTAssertTrue([tags.allKeys containsObject:obj]);
+                }];
+                [resourceField enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    XCTAssertTrue([field.allKeys containsObject:obj]);
+                }];
                 hasView = YES;
                 *stop = YES;
             }
@@ -208,36 +233,6 @@
   
 }
 
-- (void)testRumResourceData{
-    [self setESConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-        [NSThread sleepForTimeInterval:3];
-        if (!error) {
-        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-        [array enumerateObjectsUsingBlock:^(FTRecordModel *model, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-            NSString *op = dict[@"op"];
-            XCTAssertTrue([op isEqualToString:@"RUM"]);
-            NSDictionary *opdata = dict[@"opdata"];
-            NSString *measurement = opdata[@"measurement"];
-            NSDictionary *tags = opdata[@"tags"];
-            NSDictionary *field = opdata[@"field"];
-            if([measurement isEqualToString:@"resource"]){
-                [self rumTags:tags];
-                XCTAssertTrue([tags.allKeys containsObject:@"resource_url"]&&[tags.allKeys containsObject:@"resource_url_host"]&&[tags.allKeys containsObject:@"resource_url_path"]&&[tags.allKeys containsObject:@"resource_type"]&&[tags.allKeys containsObject:@"response_server"]&&[tags.allKeys containsObject:@"response_content_type"]&&[tags.allKeys containsObject:@"resource_method"]&&[tags.allKeys containsObject:@"resource_status"]);
-                XCTAssertTrue([field.allKeys containsObject:@"request_header"]&&[field.allKeys containsObject:@"response_header"]&&[field.allKeys containsObject:@"resource_size"]&&[field.allKeys containsObject:@"duration"]&&[field.allKeys containsObject:@"resource_dns"]&&[field.allKeys containsObject:@"resource_tcp"]&&[field.allKeys containsObject:@"resource_ssl"]&&[field.allKeys containsObject:@"resource_ttfb"]&&[field.allKeys containsObject:@"resource_trans"]);
-            
-        }
-        }];
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [[FTMobileAgent sharedInstance] resetInstance];
-}
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
@@ -256,7 +251,6 @@
                         @"app_id",
                         @"env",
                         @"version",
-                        @"source",
                         @"userid",
                         @"session_id",
                         @"session_type",

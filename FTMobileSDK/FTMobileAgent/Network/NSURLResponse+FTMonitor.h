@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSNumber *)ft_getResponseStatusCode;
 - (nullable NSString *)ft_getResourceStatusGroup;
 - (nullable NSError *)ft_getResponseError;
-
+- (NSUInteger)ft_getResponseHeaderDataSize;
 @end
 
 NS_ASSUME_NONNULL_END

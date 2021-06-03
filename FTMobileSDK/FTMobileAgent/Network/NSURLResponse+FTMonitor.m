@@ -83,4 +83,21 @@
     NSString *message = [NSString stringWithFormat:@"%ld-%@",(long)httpResponse.statusCode,[NSHTTPURLResponse localizedStringForStatusCode:httpResponse.statusCode]];
     return [NSError errorWithDomain:@"NSHTTPURLResponse" code:httpResponse.statusCode userInfo:@{NSLocalizedDescriptionKey: message}];
 }
+- (NSUInteger)ft_getResponseHeaderDataSize{
+    NSString *headerStr = @"";
+    if ([self isKindOfClass:[NSHTTPURLResponse class]]) {
+         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)self;
+         NSDictionary<NSString *, NSString *> *headerFields = httpResponse.allHeaderFields;
+         for (NSString *key in headerFields.allKeys) {
+             headerStr = [headerStr stringByAppendingString:key];
+             headerStr = [headerStr stringByAppendingString:@": "];
+             if ([headerFields objectForKey:key]) {
+                 headerStr = [headerStr stringByAppendingString:headerFields[key]];
+             }
+             headerStr = [headerStr stringByAppendingString:@"\n"];
+         }
+     }
+    NSData *data = [headerStr dataUsingEncoding:NSUTF8StringEncoding];
+    return data.length;
+}
 @end
