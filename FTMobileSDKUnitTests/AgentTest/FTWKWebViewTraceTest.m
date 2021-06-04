@@ -102,7 +102,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     __block NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    [self.testVC ft_load:@"https://www.baidu.com"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSInteger loggingcount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
@@ -167,7 +167,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setTraceConfig];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    [self.testVC ft_load:@"https://baidu.com"];
    
     [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:8];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
