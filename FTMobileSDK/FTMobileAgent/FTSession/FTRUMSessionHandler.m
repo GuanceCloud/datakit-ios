@@ -16,7 +16,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, copy,readwrite) NSString *sessionUUID;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
-@property (nonatomic, weak) UIViewController *currentViewController;
 @property (nonatomic, strong) FTRUMSessionModel *sessionModel;
 @end
 @implementation FTRUMSessionHandler
@@ -48,11 +47,15 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             [self startView:model];
             break;
         case FTRUMDataLaunchCold:
-            if (!self.currentViewController) {
+            if (self.viewHandlers.count == 0) {
                 [self startView:model];
             }
             break;
-        
+        case FTRUMDataError:
+            if (self.viewHandlers.count == 0) {
+                [self startView:model];
+            }
+            break;
         default:
             break;
     }
