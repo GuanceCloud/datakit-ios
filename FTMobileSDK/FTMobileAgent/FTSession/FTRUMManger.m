@@ -35,16 +35,21 @@
 
 #pragma mark - FTRUMSessionErrorDelegate -
 - (void)ftErrorWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
-    FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
-    model.tags = tags;
-    model.fields = field;
-    [self process:model];
+    dispatch_sync(self.serialQueue, ^{
+        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
+        model.tags = tags;
+        model.fields = field;
+        [self process:model];
+    });
 }
 - (void)ftLongTaskWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
-    FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
-    model.tags = tags;
-    model.fields = field;
-    [self process:model];
+    dispatch_async(self.serialQueue, ^{
+        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
+        model.tags = tags;
+        model.fields = field;
+        [self process:model];
+    });
+    
 }
 #pragma mark - FTRUMSessionActionDelegate -
 -(void)ftViewDidAppear:(UIViewController *)viewController{
