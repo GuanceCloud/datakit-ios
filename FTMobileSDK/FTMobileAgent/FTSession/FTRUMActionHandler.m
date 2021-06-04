@@ -17,7 +17,6 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, strong,readwrite) FTRUMDataModel *model;
-@property (nonatomic, weak) FTRUMViewHandler *parent;
 //field
 @property (nonatomic, strong) NSDate *actionStartTime;
 @property (nonatomic, strong) NSNumber *duration;
@@ -30,13 +29,12 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 @end
 @implementation FTRUMActionHandler
 
--(instancetype)initWithModel:(FTRUMDataModel *)model parent:(FTRUMViewHandler *)parent{
+-(instancetype)initWithModel:(FTRUMDataModel *)model{
     self = [super init];
     if (self) {
         self.assistant = self;
         self.actionStartTime = model.time;
         self.model = model;
-        self.parent = parent;
     }
     return  self;
 }

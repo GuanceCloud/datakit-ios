@@ -15,11 +15,10 @@
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) FTRUMResourceDataModel *model;
-@property (nonatomic, weak) FTRUMViewHandler *parent;
 
 @end
 @implementation FTRUMResourceHandler
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model parent:(FTRUMViewHandler *)parent{
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model{
     self = [super init];
     if (self) {
         self.model = model;

@@ -16,7 +16,7 @@ typedef void(^FTActionEventSent)(void);
 
 @property (nonatomic, copy) FTActionEventSent handler;
 
--(instancetype)initWithModel:(FTRUMDataModel *)model parent:(FTRUMViewHandler *)parent;
+-(instancetype)initWithModel:(FTRUMDataModel *)model;
 -(void)writeActionData:(NSDate *)endDate;
 @end
 

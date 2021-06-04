@@ -17,7 +17,7 @@ typedef void(^FTErrorEventSent)(void);
 
 @property (nonatomic, copy) FTResourceEventSent resourceHandler;
 @property (nonatomic, copy) FTErrorEventSent errorHandler;
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model parent:(FTRUMViewHandler *)parent;
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model;
 @end
 
 NS_ASSUME_NONNULL_END
