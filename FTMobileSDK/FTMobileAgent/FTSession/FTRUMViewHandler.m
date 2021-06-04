@@ -15,7 +15,7 @@
 #import "FTBaseInfoHander.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
-@property (nonatomic, strong) NSMutableDictionary<FTRUMResourceHandler *,id> *resourceHandlers;
+@property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 
 @property (nonatomic, copy) NSString *viewid;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
@@ -91,9 +91,9 @@
                 self.viewErrorCount++;
                 model.baseActionData = self.actionHandler.model.baseActionData;
                 [self writeErrorData:model];
+                [self.actionHandler writeActionData:[NSDate date]];
+                self.needUpdateView = YES;
             }
-            [self writeViewData];
-            return NO;
             break;
         }
         case FTRUMDataResourceStart:
@@ -137,7 +137,7 @@
 }
 - (void)startAction:(FTRUMDataModel *)model{
     __weak typeof(self) weakSelf = self;
-    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:model parent:self];
+    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:model];
     actionHandler.handler = ^{
         weakSelf.viewActionCount +=1;
         weakSelf.needUpdateView = YES;
@@ -146,7 +146,7 @@
 }
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;
-    FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc]initWithModel:model parent:self];
+    FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc]initWithModel:model];
     resourceHandler.errorHandler = ^(){
         weakSelf.viewErrorCount +=1;
         weakSelf.needUpdateView = YES;
