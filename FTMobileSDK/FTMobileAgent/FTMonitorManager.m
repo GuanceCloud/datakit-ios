@@ -308,8 +308,7 @@ static dispatch_once_t onceToken;
         return;
     }
     long long time = [[NSDate date] ft_dateTimestamp];
-    int duration = (int)(MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount/1000);
-    NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithInt:duration]}.mutableCopy;
+    NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]}.mutableCopy;
     fields[@"long_task_stack"] = slowStack;
     if ([agent judgeRUMTraceOpen]) {
         if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
