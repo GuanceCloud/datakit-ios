@@ -61,7 +61,9 @@ static const NSInteger MXRMonitorRunloopMinStandstillCount = 1;
 }
 - (void)startDetecting {
     self.isCancel = NO;
-    [self registerObserver];
+    if (!_semaphore) {
+        [self registerObserver];
+    }
 }
 static void runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info)
 {
