@@ -43,7 +43,6 @@
     
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
-    [self.testVC viewDidAppear:NO];
     
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable{
@@ -63,6 +62,7 @@
 }
 - (void)testTraceAnrBlock{
     [self initSDKWithEnableTrackAppANR:YES];
+    [self.testVC viewDidAppear:NO];
     [NSThread sleepForTimeInterval:2];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
     [self.testVC testAnrBlock];
@@ -72,38 +72,25 @@
         XCTAssertTrue(newCount-lastCount>0);
 
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-        BOOL hasBlock = NO;
-        BOOL hasANR = NO;
+
         for (NSInteger i=0; i<datas.count; i++) {
            FTRecordModel *model = datas[i];
            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
-            NSDictionary *field = [opdata valueForKey:@"field"];
-            NSDictionary *tags = opdata[@"tags"];
+
             NSString *measurement = opdata[@"measurement"];
-            if ([measurement isEqualToString:@"rum_app_freeze"]) {
-                NSString *freeze_type = tags[@"freeze_type"];
-                if ([freeze_type isEqualToString:@"Freeze"]) {
-                    hasBlock = YES;
-                }else if([freeze_type isEqualToString:@"ANR"]){
-                    hasANR = YES;
-                }
-            }else if([measurement isEqualToString:@"freeze"]){
-                NSString *type = tags[@"type"];
-                if ([type isEqualToString:@"freeze"]) {
-                    hasBlock = YES;
-                }else{
-                    hasANR  = YES;
-                }
+            if ([measurement isEqualToString:@"long_task"]) {
+                NSDictionary *field = [opdata valueForKey:@"field"];
+                XCTAssertTrue([field.allKeys containsObject:@"long_task_stack"]&&[field.allKeys containsObject:@"duration"]);
+                //[field.allKeys containsObject:@"long_task_message"]
             }
         }
-        XCTAssertTrue(hasBlock == hasANR == YES);
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+//    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 - (void)testNoTraceAnrBlock{
