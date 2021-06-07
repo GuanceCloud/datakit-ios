@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)process:(FTRUMDataModel *)model;
 @optional
 - (NSMutableArray<FTRUMHandler*>*)manageChildHandlers:(NSMutableArray<FTRUMHandler*> *)childHandlers byPropagatingData:(FTRUMDataModel *)data;
-- (FTRUMDataModel *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data;
+- (FTRUMHandler *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data;
 
 @end
 @interface FTRUMHandler : NSObject
