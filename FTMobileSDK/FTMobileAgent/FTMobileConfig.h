@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig : NSObject
 /**
  * @method 指定初始化方法，设置 metricsUrl
- * @param metricsUrl FT-GateWay metrics 写入地址
+ * @param metricsUrl 数据上报地址
  * @return 配置对象
  */
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
