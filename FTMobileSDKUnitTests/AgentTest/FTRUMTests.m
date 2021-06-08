@@ -262,7 +262,6 @@
 }
 /**
  * 验证 resource，action,error,long_task数据 是否同步到view中
- * error 为resource error
  */
 - (void)testViewUpdate{
     [self setESConfig];
