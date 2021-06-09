@@ -104,7 +104,6 @@
     if (!self.config.enableTraceUserAction) {
         return;
     }
-    NSDate *time = [NSDate date];
     dispatch_async(self.serialQueue, ^{
         NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
         NSString *actionType = isHot?@"launch_hot":@"launch_cold";
