@@ -133,7 +133,6 @@
 		4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Private.h"; sourceTree = "<group>"; };
 		4A299F8F2521F7F800400931 /* FTANRDetector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTANRDetector.h; sourceTree = "<group>"; };
 		4A299F902521F7F800400931 /* FTANRDetector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTANRDetector.m; sourceTree = "<group>"; };
-		4A2D280F25A4612200A86433 /* FTWKWebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewJavascriptBridge.h; sourceTree = "<group>"; };
 		4A2D57ED2458141300478547 /* FTMonitorUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorUtils.h; sourceTree = "<group>"; };
 		4A2D57EE2458141300478547 /* FTMonitorUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorUtils.m; sourceTree = "<group>"; };
 		4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTJsonWriter.h; sourceTree = "<group>"; };
@@ -412,7 +411,6 @@
 		7C28B7D1266092C400CECBA6 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				4A2D280F25A4612200A86433 /* FTWKWebViewJavascriptBridge.h */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
