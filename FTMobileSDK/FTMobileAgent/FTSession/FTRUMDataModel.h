@@ -62,6 +62,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier;
 @end
+@interface FTRUMLaunchDataModel : FTRUMDataModel
+@property (nonatomic, strong) NSNumber *duration;
+-(instancetype)initWithType:(FTRUMDataType)type duration:(NSNumber *)duration;
+@end
 @interface FTRUMWebViewData : FTRUMDataModel
 @property (nonatomic, assign) long long tm;
 @property (nonatomic, copy) NSString *measurement;
