@@ -19,6 +19,7 @@
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTRUMManger.h>
+#import <FTRUMSessionHandler.H>
 @interface FTRUMTests : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -54,7 +55,8 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-
+    [NSThread sleepForTimeInterval:2];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 设置 appid 后 ES 开启
@@ -105,7 +107,7 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count >= oldArray.count);
-
+    
 }
 /**
  * 设置不允许追踪用户操作
@@ -121,21 +123,112 @@
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count == oldArray.count);
-
+    
+}
+/**
+ *
+ */
+- (void)testSessionIdChecks{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    //页面关闭 action 无正在加载的resource action写入
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSDictionary *tags = opdata[@"tags"];
+        XCTAssertTrue([tags.allKeys containsObject:@"session_id"]);
+        
+    }];
+}
+/**
+ * 验证： session持续15m 无新数据写入 session更新
+ */
+- (void)testSessionTimeElapse{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    //把session上次记录数据改为15分钟前 模拟session过期
+    NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
+    [session setValue:newDate forKey:@"lastInteractionTime"];
+   
+    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *old = [oldArray lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:old.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags = opdata[@"tags"];
+    NSString *oldSessionId =tags[@"session_id"];
+    FTRecordModel *new = [newArray lastObject];
+    NSDictionary *newDict = [FTJSONUtil dictionaryWithJsonString:new.data];
+    NSDictionary *newOpdata = newDict[@"opdata"];
+    NSDictionary *newTags = newOpdata[@"tags"];
+    NSString *newSessionId =newTags[@"session_id"];
+    XCTAssertTrue(oldSessionId);
+    XCTAssertTrue(newSessionId);
+    XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
+}
+/**
+ * 验证： session 持续四小时  session更新
+ */
+- (void)testSessionTimeOut{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    //把session开始时间改为四小时前 模拟session过期
+    NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
+    [session setValue:newDate forKey:@"sessionStartTime"];
+   
+    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *old = [oldArray lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:old.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags = opdata[@"tags"];
+    NSString *oldSessionId =tags[@"session_id"];
+    FTRecordModel *new = [newArray lastObject];
+    NSDictionary *newDict = [FTJSONUtil dictionaryWithJsonString:new.data];
+    NSDictionary *newOpdata = newDict[@"opdata"];
+    NSDictionary *newTags = newOpdata[@"tags"];
+    NSString *newSessionId =newTags[@"session_id"];
+    XCTAssertTrue(oldSessionId);
+    XCTAssertTrue(newSessionId);
+    XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
 }
 /**
  * 验证 source：view 的数据格式
  */
 - (void)testViewDataFormatChecks{
-    
     [self setESConfig];
-    
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [NSThread sleepForTimeInterval:2];
-
+        
         NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         __block BOOL hasView = NO;
         [array enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -157,12 +250,12 @@
         XCTAssertTrue(hasView);
         [expectation fulfill];
     }];
-   
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     
-  
+    
 }
 /**
  * 验证 source：resource 的数据格式
@@ -171,7 +264,7 @@
     NSArray *resourceTag = @[@"resource_url",
                              @"resource_url_host",
                              @"resource_url_path",
-//                             @"resource_url_query",
+                             //                             @"resource_url_query",
                              @"resource_url_path_group",
                              @"resource_type",
                              @"resource_method",
@@ -188,7 +281,6 @@
                                @"resource_first_byte",
     ];
     [self setESConfig];
-    
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -219,10 +311,10 @@
             }];
             XCTAssertTrue(hasView);
         }
-       
+        
         [expectation fulfill];
     }];
-   
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -235,7 +327,7 @@
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-   
+    
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [NSThread sleepForTimeInterval:2];
@@ -261,6 +353,136 @@
     }];
 }
 /**
+ * 验证：action 最长持续10s
+ */
+- (void)testActionTimedOut{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [NSThread sleepForTimeInterval:10];
+    [self addLongTaskData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasClickAction = NO;
+    __block BOOL hasLongTask = NO;
+
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        NSDictionary *tags = opdata[@"tags"];
+        NSDictionary *field = opdata[@"field"];
+        if ([measurement isEqualToString:@"action"]) {
+            
+            if([tags[@"action_type"] isEqualToString:@"click"]){
+                XCTAssertTrue([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]click"]);
+                XCTAssertTrue([field[@"action_long_task_count"] isEqual:@0]);
+                XCTAssertTrue([field[@"duration"] isEqual:@10000000000]);
+                hasClickAction = YES;
+            }
+        }else if([measurement isEqualToString:@"long_task"]){
+            XCTAssertFalse([tags.allKeys containsObject:@"action_id"]);
+            hasLongTask  = YES;
+        }
+    }];
+    XCTAssertTrue(hasClickAction && hasLongTask);
+}
+/**
+ * 验证： action: launch_cold
+ * 应用启动 --> 第一个页面viewDidAppear
+ */
+- (void)testRumAppLaunchCold{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    //页面关闭 action 无正在加载的resource action写入
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger count = 0;
+    __block BOOL isLaunchCold = NO;
+    
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        if ([measurement isEqualToString:@"action"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            if([tags[@"action_type"] isEqualToString:@"launch_cold"]){
+                isLaunchCold = YES;
+            }
+            count ++;
+        }
+    }];
+    XCTAssertTrue(count == 1);
+    XCTAssertTrue(isLaunchCold);
+    
+}
+/**
+ * 验证： action: launch_hot
+ */
+- (void)testRumAppLaunchHot{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [NSThread sleepForTimeInterval:1];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    //页面关闭 action 无正在加载的resource action写入
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger count = 0;
+    __block BOOL isLaunchHot = NO;
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        if ([measurement isEqualToString:@"action"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            if([tags[@"action_type"] isEqualToString:@"launch_hot"]){
+                isLaunchHot = YES;
+            }
+            count ++;
+        }
+    }];
+    XCTAssertTrue(count == 2);
+    XCTAssertTrue(isLaunchHot);
+}
+/**
+ * 验证： action: click
+ */
+- (void)testRumClickBtn{
+    [self setESConfig];
+    [self.testVC view];
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [NSThread sleepForTimeInterval:2];
+    
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL firstBtnClick = NO;
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        if ([measurement isEqualToString:@"action"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            if([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]click"]){
+                firstBtnClick = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(firstBtnClick);
+}
+/**
  * 验证 resource，action,error,long_task数据 是否同步到view中
  */
 - (void)testViewUpdate{
@@ -283,29 +505,30 @@
     [self addErrorData];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasViewData = NO;
-
+    __block NSInteger hasViewData = NO;
+    __block NSInteger actionCount,trueActionCount=0;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"measurement"];
-        if ([measurement isEqualToString:@"view"]) {
+        if ([measurement isEqualToString:@"view"] && hasViewData == NO) {
             NSDictionary *field = opdata[@"field"];
-            NSInteger actionCount = [field[@"view_action_count"] integerValue];
+            actionCount = [field[@"view_action_count"] integerValue];
             NSInteger errorCount = [field[@"view_error_count"] integerValue];
             NSInteger resourceCount = [field[@"view_resource_count"] integerValue];
             NSInteger longTaskCount = [field[@"view_long_task_count"] integerValue];
-            XCTAssertTrue(actionCount == 1);
+            hasViewData = YES;
             XCTAssertTrue(errorCount == (1+resErrorCount));
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == (1-resErrorCount));
-            hasViewData = YES;
-            *stop = YES;
+        }else if([measurement isEqualToString:@"action"]){
+            trueActionCount ++;
         }
     }];
     XCTAssertTrue(hasViewData);
+    XCTAssertTrue(actionCount == trueActionCount);
 
 }
 /**
@@ -355,7 +578,7 @@
 }
 
 - (void)addErrorData{
-   
+    
     NSDictionary *field = @{@"error_message":@"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270",
                             @"error_stack":@"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15"
     };
@@ -372,7 +595,7 @@
 - (void)addLongTaskData{
     NSDictionary *field = @{@"duration":@5000000000,
                             @"long_task_stack":@"Backtrace of Thread 771:\n0 libsystem_kernel.dylib          0x7fff6112d756 __semwait_signal + 10\n1 libsystem_c.dylib               0x7fff200f7500 usleep + 53\n2 SampleApp                       0x1038b9a96 -[TestANRVC tableView:cellForRowAtIndexPath:] + 230\n3 UIKitCore                       0x7fff248ce1af -[UITableView _createPreparedCellForGlobalRow:withIndexPath:willDisplay:] + 865\n4 UIKitCore                       0x7fff248ce637 -[UITableView _createPreparedCellForRowAtIndexPath:willDisplay:] + 80\n5 UIKitCore                       0x7fff248dab61 -[UITableView _heightForRowAtIndexPath:] + 204\n6 UIKitCore                       0x7fff248eea95 -[UISectionRowData heightForRow:inSection:canGuess:] + 220\n7 UIKitCore                       0x7fff248f40ca -[UITableViewRowData heightForRow:inSection:canGuess:adjustForReorderedRow:] + 238\n8 UIKitCore                       0x7fff248f7c1a -[UITableViewRowData ensureHeightsFaultedInForScrollToIndexPath:boundsHeight:] + 864\n9 UIKitCore                       0x7fff248ad10f -[UITableView _contentOffsetForScrollingToRowAtIndexPath:atScrollPosition:usingPresentationValues:] + 1138\n10 UIKitCore                       0x7fff248ae07c -[UITableView _scrollToRowAtIndexPath:atScrollPosition:animated:usingPresentationValues:] + 142\n11 UIKitCore                       0x7fff248b18dc -[UITableView _selectRowAtIndexPath:animated:scrollPosition:notifyDelegate:isCellMultiSelect:] + 719\n12 UIKitCore                       0x7fff248b2004 -[UITableView selectRowAtIndexPath:animated:scrollPosition:] + 91\n"
-        
+                            
     };
     
     NSString *invokeMethod = @"ftLongTaskWithtags:field:";
@@ -438,6 +661,6 @@
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-
+    
 }
 @end
