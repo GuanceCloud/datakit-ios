@@ -85,8 +85,12 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     return self.activeResourcesCount<=0;
 }
 -(void)writeActionData:(NSDate *)endDate{
+    if (self.model.type == FTRUMDataLaunchHot ||self.model.type == FTRUMDataLaunchCold ) {
+        FTRUMLaunchDataModel *model = (FTRUMLaunchDataModel *)self.model;
+        self.duration =model.duration;
+    }else{
     self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
-
+    }
     NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
                                  @"session_type":self.model.baseSessionData.session_type,
     };

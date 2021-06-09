@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 @class FTTaskInterceptionModel;
 @protocol FTRUMSessionActionDelegate <NSObject>
-- (void)ftApplicationDidBecomeActive:(BOOL)isHot;
+- (void)ftApplicationDidBecomeActive:(BOOL)isHot duration:(NSNumber *)duration;
 - (void)ftApplicationWillTerminate;
 - (void)ftViewDidAppear:(UIViewController *)viewController;
 - (void)ftViewDidDisappear:(UIViewController *)viewController;

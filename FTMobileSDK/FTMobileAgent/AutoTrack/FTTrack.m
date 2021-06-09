@@ -34,6 +34,8 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
     BOOL _appRelaunched;          // App 从后台恢复
     //进入非活动状态，比如双击 home、系统授权弹框
     BOOL _applicationWillResignActive;
+    BOOL _applicationLoadFirstViewController;
+    
 }
 @property (nonatomic,assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSMutableArray *aspectTokenAry;
@@ -90,15 +92,17 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
             _applicationWillResignActive = NO;
             return;
         }
-        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:)]) {
-            [self.rumActionDelegate ftApplicationDidBecomeActive:_appRelaunched];
+        if (!_applicationLoadFirstViewController) {
+            return;
         }
         if (self.currentController && self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
             NSString *viewid = [NSUUID UUID].UUIDString;
             self.currentController.ft_viewUUID = viewid;
             [self.rumActionDelegate ftViewDidAppear:self.currentController];
         }
-        _appRelaunched = YES;
+        if (self.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+            [self.rumActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+        }
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -148,7 +152,7 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         UIViewController * vc = [info instance];
         if(![weakSelf isBlackListContainsViewController:vc]){
             // 预防撤回侧滑
-            if (self.currentController != vc) {
+            if (weakSelf.currentController != vc) {
                 if(vc.ft_viewLoadStartTime){
                     NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:vc.ft_viewLoadStartTime];
                     vc.ft_loadDuration = loadTime;
@@ -158,11 +162,18 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
                     vc.ft_loadDuration = loadTime;
                 }
                 vc.ft_viewUUID = [NSUUID UUID].UUIDString;
-                self.currentController = vc;
-                if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-                    [self.rumActionDelegate ftViewDidAppear:vc];
+                weakSelf.currentController = vc;
+                if (weakSelf.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+                    [weakSelf.rumActionDelegate ftViewDidAppear:vc];
                 }
             }
+            if (!self->_applicationLoadFirstViewController) {
+                self->_applicationLoadFirstViewController = YES;
+                if (weakSelf.rumActionDelegate && [self.rumActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+                    [weakSelf.rumActionDelegate ftApplicationDidBecomeActive:self->_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+                }
+            }
+            self->_appRelaunched = YES;
         }
     } error:nil];
     id<ZY_AspectToken> lifeClose = [UIViewController aspect_hookSelector:@selector(viewDidDisappear:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> info){
@@ -170,9 +181,9 @@ static NSString * const FT_AUTO_TRACK_VTP_TREE_PATH = @"view_tree_path";
         if([weakSelf isBlackListContainsViewController:tempVC]){
             return;
         }
-        if (self.currentController == tempVC) {
-            if (self.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
-                [self.rumActionDelegate ftViewDidDisappear:tempVC];
+        if (weakSelf.currentController == tempVC) {
+            if (weakSelf.rumActionDelegate&&[self.rumActionDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+                [weakSelf.rumActionDelegate ftViewDidDisappear:tempVC];
             }
         }
         

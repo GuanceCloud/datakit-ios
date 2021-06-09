@@ -100,7 +100,7 @@
         [self process:model];
     });
 }
-- (void)ftApplicationDidBecomeActive:(BOOL)isHot{
+- (void)ftApplicationDidBecomeActive:(BOOL)isHot duration:(NSNumber *)duration{
     if (!self.config.enableTraceUserAction) {
         return;
     }
@@ -110,7 +110,7 @@
         NSString *actionType = isHot?@"launch_hot":@"launch_cold";
         FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
         FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
-        FTRUMDataModel *launchModel = [[FTRUMDataModel alloc]initWithType:type time:time];
+        FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
         launchModel.baseActionData =actionModel;
         [self process:launchModel];
     });
