@@ -19,7 +19,6 @@
 #import <FTMobileAgent/NSDate+FTAdd.h>
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
-#import "FTMonitorManager+Test.h"
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import <FTMobileAgent/FTPresetProperty.h>
