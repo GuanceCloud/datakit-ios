@@ -14,7 +14,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) NSDate *sessionStartTime;
 @property (nonatomic, strong) NSDate *lastInteractionTime;
-@property (nonatomic, copy,readwrite) NSString *sessionUUID;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, strong) FTRUMSessionModel *sessionModel;
 @end
@@ -22,17 +21,17 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(instancetype)initWithModel:(FTRUMDataModel *)model{
     self = [super init];
     if (self) {
-        self.sessionUUID = [[NSUUID UUID] UUIDString];
         self.assistant = self;
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
-        self.sessionModel = [[FTRUMSessionModel alloc]initWithSessionID:self.sessionUUID];
+        self.sessionModel = [[FTRUMSessionModel alloc]initWithSessionID:[NSUUID UUID].UUIDString];
     }
     return  self;
 }
 -(void)refreshWithDate:(NSDate *)date{
+    self.sessionModel.session_id = [NSUUID UUID].UUIDString;
     self.sessionStartTime = date;
-    self.sessionUUID = [[NSUUID UUID] UUIDString];
+    self.lastInteractionTime = date;
 }
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
