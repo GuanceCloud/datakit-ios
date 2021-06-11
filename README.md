@@ -16,7 +16,7 @@ DataFlux 应用监测能够通过收集各个iOS应用的指标数据，以可�
  [Dataflux-SDK-iOS Demo](https://github.com/CloudCare/dataflux-sdk-ios-demo)   
 
 ## 使用文档
- [文档中心](https://help.dataflux.cn/doc/fbbdef366ed4af83050961384bd7f7bb64dc455e)   
+ [文档中心](https://www.yuque.com/dataflux/doc/gsto6k)   
 
 
 
