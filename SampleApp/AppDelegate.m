@@ -24,26 +24,30 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-
+    
     // Override point for customization after application launch.
     /**
-      测试 SDK config
-      APP_ID  = @"Your AppId";
-      ACCESS_SERVER_URL  = @"Your App metricsUrl";
+     测试 SDK config
+     APP_ID  = @"Your AppId";
+     ACCESS_SERVER_URL  = @"Your App metricsUrl";
      
-      进行单元测试时 在FTMobileSDKUnitTests 的 scheme 中添加
-      isUnitTests = 1;
-      防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     进行单元测试时 在FTMobileSDKUnitTests 的 scheme 中添加
+     isUnitTests = 1;
+     防止 SDK 在 AppDelegate 启动 对单元测试造成影响
+     
+     进行单UI试时 在FTMobileSDKUnitTests 的 scheme 中添加
+     isUITests = 1;
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
-    if ( url && !isUnitTests) {
+    BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
+    if ( url && !isUnitTests && !isUITests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.appid = appid;
         config.enableSDKDebugLog = YES;
-//        config.monitorInfoType = FTMonitorInfoTypeAll;
+        //        config.monitorInfoType = FTMonitorInfoTypeAll;
         config.traceConsoleLog = YES;
         config.networkTrace = YES;
         config.enableTrackAppCrash = YES;
@@ -51,7 +55,19 @@
         config.enableTrackAppANR = YES;
         config.enableTraceUserAction = YES;
         [FTMobileAgent startWithConfigOptions:config];
-        self.config = config;
+    }
+    // UI 测试
+    if(isUITests){
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+        config.appid = appid;
+        config.networkTrace = YES;
+        config.enableTrackAppCrash = YES;
+        config.enableTrackAppFreeze = YES;
+        config.enableTrackAppANR = YES;
+        config.enableTraceUserAction = YES;
+        [FTMobileAgent startWithConfigOptions:config];
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+        [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     }
     return YES;
 }

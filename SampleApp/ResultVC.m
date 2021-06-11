@@ -10,11 +10,14 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
-
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "FTRecordModel.h"
 @interface ResultVC ()
 @property (nonatomic ,strong) FTMobileConfig *config;
 
 @property (nonatomic, strong) UILabel *lable;
+@property (nonatomic, strong) UILabel *successView;
 @end
 
 @implementation ResultVC
@@ -22,188 +25,53 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = @"Result";
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    self.config = appDelegate.config;
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self checkResult];
 }
--(void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-    [self createUI];
-}
-- (void)createUI{
-    UILabel *lable = [[UILabel alloc]initWithFrame:CGRectMake(10, 230, 350, 250)];
-    lable.backgroundColor = [UIColor whiteColor];
-    lable.textColor = [UIColor blackColor];
-    lable.numberOfLines = 0;
-    lable.text = [NSString stringWithFormat:@"数据库原有数据 0 条\n 数据库增加：\nlunch:1\nopen、close：4 \nclick:5 \n数据库现有数据： %ld 条 \n",[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"]];
-    
-    self.lable = lable;
-    [self.view addSubview:lable];
-    dispatch_queue_t queue = dispatch_queue_create("net.test.testQueue", DISPATCH_QUEUE_SERIAL);
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        dispatch_async(queue, ^{
-            NSInteger count = [self getUploadInfo];
-            [self judjeSuccessWithCount:count];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // 追加在主线程中执行的任务
-                self.lable.text = [NSString stringWithFormat:@"数据库现有数据： %ld 条 \n上传：%ld条",[[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:@"metrics"],(long)count];
-            });
-        });
+-(void)checkResult{
+    //数据库写入操作是异步的 等待数据写入
+    __block NSInteger viewCount,actionCount = 0;
+    __block NSMutableArray *viewAry = [NSMutableArray new];
+    dispatch_after(5, dispatch_get_main_queue(), ^{
+        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+        [datas enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"measurement"];
+            if ([measurement isEqualToString:@"action"]) {
+                actionCount++;
+            }else if([measurement isEqualToString:@"view"]){
+                viewCount ++;
+                [viewAry addObject:obj];
+            }
+        }];
+        self.lable.text = [NSString stringWithFormat:@"viewCount: %@ \nactionCount:%@",@(viewCount),@(actionCount)];
+        if(viewCount == actionCount+1 && viewCount == 11){
+            self.successView.backgroundColor = [UIColor redColor];
+            self.successView.hidden = NO;
+        }
     });
-}
-
--(void)judjeSuccessWithCount:(NSInteger)count{
-  
-    
+    //action:launch_cold -> view:UITabBarController ->resource ->view:DemoViewController->action:click->view:DemoViewController->action:click->view:DemoViewController->action:click->view:UITestVC........
     
 }
--(NSString *)login{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *account =[processInfo environment][@"FTTestAccount"];
-    NSString *password = [processInfo environment][@"FTTestPassword"];
-    if (account.length>0 && password.length>0) {
-        NSLog(@"account:%@,password:%@",account,password);
-    }else{
-        return @"";
+-(UILabel *)successView{
+    if (!_successView) {
+        _successView = [[UILabel alloc]initWithFrame:CGRectMake(20, 150, 100, 40)];
+        _successView.text = @"SUCCESS";
+        [self.view addSubview:_successView];
     }
-    NSURL *url = [NSURL URLWithString:@"http://testing.api-ft2x.cloudcare.cn:10531/api/v1/auth-token/login"];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    NSMutableURLRequest *mutableRequest = [request mutableCopy];    //拷贝request
-    mutableRequest.HTTPMethod = @"POST";
-    //添加header
-    [mutableRequest addValue:@"application/json;charset=UTF-8" forHTTPHeaderField:@"Content-Type"];
-    
-    //设置请求参数
-    [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
-    NSDictionary *param = @{
-        @"username": account,
-        @"password": password,
-        @"workspaceUUID": [NSString stringWithFormat:@"wksp_%@",[[NSUUID UUID] UUIDString]],
-    };
-    NSData* data = [NSJSONSerialization dataWithJSONObject:param options:NSJSONWritingPrettyPrinted error:nil];
-    NSString *bodyData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    
-    [mutableRequest setHTTPBody:[NSData dataWithBytes:[bodyData UTF8String] length:strlen([bodyData UTF8String])]];
-    
-    
-    request = [mutableRequest copy];
-    __block NSString *token = @"";
-    
-    //设置请求session
-    NSURLSession *session = [NSURLSession sharedSession];
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    
-    //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
-                
-            }else{
-                NSError *errors;
-                NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
-                
-                if (!errors){
-                    NSDictionary *content = [responseObject valueForKey:@"content"];
-                    token = [content valueForKey:@"token"];
-                }
-            }
-            dispatch_group_leave(group);
-        });
-        
-    }];
-    //开始请求
-    [dataTask resume];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    
-    return token;
+    return _successView;
 }
--(NSInteger)getUploadInfo{
-    NSString *token = [self login];
-    NSURL *url = [NSURL URLWithString:@"http://testing.api-ft2x.cloudcare.cn:10531/api/v1/influx/query_data"];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    //设置请求地址
-    //添加header
-    NSMutableURLRequest *mutableRequest = [request mutableCopy];    //拷贝request
-    mutableRequest.HTTPMethod = @"POST";
-    //添加header
-    [mutableRequest addValue:@"application/json;charset=UTF-8" forHTTPHeaderField:@"Content-Type"];
-    
-    //设置请求参数
-    [mutableRequest setValue:token forHTTPHeaderField:@"X-FT-Auth-Token"];
-    [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
-    NSDictionary *param = [self getParams];
-    NSData* data = [NSJSONSerialization dataWithJSONObject:param options:NSJSONWritingPrettyPrinted error:nil];
-    NSString *bodyData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    
-    [mutableRequest setHTTPBody:[NSData dataWithBytes:[bodyData UTF8String] length:strlen([bodyData UTF8String])]];
-    request = [mutableRequest copy];        //拷贝回去
-    __block NSInteger count = 0;
-    
-    //设置请求session
-    NSURLSession *session = [NSURLSession sharedSession];
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    
-    //设置网络请求的返回接收器
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
-                
-            }else{
-                NSError *errors;
-                NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
-                
-                if (!errors){
-                    NSDictionary *content= [responseObject valueForKey:@"content"];
-                    NSArray *data = [content valueForKey:@"data"];
-                    NSArray *series = [[data firstObject] valueForKey:@"Series"];
-                    if (![series isKindOfClass:[NSNull class]] && ![series isEqual:[NSNull null]]) {
-                        NSArray *values = [[series firstObject] valueForKey:@"values"];
-                        
-                        count = values.count;
-                    }
-                }
-            }
-            dispatch_group_leave(group);
-        });
-        
-    }];
-    //开始请求
-    [dataTask resume];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    
-    return count;
-    
+-(UILabel *)lable{
+    if (!_lable) {
+        _lable = [[UILabel alloc]initWithFrame:CGRectMake(10, 230, 350, 250)];
+        _lable.backgroundColor = [UIColor whiteColor];
+        _lable.textColor = [UIColor blackColor];
+        _lable.numberOfLines = 0;
+        [self.view addSubview:_lable];
+    }
+    return _lable;
 }
--(NSDictionary *)getParams{
-    NSDictionary *param = @{@"qtype":@"http",
-                            @"query":@{@"filter":@{@"tags":@[@{@"name":@"application_identifier",
-                                                               @"condition":@"",
-                                                               @"operation":@"=",
-                                                               @"value":@"HLL.ft-sdk-iosTest",
-                            }],
-                                                   @"time":[self getTime],
-                            },
-                                       @"measurements":@[@"mobile_tracker"],
-                                       @"tz":@"Asia/Shanghai",
-                                       @"orderBy":@[@{@"name":@"time",
-                                                      @"method":@"desc"}],
-                                       @"offset":@0,
-                                       @"limit":@1000,
-                                       @"fields":@[@{@"name":@"event"}],
-                                       
-                            },
-    };
-    
-    return param;
-}
--(NSArray *)getTime{
-    NSDate *datenow = [NSDate date];
-    long  time= (long)([datenow timeIntervalSince1970]*1000);
-    return @[[NSNumber numberWithLong:time-(1000 * 60 * 2)],[NSNumber numberWithLong:time]];
-}
-
 
 /*
  #pragma mark - Navigation

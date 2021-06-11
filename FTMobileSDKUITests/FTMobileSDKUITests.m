@@ -28,58 +28,54 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 /**
-  测试全埋点流程 请设置 enableTrackScreenFlow = NO;
+ * 测试action、view数据采集
+ * enableTraceUserAction = YES;
  */
-//- (void)testAutoTrackUIExample {
-//    // UI tests must launch the application that they test.
-//    XCUIApplication *app = [[XCUIApplication alloc] init];
-//    XCUIElement *window = [app.windows elementBoundByIndex:0];
-//    ////将test 运行使用环境赋值给 application
-//    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
-//    [app launch];
-//    
-//   
-//    
-//    XCUIElementQuery *tablesQuery = app.tables;
-////    [tablesQuery.staticTexts[@"BindUser"] tap];
-//    [tablesQuery.staticTexts[@"Test_autoTrack"] tap];
-//        
-//    XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
-//    [segmentedControlsQuery.buttons[@"first"] tap];
-//    [segmentedControlsQuery.buttons[@"second"] tap];
-//    [segmentedControlsQuery.buttons[@"third"] tap];
-//    
-//    XCUIElementQuery *steppersQuery = app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
-//    [steppersQuery.buttons[@"Increment"] tap];
-//    [steppersQuery.buttons[@"Decrement"] tap];
-//    
-//    XCUIApplication *app2 = app;
-//    [app2.buttons[@"lable"] tap];
-//    [[app.scrollViews childrenMatchingType:XCUIElementTypeImage].element tap];
-//    
-//    XCUIElementQuery *tablesQuery2 = app2.tables;
-//    [tablesQuery2.staticTexts[@"Section: 0, Row: 0"] pressForDuration:2];
-//    [tablesQuery2.staticTexts[@"Section: 0, Row: 1"] pressForDuration:2];
-//    [app2.buttons[@"result"] tap];
-//
-//   
-//    [window pressForDuration:70];
-//    XCUIElement *success = app.staticTexts[@"SUCCESS"];
-//         //判断上传成功数量 与 实际上传数量是否相等
-//    XCTAssertTrue(success.exists);
-//    
-//    // Use recording to get started writing UI tests.
-//    // Use XCTAssert and related functions to verify your tests produce the correct results.
-//}
-
-- (void)testCrash{
+- (void)testTraceUserActionUIExample {
+    // UI tests must launch the application that they test.
     XCUIApplication *app = [[XCUIApplication alloc] init];
     XCUIElement *window = [app.windows elementBoundByIndex:0];
     ////将test 运行使用环境赋值给 application
     app.launchEnvironment =[[NSProcessInfo processInfo] environment];
+    [app launch];//
+    XCUIElementQuery *tablesQuery = app.tables;
+    XCUIElement *networktraceClienthttpStaticText = tablesQuery.staticTexts[@"NetworkTrace_clienthttp"];
+    [networktraceClienthttpStaticText tap];
+    [tablesQuery.staticTexts[@"EventFlowLog"] tap];
+    
+    XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
+    [segmentedControlsQuery.buttons[@"first"] tap];
+    [segmentedControlsQuery.buttons[@"second"] tap];
+    [segmentedControlsQuery.buttons[@"third"] tap];
+    
+    [app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.buttons[@"Increment"] tap];
+    [app/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    
+    XCUIElementQuery *tablesQuery2 = app.tables;
+    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [[[XCUIApplication alloc] init]/*@START_MENU_TOKEN@*/.buttons[@"result"]/*[[".scrollViews.buttons[@\"result\"]",".buttons[@\"result\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.staticTexts[@"result"] tap];
+        
+   
+    
+    [window pressForDuration:10];
+    XCUIElement *success = app.staticTexts[@"SUCCESS"];
+    //判断采集结果与预期是否一致
+    XCTAssertTrue(success.exists);
+    // Use recording to get started writing UI tests.
+    // Use XCTAssert and related functions to verify your tests produce the correct results.
+}
+- (void)testCrash{
+    XCUIApplication *app = [[XCUIApplication alloc] init];
+    ////将test 运行使用环境赋值给 application
+    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
     [app launch];
     
-    [app.tables.staticTexts[@"Test_crashLog"] tap];
+    [app.tables.staticTexts[@"TrackAppCrash"] tap];
+    XCUIElementQuery *tablesQuery2 = app.tables;
+
+    [tablesQuery2.staticTexts[@"throwUncaughtNSException"] tap];
+
     [NSThread sleepForTimeInterval:3];
     XCUIElement *success  = app.alerts[@"Crash"];
     
