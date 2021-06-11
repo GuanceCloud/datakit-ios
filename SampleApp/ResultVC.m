@@ -30,7 +30,7 @@
 }
 -(void)checkResult{
     //数据库写入操作是异步的 等待数据写入
-    __block NSInteger viewCount,actionCount = 0;
+    __block NSInteger viewCount,actionCount,longTaskCount,resourceCount = 0;
     __block NSMutableArray *viewAry = [NSMutableArray new];
     dispatch_after(5, dispatch_get_main_queue(), ^{
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
@@ -43,10 +43,14 @@
             }else if([measurement isEqualToString:@"view"]){
                 viewCount ++;
                 [viewAry addObject:obj];
+            }else if([measurement isEqualToString:@"long_task"]){
+                longTaskCount ++;
+            }else if([measurement isEqualToString:@"resource"]){
+                resourceCount ++;
             }
         }];
         self.lable.text = [NSString stringWithFormat:@"viewCount: %@ \nactionCount:%@",@(viewCount),@(actionCount)];
-        if(viewCount == actionCount+1 && viewCount == 11){
+        if(viewCount == actionCount+resourceCount+longTaskCount && actionCount == 10){
             self.successView.backgroundColor = [UIColor redColor];
             self.successView.hidden = NO;
         }
