@@ -76,7 +76,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    [self.testVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -133,7 +133,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    [self.testVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
         [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
@@ -201,7 +201,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://github.com/CloudCare/dataflux-sdk-ios/tree/master"];
+    [self.testVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
