@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   # s.tvos.deployment_target = "9.0"
 
 #   s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/.zip" }
-   s.source       = { :git => "https://github.com/CloudCare/dataflux-sdk-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
+   s.source       = { :git => "https://github.com/DataFlux-cn/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
    s.subspec  'FTMobileAgent' do | agent |
        agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*'
        agent.library = "resolv.9"
