@@ -122,6 +122,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
@@ -161,6 +162,90 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+}
+/**
+ * 设置 appid 后 ES 开启
+ * 验证： ES 数据能正常写入
+ */
+- (void)testSetAppid{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.appid = self.appid;
+    config.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [self addESData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count>oldArray.count);
     [[FTMobileAgent sharedInstance] resetInstance];
+}
+/**
+ * 未设置 appid  ES 关闭
+ * 验证： ES 数据不能正常写入
+ */
+-(void)testSetEmptyAppid{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [self addESData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
+/**
+ * 设置允许追踪用户操作，目前支持应用启动和点击操作
+ * 验证： Action 数据能正常写入
+ */
+- (void)testEnableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.appid = self.appid;
+    config.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [self addESData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count >= oldArray.count);
+    [[FTMobileAgent sharedInstance] resetInstance];
+    
+}
+/**
+ * 设置不允许追踪用户操作
+ * 验证： Action 数据不能正常写入
+ */
+- (void)testDisableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.appid = self.appid;
+    [FTMobileAgent startWithConfigOptions:config];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+    [[FTMobileAgent sharedInstance] resetInstance];
+    
+}
+- (void)addESData{
+    NSDictionary *field = @{@"action_error_count":@0,
+                            @"action_long_task_count":@0,
+                            @"action_resource_count":@0,
+                            @"duration":@103492975,
+    };
+    NSDictionary *tags = @{@"action_id":[NSUUID UUID].UUIDString,
+                           @"action_name":@"app_cold_start",
+                           @"action_type":@"launch_cold",
+                           @"session_id":[NSUUID UUID].UUIDString,
+                           @"session_type":@"user",
+    };
+    [[FTMobileAgent sharedInstance] rumWrite:@"action" terminal:@"app" tags:tags fields:field];
 }
 @end

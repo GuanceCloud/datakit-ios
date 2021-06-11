@@ -19,7 +19,8 @@
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTRUMManger.h>
-#import <FTRUMSessionHandler.H>
+#import <FTRUMSessionHandler.h>
+#import "FTUploadTool+Test.h"
 @interface FTRUMTests : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -57,73 +58,6 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] resetInstance];
-}
-/**
- * 设置 appid 后 ES 开启
- * 验证： ES 数据能正常写入
- */
-- (void)testSetAppid{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.appid = self.appid;
-    config.enableTraceUserAction = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count>oldArray.count);
-}
-/**
- * 未设置 appid  ES 关闭
- * 验证： ES 数据不能正常写入
- */
--(void)testSetEmptyAppid{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.enableTraceUserAction = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count);
-}
-/**
- * 设置允许追踪用户操作，目前支持应用启动和点击操作
- * 验证： Action 数据能正常写入
- */
-- (void)testEnableTraceUserAction{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.appid = self.appid;
-    config.enableTraceUserAction = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [self addESData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count >= oldArray.count);
-    
-}
-/**
- * 设置不允许追踪用户操作
- * 验证： Action 数据不能正常写入
- */
-- (void)testDisableTraceUserAction{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.appid = self.appid;
-    [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count);
-    
 }
 /**
  *
@@ -225,37 +159,27 @@
     [self setESConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-        [NSThread sleepForTimeInterval:2];
-        
-        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-        __block BOOL hasView = NO;
-        [array enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-            NSString *op = dict[@"op"];
-            XCTAssertTrue([op isEqualToString:@"RUM"]);
-            NSDictionary *opdata = dict[@"opdata"];
-            NSString *measurement = opdata[@"measurement"];
-            if ([measurement isEqualToString:@"view"]) {
-                NSDictionary *tags = opdata[@"tags"];
-                [self rumTags:tags];
-                NSDictionary *field = opdata[@"field"];
-                XCTAssertTrue([field.allKeys containsObject:@"view_resource_count"]&&[field.allKeys containsObject:@"view_action_count"]&&[field.allKeys containsObject:@"view_long_task_count"]&&[field.allKeys containsObject:@"view_error_count"]);
-                XCTAssertTrue([tags.allKeys containsObject:@"is_active"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_referrer"]&&[tags.allKeys containsObject:@"view_name"]);
-                hasView = YES;
-                *stop = YES;
-            }
-        }];
-        XCTAssertTrue(hasView);
-        [expectation fulfill];
+    [self addLongTaskData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasView = NO;
+    [array enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        if ([measurement isEqualToString:@"view"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            [self rumTags:tags];
+            NSDictionary *field = opdata[@"field"];
+            XCTAssertTrue([field.allKeys containsObject:@"view_resource_count"]&&[field.allKeys containsObject:@"view_action_count"]&&[field.allKeys containsObject:@"view_long_task_count"]&&[field.allKeys containsObject:@"view_error_count"]);
+            XCTAssertTrue([tags.allKeys containsObject:@"is_active"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_referrer"]&&[tags.allKeys containsObject:@"view_name"]);
+            hasView = YES;
+            *stop = YES;
+        }
     }];
-    
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    
-    
+    XCTAssertTrue(hasView);
 }
 /**
  * 验证 source：resource 的数据格式
@@ -357,13 +281,14 @@
  */
 - (void)testActionTimedOut{
     [self setESConfig];
+    [self.testVC viewDidDisappear:NO];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     [NSThread sleepForTimeInterval:10];
     [self addLongTaskData];
     [NSThread sleepForTimeInterval:2];
-    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasClickAction = NO;
     __block BOOL hasLongTask = NO;
 
@@ -386,7 +311,8 @@
             hasLongTask  = YES;
         }
     }];
-    XCTAssertTrue(hasClickAction && hasLongTask);
+    XCTAssertTrue(hasClickAction);
+    XCTAssertTrue(hasLongTask);
 }
 /**
  * 验证： action: launch_cold
@@ -396,7 +322,6 @@
     [self setESConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    //页面关闭 action 无正在加载的resource action写入
     [self.testVC viewDidDisappear:NO];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -658,7 +583,6 @@
     config.enableTraceUserAction = YES;
     config.appid = self.appid;
     [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     
