@@ -61,6 +61,7 @@
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.appid = appid;
         config.networkTrace = YES;
+        config.enableSDKDebugLog = YES;
         config.enableTrackAppCrash = YES;
         config.enableTrackAppFreeze = YES;
         config.enableTrackAppANR = YES;
