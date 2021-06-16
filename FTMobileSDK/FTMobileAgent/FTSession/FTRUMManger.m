@@ -145,8 +145,13 @@
         if(error){
             tags[@"error_source"] = @"network";
             tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
-            NSDictionary *field = @{@"error_message":error.localizedDescription,
-                                    @"error_stack":error,
+            NSDictionary *field = @{
+                @"error_message":error.localizedDescription,
+                @"error_stack":@{
+                        @"domain":error.domain,
+                        @"code":@(error.code),
+                        @"userInfo":error.userInfo
+                },
             };
             FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
             resourceError.time = taskMes.requestEndDate;
