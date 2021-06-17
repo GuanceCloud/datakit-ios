@@ -87,19 +87,16 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @interface FTPresetProperty ()
 @property (nonatomic, strong,readonly) MobileDevice *mobileDevice;
 @property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
-@property (nonatomic, strong) NSMutableDictionary *mobileCommonPropertyTags;
-@property (nonatomic, strong) NSMutableDictionary *esCommonPropertyTags;
-@property (nonatomic, strong) NSMutableDictionary *basePropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @property (nonatomic, copy) NSString *tags;
 @end
 @implementation FTPresetProperty
-- (instancetype)initWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
+- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env{
     self = [super init];
     if (self) {
-        _appid = appid;
         _version = version;
         _env = env;
         _isSignin = [FTBaseInfoHander userId]?YES:NO;
@@ -686,67 +683,37 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return _webCommonPropertyTags;
 }
-- (NSDictionary *)mobileCommonPropertyTags{
-    if (!_mobileCommonPropertyTags) {
-        _mobileCommonPropertyTags = [NSMutableDictionary new];
-        _mobileCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
-        _mobileCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
-        _mobileCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-        _mobileCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-        _mobileCommonPropertyTags[FT_COMMON_PROPERTY_APP_NAME] = [FTPresetProperty appName];
-        _mobileCommonPropertyTags[FT_COMMON_PROPERTY_APP_IDENTIFIER] = [FTPresetProperty appIdentifier];
-        _mobileCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
+-(NSDictionary *)rumCommonPropertyTags{
+    if (!_rumCommonPropertyTags) {
+        _rumCommonPropertyTags = [NSMutableDictionary new];
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
+        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
+        _rumCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+        _rumCommonPropertyTags[FT_SDK_VERSION] = SDK_VERSION;
     }
-    return _mobileCommonPropertyTags;
+    return _rumCommonPropertyTags;
 }
--(NSDictionary *)esCommonPropertyTags{
-    if (!_esCommonPropertyTags) {
-        _esCommonPropertyTags = [NSMutableDictionary new];
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
-        _esCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
-        _esCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-        _esCommonPropertyTags[FT_IS_SIGNIN] = [self isSigninStr];
-    }
-    return _esCommonPropertyTags;
-}
--(NSDictionary *)basePropertyTags{
-    if (!_basePropertyTags) {
-        _basePropertyTags = [NSMutableDictionary new];
-        [_basePropertyTags setValue:self.env forKey:FT_ENV];
-        [_basePropertyTags setValue:self.version forKey:FT_VERSION];
-        [_basePropertyTags setValue:self.appid forKey:FT_APP_ID];
-        [_basePropertyTags setValue:SDK_VERSION forKey:FT_SDK_VERSION];
-    }
-    return _basePropertyTags;
-}
-- (void)resetWithAppid:(NSString *)appid version:(NSString *)version env:(NSString *)env{
-    self.appid = appid;
+- (void)resetWithVersion:(NSString *)version env:(NSString *)env{
     self.version = version;
     self.env = env;
     _isSignin = [FTBaseInfoHander userId]?YES:NO;
-    _basePropertyTags = nil;
 }
-- (NSDictionary *)esPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.basePropertyTags];
-    [dict addEntriesFromDictionary:[self esCommonPropertyTags]];
+- (NSDictionary *)rumPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:@"app"]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
-    if ([type isEqualToString:FT_TYPE_ERROR]) {
-        dict[FT_COMMON_PROPERTY_CARRIER] = [FTPresetProperty ft_getTelephonyInfo];
-        NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-        dict[FT_COMMON_PROPERTY_LOCALE] = preferredLanguage;
-    }
+    [dict setValue:self.env forKey:FT_ENV];
+    [dict setValue:self.version forKey:FT_VERSION];
+    [dict setValue:self.appid forKey:FT_APP_ID];
+    [dict setValue:[self isSigninStr] forKey:FT_IS_SIGNIN];
     return dict;
 }
 -(void)setIsSignin:(BOOL)isSignin{
     _isSignin = isSignin;
-    NSString *str = [self isSigninStr];
-    self.esCommonPropertyTags[FT_IS_SIGNIN] = str;
-    self.mobileCommonPropertyTags[FT_IS_SIGNIN] = str;
 }
 - (NSString *)isSigninStr{
     return _isSignin?@"T":@"F";

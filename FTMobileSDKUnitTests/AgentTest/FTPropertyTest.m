@@ -123,7 +123,7 @@
     config.source = @"iOSTest";
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -133,7 +133,7 @@
     config.source = @"iOSTest\\";
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty esPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] resetInstance];
