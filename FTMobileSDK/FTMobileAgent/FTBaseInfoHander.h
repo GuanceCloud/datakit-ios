@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;
 + (NSString *)getIPWithHostName:(const NSString *)hostName;
 + (NSString *)boolStr:(BOOL)isTrue;
+
++ (BOOL)randomSampling:(int)sampling;
 @end
 
 NS_ASSUME_NONNULL_END

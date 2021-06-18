@@ -357,4 +357,14 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 + (NSString *)boolStr:(BOOL)isTrue{
     return isTrue?@"true":@"false";
 }
++ (BOOL)randomSampling:(int)sampling{
+    if(sampling<=0){
+        return NO;
+    }
+    if(sampling<100){
+        int x = arc4random() % 100;
+        return x <= sampling ? YES:NO;
+    }
+    return YES;
+}
 @end
