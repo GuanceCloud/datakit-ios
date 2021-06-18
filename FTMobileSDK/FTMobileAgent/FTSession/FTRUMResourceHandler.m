@@ -58,38 +58,19 @@
     return YES;
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
-    NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
-                                 @"session_type":self.model.baseSessionData.session_type,
-    };
-    NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
-                                                        @"view_name":self.model.baseViewData.view_name,
-                                                        @"view_referrer":self.model.baseViewData.view_referrer,
-    }:@{};
-    NSDictionary *actiontags =self.model.baseActionData? @{@"action_id":self.model.baseActionData.action_id,
-                           @"action_name":self.model.baseActionData.action_name,
-                           @"action_type":self.model.baseActionData.action_type
-    }:@{};
+    NSDictionary *sessionTag = [self.model getGlobalSessionViewTags];
+    NSDictionary *actiontags =self.model.baseActionData? [self.model.baseActionData getActionTags]:@{};
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
-    [tags addEntriesFromDictionary:viewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)data{
-    NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
-                                 @"session_type":self.model.baseSessionData.session_type,
-    };
-    NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
-                                                        @"view_name":self.model.baseViewData.view_name,
-                                                        @"view_referrer":self.model.baseViewData.view_referrer,
-    }:@{};
-    NSDictionary *actiontags =self.model.baseActionData? @{@"action_id":self.model.baseActionData.action_id,
-                           @"action_name":self.model.baseActionData.action_name,
-                           @"action_type":self.model.baseActionData.action_type
-    }:@{};
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
-    [tags addEntriesFromDictionary:viewTag];
+    NSDictionary *sessionViewTag = [data getGlobalSessionViewTags];
+    
+    NSDictionary *actiontags =self.model.baseActionData? [self.model.baseActionData getActionTags]:@{};
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields];

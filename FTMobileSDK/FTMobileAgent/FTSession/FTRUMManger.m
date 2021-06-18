@@ -16,23 +16,27 @@
 #import "FTLog.h"
 #import "FTJSONUtil.h"
 #import "FTMobileConfig.h"
+#import "FTPingThread.h"
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
-@property (nonatomic, strong) FTMobileConfig *config;
+@property (nonatomic, strong) FTPingThread *pingThread;
+
 @end
 @implementation FTRUMManger
 
--(instancetype)initWithConfig:(FTMobileConfig *)config{
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig{
     self = [super init];
     if (self) {
-        self.config = config;
+        self.rumConfig = rumConfig;
         self.assistant = self;
         self.serialQueue= dispatch_queue_create([@"io.serialQueue.rum" UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
-
+-(void)setRumConfig:(FTRumConfig *)rumConfig{
+    _rumConfig = rumConfig;
+}
 #pragma mark - FTRUMSessionErrorDelegate -
 - (void)ftErrorWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
     dispatch_sync(self.serialQueue, ^{
@@ -80,7 +84,7 @@
     
 }
 - (void)ftClickView:(UIView *)clickView{
-    if (!self.config.enableTraceUserAction) {
+    if (!self.rumConfig.enableTraceUserAction) {
         return;
     }
     NSDate *time = [NSDate date];
@@ -101,7 +105,7 @@
     });
 }
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot duration:(NSNumber *)duration{
-    if (!self.config.enableTraceUserAction) {
+    if (!self.rumConfig.enableTraceUserAction) {
         return;
     }
     dispatch_async(self.serialQueue, ^{
@@ -134,6 +138,8 @@
         NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
         NSError *error = resourceModel.error?resourceModel.error:response.ft_getResponseError;
         NSMutableDictionary *tags = [NSMutableDictionary new];
+        // trace 开启 enableLinkRumData 时 linkTags 有值
+        [tags addEntriesFromDictionary:resourceModel.linkTags];
         NSMutableDictionary *fields = [NSMutableDictionary new];
         NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:task.originalRequest.URL];
         tags[@"resource_url_path_group"] =url_path_group;
@@ -228,10 +234,14 @@
         }
     }else{
         //初始化
-        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model];
+        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model rumConfig:self.rumConfig];
         [self.sessionHandler.assistant process:model];
     }
     
     return YES;
+}
+
+-(NSDictionary *)getCurrentSessionInfo{
+    return [self.sessionHandler getCurrentSessionInfo];
 }
 @end

@@ -7,13 +7,14 @@
 //
 
 #import "FTRUMHandler.h"
-
+@class FTRumConfig;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMSessionHandler : FTRUMHandler
--(instancetype)initWithModel:(FTRUMDataModel *)model;
 
+-(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig;
 -(void)refreshWithDate:(NSDate *)date;
+-(NSDictionary *)getCurrentSessionInfo;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -8,11 +8,13 @@
 
 #import "FTRUMHandler.h"
 #import "FTRUMSessionProtocol.h"
-@class FTMobileConfig;
+@class FTRumConfig;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManger : FTRUMHandler<FTRUMSessionErrorDelegate,FTRUMSessionActionDelegate,FTRUMSessionResourceDelegate,FTRUMWebViewJSBridgeDataDelegate>
--(instancetype)initWithConfig:(FTMobileConfig *)config;
+@property (nonatomic, strong) FTRumConfig *rumConfig;
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
+-(NSDictionary *)getCurrentSessionInfo;
 @end
 
 NS_ASSUME_NONNULL_END
