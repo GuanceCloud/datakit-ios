@@ -90,7 +90,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    self.trackUrl = [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL];
+    self.trackUrl = [[FTMonitorManager sharedInstance] traceUrl:mutableReqeust.URL];
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     

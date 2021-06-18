@@ -206,7 +206,7 @@
 }
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    [[FTMonitorManager sharedInstance] trackUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
+    [[FTMonitorManager sharedInstance] traceUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
         if (traceHeader && traceHeader.allKeys.count>0) {
             [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
                     [mutableReqeust setValue:value forHTTPHeaderField:field];
