@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMViewHandler : FTRUMHandler
+@property (nonatomic, strong, readonly) FTRUMDataModel *model;
 
 -(instancetype)initWithModel:(FTRUMDataModel *)model;
 @end

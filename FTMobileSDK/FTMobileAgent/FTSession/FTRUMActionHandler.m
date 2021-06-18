@@ -91,24 +91,15 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     }else{
     self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
     }
-    NSDictionary *sessionTag = @{@"session_id":self.model.baseSessionData.session_id,
-                                 @"session_type":self.model.baseSessionData.session_type,
-    };
-    NSDictionary *viewTag = self.model.baseViewData?@{@"view_id":self.model.baseViewData.view_id,
-                                                        @"view_name":self.model.baseViewData.view_name,
-                                                        @"view_referrer":self.model.baseViewData.view_referrer,
-    }:@{};
-    NSDictionary *actiontags = @{@"action_id":self.model.baseActionData.action_id,
-                           @"action_name":self.model.baseActionData.action_name,
-                           @"action_type":self.model.baseActionData.action_type
-    };
+    NSDictionary *sessionViewTag = [self.model getGlobalSessionViewTags];
+
+    NSDictionary *actiontags = [self.model.baseActionData getActionTags];
     NSDictionary *fields = @{@"duration":self.duration,
                              @"action_long_task_count":[NSNumber numberWithInteger:self.actionLongTaskCount],
                              @"action_resource_count":[NSNumber numberWithInteger:self.actionResourcesCount],
                              @"action_error_count":[NSNumber numberWithInteger:self.actionErrorCount],
     };
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
-    [tags addEntriesFromDictionary:viewTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields];
     if (self.handler) {

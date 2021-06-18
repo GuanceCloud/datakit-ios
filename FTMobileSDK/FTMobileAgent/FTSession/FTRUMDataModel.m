@@ -7,7 +7,7 @@
 //
 
 #import "FTRUMDataModel.h"
-
+#import "FTBaseInfoHander.h"
 
 @implementation FTRUMSessionModel
 
@@ -29,6 +29,18 @@
         self.type = type;
     }
     return self;
+}
+-(NSDictionary *)getGlobalSessionViewTags{
+    NSDictionary *sessionTag = @{@"session_id":self.baseSessionData.session_id,
+                                 @"session_type":self.baseSessionData.session_type,
+    };
+    NSDictionary *viewTag = self.baseViewData?@{@"view_id":self.baseViewData.view_id,
+                                                @"view_name":self.baseViewData.view_name,
+                                                @"view_referrer":self.baseViewData.view_referrer,
+    }:@{};
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    [dict addEntriesFromDictionary:viewTag];
+    return dict;
 }
 @end
 @implementation FTRUMViewModel
@@ -54,7 +66,12 @@
     }
     return self;
 }
-
+-(NSDictionary *)getActionTags{
+    return @{@"action_id":self.action_id,
+             @"action_name":self.action_name,
+             @"action_type":self.action_type
+    };
+}
 @end
 @implementation FTRUMResourceDataModel
 

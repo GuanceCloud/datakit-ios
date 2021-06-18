@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *action_name;
 @property (nonatomic, copy) NSString *action_type;
 -(instancetype)initWithActionID:(NSString *)actionid actionName:(NSString *)actionName actionType:(NSString *)actionType;
+
+-(NSDictionary *)getActionTags;
+
 @end
 //tags
 @interface FTRUMViewModel : NSObject
@@ -55,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMActionModel *baseActionData;
 @property (nonatomic, strong) FTRUMSessionModel *baseSessionData;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
+-(NSDictionary *)getGlobalSessionViewTags;
 @end
 
 @interface FTRUMResourceDataModel : FTRUMDataModel

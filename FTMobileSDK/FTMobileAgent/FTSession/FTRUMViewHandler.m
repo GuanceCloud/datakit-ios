@@ -19,8 +19,7 @@
 
 @property (nonatomic, copy) NSString *viewid;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
-@property (nonatomic, strong) FTRUMViewModel *viewModel;
-@property (nonatomic, strong) FTRUMSessionModel *sessionModel;
+@property (nonatomic, strong) FTRUMDataModel *model;
 
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
@@ -37,8 +36,7 @@
         self.assistant = self;
         self.isActiveView = YES;
         self.viewid = model.baseViewData.view_id;
-        self.viewModel = model.baseViewData;
-        self.sessionModel = model.baseSessionData;
+        self.model = model;
         self.didReceiveStartData = NO;
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
@@ -47,7 +45,9 @@
 }
 
 - (BOOL)process:(FTRUMDataModel *)model{
-    model.baseViewData = self.viewModel;
+    if(model.type != FTRUMDataViewStart && model.type != FTRUMDataViewStop){
+        model.baseViewData = self.model.baseViewData;
+    }
     self.needUpdateView = NO;
     self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model];
     switch (model.type) {
@@ -158,28 +158,18 @@
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
-    NSDictionary *sessionTag = @{@"session_id":self.sessionModel.session_id,
-                                 @"session_type":self.sessionModel.session_type};
+    NSDictionary *sessionTag = @{@"session_id":data.baseSessionData.session_id,
+                                 @"session_type":data.baseSessionData.session_type};
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
-    //判断冷启动 冷启动可能没有viewModel
-    NSDictionary *viewTag = self.viewModel?@{@"view_id":self.viewModel.view_id,
-                                             @"view_referrer":self.viewModel.view_referrer,
-                                             @"view_name":self.viewModel.view_name,
-    }:@{};
-    NSDictionary *sessionTag = @{@"session_id":self.sessionModel.session_id,
-                                 @"session_type":self.sessionModel.session_type};
+    NSDictionary *sessionViewTag = [model getGlobalSessionViewTags];
     //产生error数据时 判断是否有action
-    NSDictionary *actionTag =model.baseActionData? @{@"action_id":model.baseActionData.action_id,
-                                                     @"action_name":model.baseActionData.action_name,
-                                                     @"action_type":model.baseActionData.action_type,
-    }:@{};
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
-    [tags addEntriesFromDictionary:viewTag];
+    NSDictionary *actionTag =model.baseActionData? [self.model.baseActionData getActionTags]:@{};
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actionTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
@@ -188,17 +178,12 @@
 }
 - (void)writeViewData{
     //判断冷启动 冷启动可能没有viewModel
-    if (!self.viewModel) {
+    if (!self.model.baseViewData) {
         return;
     }
     NSNumber *timeSpend = [[NSDate date] ft_nanotimeIntervalSinceDate:self.viewStartTime];
-    NSDictionary *tags = @{@"view_id":self.viewModel.view_id,
-                           @"is_active":[FTBaseInfoHander boolStr:self.isActiveView],
-                           @"view_referrer":self.viewModel.view_referrer,
-                           @"view_name":self.viewModel.view_name,
-                           @"session_id":self.sessionModel.session_id,
-                           @"session_type":self.sessionModel.session_type,
-    };
+    NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.model getGlobalSessionViewTags]];
+    [sessionViewTag setValue:[FTBaseInfoHander boolStr:self.isActiveView] forKey:@"is_active"];
     NSMutableDictionary *field = @{@"view_error_count":@(self.viewErrorCount),
                                    @"view_resource_count":@(self.viewResourceCount),
                                    @"view_long_task_count":@(self.viewLongTaskCount),
@@ -206,10 +191,10 @@
                                    @"time_spent":timeSpend,
                                    
     }.mutableCopy;
-    if (![self.viewModel.loading_time isEqual:@0]) {
-        [field setValue:self.viewModel.loading_time forKey:@"loading_time"];
+    if (![self.model.baseViewData.loading_time isEqual:@0]) {
+        [field setValue:self.model.baseViewData.loading_time forKey:@"loading_time"];
     }
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:@"app" tags:tags fields:field];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:@"app" tags:sessionViewTag fields:field];
 }
 
 @end

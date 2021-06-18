@@ -9,6 +9,7 @@
 #import "FTRUMSessionHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTRUMViewHandler.h"
+#import "FTBaseInfoHander.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -16,12 +17,16 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, strong) FTRUMSessionModel *sessionModel;
+@property (nonatomic, strong) FTRumConfig *rumConfig;
+@property (nonatomic, assign) BOOL sampling;
 @end
 @implementation FTRUMSessionHandler
--(instancetype)initWithModel:(FTRUMDataModel *)model{
+-(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig{
     self = [super init];
     if (self) {
         self.assistant = self;
+        self.rumConfig = rumConfig;
+        self.sampling = [FTBaseInfoHander randomSampling:rumConfig.samplerate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.sessionModel = [[FTRUMSessionModel alloc]initWithSessionID:[NSUUID UUID].UUIDString];
@@ -32,10 +37,14 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     self.sessionModel.session_id = [NSUUID UUID].UUIDString;
     self.sessionStartTime = date;
     self.lastInteractionTime = date;
+    self.sampling = [FTBaseInfoHander randomSampling:self.rumConfig.samplerate];
 }
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
+    }
+    if (!self.sampling) {
+        return YES;
     }
     _lastInteractionTime = [NSDate date];
     //数据与session绑定
@@ -74,5 +83,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     BOOL expired = sessionDuration >= sessionMaxDuration;
 
     return timedOut || expired;
+}
+-(NSDictionary *)getCurrentSessionInfo{
+    FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
+    if (view) {
+        return [view.model getGlobalSessionViewTags];
+    }
+    return @{};
 }
 @end
