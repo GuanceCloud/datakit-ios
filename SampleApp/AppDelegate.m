@@ -45,28 +45,38 @@
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( url && !isUnitTests && !isUITests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-        config.appid = appid;
         config.enableSDKDebugLog = YES;
-        //        config.monitorInfoType = FTMonitorInfoTypeAll;
-        config.traceConsoleLog = YES;
-        config.networkTrace = YES;
-        config.enableTrackAppCrash = YES;
-        config.enableTrackAppFreeze = YES;
-        config.enableTrackAppANR = YES;
-        config.enableTraceUserAction = YES;
+        FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+        rumConfig.appid = appid;
+        rumConfig.enableTrackAppCrash = YES;
+        rumConfig.enableTrackAppANR = YES;
+        rumConfig.enableTrackAppFreeze = YES;
+        rumConfig.enableTraceUserAction = YES;
+        FTLoggerConfig *loggerConfig = [FTLoggerConfig new];
+        loggerConfig.enableCustomLog = YES;
+        loggerConfig.enableLinkRumData = YES;
+        loggerConfig.traceConsoleLog = YES;
+        FTTraceConfig *traceConfig = [FTTraceConfig new];
+        traceConfig.networkTrace = YES;
+        traceConfig.enableLinkRumData = YES;
         [FTMobileAgent startWithConfigOptions:config];
+        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+        [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+        [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+
     }
     // UI 测试
     if(isUITests){
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-        config.appid = appid;
-        config.networkTrace = YES;
         config.enableSDKDebugLog = YES;
-        config.enableTrackAppCrash = YES;
-        config.enableTrackAppFreeze = YES;
-        config.enableTrackAppANR = YES;
-        config.enableTraceUserAction = YES;
+        FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+        rumConfig.appid = appid;
+        rumConfig.enableTrackAppCrash = YES;
+        rumConfig.enableTrackAppANR = YES;
+        rumConfig.enableTrackAppFreeze = YES;
+        rumConfig.enableTraceUserAction = YES;
         [FTMobileAgent startWithConfigOptions:config];
+        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
         [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     }
