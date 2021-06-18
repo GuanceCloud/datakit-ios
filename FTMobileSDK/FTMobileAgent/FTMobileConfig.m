@@ -10,29 +10,86 @@
 #endif
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHander.h"
-#import "FTLog.h"
 #import "FTConstants.h"
-
+@implementation FTRumConfig
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+        _enableTrackAppCrash= NO;
+        _samplerate = 100;
+        _enableTrackAppFreeze = NO;
+        _enableTrackAppANR = NO;
+        _enableTraceUserAction = NO;
+    }
+    return self;
+}
+- (instancetype)copyWithZone:(NSZone *)zone {
+    FTRumConfig *options = [[[self class] allocWithZone:zone] init];
+    options.enableTrackAppCrash = self.enableTrackAppCrash;
+    options.samplerate = self.samplerate;
+    options.enableTrackAppFreeze = self.enableTrackAppFreeze;
+    options.enableTrackAppANR = self.enableTrackAppANR;
+    options.enableTraceUserAction = self.enableTraceUserAction;
+    options.appid = self.appid;
+    options.monitorInfoType = self.monitorInfoType;
+    return options;
+}
+@end
+@implementation FTLoggerConfig
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+        _source = FT_USER_AGENT;
+        _serviceName = FT_DEFAULT_SERVICE_NAME;
+        _samplerate = 100;
+        _traceConsoleLog = NO;
+        _enableLinkRumData = NO;
+        _enableCustomLog = NO;
+    }
+    return self;
+}
+- (instancetype)copyWithZone:(NSZone *)zone {
+    FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
+    options.serviceName = self.serviceName;
+    options.samplerate = self.samplerate;
+    options.source = self.source;
+    options.traceConsoleLog = self.traceConsoleLog;
+    options.enableLinkRumData = self.enableLinkRumData;
+    options.enableCustomLog = self.enableCustomLog;
+    return options;
+}
+@end
+@implementation FTTraceConfig
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+        _samplerate= 100;
+        _networkTrace = NO;
+        _networkTrace = FTNetworkTraceTypeZipkin;
+        _serviceName = FT_DEFAULT_SERVICE_NAME;
+    }
+    return self;
+}
+- (instancetype)copyWithZone:(NSZone *)zone {
+    FTTraceConfig *options = [[[self class] allocWithZone:zone] init];
+    options.networkTrace = self.networkTrace;
+    options.samplerate = self.samplerate;
+    options.serviceName = self.serviceName;
+    options.enableLinkRumData = self.enableLinkRumData;
+    options.networkTraceType = self.networkTraceType;
+    return options;
+}
+@end
 @implementation FTMobileConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
     if (self = [super init]) {
         _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
         _XDataKitUUID = [FTBaseInfoHander XDataKitUUID];
-        _enableTrackAppCrash= NO;
-        _samplerate = 100;
-        _serviceName = FT_DEFAULT_SERVICE_NAME;
-        _source = FT_USER_AGENT;
-        _networkTrace = NO;
-        _networkTrace = FTNetworkTraceTypeZipkin;
-        _enableTrackAppFreeze = NO;
-        _enableTrackAppANR = NO;
-        _traceConsoleLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _env = FTEnvProd;
-        _enableTraceUserAction = NO;
     }
-      return self;
+    return self;
 }
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
@@ -40,24 +97,8 @@
     options.metricsUrl = self.metricsUrl;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.XDataKitUUID = self.XDataKitUUID;
-    options.enableTrackAppCrash = self.enableTrackAppCrash;
-    options.samplerate = self.samplerate;
-    options.serviceName = self.serviceName;
-    options.source = self.source;
-    options.networkTrace = self.networkTrace;
-    options.networkTraceType = self.networkTraceType;
     options.env = self.env;
-    options.enableTrackAppFreeze = self.enableTrackAppFreeze;
-    options.enableTrackAppANR = self.enableTrackAppANR;
     options.version = self.version;
-    options.traceConsoleLog = self.traceConsoleLog;
-    options.appid = self.appid;
-    options.monitorInfoType = self.monitorInfoType;
-    options.enableTraceUserAction = self.enableTraceUserAction;
     return options;
-}
--(void)networkTraceWithTraceType:(FTNetworkTraceType)type{
-    self.networkTrace = YES;
-    self.networkTraceType = type;
 }
 @end
