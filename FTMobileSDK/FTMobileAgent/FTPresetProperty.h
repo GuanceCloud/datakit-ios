@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPresetProperty : NSObject
 @property (nonatomic, assign) BOOL isSignin;
 @property (nonatomic, copy) NSString *appid;
-+ (NSDictionary *)ft_getDeviceInfo;
++ (NSString *)ft_getDeviceInfo;
 + (NSString *)appIdentifier;
 + (NSString *)userid;
 + (NSString *)ft_getTelephonyInfo;

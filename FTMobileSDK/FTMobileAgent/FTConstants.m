@@ -22,12 +22,9 @@ NSString * const FT_AUTO_TRACK_OP_LAUNCH = @"launch";
 NSString * const FT_TERMINAL_APP = @"app";
 NSString * const FT_TERMINAL_MINIPROGRA = @"miniprogram";
 #pragma mark ========== InfluxDB 指标集==========
-NSString * const FT_RUM_WEB_PAGE_PERFORMANCE = @"rum_web_page_performance";
-NSString * const FT_RUM_WEB_RESOURCE_PERFORMANCE = @"rum_web_resource_performance";
 NSString * const FT_RUM_APP_STARTUP = @"rum_app_startup";
 NSString * const FT_RUM_APP_VIEW = @"rum_app_view";
 NSString * const FT_RUM_APP_FREEZE = @"rum_app_freeze";
-NSString * const FT_RUM_APP_RESOURCE_PERFORMANCE = @"rum_app_resource_performance";
 #pragma mark ========== ES ==========
 NSString * const FT_TYPE_JS = @"js";
 NSString * const FT_TYPE_PAGE = @"page";
@@ -69,10 +66,6 @@ NSString * const FT_MONITOR_BT_OPEN  = @"bt_open";
 NSString * const FT_MONITOR_CPU_USAGE = @"cpu_usage";
 NSString * const FT_MONITOR_MEM_USAGE = @"mem_usage";
 NSString * const FT_MONITOR_POWER = @"power";
-NSString * const FTBaseInfoHanderDeviceCPUType = @"FTBaseInfoHanderDeviceCPUType";
-NSString * const FTBaseInfoHanderDeviceCPUClock = @"FTBaseInfoHanderDeviceCPUClock";
-NSString * const FTBaseInfoHanderBatteryTotal = @"FTBaseInfoHanderBatteryTotal";
-NSString * const FTBaseInfoHanderDeviceGPUType = @"FTBaseInfoHanderDeviceGPUType";
 
 #pragma mark ========== API ==========
 NSString * const FT_DATA_TYPE_RUM = @"RUM";

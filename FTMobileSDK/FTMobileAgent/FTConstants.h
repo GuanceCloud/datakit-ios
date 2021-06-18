@@ -26,12 +26,9 @@ extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;
 
-extern NSString * const FT_RUM_WEB_PAGE_PERFORMANCE;
-extern NSString * const FT_RUM_WEB_RESOURCE_PERFORMANCE;
 extern NSString * const FT_RUM_APP_STARTUP;
 extern NSString * const FT_RUM_APP_VIEW;
 extern NSString * const FT_RUM_APP_FREEZE;
-extern NSString * const FT_RUM_APP_RESOURCE_PERFORMANCE;
 extern NSString * const FT_TYPE_JS;
 extern NSString * const FT_TYPE_PAGE;
 extern NSString * const FT_TYPE_RESOURCE;
@@ -89,11 +86,6 @@ extern NSString * const FT_ISERROR;
 extern NSString * const FT_MONITOR_GPS_OPEN;
 extern NSString * const FT_MONITOR_FPS;
 extern NSString * const FT_MONITOR_BT_OPEN;
-#pragma mark ========== device info ==========
-extern NSString * const FTBaseInfoHanderDeviceCPUType;
-extern NSString * const FTBaseInfoHanderDeviceCPUClock;
-extern NSString * const FTBaseInfoHanderBatteryTotal;
-extern NSString * const FTBaseInfoHanderDeviceGPUType;
 
 #pragma mark ========== logging network trace key ==========
 extern NSString * const FT_APPLICATION_UUID;
