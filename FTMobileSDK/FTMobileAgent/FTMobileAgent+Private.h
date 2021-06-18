@@ -27,16 +27,13 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
 
 
 @interface FTMobileAgent (Private)
-@property (nonatomic, assign) BOOL running; //正在运行
+@property (nonatomic, assign,readonly) BOOL running; //正在运行
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTRUMManger *rumManger;
 
-/**
- * 采集判断
- */
-- (BOOL)judgeIsTraceSampling;
+
 - (BOOL)judgeRUMTraceOpen;
 
 
@@ -44,10 +41,6 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
 
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
-/**
- * eventFlowLog
-*/
--(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
 /**
  * networkTrace 写入
  */
