@@ -42,6 +42,8 @@
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTNetworkTrace *trace;
 @property (nonatomic, strong) FTMobileConfig *config;
+@property (nonatomic, strong) FTTraceConfig *traceConfig;
+
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @end
 
@@ -54,28 +56,42 @@ static dispatch_once_t onceToken;
     });
     return sharedInstance;
 }
--(void)setMobileConfig:(FTMobileConfig *)config{
-    self.config = config;
-    [self startMonitorNetwork];
-    if (config.networkTrace) {
-        [FTWKWebViewHandler sharedInstance].trace = YES;
-        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
-    }else{
-        [FTWKWebViewHandler sharedInstance].trace = NO;
-        [FTWKWebViewHandler sharedInstance].traceDelegate = nil;
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+        [self startMonitorNetwork];
     }
+    return self;
+}
+-(void)setMobileConfig:(FTMobileConfig *)config{
+    _config = config;
+}
+-(void)setRumConfig:(FTRumConfig *)rumConfig{
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (config.enableTrackAppFreeze) {
+        if (rumConfig.enableTrackAppFreeze) {
             [self startPingThread];
         }else{
             [self stopPingThread];
         }
-        if (config.enableTrackAppANR) {
+        if (rumConfig.enableTrackAppANR) {
             [FTANRDetector sharedInstance].delegate = self;
             [[FTANRDetector sharedInstance] startDetecting];
+        }else{
+            [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    self.trace = [[FTNetworkTrace alloc]initWithType:config.networkTraceType];
+    if (rumConfig.enableTrackAppANR == NO && rumConfig.enableTrackAppANR == NO) {
+        self.sessionErrorDelegate = nil;
+    }
+}
+-(void)setTraceConfig:(FTTraceConfig *)traceConfig{
+    self.trace = [[FTNetworkTrace alloc]initWithType:traceConfig.networkTraceType];
+    _traceConfig = traceConfig;
+    if (traceConfig.networkTrace) {
+        [FTWKWebViewHandler sharedInstance].trace = YES;
+    }else{
+        [FTWKWebViewHandler sharedInstance].trace = NO;
+    }
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -98,16 +114,13 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
-    if (!self.config.enableTrackAppFreeze || ![agent judgeIsTraceSampling]) {
-        return;
-    }
     NSMutableDictionary *fields = @{@"duration":duration}.mutableCopy;
     
     fields[@"long_task_stack"] = stack;
-    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
-        [self.sessionSourceDelegate ftLongTaskWithtags:@{} field:fields];
-    }}
+    if (self.sessionErrorDelegate && [self.sessionErrorDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
+        [self.sessionErrorDelegate ftLongTaskWithtags:@{} field:fields];
+    }
+}
 -(void)stopMonitor{
     [FTURLProtocol stopMonitor];
     [self stopPingThread];
@@ -115,6 +128,8 @@ static dispatch_once_t onceToken;
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
     [FTURLProtocol setDelegate:[FTWeakProxy proxyWithTarget:self]];
+    //js
+    [FTWKWebViewHandler sharedInstance].traceDelegate = self;
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
 - (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel{
@@ -126,14 +141,19 @@ static dispatch_once_t onceToken;
 - (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
     @try {
         // network trace
+        if (self.traceConfig.networkTrace && [FTBaseInfoHander randomSampling:self.traceConfig.samplerate]) {
         [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
-        
-        // rum resourc
-        if (![[FTMobileAgent sharedInstance] judgeIsTraceSampling]) {
-            return;
         }
-        
+        // rum resourc
         if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
+            if (self.traceConfig.enableLinkRumData) {
+                [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+                    NSDictionary *linkTag = @{@"span_id":spanID,
+                                              @"trace_id":traceId
+                    };
+                    taskModel.linkTags = linkTag;
+                }];
+            }
             [self.sessionSourceDelegate ftResourceCompleted:taskModel];
         }
     }@catch (NSException *exception) {
@@ -143,60 +163,60 @@ static dispatch_once_t onceToken;
 // 网络请求信息采集 链路追踪
 - (void)networkTraceWithTask:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics didCompleteWithError:(NSError *)error{
     NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];
-    if (self.config.networkTrace) {
-        FTStatus status = FTStatusOk;
-        NSDictionary *responseDict = @{};
-        if (error) {
-            status = FTStatusError;
-            NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
-            NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
-            
-            responseDict = @{FT_NETWORK_HEADERS:@{},
-                             FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
-                                                
-                                                @"errorDomain":error.domain,
-                                                
-                                                @"errorDescription":errorDescription,
-                                                
-                             },
-                             FT_NETWORK_CODE:errorCode,
-            };
-        }else{
-            if( [[task.response ft_getResponseStatusCode] integerValue] >=400){
-                status = FTStatusError;
-            }
-            responseDict = task.response?[task.response ft_getResponseDict]:@{};
-        }
-        NSString *statusStr = [FTBaseInfoHander statusStrWithStatus:status];
+    
+    FTStatus status = FTStatusOk;
+    NSDictionary *responseDict = @{};
+    if (error) {
+        status = FTStatusError;
+        NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
+        NSNumber *errorCode = [task.response ft_getResponseStatusCode]?[task.response ft_getResponseStatusCode]:[NSNumber numberWithInteger:error.code];
         
-        NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
-        NSDictionary *response = responseDict?responseDict:@{};
-        NSDictionary *content = @{
-            FT_NETWORK_RESPONSE_CONTENT:response,
-            FT_NETWORK_REQUEST_CONTENT:request
+        responseDict = @{FT_NETWORK_HEADERS:@{},
+                         FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                                            
+                                            @"errorDomain":error.domain,
+                                            
+                                            @"errorDescription":errorDescription,
+                                            
+                         },
+                         FT_NETWORK_CODE:errorCode,
         };
-        NSString *opreation = [task.originalRequest ft_getOperationName];
-        NSMutableDictionary *tags = @{FT_KEY_OPERATION:opreation,
-                                      FT_TRACING_STATUS:statusStr,
-                                      FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
-                                      FT_TYPE_RESOURCE:opreation,
-                                      FT_TYPE:@"custom",
-                                      
-        }.mutableCopy;
-        NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000000]};
-        __block NSString *trace,*span;
-        __block BOOL sampling;
-        [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-            trace = traceId;
-            span = spanID;
-            sampling = sampled;
-        }];
-        if(trace&&span&&sampling){
-            [tags setValue:trace forKey:FT_FLOW_TRACEID];
-            [tags setValue:span forKey:FT_KEY_SPANID];
-            [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+    }else{
+        if( [[task.response ft_getResponseStatusCode] integerValue] >=400){
+            status = FTStatusError;
         }
+        responseDict = task.response?[task.response ft_getResponseDict]:@{};
     }
+    NSString *statusStr = [FTBaseInfoHander statusStrWithStatus:status];
+    
+    NSMutableDictionary *request = [task.currentRequest ft_getRequestContentDict].mutableCopy;
+    NSDictionary *response = responseDict?responseDict:@{};
+    NSDictionary *content = @{
+        FT_NETWORK_RESPONSE_CONTENT:response,
+        FT_NETWORK_REQUEST_CONTENT:request
+    };
+    NSString *opreation = [task.originalRequest ft_getOperationName];
+    NSMutableDictionary *tags = @{FT_KEY_OPERATION:opreation,
+                                  FT_TRACING_STATUS:statusStr,
+                                  FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+                                  FT_TYPE_RESOURCE:opreation,
+                                  FT_TYPE:@"custom",
+                                  
+    }.mutableCopy;
+    NSDictionary *field = @{FT_KEY_DURATION:[NSNumber numberWithInt:[metrics.taskInterval duration]*1000000]};
+    __block NSString *trace,*span;
+    __block BOOL sampling;
+    [task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+        trace = traceId;
+        span = spanID;
+        sampling = sampled;
+    }];
+    if(trace&&span&&sampling){
+        [tags setValue:trace forKey:FT_FLOW_TRACEID];
+        [tags setValue:span forKey:FT_KEY_SPANID];
+        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+    }
+    
     
 }
 #pragma mark == FTWKWebViewDelegate ==
@@ -300,34 +320,23 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    if (!self.config.enableTrackAppANR || slowStack.length==0) {
-        return;
-    }
-    FTMobileAgent *agent = [FTMobileAgent sharedInstance];
-    if (![agent judgeIsTraceSampling]) {
-        return;
-    }
-    long long time = [[NSDate date] ft_dateTimestamp];
+//    long long time = [[NSDate date] ft_dateTimestamp];
     NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]}.mutableCopy;
     fields[@"long_task_stack"] = slowStack;
-    if ([agent judgeRUMTraceOpen]) {
-        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
-            [self.sessionSourceDelegate ftLongTaskWithtags:@{} field:fields];
-        }
-    }else{
-        [agent loggingWithType:FTAddDataCache status:FTStatusCritical content:slowStack tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:nil tm:time];
+    if (self.sessionErrorDelegate && [self.sessionErrorDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
+        [self.sessionErrorDelegate ftLongTaskWithtags:@{} field:fields];
     }
 }
-#pragma mark ========== FTNetworkTrack ==========
-- (BOOL)trackUrl:(NSURL *)url{
+#pragma mark ========== FTNetworkTrace ==========
+- (BOOL)traceUrl:(NSURL *)url{
     if (self.config.metricsUrl) {
         return ![url.host isEqualToString:[NSURL URLWithString:self.config.metricsUrl].host];
     }
     return NO;
 }
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler{
-    if ([self trackUrl:url] && self.config.networkTrace) {
-        BOOL sample = [[FTMobileAgent sharedInstance] judgeIsTraceSampling];
+- (void)traceUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler{
+    if ([self traceUrl:url] && self.traceConfig.networkTrace) {
+        BOOL sample = [FTBaseInfoHander randomSampling:self.traceConfig.samplerate];
         NSDictionary *dict = [self.trace networkTrackHeaderWithSampled:sample url:url];
         if (completionHandler) {
             completionHandler(dict);

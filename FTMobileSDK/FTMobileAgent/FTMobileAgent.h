@@ -30,6 +30,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param configOptions     配置参数
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
+
+- (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions;
+
+- (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions;
+
+- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
+
 /**
  * @abstract
  * 日志上报

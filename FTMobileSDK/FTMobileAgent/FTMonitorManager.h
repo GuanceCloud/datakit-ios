@@ -14,7 +14,9 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) NSSet *netContentType;
-@property (nonatomic, weak) id<FTRUMSessionResourceDelegate,FTRUMSessionErrorDelegate,FTRUMWebViewJSBridgeDataDelegate> sessionSourceDelegate;
+@property (nonatomic, weak) id<FTRUMSessionResourceDelegate,FTRUMWebViewJSBridgeDataDelegate> sessionSourceDelegate;
+@property (nonatomic, weak) id<FTRUMSessionErrorDelegate> sessionErrorDelegate;
+
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
@@ -22,9 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 -(void)setMobileConfig:(FTMobileConfig *)config;
-
-- (BOOL)trackUrl:(NSURL *)url;
-- (void)trackUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler;
+-(void)setTraceConfig:(FTTraceConfig *)traceConfig;
+-(void)setRumConfig:(FTRumConfig *)rumConfig;
+- (BOOL)traceUrl:(NSURL *)url;
+- (void)traceUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler;
 - (void)resetInstance;
 @end
 
