@@ -15,6 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, strong) NSURLSessionTask *task;
+/**
+ * trace 开启 enableLinkRumData时 resource Tags 添加 trace_id、span_id
+ */
+@property (nonatomic, strong) NSDictionary *linkTags;
 @end
 
 NS_ASSUME_NONNULL_END
