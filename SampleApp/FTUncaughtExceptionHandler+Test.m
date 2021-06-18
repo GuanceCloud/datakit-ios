@@ -19,29 +19,22 @@
 - (void)handleException:(NSException *)exception {
     NSString *info = @"";
     for (FTMobileAgent *instance in self.ftSDKInstances) {
-        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-        if ([instance judgeRUMTraceOpen]) {
-            if (![instance judgeIsTraceSampling]) {
-                return;
-            }
+        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
+            long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
             info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
             //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
             NSDictionary *field = @{ @"error_message":[exception reason],
                                      @"error_stack":info,
             };
+            NSString *run = instance.running?@"run":@"startup";
             NSDictionary *tags = @{
                 @"error_type":[exception name],
                 @"error_source":@"logger",
+                @"crash_situation":run
             };
-            
-            if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-                [self.errorDelegate ftErrorWithtags:tags field:field];
-            }
-        }else if(instance.config.enableTrackAppCrash){
-            NSDictionary *field =  @{FT_KEY_EVENT:@"crash"};
-            info=[NSString stringWithFormat:@"Exception Reason:%@\nSlide_Address:%ld\nException Stack:\n%@\n", [exception reason],slide_address, exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-            [instance loggingWithType:FTAddDataImmediate status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:[[NSDate date]ft_dateTimestamp]];
+            [self.errorDelegate ftErrorWithtags:tags field:field];
         }
+        
     }
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);
