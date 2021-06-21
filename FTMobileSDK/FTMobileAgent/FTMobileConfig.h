@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置日志所属业务或服务的名称
  */
-@property (nonatomic, copy) NSString *serviceName;
+@property (nonatomic, copy) NSString *service;
 /**
  * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */
@@ -138,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置所属业务或服务的名称
  */
-@property (nonatomic, copy) NSString *serviceName;
+@property (nonatomic, copy) NSString *service;
 /**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
 */

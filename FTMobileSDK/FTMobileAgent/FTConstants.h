@@ -22,6 +22,7 @@ extern NSString * const FT_AGENT_OPDATA;
 extern NSString * const FT_AGENT_OP;
 extern NSString * const FT_USER_AGENT;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
+extern NSString * const FT_LOGGER_SOURCE;
 extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
 extern NSString * const FT_AUTO_TRACK_OP_LAUNCH;

@@ -43,7 +43,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _serviceName = FT_LOGGER_SERVICE_NAME;
+        _service = FT_DEFAULT_SERVICE_NAME;
         _samplerate = 100;
         _traceConsoleLog = NO;
         _enableLinkRumData = NO;
@@ -53,7 +53,7 @@
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
-    options.serviceName = self.serviceName;
+    options.service = self.service;
     options.samplerate = self.samplerate;
     options.traceConsoleLog = self.traceConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
@@ -68,7 +68,7 @@
         _samplerate= 100;
         _networkTrace = NO;
         _networkTrace = FTNetworkTraceTypeZipkin;
-        _serviceName = FT_DEFAULT_SERVICE_NAME;
+        _service = FT_DEFAULT_SERVICE_NAME;
     }
     return self;
 }
@@ -76,7 +76,7 @@
     FTTraceConfig *options = [[[self class] allocWithZone:zone] init];
     options.networkTrace = self.networkTrace;
     options.samplerate = self.samplerate;
-    options.serviceName = self.serviceName;
+    options.service = self.service;
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     return options;
