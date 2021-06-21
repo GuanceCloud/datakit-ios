@@ -12,9 +12,13 @@
 #import "FTBaseInfoHander.h"
 #import "FTConstants.h"
 @implementation FTRumConfig
--(instancetype)init{
+- (instancetype)init{
+    return [self initWithAppid:@""];
+}
+- (instancetype)initWithAppid:(nonnull NSString *)appid{
     self = [super init];
     if (self) {
+        _appid = appid;
         _enableTrackAppCrash= NO;
         _samplerate = 100;
         _enableTrackAppFreeze = NO;
@@ -39,8 +43,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _source = FT_USER_AGENT;
-        _serviceName = FT_DEFAULT_SERVICE_NAME;
+        _serviceName = FT_LOGGER_SERVICE_NAME;
         _samplerate = 100;
         _traceConsoleLog = NO;
         _enableLinkRumData = NO;
@@ -52,7 +55,6 @@
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
     options.serviceName = self.serviceName;
     options.samplerate = self.samplerate;
-    options.source = self.source;
     options.traceConsoleLog = self.traceConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;

@@ -59,10 +59,8 @@ typedef NS_ENUM(NSInteger, FTEnv) {
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLoggerConfig : NSObject
-/**
- * 日志的来源 默认为：ft_mobile_sdk_ios
- */
-@property (nonatomic, copy) NSString *source;
+/// 禁用 new 初始化
++ (instancetype)new NS_UNAVAILABLE;
 /**
  * 设置日志所属业务或服务的名称
  */
@@ -87,6 +85,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface FTRumConfig : NSObject
+/**
+ * @method 指定初始化方法，设置 appid
+ * @param appid 应用唯一ID 设置后 rum 数据才能正常上报
+ * @return 配置对象
+ */
+- (instancetype)initWithAppid:(nonnull NSString *)appid;
+/// 禁用 new 初始化
++ (instancetype)new NS_UNAVAILABLE;
 /**
  * 应用唯一ID，在DataFlux控制台上面创建监控时自动生成。
  */
@@ -119,6 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTTraceConfig : NSObject
+/// 禁用 new 初始化
++ (instancetype)new NS_UNAVAILABLE;
 /**
  * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
  */
