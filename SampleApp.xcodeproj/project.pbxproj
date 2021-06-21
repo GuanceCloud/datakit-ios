@@ -51,6 +51,7 @@
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
+		7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */; };
 		7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */; };
 /* End PBXBuildFile section */
 
@@ -196,6 +197,7 @@
 		7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TableViewCellItem.m; sourceTree = "<group>"; };
 		7C6E925225E35E9700D12C12 /* Crasher.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Crasher.mm; sourceTree = "<group>"; };
 		7C6E925325E35E9800D12C12 /* Crasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Crasher.h; sourceTree = "<group>"; };
+		7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLoggerTest.m; sourceTree = "<group>"; };
 		7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintHookTest.swift; sourceTree = "<group>"; };
 		84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				4A299B932514953300400931 /* FTPropertyTest.m */,
 				4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */,
 				4AB1FFA62546D74900CB36CF /* FTANRTest.m */,
+				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
 			);
 			path = AgentTest;
 			sourceTree = "<group>";
@@ -731,6 +734,7 @@
 				4A51AE6025957B9A0061ACF7 /* FTRUMTests.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
+				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 				4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */,

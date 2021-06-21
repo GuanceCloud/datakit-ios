@@ -63,7 +63,7 @@
  *
  */
 - (void)testSessionIdChecks{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     //页面关闭 action 无正在加载的resource action写入
@@ -84,7 +84,7 @@
  * 验证： session持续15m 无新数据写入 session更新
  */
 - (void)testSessionTimeElapse{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
@@ -120,7 +120,7 @@
  * 验证： session 持续四小时  session更新
  */
 - (void)testSessionTimeOut{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
@@ -156,7 +156,7 @@
  * 验证 source：view 的数据格式
  */
 - (void)testViewDataFormatChecks{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self addLongTaskData];
@@ -204,7 +204,7 @@
                                @"resource_trans",
                                @"resource_first_byte",
     ];
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -247,7 +247,7 @@
  * 验证 source：action 的数据格式
  */
 - (void)testActionDataFormatChecks{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -280,7 +280,7 @@
  * 验证：action 最长持续10s
  */
 - (void)testActionTimedOut{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC viewDidDisappear:NO];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
@@ -319,7 +319,7 @@
  * 应用启动 --> 第一个页面viewDidAppear
  */
 - (void)testRumAppLaunchCold{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC viewDidDisappear:NO];
@@ -350,7 +350,7 @@
  * 验证： action: launch_hot
  */
 - (void)testRumAppLaunchHot{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -383,7 +383,7 @@
  * 验证： action: click
  */
 - (void)testRumClickBtn{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
@@ -411,7 +411,7 @@
  * 验证 resource，action,error,long_task数据 是否同步到view中
  */
 - (void)testViewUpdate{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
@@ -460,7 +460,7 @@
  * 验证 resource,error,long_task数据 是否同步到action中
  */
 - (void)testActionUpdate{
-    [self setESConfig];
+    [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
@@ -578,11 +578,12 @@
     [[FTMobileAgent sharedInstance] rumWrite:@"action" terminal:@"app" tags:tags fields:field];
 }
 
-- (void)setESConfig{
+- (void)setRumConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.enableTraceUserAction = YES;
-    config.appid = self.appid;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     

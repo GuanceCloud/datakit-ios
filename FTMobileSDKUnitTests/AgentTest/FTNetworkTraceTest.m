@@ -41,11 +41,12 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    config.source = @"iOSTest";
-    config.networkTrace = YES;
-    config.networkTraceType = type;
-    config.serviceName = @"iOSTestService";
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTrace = YES;
+    traceConfig.networkTraceType = type;
+    traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
 
@@ -66,7 +67,6 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    
 }
 - (void)testFTNetworkTrackTypeJaeger{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

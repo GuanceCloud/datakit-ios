@@ -50,13 +50,14 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    config.appid =appid;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     if (enable) {
-        config.enableTrackAppANR = YES;
-        config.enableTrackAppFreeze = YES;
+        rumConfig.enableTrackAppANR = YES;
+        rumConfig.enableTrackAppFreeze = YES;
     }
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }

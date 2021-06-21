@@ -52,9 +52,10 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    config.networkTrace = YES;
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTMonitorManager sharedInstance] setMobileConfig:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     [self setWKWebview];
@@ -63,7 +64,6 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    config.networkTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;

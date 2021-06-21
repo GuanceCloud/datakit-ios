@@ -112,12 +112,13 @@
 - (void)transliteration:(NSString *)str{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
+//    NSString *appid = [processInfo environment][@"APP_ID"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    config.appid = appid;
-    config.enableSDKDebugLog = YES;
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
      
     [[FTMobileAgent sharedInstance] logging:str status:FTStatusInfo];

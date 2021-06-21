@@ -48,20 +48,11 @@
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.appid = self.appid;
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-}
-- (void)testLoggingMethod{
-    [self setRightSDKConfig];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:1];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount>count);
 }
 #pragma mark ========== 用户数据绑定 ==========
 /**

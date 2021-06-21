@@ -52,11 +52,11 @@
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
-        FTLoggerConfig *loggerConfig = [FTLoggerConfig new];
+        FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.traceConsoleLog = YES;
-        FTTraceConfig *traceConfig = [FTTraceConfig new];
+        FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
         traceConfig.networkTrace = YES;
         traceConfig.enableLinkRumData = YES;
         [FTMobileAgent startWithConfigOptions:config];
