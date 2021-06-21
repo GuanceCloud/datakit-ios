@@ -235,26 +235,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
         baseTags[@"network_type"] = self.net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
-        if ([type isEqualToString:FT_TYPE_ERROR]) {
-            if ([terminal isEqualToString:FT_TERMINAL_APP]) {
-                FTMonitorInfoType monitorType = self.rumConfig.monitorInfoType;
-                if (monitorType & FTMonitorInfoTypeMemory) {
-                    baseTags[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils totalMemorySize];
-                    baseTags[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils usedMemory]];
-                }
-                if (monitorType & FTMonitorInfoTypeCpu) {
-                    baseTags[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
-                }
-                if (monitorType & FTMonitorInfoTypeBattery) {
-                    baseTags[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
-                }
-                baseTags[@"carrier"] = [FTPresetProperty ft_getTelephonyInfo];
-                NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
-                baseTags[@"locale"] = preferredLanguage;
-            }else{
-                baseTags[@"crash_situation"] = @"run";
-            }
-        }
         FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
@@ -269,12 +249,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = @{FT_KEY_STATUS:[FTBaseInfoHander statusStrWithStatus:status],
-                                         FT_KEY_SERVICE:self.loggerConfig.serviceName,
-                                         @"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                         @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
-                                         @"version":self.config.version
-        }.mutableCopy;
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
@@ -288,7 +263,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:self.loggerConfig.source op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:FT_LOGGER_SOURCE op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:type];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -300,13 +275,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = @{
-            FT_KEY_SERVICE:self.traceConfig.serviceName,
-            @"application_identifier":[FTPresetProperty appIdentifier],
-            @"env":[FTBaseInfoHander envStrWithEnv: self.config.env],
-            @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
-            @"version":self.config.version
-        }.mutableCopy;
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty tracePropertyWithServiceName:self.traceConfig.service]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }

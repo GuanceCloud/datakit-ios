@@ -7,16 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTPresetProperty : NSObject
 @property (nonatomic, assign) BOOL isSignin;
 @property (nonatomic, copy) NSString *appid;
-+ (NSString *)ft_getDeviceInfo;
++ (NSString *)deviceInfo;
 + (NSString *)appIdentifier;
 + (NSString *)userid;
-+ (NSString *)ft_getTelephonyInfo;
++ (NSString *)telephonyInfo;
 
 /**
  * 初始化方法
@@ -34,6 +34,14 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取 Rum ES 公共Tag
 */
 - (NSDictionary *)rumPropertyWithType:(NSString *)type terminal:(NSString *)terminal;
+/**
+ * 获取 logger base Tag
+ */
+- (NSDictionary *)loggerPropertyWithStatus:(FTStatus)status serviceName:(NSString *)serviceName;
+/**
+ * 获取 trace base Tag
+ */
+- (NSDictionary *)tracePropertyWithServiceName:(NSString *)serviceName;
 /**
  *  重新设置
  */
