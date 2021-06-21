@@ -17,6 +17,9 @@
 #import "FTJSONUtil.h"
 #import "FTMobileConfig.h"
 #import "FTPingThread.h"
+#import "FTMonitorUtils.h"
+#import "FTConstants.h"
+#import "FTPresetProperty.h"
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
@@ -39,9 +42,11 @@
 }
 #pragma mark - FTRUMSessionErrorDelegate -
 - (void)ftErrorWithtags:(NSDictionary *)tags field:(NSDictionary *)field{
+    NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
+    [errorTag addEntriesFromDictionary:[self errrorMonitorInfo]];
     dispatch_sync(self.serialQueue, ^{
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
-        model.tags = tags;
+        model.tags = errorTag;
         model.fields = field;
         [self process:model];
     });
@@ -151,6 +156,7 @@
         if(error){
             tags[@"error_source"] = @"network";
             tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
+            [tags addEntriesFromDictionary:[self errrorMonitorInfo]];
             NSDictionary *field = @{
                 @"error_message":error.localizedDescription,
                 @"error_stack":@{
@@ -214,6 +220,24 @@
         }
     });
     
+}
+- (NSDictionary *)errrorMonitorInfo{
+    NSMutableDictionary *errorTag = [NSMutableDictionary new];
+    FTMonitorInfoType monitorType = self.rumConfig.monitorInfoType;
+    if (monitorType & FTMonitorInfoTypeMemory) {
+        errorTag[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils totalMemorySize];
+        errorTag[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils usedMemory]];
+    }
+    if (monitorType & FTMonitorInfoTypeCpu) {
+        errorTag[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
+    }
+    if (monitorType & FTMonitorInfoTypeBattery) {
+        errorTag[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
+    }
+    errorTag[@"carrier"] = [FTPresetProperty telephonyInfo];
+    NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
+    errorTag[@"locale"] = preferredLanguage;
+    return errorTag;
 }
 #pragma mark - FTRUMWebViewJSBridgeDataDelegate -
 
