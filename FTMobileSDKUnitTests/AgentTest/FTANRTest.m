@@ -52,8 +52,8 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     if (enable) {
-        rumConfig.enableTrackAppANR = YES;
-        rumConfig.enableTrackAppFreeze = YES;
+        rumConfig.enableTrackAppANR = enable;
+        rumConfig.enableTrackAppFreeze = enable;
     }
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
