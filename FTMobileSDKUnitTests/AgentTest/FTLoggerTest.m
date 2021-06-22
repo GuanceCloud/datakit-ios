@@ -125,11 +125,9 @@
 
 -(void)testSetLoggerServiceName{
     [self setRightSDKConfig];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.service = @"testSetServiceName";
     loggerConfig.enableCustomLog = YES;
-    [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
@@ -184,6 +182,36 @@
     NSDictionary *tags =opdata[@"tags"];
     XCTAssertFalse([tags.allKeys containsObject:@"session_id"]);
     XCTAssertFalse([tags.allKeys containsObject:@"session_type"]);
+
+}
+- (void)testSampleRate0{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.samplerate = 0;
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.traceConsoleLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+
+    [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
+    NSLog(@"testSampleRate0");
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+
+    XCTAssertTrue(oldDatas.count == newDatas.count);
+}
+- (void)testSampleRate100{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.traceConsoleLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
+    NSLog(@"testSampleRate100");
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(oldDatas.count < newDatas.count);
 
 }
 @end

@@ -501,7 +501,80 @@
     XCTAssertTrue(hasActionData);
 
 }
+- (void)testSampleRate0{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.samplerate = 0;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
 
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self addErrorData];
+    
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+}
+- (void)testSampleRate100{
+    [self setRumConfig];
+    
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self addErrorData];
+    
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count > oldArray.count);
+}
+- (void)testTraceLinkRumData{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTrace = YES;
+    traceConfig.enableLinkRumData = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [self.testVC viewDidAppear:NO];
+
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasResourceData;
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"measurement"];
+        if ([measurement isEqualToString:@"resource"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            XCTAssertTrue([tags.allKeys containsObject:@"span_id"]);
+            XCTAssertTrue([tags.allKeys containsObject:@"trace_id"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData == YES);
+
+}
 - (void)addErrorData{
     
     NSDictionary *field = @{@"error_message":@"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270",

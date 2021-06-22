@@ -67,6 +67,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testFTNetworkTrackTypeJaeger{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -86,6 +87,66 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
+- (void)testSampleRate0{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTrace = YES;
+    traceConfig.samplerate = 0;
+    traceConfig.service = @"iOSTestService";
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+
+    [self networkUpload:@"" handler:^(NSDictionary *header) {
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+    XCTAssertTrue(newArray.count == oldArray.count);
+
+    [[FTMobileAgent sharedInstance] resetInstance];
+}
+- (void)testSampleRate100{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTrace = YES;
+    traceConfig.samplerate = 100;
+    traceConfig.service = @"iOSTestService";
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+
+    [self networkUpload:@"" handler:^(NSDictionary *header) {
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+    
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+    XCTAssertTrue(newArray.count > oldArray.count);
+
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
