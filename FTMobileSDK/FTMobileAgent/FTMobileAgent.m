@@ -248,6 +248,10 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }
+    if (![FTBaseInfoHander randomSampling:self.loggerConfig.samplerate]){
+        ZYDebug(@"经过采集算法判断-此条日志不采集");
+        return;
+    }
     @try {
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
         if (tags) {
