@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *service;
 /**
- * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ * 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
 /**
@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *appid;
 /**
- * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ * 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
 /**
@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /**
- * 采样配置，属性值：0或者100，100则表示百分百采集，不做数据样本压缩。
+ * 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
  */
 @property (nonatomic, assign) int samplerate;
 /**
@@ -162,7 +162,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-#pragma mark ========== 基本设置 ==========
 /**
  * 数据上报地址，两种模式：
  * ①使用Dataflux的数据网关，可在控制台获取对应网址；
