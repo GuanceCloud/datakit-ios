@@ -44,36 +44,34 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
         ZYDebug(@"******** 已替换过，避免多次替换 --> (%@)",NSStringFromClass(originalClass));
     }
 }
-
+///动态交换方法
+static void Exchange_Method(Class cls, SEL method1, SEL method2){
+    Method m1 = class_getInstanceMethod(cls, method1);
+    Method m2 = class_getInstanceMethod(cls, method2);
+    method_exchangeImplementations(m1, m2);
+}
 + (void)load {
-    SEL oriMethod =  NSSelectorFromString(@"dealloc");
-    
-    
-    Method originalLoadMethod = class_getInstanceMethod([WKWebView class], oriMethod);
-    Method ownerLoadMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_dealloc));
-    method_exchangeImplementations(originalLoadMethod, ownerLoadMethod);
-    
-    // Hook WKWebView
-    Method originalMethod = class_getInstanceMethod([WKWebView class], @selector(setNavigationDelegate:));
-    Method ownerMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_setNavigationDelegate:));
-    method_exchangeImplementations(originalMethod, ownerMethod);
-    
-    Method originalreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(reload));
-    Method ownerreLoadMethod = class_getInstanceMethod([WKWebView class], @selector(fthook_reload));
-    method_exchangeImplementations(originalreLoadMethod, ownerreLoadMethod);
-    
-    Method originalLoadRequest= class_getInstanceMethod([WKWebView class], @selector(loadRequest:));
-    Method ownerreLoadRequest = class_getInstanceMethod([WKWebView class], @selector(fthook_loadRequest:));
-    method_exchangeImplementations(originalLoadRequest, ownerreLoadRequest);
-    
-    Method originalLoadHTMLString= class_getInstanceMethod([WKWebView class], @selector(loadHTMLString:baseURL:));
-    Method ownerLoadHTMLString = class_getInstanceMethod([WKWebView class], @selector(fthook_loadHTMLString:baseURL:));
-    method_exchangeImplementations(originalLoadHTMLString, ownerLoadHTMLString);
-    
-    Method oriloadFileURL = class_getInstanceMethod([WKWebView class], @selector(loadFileURL:allowingReadAccessToURL:));
-    Method newloadFileURL = class_getInstanceMethod([WKWebView class], @selector(fthook_loadFileURL:allowingReadAccessToURL:));
-    method_exchangeImplementations(oriloadFileURL, newloadFileURL);
-    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SEL oriMethod =  NSSelectorFromString(@"dealloc");
+        Class class = [WKWebView class];
+        //dealloc
+        Exchange_Method(class,oriMethod,@selector(fthook_dealloc));
+
+        //setNavigationDelegate:
+        Exchange_Method(class,@selector(setNavigationDelegate:),@selector(fthook_setNavigationDelegate:));
+        //reload
+        Exchange_Method(class,@selector(reload),@selector(fthook_reload));
+
+        //loadRequest:
+        Exchange_Method(class,@selector(loadRequest:),@selector(fthook_loadRequest:));
+
+        //loadHTMLString
+        Exchange_Method(class,@selector(loadHTMLString:baseURL:),@selector(fthook_loadHTMLString:baseURL:));
+
+        //loadFileURL
+        Exchange_Method(class,@selector(loadFileURL:allowingReadAccessToURL:),@selector(fthook_loadFileURL:allowingReadAccessToURL:));
+    });
 }
 - (WKNavigation *)fthook_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
@@ -121,16 +119,18 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
     [self fthook_dealloc];
 }
 - (void)fthook_setNavigationDelegate:(id<WKNavigationDelegate>)delegate {
+    if (delegate != nil) {
     // request
     Hook_Method([delegate class], @selector(webView:decidePolicyForNavigationAction:decisionHandler:), [self class], @selector(owner_webView:decidePolicyForNavigationAction:decisionHandler:), @selector(none_webView:decidePolicyForNavigationAction:decisionHandler:));
     //response
     Hook_Method([delegate class], @selector(webView:decidePolicyForNavigationResponse:decisionHandler:), [self class], @selector(owner_webView:decidePolicyForNavigationResponse:decisionHandler:), @selector(none_webView:decidePolicyForNavigationResponse:decisionHandler:));
     //load error
     Hook_Method([delegate class], @selector(webView:didFailProvisionalNavigation:withError:), [self class], @selector(owner_webView:didFailProvisionalNavigation:withError:), @selector(none_webView:didFailProvisionalNavigation:withError:));
-    //
+    //webView:didCommitNavigation:
     Hook_Method([delegate class], @selector(webView:didCommitNavigation:), [self class], @selector(owner_webView:didCommitNavigation:), @selector(none_webView:didCommitNavigation:));
     //navigation Finish
     Hook_Method([delegate class], @selector(webView:didFinishNavigation:), [self class], @selector(owner_webView:didFinishNavigation:), @selector(none_webView:didFinishNavigation:));
+    }
     [self fthook_setNavigationDelegate:delegate];
     
 }
