@@ -34,6 +34,7 @@
 }
 
 - (void)tearDown {
+    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
@@ -67,7 +68,6 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testFTNetworkTrackTypeJaeger{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -87,8 +87,25 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
+- (void)testFTNetworkTrackTypeDDtrace{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
+    [self networkUpload:@"Jaeger" handler:^(NSDictionary *header) {
+       
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
+
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+
 - (void)testSampleRate0{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
@@ -116,7 +133,6 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newArray.count == oldArray.count);
 
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testSampleRate100{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -146,7 +162,6 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newArray.count > oldArray.count);
 
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -242,7 +257,7 @@
 
 - (void)testBadResponse{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
+    [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     NSString *uuid = [NSUUID UUID].UUIDString;
 
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
