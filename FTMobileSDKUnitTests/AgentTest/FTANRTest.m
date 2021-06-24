@@ -16,7 +16,7 @@
 #import <FTMobileAgent/FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>
-
+#import "FTUploadTool+Test.h"
 @interface FTANRTest : XCTestCase
 @property (nonatomic, strong) TestANRVC *testVC;
 
@@ -61,7 +61,7 @@
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
 }
-- (void)testTraceAnrBlock{
+- (void)testTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:YES];
     [self.testVC viewDidAppear:NO];
     [NSThread sleepForTimeInterval:2];
@@ -94,15 +94,26 @@
 //    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
-- (void)testNoTraceAnrBlock{
+- (void)testNoTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:NO];
+    [self.testVC viewDidAppear:NO];
     [NSThread sleepForTimeInterval:2];
-    NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.testVC testAnrBlock];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-        XCTAssertTrue(newCount == lastCount);
+        NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        BOOL noLongTask = YES;
+        for (NSInteger i=0; i<datas.count; i++) {
+           FTRecordModel *model = datas[i];
+           NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+            NSDictionary *opdata = [dict valueForKey:@"opdata"];
+
+            NSString *measurement = opdata[@"measurement"];
+            if ([measurement isEqualToString:@"long_task"]) {
+                noLongTask = NO;
+            }
+        }
+        XCTAssertTrue(noLongTask == YES);
         [expect fulfill];
         
     });
