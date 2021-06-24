@@ -427,11 +427,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
-    if (_reachability) {
-        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-        SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
-        _reachability = nil;
-    }
+    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+        if (_reachability) {
+            SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+            SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
+            _reachability = nil;
+        }
+    }];
     _presetProperty = nil;
     _config = nil;
     _track = nil;
