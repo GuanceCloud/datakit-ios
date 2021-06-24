@@ -534,12 +534,18 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count > oldArray.count);
 }
+/**
+ * 验证  FTTraceConfig enableLinkRumData
+ * 需要设置 networkTraceType = FTNetworkTraceTypeDDtrace
+ */
 - (void)testTraceLinkRumData{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTrace = YES;
+    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
@@ -549,7 +555,11 @@
     [self.testVC viewDidAppear:NO];
 
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+   __block BOOL isError = NO;
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        if (error) {
+            isError = YES;
+        }
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -572,7 +582,9 @@
             *stop = YES;
         }
     }];
-    XCTAssertTrue(hasResourceData == YES);
+    if (!isError) {
+        XCTAssertTrue(hasResourceData == YES);
+    }
 
 }
 - (void)addErrorData{
