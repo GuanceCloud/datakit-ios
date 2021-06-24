@@ -98,7 +98,10 @@ extern NSString * const FT_NETWORK_SKYWALKING_V2;
 extern NSString * const FT_NETWORK_JAEGER_TRACEID;
 extern NSString * const FT_NETWORK_REQUEST_CONTENT;
 extern NSString * const FT_NETWORK_RESPONSE_CONTENT;
-
+extern NSString * const FT_NETWORK_DDTRACE_TRACEID;
+extern NSString * const FT_NETWORK_DDTRACE_SPANID;
+extern NSString * const FT_NETWORK_DDTRACE_ORIGIN;
+extern NSString * const FT_NETWORK_DDTRACE_SAMPLED;
 extern NSString * const FT_NETWORK_HEADERS;
 extern NSString * const FT_NETWORK_BODY;
 extern NSString * const FT_LOGGING_CLASS_TRACING;
