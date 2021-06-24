@@ -282,6 +282,9 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         case FTNetworkTraceTypeZipkin:
             str = @"zipkin";
             break;
+        case FTNetworkTraceTypeDDtrace:
+            str = @"ddtrace";
+            break;
     }
     return  str;
 }

@@ -40,6 +40,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     FTNetworkTraceTypeZipkin          = 0,
     FTNetworkTraceTypeJaeger          = 1,
+    FTNetworkTraceTypeDDtrace         = 2,
 };
 /**
  * 环境字段。属性值：prod/gray/pre/common/local。其中
@@ -145,6 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 /**
  * 是否将 Trace 数据与 rum 关联
+ * 仅在 FTNetworkTraceType 设置为 FTNetworkTraceTypeDDtrace 时生效
  */
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @end

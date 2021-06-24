@@ -146,7 +146,7 @@ static dispatch_once_t onceToken;
         }
         // rum resourc
         if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
-            if (self.traceConfig.enableLinkRumData) {
+            if (self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
                 [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
                     NSDictionary *linkTag = @{@"span_id":spanID,
                                               @"trace_id":traceId

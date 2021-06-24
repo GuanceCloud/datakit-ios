@@ -155,6 +155,10 @@
             sampling = [traceAry lastObject];
         }
 
+    }else if([[header allKeys] containsObject:FT_NETWORK_DDTRACE_TRACEID]){
+        sampling = [header valueForKey:FT_NETWORK_DDTRACE_SAMPLED];
+        trace = [header valueForKey:FT_NETWORK_DDTRACE_TRACEID];
+        span = [header valueForKey:FT_NETWORK_DDTRACE_SPANID];
     }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];

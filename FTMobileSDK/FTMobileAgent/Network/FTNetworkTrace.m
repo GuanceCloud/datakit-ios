@@ -40,10 +40,19 @@
                      FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTrace networkTraceID],
             };
             break;
+        case FTNetworkTraceTypeDDtrace:
+            return @{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
+                     FT_NETWORK_DDTRACE_SPANID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]],
+                     FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
+                     FT_NETWORK_DDTRACE_TRACEID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]]
+            };
+            break;
     }
     return  nil;
 }
-
+- (int64_t)generateUniqueID{
+    return arc4random() % (INT64_MAX >> 1);
+}
 - (NSString *)getSkyWalking_V2Str:(BOOL)sampled url:(NSURL *)url{
     [self.lock lock];
     NSInteger v2 =  _skywalkingv2 ++;
