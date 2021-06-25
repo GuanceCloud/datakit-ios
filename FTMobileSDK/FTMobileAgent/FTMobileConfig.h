@@ -36,6 +36,7 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  * @constant
  *  FTNetworkTrackTypeZipkin       - Zipkin
  *  FTNetworkTrackTypeJaeger       - Jaeger
+ *  FTNetworkTraceTypeDDtrace      - DDtrace 
  */
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     FTNetworkTraceTypeZipkin          = 0,
