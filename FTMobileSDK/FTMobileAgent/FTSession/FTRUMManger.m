@@ -101,7 +101,7 @@
     dispatch_async(self.serialQueue, ^{
         NSString *className = NSStringFromClass(clickView.class);
         
-        NSString *actionName = [NSString stringWithFormat:@"[%@]%@click",className,viewTitle];
+        NSString *actionName = [NSString stringWithFormat:@"[%@]%@",className,viewTitle];
         
         FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:time];
@@ -157,14 +157,15 @@
             tags[@"error_source"] = @"network";
             tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
             [tags addEntriesFromDictionary:[self errrorMonitorInfo]];
-            NSDictionary *field = @{
-                @"error_message":error.localizedDescription,
-                @"error_stack":@{
-                        @"domain":error.domain,
-                        @"code":@(error.code),
-                        @"userInfo":error.userInfo
-                },
-            };
+           
+            NSMutableDictionary *field = @{
+                @"error_message":[NSString stringWithFormat:@"[%ld][%@]",(long)error.code,task.originalRequest.URL],
+            }.mutableCopy;
+            if (resourceModel.data) {
+                NSError *errors;
+                id responseObject = [NSJSONSerialization JSONObjectWithData:resourceModel.data options:NSJSONReadingMutableContainers error:&errors];
+                [field setValue:responseObject forKey:@"error_stack"];
+            }
             FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:resourceModel.identifier];
             resourceError.time = taskMes.requestEndDate;
             resourceError.tags = tags;
