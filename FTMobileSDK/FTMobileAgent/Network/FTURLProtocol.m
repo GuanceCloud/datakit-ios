@@ -127,6 +127,9 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
+    if (self.trackUrl) {
+        self.taskModel.data = data;
+    }
     [self.client URLProtocol:self didLoadData:data];
 }
 
