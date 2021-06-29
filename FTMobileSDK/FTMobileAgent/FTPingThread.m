@@ -80,8 +80,8 @@
             });
             [NSThread sleepForTimeInterval: 0.5];
             if (self.isResponse == NO){
-                self.freezeStartDate = [NSDate date];
-                self.callSymbols = [FTCallStack ft_backtraceOfMainThread];
+                NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] - 0.5;
+                self.freezeStartDate = [NSDate dateWithTimeIntervalSinceReferenceDate:aTimeInterval];                self.callSymbols = [FTCallStack ft_backtraceOfMainThread];
             }
             dispatch_semaphore_wait(self.semaphore, DISPATCH_TIME_FOREVER);
         }
