@@ -146,12 +146,14 @@ static dispatch_once_t onceToken;
         }
         // rum resourc
         if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
-            if (self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
+            if (self.traceConfig.networkTrace &&self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
                 [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-                    NSDictionary *linkTag = @{@"span_id":spanID,
-                                              @"trace_id":traceId
-                    };
-                    taskModel.linkTags = linkTag;
+                    if(traceId && spanID){
+                        NSDictionary *linkTag = @{@"span_id":spanID,
+                                                  @"trace_id":traceId
+                        };
+                        taskModel.linkTags = linkTag;
+                    }
                 }];
             }
             [self.sessionSourceDelegate ftResourceCompleted:taskModel];
