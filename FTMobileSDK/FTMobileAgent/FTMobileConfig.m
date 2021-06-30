@@ -66,15 +66,13 @@
     self = [super init];
     if (self) {
         _samplerate= 100;
-        _networkTrace = NO;
-        _networkTrace = FTNetworkTraceTypeZipkin;
+        _networkTraceType = FTNetworkTraceTypeZipkin;
         _service = FT_DEFAULT_SERVICE_NAME;
     }
     return self;
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTTraceConfig *options = [[[self class] allocWithZone:zone] init];
-    options.networkTrace = self.networkTrace;
     options.samplerate = self.samplerate;
     options.service = self.service;
     options.enableLinkRumData = self.enableLinkRumData;

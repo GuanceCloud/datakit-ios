@@ -87,11 +87,7 @@ static dispatch_once_t onceToken;
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     self.trace = [[FTNetworkTrace alloc]initWithType:traceConfig.networkTraceType];
     _traceConfig = traceConfig;
-    if (traceConfig.networkTrace) {
-        [FTWKWebViewHandler sharedInstance].trace = YES;
-    }else{
-        [FTWKWebViewHandler sharedInstance].trace = NO;
-    }
+    [FTWKWebViewHandler sharedInstance].trace = YES;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -141,12 +137,12 @@ static dispatch_once_t onceToken;
 - (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
     @try {
         // network trace
-        if (self.traceConfig.networkTrace && [FTBaseInfoHander randomSampling:self.traceConfig.samplerate]) {
+        if ([FTBaseInfoHander randomSampling:self.traceConfig.samplerate]) {
         [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
         }
         // rum resourc
         if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
-            if (self.traceConfig.networkTrace &&self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
+            if (self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
                 [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
                     if(traceId && spanID){
                         NSDictionary *linkTag = @{@"span_id":spanID,
@@ -337,7 +333,7 @@ static dispatch_once_t onceToken;
     return NO;
 }
 - (void)traceUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler{
-    if ([self traceUrl:url] && self.traceConfig.networkTrace) {
+    if ([self traceUrl:url]) {
         BOOL sample = [FTBaseInfoHander randomSampling:self.traceConfig.samplerate];
         NSDictionary *dict = [self.trace networkTrackHeaderWithSampled:sample url:url];
         if (completionHandler) {

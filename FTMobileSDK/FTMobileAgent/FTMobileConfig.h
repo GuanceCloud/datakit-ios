@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /**
- * 设置日志所属业务或服务的名称
+ * 设置日志所属业务或服务的名称 默认：df_rum_ios
  */
 @property (nonatomic, copy) NSString *service;
 /**
@@ -134,11 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) int samplerate;
 /**
- * 设置网络请求信息采集 默认为NO
-*/
-@property (nonatomic, assign) BOOL networkTrace;
-/**
- * 设置所属业务或服务的名称
+ * 设置所属业务或服务的名称  默认：df_rum_ios
  */
 @property (nonatomic, copy) NSString *service;
 /**

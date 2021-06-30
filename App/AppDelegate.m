@@ -57,7 +57,6 @@
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.traceConsoleLog = YES;
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-        traceConfig.networkTrace = YES;
         traceConfig.enableLinkRumData = YES;
         traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
         [FTMobileAgent startWithConfigOptions:config];
