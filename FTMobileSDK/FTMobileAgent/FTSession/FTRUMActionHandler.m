@@ -101,7 +101,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields tm:[self.actionStartTime ft_dateTimestamp]];
     if (self.handler) {
         self.handler();
     }
