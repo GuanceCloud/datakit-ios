@@ -1,3 +1,7 @@
+# 1.2.0-alpha.4
+1.Config 配置修改
+2.Logger 与 Trace 数据支持绑定 RUM
+---
 # 1.2.0-alpha.3
 1.Config 配置修改
 2.Logger 与 Trace 数据支持绑定 RUM
