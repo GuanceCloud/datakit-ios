@@ -301,7 +301,7 @@
         if ([measurement isEqualToString:@"action"]) {
             
             if([tags[@"action_type"] isEqualToString:@"click"]){
-                XCTAssertTrue([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]click"]);
+                XCTAssertTrue([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]"]);
                 XCTAssertTrue([field[@"action_long_task_count"] isEqual:@0]);
                 XCTAssertTrue([field[@"duration"] isEqual:@10000000000]);
                 hasClickAction = YES;
@@ -400,7 +400,7 @@
         NSString *measurement = opdata[@"measurement"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *tags = opdata[@"tags"];
-            if([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]click"]){
+            if([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]"]){
                 firstBtnClick = YES;
             }
         }
