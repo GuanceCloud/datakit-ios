@@ -53,7 +53,6 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [FTMobileAgent sharedInstance].upTool.isUploading = YES;

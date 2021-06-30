@@ -544,7 +544,6 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
     [FTMobileAgent startWithConfigOptions:config];

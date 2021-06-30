@@ -43,7 +43,6 @@
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     traceConfig.networkTraceType = type;
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
@@ -113,7 +112,6 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     traceConfig.samplerate = 0;
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
@@ -142,7 +140,6 @@
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     traceConfig.samplerate = 100;
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
