@@ -26,15 +26,31 @@ NS_ASSUME_NONNULL_BEGIN
 */
 + (instancetype)sharedInstance;
 /**
+ * @abstract
  * SDK 初始化方法
  * @param configOptions     配置参数
 */
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions;
-
+/**
+ * @abstract
+ * 配置 RUM Config 开启 RUM 功能
+ *
+ * @param rumConfigOptions   rum配置参数
+ */
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions;
-
+/**
+ * @abstract
+ * 配置 Logger Config 开启 Logger 功能
+ *
+ * @param loggerConfigOptions   logger配置参数
+ */
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions;
-
+/**
+ * @abstract
+ * 配置 Trace Config 开启 Trace 功能
+ *
+ * @param traceConfigOptions   trace配置参数
+ */
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
 
 /**
