@@ -19,7 +19,7 @@
                BlueprintIdentifier = "4A85313523AB85FC00B40B5D"
                BuildableName = "FTMobileSDKUnitTests.xctest"
                BlueprintName = "FTMobileSDKUnitTests"
-               ReferencedContainer = "container:SampleApp.xcodeproj">
+               ReferencedContainer = "container:App.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

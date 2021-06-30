@@ -16,7 +16,7 @@
 #import "TestWKWebViewVC.h"
 #import "CrashVC.h"
 #import "TableViewCellItem.h"
-#import "SampleApp-Swift.h"
+#import "App-Swift.h"
 #import "TestJsbridgeData.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
