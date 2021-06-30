@@ -85,7 +85,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 @end
 @interface FTPresetProperty ()
-@property (nonatomic, strong,readonly) MobileDevice *mobileDevice;
+@property (nonatomic, strong) MobileDevice *mobileDevice;
 @property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
