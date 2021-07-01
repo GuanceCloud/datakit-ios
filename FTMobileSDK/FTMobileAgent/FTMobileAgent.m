@@ -235,7 +235,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
         baseTags[@"network_type"] = self.net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:[[NSDate date] ft_dateTimestamp]];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
