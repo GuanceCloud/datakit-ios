@@ -16,6 +16,7 @@
 #import "NSURLResponse+FTMonitor.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTMobileAgent+Private.h"
+#import "ZYAspects.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成
@@ -41,6 +42,25 @@ static dispatch_once_t onceToken;
         self.trace = NO;
     }
     return self;
+}
+- (void)setWKWebViewTrace{
+    @try {
+        __weak typeof(self) weakSelf = self;
+        [WKWebView aspect_hookSelector:@selector(loadRequest:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo,NSURLRequest *reques) {
+            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
+            
+        } error:nil];
+        [WKWebView aspect_hookSelector:@selector(loadHTMLString:baseURL:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
+            
+        } error:nil];
+        [WKWebView aspect_hookSelector:@selector(loadFileURL:allowingReadAccessToURL:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
+            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
+            
+        } error:nil];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"setWKWebViewTrace Error");
+    }
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView{
