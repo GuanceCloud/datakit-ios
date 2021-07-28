@@ -7,7 +7,6 @@
 //
 
 #import "TestWKWebViewVC.h"
-#import <FTMobileAgent/WKWebView+FTTrace.h>
 
 @interface TestWKWebViewVC ()<WKNavigationDelegate>
 

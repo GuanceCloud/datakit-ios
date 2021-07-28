@@ -131,7 +131,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        // Create a hash table of weak pointers to SensorsAnalytics instances
         _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
         [self installUncaughtExceptionHandler];
@@ -196,19 +195,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     int signals[] = {SIGABRT,SIGBUS, SIGFPE, SIGILL, SIGPIPE, SIGSEGV,SIGSYS,SIGTRAP};
     for (int i = 0; i < sizeof(signals) / sizeof(int); i++) {
         sigaction(signals[i], &action, 0);
-    }
-    
-}
-- (void)addftSDKInstance:(FTMobileAgent *)instance{
-    NSParameterAssert(instance != nil);
-    if (![self.ftSDKInstances containsObject:instance]) {
-        [self.ftSDKInstances addObject:instance];
-    }
-}
-- (void)removeftSDKInstance:(FTMobileAgent *)instance{
-    NSParameterAssert(instance != nil);
-    if ([self.ftSDKInstances containsObject:instance]) {
-        [self.ftSDKInstances removeObject:instance];
     }
 }
 static void FTClearSignalRegister() {
@@ -283,21 +269,19 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
-    for (FTMobileAgent *instance in self.ftSDKInstances) {
-        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-            long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-            NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-            NSDictionary *field = @{ @"error_message":[exception reason],
-                                     @"error_stack":info,
-            };
-            NSString *run = instance.running?@"run":@"startup";
-            NSDictionary *tags = @{
-                @"error_type":[exception name],
-                @"error_source":@"logger",
-                @"crash_situation":run
-            };
-            [self.errorDelegate ftErrorWithtags:tags field:field];
-        }
+    if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
+        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+        NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+        NSDictionary *field = @{ @"error_message":[exception reason],
+                                 @"error_stack":info,
+        };
+        //todo:crash_situation
+        NSDictionary *tags = @{
+            @"error_type":[exception name],
+            @"error_source":@"logger",
+//            @"crash_situation":run
+        };
+        [self.errorDelegate ftErrorWithtags:tags field:field];
     }
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();

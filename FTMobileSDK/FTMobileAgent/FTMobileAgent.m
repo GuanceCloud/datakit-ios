@@ -25,7 +25,6 @@
 #import "NSDate+FTAdd.h"
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
-#import "FTTrack.h"
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
 #import "FTNetworkInfo.h"
@@ -42,13 +41,12 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
-@property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) BOOL running; //正在运行
-@property (nonatomic, copy) NSString *netTraceStr;
-@property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
+@property (nonatomic, strong) FTRUMManger *rumManger;
+@property (nonatomic, copy) NSString *netTraceStr;
 
 @end
 @implementation FTMobileAgent
@@ -90,7 +88,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _net = @"unknown";
             _running = NO;
             [FTLog enableLog:config.enableSDKDebugLog];
-            _track = [[FTTrack alloc]init];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
@@ -99,7 +96,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
             _upTool = [[FTUploadTool alloc]initWithConfig:config];
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
-            [FTMonitorManager sharedInstance].sessionSourceDelegate = _rumManger;
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -121,14 +117,11 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppid:_rumConfig.appid];
         _rumManger = [[FTRUMManger alloc]initWithRumConfig:_rumConfig];
-        _track.rumActionDelegate = _rumManger;
         if (_rumConfig.enableTrackAppCrash) {
-            [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
             [FTUncaughtExceptionHandler sharedHandler].errorDelegate = _rumManger;
         }
+        [FTMonitorManager sharedInstance].sessionSourceDelegate = _rumManger;
         [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig];
-        [FTMonitorManager sharedInstance].sessionErrorDelegate = self.rumManger;
-        [FTMonitorManager sharedInstance].sessionSourceDelegate = self.rumManger;
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -426,7 +419,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
-    [[FTUncaughtExceptionHandler sharedHandler] removeftSDKInstance:self];
     [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
         if (_reachability) {
             SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
@@ -436,7 +428,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }];
     _presetProperty = nil;
     _config = nil;
-    _track = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     _upTool = nil;
     onceToken = 0;

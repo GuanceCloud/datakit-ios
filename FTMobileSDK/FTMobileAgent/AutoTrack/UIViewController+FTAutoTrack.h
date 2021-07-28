@@ -11,7 +11,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (FTAutoTrack)<FTAutoTrackViewControllerProperty>
-
+-(BOOL)isBlackListContainsViewController;
+-(void)dataflux_viewDidLoad;
+-(void)dataflux_viewDidAppear:(BOOL)animated;
+-(void)dataflux_viewDidDisappear:(BOOL)animated;
 @end
 
 NS_ASSUME_NONNULL_END

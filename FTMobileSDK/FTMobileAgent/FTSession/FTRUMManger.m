@@ -16,14 +16,12 @@
 #import "FTLog.h"
 #import "FTJSONUtil.h"
 #import "FTMobileConfig.h"
-#import "FTPingThread.h"
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTPresetProperty.h"
 @interface FTRUMManger()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
-@property (nonatomic, strong) FTPingThread *pingThread;
 
 @end
 @implementation FTRUMManger

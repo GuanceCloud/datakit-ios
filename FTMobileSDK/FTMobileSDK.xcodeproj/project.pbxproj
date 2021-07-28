@@ -37,9 +37,6 @@
 		4A4B0C22253EAED900D903AB /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4B0C20253EAED900D903AB /* FTJSONUtil.m */; };
 		4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */; };
 		4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */; };
-		4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */; };
-		4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */; };
-		4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A852FD323A240B300B40B5D /* ZYAspects.m */; };
 		4A6C542E255E6464009771B8 /* FTMobileExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6C5420255E6464009771B8 /* FTMobileExtension.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6C5437255E68B7009771B8 /* FTExtensionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6C5435255E68B7009771B8 /* FTExtensionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A6C5438255E68B7009771B8 /* FTExtensionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6C5436255E68B7009771B8 /* FTExtensionManager.m */; };
@@ -118,6 +115,22 @@
 		7C2DD69825F9C2F300BFF757 /* FTAutoTrackProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */; };
 		7C2DD8922601E90F00BFF757 /* FTNetworkTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C2DD8902601E90F00BFF757 /* FTNetworkTrace.h */; };
 		7C2DD8932601E90F00BFF757 /* FTNetworkTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C2DD8912601E90F00BFF757 /* FTNetworkTrace.m */; };
+		7CEE842C268F1E57003AD0A0 /* FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */; };
+		7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */; };
+		7CF4DEDF26A674480076D238 /* FTWKWebViewDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */; };
+		7CF4DEE026A674480076D238 /* FTWKWebViewDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */; };
+		7CF4E08226A7EB080076D238 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */; };
+		7CF4E08326A7EB080076D238 /* UIApplication+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */; };
+		7CF4E09426A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */; };
+		7CF4E09526A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E09326A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m */; };
+		7CF4E10626B121610076D238 /* FTSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E10426B121610076D238 /* FTSwizzle.h */; };
+		7CF4E10726B121610076D238 /* FTSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E10526B121610076D238 /* FTSwizzle.m */; };
+		7CF4E11126B1265E0076D238 /* WKWebView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */; };
+		7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */; };
+		7CF4E11E26B145C90076D238 /* NSObject+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */; };
+		7CF4E11F26B145C90076D238 /* NSObject+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */; };
+		7CF4E12426B15B800076D238 /* UIScrollView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */; };
+		7CF4E12526B15B800076D238 /* UIScrollView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */; };
 		7CF5875025E3B5B200EE372E /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */; };
 /* End PBXBuildFile section */
 
@@ -154,8 +167,6 @@
 		4A4B0C20253EAED900D903AB /* FTJSONUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJSONUtil.m; sourceTree = "<group>"; };
 		4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewHandler.h; sourceTree = "<group>"; };
 		4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewHandler.m; sourceTree = "<group>"; };
-		4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTTrace.h"; sourceTree = "<group>"; };
-		4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "WKWebView+FTTrace.m"; sourceTree = "<group>"; };
 		4A6C541E255E6464009771B8 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A6C5420255E6464009771B8 /* FTMobileExtension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMobileExtension.h; sourceTree = "<group>"; };
 		4A6C5421255E6464009771B8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -175,12 +186,10 @@
 		4A7C739625C0318D003936A0 /* FTPingThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPingThread.m; sourceTree = "<group>"; };
 		4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakProxy.h; sourceTree = "<group>"; };
 		4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakProxy.m; sourceTree = "<group>"; };
-		4A852FD323A240B300B40B5D /* ZYAspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYAspects.m; sourceTree = "<group>"; };
 		4A852FD423A240B300B40B5D /* UIView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FTAutoTrack.m"; sourceTree = "<group>"; };
 		4A852FD623A240B300B40B5D /* UIView+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+FTAutoTrack.h"; sourceTree = "<group>"; };
 		4A852FD923A240B400B40B5D /* UIViewController+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+FTAutoTrack.h"; sourceTree = "<group>"; };
-		4A852FDA23A240B400B40B5D /* ZYAspects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYAspects.h; sourceTree = "<group>"; };
 		4A88425A239E5754001B44C3 /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A884266239E5768001B44C3 /* FTBaseInfoHander.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTBaseInfoHander.h; sourceTree = "<group>"; };
 		4A88426A239E5768001B44C3 /* FTMobileAgent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgent.m; sourceTree = "<group>"; };
@@ -240,6 +249,22 @@
 		7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackProperty.h; sourceTree = "<group>"; };
 		7C2DD8902601E90F00BFF757 /* FTNetworkTrace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkTrace.h; sourceTree = "<group>"; };
 		7C2DD8912601E90F00BFF757 /* FTNetworkTrace.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTrace.m; sourceTree = "<group>"; };
+		7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSwizzler.h; sourceTree = "<group>"; };
+		7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzler.m; sourceTree = "<group>"; };
+		7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewDelegateProxy.h; sourceTree = "<group>"; };
+		7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewDelegateProxy.m; sourceTree = "<group>"; };
+		7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
+		7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+FTAutoTrack.m"; sourceTree = "<group>"; };
+		7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+FTAutoTrack.h"; sourceTree = "<group>"; };
+		7CF4E09326A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIGestureRecognizer+FTAutoTrack.m"; sourceTree = "<group>"; };
+		7CF4E10426B121610076D238 /* FTSwizzle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSwizzle.h; sourceTree = "<group>"; };
+		7CF4E10526B121610076D238 /* FTSwizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzle.m; sourceTree = "<group>"; };
+		7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTAutoTrack.h"; sourceTree = "<group>"; };
+		7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "WKWebView+FTAutoTrack.m"; sourceTree = "<group>"; };
+		7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+FTAutoTrack.h"; sourceTree = "<group>"; };
+		7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+FTAutoTrack.m"; sourceTree = "<group>"; };
+		7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+FTAutoTrack.h"; sourceTree = "<group>"; };
+		7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
 		CACC4E2623A72A67006BA378 /* BuildFramwork.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = BuildFramwork.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -327,10 +352,6 @@
 				4A884275239E5768001B44C3 /* FTRecordModel.m */,
 				4A884266239E5768001B44C3 /* FTBaseInfoHander.h */,
 				4A88426F239E5768001B44C3 /* FTBaseInfoHander.m */,
-				4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */,
-				4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */,
-				4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */,
-				4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */,
 				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
 				7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */,
 				4AED6B242473AFEC00E04AE2 /* FTLog.h */,
@@ -341,10 +362,6 @@
 				4A39314B25300D2100BC2134 /* FTCallStack.m */,
 				4A7C739525C0318D003936A0 /* FTPingThread.h */,
 				4A7C739625C0318D003936A0 /* FTPingThread.m */,
-				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
-				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
-				4A4D92602511E86A004B9FA0 /* WKWebView+FTTrace.h */,
-				4A4D92612511E86B004B9FA0 /* WKWebView+FTTrace.m */,
 				7C28B90326611B3700CECBA6 /* FTSession */,
 				7C28B8522660980000CECBA6 /* JSBridge */,
 				7C2DD6B825FEF88100BFF757 /* Utils */,
@@ -454,15 +471,29 @@
 		7C2DD69625F9C2BA00BFF757 /* AutoTrack */ = {
 			isa = PBXGroup;
 			children = (
-				7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */,
 				4A7135A1257096FF00444C3D /* FTTrack.h */,
 				4A7135A2257096FF00444C3D /* FTTrack.m */,
+				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
+				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
+				7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */,
+				7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */,
+				7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */,
+				7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */,
+				7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */,
 				4A852FD623A240B300B40B5D /* UIView+FTAutoTrack.h */,
 				4A852FD423A240B300B40B5D /* UIView+FTAutoTrack.m */,
-				4A852FD923A240B400B40B5D /* UIViewController+FTAutoTrack.h */,
-				4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */,
 				4A3E7DC5245AAD530004A499 /* BlacklistedVCClassNames.h */,
 				4A3E7DC6245AAD540004A499 /* BlacklistedVCClassNames.m */,
+				4A852FD923A240B400B40B5D /* UIViewController+FTAutoTrack.h */,
+				4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */,
+				7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */,
+				7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */,
+				7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */,
+				7CF4E09326A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m */,
+				7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */,
+				7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */,
+				7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */,
+				7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */,
 			);
 			path = AutoTrack;
 			sourceTree = "<group>";
@@ -470,10 +501,16 @@
 		7C2DD6B825FEF88100BFF757 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */,
+				4A1FFA2624AB072D00049D9E /* NSString+FTAdd.m */,
+				4A01160A24C966C200AECC1C /* NSDate+FTAdd.h */,
+				4A01160B24C966C200AECC1C /* NSDate+FTAdd.m */,
 				4A7135AF2579E82900444C3D /* FTfishhook.c */,
 				4A7135AE2579E82800444C3D /* FTfishhook.h */,
-				4A852FDA23A240B400B40B5D /* ZYAspects.h */,
-				4A852FD323A240B300B40B5D /* ZYAspects.m */,
+				7CF4E10426B121610076D238 /* FTSwizzle.h */,
+				7CF4E10526B121610076D238 /* FTSwizzle.m */,
+				7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */,
+				7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */,
 				4A4B0C1F253EAED900D903AB /* FTJSONUtil.h */,
 				4A4B0C20253EAED900D903AB /* FTJSONUtil.m */,
 				4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */,
@@ -511,15 +548,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7CF4E11126B1265E0076D238 /* WKWebView+FTAutoTrack.h in Headers */,
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				7C28B92126611B3800CECBA6 /* FTRUMDataModel.h in Headers */,
+				7CF4E11E26B145C90076D238 /* NSObject+FTAutoTrack.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
-				4A4D92622511E86B004B9FA0 /* WKWebView+FTTrace.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
+				7CF4E10626B121610076D238 /* FTSwizzle.h in Headers */,
 				4AECBCED244EE8450023DEF7 /* FTURLProtocol.h in Headers */,
+				7CF4E12426B15B800076D238 /* UIScrollView+FTAutoTrack.h in Headers */,
 				7C28B91F26611B3800CECBA6 /* FTRUMViewHandler.h in Headers */,
 				4A1DF2DD2445939100BEC337 /* FTMonitorManager.h in Headers */,
 				4AB783C923C5B802001FC994 /* FTLocationManager.h in Headers */,
@@ -529,6 +569,7 @@
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
 				4A37A94F24862A8000E0381B /* NSURLResponse+FTMonitor.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
+				7CF4E08226A7EB080076D238 /* UIApplication+FTAutoTrack.h in Headers */,
 				4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */,
 				7C28B8592660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h in Headers */,
 				7C28B8AD26609CB200CECBA6 /* FTTaskInterceptionModel.h in Headers */,
@@ -536,6 +577,7 @@
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
 				7C28B85E2660980000CECBA6 /* FTWKWebViewJavascriptBridge.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHander.h in Headers */,
+				7CF4E09426A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h in Headers */,
 				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
 				4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */,
 				4AE81C5B242DC60F004D8496 /* FTMobileAgentVersion.h in Headers */,
@@ -555,6 +597,7 @@
 				4A299F912521F7F800400931 /* FTANRDetector.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
+				7CF4DEDF26A674480076D238 /* FTWKWebViewDelegateProxy.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				7C28B91526611B3800CECBA6 /* FTRUMSessionHandler.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
@@ -563,6 +606,7 @@
 				7C28B85D2660980000CECBA6 /* FTWebViewJavascriptLeakAvoider.h in Headers */,
 				7C28B91826611B3800CECBA6 /* FTRUMSessionProtocol.h in Headers */,
 				7C28B91E26611B3800CECBA6 /* FTRUMResourceHandler.h in Headers */,
+				7CEE842C268F1E57003AD0A0 /* FTSwizzler.h in Headers */,
 				4A2EFD8C253ECDC100F93B1E /* FTJsonWriter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -613,7 +657,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1110;
-				ORGANIZATIONNAME = hll;
+				ORGANIZATIONNAME = "DataFlux-cn";
 				TargetAttributes = {
 					4A6C541D255E6464009771B8 = {
 						CreatedOnToolsVersion = 11.4;
@@ -674,7 +718,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7CF4E11F26B145C90076D238 /* NSObject+FTAutoTrack.m in Sources */,
 				4A31E75523CDA69C0077531B /* FTNetworkInfo.m in Sources */,
+				7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */,
+				7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */,
 				7C28B91D26611B3800CECBA6 /* FTRUMHandler.m in Sources */,
 				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
 				7C2DD8932601E90F00BFF757 /* FTNetworkTrace.m in Sources */,
@@ -682,8 +729,10 @@
 				7C28B91926611B3800CECBA6 /* FTRUMDataModel.m in Sources */,
 				4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
+				7CF4DEE026A674480076D238 /* FTWKWebViewDelegateProxy.m in Sources */,
 				4A7135A72574FE1F00444C3D /* UIView+FTAutoTrack.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
+				7CF4E09526A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
 				7C28B85C2660980000CECBA6 /* FTWebViewJavascriptBridgeBase.m in Sources */,
 				7C28B85B2660980000CECBA6 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				7C28B91A26611B3800CECBA6 /* FTRUMManger.m in Sources */,
@@ -693,6 +742,7 @@
 				4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */,
 				4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */,
 				4A7135A62570DA2300444C3D /* BlacklistedVCClassNames.m in Sources */,
+				7CF4E12526B15B800076D238 /* UIScrollView+FTAutoTrack.m in Sources */,
 				4A7135A4257096FF00444C3D /* FTTrack.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTMonitorManager.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
@@ -706,17 +756,17 @@
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				4A2EFD8D253ECDC100F93B1E /* FTJsonWriter.m in Sources */,
 				7C28B91626611B3800CECBA6 /* FTRUMViewHandler.m in Sources */,
+				7CF4E10726B121610076D238 /* FTSwizzle.m in Sources */,
 				4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */,
 				4A7C739825C0318D003936A0 /* FTPingThread.m in Sources */,
 				7C28B91B26611B3800CECBA6 /* FTRUMActionHandler.m in Sources */,
 				4A88429F239E5768001B44C3 /* ZY_FMDatabase.m in Sources */,
 				4A297BDB246BBF340028645B /* FTConstants.m in Sources */,
 				4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */,
+				7CF4E08326A7EB080076D238 /* UIApplication+FTAutoTrack.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				7CF5875025E3B5B200EE372E /* FTUncaughtExceptionHandler.m in Sources */,
-				4A4D92632511E86B004B9FA0 /* WKWebView+FTTrace.m in Sources */,
 				4A88429C239E5768001B44C3 /* FTTrackerEventDBTool.m in Sources */,
-				4A4F0DCA247E723D000A2A76 /* ZYAspects.m in Sources */,
 				4A7135A52570D73E00444C3D /* UIViewController+FTAutoTrack.m in Sources */,
 				7C28B91C26611B3800CECBA6 /* FTRUMSessionHandler.m in Sources */,
 				4A2D57F02458141300478547 /* FTMonitorUtils.m in Sources */,
@@ -901,8 +951,11 @@
 		4A884263239E5754001B44C3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RRLM22BB37;
 				DYLIB_COMPATIBILITY_VERSION = 8.0;
 				DYLIB_CURRENT_VERSION = 1.0.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -929,8 +982,11 @@
 		4A884264239E5754001B44C3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RRLM22BB37;
 				DYLIB_COMPATIBILITY_VERSION = 8.0;
 				DYLIB_CURRENT_VERSION = 1.0.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";

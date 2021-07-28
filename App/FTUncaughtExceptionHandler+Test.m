@@ -8,13 +8,12 @@
 
 #import "FTUncaughtExceptionHandler+Test.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     NSString *info = @"";

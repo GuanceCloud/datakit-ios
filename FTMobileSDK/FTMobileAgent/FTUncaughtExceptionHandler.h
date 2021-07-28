@@ -14,8 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,weak) id<FTRUMSessionErrorDelegate> errorDelegate;
 
 + (instancetype)sharedHandler;
-- (void)addftSDKInstance:(FTMobileAgent *)instance;
-- (void)removeftSDKInstance:(FTMobileAgent *)instance;
 
 @end
 

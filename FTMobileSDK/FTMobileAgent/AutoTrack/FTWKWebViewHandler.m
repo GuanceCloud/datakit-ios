@@ -9,14 +9,15 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTWKWebViewHandler.h"
-#import "ZYAspects.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTLog.h"
 #import "NSDate+FTAdd.h"
+#import "WKWebView+FTAutoTrack.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTMobileAgent+Private.h"
-#import "ZYAspects.h"
+#import "FTSwizzler.h"
+#import "FTSwizzle.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成
@@ -36,31 +37,36 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
+        [self setWKWebViewTrace];
         self.mutableRequestKeyedByWebviewHash = [NSMutableDictionary new];
         self.mutableLoadStateByWebviewHash = [NSMutableDictionary new];
         self.lock = [NSLock new];
-        self.trace = NO;
+        self.enableTrace = NO;
     }
     return self;
 }
 - (void)setWKWebViewTrace{
-    @try {
-        __weak typeof(self) weakSelf = self;
-        [WKWebView aspect_hookSelector:@selector(loadRequest:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo,NSURLRequest *reques) {
-            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
-            
-        } error:nil];
-        [WKWebView aspect_hookSelector:@selector(loadHTMLString:baseURL:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
-            
-        } error:nil];
-        [WKWebView aspect_hookSelector:@selector(loadFileURL:allowingReadAccessToURL:) withOptions:ZY_AspectPositionBefore usingBlock:^(id<ZY_AspectInfo> aspectInfo) {
-            [weakSelf addScriptMessageHandlerWithWebView:aspectInfo.instance];
-            
-        } error:nil];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"setWKWebViewTrace Error");
-    }
+    static dispatch_once_t onceTokenWebView;
+    dispatch_once(&onceTokenWebView, ^{
+        NSError *error = NULL;
+        
+        [WKWebView ft_swizzleMethod:@selector(loadRequest:)
+                         withMethod:@selector(dataflux_loadRequest:)
+                              error:&error];
+        [WKWebView ft_swizzleMethod:@selector(loadHTMLString:baseURL:)
+                         withMethod:@selector(dataflux_loadHTMLString:baseURL:)
+                              error:&error];
+        [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
+                         withMethod:@selector(dataflux_loadFileURL:allowingReadAccessToURL:)
+                              error:&error];
+        [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(dataflux_reload) error:&error];
+        [WKWebView ft_swizzleMethod:@selector(setNavigationDelegate:) withMethod:@selector(dataflux_setNavigationDelegate:) error:&error];
+        
+        SEL deallocMethod =  NSSelectorFromString(@"dealloc");
+        [WKWebView ft_swizzleMethod:deallocMethod
+                         withMethod:@selector(dataflux_dealloc)
+                              error:&error];
+    });
 }
 #pragma mark request
 - (void)addWebView:(WKWebView *)webView{
@@ -110,18 +116,18 @@ static dispatch_once_t onceToken;
     if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
         [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
         [self.mutableLoadStateByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-
+        
     }
     [self.lock unlock];
 }
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler{
     NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
     NSURLRequest *request;
-       [self.lock lock];
-       if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
+    [self.lock lock];
+    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
         request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-       }
-       [self.lock unlock];
+    }
+    [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
         [self addWebView:webView];
         completionHandler? completionHandler(request,YES):nil;

@@ -21,7 +21,6 @@
 #import "FTConstants.h"
 #import "FTURLProtocol.h"
 #import "FTMobileAgent+Private.h"
-#import "ZYAspects.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "NSString+FTAdd.h"
@@ -35,6 +34,8 @@
 #import "FTNetworkTrace.h"
 #import "FTTaskInterceptionModel.h"
 #import "FTWKWebViewJavascriptBridge.h"
+#import "FTTrack.h"
+#import "UIViewController+FTAutoTrack.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
@@ -43,30 +44,56 @@
 @property (nonatomic, strong) FTNetworkTrace *trace;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
-
+@property (nonatomic, strong) FTRumConfig *rumConfig;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
+@property (nonatomic, strong) FTTrack *track;
+@property (nonatomic, strong) FTRUMManger *rumManger;
+@property (nonatomic, assign) CFTimeInterval launch;
+@property (nonatomic, strong) NSDate *launchTime;
+@property (nonatomic, assign) BOOL running; //正在运行
 @end
 
-@implementation FTMonitorManager
+@implementation FTMonitorManager{
+    BOOL _appRelaunched;          // App 从后台恢复
+    //进入非活动状态，比如双击 home、系统授权弹框
+    BOOL _applicationWillResignActive;
+    BOOL _applicationLoadFirstViewController;
+    
+}
 static FTMonitorManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
-+ (instancetype)sharedInstance {
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[self alloc] init];
-    });
-    return sharedInstance;
-}
 -(instancetype)init{
     self = [super init];
     if (self) {
+        self.serialQueue= dispatch_queue_create([@"io.serialQueue.rum" UTF8String], DISPATCH_QUEUE_SERIAL);
+        _track = [[FTTrack alloc]init];
         [self startMonitorNetwork];
     }
+    return self;
+}
++ (instancetype)sharedInstance {
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+    });
+    return sharedInstance;
+}
++ (instancetype)allocWithZone:(struct _NSZone *)zone {
+    return [self sharedInstance];
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    return self;
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone {
     return self;
 }
 -(void)setMobileConfig:(FTMobileConfig *)config{
     _config = config;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
+    _rumConfig = rumConfig;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (rumConfig.enableTrackAppFreeze) {
             [self startPingThread];
@@ -80,14 +107,14 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    if (rumConfig.enableTrackAppANR == NO && rumConfig.enableTrackAppANR == NO) {
+    if (rumConfig.enableTrackAppANR == NO && rumConfig.enableTrackAppFreeze == NO) {
         self.sessionErrorDelegate = nil;
     }
 }
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     self.trace = [[FTNetworkTrace alloc]initWithType:traceConfig.networkTraceType];
     _traceConfig = traceConfig;
-    [FTWKWebViewHandler sharedInstance].trace = YES;
+    [FTWKWebViewHandler sharedInstance].enableTrace = YES;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -132,7 +159,6 @@ static dispatch_once_t onceToken;
     if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCreate:)]) {
         [self.sessionSourceDelegate ftResourceCreate:taskModel];
     }
-    
 }
 - (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
     @try {
@@ -289,10 +315,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if([name isEqualToString:@"serverVerify"]){
-            
-            
-        }else if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
+        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[@"measurement"];
             NSDictionary *tags = data[@"tags"];
@@ -345,12 +368,108 @@ static dispatch_once_t onceToken;
         }
     }
 }
+#pragma mark ========== AUTO TRACK ==========
+- (void)applicationLaunch{
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    // 应用生命周期通知
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillEnterForeground:)
+                               name:UIApplicationWillEnterForegroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActive:)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActive:)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackground:)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
+    [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
+}
+- (void)applicationWillEnterForeground:(NSNotification *)notification{
+    if (_appRelaunched){
+        self.launchTime = [NSDate date];
+    }
+}
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    @try {
+        if (_applicationWillResignActive) {
+            _applicationWillResignActive = NO;
+            return;
+        }
+        if (!_applicationLoadFirstViewController) {
+            return;
+        }
+        if (self.currentController && self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+            NSString *viewid = [NSUUID UUID].UUIDString;
+            self.currentController.ft_viewUUID = viewid;
+            [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
+        }
+        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+            [self.sessionSourceDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+        }
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
+- (void)applicationDidEnterBackground:(NSNotification *)notification{
+    if (!_applicationWillResignActive) {
+        return;
+    }
+    if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
+        [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
+    }
+    _applicationWillResignActive = NO;
+}
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    @try {
+        _applicationWillResignActive = YES;
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+    }
+}
+- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+    @try {
+        if(self.sessionSourceDelegate){
+            if (self.currentController &&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+                [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];
+            }
+            if ([self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
+                [self.sessionSourceDelegate ftApplicationWillTerminate];
+            }
+        }
+    }@catch (NSException *exception) {
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+    }
+}
+- (void)trackViewDidAppear:(UIViewController *)viewController{
+    self.currentController = viewController;
+    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]){
+        [self.sessionSourceDelegate ftViewDidAppear:viewController];
+    }
+}
+- (void)trackViewDidDisappear:(UIViewController *)viewController{
+    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]){
+        [self.sessionSourceDelegate ftViewDidDisappear:viewController];
+    }
+}
+- (void)trackClickWithView:(UIView *)view{
+    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftClickView:)]){
+        [self.sessionSourceDelegate ftClickView:view];
+    }
+}
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;
     onceToken = 0;
     sharedInstance =nil;
-    [FTWKWebViewHandler sharedInstance].trace = NO;
+    [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [[FTANRDetector sharedInstance] stopDetecting];
     [self stopMonitor];
 }

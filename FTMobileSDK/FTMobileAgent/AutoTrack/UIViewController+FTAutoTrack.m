@@ -13,6 +13,10 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHander.h"
 #import "NSString+FTAdd.h"
+#import "BlacklistedVCClassNames.h"
+#import "FTLog.h"
+#import "FTMonitorManager.h"
+#import "NSDate+FTAdd.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
@@ -75,5 +79,62 @@ static char *viewLoadDuration = "viewLoadDuration";
         viewController = (UIViewController *)viewController.parentViewController;
     }
    return viewPaths;
+}
+- (BOOL)isBlackListContainsViewController{
+    static NSSet * blacklistedClasses  = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        @try {
+            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
+            
+        } @catch(NSException *exception) {  // json加载和解析可能失败
+            ZYDebug(@"error: %@",exception);
+        }
+    });
+    
+    __block BOOL isContains = NO;
+    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString *blackClassName = (NSString *)obj;
+        Class blackClass = NSClassFromString(blackClassName);
+        if (blackClass && [self isKindOfClass:blackClass]) {
+            isContains = YES;
+            *stop = YES;
+        }
+    }];
+    return isContains;
+}
+
+- (void)dataflux_viewDidLoad{
+    self.ft_viewLoadStartTime =[NSDate date];
+    [self dataflux_viewDidLoad];
+}
+-(void)dataflux_viewDidAppear:(BOOL)animated{
+    [self dataflux_viewDidAppear:animated];
+    if(![self isBlackListContainsViewController]){
+        // 预防撤回侧滑
+        if ([FTMonitorManager sharedInstance].currentController != self) {
+            if(self.ft_viewLoadStartTime){
+                NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:self.ft_viewLoadStartTime];
+                self.ft_loadDuration = loadTime;
+                self.ft_viewLoadStartTime = nil;
+            }else{
+                NSNumber *loadTime = @0;
+                self.ft_loadDuration = loadTime;
+            }
+            self.ft_viewUUID = [NSUUID UUID].UUIDString;
+            [[FTMonitorManager sharedInstance] trackViewDidAppear:self];
+        }
+      
+    }
+}
+-(void)dataflux_viewDidDisappear:(BOOL)animated{
+    [self dataflux_viewDidDisappear:animated];
+    if([self isBlackListContainsViewController]){
+        return;
+    }
+    if ([FTMonitorManager sharedInstance].currentController == self) {
+        [[FTMonitorManager sharedInstance] trackViewDidDisappear:self];
+    }
 }
 @end

@@ -10,7 +10,7 @@
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/FTMonitorManager.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "FTUploadTool+Test.h"
 #import "DemoViewController.h"

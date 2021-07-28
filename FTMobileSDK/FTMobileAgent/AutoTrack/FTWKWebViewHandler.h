@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
-@property (nonatomic, assign) BOOL trace;
+@property (nonatomic, assign) BOOL enableTrace;
 @property (nonatomic, weak) id<FTWKWebViewTraceDelegate> traceDelegate;
 + (instancetype)sharedInstance;
 - (void)addWebView:(WKWebView *)webView;
