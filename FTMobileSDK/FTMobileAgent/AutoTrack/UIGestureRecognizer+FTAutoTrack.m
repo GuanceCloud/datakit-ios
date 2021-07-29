@@ -18,9 +18,11 @@
             return;
         }
         UIView *view = gesture.view;
-        
+        //todo:多种控件测试
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ;
-        
+        if(isTrackClass){
+            [[FTMonitorManager sharedInstance] trackClickWithView:view];
+        }
         
     }@catch (NSException *exception) {
         ZYErrorLog(@"%@ error: %@", self, exception);

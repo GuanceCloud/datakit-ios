@@ -41,7 +41,6 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
-@property (nonatomic, assign) BOOL running; //正在运行
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
@@ -86,7 +85,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             //基础类型的记录
             _config = [config copy];
             _net = @"unknown";
-            _running = NO;
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -117,7 +115,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppid:_rumConfig.appid];
         _rumManger = [[FTRUMManger alloc]initWithRumConfig:_rumConfig];
-        if (_rumConfig.enableTrackAppCrash) {
+        if (_rumConfig.enableTrackAppCrash||_rumConfig.enableTrackAppANR||_rumConfig.enableTrackAppFreeze) {
             [FTUncaughtExceptionHandler sharedHandler].errorDelegate = _rumManger;
         }
         [FTMonitorManager sharedInstance].sessionSourceDelegate = _rumManger;
@@ -352,10 +350,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     // 应用生命周期通知
     [notificationCenter addObserver:self
-                           selector:@selector(applicationWillEnterForeground:)
-                               name:UIApplicationWillEnterForegroundNotification
-                             object:nil];
-    [notificationCenter addObserver:self
                            selector:@selector(applicationDidBecomeActive:)
                                name:UIApplicationDidBecomeActiveNotification
                              object:nil];
@@ -380,12 +374,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     ZYDebug(@"联网状态: %@", [@"unreachable" isEqualToString:self.net]?@"未知":[@"wifi" isEqualToString:self.net]?@"WIFI":@"移动网络");
 }
 
-- (void)applicationWillEnterForeground:(NSNotification *)notification{
-    _running = NO;
-}
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     @try {
-        self.running = YES;
         [self uploadFlush];
     }
     @catch (NSException *exception) {

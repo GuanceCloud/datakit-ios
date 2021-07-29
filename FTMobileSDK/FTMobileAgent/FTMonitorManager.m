@@ -66,9 +66,11 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.serialQueue= dispatch_queue_create([@"io.serialQueue.rum" UTF8String], DISPATCH_QUEUE_SERIAL);
+        _running = NO;
+        _appRelaunched = NO;
         _track = [[FTTrack alloc]init];
         [self startMonitorNetwork];
+        [self applicationLaunch];
     }
     return self;
 }
@@ -401,6 +403,7 @@ static dispatch_once_t onceToken;
             _applicationWillResignActive = NO;
             return;
         }
+        _running = YES;
         if (!_applicationLoadFirstViewController) {
             return;
         }
@@ -421,6 +424,7 @@ static dispatch_once_t onceToken;
     if (!_applicationWillResignActive) {
         return;
     }
+    _running = NO;
     if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
         [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
     }
@@ -449,14 +453,37 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
+    //记录冷启动 是在第一个页面显示出来后
+    if (!_applicationLoadFirstViewController) {
+        _applicationLoadFirstViewController = YES;
+        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+            [self.sessionSourceDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+        }
+        _appRelaunched = YES;
+    }
+    //预防侧滑返回
+    if(self.currentController == viewController){
+        return;;
+    }
     self.currentController = viewController;
-    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]){
+    if(viewController.ft_viewLoadStartTime){
+        NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:viewController.ft_viewLoadStartTime];
+        viewController.ft_loadDuration = loadTime;
+        viewController.ft_viewLoadStartTime = nil;
+    }else{
+        NSNumber *loadTime = @0;
+        viewController.ft_loadDuration = loadTime;
+    }
+    viewController.ft_viewUUID = [NSUUID UUID].UUIDString;
+    if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
         [self.sessionSourceDelegate ftViewDidAppear:viewController];
     }
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
-    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]){
-        [self.sessionSourceDelegate ftViewDidDisappear:viewController];
+    if(self.currentController == viewController){
+        if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]){
+            [self.sessionSourceDelegate ftViewDidDisappear:viewController];
+        }
     }
 }
 - (void)trackClickWithView:(UIView *)view{
