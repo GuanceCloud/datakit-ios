@@ -11,7 +11,7 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTDataBase/fmdb/ZY_FMDatabase.h>
 #import <FTRecordModel.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 
 @interface FTDatabaseTest : XCTestCase
 

@@ -17,7 +17,7 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTMonitorManager.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import <FTJSONUtil.h>
 @interface FTWKWebViewTraceTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;

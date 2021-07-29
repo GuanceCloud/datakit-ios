@@ -12,7 +12,7 @@
 #import <FTMobileAgent/FTMonitorManager.h>
 #import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
-#import <FTMobileAgent/NSString+FTAdd.h>
+#import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
 #import <FTMobileAgent/FTMonitorUtils.h>

@@ -12,7 +12,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "FTUploadTool+Test.h"
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import <FTMobileAgent/FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>

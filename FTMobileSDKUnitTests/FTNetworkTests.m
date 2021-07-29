@@ -13,7 +13,7 @@
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import <FTJSONUtil.h>
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,

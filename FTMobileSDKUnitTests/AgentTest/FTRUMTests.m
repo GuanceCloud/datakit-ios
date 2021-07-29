@@ -14,7 +14,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "FTUploadTool+Test.h"
 #import "UITestVC.h"
-#import <FTMobileAgent/NSDate+FTAdd.h>
+#import <NSDate+FTAdd.h>
 #import "NSString+FTAdd.h"
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
