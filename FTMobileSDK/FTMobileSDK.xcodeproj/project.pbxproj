@@ -117,8 +117,6 @@
 		7C2DD8932601E90F00BFF757 /* FTNetworkTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C2DD8912601E90F00BFF757 /* FTNetworkTrace.m */; };
 		7CEE842C268F1E57003AD0A0 /* FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */; };
 		7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */; };
-		7CF4DEDF26A674480076D238 /* FTWKWebViewDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */; };
-		7CF4DEE026A674480076D238 /* FTWKWebViewDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */; };
 		7CF4E08226A7EB080076D238 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */; };
 		7CF4E08326A7EB080076D238 /* UIApplication+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */; };
 		7CF4E09426A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */; };
@@ -251,8 +249,6 @@
 		7C2DD8912601E90F00BFF757 /* FTNetworkTrace.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTrace.m; sourceTree = "<group>"; };
 		7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSwizzler.h; sourceTree = "<group>"; };
 		7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzler.m; sourceTree = "<group>"; };
-		7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWKWebViewDelegateProxy.h; sourceTree = "<group>"; };
-		7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewDelegateProxy.m; sourceTree = "<group>"; };
 		7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
 		7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+FTAutoTrack.m"; sourceTree = "<group>"; };
 		7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -475,8 +471,6 @@
 				4A7135A2257096FF00444C3D /* FTTrack.m */,
 				4A4D925C2511B8B1004B9FA0 /* FTWKWebViewHandler.h */,
 				4A4D925D2511B8B1004B9FA0 /* FTWKWebViewHandler.m */,
-				7CF4DEDD26A674470076D238 /* FTWKWebViewDelegateProxy.h */,
-				7CF4DEDE26A674480076D238 /* FTWKWebViewDelegateProxy.m */,
 				7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */,
 				7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */,
 				7C2DD69725F9C2F300BFF757 /* FTAutoTrackProperty.h */,
@@ -597,7 +591,6 @@
 				4A299F912521F7F800400931 /* FTANRDetector.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A884299239E5768001B44C3 /* FTUploadTool.h in Headers */,
-				7CF4DEDF26A674480076D238 /* FTWKWebViewDelegateProxy.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				7C28B91526611B3800CECBA6 /* FTRUMSessionHandler.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
@@ -729,7 +722,6 @@
 				7C28B91926611B3800CECBA6 /* FTRUMDataModel.m in Sources */,
 				4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
-				7CF4DEE026A674480076D238 /* FTWKWebViewDelegateProxy.m in Sources */,
 				4A7135A72574FE1F00444C3D /* UIView+FTAutoTrack.m in Sources */,
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				7CF4E09526A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
