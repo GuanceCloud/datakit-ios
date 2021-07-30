@@ -199,37 +199,4 @@ static dispatch_once_t onceToken;
 @end
 @implementation FTWKWebViewHandler (HookDelegate)
 
-// request
--(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-    if (self.enableTrace) {
-        [self addRequest:navigationAction.request webView:webView];
-    }
-    //允许跳转
-    decisionHandler(WKNavigationActionPolicyAllow);
-}
-//response
--(void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-    if (self.enableTrace) {
-        [self addResponse:navigationResponse.response webView:webView];
-    }
-    decisionHandler(WKNavigationResponsePolicyAllow);
-}
-//load error
--(void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
-    if (self.enableTrace) {
-        [self didRequestFailWithError:error webView:webView];
-    }
-}
-//webView:didCommitNavigation:
--(void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation{
-    if (self.enableTrace) {
-        [self loadingWebView:webView];
-    }
-}
-//navigation Finish
--(void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
-    if (self.enableTrace) {
-        [self didFinishWithWebview:webView];
-    }
-}
 @end

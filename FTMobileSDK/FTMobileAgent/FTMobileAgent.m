@@ -20,7 +20,6 @@
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
-#import "FTUncaughtExceptionHandler.h"
 #import "NSString+FTAdd.h"
 #import "NSDate+FTAdd.h"
 #import "FTJSONUtil.h"
@@ -46,7 +45,7 @@
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, copy) NSString *netTraceStr;
-
+@property (nonatomic, strong) NSLock *lock;
 @end
 @implementation FTMobileAgent
 
@@ -85,6 +84,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             //基础类型的记录
             _config = [config copy];
             _net = @"unknown";
+            _lock = [[NSLock alloc]init];
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
@@ -115,11 +115,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppid:_rumConfig.appid];
         _rumManger = [[FTRUMManger alloc]initWithRumConfig:_rumConfig];
-        if (_rumConfig.enableTrackAppCrash||_rumConfig.enableTrackAppANR||_rumConfig.enableTrackAppFreeze) {
-            [FTUncaughtExceptionHandler sharedHandler].errorDelegate = _rumManger;
-        }
-        [FTMonitorManager sharedInstance].sessionSourceDelegate = _rumManger;
-        [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig];
+        [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig delegate:_rumManger];
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -338,6 +334,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 网络与App的生命周期
 - (void)setUpListeners{
+    [self.lock lock];
     if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
         SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
         if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
@@ -347,6 +344,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         }
     }
+    [self.lock unlock];
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     // 应用生命周期通知
     [notificationCenter addObserver:self
@@ -409,13 +407,13 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-        if (_reachability) {
-            SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-            SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
-            _reachability = nil;
-        }
-    }];
+    [self.lock lock];
+    if (_reachability) {
+        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
+        SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
+        _reachability = nil;
+    }
+    [self.lock unlock];
     _presetProperty = nil;
     _config = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];

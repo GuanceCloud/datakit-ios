@@ -16,7 +16,10 @@
 - (void)ftViewDidDisappear:(UIViewController *)viewController;
 - (void)ftClickView:(UIView *)clickView;
 @end
-
+@protocol FTRUMSessionViewDelegate <NSObject>
+- (void)ftViewDidAppear:(UIViewController *)viewController;
+- (void)ftViewDidDisappear:(UIViewController *)viewController;
+@end
 @protocol FTRUMSessionResourceDelegate <NSObject>
 - (void)ftResourceCreate:(FTTaskInterceptionModel *)resourceModel;
 - (void)ftResourceCompleted:(FTTaskInterceptionModel *)resourceModel;

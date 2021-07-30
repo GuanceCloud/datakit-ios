@@ -11,7 +11,7 @@
 @class FTRumConfig;
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManger : FTRUMHandler<FTRUMSessionErrorDelegate,FTRUMSessionActionDelegate,FTRUMSessionResourceDelegate,FTRUMWebViewJSBridgeDataDelegate>
+@interface FTRUMManger : FTRUMHandler<FTRUMSessionErrorDelegate,FTRUMSessionActionDelegate,FTRUMSessionResourceDelegate,FTRUMWebViewJSBridgeDataDelegate,FTRUMSessionViewDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 -(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
 -(NSDictionary *)getCurrentSessionInfo;

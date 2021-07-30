@@ -27,7 +27,6 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
 
 
 @interface FTMobileAgent (Private)
-@property (nonatomic, assign,readonly) BOOL running; //正在运行
 @property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;

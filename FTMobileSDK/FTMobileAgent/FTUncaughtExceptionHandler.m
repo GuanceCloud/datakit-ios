@@ -13,8 +13,7 @@
 #import "NSDate+FTAdd.h"
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
-#import <FTMobileAgent.h>
-#import "FTMobileAgent+Private.h"
+#import "FTMonitorManager.h"
 #import "FTBaseInfoHander.h"
 #import <mach-o/ldsyms.h>
 #import "FTConstants.h"
@@ -275,11 +274,12 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         NSDictionary *field = @{ @"error_message":[exception reason],
                                  @"error_stack":info,
         };
-        //todo:crash_situation
+        
+        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
         NSDictionary *tags = @{
             @"error_type":[exception name],
             @"error_source":@"logger",
-//            @"crash_situation":run
+            @"crash_situation":run
         };
         [self.errorDelegate ftErrorWithtags:tags field:field];
     }

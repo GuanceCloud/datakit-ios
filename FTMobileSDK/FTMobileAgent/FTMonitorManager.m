@@ -36,6 +36,7 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
+#import "FTUncaughtExceptionHandler.h"
 #define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
@@ -51,7 +52,6 @@
 @property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
-@property (nonatomic, assign) BOOL running; //正在运行
 @end
 
 @implementation FTMonitorManager{
@@ -68,6 +68,7 @@ static dispatch_once_t onceToken;
     if (self) {
         _running = NO;
         _appRelaunched = NO;
+        _launchTime = [NSDate date];
         _track = [[FTTrack alloc]init];
         [self startMonitorNetwork];
         [self applicationLaunch];
@@ -94,8 +95,19 @@ static dispatch_once_t onceToken;
 -(void)setMobileConfig:(FTMobileConfig *)config{
     _config = config;
 }
--(void)setRumConfig:(FTRumConfig *)rumConfig{
+-(void)setRumConfig:(FTRumConfig *)rumConfig delegate:(FTRUMManger *)delegate{
     _rumConfig = rumConfig;
+    if (rumConfig.enableTraceUserAction) {
+        self.sessionActionDelegate = delegate;
+    }
+    if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
+        self.sessionErrorDelegate = delegate;
+    }
+    if(rumConfig.enableTrackAppCrash){
+        [[FTUncaughtExceptionHandler sharedHandler] setErrorDelegate:delegate];
+    }
+    //采集view、resource、jsBridge
+    self.sessionSourceDelegate = delegate;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (rumConfig.enableTrackAppFreeze) {
             [self startPingThread];
@@ -109,9 +121,7 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    if (rumConfig.enableTrackAppANR == NO && rumConfig.enableTrackAppFreeze == NO) {
-        self.sessionErrorDelegate = nil;
-    }
+    
 }
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     self.trace = [[FTNetworkTrace alloc]initWithType:traceConfig.networkTraceType];
@@ -412,8 +422,8 @@ static dispatch_once_t onceToken;
             self.currentController.ft_viewUUID = viewid;
             [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
         }
-        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionSourceDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+        if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
         }
     }
     @catch (NSException *exception) {
@@ -440,27 +450,18 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationWillTerminateNotification:(NSNotification *)notification{
     @try {
-        if(self.sessionSourceDelegate){
-            if (self.currentController &&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
-                [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];
-            }
-            if ([self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
-                [self.sessionSourceDelegate ftApplicationWillTerminate];
-            }
+        if (self.currentController&&self.sessionSourceDelegate &&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+            [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];
         }
+        if (self.sessionActionDelegate &&[self.sessionActionDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
+            [self.sessionActionDelegate ftApplicationWillTerminate];
+        }
+        
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
-    //记录冷启动 是在第一个页面显示出来后
-    if (!_applicationLoadFirstViewController) {
-        _applicationLoadFirstViewController = YES;
-        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionSourceDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
-        }
-        _appRelaunched = YES;
-    }
     //预防侧滑返回
     if(self.currentController == viewController){
         return;;
@@ -478,6 +479,14 @@ static dispatch_once_t onceToken;
     if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
         [self.sessionSourceDelegate ftViewDidAppear:viewController];
     }
+    //记录冷启动 是在第一个页面显示出来后
+    if (!_applicationLoadFirstViewController) {
+        _applicationLoadFirstViewController = YES;
+        if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+        }
+        _appRelaunched = YES;
+    }
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){
@@ -487,8 +496,8 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackClickWithView:(UIView *)view{
-    if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftClickView:)]){
-        [self.sessionSourceDelegate ftClickView:view];
+    if(self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftClickView:)]){
+        [self.sessionActionDelegate ftClickView:view];
     }
 }
 #pragma mark ========== 注销 ==========

@@ -9,7 +9,7 @@
 #import "FTUncaughtExceptionHandler+Test.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <NSDate+FTAdd.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
+#import <FTMonitorManager.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
@@ -17,24 +17,22 @@
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     NSString *info = @"";
-    for (FTMobileAgent *instance in self.ftSDKInstances) {
-        if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-            long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-            info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-            //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
-            NSDictionary *field = @{ @"error_message":[exception reason],
-                                     @"error_stack":info,
-            };
-            NSString *run = instance.running?@"run":@"startup";
-            NSDictionary *tags = @{
-                @"error_type":[exception name],
-                @"error_source":@"logger",
-                @"crash_situation":run
-            };
-            [self.errorDelegate ftErrorWithtags:tags field:field];
-        }
-        
+    if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
+        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+        info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
+        //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
+        NSDictionary *field = @{ @"error_message":[exception reason],
+                                 @"error_stack":info,
+        };
+        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
+        NSDictionary *tags = @{
+            @"error_type":[exception name],
+            @"error_source":@"logger",
+            @"crash_situation":run
+        };
+        [self.errorDelegate ftErrorWithtags:tags field:field];
     }
+    
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);
     signal(SIGFPE,SIG_DFL);
