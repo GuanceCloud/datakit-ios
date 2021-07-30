@@ -21,6 +21,7 @@
 #import <FTRUMManger.h>
 #import <FTRUMSessionHandler.h>
 #import "FTUploadTool+Test.h"
+#import <FTMonitorManager.h>
 @interface FTRUMTests : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -87,8 +88,8 @@
     [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
+    [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
@@ -98,7 +99,7 @@
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"lastInteractionTime"];
    
-    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
     [self.testVC viewDidDisappear:NO];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -123,8 +124,8 @@
     [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
+    [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
@@ -134,7 +135,7 @@
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"sessionStartTime"];
    
-    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
     [self.testVC viewDidDisappear:NO];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -251,9 +252,8 @@
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
+    [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -284,7 +284,7 @@
     [self.testVC viewDidDisappear:NO];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
     [NSThread sleepForTimeInterval:10];
     [self addLongTaskData];
     [NSThread sleepForTimeInterval:2];
@@ -386,8 +386,8 @@
     [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
+    [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -414,7 +414,7 @@
     [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self mockBtnClick];
     [self addLongTaskData];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     __block NSInteger resErrorCount = 0;
@@ -463,7 +463,6 @@
     [self setRumConfig];
     [self.testVC view];
     [self.testVC viewDidAppear:NO];
-    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     __block NSInteger resErrorCount = 0;
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
@@ -612,6 +611,9 @@
     IMP imp = [[FTMobileAgent sharedInstance].rumManger methodForSelector:startMethod];
     void (*func)(id, SEL,id,id) = (void (*)(id,SEL,id,id))imp;
     func([FTMobileAgent sharedInstance].rumManger,startMethod,@{},field);
+}
+- (void)mockBtnClick{
+    [[FTMonitorManager sharedInstance] trackClickWithView:self.testVC.firstButton];
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
