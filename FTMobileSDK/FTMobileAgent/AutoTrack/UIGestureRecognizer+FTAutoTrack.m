@@ -8,6 +8,7 @@
 
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "FTLog.h"
+#import "UIView+FTAutoTrack.h"
 #import "FTMonitorManager.h"
 @implementation UIGestureRecognizer (FTAutoTrack)
 
@@ -18,8 +19,14 @@
             return;
         }
         UIView *view = gesture.view;
-        //todo:多种控件测试
-        BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ;
+        if(view.isAlertView){
+            UIView *touchView = [self searchGestureTouchView:gesture];
+            if (touchView) {
+                view = touchView;
+            }
+        }
+        BOOL isAlterType = [view isAlertClick];
+        BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
             [[FTMonitorManager sharedInstance] trackClickWithView:view];
         }
@@ -28,6 +35,28 @@
         ZYErrorLog(@"%@ error: %@", self, exception);
     }
 }
+// 查找弹框手势选择所在的 view
+- (UIView *)searchGestureTouchView:(UIGestureRecognizer *)gesture {
+    UIView *gestureView = gesture.view;
+    CGPoint point = [gesture locationInView:gestureView];
+
+    UIView *view = [gestureView.subviews lastObject];
+    UIView *sequeceView = [view.subviews lastObject];
+    UIView *reparatableVequeceView = [sequeceView.subviews firstObject];
+    UIView *stackView = [reparatableVequeceView.subviews firstObject];
+    if ([NSStringFromClass(gestureView.class) isEqualToString:@"_UIAlertControllerView"]) {
+        // iOS9 上，为 UICollectionView
+        stackView = [reparatableVequeceView.subviews lastObject];
+    }
+    for (UIView *subView in stackView.subviews) {
+        CGRect rect = [subView convertRect:subView.bounds toView:gestureView];
+        if (CGRectContainsPoint(rect, point)) {
+            return subView;
+        }
+    }
+    return nil;
+}
+
 @end
 
 

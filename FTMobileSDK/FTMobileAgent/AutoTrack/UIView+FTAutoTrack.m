@@ -57,6 +57,40 @@
     vc?[str insertString:[NSString stringWithFormat:@"%@/",NSStringFromClass(vc.class)] atIndex:0]:nil;
     return str;
 }
+- (BOOL)isAlertView {
+    UIResponder *responder = self;
+    do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        BOOL isUIAlertView = [responder isKindOfClass:UIAlertView.class];
+        BOOL isUIActionSheet = [responder isKindOfClass:UIActionSheet.class];
+#pragma clang diagnostic pop
 
+        BOOL isUIAlertController = [responder isKindOfClass:UIAlertController.class];
+
+    
+        if (isUIAlertController || isUIAlertView || isUIActionSheet) {
+            return YES;
+        }
+    } while ((responder = [responder nextResponder]));
+    return NO;
+}
+/// 是否为弹框点击
+- (BOOL)isAlertClick {
+    if ([NSStringFromClass(self.class) isEqualToString:@"_UIInterfaceActionCustomViewRepresentationView"] || [NSStringFromClass(self.class) isEqualToString:@"_UIAlertControllerCollectionViewCell"]) { // 标记弹框
+        return YES;
+    }
+    return NO;
+}
+- (UIViewController*)datafluxHelper_viewController {
+    UIResponder *curNode = self.nextResponder;
+    while (curNode) {
+        if ([curNode isKindOfClass:[UIViewController class]]) {
+            return (id)curNode;
+        }
+        curNode = [curNode nextResponder];
+    }
+    return nil;
+}
 
 @end

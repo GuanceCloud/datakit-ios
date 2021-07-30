@@ -19,5 +19,7 @@
 
 @property (nonatomic, readonly) UIViewController *ft_currentViewController;
 @property (nonatomic, copy, readonly) NSString *ft_parentsView;
+@property (nonatomic, assign) BOOL isAlertView;
+@property (nonatomic, assign) BOOL isAlertClick;
 @end
 

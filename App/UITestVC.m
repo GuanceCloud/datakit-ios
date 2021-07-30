@@ -112,7 +112,16 @@
 }
 
 - (void)firstAction:(UIButton *)sender {
-    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"测试" message:@"测试alert按钮点击" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"点击OK");
+    }];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"CANCEL" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"点击CANCEL");
+    }];
+    [alert addAction:action];
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
     
 }
 
