@@ -7,36 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
-typedef NS_OPTIONS(NSUInteger, FTSwizzleOptions) {
-    FTSwizzlePositionAfter   = 0,
-    FTSwizzlePositionBefore = 1,
-};
-#define FTSwizzleClassMethod(classToSwizzle, \
-                             selector, \
-                             RSSWReturnType, \
-                             RSSWArguments, \
-                             RSSWReplacement) \
-    _RSSwizzleClassMethod(classToSwizzle, \
-                          selector, \
-                          RSSWReturnType, \
-                          _RSSWWrapArg(RSSWArguments), \
-                          _RSSWWrapArg(RSSWReplacement))
-typedef void (*FTSwizzleOriginalIMP)(void /* id, SEL, ... */ );
 
-@interface FTSwizzleInfo : NSObject
+#define MAPTABLE_ID(x) (__bridge id)((void *)x)
 
--(FTSwizzleOriginalIMP)getOriginalImplementation;
-
-@property (nonatomic, readonly) SEL selector;
-
-@end
-
-typedef id (^FTSwizzleImpFactoryBlock)(FTSwizzleInfo *swizzleInfo);
+// Ignore the warning cause we need the paramters to be dynamic and it's only being used internally
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
+typedef void (^datafluxSwizzleBlock)();
+#pragma clang diagnostic pop
 
 @interface FTSwizzler : NSObject
-+(void)swizzleInstanceMethod:(SEL)selector
-                     inClass:(Class)classToSwizzle
-newImpFactory:(FTSwizzleImpFactoryBlock)factoryBlock;
+
++ (void)swizzleSelector:(SEL)aSelector onClass:(Class)aClass withBlock:(datafluxSwizzleBlock)block named:(NSString *)aName;
++ (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass named:(NSString *)aName;
++ (void)printSwizzles;
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel;
 + (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy;
 @end

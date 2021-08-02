@@ -20,14 +20,18 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
     
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        [FTSwizzler swizzleInstanceMethod:selector inClass:class newImpFactory:^id(FTSwizzleInfo *swizzleInfo) {
-            void (*originalImplementation_)(__unsafe_unretained id,SEL,id,id);
-            SEL selector_ = swizzleInfo.selector;
-            return ^void(__unsafe_unretained id instance,id tableView,id indexPath){
-                [[FTMonitorManager sharedInstance] trackClickWithView:tableView];
-                ((__typeof(originalImplementation_))[swizzleInfo getOriginalImplementation])(instance, selector_,tableView,indexPath);
-            };
-        }];
+        void (^didSelectRowBlock)(id, SEL, id, id) = ^(id view, SEL command, UITableView *tableView, NSIndexPath *indexPath) {
+            
+            if (tableView && indexPath) {
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                [[FTMonitorManager sharedInstance] trackClickWithView:cell];
+            }
+        };
+        
+        [FTSwizzler swizzleSelector:selector
+                            onClass:class
+                          withBlock:didSelectRowBlock
+                              named:@"tableView_didSelect"];
     }
     
 }
@@ -47,14 +51,18 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
     
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        [FTSwizzler swizzleInstanceMethod:selector inClass:class newImpFactory:^id(FTSwizzleInfo *swizzleInfo) {
-            void (*originalImplementation_)(__unsafe_unretained id,SEL,id,id);
-            SEL selector_ = swizzleInfo.selector;
-            return ^void(__unsafe_unretained id instance,id collectionView,id indexPath){
-                [[FTMonitorManager sharedInstance] trackClickWithView:collectionView];
-                ((__typeof(originalImplementation_))[swizzleInfo getOriginalImplementation])(instance, selector_,collectionView,indexPath);
-            };
-        }];
+        void (^didSelectItemBlock)(id, SEL, id, id) = ^(id view, SEL command, UICollectionView *collectionView, NSIndexPath *indexPath) {
+            
+            if (collectionView && indexPath) {
+                UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+                [[FTMonitorManager sharedInstance] trackClickWithView:cell];
+            }
+        };
+        
+        [FTSwizzler swizzleSelector:selector
+                            onClass:class
+                          withBlock:didSelectItemBlock
+                              named:@"collectionView_didSelect"];
     }
     
 }
