@@ -1,3 +1,7 @@
+# 1.2.1-alpha.1
+1.swizzle 方法修改
+---
+
 # 1.2.0-alpha.5
 1.Config 配置修改
 2.Logger 与 Trace 数据支持绑定 RUM
