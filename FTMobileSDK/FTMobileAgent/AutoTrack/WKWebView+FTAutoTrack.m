@@ -12,31 +12,20 @@
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
 #import "NSObject+FTAutoTrack.h"
-static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClass, SEL replacedSel, SEL noneSel){
-    // 原实例方法
-    Method originalMethod = class_getInstanceMethod(originalClass, originalSel);
-    // 替换的实例方法
-    Method replacedMethod = class_getInstanceMethod(replacedClass, replacedSel);
-    
-    
-    // 如果没有实现 delegate 方法，则手动动态添加
-    if (!originalMethod) {
-        Method noneMethod = class_getInstanceMethod(replacedClass, noneSel);
-        class_addMethod(originalClass, originalSel, method_getImplementation(noneMethod), method_getTypeEncoding(noneMethod));
-    }
-    originalMethod = class_getInstanceMethod(originalClass, originalSel);
-    // 向实现 delegate 的类中添加新的方法
-    // 这里是向 originalClass 的 replaceSel（@selector(owner_webViewDidStartLoad:)） 添加 replaceMethod
-    BOOL didAddMethod = class_addMethod(originalClass, replacedSel, method_getImplementation(replacedMethod), method_getTypeEncoding(replacedMethod));
-    if (didAddMethod) {
-        // 添加成功
-        // 重新拿到添加被添加的 method,这里是关键(注意这里 originalClass, 不 replacedClass), 因为替换的方法已经添加到原类中了, 应该交换原类中的两个方法
-        Method newMethod = class_getInstanceMethod(originalClass, replacedSel);
-        // 实现交换
-        method_exchangeImplementations(originalMethod, newMethod);
+static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromClass, Class toClass) {
+    NSCParameterAssert(fromClass);
+    NSCParameterAssert(toClass);
+    Method originalMethod = class_getInstanceMethod(toClass, selector);
+    if(!originalMethod){
+    Method method = class_getInstanceMethod(fromClass, addSelector);
+    // 返回该方法的实现
+    IMP methodIMP = method_getImplementation(method);
+    // 获取该方法的返回类型
+    const char *types = method_getTypeEncoding(method);
+    // 在 toClass 中，添加方法
+        class_addMethod(toClass, selector, methodIMP, types);
     }
 }
-
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
@@ -80,16 +69,71 @@ static void Hook_Method(Class originalClass, SEL originalSel, Class replacedClas
 -(void)dataflux_setNavigationDelegate:(id<WKNavigationDelegate>)navigationDelegate{
     if (navigationDelegate != nil) {
        Class realClass = [FTSwizzler realDelegateClassFromSelector:@selector(webView:decidePolicyForNavigationAction:decisionHandler:) proxy:navigationDelegate];
-        // request
-       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationAction:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationAction:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:));
-       //response
-       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationResponse:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationResponse:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:));
-       //load error
-       Hook_Method(realClass, @selector(webView:didFailProvisionalNavigation:withError:), [self class], @selector(dataflux_webView:didFailProvisionalNavigation:withError:), @selector(dataflux_none_webView:didFailProvisionalNavigation:withError:));
-       //webView:didCommitNavigation:
-       Hook_Method(realClass, @selector(webView:didCommitNavigation:), [self class], @selector(dataflux_webView:didCommitNavigation:), @selector(dataflux_none_webView:didCommitNavigation:));
-       //navigation Finish
-       Hook_Method(realClass, @selector(webView:didFinishNavigation:), [self class], @selector(dataflux_webView:didFinishNavigation:), @selector(dataflux_none_webView:didFinishNavigation:));
+        SEL requestM = @selector(webView:decidePolicyForNavigationAction:decisionHandler:);
+        SEL responseM = @selector(webView:decidePolicyForNavigationResponse:decisionHandler:);
+        SEL loadErrorM = @selector(webView:didFailProvisionalNavigation:withError:);
+        SEL webViewCommitM = @selector(webView:didCommitNavigation:);
+        SEL navigationFinishM = @selector(webView:didFinishNavigation:);
+        
+        if(!realClass.dataFlux_className){
+            realClass.dataFlux_className = NSStringFromClass(realClass);
+            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:requestM]){
+                dataflux_addInstanceMethod(requestM,@selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:), WKWebView.class, realClass);
+            }
+            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:responseM]){
+                dataflux_addInstanceMethod(responseM,@selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:), WKWebView.class, realClass);
+            }
+            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:loadErrorM]){
+                dataflux_addInstanceMethod(loadErrorM,@selector(dataflux_none_webView:didFailProvisionalNavigation:withError:), WKWebView.class, realClass);
+            }
+            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:webViewCommitM]){
+                dataflux_addInstanceMethod(webViewCommitM,@selector(dataflux_none_webView:didCommitNavigation:), WKWebView.class, realClass);
+            }
+            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:navigationFinishM]){
+                dataflux_addInstanceMethod(navigationFinishM,@selector(dataflux_none_webView:didFinishNavigation:), WKWebView.class, realClass);
+            }
+            [FTSwizzler swizzleSelector:requestM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationAction *navigationAction,id decisionHandler) {
+                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+                    [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
+                }
+                
+            
+            } named:@"dataflux_wkwebview_request"];
+
+            [FTSwizzler swizzleSelector:responseM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationResponse *navigationResponse,id decisionHandler) {
+                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+                    [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
+                }
+            
+            } named:@"dataflux_wkwebview_response"];
+            [FTSwizzler swizzleSelector:loadErrorM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation,NSError *error) {
+                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+                    [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
+                }
+            
+            } named:@"dataflux_wkwebview_loadError"];
+            [FTSwizzler swizzleSelector:webViewCommitM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation) {
+                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+                    [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
+                }
+            
+            } named:@"dataflux_wkwebview_webViewCommit"];
+            [FTSwizzler swizzleSelector:navigationFinishM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation) {
+                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+                    [[FTWKWebViewHandler sharedInstance] didFinishWithWebview:webView];
+                }
+            } named:@"dataflux_wkwebview_navigationFinish"];
+        }
+//        // request
+//       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationAction:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationAction:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:));
+//       //response
+//       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationResponse:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationResponse:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:));
+//       //load error
+//       Hook_Method(realClass, @selector(webView:didFailProvisionalNavigation:withError:), [self class], @selector(dataflux_webView:didFailProvisionalNavigation:withError:), @selector(dataflux_none_webView:didFailProvisionalNavigation:withError:));
+//       //webView:didCommitNavigation:
+//       Hook_Method(realClass, @selector(webView:didCommitNavigation:), [self class], @selector(dataflux_webView:didCommitNavigation:), @selector(dataflux_none_webView:didCommitNavigation:));
+//       //navigation Finish
+//       Hook_Method(realClass, @selector(webView:didFinishNavigation:), [self class], @selector(dataflux_webView:didFinishNavigation:), @selector(dataflux_none_webView:didFinishNavigation:));
        }
     [self dataflux_setNavigationDelegate:navigationDelegate];
 }
