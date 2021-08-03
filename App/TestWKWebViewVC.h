@@ -7,12 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <WebKit/WebKit.h>
+#import "TestWKParentVC.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TestWKWebViewVC : UIViewController
-@property (nonatomic, strong) WKWebView *webView;
+@interface TestWKWebViewVC : TestWKParentVC
 - (void)ft_load:(NSString *)urlStr;
 - (void)ft_loadOther:(NSString *)urlStr;
 - (void)ft_reload;
