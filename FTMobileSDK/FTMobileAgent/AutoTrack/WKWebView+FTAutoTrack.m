@@ -124,16 +124,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
                 }
             } named:@"dataflux_wkwebview_navigationFinish"];
         }
-//        // request
-//       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationAction:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationAction:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:));
-//       //response
-//       Hook_Method(realClass, @selector(webView:decidePolicyForNavigationResponse:decisionHandler:), [self class], @selector(dataflux_webView:decidePolicyForNavigationResponse:decisionHandler:), @selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:));
-//       //load error
-//       Hook_Method(realClass, @selector(webView:didFailProvisionalNavigation:withError:), [self class], @selector(dataflux_webView:didFailProvisionalNavigation:withError:), @selector(dataflux_none_webView:didFailProvisionalNavigation:withError:));
-//       //webView:didCommitNavigation:
-//       Hook_Method(realClass, @selector(webView:didCommitNavigation:), [self class], @selector(dataflux_webView:didCommitNavigation:), @selector(dataflux_none_webView:didCommitNavigation:));
-//       //navigation Finish
-//       Hook_Method(realClass, @selector(webView:didFinishNavigation:), [self class], @selector(dataflux_webView:didFinishNavigation:), @selector(dataflux_none_webView:didFinishNavigation:));
        }
     [self dataflux_setNavigationDelegate:navigationDelegate];
 }
