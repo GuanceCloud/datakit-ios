@@ -21,7 +21,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
 #import "NSString+FTAdd.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
 #import "FTMonitorUtils.h"
@@ -187,7 +187,9 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        [self loggingWithType:FTAddDataNormal status:status content:content tags:nil field:nil tm:[[NSDate date]ft_dateTimestamp]];
+        dispatch_async(self.concurrentLabel, ^{
+            [self loggingWithType:FTAddDataNormal status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
+        });
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -208,7 +210,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark ========== private method ==========
 //RUM  ES
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[[NSDate date] ft_dateTimestamp]];
+    [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     if (![self judgeRUMTraceOpen]) {
@@ -295,24 +297,19 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     switch (type) {
         case FTAddDataNormal:{
-            dispatch_async(self.concurrentLabel, ^{
-                [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-            });
+            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
         }
             break;
         case FTAddDataCache:{
-            dispatch_async(self.concurrentLabel, ^{
-                [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
-            });
+            [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
         }
             break;
         case FTAddDataImmediate:{
             [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
             [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-
         }
             break;
-     
+            
     }
     //上传逻辑 数据库写入 距第一次写入间隔10秒以上 启动上传
     if (self.lastAddDBDate) {
