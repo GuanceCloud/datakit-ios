@@ -7,7 +7,7 @@
 //
 
 #import "FTNetworkTrace.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
@@ -57,7 +57,7 @@
     [self.lock lock];
     NSInteger v2 =  _skywalkingv2 ++;
     [self.lock unlock];
-    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[[NSDate date] ft_msDateTimestamp]];
+    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
     urlStr = [urlStr ft_base64Encode];
     NSUInteger seq = [self getSkywalkingSeq];
@@ -67,7 +67,7 @@
     return [NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",[NSNumber numberWithBool:sampled],traceId,parentTraceId,[NSNumber numberWithInteger:v2],[NSNumber numberWithInteger:v2],urlStr,endPoint,endPoint];
 }
 - (NSString *)getSkyWalking_V3Str:(BOOL)sampled url:(NSURL *)url{
-    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[[NSDate date] ft_msDateTimestamp]];
+    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.traceId,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
     NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.parentInstance,[FTMonitorUtils cellularIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";

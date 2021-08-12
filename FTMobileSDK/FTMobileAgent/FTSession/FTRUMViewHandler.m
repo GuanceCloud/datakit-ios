@@ -11,7 +11,7 @@
 #import "FTRUMResourceHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTBaseInfoHander.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
@@ -181,7 +181,7 @@
     if (!self.model.baseViewData) {
         return;
     }
-    NSNumber *timeSpend = [[NSDate date] ft_nanotimeIntervalSinceDate:self.viewStartTime];
+    NSNumber *timeSpend = [FTDateUtil nanotimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.model getGlobalSessionViewTags]];
     [sessionViewTag setValue:[FTBaseInfoHander boolStr:self.isActiveView] forKey:@"is_active"];
     NSMutableDictionary *field = @{@"view_error_count":@(self.viewErrorCount),

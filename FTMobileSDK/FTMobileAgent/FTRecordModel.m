@@ -10,14 +10,14 @@
 #endif
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTLog.h"
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _tm = [[NSDate date] ft_dateTimestamp];
+        _tm = [FTDateUtil currentTimeNanosecond];
         _sessionid = [FTBaseInfoHander sessionId];
         _op = @"";
     }

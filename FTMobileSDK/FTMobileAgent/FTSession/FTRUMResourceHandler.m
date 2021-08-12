@@ -11,7 +11,7 @@
 #import "FTRUMDataModel.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTBaseInfoHander.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
@@ -64,7 +64,8 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields tm:[self.model.time ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeMillisecond:self.model.time]];
+    
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)data{
@@ -74,6 +75,6 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields tm:[self.model.time ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeMillisecond:self.model.time]];
 }
 @end

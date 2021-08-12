@@ -12,7 +12,7 @@
 #import "FTTaskInterceptionModel.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "NSURLRequest+FTMonitor.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTLog.h"
 #import "FTJSONUtil.h"
 #import "FTMobileConfig.h"
@@ -189,13 +189,15 @@
             if (group) {
                 tags[@"resource_status_group"] = group;
             }
-            NSNumber *dnsTime = [taskMes.domainLookupEndDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
-            NSNumber *tcpTime = [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.connectStartDate];
-            NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [taskMes.connectEndDate ft_nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate]:@0;
-            NSNumber *ttfbTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-            NSNumber *transTime =[taskMes.responseEndDate ft_nanotimeIntervalSinceDate:taskMes.requestStartDate];
-            NSNumber *durationTime = [taskMes.requestEndDate ft_nanotimeIntervalSinceDate:taskMes.fetchStartDate];
-            NSNumber *resourceFirstByteTime = [taskMes.responseStartDate ft_nanotimeIntervalSinceDate:taskMes.domainLookupStartDate];
+    
+            NSNumber *dnsTime = [FTDateUtil nanotimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
+            NSNumber *tcpTime = [FTDateUtil nanotimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
+            
+            NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [FTDateUtil nanotimeIntervalSinceDate:taskMes.secureConnectionStartDate toDate:taskMes.connectEndDate]:@0;
+            NSNumber *ttfbTime = [FTDateUtil nanotimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseStartDate];
+            NSNumber *transTime =[FTDateUtil nanotimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
+            NSNumber *durationTime = [FTDateUtil nanotimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
+            NSNumber *resourceFirstByteTime = [FTDateUtil nanotimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
             fields[@"resource_first_byte"] = resourceFirstByteTime;
             fields[@"resource_size"] =[NSNumber numberWithLongLong:task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]];
             fields[@"duration"] =durationTime;

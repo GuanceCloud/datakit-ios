@@ -7,7 +7,7 @@
 //
 
 #import "FTRUMActionHandler.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTRUMViewHandler.h"
@@ -89,7 +89,8 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         FTRUMLaunchDataModel *model = (FTRUMLaunchDataModel *)self.model;
         self.duration =model.duration;
     }else{
-    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[endDate ft_nanotimeIntervalSinceDate:self.actionStartTime];
+    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanotimeIntervalSinceDate:self.actionStartTime toDate:endDate];
+        
     }
     NSDictionary *sessionViewTag = [self.model getGlobalSessionViewTags];
 
@@ -101,7 +102,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields tm:[self.actionStartTime ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields tm:[FTDateUtil dateTimeMillisecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }

@@ -24,7 +24,7 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "NSString+FTAdd.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
 #import "FTANRDetector.h"
 #import "FTJSONUtil.h"
@@ -133,7 +133,7 @@ static dispatch_once_t onceToken;
         _pingThread = [[FTPingThread alloc]init];
         WeakSelf
         _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
-            [weakSelf trackAppFreeze:stackStr duration:[endDate ft_nanotimeIntervalSinceDate:startDate]];
+            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanotimeIntervalSinceDate:startDate toDate:endDate]];
         };
     }
     return _pingThread;
@@ -250,7 +250,7 @@ static dispatch_once_t onceToken;
     if(trace&&span&&sampling){
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
-        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[taskMes.requestStartDate ft_dateTimestamp]];
+        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeMillisecond:taskMes.requestStartDate]];
     }
     
     
@@ -307,7 +307,7 @@ static dispatch_once_t onceToken;
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
     }
-    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[start ft_dateTimestamp]];
+    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeMillisecond:start]];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
@@ -333,7 +333,7 @@ static dispatch_once_t onceToken;
             NSDictionary *tags = data[@"tags"];
             NSDictionary *fields = data[@"fields"];
             long long time = [data[@"time"] longLongValue];
-            time = time>0?:[[NSDate date] ft_dateTimestamp];
+            time = time>0?:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftWebviewDataWithMeasurement:tags:fields:tm:)]) {
@@ -353,7 +353,6 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-//    long long time = [[NSDate date] ft_dateTimestamp];
     NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]}.mutableCopy;
     fields[@"long_task_stack"] = slowStack;
     if (self.sessionErrorDelegate && [self.sessionErrorDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
@@ -423,7 +422,7 @@ static dispatch_once_t onceToken;
             [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
         }
         if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanotimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         }
     }
     @catch (NSException *exception) {
@@ -468,7 +467,7 @@ static dispatch_once_t onceToken;
     }
     self.currentController = viewController;
     if(viewController.ft_viewLoadStartTime){
-        NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:viewController.ft_viewLoadStartTime];
+        NSNumber *loadTime = [FTDateUtil nanotimeIntervalSinceDate:viewController.ft_viewLoadStartTime toDate:[NSDate date]];
         viewController.ft_loadDuration = loadTime;
         viewController.ft_viewLoadStartTime = nil;
     }else{
@@ -483,7 +482,7 @@ static dispatch_once_t onceToken;
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
         if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[[NSDate date] ft_nanotimeIntervalSinceDate:self.launchTime]];
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanotimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         }
         _appRelaunched = YES;
     }

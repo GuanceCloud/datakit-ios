@@ -1,51 +1,53 @@
 //
-//  NSDate+FTAdd.h
-//  FTMobileAgent
+//  FTDateUtil.h
+//  FTMacOSSDK
 //
-//  Created by 胡蕾蕾 on 2020/7/23.
-//  Copyright © 2020 hll. All rights reserved.
+//  Created by 胡蕾蕾 on 2021/8/5.
+//  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSDate (FTAdd)
+@interface FTDateUtil : NSObject
 /**
  *  @abstract
  *  获取当前时间戳 豪秒级
  *
  *  @return 时间戳
 */
--(long long)ft_msDateTimestamp;
++ (long long)currentTimeMillisecond;
++ (long long)dateTimeMillisecond:(NSDate *)date;
 /**
  *  @abstract
  *  获取当前时间戳 纳秒级
  *
  *  @return 时间戳
 */
--(long long)ft_dateTimestamp;
++ (long long)currentTimeNanosecond;
 /**
  *  @abstract
  *  获取GMT格式的时间
  *
  *  @return GMT格式的时间
 */
--(NSString *)ft_dateGMT;
+
++ (NSString *)currentTimeGMT;
 /**
  *  @abstract
  *  获取时间间隔 纳秒级
  *
  *  @return 时间间隔
 */
--(NSNumber *)ft_nanotimeIntervalSinceDate:(NSDate *)anotherDate;
++ (NSNumber *)microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
 /**
  *  @abstract
  *  获取时间间隔 微秒级
  *
  *  @return 时间间隔
 */
--(NSNumber *)ft_microcrosecondtimeIntervalSinceDate:(NSDate *)anotherDate;
++ (NSNumber *)nanotimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
 @end
 
 NS_ASSUME_NONNULL_END

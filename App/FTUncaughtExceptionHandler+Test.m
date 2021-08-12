@@ -8,7 +8,6 @@
 
 #import "FTUncaughtExceptionHandler+Test.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <NSDate+FTAdd.h>
 #import <FTMonitorManager.h>
 #include <execinfo.h>
 #import <objc/runtime.h>

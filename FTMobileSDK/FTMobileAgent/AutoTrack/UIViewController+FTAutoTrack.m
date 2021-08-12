@@ -16,7 +16,7 @@
 #import "BlacklistedVCClassNames.h"
 #import "FTLog.h"
 #import "FTMonitorManager.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
@@ -115,7 +115,7 @@ static char *viewLoadDuration = "viewLoadDuration";
         // 预防撤回侧滑
         if ([FTMonitorManager sharedInstance].currentController != self) {
             if(self.ft_viewLoadStartTime){
-                NSNumber *loadTime = [[NSDate date] ft_nanotimeIntervalSinceDate:self.ft_viewLoadStartTime];
+                NSNumber *loadTime = [FTDateUtil nanotimeIntervalSinceDate:[NSDate date] toDate:self.ft_viewLoadStartTime];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
             }else{

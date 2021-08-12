@@ -10,7 +10,6 @@
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
-#import <NSDate+FTAdd.h>
 //测试崩溃采集
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"

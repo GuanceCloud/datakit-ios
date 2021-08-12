@@ -18,7 +18,7 @@
 #import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
-#import "NSDate+FTAdd.h"
+#import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTMobileAgentVersion.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
@@ -218,7 +218,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(NSURLRequest *)getRequestWithURL:(NSURL *)url body:(id)body contentType:(NSString *)contentType{
     NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:url];
-     NSString *date =[[NSDate date] ft_dateGMT];
+     NSString *date =[FTDateUtil currentTimeGMT];
      mutableRequest.HTTPMethod = @"POST";
      //添加header
      [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];

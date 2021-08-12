@@ -10,7 +10,6 @@
 #endif
 #import "FTUncaughtExceptionHandler.h"
 #import "FTLog.h"
-#import "NSDate+FTAdd.h"
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
 #import "FTMonitorManager.h"

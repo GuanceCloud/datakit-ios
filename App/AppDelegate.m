@@ -10,7 +10,7 @@
 #import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/FTMonitorManager.h>
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "FTUploadTool+Test.h"
 #import "DemoViewController.h"
@@ -77,7 +77,7 @@
         rumConfig.enableTraceUserAction = YES;
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+        [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
         [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     }
     return YES;
