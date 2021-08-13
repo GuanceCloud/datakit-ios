@@ -12,7 +12,6 @@
 #import <UIKit/UIKit.h>
 #import "FTTrackerEventDBTool.h"
 #import <SystemConfiguration/SystemConfiguration.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import "FTUploadTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
@@ -30,9 +29,8 @@
 #import "FTMonitorUtils.h"
 #import "FTRUMManger.h"
 #import "FTConstants.h"
+#import "FTReachability.h"
 @interface FTMobileAgent ()
-@property (nonatomic, assign) SCNetworkReachabilityRef reachability;
-@property (nonatomic, strong) CTTelephonyNetworkInfo *telephonyInfo;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, copy)   NSString *net;
@@ -51,15 +49,6 @@
 
 static FTMobileAgent *sharedInstance = nil;
 static dispatch_once_t onceToken;
-static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info) {
-    
-    if (info != NULL && [(__bridge NSObject*)info isKindOfClass:[FTMobileAgent class]]) {
-        @autoreleasepool {
-            FTMobileAgent *zy = (__bridge FTMobileAgent *)info;
-            [zy reachabilityChanged:flags];
-        }
-    }
-}
 #pragma mark --------- 初始化 config 设置 ----------
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
@@ -90,6 +79,8 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
+            //开启网络监听
+            [[FTReachability sharedInstance] startNotifier];
             [self setUpListeners];
             _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
             _upTool = [[FTUploadTool alloc]initWithConfig:config];
@@ -331,17 +322,14 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 #pragma mark - 网络与App的生命周期
 - (void)setUpListeners{
-    [self.lock lock];
-    if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, "www.baidu.com")) != NULL) {
-        SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
-        if (SCNetworkReachabilitySetCallback(_reachability, ZYReachabilityCallback, &context)) {
-            if (SCNetworkReachabilitySetDispatchQueue(_reachability, self.concurrentLabel)) {
-            } else {
-                SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-            }
+    self.net = [FTReachability sharedInstance].networkType;
+    __weak typeof(self) weakSelf = self;
+    [FTReachability sharedInstance].networkChanged = ^(){
+        weakSelf.net = [FTReachability sharedInstance].networkType;
+        if([FTReachability sharedInstance].isReachable){
+            [weakSelf uploadFlush];
         }
-    }
-    [self.lock unlock];
+    };
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     // 应用生命周期通知
     [notificationCenter addObserver:self
@@ -354,19 +342,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
-}
-- (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags {
-    if (flags & kSCNetworkReachabilityFlagsReachable) {
-        if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
-            self.net = [FTNetworkInfo getNetworkType];//2G/3G/4G/5G
-        } else {
-            self.net = @"wifi";//WIFI
-        }
-         [self uploadFlush];
-    } else {
-        self.net = @"unreachable";//未知
-    }
-    ZYDebug(@"联网状态: %@", [@"unreachable" isEqualToString:self.net]?@"未知":[@"wifi" isEqualToString:self.net]?@"WIFI":@"移动网络");
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
@@ -396,7 +371,7 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - 上报策略
 - (void)uploadFlush{
     dispatch_async(self.serialQueue, ^{
-        if (![self.net isEqualToString:@"unreachable"]) {
+        if ([FTReachability sharedInstance].isReachable) {
             [self.upTool upload];
         }
     });
@@ -404,13 +379,6 @@ static void ZYReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
-    [self.lock lock];
-    if (_reachability) {
-        SCNetworkReachabilitySetCallback(_reachability, NULL, NULL);
-        SCNetworkReachabilitySetDispatchQueue(_reachability, NULL);
-        _reachability = nil;
-    }
-    [self.lock unlock];
     _presetProperty = nil;
     _config = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
