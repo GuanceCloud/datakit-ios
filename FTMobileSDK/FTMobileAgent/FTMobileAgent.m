@@ -11,7 +11,6 @@
 #import "FTMobileAgent.h"
 #import <UIKit/UIKit.h>
 #import "FTTrackerEventDBTool.h"
-#import <SystemConfiguration/SystemConfiguration.h>
 #import "FTUploadTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
@@ -25,7 +24,6 @@
 #import "FTPresetProperty.h"
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
-#import "FTNetworkInfo.h"
 #import "FTMonitorUtils.h"
 #import "FTRUMManger.h"
 #import "FTConstants.h"

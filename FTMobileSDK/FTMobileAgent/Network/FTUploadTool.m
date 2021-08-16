@@ -15,7 +15,6 @@
 #import "FTLog.h"
 #import "FTRecordModel.h"
 #import "FTMobileConfig.h"
-#import "FTNetworkInfo.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "FTDateUtil.h"

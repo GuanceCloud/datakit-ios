@@ -9,12 +9,8 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMonitorManager.h"
-#import <CoreLocation/CLLocationManager.h>
-#import <CoreBluetooth/CoreBluetooth.h>
-#import <SystemConfiguration/CaptiveNetwork.h>
 #import "FTBaseInfoHander.h"
 #import "FTMobileConfig.h"
-#import "FTNetworkInfo.h"
 #import "FTURLProtocol.h"
 #import "FTLog.h"
 #import "FTMonitorUtils.h"
@@ -37,7 +33,6 @@
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTUncaughtExceptionHandler.h"
-#define WeakSelf __weak typeof(self) weakSelf = self;
 
 @interface FTMonitorManager ()<FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
@@ -131,7 +126,7 @@ static dispatch_once_t onceToken;
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
         _pingThread = [[FTPingThread alloc]init];
-        WeakSelf
+        __weak typeof(self) weakSelf = self;
         _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
             [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanotimeIntervalSinceDate:startDate toDate:endDate]];
         };

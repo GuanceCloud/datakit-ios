@@ -8,7 +8,7 @@
 
 #import "TodayViewController.h"
 #import <NotificationCenter/NotificationCenter.h>
-#import <FTMobileExtension/FTExtensionManager.h>
+#import <FTExtensionManager.h>
 @interface TodayViewController () <NCWidgetProviding>
 
 @end
