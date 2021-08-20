@@ -13,8 +13,10 @@
 #import <arpa/inet.h>
 #import <ifaddrs.h>
 #import <netdb.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#if    TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#endif
 
 NSString *const kFTReachabilityChangedNotification = @"kFTReachabilityChangedNotification";
 
@@ -33,9 +35,9 @@ NSString *const kFTReachabilityChangedNotification = @"kFTReachabilityChangedNot
 static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info)
 {
 #pragma unused (target)
-    
+
     FTReachability *reachability = ((__bridge FTReachability*)info);
-    
+
     // We probably don't need an autoreleasepool here, as GCD docs state each queue has its own autorelease pool,
     // but what the heck eh?
     @autoreleasepool
@@ -60,45 +62,43 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         return @"wifi";
     }
 #if TARGET_OS_IPHONE
-    if(status == FTReachableViaWWAN){
-        NSArray *typeStrings2G = @[CTRadioAccessTechnologyEdge,
-                                   CTRadioAccessTechnologyGPRS,
-                                   CTRadioAccessTechnologyCDMA1x];
-        NSArray *typeStrings3G = @[CTRadioAccessTechnologyHSDPA,
-                                   CTRadioAccessTechnologyWCDMA,
-                                   CTRadioAccessTechnologyHSUPA,
-                                   CTRadioAccessTechnologyCDMAEVDORev0,
-                                   CTRadioAccessTechnologyCDMAEVDORevA,
-                                   CTRadioAccessTechnologyCDMAEVDORevB,
-                                   CTRadioAccessTechnologyeHRPD];
-        
-        NSArray *typeStrings4G = @[CTRadioAccessTechnologyLTE];
-        
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-            CTTelephonyNetworkInfo *teleInfo= [[CTTelephonyNetworkInfo alloc] init];
-            NSString *accessString = teleInfo.currentRadioAccessTechnology;
-            if (@available(iOS 14.1, *)) {
-                NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
-                                           CTRadioAccessTechnologyNR];
-                if ([typeStrings5G containsObject:accessString]) {
-                    return @"5G";
-                }
+    NSArray *typeStrings2G = @[CTRadioAccessTechnologyEdge,
+                               CTRadioAccessTechnologyGPRS,
+                               CTRadioAccessTechnologyCDMA1x];
+    NSArray *typeStrings3G = @[CTRadioAccessTechnologyHSDPA,
+                               CTRadioAccessTechnologyWCDMA,
+                               CTRadioAccessTechnologyHSUPA,
+                               CTRadioAccessTechnologyCDMAEVDORev0,
+                               CTRadioAccessTechnologyCDMAEVDORevA,
+                               CTRadioAccessTechnologyCDMAEVDORevB,
+                               CTRadioAccessTechnologyeHRPD];
+    
+    NSArray *typeStrings4G = @[CTRadioAccessTechnologyLTE];
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        CTTelephonyNetworkInfo *teleInfo= [[CTTelephonyNetworkInfo alloc] init];
+        NSString *accessString = teleInfo.currentRadioAccessTechnology;
+        if (@available(iOS 14.1, *)) {
+            NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
+                                       CTRadioAccessTechnologyNR];
+            if ([typeStrings5G containsObject:accessString]) {
+                return @"5G";
             }
-            if ([typeStrings4G containsObject:accessString]) {
-                return @"4G";
-            } else if ([typeStrings3G containsObject:accessString]) {
-                return @"3G";
-            } else if ([typeStrings2G containsObject:accessString]) {
-                return @"2G";
-            } else {
-                return @"unknown";
-            }
+        }
+        if ([typeStrings4G containsObject:accessString]) {
+            return @"4G";
+        } else if ([typeStrings3G containsObject:accessString]) {
+            return @"3G";
+        } else if ([typeStrings2G containsObject:accessString]) {
+            return @"2G";
         } else {
             return @"unknown";
         }
+    } else {
+        return @"unknown";
     }
 #endif
-    
+
     return @"unreachable";
 }
 
@@ -129,12 +129,12 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 {
     self = [super init];
     if (self != nil)
-    {  self.reachableOnWWAN = YES;
+    {   self.reachableOnWWAN = YES;
         self.reachabilityRef = ref;
-        
+
         // We need to create a serial queue.
         // We allocate this once for the lifetime of the notifier.
-        
+
         self.reachabilitySerialQueue = dispatch_queue_create("com.tonymillion.reachability", NULL);
     }
     
@@ -147,11 +147,11 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     {
         return YES;
     }
-    
-    
+
+
     SCNetworkReachabilityContext    context = { 0, NULL, NULL, NULL, NULL };
     context.info = (__bridge void *)self;
-    
+
     if(SCNetworkReachabilitySetCallback(self.reachabilityRef, FTReachabilityCallback, &context))
     {
         // Set it as our reachability queue, which will retain the queue
@@ -168,7 +168,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             SCNetworkReachabilitySetCallback(self.reachabilityRef, NULL, NULL);
         }
     }
-    
+
     // if we get here we fail at the internet
     self.reachabilityObject = nil;
     return NO;
@@ -219,7 +219,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 -(BOOL)isReachableViaWWAN
 {
 #if    TARGET_OS_IPHONE
-    
+
     SCNetworkReachabilityFlags flags = 0;
     
     if(SCNetworkReachabilityGetFlags(self.reachabilityRef, &flags))
@@ -278,12 +278,12 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 {
     NSAssert(_reachabilityRef != NULL, @"connectionRequired called with NULL reachabilityRef");
     SCNetworkReachabilityFlags flags;
-    
+
     if (SCNetworkReachabilityGetFlags(_reachabilityRef, &flags))
     {
         return (flags & kSCNetworkReachabilityFlagsConnectionRequired);
     }
-    
+
     return NO;
 }
 -(void)reachabilityChanged:(SCNetworkReachabilityFlags)flags

@@ -13,7 +13,7 @@
 #import <sys/utsname.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
-#import "FTMobileAgentVersion.h"
+#import "FTConfigManager.h"
 #import "NSString+FTAdd.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";

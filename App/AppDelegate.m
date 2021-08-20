@@ -7,12 +7,11 @@
 //
 
 #import "AppDelegate.h"
-#import <FTMobileAgent/FTDataBase/FTTrackerEventDBTool.h>
+#import <FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
 #import <FTMobileAgent/FTMonitorManager.h>
 #import <FTDateUtil.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import "FTUploadTool+Test.h"
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
 @interface AppDelegate ()
@@ -78,7 +77,6 @@
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-        [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     }
     return YES;
 }

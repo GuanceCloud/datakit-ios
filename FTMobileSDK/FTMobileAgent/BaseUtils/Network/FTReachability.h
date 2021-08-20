@@ -9,9 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 NS_ASSUME_NONNULL_BEGIN
-#ifndef NS_ENUM
-#define NS_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
-#endif
+
 extern NSString *const kFTReachabilityChangedNotification;
 
 typedef NS_ENUM(NSInteger, FTNetworkStatus) {
@@ -28,6 +26,7 @@ typedef void(^NetworkChangeBlock)(void);
 /// 网络状态改变回调
 @property (nonatomic,copy) NetworkChangeBlock networkChanged;
 
+/// iOS下 是否允许在移动网络状态下进行网络传输
 @property (nonatomic, assign) BOOL reachableOnWWAN;
 
 + (instancetype)sharedInstance;

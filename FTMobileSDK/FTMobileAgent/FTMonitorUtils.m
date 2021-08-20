@@ -31,35 +31,9 @@
 #define IP_ADDR_IPv4    @"ipv4"
 #define IP_ADDR_IPv6    @"ipv6"
 @implementation FTMonitorUtils
-#pragma mark ========== 开机时间/自定义手机名称 ==========
-//系统开机时间获取
-+(NSString *)launchSystemTime{
-    struct timeval t;
-    size_t len=sizeof(struct timeval);
-    if(sysctlbyname("kern.boottime",&t,&len,0,0)!=0)
-        return FT_NULL_VALUE;
-    time_t timeInterval = (time_t)(t.tv_sec+t.tv_usec/USEC_PER_SEC);
-    struct tm *time = localtime(&timeInterval);
-    NSString *timeStr = [NSString stringWithFormat:@"%d-%02d-%02d %02d:%02d:%02d",time->tm_year + 1900,time->tm_mon + 1,time->tm_mday,time->tm_hour,time->tm_min, time->tm_sec];
-    return timeStr;
-}
+
 #pragma mark ========== WIFI的SSID 与 IP ==========
-/**
- * iOS 12 之后WifiSSID 需要配置 'capability' ->'Access WiFi Infomation' 才能获取 还需要配置证书
- * iOS 13 之后需要定位开启 才能获取到信息
- */
-+ (NSDictionary *)wifiAccessAndIPAddress{
-    if (@available(iOS 13.0, *)) {
-        if ([CLLocationManager locationServicesEnabled] && ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedWhenInUse || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways)) {
-            return @{FT_MONITOR_WITF_SSID: [self currentWifiSSID],@"ip": [self ipAddress]};
-        }else{
-            ZYDebug(@"用户拒绝授权或未开启定位服务");
-            return @{@"ip": [self ipAddress],FT_MONITOR_WITF_SSID:FT_NULL_VALUE};
-        }
-    }else{
-        return @{FT_MONITOR_WITF_SSID: [self currentWifiSSID],@"ip": [self ipAddress]};
-    }
-}
+
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
 + (NSString *)currentWifiSSID{
     NSString * wifiName = FT_NULL_VALUE;
@@ -184,19 +158,7 @@
     }
     return [addresses count] ? addresses : nil;
 }
-+ (CGFloat)screenBrightness{
-    return [UIScreen mainScreen].brightness;
-}
-+(BOOL)proximityState{
-    if ([UIDevice currentDevice].proximityMonitoringEnabled == NO) {
-        [UIDevice currentDevice].proximityMonitoringEnabled = YES;
-    }
-    return [UIDevice currentDevice].proximityState;
-}
-+ (float)torchLevel{
-   AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-      return device.torchLevel;
-}
+
 #pragma mark ========== 电池 ==========
 //电池电量
 +(double)batteryUse{
@@ -208,23 +170,7 @@
     return deviceLevel*100;
     }
 }
-//电池是否在充电
-+ (NSString *)batteryStatus{
-    switch ([UIDevice currentDevice].batteryState) {
-        case UIDeviceBatteryStateUnknown:
-            return @"unknown";
-            break;
-        case UIDeviceBatteryStateUnplugged:
-            return @"unplugged";
-            break;
-        case UIDeviceBatteryStateCharging:
-            return @"charging";
-            break;
-        case UIDeviceBatteryStateFull:
-            return @"full";
-            break;
-    }
-}
+
 #pragma mark ========== 内存 ==========
 //当前设备可用内存
 + (double)availableMemory
@@ -328,32 +274,5 @@
     
     return tot_cpu;
 }
-+ (NSString *)cpuType{
-    host_basic_info_data_t hostInfo;
-    mach_msg_type_number_t infoCount;
-    
-    infoCount = HOST_BASIC_INFO_COUNT;
-    host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t)&hostInfo, &infoCount);
-    
-    switch (hostInfo.cpu_type) {
-        case CPU_TYPE_ARM:
-            return @"CPU_TYPE_ARM";
-            break;
-            
-        case CPU_TYPE_ARM64:
-            return @"CPU_TYPE_ARM64";
-            break;
-            
-        case CPU_TYPE_X86:
-            return @"CPU_TYPE_X86";
-            break;
-            
-        case CPU_TYPE_X86_64:
-            return @"CPU_TYPE_X86_64";
-            break;
-        default:
-            break;
-    }
-    return @"";
-}
+
 @end

@@ -10,7 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 #define FT_DB_TRACREVENT_TABLE_NAME @"trace_event"
-#define FT_DB_USERSESSION_TABLE_NAME    @"user_session_data"
 @class FTRecordModel;
 @interface FTTrackerEventDBTool : NSObject
 
@@ -27,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 *
 *  @return 存储是否成功
 */
--(BOOL)insertItemWithItemData:(FTRecordModel *)datas;
+-(BOOL)insertItem:(FTRecordModel *)datas;
 /**
 *  @abstract
 *  向数据库中添加一组对象
@@ -36,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 *
 *  @return 存储是否成功
 */
--(BOOL)insertItemWithItemDatas:(NSArray *)items;
+-(BOOL)insertItemWithItemDatas:(NSArray<FTRecordModel*> *)items;
 /**
 *  @abstract
 *  向缓存中添加一组对象
@@ -52,19 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)insertCacheToDB;
 /**
 *  @abstract
-*  获取数据库所有的数据 不绑定用户信息
+*  获取数据库所有的数据
 
 *  @return 获取的数据
 */
 -(NSArray *)getAllDatas;
-/**
-*  @abstract
-*  从数据库前端，获取十条记录，获取的记录以FTRecordModel的形式存放在数组中 包含相应的用户信息 未绑定用户时无法获取数据
-
-*  @return 获取的数据
-*/
-
--(NSArray *)getFirstBindUserRecords:(NSUInteger)recordSize withType:(NSString *)type;
 /**
 *  @abstract
 *  从数据库前端，获取十条记录
@@ -102,12 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
 *  @return 数据数量
 */
 - (NSInteger)getDatasCountWithOp:(NSString *)op;
-/**
-*  @abstract
-*  添加用户
-*  @param Id 用户Id
-*  @return 添加是否成功
-*/
--(BOOL)insertUserDataWithUserID:(NSString *)Id;
+
 @end
 NS_ASSUME_NONNULL_END

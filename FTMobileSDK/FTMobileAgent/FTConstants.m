@@ -116,3 +116,24 @@ NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
 NSUInteger const MXRMonitorRunloopStandstillCount = 5;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
+
+@implementation FTConstants
++(NSString *)dataTypeStr:(FTDataType)type{
+    NSString *request = nil;
+    switch (type) {
+        case FTDataTypeRUM:
+            request = @"RUM";
+            break;
+        case FTDataTypeLOGGING:
+            request = @"Logging";
+            break;
+        case FTDataTypeTRACING:
+            request = @"Tracing";
+            break;
+        case FTDataTypeObject:
+            request = @"Object";
+            break;
+    }
+    return request;
+}
+@end

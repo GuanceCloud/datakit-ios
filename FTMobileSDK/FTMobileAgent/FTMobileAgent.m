@@ -11,7 +11,6 @@
 #import "FTMobileAgent.h"
 #import <UIKit/UIKit.h>
 #import "FTTrackerEventDBTool.h"
-#import "FTUploadTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHander.h"
 #import "FTMonitorManager.h"
@@ -28,12 +27,12 @@
 #import "FTRUMManger.h"
 #import "FTConstants.h"
 #import "FTReachability.h"
+#import "FTConfigManager.h"
+#import "FTTrackDataManger.h"
+
 @interface FTMobileAgent ()
-@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, copy)   NSString *net;
-@property (nonatomic, strong) FTUploadTool *upTool;
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -69,19 +68,16 @@ static dispatch_once_t onceToken;
         self = [super init];
         if (self) {
             //基础类型的记录
-            _config = [config copy];
+            [[FTConfigManager sharedInstance] setTrackConfig:config];
             _net = @"unknown";
             _lock = [[NSLock alloc]init];
             [FTLog enableLog:config.enableSDKDebugLog];
-            NSString *label = [NSString stringWithFormat:@"io.zy.%p", self];
-            _serialQueue = dispatch_queue_create([label UTF8String], DISPATCH_QUEUE_SERIAL);
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             //开启网络监听
             [[FTReachability sharedInstance] startNotifier];
             [self setUpListeners];
             _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
-            _upTool = [[FTUploadTool alloc]initWithConfig:config];
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
@@ -91,13 +87,12 @@ static dispatch_once_t onceToken;
 }
 -(void)resetConfig:(FTMobileConfig *)config{
     [FTLog enableLog:config.enableSDKDebugLog];
-    self.config = config;
+    [[FTConfigManager sharedInstance] setTrackConfig:config];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:self.config.version env:[FTBaseInfoHander envStrWithEnv:self.config.env]];
+        [self.presetProperty resetWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:self.config.version env:[FTBaseInfoHander envStrWithEnv:self.config.env]];
+        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
     }
-    [self.upTool setConfig:config];
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     if (!_rumConfig) {
@@ -213,7 +208,7 @@ static dispatch_once_t onceToken;
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
         baseTags[@"network_type"] = self.net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:type op:FTDataTypeRUM tags:baseTags field:fields tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FTDataTypeRUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -245,7 +240,7 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:FT_LOGGER_SOURCE op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:type];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -266,7 +261,7 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithMeasurement:self.netTraceStr op:FTDataTypeTRACING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FTDataTypeTRACING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:FTAddDataNormal];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -284,33 +279,7 @@ static dispatch_once_t onceToken;
     }];
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
-    switch (type) {
-        case FTAddDataNormal:{
-            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-        }
-            break;
-        case FTAddDataCache:{
-            [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
-        }
-            break;
-        case FTAddDataImmediate:{
-            [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
-            [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-        }
-            break;
-            
-    }
-    //上传逻辑 数据库写入 距第一次写入间隔10秒以上 启动上传
-    if (self.lastAddDBDate) {
-        NSDate* now = [NSDate date];
-        NSTimeInterval time = [now timeIntervalSinceDate:self.lastAddDBDate];
-        if (time>10) {
-            self.lastAddDBDate = [NSDate date];
-            [self uploadFlush];
-        }
-    }else{
-        self.lastAddDBDate = [NSDate date];
-    }
+    [[FTTrackDataManger sharedInstance] addTrackData:model type:type];
 }
 - (BOOL)judgeRUMTraceOpen{
     if (self.rumConfig.appid.length>0) {
@@ -368,19 +337,13 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - 上报策略
 - (void)uploadFlush{
-    dispatch_async(self.serialQueue, ^{
-        if ([FTReachability sharedInstance].isReachable) {
-            [self.upTool upload];
-        }
-    });
+    [[FTTrackDataManger sharedInstance] uploadTrackData];
 }
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     _presetProperty = nil;
-    _config = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    _upTool = nil;
     onceToken = 0;
     sharedInstance =nil;
 }

@@ -14,20 +14,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 @class FTRecordModel,FTUploadTool,FTPresetProperty,FTRUMManger;
-/**
- - FTAddDataNormal: 异步写入数据库
- - FTAddDataCache:  事务写入数据库
- - FTAddDataImmediate: 同步写入数据库
- */
-typedef NS_ENUM(NSInteger, FTAddDataType) {
-    FTAddDataNormal,
-    FTAddDataCache,
-    FTAddDataImmediate,
-};
 
 
 @interface FTMobileAgent (Private)
-@property (nonatomic, strong,readonly) FTMobileConfig *config;
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTRUMManger *rumManger;

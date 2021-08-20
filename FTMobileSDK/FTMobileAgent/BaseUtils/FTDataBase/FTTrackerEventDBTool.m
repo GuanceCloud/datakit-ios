@@ -7,20 +7,19 @@
 //
 
 #import "FTTrackerEventDBTool.h"
-#import "FTRecordModel.h"
 #import "ZY_FMDB.h"
+#import "FTRecordModel.h"
 #import "FTLog.h"
-#import "FTConstants.h"
-#import "FTBaseInfoHander.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong) ZY_FMDatabase *db;
 @property (nonatomic, strong) NSMutableArray<FTRecordModel *> *messageCaches;
-@property (nonatomic, strong) NSLock *lock;
 
 @end
-@implementation FTTrackerEventDBTool
+@implementation FTTrackerEventDBTool{
+    dispatch_semaphore_t _lock;
+}
 static FTTrackerEventDBTool *dbTool = nil;
 static dispatch_once_t onceToken;
 
@@ -45,6 +44,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
+            dbTool->_lock = dispatch_semaphore_create(1);
         }
         [dbTool createTable];
      }
@@ -57,9 +57,7 @@ static dispatch_once_t onceToken;
 }
 - (void)createTable{
     @try {
-        self.lock = [[NSLock alloc]init];
         [self createEventTable];
-        [self createUserTable];
     } @catch (NSException *exception) {
         ZYDebug(@"%@",exception);
     }
@@ -73,7 +71,6 @@ static dispatch_once_t onceToken;
         NSDictionary *keyTypes = @{@"_id":@"INTEGER",
                                    @"tm":@"INTEGER",
                                    @"data":@"TEXT",
-                                   @"sessionid":@"TEXT",
                                    @"op":@"TEXT",
         };
         if ([self isOpenDatabese:self.db]) {
@@ -98,77 +95,25 @@ static dispatch_once_t onceToken;
            }
     }];
 }
-- (void)createUserTable{
-    if ([self zy_isExistTable:FT_DB_USERSESSION_TABLE_NAME]) {
-           return;
-       }
-    [self zy_inTransaction:^(BOOL *rollback) {
-           NSDictionary *keyTypes = @{@"usersessionid":@"TEXT",
-                                      @"userdata":@"TEXT",
-           };
-           if ([self isOpenDatabese:self.db]) {
-                  NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_USERSESSION_TABLE_NAME]];
-                  int count = 0;//%@  INTEGER PRIMARY KEY
-                  for (NSString *key in keyTypes) {
-                      count++;
-                      [sql appendString:key];
-                      [sql appendString:@" "];
-                      [sql appendString:[keyTypes valueForKey:key]];
-                      if ([key isEqualToString:@"usersessionid"]) {
-                           [sql appendString:@" PRIMARY KEY"];
-                      }
-                      if (count != [keyTypes count]) {
-                           [sql appendString:@", "];
-                      }
-                  }
-                  [sql appendString:@")"];
-                  ZYDebug(@"%@", sql);
-                BOOL success =[self.db executeUpdate:sql];
-               ZYDebug(@"createUserTable success == %d",success);
-              }
-       }];
-}
--(BOOL)insertUserDataWithUserID:(NSString *)Id{
-    NSMutableDictionary *data = [@{
-                           @"id":Id,
-    } mutableCopy];
-    
-    NSError *parseError = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data options:NSJSONWritingPrettyPrinted error:&parseError];
-    
-    NSString *userdata = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    NSString *sessionid = [FTBaseInfoHander sessionId];
-    if([self isOpenDatabese:self.db]) {
-        __block BOOL  is = NO;
-        [self zy_inDatabase:^{
-            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'usersessionid' , 'userdata') VALUES ( ? , ? );",FT_DB_USERSESSION_TABLE_NAME];
-           is=  [self.db executeUpdate:sqlStr,sessionid,userdata];
-            ZYDebug(@"bind user success == %ld \n userData = %@",is,userdata);
-        }];
-        return is;
-    }else{
-    return NO;
-    }
-}
 
--(BOOL)insertItemWithItemData:(FTRecordModel *)item{
+-(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
-       if([self getDatasCount]+self.messageCaches.count>=FT_DB_CONTENT_MAX_COUNT){
+       if([self getDatasCount]+self.messageCaches.count>=5000){
            return NO;
        }
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  ? , ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
-          success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.sessionid,item.op];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
+          success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
            ZYDebug(@"data storage success == %d",success);
        }];
    }
     return success;
 }
--(BOOL)insertItemWithItemDatas:(NSArray *)items{
+-(BOOL)insertItemWithItemDatas:(NSArray<FTRecordModel*> *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
-        NSInteger count = FT_DB_CONTENT_MAX_COUNT - [self getDatasCount]-self.messageCaches.count;
+        NSInteger count = 5000 - [self getDatasCount]-self.messageCaches.count;
         if(count <= 0){
             return NO;
         }else if(items.count > count){
@@ -176,8 +121,8 @@ static dispatch_once_t onceToken;
         }
         [self zy_inTransaction:^(BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' , 'sessionid','op') VALUES (  ? , ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
-                if(![self.db executeUpdate:sqlStr,@(item.tm),item.data,item.sessionid,item.op]){
+                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data','op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
+                if(![self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op]){
                     *stop = YES;
                     needRoolback = YES;
                 }
@@ -192,26 +137,27 @@ static dispatch_once_t onceToken;
     if (!data) {
         return;
     }
-    [self.lock lock];
+    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
     [self.messageCaches addObject:data];
     if (self.messageCaches.count>20) {
         NSArray *array = [self.messageCaches subarrayWithRange:NSMakeRange(0, 20)];
         [self.messageCaches removeObjectsInArray:array];
-        [self.lock unlock];
+        dispatch_semaphore_signal(_lock);
         [self insertItemWithItemDatas:array];
     }else{
-        [self.lock unlock];
+        dispatch_semaphore_signal(_lock);
+
     }
 }
 -(void)insertCacheToDB{
-    [self.lock lock];
+    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
     if (self.messageCaches.count > 0) {
         NSArray *array = [self.messageCaches copy];
         self.messageCaches = nil;
-        [self.lock unlock];
+        dispatch_semaphore_signal(_lock);
         [self insertItemWithItemDatas:array];
     }else{
-        [self.lock unlock];
+        dispatch_semaphore_signal(_lock);
     }
 }
 -(NSArray *)getAllDatas{
@@ -220,16 +166,7 @@ static dispatch_once_t onceToken;
     return [self getDatasWithFormat:sql bindUser:NO];
 
 }
--(NSArray *)getFirstBindUserRecords:(NSUInteger)recordSize withType:(NSString *)type{
-    if (recordSize == 0) {
-        return @[];
-    }
-    NSString *sessionidSql =[NSString stringWithFormat:@"SELECT * FROM '%@' join '%@' on %@.sessionid = %@.usersessionid WHERE %@.op = '%@' ORDER BY tm ASC limit %lu ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,FT_DB_USERSESSION_TABLE_NAME,FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
-    NSArray *session =[self getDatasWithFormat:sessionidSql bindUser:YES];
 
-    return session;
-   
-}
 -(NSArray *)getFirstRecords:(NSUInteger)recordSize withType:(NSString *)type{
     if (recordSize == 0) {
         return @[];
@@ -252,9 +189,6 @@ static dispatch_once_t onceToken;
                 item.tm = [set longForColumn:@"tm"];
                 item.data= [set stringForColumn:@"data"];
                 item.op = [set stringForColumn:@"op"];
-                if (bindUser) {
-                    item.userdata = [set stringForColumn:@"userdata"];
-                }
                 [array addObject:item];
             }
         }];
