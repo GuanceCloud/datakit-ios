@@ -10,6 +10,7 @@
 #import "FTBaseInfoHander.h"
 #import <UIKit/UIKit.h>
 #import "FTConstants.h"
+#import "FTMobileAgentVersion.h"
 #import <sys/utsname.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>

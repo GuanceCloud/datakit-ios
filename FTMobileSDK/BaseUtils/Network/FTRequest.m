@@ -67,7 +67,7 @@
      //设置请求参数
      [mutableRequest setValue:FTConfigManager.sharedInstance.trackConfig.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",SDK_VERSION] forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTConfigManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      
     if (self.requestBody&&self.events) {

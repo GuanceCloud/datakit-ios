@@ -11,11 +11,10 @@
 #import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
-#define SDK_VERSION  @"1.2.1-alpha.1"
 
 @interface FTConfigManager : NSObject
 @property(nonatomic, strong) FTMobileConfig *trackConfig;
-
+@property(nonatomic, copy, readonly) NSString *sdkVersion;
 + (instancetype)sharedInstance;
 
 @end

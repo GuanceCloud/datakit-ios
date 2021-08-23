@@ -7,7 +7,7 @@
 //
 
 #import "FTConfigManager.h"
-
+#import "FTMobileAgentVersion.h"
 @implementation FTConfigManager
 + (instancetype)sharedInstance{
     static FTConfigManager *sharedInstance = nil;
@@ -20,5 +20,8 @@
 }
 -(void)setTrackConfig:(FTMobileConfig *)trackConfig{
     _trackConfig = [trackConfig copy];
+}
+-(NSString *)sdkVersion{
+    return SDK_VERSION;
 }
 @end

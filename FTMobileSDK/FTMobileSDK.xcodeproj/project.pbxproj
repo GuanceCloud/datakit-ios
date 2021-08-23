@@ -251,8 +251,8 @@
 		7C81952926C4B90F00D0D8C4 /* FTDateUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDateUtil.m; sourceTree = "<group>"; };
 		7CA1802E26CF4E600035DDF0 /* FTThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTThread.m; sourceTree = "<group>"; };
 		7CA1802F26CF4E610035DDF0 /* FTThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTThread.h; sourceTree = "<group>"; };
-		7CA1803D26CF5C010035DDF0 /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTLog.m; path = FTMobileAgent/BaseUtils/Utils/FTLog.m; sourceTree = SOURCE_ROOT; };
-		7CA1803E26CF5C020035DDF0 /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = FTMobileAgent/BaseUtils/Utils/FTLog.h; sourceTree = SOURCE_ROOT; };
+		7CA1803D26CF5C010035DDF0 /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTLog.m; path = ../BaseUtils/Utils/FTLog.m; sourceTree = "<group>"; };
+		7CA1803E26CF5C020035DDF0 /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = ../BaseUtils/Utils/FTLog.h; sourceTree = "<group>"; };
 		7CA1805B26CF99A20035DDF0 /* FTConfigManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTConfigManager.m; sourceTree = "<group>"; };
 		7CA1805C26CF99A30035DDF0 /* FTConfigManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTConfigManager.h; sourceTree = "<group>"; };
 		7CA1806526CFA7830035DDF0 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
@@ -265,6 +265,7 @@
 		7CA1806C26CFA7830035DDF0 /* FTRequestBody.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRequestBody.m; sourceTree = "<group>"; };
 		7CA1808026CFAE430035DDF0 /* FTTrackDataManger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTrackDataManger.h; sourceTree = "<group>"; };
 		7CA1808126CFAE430035DDF0 /* FTTrackDataManger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTrackDataManger.m; sourceTree = "<group>"; };
+		7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMobileAgentVersion.h; sourceTree = "<group>"; };
 		7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSwizzler.h; sourceTree = "<group>"; };
 		7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzler.m; sourceTree = "<group>"; };
 		7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -328,6 +329,7 @@
 			children = (
 				CACC4E2623A72A67006BA378 /* BuildFramwork.sh */,
 				4A88425C239E5754001B44C3 /* FTMobileAgent */,
+				7CA1802526CF49190035DDF0 /* BaseUtils */,
 				4A6C541F255E6464009771B8 /* FTMobileExtension */,
 				4A88425B239E5754001B44C3 /* Products */,
 				4A852FB423A23B0600B40B5D /* Frameworks */,
@@ -372,8 +374,8 @@
 				4A39314B25300D2100BC2134 /* FTCallStack.m */,
 				4A7C739525C0318D003936A0 /* FTPingThread.h */,
 				4A7C739625C0318D003936A0 /* FTPingThread.m */,
+				7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */,
 				7CA1805726CF96C60035DDF0 /* Core */,
-				7CA1802526CF49190035DDF0 /* BaseUtils */,
 				7C28B90326611B3700CECBA6 /* FTSession */,
 				7C28B8522660980000CECBA6 /* JSBridge */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
