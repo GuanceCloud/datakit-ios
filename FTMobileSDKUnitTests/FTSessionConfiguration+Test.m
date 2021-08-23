@@ -7,7 +7,7 @@
 //
 
 #import "FTSessionConfiguration+Test.h"
-#import <FTMobileAgent/Network/FTURLProtocol.h>
+#import <FTURLProtocol.h>
 @implementation FTSessionConfiguration (Test)
 - (NSArray *)protocolClasses {
   return @[[FTURLProtocol class],NSClassFromString(@"OHHTTPStubsProtocol")];

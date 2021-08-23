@@ -10,12 +10,12 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <NSDate+FTAdd.h>
-#import "FTUploadTool+Test.h"
+#import <FTDateUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
 #import <FTRecordModel.h>
 #import "UITestVC.h"
+#import "FTTrackDataManger+Test.h"
 
 @interface FTLoggerTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
@@ -101,7 +101,7 @@
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 -(void)testSetEmptyLoggerServiceName{
     [self setRightSDKConfig];
@@ -110,8 +110,8 @@
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:1];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
@@ -129,8 +129,8 @@
     loggerConfig.service = @"testSetServiceName";
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];

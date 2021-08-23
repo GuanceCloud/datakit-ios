@@ -46,6 +46,7 @@
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
 		7C28B8B62660B29500CECBA6 /* sample1.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B8B52660B29400CECBA6 /* sample1.html */; };
+		7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
@@ -192,6 +193,8 @@
 		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		7C28B8B52660B29400CECBA6 /* sample1.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample1.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		7C57E8BC26D3A40F002DA85B /* FTTrackDataManger+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackDataManger+Test.h"; sourceTree = "<group>"; };
+		7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTTrackDataManger+Test.m"; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
 		7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashVC.m; sourceTree = "<group>"; };
 		7C6E8F1225DF684600D12C12 /* TableViewCellItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TableViewCellItem.h; sourceTree = "<group>"; };
@@ -407,6 +410,8 @@
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
 				4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */,
 				4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */,
+				7C57E8BC26D3A40F002DA85B /* FTTrackDataManger+Test.h */,
+				7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */,
 				4A2C826224EFD13D006D4FC6 /* AgentTest */,
 				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
 				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
@@ -751,6 +756,7 @@
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
+				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 				4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */,

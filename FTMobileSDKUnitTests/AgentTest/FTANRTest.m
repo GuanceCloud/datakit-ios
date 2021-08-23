@@ -10,13 +10,13 @@
 #import "TestANRVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import "FTUploadTool+Test.h"
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <NSDate+FTAdd.h>
-#import <FTMobileAgent/FTRecordModel.h>
+#import <FTDateUtil.h>
+#import <FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>
-#import "FTUploadTool+Test.h"
+#import "FTTrackDataManger+Test.h"
+
 @interface FTANRTest : XCTestCase
 @property (nonatomic, strong) TestANRVC *testVC;
 
@@ -58,8 +58,7 @@
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)testTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:YES];

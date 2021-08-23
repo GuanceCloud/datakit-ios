@@ -10,19 +10,21 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTMobileAgent/FTMonitorManager.h>
-#import "FTUploadTool+Test.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
-#import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
+#import <NSURLRequest+FTMonitor.h>
 #import <FTMobileAgent/FTMonitorUtils.h>
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTRecordModel.h>
 #import <FTBaseInfoHander.h>
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 #import "FTSessionConfiguration+Test.h"
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
+#import "FTTrackDataManger+Test.h"
+#import <FTRequest.h>
+#import <FTNetworkManager.h>
 @interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -30,7 +32,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 
 - (void)tearDown {
@@ -47,7 +49,6 @@
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
 
 - (void)testFTNetworkTrackTypeZipkin{
@@ -116,7 +117,6 @@
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
 
     [self networkUpload:@"" handler:^(NSDictionary *header) {
@@ -144,7 +144,6 @@
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
 
     [self networkUpload:@"" handler:^(NSDictionary *header) {
@@ -312,8 +311,12 @@
 }
 - (void)uploadModel:(FTRecordModel *)model{
     XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeTRACING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+       
+        NSInteger statusCode = httpResponse.statusCode;
+        BOOL success = (statusCode >=200 && statusCode < 500);
+        XCTAssertTrue(success);
         [expectation2 fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

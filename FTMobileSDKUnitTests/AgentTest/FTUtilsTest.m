@@ -10,14 +10,18 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTRecordModel.h>
+#import <FTRecordModel.h>
 #import <FTMobileAgent/FTBaseInfoHander.h>
-#import <NSDate+FTAdd.h>
-#import "FTUploadTool+Test.h"
+#import <FTDateUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
 #import <NSString+FTAdd.h>
 #import "FTBaseInfoHander.h"
+#import "FTTrackDataManger+Test.h"
+#import <FTRequest.h>
+#import <FTNetworkManager.h>
+#import "FTRequestBody.h"
+
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -50,15 +54,16 @@
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
                           FT_AGENT_OPDATA:dict,
     };
-    
+
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    FTUploadTool *tool =  [FTUploadTool new];
-    NSString *line = [tool getRequestDataWithEventArray:@[model] type:FT_AGENT_MEASUREMENT];
-    NSArray *array = [line componentsSeparatedByString:@" "];
-    XCTAssertTrue(array.count == 3);
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@" "];
+    XCTAssertTrue(array.count == 3);
+
     XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
     XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
@@ -113,13 +118,12 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
 //    NSString *appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
      
     [[FTMobileAgent sharedInstance] logging:str status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
@@ -127,8 +131,12 @@
     FTRecordModel *model = [array lastObject];
     
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [[FTMobileAgent sharedInstance].upTool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    
+        NSInteger statusCode = httpResponse.statusCode;
+        BOOL success = (statusCode >=200 && statusCode < 500);
+        XCTAssertTrue(success);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

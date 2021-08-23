@@ -12,15 +12,13 @@
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTLocationManager.h>
-#import <Network/FTUploadTool.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTMobileAgent/FTConstants.h>
-#import <NSDate+FTAdd.h>
-#import <FTMobileAgent/Network/NSURLRequest+FTMonitor.h>
+#import <FTDateUtil.h>
+#import <NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "NSString+FTAdd.h"
 #import <FTJSONUtil.h>
-#import "FTUploadTool+Test.h"
 #import "FTPresetProperty.h"
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -39,7 +37,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 
 - (void)tearDown {
@@ -50,9 +48,9 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
+//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 #pragma mark ========== 用户数据绑定 ==========
 /**

@@ -11,7 +11,7 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTDataBase/fmdb/ZY_FMDatabase.h>
 #import <FTRecordModel.h>
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 
 @interface FTDatabaseTest : XCTestCase
 
@@ -23,7 +23,7 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[FTTrackerEventDBTool sharedManger] resetInstance];
     [FTTrackerEventDBTool shareDatabase:@"test.sqlite"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 
 - (void)tearDown {
@@ -37,15 +37,14 @@
 }
 -(void)testCreateTable{
     BOOL  track = [[FTTrackerEventDBTool sharedManger] zy_isExistTable:FT_DB_TRACREVENT_TABLE_NAME];
-    BOOL  user = [[FTTrackerEventDBTool sharedManger] zy_isExistTable:FT_DB_USERSESSION_TABLE_NAME];
-    XCTAssertTrue(track && user);
+    XCTAssertTrue(track);
 }
 - (void)testInsertSingle{
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTRecordModel *model = [FTRecordModel new];
     model.op = @"test";
     model.data = @"testData";
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    [[FTTrackerEventDBTool sharedManger] insertItem:model];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 1);
     
@@ -68,9 +67,9 @@
     FTRecordModel *model = [FTRecordModel new];
     model.op = @"test";
     model.data = @"testData";
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+    [[FTTrackerEventDBTool sharedManger] insertItem:model];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(oldCount>0 && newCount == 0);
 }
@@ -80,7 +79,7 @@
         FTRecordModel *model = [FTRecordModel new];
         model.op = [NSString stringWithFormat:@"test%d",i];
         model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackerEventDBTool sharedManger] insertItemWithItemData:model];
+        [[FTTrackerEventDBTool sharedManger] insertItem:model];
     }
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 5000);

@@ -6,7 +6,7 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import <FTMobileAgent/Network/FTSessionConfiguration.h>
+#import <FTSessionConfiguration.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

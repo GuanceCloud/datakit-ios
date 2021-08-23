@@ -7,14 +7,16 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <Network/FTUploadTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
 #import <FTMobileAgent/FTConstants.h>
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 #import <FTJSONUtil.h>
+#import "FTConfigManager.h"
+#import <FTRequest.h>
+#import <FTNetworkManager.h>
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -31,10 +33,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[[NSDate new] ft_dateTimestamp];
+    long  tm =[FTDateUtil currentTimeNanosecond];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
 }
-- (FTUploadTool *)setRightConfigWithTestType:(FTNetworkTestsType)type{
+- (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
     switch (type) {
@@ -59,7 +61,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             urlStr = [urlStr stringByAppendingString:@"TestErrorNet"];
             break;
     }
-    NSString *newUrl = [urlStr stringByAppendingString:@"/v1/write/metric"];
+    NSString *newUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
     
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         NSString *str =  request.URL.absoluteString;
@@ -115,20 +117,21 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
         config.enableSDKDebugLog = YES;
-        return  [[FTUploadTool alloc]initWithConfig:config];
+        [[FTConfigManager sharedInstance] setTrackConfig:config];
     }
-    return nil;
 }
--(FTUploadTool *)setBadMetricsUrl{
+-(void)setBadMetricsUrl{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://162.215.252.78"];
     config.enableSDKDebugLog = YES;
-    return  [[FTUploadTool alloc]initWithConfig:config];
+    [[FTConfigManager sharedInstance] setTrackConfig:config];
+
 }
 /**
  测试上传过程是否正确
  */
 -(void)testNetwork{
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTest];
+    
+    [self setRightConfigWithTestType:FTNetworkTest];
     [NSThread sleepForTimeInterval:2];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
@@ -144,8 +147,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    
+        NSInteger statusCode = httpResponse.statusCode;
+        BOOL success = (statusCode >=200 && statusCode < 500);
+        XCTAssertTrue(success);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -158,7 +165,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 -(void)testBadNetwork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTestBad];
+    [self setRightConfigWithTestType:FTNetworkTestBad];
     
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
@@ -172,10 +179,16 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode == 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    
+        NSInteger statusCode = httpResponse.statusCode;
+        BOOL success = (statusCode >=200 && statusCode < 500);
+        XCTAssertTrue(success);
         [expectation fulfill];
+        
     }];
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -187,7 +200,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 -(void)testNoJsonResponseNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
+     [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -200,13 +213,16 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        NSError *errors;
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
-        NSString *result =[[ NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
-        XCTAssertTrue(errors != nil && [result isEqualToString:@"Hello World!"]);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    
+        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
+        NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        XCTAssertTrue(error != nil && [result isEqualToString:@"Hello World!"]);
         [expectation fulfill];
+        
     }];
+
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -216,7 +232,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 - (void)testWrongJsonResponseNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
+    [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -229,12 +245,15 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    
         NSError *errors;
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:&errors];
+        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
         [expectation fulfill];
     }];
+
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -244,7 +263,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 - (void)testEmptyResponseDataNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool =  [self setRightConfigWithTestType:FTNetworkTestEmptyResponseData];
+    [self setRightConfigWithTestType:FTNetworkTestEmptyResponseData];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -257,10 +276,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(response.bytes == 0);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        XCTAssertTrue(data.bytes == 0);
         [expectation fulfill];
     }];
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -270,7 +291,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 - (void)testErrorResponse{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTestErrorResponse];
+     [self setRightConfigWithTestType:FTNetworkTestErrorResponse];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -283,8 +304,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode != 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        NSInteger statusCode = httpResponse.statusCode;
+        XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -296,7 +319,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 -(void)testBadMetricsUrl{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setBadMetricsUrl];
+     [self setBadMetricsUrl];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -309,8 +332,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode != 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        NSInteger statusCode = httpResponse.statusCode;
+        XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -322,7 +347,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
  */
 - (void)testErrorNet{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTUploadTool *tool = [self setRightConfigWithTestType:FTNetworkTestErrorNet];
+    [self setRightConfigWithTestType:FTNetworkTestErrorNet];
     NSDictionary *dict = @{
         FT_AGENT_MEASUREMENT:@"iOSTest",
         FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
@@ -335,8 +360,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTRecordModel new];
     model.op =FT_DATA_TYPE_INFLUXDB;
     model.data =[FTJSONUtil convertToJsonData:data];
-    [tool trackImmediate:model callBack:^(NSInteger statusCode, NSData * _Nullable response) {
-        XCTAssertTrue(statusCode != 200);
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        NSInteger statusCode = httpResponse.statusCode;
+        XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

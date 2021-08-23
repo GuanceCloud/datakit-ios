@@ -15,7 +15,6 @@
 #import <objc/runtime.h>
 #import <FTTrack.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import "FTUploadTool+Test.h"
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
@@ -57,7 +56,6 @@
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     [FTMobileAgent startWithConfigOptions:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
 }
 - (void)tearDown {
 //    [[FTMobileAgent sharedInstance] resetInstance];

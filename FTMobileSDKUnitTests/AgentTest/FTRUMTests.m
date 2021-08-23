@@ -12,16 +12,16 @@
 #import <FTBaseInfoHander.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import "FTUploadTool+Test.h"
 #import "UITestVC.h"
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 #import "NSString+FTAdd.h"
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
 #import <FTRUMManger.h>
 #import <FTRUMSessionHandler.h>
-#import "FTUploadTool+Test.h"
 #import <FTMonitorManager.h>
+#import "FTTrackDataManger+Test.h"
+
 @interface FTRUMTests : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -169,7 +169,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"view"]) {
             NSDictionary *tags = opdata[@"tags"];
             [self rumTags:tags];
@@ -219,7 +219,7 @@
                 NSString *op = dict[@"op"];
                 XCTAssertTrue([op isEqualToString:@"RUM"]);
                 NSDictionary *opdata = dict[@"opdata"];
-                NSString *measurement = opdata[@"measurement"];
+                NSString *measurement = opdata[@"source"];
                 if ([measurement isEqualToString:@"resource"]) {
                     NSDictionary *tags = opdata[@"tags"];
                     NSDictionary *field = opdata[@"field"];
@@ -262,7 +262,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *tags = opdata[@"tags"];
             NSDictionary *field = opdata[@"field"];
@@ -295,7 +295,7 @@
     [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         NSDictionary *tags = opdata[@"tags"];
         NSDictionary *field = opdata[@"field"];
         if ([measurement isEqualToString:@"action"]) {
@@ -333,7 +333,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *tags = opdata[@"tags"];
             if([tags[@"action_type"] isEqualToString:@"launch_cold"]){
@@ -367,7 +367,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *tags = opdata[@"tags"];
             if([tags[@"action_type"] isEqualToString:@"launch_hot"]){
@@ -397,7 +397,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *tags = opdata[@"tags"];
             if([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]"]){
@@ -437,7 +437,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"view"] && hasViewData == NO) {
             NSDictionary *field = opdata[@"field"];
             actionCount = [field[@"view_action_count"] integerValue];
@@ -484,7 +484,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"action"]) {
             NSDictionary *field = opdata[@"field"];
             NSInteger errorCount = [field[@"action_error_count"] integerValue];
@@ -508,7 +508,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
 
@@ -549,7 +549,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [self.testVC viewDidAppear:NO];
 
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -571,7 +571,7 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"measurement"];
+        NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:@"resource"]) {
             NSDictionary *tags = opdata[@"tags"];
             XCTAssertTrue([tags.allKeys containsObject:@"span_id"]);
@@ -671,7 +671,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
 }
 @end

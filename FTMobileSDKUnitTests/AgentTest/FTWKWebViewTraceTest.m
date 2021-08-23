@@ -10,16 +10,16 @@
 #import "TestWKWebViewVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import "FTUploadTool+Test.h"
 #import <FTBaseInfoHander.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTMonitorManager.h>
-#import <NSDate+FTAdd.h>
+#import <FTDateUtil.h>
 #import <FTJSONUtil.h>
 #import "TestWKParentVC.h"
+#import "FTTrackDataManger+Test.h"
 @interface FTWKWebViewTraceTest : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) TestWKWebViewVC *testVC;
@@ -50,8 +50,7 @@
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [self setWKWebview];
 }
 - (void)setNoTraceConfig{
@@ -60,8 +59,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMonitorManager sharedInstance] setMobileConfig:config];
-    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[[NSDate date] ft_dateTimestamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [self setWKWebview];
 }
 
