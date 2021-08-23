@@ -10,6 +10,8 @@ Pod::Spec.new do |s|
   s.license      = { type: 'Apache', :file => 'LICENSE'}
   s.authors             = { "hulilei" => "hulilei@jiagouyun.com","Brandon Zhang" => "zhangbo@jiagouyun.com" }
   s.platform     = :ios, "8.0"
+  s.default_subspec = 'FTMobileAgent'
+
   # s.ios.deployment_target = "8.0"
   # s.osx.deployment_target = "10.7"
   # s.watchos.deployment_target = "2.0"
@@ -20,6 +22,12 @@ Pod::Spec.new do |s|
    s.subspec  'FTMobileAgent' do | agent |
        agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*'
        agent.library = "resolv.9"
+       agent.dependency = 'FTMobileSDK/Common'
    end
+
+   s.subspec 'Common' do |c|
+       c.source_files = 'FTMobileSDK/BaseUtils/**/*'
+   end
+   
 
 end
