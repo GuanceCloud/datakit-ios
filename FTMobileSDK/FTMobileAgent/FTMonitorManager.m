@@ -157,7 +157,8 @@ static dispatch_once_t onceToken;
 }
 - (void)startMonitorNetwork{
     [FTURLProtocol startMonitor];
-    [FTURLProtocol setDelegate:[FTWeakProxy proxyWithTarget:self]];
+    FTWeakProxy *weakProxy = [FTWeakProxy proxyWithTarget:self];
+    [FTURLProtocol setDelegate:weakProxy];
     //js
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
 }

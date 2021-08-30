@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)startMonitor;
 
 + (void)stopMonitor;
-+ (void)setDelegate:(id<FTHTTPProtocolDelegate>)newValue;
++ (void)setDelegate:(id)newValue;
 
 + (id<FTHTTPProtocolDelegate>)delegate;
 

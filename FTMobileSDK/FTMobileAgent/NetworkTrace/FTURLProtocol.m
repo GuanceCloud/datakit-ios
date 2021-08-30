@@ -53,7 +53,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     }
     return result;
 }
-+ (void)setDelegate:(id<FTHTTPProtocolDelegate>)newValue{
++ (void)setDelegate:(id)newValue{
     @synchronized (self) {
         sDelegate = newValue;
     }

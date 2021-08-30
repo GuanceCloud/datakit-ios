@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTURLProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@interface FTWeakProxy : NSProxy<FTHTTPProtocolDelegate>
+@interface FTWeakProxy : NSProxy
 @property (nullable, nonatomic, weak, readonly) id target;
 - (instancetype)initWithTarget:(id)target;
 + (instancetype)proxyWithTarget:(id)target;
