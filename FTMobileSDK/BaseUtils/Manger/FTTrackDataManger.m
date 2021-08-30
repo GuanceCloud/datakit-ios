@@ -13,7 +13,6 @@
 #import "FTReachability.h"
 #import "FTLog.h"
 #import "FTRequest.h"
-#import "FTConstants.h"
 #import "FTNetworkManager.h"
 #import "FTThread.h"
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量

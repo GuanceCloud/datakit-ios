@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTConstants.h"
 /**
  - FTAddDataNormal: trace与rum
  - FTAddDataCache:  logging
