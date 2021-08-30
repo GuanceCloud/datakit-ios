@@ -8,6 +8,7 @@
 
 #import "FTConfigManager.h"
 #import "FTMobileAgentVersion.h"
+#import "FTNetworkInfoManger.h"
 @implementation FTConfigManager
 + (instancetype)sharedInstance{
     static FTConfigManager *sharedInstance = nil;
@@ -15,13 +16,13 @@
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
     });
-
     return sharedInstance;
 }
 -(void)setTrackConfig:(FTMobileConfig *)trackConfig{
     _trackConfig = [trackConfig copy];
+    [FTNetworkInfoManger sharedInstance].setMetricsUrl(trackConfig.metricsUrl)
+    .setSdkVersion(SDK_VERSION)
+    .setXDataKitUUID(trackConfig.XDataKitUUID);
 }
--(NSString *)sdkVersion{
-    return SDK_VERSION;
-}
+
 @end

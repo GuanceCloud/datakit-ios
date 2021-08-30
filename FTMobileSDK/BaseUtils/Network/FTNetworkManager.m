@@ -30,7 +30,9 @@
                              NSError * _Nullable error))callback{
     
     NSURLRequest *urlRequest = [self createRequest:request];
-    
+    if(!urlRequest){
+        return nil;
+    }
     NSURLSessionDataTask  *task =
     
     [self.session dataTaskWithRequest:urlRequest
