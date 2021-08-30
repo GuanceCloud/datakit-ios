@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 *
 *  @return 存储是否成功
 */
--(BOOL)insertItemWithItemDatas:(NSArray<FTRecordModel*> *)items;
+-(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items;
 /**
 *  @abstract
 *  向缓存中添加一组对象

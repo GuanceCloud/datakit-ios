@@ -110,7 +110,7 @@ static dispatch_once_t onceToken;
    }
     return success;
 }
--(BOOL)insertItemWithItemDatas:(NSArray<FTRecordModel*> *)items{
+-(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
         NSInteger count = 5000 - [self getDatasCount]-self.messageCaches.count;
@@ -143,7 +143,7 @@ static dispatch_once_t onceToken;
         NSArray *array = [self.messageCaches subarrayWithRange:NSMakeRange(0, 20)];
         [self.messageCaches removeObjectsInArray:array];
         dispatch_semaphore_signal(_lock);
-        [self insertItemWithItemDatas:array];
+        [self insertItemsWithDatas:array];
     }else{
         dispatch_semaphore_signal(_lock);
 
@@ -155,7 +155,7 @@ static dispatch_once_t onceToken;
         NSArray *array = [self.messageCaches copy];
         self.messageCaches = nil;
         dispatch_semaphore_signal(_lock);
-        [self insertItemWithItemDatas:array];
+        [self insertItemsWithDatas:array];
     }else{
         dispatch_semaphore_signal(_lock);
     }
@@ -163,7 +163,7 @@ static dispatch_once_t onceToken;
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
 
-    return [self getDatasWithFormat:sql bindUser:NO];
+    return [self getDatasWithFormat:sql];
 
 }
 
@@ -173,10 +173,10 @@ static dispatch_once_t onceToken;
     }
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC limit %lu  ;",FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
 
-    return [self getDatasWithFormat:sql bindUser:NO];
+    return [self getDatasWithFormat:sql];
 }
 
--(NSArray *)getDatasWithFormat:(NSString *)format bindUser:(BOOL)bindUser{
+-(NSArray *)getDatasWithFormat:(NSString *)format{
     if([self isOpenDatabese:self.db]) {
         __block  NSMutableArray *array = [NSMutableArray new];
         [self zy_inDatabase:^{
@@ -185,7 +185,6 @@ static dispatch_once_t onceToken;
             while(set.next) {
                 //创建对象赋值
                 FTRecordModel* item = [[FTRecordModel alloc]init];
-                item._id= [[set stringForColumn:@"_id"]intValue];
                 item.tm = [set longForColumn:@"tm"];
                 item.data= [set stringForColumn:@"data"];
                 item.op = [set stringForColumn:@"op"];
