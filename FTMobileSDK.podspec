@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
    s.subspec  'FTMobileAgent' do | agent |
        agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*'
        agent.library = "resolv.9"
-       agent.dependency = 'FTMobileSDK/Common'
+       agent.dependency 'FTMobileSDK/Common'
    end
 
    s.subspec 'Common' do |c|
