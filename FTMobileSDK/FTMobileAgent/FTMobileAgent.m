@@ -208,7 +208,7 @@ static dispatch_once_t onceToken;
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
         baseTags[@"network_type"] = self.net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FTDataTypeRUM tags:baseTags field:fields tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -240,7 +240,7 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FTDataTypeLOGGING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:type];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -261,7 +261,7 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FTDataTypeTRACING tags:tagDict field:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
         [self insertDBWithItemData:model type:FTAddDataNormal];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);

@@ -68,13 +68,6 @@ NSString * const FT_MONITOR_CPU_USAGE = @"cpu_usage";
 NSString * const FT_MONITOR_MEM_USAGE = @"mem_usage";
 NSString * const FT_MONITOR_POWER = @"power";
 
-#pragma mark ========== API ==========
-NSString * const FT_DATA_TYPE_RUM = @"RUM";
-NSString * const FT_DATA_TYPE_INFLUXDB = @"InfluxDB";
-NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
-NSString * const FT_DATA_TYPE_OBJECT = @"Object";
-NSString * const FT_DATA_TYPE_TRACING = @"Tracing";
-
 #pragma mark ========== logging key ==========
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_KEY_STATUS = @"status";
@@ -117,23 +110,4 @@ NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
 NSUInteger const MXRMonitorRunloopStandstillCount = 5;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 
-@implementation FTConstants
-+(NSString *)dataTypeStr:(FTDataType)type{
-    NSString *request = nil;
-    switch (type) {
-        case FTDataTypeRUM:
-            request = @"RUM";
-            break;
-        case FTDataTypeLOGGING:
-            request = @"Logging";
-            break;
-        case FTDataTypeTRACING:
-            request = @"Tracing";
-            break;
-        case FTDataTypeObject:
-            request = @"Object";
-            break;
-    }
-    return request;
-}
-@end
+

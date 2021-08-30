@@ -9,29 +9,24 @@
 #import "FTRequest.h"
 #import "FTRequestBody.h"
 #import "FTDateUtil.h"
-#import "FTConfigManager.h"
+#import "FTNetworkInfoManger.h"
+#import "FTRecordModel.h"
 @interface FTRequest()
 @property (nonatomic, strong) NSArray <FTRecordModel *> *events;
 
 @end
 @implementation FTRequest
--(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events type:(FTDataType)type{
-    FTRequest *request = nil;
-    switch (type) {
-        case FTDataTypeRUM:
-            request = [[FTRumRequest alloc]initWithEvents:events];
-            break;
-        case FTDataTypeLOGGING:
-            request = [[FTLoggingRequest alloc]initWithEvents:events];
-            break;
-        case FTDataTypeTRACING:
-            request = [[FTTracingRequest alloc]initWithEvents:events];
-            break;
-        case FTDataTypeObject:
-            request = [[FTObjectRequest alloc]initWithEvents:events];
-            break;
+-(instancetype)initWithEvents:(NSArray *)events type:(NSString *)type{
+    if ([type isEqualToString:FT_DATA_TYPE_RUM]) {
+        return [[FTRumRequest alloc]initWithEvents:events];
+    }else if ([type isEqualToString:FT_DATA_TYPE_LOGGING]){
+        return [[FTLoggingRequest alloc]initWithEvents:events];
+    }else if([type isEqualToString:FT_DATA_TYPE_TRACING]){
+        return [[FTTracingRequest alloc]initWithEvents:events];
+    }else if([type isEqualToString:FT_DATA_TYPE_OBJECT]){
+        return [[FTObjectRequest alloc]initWithEvents:events];
     }
-    return request;
+    return nil;
 }
 -(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
     self = [super init];
@@ -41,10 +36,10 @@
     return self;
 }
 -(NSURL *)absoluteURL{
-    if (!FTConfigManager.sharedInstance.trackConfig.metricsUrl) {
+    if (!FTNetworkInfoManger.sharedInstance.metricsUrl) {
         return nil;
     }
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTConfigManager.sharedInstance.trackConfig.metricsUrl,self.path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManger.sharedInstance.metricsUrl,self.path]];
     return url;
 }
 -(NSString *)contentType{
@@ -65,9 +60,9 @@
      [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
      [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
      //设置请求参数
-     [mutableRequest setValue:FTConfigManager.sharedInstance.trackConfig.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+     [mutableRequest setValue:FTNetworkInfoManger.sharedInstance.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTConfigManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManger sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      
     if (self.requestBody&&self.events) {

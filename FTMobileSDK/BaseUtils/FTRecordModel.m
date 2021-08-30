@@ -9,10 +9,15 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTRecordModel.h"
-#import "FTBaseInfoHander.h"
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTLog.h"
+
+NSString * const FT_DATA_TYPE_RUM = @"RUM";
+NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
+NSString * const FT_DATA_TYPE_TRACING = @"Tracing";
+NSString * const FT_DATA_TYPE_OBJECT = @"Object";
+
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
@@ -22,38 +27,23 @@
     }
     return self;
 }
--(instancetype)initWithSource:(NSString *)source op:(FTDataType )op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     self = [super init];
     if (self) {
         NSMutableDictionary *fieldDict = [NSMutableDictionary new];
         NSMutableDictionary *tagsDict = [NSMutableDictionary new];
         [fieldDict addEntriesFromDictionary:field];
         [tagsDict addEntriesFromDictionary:tags];
-        NSString *opStr;
-        switch (op) {
-            case FTDataTypeRUM:
-                opStr = @"RUM";
-                break;
-            case FTDataTypeLOGGING:
-                opStr = @"Logging";
-                break;
-            case FTDataTypeTRACING:
-                opStr = @"Tracing";
-                break;
-            case FTDataTypeObject:
-                opStr = @"Object";
-                break;
-        }
         NSMutableDictionary *opdata = @{
             @"source":source,
             @"field":fieldDict,
         }.mutableCopy;
         [opdata setValue:tagsDict forKey:@"tags"];
-        NSDictionary *data =@{@"op":opStr,
+        NSDictionary *data =@{@"op":op,
                               @"opdata":opdata,
         };
         ZYDebug(@"write data = %@",data);
-        _op = opStr;
+        _op = op;
         _data =[FTJSONUtil convertToJsonData:data];
         if (tm&&tm>0) {
             _tm = tm;

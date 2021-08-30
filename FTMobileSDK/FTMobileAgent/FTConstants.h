@@ -7,12 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-typedef NS_ENUM(NSInteger, FTDataType) {
-    FTDataTypeRUM,
-    FTDataTypeLOGGING,
-    FTDataTypeTRACING,
-    FTDataTypeObject
-};
+
 typedef enum FTError : NSInteger {
   NetWorkException = 101,        //网络问题
   InvalidParamsException = 102,  //参数问题
@@ -45,12 +40,7 @@ extern NSString * const FT_TYPE_FREEZE;
 extern NSString * const FT_TYPE_VIEW;
 extern NSString * const FT_TERMINAL_APP;
 extern NSString * const FT_TERMINAL_MINIPROGRA;
-#pragma mark ========== api ==========
-extern NSString * const FT_DATA_TYPE_RUM;
-extern NSString * const FT_DATA_TYPE_INFLUXDB;
-extern NSString * const FT_DATA_TYPE_LOGGING;
-extern NSString * const FT_DATA_TYPE_OBJECT;
-extern NSString * const FT_DATA_TYPE_TRACING;
+
 #pragma mark ========== logging key ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_SOURCE;
@@ -123,6 +113,4 @@ extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
 // 多少次卡顿纪录为一次有效卡顿
 extern NSUInteger const  MXRMonitorRunloopStandstillCount;
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
-@interface FTConstants : NSObject
-+(NSString *)dataTypeStr:(FTDataType)type;
-@end
+

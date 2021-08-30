@@ -98,33 +98,33 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     }
     self.isUploading = YES;
     @try {
-        [self flushWithType:FTDataTypeRUM];
-        [self flushWithType:FTDataTypeLOGGING];
-        [self flushWithType:FTDataTypeTRACING];
+        [self flushWithType:FT_DATA_TYPE_RUM];
+        [self flushWithType:FT_DATA_TYPE_LOGGING];
+        [self flushWithType:FT_DATA_TYPE_TRACING];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);
     }
 }
--(BOOL)flushWithType:(FTDataType )type{
-    NSString *dataType = [FTConstants dataTypeStr:type];
-    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:dataType];
+-(BOOL)flushWithType:(NSString *)type{
+    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
     if (events.count == 0 || ![self flushWithEvents:events type:type]) {
         return NO;
     }
     FTRecordModel *model = [events lastObject];
-    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:dataType tm:model.tm]) {
+    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
         ZYErrorLog(@"数据库删除已上传数据失败");
         return NO;
     }
     return [self flushWithType:type];
 }
--(BOOL)flushWithEvents:(NSArray *)events type:(FTDataType)type{
+-(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
     @try {
         ZYDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
         FTRequest *request = [[FTRequest alloc]initWithEvents:events type:type];
+      
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 ZYErrorLog(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);

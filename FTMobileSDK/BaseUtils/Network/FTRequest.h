@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTConstants.h"
 #import "FTRequestBody.h"
 @class FTRecordModel;
 NS_ASSUME_NONNULL_BEGIN
@@ -28,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRequest : NSObject<FTRequestProtocol>
 
--(instancetype)initWithEvents:(NSArray <FTRecordModel*>*)events type:(FTDataType)type;
+-(instancetype)initWithEvents:(NSArray <FTRecordModel*>*)events type:(NSString *)type;
 @end
 
 @interface FTLoggingRequest : FTRequest
