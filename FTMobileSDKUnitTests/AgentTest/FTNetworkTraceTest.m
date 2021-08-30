@@ -311,7 +311,7 @@
 }
 - (void)uploadModel:(FTRecordModel *)model{
     XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
-    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeTRACING];
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FT_DATA_TYPE_TRACING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
        
         NSInteger statusCode = httpResponse.statusCode;

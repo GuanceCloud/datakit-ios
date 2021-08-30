@@ -58,7 +58,7 @@
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [array addObject:model];
     }
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
+    [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 30);
     
@@ -92,7 +92,7 @@
         model.data = [NSString stringWithFormat:@"testData%d",i];
         [array addObject:model];
     }
-    [[FTTrackerEventDBTool sharedManger] insertItemWithItemDatas:array];
+    [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 5000);
 }

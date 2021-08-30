@@ -51,12 +51,12 @@
         FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
         FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_INFLUXDB,
+    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_RUM,
                           FT_AGENT_OPDATA:dict,
     };
 
     FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_INFLUXDB;
+    model.op =FT_DATA_TYPE_RUM;
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
@@ -131,7 +131,7 @@
     FTRecordModel *model = [array lastObject];
     
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;

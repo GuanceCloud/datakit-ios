@@ -82,7 +82,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testIllegalUrl" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:3];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
-    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FTDataTypeLOGGING];
+    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
