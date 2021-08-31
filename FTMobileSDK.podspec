@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
   s.name         = "FTMobileSDK"
 #   s.version      = "1.0.2-alpha.8"
   s.version      = "$JENKINS_DYNAMIC_VERSION"
-  s.summary      = "驻云 DataFlux iOS 数据采集 SDK"
-  s.description  = "驻云 DataFlux iOS 数据采集 SDK"
+  s.summary      = "椹讳簯 DataFlux iOS 鏁版嵁閲囬泦 SDK"
+  s.description  = "椹讳簯 DataFlux iOS 鏁版嵁閲囬泦 SDK"
   s.homepage     = "https://github.com/DataFlux-cn/datakit-ios.git"
 
   s.license      = { type: 'Apache', :file => 'LICENSE'}
@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
    end
    
    s.subspec  'FTMobileAgent' do | agent |
-       agent.ios.deployment_target = '10.0'
+       agent.ios.deployment_target = '9.0'
        agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*'
        agent.library = "resolv.9"
        agent.dependency 'FTMobileSDK/Common'
