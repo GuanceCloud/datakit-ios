@@ -8,8 +8,9 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
-
+#endif
 #import "FTLog.h"
 static BOOL _enableLog;
 static BOOL _enableDescLog;
@@ -68,10 +69,12 @@ static dispatch_queue_t _loggingQueue;
         return;
     }
     }
+#if TARGET_OS_IOS
     NSInteger systemVersion = UIDevice.currentDevice.systemVersion.integerValue;
     if (systemVersion == 10) {
         return;
     }
+#endif
     @try {
         va_list args;
         va_start(args, format);
