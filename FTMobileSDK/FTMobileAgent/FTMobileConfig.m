@@ -45,19 +45,27 @@
     if (self) {
         _service = FT_DEFAULT_SERVICE_NAME;
         _samplerate = 100;
-        _traceConsoleLog = NO;
+        _enableConsoleLog = NO;
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
+        _prefix = @"";
+        _logLevelFilter = @[@0,@1,@2,@3,@4];
     }
     return self;
+}
+- (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix{
+    _enableConsoleLog = enable;
+    _prefix = prefix;
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
     options.service = self.service;
     options.samplerate = self.samplerate;
-    options.traceConsoleLog = self.traceConsoleLog;
+    options.enableConsoleLog = self.enableConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;
+    options.prefix = self.prefix;
+    options.logLevelFilter = self.logLevelFilter;
     return options;
 }
 @end

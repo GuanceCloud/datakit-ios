@@ -41,6 +41,7 @@
 @property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTMobileAgent
 
@@ -105,9 +106,10 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
-        if(self.loggerConfig.traceConsoleLog){
+        if(self.loggerConfig.enableConsoleLog){
             [self _traceConsoleLog];
         }
+        self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -217,8 +219,16 @@ static dispatch_once_t onceToken;
 
 // FT_DATA_TYPE_LOGGING
 -(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+    if (!self.loggerConfig) {
+        ZYErrorLog(@"请先设置 FTLoggerConfig");
+        return;
+    }
     if (!content || content.length == 0 || [content ft_charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
+        return;
+    }
+    if (![self.logLevelFilterSet containsObject:@(status)]) {
+        ZYDebug(@"经过过滤算法判断-此条日志不采集");
         return;
     }
     if (![FTBaseInfoHander randomSampling:self.loggerConfig.samplerate]){
@@ -272,7 +282,14 @@ static dispatch_once_t onceToken;
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            if (weakSelf.loggerConfig.traceConsoleLog) {
+            if (!weakSelf.loggerConfig.enableConsoleLog ) {
+                return;
+            }
+            if (weakSelf.loggerConfig.prefix.length>0) {
+                if([logStr containsString:weakSelf.loggerConfig.prefix]){
+                    [weakSelf loggingWithType:FTAddDataCache status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                }
+            }else{
                 [weakSelf loggingWithType:FTAddDataCache status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
             }
         });

@@ -74,7 +74,11 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置是否需要采集控制台日志 默认为NO
  */
-@property (nonatomic, assign) BOOL traceConsoleLog;
+@property (nonatomic, assign) BOOL enableConsoleLog;
+/**
+ * 设置采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
+ */
+@property (nonatomic, copy) NSString *prefix;
 /**
  * 是否将 logger 数据与 rum 关联
  */
@@ -83,6 +87,14 @@ NS_ASSUME_NONNULL_BEGIN
  * 是否上传自定义 log
  */
 @property (nonatomic, assign) BOOL enableCustomLog;
+/**
+ * 设置采集自定义日志的状态数组  默认为全采集
+ * 例: @[@(FTStatusInfo),@(FTStatusError)]
+ * 或 @[@0,@1]
+ */
+@property (nonatomic, strong) NSArray<NSNumber*> *logLevelFilter;
+
+- (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix;
 @end
 
 
