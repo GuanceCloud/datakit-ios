@@ -54,7 +54,7 @@
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
-        loggerConfig.traceConsoleLog = YES;
+        loggerConfig.enableConsoleLog = YES;
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
         traceConfig.enableLinkRumData = YES;
         traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;

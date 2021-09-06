@@ -80,21 +80,67 @@
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.traceConsoleLog = YES;
-    NSLog(@"testEnableTraceConsoleLog");
-    [NSThread sleepForTimeInterval:1];
+    loggerConfig.enableConsoleLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    for (int i = 0; i<21; i++) {
+        NSLog(@"testEnableTraceConsoleLog");
+    }
+    [NSThread sleepForTimeInterval:3];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount >= count);
+    XCTAssertTrue(newCount > count);
 }
 - (void)testDisableTraceConsoleLog{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.traceConsoleLog = NO;
-    NSLog(@"testDisableTraceConsoleLog");
+    loggerConfig.enableConsoleLog = NO;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    for (int i = 0; i<21; i++) {
+        NSLog(@"testEnableTraceConsoleLog");
+    }
     [NSThread sleepForTimeInterval:1];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
+}
+- (void)testPrefix{
+    [self setRightSDKConfig];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableConsoleLog = YES;
+    loggerConfig.prefix = @"debug";
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    NSLog(@"debug testDisableTraceConsoleLog");
+    for (int i = 0; i<20; i++) {
+        NSLog(@"testDisableTraceConsoleLog");
+    }
+    [NSThread sleepForTimeInterval:3];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == count);
+    for (int i = 0; i<20; i++) {
+        NSLog(@"debug testDisableTraceConsoleLog");
+    }
+    [NSThread sleepForTimeInterval:3];
+    NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount2 > count);
+
+}
+- (void)testLogLevelFilter{
+    [self setRightSDKConfig];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.logLevelFilter = @[@(FTStatusInfo)];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
+    [NSThread sleepForTimeInterval:1];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount>count);
+    [[FTMobileAgent sharedInstance] logging:@"testLoggingMethodError" status:FTStatusError];
+    [NSThread sleepForTimeInterval:1];
+    NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount2 == newCount);
+
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -189,7 +235,7 @@
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.samplerate = 0;
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.traceConsoleLog = YES;
+    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
@@ -204,7 +250,7 @@
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.traceConsoleLog = YES;
+    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
