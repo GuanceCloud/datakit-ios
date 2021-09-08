@@ -63,7 +63,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:1];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount>count);
+    XCTAssertTrue(newCount=count+1);
 }
 - (void)testDisbleCustomLog{
     [self setRightSDKConfig];
@@ -87,7 +87,7 @@
     }
     [NSThread sleepForTimeInterval:3];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount > count);
+    XCTAssertTrue(newCount == count+20);
 }
 - (void)testDisableTraceConsoleLog{
     [self setRightSDKConfig];
@@ -121,7 +121,7 @@
     }
     [NSThread sleepForTimeInterval:3];
     NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount2 > count);
+    XCTAssertTrue(newCount2 == count+20);
 
 }
 - (void)testLogLevelFilter{
@@ -257,7 +257,7 @@
     NSLog(@"testSampleRate100");
     [NSThread sleepForTimeInterval:2];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    XCTAssertTrue(oldDatas.count < newDatas.count);
+    XCTAssertTrue(oldDatas.count+1 == newDatas.count);
 
 }
 @end
