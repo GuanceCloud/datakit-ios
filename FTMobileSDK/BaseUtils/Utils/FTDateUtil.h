@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 时间戳
 */
 + (long long)currentTimeMillisecond;
-+ (long long)dateTimeMillisecond:(NSDate *)date;
++ (long long)dateTimeNanosecond:(NSDate *)date;
 /**
  *  @abstract
  *  获取当前时间戳 纳秒级

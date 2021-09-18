@@ -64,7 +64,7 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeMillisecond:self.model.time]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeNanosecond:self.model.time]];
     
 
 }
@@ -75,6 +75,6 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeMillisecond:self.model.time]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeNanosecond:self.model.time]];
 }
 @end

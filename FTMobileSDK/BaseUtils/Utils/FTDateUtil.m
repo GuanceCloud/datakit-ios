@@ -17,7 +17,7 @@
     NSDate *dateNow = [NSDate date];
     return (long long) ([dateNow timeIntervalSince1970] * 1000000000);
 }
-+ (long long)dateTimeMillisecond:(NSDate *)date{
++ (long long)dateTimeNanosecond:(NSDate *)date{
     long long time= (long long)([date timeIntervalSince1970]*1000000000);
     return  time;
 }

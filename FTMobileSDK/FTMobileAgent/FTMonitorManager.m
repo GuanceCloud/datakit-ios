@@ -246,7 +246,7 @@ static dispatch_once_t onceToken;
     if(trace&&span&&sampling){
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
-        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeMillisecond:taskMes.requestStartDate]];
+        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeNanosecond:taskMes.requestStartDate]];
     }
     
     
@@ -303,7 +303,7 @@ static dispatch_once_t onceToken;
         [tags setValue:trace forKey:FT_FLOW_TRACEID];
         [tags setValue:span forKey:FT_KEY_SPANID];
     }
-    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeMillisecond:start]];
+    [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeNanosecond:start]];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
