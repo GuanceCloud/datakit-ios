@@ -106,8 +106,8 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
+        self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
         if(self.loggerConfig.enableConsoleLog){
-            self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
             [self _traceConsoleLog];
         }
     }
