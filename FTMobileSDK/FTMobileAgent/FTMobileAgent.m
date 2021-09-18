@@ -107,9 +107,9 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         if(self.loggerConfig.enableConsoleLog){
+            self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
             [self _traceConsoleLog];
         }
-        self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -281,7 +281,7 @@ static dispatch_once_t onceToken;
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(self.concurrentLabel, ^{
             if (!weakSelf.loggerConfig.enableConsoleLog ) {
                 return;
             }

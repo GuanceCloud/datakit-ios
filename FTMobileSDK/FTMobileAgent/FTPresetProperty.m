@@ -105,33 +105,46 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     return self;
 }
 -(NSDictionary *)webCommonPropertyTags{
-    if (!_webCommonPropertyTags) {
-        _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-        _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-        _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-        _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+    if(!_webCommonPropertyTags){
+        @synchronized (self) {
+            if (!_webCommonPropertyTags) {
+                _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
+                _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+                _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+                _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+            }
+        }
     }
     return _webCommonPropertyTags;
 }
 -(NSDictionary *)rumCommonPropertyTags{
     if (!_rumCommonPropertyTags) {
-        _rumCommonPropertyTags = [NSMutableDictionary new];
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
-        _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
-        _rumCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-        _rumCommonPropertyTags[FT_SDK_VERSION] = SDK_VERSION;
+        @synchronized (self) {
+            if (!_rumCommonPropertyTags) {
+                _rumCommonPropertyTags = [NSMutableDictionary new];
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
+                _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
+                _rumCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+                _rumCommonPropertyTags[FT_SDK_VERSION] = SDK_VERSION;
+            }
+        }
+        
     }
     return _rumCommonPropertyTags;
 }
 -(NSDictionary *)baseCommonPropertyTags{
     if (!_baseCommonPropertyTags) {
-        _baseCommonPropertyTags =@{@"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                   @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
-        };
+        @synchronized (self) {
+            if (!_baseCommonPropertyTags) {
+                _baseCommonPropertyTags =@{@"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                                           @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                };
+            }
+        }
     }
     return _baseCommonPropertyTags;
 }
