@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "FTRUMSessionProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@class  FTMobileAgent;
 @interface FTUncaughtExceptionHandler : NSObject
 @property (nonatomic,weak) id<FTRUMSessionErrorDelegate> errorDelegate;
 
