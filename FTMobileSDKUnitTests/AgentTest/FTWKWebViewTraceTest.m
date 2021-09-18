@@ -93,11 +93,11 @@
  *
 */
 - (void)testWKWebViewNextLink{
+    [self setTraceConfig];
     self.testVC =  [[TestWKWebViewVC alloc] init];
     [self.navigationController pushViewController:self.testVC animated:YES];
     [self.testVC viewDidLoad];
     [self.testVC setDelegateSelf];
-    [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     __block NSInteger lastLoggingCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
@@ -144,10 +144,10 @@
     self.testParentVC = nil;
 }
 - (void)testWKWebViewProxytLoad{
+    [self setTraceConfig];
     self.testParentVC =  [[TestWKParentVC alloc] init];
     [self.navigationController pushViewController:self.testParentVC animated:YES];
     [self.testParentVC viewDidLoad];
-    [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self.testParentVC setDelegateProxy];
 
@@ -170,11 +170,11 @@
  * reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url、spanid 都不一致
 */
 - (void)testWKWebViewReloadNextLink{
+    [self setTraceConfig];
     self.testVC =  [[TestWKWebViewVC alloc] init];
     [self.navigationController pushViewController:self.testVC animated:YES];
     [self.testVC viewDidLoad];
     [self.testVC setDelegateSelf];
-    [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
@@ -209,12 +209,12 @@
  * 验证： reload 后 新的trace数据 的url 与ft_loadRequest产生的trace数据 url一致 spanid 不一致
 */
 - (void)testWKWebViewReloadTrace{
+    [self setTraceConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     self.testVC =  [[TestWKWebViewVC alloc] init];
     [self.navigationController pushViewController:self.testVC animated:YES];
     [self.testVC viewDidLoad];
     [self.testVC setDelegateSelf];
-    [self setTraceConfig];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
     [self.testVC ft_load:@"https://baidu.com"];
    
@@ -249,12 +249,13 @@
     self.testVC =  [[TestWKWebViewVC alloc] init];
     [self.navigationController pushViewController:self.testVC animated:YES];
     [self.testVC viewDidLoad];
-    [self.testVC setDelegateSelf];
     [self setTraceConfig];
+    [self.testVC setDelegateSelf];
+
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
+    [self.testVC ft_load:@"https://dataflux.cn"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
