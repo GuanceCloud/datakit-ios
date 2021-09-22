@@ -41,43 +41,6 @@
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
 }
-#pragma mark ========== 字符串处理  前后空格移除、特殊字符转换、校验合法 ==========
-+ (id)repleacingSpecialCharacters:(id )str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        return reStr;
-    }else{
-        return str;
-    }
-    
-}
-+ (id)repleacingSpecialCharactersField:(id )str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr = [reStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-        return reStr;
-    }else{
-        return str;
-    }
-    
-}
-+ (id)repleacingSpecialCharactersMeasurement:(id )str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        return reStr;
-    }else{
-        return str;
-    }
-    
-}
-
-
-
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block{
     if (NSThread.isMainThread) {
         block();

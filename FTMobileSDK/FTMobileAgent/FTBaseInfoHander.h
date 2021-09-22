@@ -20,21 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 签名后字符串
  */
 +(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
-/**
- *  @abstract
- *  tags key、value 替换特殊字符 '"'
-*/
-+ (id)repleacingSpecialCharactersField:(id )str;
-/**
- *  @abstract
- *  tags key、value 替换特殊字符 ',' '=' ' '
-*/
-+ (id)repleacingSpecialCharacters:(id )str;
-/**
- *  @abstract
- *  Measurement 替换特殊字符 ' ' ','
-*/
-+ (id)repleacingSpecialCharactersMeasurement:(id )str;
+
 /**
  * 主线程同步执行
  */
