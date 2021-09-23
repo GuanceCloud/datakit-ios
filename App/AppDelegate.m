@@ -62,7 +62,7 @@
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-
+        
     }
     // UI 测试
     if(isUITests){
@@ -77,6 +77,22 @@
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    }
+    if (@available(iOS 13.0, *)) {
+        //iOS 13以上系统
+    } else {
+        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        UITabBarController *tab = [[UITabBarController alloc]init];
+        DemoViewController *rootVC = [[DemoViewController alloc] init];
+        rootVC.title = @"home";
+        
+        UINavigationController *rootNav = [[UINavigationController alloc] initWithRootViewController:rootVC];
+        RootTabbarVC *second =  [RootTabbarVC new];
+        second.title = @"second";
+        tab.viewControllers = @[rootNav,second];
+        
+        self.window.rootViewController = tab;
+        [self.window makeKeyAndVisible];
     }
     return YES;
 }
