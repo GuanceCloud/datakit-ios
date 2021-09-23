@@ -33,8 +33,8 @@
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTUncaughtExceptionHandler.h"
-
-@interface FTMonitorManager ()<FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate>
+#import "FTAppLifeCycle.h"
+@interface FTMonitorManager ()<FTHTTPProtocolDelegate,FTANRDetectorDelegate,FTWKWebViewTraceDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTNetworkTrace *trace;
@@ -66,7 +66,7 @@ static dispatch_once_t onceToken;
         _launchTime = [NSDate date];
         _track = [[FTTrack alloc]init];
         [self startMonitorNetwork];
-        [self applicationLaunch];
+        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;
 }
@@ -376,33 +376,12 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== AUTO TRACK ==========
-- (void)applicationLaunch{
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    // 应用生命周期通知
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillEnterForeground:)
-                               name:UIApplicationWillEnterForegroundNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidBecomeActive:)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillResignActive:)
-                               name:UIApplicationWillResignActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidEnterBackground:)
-                               name:UIApplicationDidEnterBackgroundNotification
-                             object:nil];
-    [notificationCenter addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
-}
-- (void)applicationWillEnterForeground:(NSNotification *)notification{
+- (void)applicationWillEnterForeground{
     if (_appRelaunched){
         self.launchTime = [NSDate date];
     }
 }
-- (void)applicationDidBecomeActive:(NSNotification *)notification {
+- (void)applicationDidBecomeActive{
     @try {
         if (_applicationWillResignActive) {
             _applicationWillResignActive = NO;
@@ -425,7 +404,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)applicationDidEnterBackground:(NSNotification *)notification{
+- (void)applicationDidEnterBackground{
     if (!_applicationWillResignActive) {
         return;
     }
@@ -435,7 +414,7 @@ static dispatch_once_t onceToken;
     }
     _applicationWillResignActive = NO;
 }
-- (void)applicationWillResignActive:(NSNotification *)notification {
+- (void)applicationWillResignActive{
     @try {
         _applicationWillResignActive = YES;
     }
@@ -443,7 +422,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
-- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+- (void)applicationWillTerminateNotification{
     @try {
         if (self.currentController&&self.sessionSourceDelegate &&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
             [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];

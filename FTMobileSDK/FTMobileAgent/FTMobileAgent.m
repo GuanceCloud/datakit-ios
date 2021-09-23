@@ -29,8 +29,9 @@
 #import "FTReachability.h"
 #import "FTConfigManager.h"
 #import "FTTrackDataManger.h"
+#import "FTAppLifeCycle.h"
 
-@interface FTMobileAgent ()
+@interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, copy)   NSString *net;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -313,21 +314,9 @@ static dispatch_once_t onceToken;
             [weakSelf uploadFlush];
         }
     };
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    // 应用生命周期通知
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationDidBecomeActive:)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillResignActive:)
-                               name:UIApplicationWillResignActiveNotification
-                             object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
 }
-
-- (void)applicationDidBecomeActive:(NSNotification *)notification {
+-(void)applicationDidBecomeActive{
     @try {
         [self uploadFlush];
     }
@@ -335,7 +324,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)applicationWillResignActive:(NSNotification *)notification {
+-(void)applicationWillResignActive{
     @try {
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
@@ -343,8 +332,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
-
-- (void)applicationWillTerminateNotification:(NSNotification *)notification{
+-(void)applicationWillTerminate{
     @try {
         [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     } @catch (NSException *exception) {
