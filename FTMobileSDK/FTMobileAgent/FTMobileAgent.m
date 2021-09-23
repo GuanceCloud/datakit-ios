@@ -34,7 +34,6 @@
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, copy)   NSString *net;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
-@property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;

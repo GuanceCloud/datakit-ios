@@ -21,7 +21,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 @property (nonatomic, strong) FTReachability *reachability;
 @property (nonatomic, strong) FTThread *ftThread;
 @property (nonatomic, assign) BOOL isUploading;
-@property (nonatomic, assign) NSDate *lastAddDBDate;
+@property (nonatomic, strong) NSDate *lastAddDBDate;
 @end
 @implementation FTTrackDataManger{
     dispatch_semaphore_t _lock;
@@ -72,7 +72,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             break;
     }
     if (self.lastAddDBDate) {
-        NSDate* now = [NSDate date];
+        NSDate *now = [NSDate date];
         NSTimeInterval time = [now timeIntervalSinceDate:self.lastAddDBDate];
         if (time>10) {
             self.lastAddDBDate = [NSDate date];
