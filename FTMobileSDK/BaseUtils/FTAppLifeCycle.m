@@ -6,6 +6,9 @@
 //
 
 #import "FTAppLifeCycle.h"
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
 @interface FTAppLifeCycle()
 @property(strong, nonatomic, readonly) NSPointerArray *appLifecycleDelegates;
 @property(strong, nonatomic, readonly) NSLock *delegateLock;
@@ -83,7 +86,7 @@
                            selector:@selector(applicationDidEnterBackground:)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
-    [notification addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
+    [notification addObserver:self selector:@selector(applicationWillTerminate:) name:UIApplicationWillTerminateNotification object:nil];
 #endif
 
 }
