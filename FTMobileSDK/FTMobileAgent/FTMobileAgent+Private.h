@@ -22,9 +22,6 @@
 @property (nonatomic, strong) FTRUMManger *rumManger;
 
 
-- (BOOL)judgeRUMTraceOpen;
-
-
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

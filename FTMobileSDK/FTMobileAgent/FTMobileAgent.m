@@ -33,7 +33,6 @@
 
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
-@property (nonatomic, copy)   NSString *net;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -70,7 +69,6 @@ static dispatch_once_t onceToken;
         if (self) {
             //基础类型的记录
             [[FTConfigManager sharedInstance] setTrackConfig:config];
-            _net = @"unknown";
             _lock = [[NSLock alloc]init];
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
@@ -208,7 +206,7 @@ static dispatch_once_t onceToken;
     @try {
         FTAddDataType dataType = FTAddDataImmediate;
         NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
-        baseTags[@"network_type"] = self.net;
+        baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
@@ -306,10 +304,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - 网络与App的生命周期
 - (void)setUpListeners{
-    self.net = [FTReachability sharedInstance].networkType;
     __weak typeof(self) weakSelf = self;
     [FTReachability sharedInstance].networkChanged = ^(){
-        weakSelf.net = [FTReachability sharedInstance].networkType;
         if([FTReachability sharedInstance].isReachable){
             [weakSelf uploadFlush];
         }
