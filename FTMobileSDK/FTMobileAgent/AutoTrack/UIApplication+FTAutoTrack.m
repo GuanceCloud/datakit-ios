@@ -15,8 +15,7 @@
     return [self dataflux_sendAction:action to:target from:sender forEvent:event];
 }
 - (void)ftTrack:(SEL)action to:(id)target from:(id )sender forEvent:(UIEvent *)event {
-    if ([sender isKindOfClass:UITabBarItem.class] || [sender isKindOfClass:UIBarButtonItem.class] ||
-        [sender isKindOfClass:UISegmentedControl.class]) {
+    if ([sender isKindOfClass:UITabBarItem.class] || [sender isKindOfClass:UIBarButtonItem.class]) {
         return;
     }
     if ([target isKindOfClass:UIViewController.class]) {
