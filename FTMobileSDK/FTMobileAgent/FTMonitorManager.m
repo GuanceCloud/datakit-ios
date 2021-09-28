@@ -128,7 +128,7 @@ static dispatch_once_t onceToken;
         _pingThread = [[FTPingThread alloc]init];
         __weak typeof(self) weakSelf = self;
         _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
-            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanotimeIntervalSinceDate:startDate toDate:endDate]];
+            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanosecondtimeIntervalSinceDate:startDate toDate:endDate]];
         };
     }
     return _pingThread;
@@ -397,7 +397,7 @@ static dispatch_once_t onceToken;
             [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
         }
         if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanotimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         }
     }
     @catch (NSException *exception) {
@@ -442,7 +442,7 @@ static dispatch_once_t onceToken;
     }
     self.currentController = viewController;
     if(viewController.ft_viewLoadStartTime){
-        NSNumber *loadTime = [FTDateUtil nanotimeIntervalSinceDate:viewController.ft_viewLoadStartTime toDate:[NSDate date]];
+        NSNumber *loadTime = [FTDateUtil nanosecondtimeIntervalSinceDate:viewController.ft_viewLoadStartTime toDate:[NSDate date]];
         viewController.ft_loadDuration = loadTime;
         viewController.ft_viewLoadStartTime = nil;
     }else{
@@ -457,7 +457,7 @@ static dispatch_once_t onceToken;
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
         if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanotimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         }
         _appRelaunched = YES;
     }

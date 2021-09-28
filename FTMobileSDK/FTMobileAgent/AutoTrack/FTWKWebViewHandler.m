@@ -100,7 +100,7 @@ static dispatch_once_t onceToken;
     // 判断是否是SDK添加链路追踪信息的request
     // wkwebview 使用loadRequest 与 reload 发起的请求
     if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanotimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
         }
@@ -145,7 +145,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [FTDateUtil nanotimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadingWithURL:duration:)]) {
             [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL duration:duration];
         }
@@ -161,7 +161,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [FTDateUtil nanotimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadCompletedWithURL:duration:)]) {
             [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL duration:duration];
         }
@@ -181,7 +181,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanotimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
             [self.traceDelegate ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
         }

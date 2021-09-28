@@ -181,7 +181,7 @@
     if (!self.model.baseViewData) {
         return;
     }
-    NSNumber *timeSpend = [FTDateUtil nanotimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
+    NSNumber *timeSpend = [FTDateUtil nanosecondtimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.model getGlobalSessionViewTags]];
     [sessionViewTag setValue:[FTBaseInfoHander boolStr:self.isActiveView] forKey:@"is_active"];
     NSMutableDictionary *field = @{@"view_error_count":@(self.viewErrorCount),
