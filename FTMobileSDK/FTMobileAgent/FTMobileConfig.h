@@ -58,6 +58,11 @@ typedef NS_ENUM(NSInteger, FTEnv) {
     FTEnvCommon,
     FTEnvLocal,
 };
+typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
+    FTDiscard,        //默认，当日志数据大于最大值时 废弃新传入的数据
+    FTDiscardOldest   //当日志数据大于最大值时,废弃旧数据
+};
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLoggerConfig : NSObject
@@ -67,6 +72,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置日志所属业务或服务的名称 默认：df_rum_ios
  */
 @property (nonatomic, copy) NSString *service;
+/**
+ * 设置日志废弃策略
+ */
+@property (nonatomic, assign) FTLogCacheDiscard  discardType;
 /**
  * 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
  */

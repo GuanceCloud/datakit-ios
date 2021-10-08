@@ -105,6 +105,8 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
+        [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
+        [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
         if(self.loggerConfig.enableConsoleLog){
             [self _traceConsoleLog];
         }
@@ -172,7 +174,7 @@ static dispatch_once_t onceToken;
             return;
         }
         dispatch_async(self.concurrentLabel, ^{
-            [self loggingWithType:FTAddDataNormal status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
+            [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
         });
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -285,10 +287,10 @@ static dispatch_once_t onceToken;
             }
             if (weakSelf.loggerConfig.prefix.length>0) {
                 if([logStr containsString:weakSelf.loggerConfig.prefix]){
-                    [weakSelf loggingWithType:FTAddDataCache status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                    [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
                 }
             }else{
-                [weakSelf loggingWithType:FTAddDataCache status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
             }
         });
     }];

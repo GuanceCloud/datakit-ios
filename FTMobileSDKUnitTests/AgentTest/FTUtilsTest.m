@@ -30,6 +30,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 
 - (void)tearDown {
@@ -127,6 +128,7 @@
      
     [[FTMobileAgent sharedInstance] logging:str status:FTStatusInfo];
     [NSThread sleepForTimeInterval:2];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     
