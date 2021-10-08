@@ -12,7 +12,7 @@
 #import <FTDataBase/fmdb/ZY_FMDatabase.h>
 #import <FTRecordModel.h>
 #import <FTDateUtil.h>
-
+#import <FTTrackDataManger.h>
 @interface FTDatabaseTest : XCTestCase
 
 @end
@@ -24,6 +24,7 @@
     [[FTTrackerEventDBTool sharedManger] resetInstance];
     [FTTrackerEventDBTool shareDatabase:@"test.sqlite"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = 5000;
 }
 
 - (void)tearDown {
@@ -74,41 +75,5 @@
     XCTAssertTrue(oldCount>0 && newCount == 0);
 }
 
-- (void)testDiscardSingle{
-    for (int i = 0; i<5005; i++) {
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = [NSString stringWithFormat:@"test%d",i];
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackerEventDBTool sharedManger] insertItem:model];
-    }
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == 5000);
-}
-- (void)testDiscardBulk{
-    NSMutableArray *array = [NSMutableArray new];
-    for (int i = 0; i<5005; i++) {
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = [NSString stringWithFormat:@"test%d",i];
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [array addObject:model];
-    }
-    [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:array];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == 5000);
-}
 
-- (void)testCache{
-    for (int i = 0; i<101; i++) {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = [NSString stringWithFormat:@"test%d",i];
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackerEventDBTool sharedManger] insertItemToCache:model];
-    });
-    }
-    [NSThread sleepForTimeInterval:2];
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == 101);
-}
 @end
