@@ -99,9 +99,6 @@ static dispatch_once_t onceToken;
 -(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
    if([self isOpenDatabese:self.db]) {
-       if([self getDatasCount]+self.messageCaches.count>=5000){
-           return NO;
-       }
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
           success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
@@ -110,15 +107,38 @@ static dispatch_once_t onceToken;
    }
     return success;
 }
+-(void)insertLoggingItems:(FTRecordModel *)item{
+    if (!item) {
+        return;
+    }
+    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
+    [self.messageCaches addObject:item];
+    if (self.messageCaches.count>=20) {
+        NSArray *array = self.messageCaches.copy;
+        [self.messageCaches removeAllObjects];
+        dispatch_semaphore_signal(_lock);
+        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING]-array.count;
+        
+        if(count < 0){
+            if(!self.discardNew){
+                [[FTTrackerEventDBTool sharedManger] deleteLoggingItem:-count];
+            }else{
+                if (count+array.count>0) {
+                    array =  [array subarrayWithRange:NSMakeRange(0, count+array.count)];
+                }else{
+                    return;
+                }
+            }
+        }
+        [self insertItemsWithDatas:array];
+
+    }else{
+        dispatch_semaphore_signal(_lock);
+    }
+}
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
     __block BOOL needRoolback = NO;
     if([self isOpenDatabese:self.db]) {
-        NSInteger count = 5000 - [self getDatasCount]-self.messageCaches.count;
-        if(count <= 0){
-            return NO;
-        }else if(items.count > count){
-          items =  [items subarrayWithRange:NSMakeRange(0, count)];
-        }
         [self zy_inTransaction:^(BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data','op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
@@ -132,22 +152,6 @@ static dispatch_once_t onceToken;
         
     }
     return !needRoolback;
-}
--(void)insertItemToCache:(FTRecordModel *)data{
-    if (!data) {
-        return;
-    }
-    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
-    [self.messageCaches addObject:data];
-    if (self.messageCaches.count>20) {
-        NSArray *array = [self.messageCaches subarrayWithRange:NSMakeRange(0, 20)];
-        [self.messageCaches removeObjectsInArray:array];
-        dispatch_semaphore_signal(_lock);
-        [self insertItemsWithDatas:array];
-    }else{
-        dispatch_semaphore_signal(_lock);
-
-    }
 }
 -(void)insertCacheToDB{
     dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
@@ -232,7 +236,14 @@ static dispatch_once_t onceToken;
        }];
        return is;
 }
-
+-(BOOL)deleteLoggingItem:(NSInteger)count{
+    __block BOOL is;
+        [self zy_inDatabase:^{
+            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DB_TRACREVENT_TABLE_NAME,(long)count,FT_DB_TRACREVENT_TABLE_NAME,(long)count];
+            is = [self.db executeUpdate:sqlStr];
+        }];
+        return is;
+}
 -(BOOL)deleteItemWithTm:(long long)tm
 {   __block BOOL is;
     [self zy_inDatabase:^{

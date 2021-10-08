@@ -62,9 +62,10 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             [[FTTrackerEventDBTool sharedManger] insertItem:data];
 
             break;
-        case FTAddDataCache:
-            [[FTTrackerEventDBTool sharedManger] insertItemToCache:data];
-
+        case FTAddDataLogging:{
+            [[FTTrackerEventDBTool sharedManger] insertLoggingItems:data];
+        }
+            
             break;
         case FTAddDataImmediate:
             [[FTTrackerEventDBTool sharedManger] insertCacheToDB];

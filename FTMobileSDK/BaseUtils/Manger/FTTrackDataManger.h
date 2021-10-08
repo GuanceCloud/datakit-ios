@@ -14,7 +14,7 @@
  */
 typedef NS_ENUM(NSInteger, FTAddDataType) {
     FTAddDataNormal,
-    FTAddDataCache,
+    FTAddDataLogging,
     FTAddDataImmediate,
 };
 NS_ASSUME_NONNULL_BEGIN

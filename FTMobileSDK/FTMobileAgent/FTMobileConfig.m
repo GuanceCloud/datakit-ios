@@ -44,6 +44,7 @@
     self = [super init];
     if (self) {
         _service = FT_DEFAULT_SERVICE_NAME;
+        _discardType = FTDiscard;
         _samplerate = 100;
         _enableConsoleLog = NO;
         _enableLinkRumData = NO;
@@ -66,6 +67,7 @@
     options.enableCustomLog = self.enableCustomLog;
     options.prefix = self.prefix;
     options.logLevelFilter = self.logLevelFilter;
+    options.discardType = self.discardType;
     return options;
 }
 @end
