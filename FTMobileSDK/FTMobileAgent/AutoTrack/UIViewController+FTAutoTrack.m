@@ -114,8 +114,9 @@ static char *viewLoadDuration = "viewLoadDuration";
     if(![self isBlackListContainsViewController]){
         // 预防撤回侧滑
         if ([FTMonitorManager sharedInstance].currentController != self) {
+            [FTMonitorManager sharedInstance].currentController = self;
             if(self.ft_viewLoadStartTime){
-                NSNumber *loadTime = [FTDateUtil nanosecondtimeIntervalSinceDate:[NSDate date] toDate:self.ft_viewLoadStartTime];
+                NSNumber *loadTime = [FTDateUtil nanosecondtimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
             }else{

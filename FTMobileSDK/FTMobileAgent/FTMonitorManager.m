@@ -436,20 +436,6 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
-    //预防侧滑返回
-    if(self.currentController == viewController){
-        return;;
-    }
-    self.currentController = viewController;
-    if(viewController.ft_viewLoadStartTime){
-        NSNumber *loadTime = [FTDateUtil nanosecondtimeIntervalSinceDate:viewController.ft_viewLoadStartTime toDate:[NSDate date]];
-        viewController.ft_loadDuration = loadTime;
-        viewController.ft_viewLoadStartTime = nil;
-    }else{
-        NSNumber *loadTime = @0;
-        viewController.ft_loadDuration = loadTime;
-    }
-    viewController.ft_viewUUID = [NSUUID UUID].UUIDString;
     if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
         [self.sessionSourceDelegate ftViewDidAppear:viewController];
     }
