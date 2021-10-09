@@ -41,12 +41,12 @@
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     loggerConfig.enableLinkRumData = YES;
-    loggerConfig.traceConsoleLog = YES;
+    loggerConfig.enableConsoleLog = YES;
+    loggerConfig.discardType = FTDiscardOldest;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     
     //开启 trace
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.networkTrace = YES;
     traceConfig.enableLinkRumData = YES;
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
