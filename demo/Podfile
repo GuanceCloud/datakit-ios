@@ -6,6 +6,6 @@ target 'dataflux-sdk-ios-demo' do
   use_frameworks!
   
   # Pods for dataflux-sdk-ios-demo
-  pod 'FTMobileSDK', '~>1.2.0-alpha.3'
+  pod 'FTMobileSDK', '1.2.5-alpha.1'
 
 end
