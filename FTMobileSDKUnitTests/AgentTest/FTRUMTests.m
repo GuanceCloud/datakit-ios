@@ -585,6 +585,32 @@
     }
 
 }
+- (void)testRUMGlobalContext{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.globalContext = @{@"session_id":@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self addErrorData];
+    
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [newArray firstObject];
+    NSDictionary *dict =  [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSString *op = dict[@"op"];
+    XCTAssertTrue([op isEqualToString:@"RUM"]);
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags = opdata[@"tags"];
+    XCTAssertFalse([[tags valueForKey:@"session_id"] isEqualToString:@"testRUMGlobalContext"]);
+    XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
+
+}
 - (void)addErrorData{
     
     NSDictionary *field = @{@"error_message":@"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270",
