@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,6 +26,25 @@
 		7C02F52A2689AE3000A0FE90 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
 		7C02F52B2689AE3000A0FE90 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
 		7C02F52C2689AE3000A0FE90 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
+		7CCD69882711964600E57A6F /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
+		7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
+		7CCD698A2711964600E57A6F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
+		7CCD698B2711964600E57A6F /* DemoViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5142689AE1200A0FE90 /* DemoViewController.mm */; };
+		7CCD698C2711964600E57A6F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */; };
+		7CCD698D2711964600E57A6F /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F50C2689ADFE00A0FE90 /* Crasher.mm */; };
+		7CCD698E2711964600E57A6F /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51E2689AE2F00A0FE90 /* UITestVC.m */; };
+		7CCD698F2711964600E57A6F /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
+		7CCD69902711964600E57A6F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4FE2689ACEA00A0FE90 /* main.m */; };
+		7CCD69912711964600E57A6F /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51C2689AE2F00A0FE90 /* TestJsbridgeData.m */; };
+		7CCD69922711964600E57A6F /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F50D2689ADFE00A0FE90 /* CrashVC.m */; };
+		7CCD69932711964600E57A6F /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51D2689AE2F00A0FE90 /* TestANRVC.m */; };
+		7CCD69942711964600E57A6F /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5172689AE2000A0FE90 /* RootTabbarVC.m */; };
+		7CCD69952711964600E57A6F /* PrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5092689AD5000A0FE90 /* PrintHookTest.swift */; };
+		7CCD69962711964600E57A6F /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
+		7CCD69982711964600E57A6F /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */; };
+		7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4FA2689ACEA00A0FE90 /* LaunchScreen.storyboard */; };
+		7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F82689ACEA00A0FE90 /* Assets.xcassets */; };
+		7CCD699C2711964600E57A6F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F52689ACE700A0FE90 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +82,7 @@
 		7C02F5242689AE2F00A0FE90 /* TestANRVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
 		7C02F5252689AE2F00A0FE90 /* UITestVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestVC.h; sourceTree = "<group>"; };
 		7C02F5262689AE3000A0FE90 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
+		7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demoPreMade.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.release.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.release.xcconfig"; sourceTree = "<group>"; };
 		D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.debug.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.debug.xcconfig"; sourceTree = "<group>"; };
 		F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dataflux_sdk_ios_demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,6 +94,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				2282DE0A7602553A5B67E8B4 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CCD69972711964600E57A6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CCD69982711964600E57A6F /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */,
+				7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,6 +206,25 @@
 			productReference = 7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7CCD69852711964600E57A6F /* dataflux-sdk-ios-demoPreMade */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */;
+			buildPhases = (
+				7CCD69862711964600E57A6F /* [CP] Check Pods Manifest.lock */,
+				7CCD69872711964600E57A6F /* Sources */,
+				7CCD69972711964600E57A6F /* Frameworks */,
+				7CCD69992711964600E57A6F /* Resources */,
+				7CCD699D2711964600E57A6F /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "dataflux-sdk-ios-demoPreMade";
+			productName = "dataflux-sdk-ios-demo";
+			productReference = 7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -205,6 +253,7 @@
 			projectRoot = "";
 			targets = (
 				7C02F4E82689ACE700A0FE90 /* dataflux-sdk-ios-demo */,
+				7CCD69852711964600E57A6F /* dataflux-sdk-ios-demoPreMade */,
 			);
 		};
 /* End PBXProject section */
@@ -217,6 +266,16 @@
 				7C02F4FC2689ACEA00A0FE90 /* LaunchScreen.storyboard in Resources */,
 				7C02F4F92689ACEA00A0FE90 /* Assets.xcassets in Resources */,
 				7C02F4F72689ACE700A0FE90 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CCD69992711964600E57A6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */,
+				7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */,
+				7CCD699C2711964600E57A6F /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +302,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7CCD69862711964600E57A6F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-dataflux-sdk-ios-demo-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7CCD699D2711964600E57A6F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		968F6FAA1B5AD4798F529085 /* [CP] Embed Pods Frameworks */ = {
@@ -284,6 +382,28 @@
 				7C02F5192689AE2000A0FE90 /* RootTabbarVC.m in Sources */,
 				7C02F50A2689AD5000A0FE90 /* PrintHookTest.swift in Sources */,
 				7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CCD69872711964600E57A6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CCD69882711964600E57A6F /* SecondViewController.m in Sources */,
+				7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */,
+				7CCD698A2711964600E57A6F /* ViewController.m in Sources */,
+				7CCD698B2711964600E57A6F /* DemoViewController.mm in Sources */,
+				7CCD698C2711964600E57A6F /* AppDelegate.m in Sources */,
+				7CCD698D2711964600E57A6F /* Crasher.mm in Sources */,
+				7CCD698E2711964600E57A6F /* UITestVC.m in Sources */,
+				7CCD698F2711964600E57A6F /* TableViewCellItem.m in Sources */,
+				7CCD69902711964600E57A6F /* main.m in Sources */,
+				7CCD69912711964600E57A6F /* TestJsbridgeData.m in Sources */,
+				7CCD69922711964600E57A6F /* CrashVC.m in Sources */,
+				7CCD69932711964600E57A6F /* TestANRVC.m in Sources */,
+				7CCD69942711964600E57A6F /* RootTabbarVC.m in Sources */,
+				7CCD69952711964600E57A6F /* PrintHookTest.swift in Sources */,
+				7CCD69962711964600E57A6F /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,6 +584,56 @@
 			};
 			name = Release;
 		};
+		7CCD699F2711964600E57A6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"PREPROD=1",
+				);
+				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "dataflux_sdk_ios_demo-Swift.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7CCD69A02711964600E57A6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "dataflux_sdk_ios_demo-Swift.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -481,6 +651,15 @@
 			buildConfigurations = (
 				7C02F5032689ACEA00A0FE90 /* Debug */,
 				7C02F5042689ACEA00A0FE90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CCD699F2711964600E57A6F /* Debug */,
+				7CCD69A02711964600E57A6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

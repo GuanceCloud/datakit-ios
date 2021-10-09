@@ -8,6 +8,12 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent.h>
 #import <FTMobileConfig.h>
+//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
+#if PREPROD
+#define Track_id       @"0000000001"
+#else
+#define Track_id       @"0000000002"
+#endif
 @interface AppDelegate ()
 
 @end
@@ -35,6 +41,7 @@
     rumConfig.enableTrackAppANR = YES;
     rumConfig.enableTrackAppFreeze = YES;
     rumConfig.enableTraceUserAction = YES;
+    rumConfig.globalContext = @{@"track_id":Track_id};
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     
     //开启 logger
