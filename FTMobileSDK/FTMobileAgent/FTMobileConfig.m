@@ -36,6 +36,7 @@
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.appid = self.appid;
     options.monitorInfoType = self.monitorInfoType;
+    options.globalContext = self.globalContext;
     return options;
 }
 @end
