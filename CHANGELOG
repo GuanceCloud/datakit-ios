@@ -1,3 +1,9 @@
+# 1.2.5-alpha.1
+1.日志废弃策略添加
+2.APP 生命周期监控优化
+3.UISegmentedControl 点击事件采集bug修改
+4.页面 load 时长 bug 修改
+---
 # 1.2.4-alpha.2
 1.解决 fishhook 在 iOS14.5 及以上设备上出现的崩溃问题
 ---
