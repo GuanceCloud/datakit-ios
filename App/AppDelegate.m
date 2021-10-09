@@ -14,6 +14,11 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
+#if PREPROD
+#define TRACK_ID @"000000001"
+#else
+#define TRACK_ID @"000000002"
+#endif
 @interface AppDelegate ()
 
 @end
@@ -51,6 +56,7 @@
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
+        rumConfig.globalContext = @{@"track_id":TRACK_ID};
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
