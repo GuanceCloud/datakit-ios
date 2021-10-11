@@ -306,19 +306,27 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
 }
 +(NSString *)getIPWithHostName:(const NSString *)hostName{
     const char *hostN= [hostName UTF8String];
+    char  **pptr;
     struct hostent* phot;
+    char   str[32];
+    NSMutableArray * ips = [NSMutableArray array];
     @try {
-        phot = gethostbyname(hostN);
+        if(( phot = gethostbyname(hostN)) == NULL)
+        {
+            return nil;
+        }
+        for(pptr=phot->h_addr_list; *pptr!=NULL; pptr++) {
+            NSString * ipStr = [NSString stringWithCString:inet_ntop(phot->h_addrtype, *pptr, str, sizeof(str)) encoding:NSUTF8StringEncoding];
+            [ips addObject:ipStr?:@""];
+        }
+        if (ips.count>0) {
+            return [ips firstObject];
+        }
     }
     @catch (NSException *exception) {
         return nil;
     }
-    struct in_addr ip_addr;
-    memcpy(&ip_addr, phot->h_addr_list[0], 4);
-    char ip[20] = {0};
-    inet_ntop(AF_INET, &ip_addr, ip, sizeof(ip));
-    NSString* strIPAddress = [NSString stringWithUTF8String:ip];
-    return strIPAddress;
+    return nil;
 }
 + (NSString *)boolStr:(BOOL)isTrue{
     return isTrue?@"true":@"false";
