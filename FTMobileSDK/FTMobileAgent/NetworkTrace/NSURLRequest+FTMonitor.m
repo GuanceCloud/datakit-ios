@@ -210,13 +210,12 @@
 }
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    [[FTMonitorManager sharedInstance] traceUrl:mutableReqeust.URL completionHandler:^(NSDictionary * _Nonnull traceHeader) {
-        if (traceHeader && traceHeader.allKeys.count>0) {
-            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-                    [mutableReqeust setValue:value forHTTPHeaderField:field];
-            }];;
-        }
-    }];
+    NSDictionary *traceHeader = [[FTMonitorManager sharedInstance] getTraceHeaderWithUrl:mutableReqeust.URL];
+    if (traceHeader && traceHeader.allKeys.count>0) {
+        [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+            [mutableReqeust setValue:value forHTTPHeaderField:field];
+        }];;
+    }
     return mutableReqeust;
 }
 @end

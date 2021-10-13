@@ -27,8 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setMobileConfig:(FTMobileConfig *)config;
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig;
 -(void)setRumConfig:(FTRumConfig *)rumConfig;
-- (BOOL)traceUrl:(NSURL *)url;
-- (void)traceUrl:(NSURL *)url completionHandler:(void (^)(NSDictionary *traceHeader))completionHandler;
+
+- (BOOL)isTraceUrl:(NSURL *)url;
+- (NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
+- (void)tracingWithContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields headerFields:(NSDictionary *)headerFields time:(NSDate *)time;
 
 - (void)trackViewDidDisappear:(UIViewController *)viewController;
 - (void)trackViewDidAppear:(UIViewController *)viewController;

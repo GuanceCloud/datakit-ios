@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithType:(FTNetworkTraceType)type;
 
 - (NSDictionary *)networkTrackHeaderWithSampled:(BOOL)sampled url:(NSURL *)url;
+- (void)getTraceingDatasWithRequestHeaderFields:(NSDictionary *)headerFields handler:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler;
 @end
 
 NS_ASSUME_NONNULL_END
