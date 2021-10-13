@@ -164,14 +164,12 @@ static dispatch_once_t onceToken;
 - (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
     @try {
         // network trace
-        if ([FTBaseInfoHander randomSampling:self.traceConfig.samplerate]) {
-            [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
-        }
+        [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
         // rum resourc
         if (self.rumManger) {
             if (self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
-                [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-                    if(traceId && spanID){
+                [self.trace getTraceingDatasWithRequestHeaderFields:taskModel.task.originalRequest.allHTTPHeaderFields handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+                    if (traceId && spanID && sampled) {
                         NSDictionary *linkTag = @{@"span_id":spanID,
                                                   @"trace_id":traceId
                         };
