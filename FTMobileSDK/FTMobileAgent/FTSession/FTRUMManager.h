@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
 
 -(void)startView:(UIViewController *)viewController;
--(void)startView:(NSString *)viewID viewName:(NSString *)viewName    viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
+-(void)startView:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
 
 -(void)stopView:(UIViewController *)viewController;
 -(void)stopViewWithViewID:(NSString *)viewID;

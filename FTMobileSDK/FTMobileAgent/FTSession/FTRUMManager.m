@@ -70,9 +70,6 @@
 #pragma mark - Action -
 
 - (void)addAction:(UIView *)clickView{
-    if (!self.rumConfig.enableTraceUserAction) {
-        return;
-    }
     NSString *viewTitle = @"";
     if ([clickView isKindOfClass:UIButton.class]) {
         UIButton *btn =(UIButton *)clickView;
@@ -83,6 +80,9 @@
     [self addActionWithActionName:actionName];
 }
 - (void)addActionWithActionName:(NSString *)actionName{
+    if (!self.rumConfig.enableTraceUserAction) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:[NSDate date]];
