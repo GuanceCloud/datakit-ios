@@ -24,7 +24,7 @@
             
             if (tableView && indexPath) {
                 UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                [[FTMonitorManager sharedInstance] trackClickWithView:cell];
+                [[FTMonitorManager sharedInstance].rumManger addAction:cell];
             }
         };
         
@@ -55,7 +55,7 @@
             
             if (collectionView && indexPath) {
                 UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                [[FTMonitorManager sharedInstance] trackClickWithView:cell];
+                [[FTMonitorManager sharedInstance].rumManger addAction:cell];
             }
         };
         

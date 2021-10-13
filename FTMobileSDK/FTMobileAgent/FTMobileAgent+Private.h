@@ -13,13 +13,12 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class FTRecordModel,FTUploadTool,FTPresetProperty,FTRUMManger;
+@class FTRecordModel,FTUploadTool,FTPresetProperty,FTRUMManager;
 
 
 @interface FTMobileAgent (Private)
 @property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
-@property (nonatomic, strong) FTRUMManger *rumManger;
 
 
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;

@@ -28,7 +28,7 @@
         BOOL isAlterType = [view isAlertClick];
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
-            [[FTMonitorManager sharedInstance] trackClickWithView:view];
+            [[FTMonitorManager sharedInstance].rumManger addAction:view];
         }
         
     }@catch (NSException *exception) {

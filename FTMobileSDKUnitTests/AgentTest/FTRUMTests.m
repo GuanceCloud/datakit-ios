@@ -17,7 +17,7 @@
 #import "NSString+FTAdd.h"
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
-#import <FTRUMManger.h>
+#import <FTRUMManager.h>
 #import <FTRUMSessionHandler.h>
 #import <FTMonitorManager.h>
 #import "FTTrackDataManger+Test.h"
@@ -92,7 +92,7 @@
     [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
+    FTRUMManager *rum = [FTMonitorManager sharedInstance].rumManger;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     //把session上次记录数据改为15分钟前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
@@ -128,7 +128,7 @@
     [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRUMManger *rum = [FTMobileAgent sharedInstance].rumManger;
+    FTRUMManager *rum = [FTMonitorManager sharedInstance].rumManger;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     //把session开始时间改为四小时前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
@@ -620,11 +620,11 @@
         @"error_source":@"logger",
         @"error_type":@"ios_crash"
     };
-    NSString *invokeMethod = @"ftErrorWithtags:field:";
+    NSString *invokeMethod = @"addError:field:";
     SEL startMethod = NSSelectorFromString(invokeMethod);
-    IMP imp = [[FTMobileAgent sharedInstance].rumManger methodForSelector:startMethod];
+    IMP imp = [[FTMonitorManager sharedInstance].rumManger methodForSelector:startMethod];
     void (*func)(id, SEL,id,id) = (void (*)(id,SEL,id,id))imp;
-    func([FTMobileAgent sharedInstance].rumManger,startMethod,tag,field);
+    func([FTMonitorManager sharedInstance].rumManger,startMethod,tag,field);
 }
 - (void)addLongTaskData{
     NSDictionary *field = @{@"duration":@5000000000,
@@ -632,14 +632,14 @@
                             
     };
     
-    NSString *invokeMethod = @"ftLongTaskWithtags:field:";
+    NSString *invokeMethod = @"addLongTask:field:";
     SEL startMethod = NSSelectorFromString(invokeMethod);
-    IMP imp = [[FTMobileAgent sharedInstance].rumManger methodForSelector:startMethod];
+    IMP imp = [[FTMonitorManager sharedInstance].rumManger methodForSelector:startMethod];
     void (*func)(id, SEL,id,id) = (void (*)(id,SEL,id,id))imp;
-    func([FTMobileAgent sharedInstance].rumManger,startMethod,@{},field);
+    func([FTMonitorManager sharedInstance].rumManger,startMethod,@{},field);
 }
 - (void)mockBtnClick{
-    [[FTMonitorManager sharedInstance] trackClickWithView:self.testVC.firstButton];
+    [[FTMonitorManager sharedInstance].rumManger addAction:self.testVC.firstButton];
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];

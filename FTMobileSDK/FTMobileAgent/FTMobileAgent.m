@@ -24,7 +24,6 @@
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
 #import "FTMonitorUtils.h"
-#import "FTRUMManger.h"
 #import "FTConstants.h"
 #import "FTReachability.h"
 #import "FTConfigManager.h"
@@ -37,7 +36,6 @@
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
-@property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
@@ -97,8 +95,7 @@ static dispatch_once_t onceToken;
     if (!_rumConfig) {
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppid:_rumConfig.appid];
-        _rumManger = [[FTRUMManger alloc]initWithRumConfig:_rumConfig];
-        [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig delegate:_rumManger];
+        [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig];
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -246,7 +243,7 @@ static dispatch_once_t onceToken;
         }
         if (self.loggerConfig.enableLinkRumData) {
             [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:@"logging" terminal:@"app"]];
-            NSDictionary *rumTag = [self.rumManger getCurrentSessionInfo];
+            NSDictionary *rumTag = [[FTMonitorManager sharedInstance].rumManger getCurrentSessionInfo];
             [tagDict addEntriesFromDictionary:rumTag];
         }
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
@@ -349,7 +346,6 @@ static dispatch_once_t onceToken;
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     _presetProperty = nil;
-    _rumManger = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     onceToken = 0;
     sharedInstance =nil;

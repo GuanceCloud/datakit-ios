@@ -27,10 +27,10 @@
     
     if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
         [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        [[FTMonitorManager sharedInstance] trackClickWithView:sender];
+        [[FTMonitorManager sharedInstance].rumManger addAction:sender];
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        [[FTMonitorManager sharedInstance] trackClickWithView:sender];
+        [[FTMonitorManager sharedInstance].rumManger addAction:sender];
     }
     
 }

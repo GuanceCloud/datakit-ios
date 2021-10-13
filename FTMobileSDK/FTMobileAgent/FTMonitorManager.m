@@ -44,7 +44,6 @@
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTTrack *track;
-@property (nonatomic, strong) FTRUMManger *rumManger;
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
 @end
@@ -90,19 +89,17 @@ static dispatch_once_t onceToken;
 -(void)setMobileConfig:(FTMobileConfig *)config{
     _config = config;
 }
--(void)setRumConfig:(FTRumConfig *)rumConfig delegate:(FTRUMManger *)delegate{
+-(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
-    if (rumConfig.enableTraceUserAction) {
-        self.sessionActionDelegate = delegate;
+    if (self.rumConfig.appid.length<=0) {
+        ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
+        return;
     }
-    if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        self.sessionErrorDelegate = delegate;
-    }
+    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig];
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] setErrorDelegate:delegate];
+        [FTUncaughtExceptionHandler sharedHandler];
     }
     //采集view、resource、jsBridge
-    self.sessionSourceDelegate = delegate;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (rumConfig.enableTrackAppFreeze) {
             [self startPingThread];
@@ -147,9 +144,7 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *fields = @{@"duration":duration}.mutableCopy;
     
     fields[@"long_task_stack"] = stack;
-    if (self.sessionErrorDelegate && [self.sessionErrorDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
-        [self.sessionErrorDelegate ftLongTaskWithtags:@{} field:fields];
-    }
+    [self.rumManger addLongTask:@{} field:fields];
 }
 -(void)stopMonitor{
     [FTURLProtocol stopMonitor];
@@ -164,18 +159,16 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ==========FTHTTPProtocolDelegate 时间/错误率 ==========
 - (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel{
-    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCreate:)]) {
-        [self.sessionSourceDelegate ftResourceCreate:taskModel];
-    }
+    [self.rumManger resourceStart:taskModel.identifier];
 }
 - (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel{
     @try {
         // network trace
         if ([FTBaseInfoHander randomSampling:self.traceConfig.samplerate]) {
-        [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
+            [self networkTraceWithTask:taskModel.task didFinishCollectingMetrics:taskModel.metrics didCompleteWithError:taskModel.error];
         }
         // rum resourc
-        if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftResourceCompleted:)]) {
+        if (self.rumManger) {
             if (self.traceConfig.enableLinkRumData && self.traceConfig.networkTraceType == FTNetworkTraceTypeDDtrace) {
                 [taskModel.task.originalRequest ft_getNetworkTraceingDatas:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
                     if(traceId && spanID){
@@ -186,7 +179,7 @@ static dispatch_once_t onceToken;
                     }
                 }];
             }
-            [self.sessionSourceDelegate ftResourceCompleted:taskModel];
+            [self.rumManger ftResourceCompleted:taskModel];
         }
     }@catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -332,9 +325,7 @@ static dispatch_once_t onceToken;
             time = time>0?:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    if (self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftWebviewDataWithMeasurement:tags:fields:tm:)]) {
-                        [self.sessionSourceDelegate ftWebviewDataWithMeasurement:measurement tags:tags fields:fields tm:time];
-                    }
+                    [self.rumManger addWebviewData:measurement tags:tags fields:fields tm:time];
                 }else if([name isEqualToString:@"track"]){
                 }else if([name isEqualToString:@"log"]){
                     //数据格式需要调整
@@ -351,9 +342,7 @@ static dispatch_once_t onceToken;
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
     NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]}.mutableCopy;
     fields[@"long_task_stack"] = slowStack;
-    if (self.sessionErrorDelegate && [self.sessionErrorDelegate respondsToSelector:@selector(ftLongTaskWithtags:field:)]) {
-        [self.sessionErrorDelegate ftLongTaskWithtags:@{} field:fields];
-    }
+    [self.rumManger addLongTask:@{} field:fields];
 }
 #pragma mark ========== FTNetworkTrace ==========
 - (BOOL)traceUrl:(NSURL *)url{
@@ -391,14 +380,12 @@ static dispatch_once_t onceToken;
         if (!_applicationLoadFirstViewController) {
             return;
         }
-        if (self.currentController && self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-            NSString *viewid = [NSUUID UUID].UUIDString;
-            self.currentController.ft_viewUUID = viewid;
-            [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
-        }
-        if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        }
+        NSString *viewid = [NSUUID UUID].UUIDString;
+        self.currentController.ft_viewUUID = viewid;
+        [self.rumManger startView:self.currentController];
+        
+        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -409,9 +396,7 @@ static dispatch_once_t onceToken;
         return;
     }
     _running = NO;
-    if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-        [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
-    }
+    [self.rumManger startView:self.currentController];
     _applicationWillResignActive = NO;
 }
 - (void)applicationWillResignActive{
@@ -424,45 +409,33 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationWillTerminateNotification{
     @try {
-        if (self.currentController&&self.sessionSourceDelegate &&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
-            [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];
-        }
-        if (self.sessionActionDelegate &&[self.sessionActionDelegate respondsToSelector:@selector(ftApplicationWillTerminate)]) {
-            [self.sessionActionDelegate ftApplicationWillTerminate];
-        }
+        [self.rumManger stopView:self.currentController];
+        [self.rumManger applicationWillTerminate];
         
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
-    if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-        [self.sessionSourceDelegate ftViewDidAppear:viewController];
-    }
+    
+    [self.rumManger startView:viewController];
     //记录冷启动 是在第一个页面显示出来后
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
-        if (self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftApplicationDidBecomeActive:duration:)]) {
-            [self.sessionActionDelegate ftApplicationDidBecomeActive:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        }
+        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         _appRelaunched = YES;
     }
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){
-        if(self.sessionSourceDelegate && [self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]){
-            [self.sessionSourceDelegate ftViewDidDisappear:viewController];
-        }
+        [self.rumManger stopView:viewController];
     }
 }
-- (void)trackClickWithView:(UIView *)view{
-    if(self.sessionActionDelegate && [self.sessionActionDelegate respondsToSelector:@selector(ftClickView:)]){
-        [self.sessionActionDelegate ftClickView:view];
-    }
-}
+
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _config = nil;
+    _rumManger = nil;
     onceToken = 0;
     sharedInstance =nil;
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;

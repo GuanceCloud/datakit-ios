@@ -7,10 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTRUMSessionProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTrack : NSObject
-@property (nonatomic, weak) id<FTRUMSessionActionDelegate> rumActionDelegate;
 
 @end
 

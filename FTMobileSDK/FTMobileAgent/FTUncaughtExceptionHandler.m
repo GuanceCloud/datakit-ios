@@ -267,21 +267,19 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
-    if (self.errorDelegate && [self.errorDelegate respondsToSelector:@selector(ftErrorWithtags:field:)]) {
-        long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-        NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
-        NSDictionary *field = @{ @"error_message":[exception reason],
-                                 @"error_stack":info,
-        };
-        
-        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
-        NSDictionary *tags = @{
-            @"error_type":[exception name],
-            @"error_source":@"logger",
-            @"crash_situation":run
-        };
-        [self.errorDelegate ftErrorWithtags:tags field:field];
-    }
+    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
+    NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
+    NSDictionary *field = @{ @"error_message":[exception reason],
+                             @"error_stack":info,
+    };
+    
+    NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
+    NSDictionary *tags = @{
+        @"error_type":[exception name],
+        @"error_source":@"logger",
+        @"crash_situation":run
+    };
+    [[FTMonitorManager sharedInstance].rumManger addError:tags field:field];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
     
