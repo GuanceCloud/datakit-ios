@@ -14,6 +14,14 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
+//Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
+#if PREPROD
+#define Track_id       @"0000000001"
+#define STATIC_TAG     @"preprod"
+#else
+#define Track_id       @"0000000002"
+#define STATIC_TAG     @"formal"
+#endif
 @interface AppDelegate ()
 
 @end
@@ -45,12 +53,17 @@
     if ( url && !isUnitTests && !isUITests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
+        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NO_VALUE";
+        //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
         rumConfig.appid = appid;
         rumConfig.enableTrackAppCrash = YES;
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
+        rumConfig.globalContext = @{@"track_id":Track_id,
+                                    @"static_tag":STATIC_TAG,
+                                    @"dynamic_tag":dynamicTag};
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;

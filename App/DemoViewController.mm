@@ -72,9 +72,13 @@
     TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"WebViewBridge" handler:^{
         [weakSelf.navigationController pushViewController:[TestJsbridgeData new] animated:YES];
     }];
-
+    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"globalContext dynamic tag" handler:^{
+        NSInteger i = arc4random();
+        [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithFormat:@"dynamic_tags%ld",(long)i] forKey:@"DYNAMIC_TAG"];
+    }];
    
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9]];
+   
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;

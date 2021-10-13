@@ -145,7 +145,11 @@ NS_ASSUME_NONNULL_BEGIN
  * TAG 中的设备信息
  */
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
-
+/**
+ * 设置全局 tag
+ * 特殊 key : track_id (用于追踪功能)
+ */
+@property (nonatomic, strong) NSDictionary *globalContext;
 @end
 @interface FTTraceConfig : NSObject
 /// 禁用 new 初始化

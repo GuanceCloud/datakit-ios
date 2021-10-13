@@ -207,9 +207,13 @@ static dispatch_once_t onceToken;
     }
     @try {
         FTAddDataType dataType = FTAddDataImmediate;
-        NSMutableDictionary *baseTags =[NSMutableDictionary dictionaryWithDictionary:tags];
+        NSMutableDictionary *baseTags =[NSMutableDictionary new];
+        if (self.rumConfig.globalContext) {
+            [baseTags addEntriesFromDictionary:self.rumConfig.globalContext];
+        }
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
+        [baseTags addEntriesFromDictionary:tags];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
@@ -345,6 +349,7 @@ static dispatch_once_t onceToken;
 - (void)resetInstance{
     [[FTMonitorManager sharedInstance] resetInstance];
     _presetProperty = nil;
+    _rumManger = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     onceToken = 0;
     sharedInstance =nil;
