@@ -68,26 +68,6 @@
     }
 }
 
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
-    if (self.isSampling) {
-        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-        [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fileds tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
-    }
-}
--(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-    if (self.isSampling) {
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-    }
-    [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:[NSDate date]];
-}
-
--(void)resourceStart{
-
-    [[FTMonitorManager sharedInstance].rumManger resourceStart:self.identifier];
-}
 - (void)resourceCompleted{
 
     NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
@@ -133,12 +113,38 @@
                                       FT_TYPE:@"custom",
         }.mutableCopy;
         NSDictionary *field = @{FT_KEY_DURATION:duration};
-        if([FTNetworkTrace sharedInstance].enableLinkRumData){
-            [tags addEntriesFromDictionary:[self getTraceSpanID]];
-        }
         [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        [[FTMobileAgent sharedInstance] tracing:[FTJSONUtil convertToJsonData:content] tags:tags field:field tm:[FTDateUtil dateTimeNanosecond:start]];
+        self.startTime = [FTDateUtil dateTimeNanosecond:start];
+        [self tracingContent:[FTJSONUtil convertToJsonData:content] tags:tags fileds:field];
     }
+}
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
+    if (self.isSampling) {
+        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
+        [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
+        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fileds tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
+    }
+}
+#pragma mark - RUM 相关操作 -
+//rum resourceStart
+-(void)resourceStart{
+
+    [[FTMonitorManager sharedInstance].rumManger resourceStart:self.identifier];
+}
+-(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+    if (self.isSampling) {
+        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
+    }
+    [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:[NSDate date]];
+}
+-(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+    if (self.isSampling) {
+        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
+    }
+    [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:newTags fields:fields time:[NSDate date]];
 }
 - (void)rumDataWrite{
     //  RUM 未开启时 rumManger == nil

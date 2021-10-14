@@ -21,34 +21,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSDictionary *requestHeader;
 
 -(instancetype)initWithUrl:(NSURL *)url;
-
-- (NSDictionary *)getTraceHeader;
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds;
 /**
- * tags :
- * resource_url
- * resource_url_host
- * resource_url_path
- * resource_url_query
- * resource_url_path_group
- * resource_type
- * resource_method
- * resource_status
- * resource_status_group
- *
- * fields :
- * duration
- * resource_size
- * resource_dns
- * resource_tcp
- * resource_ssl
- * resource_ttfb
- * resource_trans
- * resource_first_byte
+ * 获取 trace 添加的请求头参数
+ */
+- (NSDictionary *)getTraceHeader;
+/**
+ * 记录 trace 数据
+ */
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds;
+
+/**
+ * RUM ResourceStart
+ */
+-(void)rumResourceStart;
+/**
+ * RUM Resource Completed
  */
 -(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+/**
+ * RUM Resource Completed Error
+ */
+-(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
--(void)resourceStart;
+    
+/**
+ * 从 FTURLProtocol 记录resourceCompleted
+ */
 -(void)resourceCompleted;
 /**
  * WKWebview trace 调用方法
