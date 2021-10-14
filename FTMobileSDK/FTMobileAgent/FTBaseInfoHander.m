@@ -305,6 +305,9 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
        return string;
 }
 +(NSString *)getIPWithHostName:(const NSString *)hostName{
+    if (!hostName) {
+        return nil;
+    }
     const char *hostN= [hostName UTF8String];
     char  **pptr;
     struct hostent* phot;
