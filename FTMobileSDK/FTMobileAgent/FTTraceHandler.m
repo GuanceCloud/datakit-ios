@@ -141,14 +141,16 @@
 }
 -(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-    if (self.isSampling) {
+    // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
+    if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
     }
     [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:self.endTime];
 }
 -(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-    if (self.isSampling) {
+    // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
+    if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
     }
     [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:newTags fields:fields time:self.endTime];
@@ -163,10 +165,6 @@
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)self.task.response;
     NSError *error = self.error?:response.ft_getResponseError;
     NSMutableDictionary *tags = [NSMutableDictionary new];
-    // trace 开启 enableLinkRumData 时 linkTags 有值
-    if ([FTNetworkTrace sharedInstance].enableLinkRumData) {
-        [tags addEntriesFromDictionary:[self getTraceSpanID]];
-    }
     NSMutableDictionary *fields = [NSMutableDictionary new];
     NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:self.task.originalRequest.URL];
     tags[@"resource_url_path_group"] =url_path_group;
