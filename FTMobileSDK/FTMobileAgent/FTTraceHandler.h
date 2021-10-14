@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
 
-@property (nonatomic, strong) NSDate *startTime;
 @property (nonatomic, assign, readonly) BOOL isSampling;
 @property (nonatomic, strong, readonly) NSURL *url;
 @property (nonatomic, strong) NSDictionary *requestHeader;

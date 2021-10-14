@@ -24,6 +24,8 @@
 @property (nonatomic, copy) NSString *span_id;
 @property (nonatomic, copy) NSString *trace_id;
 @property (nonatomic, copy) NSString *identifier;
+@property (nonatomic, strong) NSDate *startTime;
+@property (nonatomic, strong) NSDate *endTime;
 
 @end
 @implementation FTTraceHandler
@@ -67,7 +69,12 @@
         return nil;
     }
 }
-
+-(NSDate *)endTime{
+    if (!_endTime) {
+        _endTime = [NSDate date];
+    }
+    return _endTime;
+}
 - (void)resourceCompleted{
 
     NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
@@ -137,14 +144,14 @@
     if (self.isSampling) {
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
     }
-    [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:[NSDate date]];
+    [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:self.endTime];
 }
 -(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
     if (self.isSampling) {
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
     }
-    [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:newTags fields:fields time:[NSDate date]];
+    [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:newTags fields:fields time:self.endTime];
 }
 - (void)rumDataWrite{
     //  RUM 未开启时 rumManger == nil
@@ -152,6 +159,7 @@
         return;
     }
     NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
+    self.endTime = taskMes.responseEndDate;
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)self.task.response;
     NSError *error = self.error?:response.ft_getResponseError;
     NSMutableDictionary *tags = [NSMutableDictionary new];
@@ -179,7 +187,7 @@
             id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
             [field setValue:responseObject forKey:@"error_stack"];
         }
-        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:field time:taskMes.responseEndDate];
+        [self rumResourceCompletedErrorWithTags:tags fields:field];
     }else{
         NSDictionary *responseHeader = response.allHeaderFields;
         if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
@@ -223,8 +231,7 @@
         tags[@"resource_url"] = self.task.originalRequest.URL.absoluteString;
         tags[@"resource_url_query"] =[_task.originalRequest.URL query];
         tags[@"resource_url_path_group"] = url_path_group;
-
-        [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:tags fields:fields time:taskMes.responseEndDate];
+        [self rumResourceCompletedWithTags:tags fields:fields];
     }
 
 }
