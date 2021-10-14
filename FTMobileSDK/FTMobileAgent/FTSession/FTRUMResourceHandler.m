@@ -65,8 +65,6 @@
     [tags addEntriesFromDictionary:actiontags];
     [tags addEntriesFromDictionary:data.tags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeNanosecond:self.model.time]];
-    
-
 }
 - (void)writeErrorData:(FTRUMDataModel *)data{
     NSDictionary *sessionViewTag = [data getGlobalSessionViewTags];

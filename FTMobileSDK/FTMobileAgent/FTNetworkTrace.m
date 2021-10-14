@@ -11,25 +11,56 @@
 #import "NSString+FTAdd.h"
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHander.h"
+#import "FTConfigManager.h"
 @interface FTNetworkTrace ()
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
 @property (nonatomic, assign) FTNetworkTraceType type;
+@property (nonatomic, copy) NSString *sdkUrlStr;
+@property (nonatomic, assign) int samplerate;
 @end
 @implementation FTNetworkTrace{
     NSUInteger _skywalkingSeq;
     NSUInteger _skywalkingv2;
 }
--(instancetype)initWithType:(FTNetworkTraceType)type{
++ (instancetype)sharedInstance {
+    static FTNetworkTrace *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+    });
+    return sharedInstance;
+}
+-(instancetype)init{
     self = [super init];
     if (self) {
-        _type = type;
+        self.sdkUrlStr = [FTConfigManager sharedInstance].trackConfig.metricsUrl;
     }
     return self;
 }
-- (NSDictionary *)networkTrackHeaderWithSampled:(BOOL)sampled url:(NSURL *)url{
-    
+- (BOOL)isTraceUrl:(NSURL *)url{
+    if (self.sdkUrlStr) {
+        return ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+    }
+    return NO;
+}
+-(void)setNetworkTrace:(FTTraceConfig *)traceConfig {
+    self.type = traceConfig.networkTraceType;
+    self.samplerate = traceConfig.samplerate;
+    self.enableLinkRumData = traceConfig.enableLinkRumData;
+    self.service = traceConfig.service;
+
+}
+- (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url{
+    if (!self.service) {
+        return nil;
+    }
+    if (![self isTraceUrl:url]) {
+        return nil;
+    }
+    BOOL sampled = [FTBaseInfoHander randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
             return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTrace networkTraceID],[FTNetworkTrace networkSpanID],[NSNumber numberWithBool:sampled]]};

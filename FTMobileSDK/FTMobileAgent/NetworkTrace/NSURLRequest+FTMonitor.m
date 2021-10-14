@@ -14,6 +14,7 @@
 #import "NSString+FTAdd.h"
 #import "FTBaseInfoHander.h"
 #import <objc/runtime.h>
+#import "FTNetworkTrace.h"
 @implementation NSURLRequest (FTMonitor)
 -(NSDate *)ftRequestStartDate{
     return objc_getAssociatedObject(self, @"ft_requestStartDate");
@@ -104,7 +105,7 @@
 - (NSString *)ft_getOperationName{
     return [NSString stringWithFormat:@"%@ %@",self.HTTPMethod,self.URL.path];
 }
-- (NSString *)ft_getNetworkTraceId{
+- (NSString *_Nullable)ft_getNetworkTraceId{
     NSDictionary *header = self.allHTTPHeaderFields;
     if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
         return header[FT_NETWORK_ZIPKIN_TRACEID];
@@ -116,11 +117,10 @@
         if (traceAry.count == 4) {
             return  [traceAry firstObject];
         }
-        return nil;
     }
     return nil;
 }
-- (NSString *)ft_getNetworkSpanID{
+- (NSString *_Nullable)ft_getNetworkSpanID{
     NSDictionary *header = self.allHTTPHeaderFields;
     if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
         return header[FT_NETWORK_ZIPKIN_SPANID];
@@ -131,7 +131,6 @@
         if (traceAry.count == 4) {
             return  traceAry[1];
         }
-        return nil;
     }
     return nil;
 }
@@ -162,11 +161,11 @@
 }
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    NSDictionary *traceHeader = [[FTMonitorManager sharedInstance] getTraceHeaderWithUrl:mutableReqeust.URL];
+    NSDictionary *traceHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
             [mutableReqeust setValue:value forHTTPHeaderField:field];
-        }];;
+        }];
     }
     return mutableReqeust;
 }

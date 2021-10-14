@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resourceStart:(NSString *)identifier;
 - (void)resourceCompleted:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
-- (void)ftResourceCompleted:(FTTaskInterceptionModel *)resourceModel;
 
 - (void)addError:(NSDictionary *)tags field:(NSDictionary *)field;
 - (void)addLongTask:(NSDictionary *)tags field:(NSDictionary *)field;

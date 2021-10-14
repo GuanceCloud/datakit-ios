@@ -12,12 +12,14 @@
 #import "FTConstants.h"
 #import "FTRUMManager.h"
 NS_ASSUME_NONNULL_BEGIN
+@class  FTNetworkTrace;
 // 用于 开启各项数据的采集 
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) FTRUMManager *rumManger;
 @property (nonatomic, strong) NSSet *netContentType;
 @property (nonatomic, weak) UIViewController *currentController;
 @property (nonatomic, assign) BOOL running; //正在运行
+
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
@@ -27,10 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setMobileConfig:(FTMobileConfig *)config;
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig;
 -(void)setRumConfig:(FTRumConfig *)rumConfig;
-
-- (BOOL)isTraceUrl:(NSURL *)url;
-- (NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
-- (void)tracingWithContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields headerFields:(NSDictionary *)headerFields time:(NSDate *)time;
 
 - (void)trackViewDidDisappear:(UIViewController *)viewController;
 - (void)trackViewDidAppear:(UIViewController *)viewController;

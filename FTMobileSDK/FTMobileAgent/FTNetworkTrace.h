@@ -11,9 +11,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetworkTrace : NSObject
--(instancetype)initWithType:(FTNetworkTraceType)type;
+@property (nonatomic, assign) BOOL enableLinkRumData;
+@property (nonatomic, copy) NSString *service;
 
-- (NSDictionary *)networkTrackHeaderWithSampled:(BOOL)sampled url:(NSURL *)url;
++ (instancetype)sharedInstance;
+- (BOOL)isTraceUrl:(NSURL *)url;
+- (void)setNetworkTrace:(FTTraceConfig *)traceConfig;
+- (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url;
 - (void)getTraceingDatasWithRequestHeaderFields:(NSDictionary *)headerFields handler:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler;
 @end
 

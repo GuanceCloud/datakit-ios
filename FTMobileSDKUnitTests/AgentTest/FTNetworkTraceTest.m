@@ -153,7 +153,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:2];
+    [NSThread sleepForTimeInterval:4];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newArray.count > oldArray.count);

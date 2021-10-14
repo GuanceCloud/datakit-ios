@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 获取 trace base Tag
  */
-- (NSDictionary *)tracePropertyWithServiceName:(NSString *)serviceName;
+- (NSDictionary *)traceProperty;
 /**
  *  重新设置
  */

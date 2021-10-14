@@ -18,6 +18,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
+#import "FTTraceHandler.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成
@@ -101,13 +102,7 @@ static dispatch_once_t onceToken;
     // wkwebview 使用loadRequest 与 reload 发起的请求
     if (isTrace) {
         NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
-            [self.traceDelegate ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
-        }
-    }
-    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:isError:)]) {
-        BOOL iserror = [[response ft_getResponseStatusCode] integerValue] >=400? YES:NO;
-        [self.traceDelegate ftWKWebViewTraceRequest:request isError:iserror];
+        [self ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
     }
 }
 
@@ -135,38 +130,6 @@ static dispatch_once_t onceToken;
         completionHandler? completionHandler(nil,NO):nil;
     }
 }
-- (void)loadingWebView:(WKWebView *)webView{
-    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
-    NSDate *endDate = [NSDate date];
-    NSURLRequest *request;
-    [self.lock lock];
-    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
-        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-    }
-    [self.lock unlock];
-    if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadingWithURL:duration:)]) {
-            [self.traceDelegate ftWKWebViewLoadingWithURL:webView.URL duration:duration];
-        }
-    }
-}
--(void)didFinishWithWebview:(WKWebView *)webView{
-    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
-    NSDate *endDate = [NSDate date];
-    NSURLRequest *request;
-    [self.lock lock];
-    if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:key]) {
-        request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-    }
-    [self.lock unlock];
-    if ([request.URL isEqual:webView.URL]) {
-        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewLoadCompletedWithURL:duration:)]) {
-            [self.traceDelegate ftWKWebViewLoadCompletedWithURL:webView.URL duration:duration];
-        }
-    }
-}
 - (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webview{
     NSString *key = [[NSNumber numberWithInteger:webview.hash] stringValue];
     NSDate *endDate = [NSDate date];
@@ -182,21 +145,19 @@ static dispatch_once_t onceToken;
     [self.lock unlock];
     if (isTrace) {
         NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:response:startDate:taskDuration:error:)]) {
-            [self.traceDelegate ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
-        }
-    }
-    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftWKWebViewTraceRequest:isError:)]) {
-        [self.traceDelegate ftWKWebViewTraceRequest:request isError:YES];
+        [self ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
     }
 }
 #pragma mark -
+- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
+    FTTraceHandler *trace = [[FTTraceHandler alloc]init];
+    trace.requestHeader = request.allHTTPHeaderFields;
+    [trace traceRequest:request response:response startDate:start taskDuration:duration error:error];
+}
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
     if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
         [self.traceDelegate ftAddScriptMessageHandlerWithWebView:webView];
     }
 }
 @end
-@implementation FTWKWebViewHandler (HookDelegate)
 
-@end

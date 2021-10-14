@@ -155,10 +155,9 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
-- (NSDictionary *)tracePropertyWithServiceName:(NSString *)serviceName{
+- (NSDictionary *)traceProperty{
     NSMutableDictionary *tag = [NSMutableDictionary dictionaryWithDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
-    [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
 - (void)resetWithVersion:(NSString *)version env:(NSString *)env{

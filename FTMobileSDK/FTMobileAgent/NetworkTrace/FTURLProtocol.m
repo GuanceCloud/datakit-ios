@@ -14,7 +14,8 @@
 #import "FTBaseInfoHander.h"
 #import "FTConstants.h"
 #import "NSURLRequest+FTMonitor.h"
-#import "FTTaskInterceptionModel.h"
+#import "FTTraceHandler.h"
+#import "FTNetworkTrace.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -22,10 +23,10 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
 @property (nonatomic, assign) BOOL trackUrl;
-@property (nonatomic, strong) FTTaskInterceptionModel *taskModel;
+@property (nonatomic, strong) FTTraceHandler *traceHandler;
 @end
 @implementation FTURLProtocol
-static id<FTHTTPProtocolDelegate> sDelegate;
+//static id<FTHTTPProtocolDelegate> sDelegate;
 
 // 开始监听
 + (void)startMonitor {
@@ -44,20 +45,20 @@ static id<FTHTTPProtocolDelegate> sDelegate;
         [sessionConfiguration unload];
     }
 }
-+ (id<FTHTTPProtocolDelegate>)delegate
-{
-    id<FTHTTPProtocolDelegate> result;
-    
-    @synchronized (self) {
-        result = sDelegate;
-    }
-    return result;
-}
-+ (void)setDelegate:(id)newValue{
-    @synchronized (self) {
-        sDelegate = newValue;
-    }
-}
+//+ (id<FTHTTPProtocolDelegate>)delegate
+//{
+//    id<FTHTTPProtocolDelegate> result;
+//    
+//    @synchronized (self) {
+//        result = sDelegate;
+//    }
+//    return result;
+//}
+//+ (void)setDelegate:(id)newValue{
+//    @synchronized (self) {
+//        sDelegate = newValue;
+//    }
+//}
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
     
     NSString * scheme = [[request.URL scheme] lowercaseString];
@@ -90,7 +91,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    self.trackUrl = [[FTMonitorManager sharedInstance] isTraceUrl:mutableReqeust.URL];
+    self.trackUrl = [[FTNetworkTrace sharedInstance] isTraceUrl:mutableReqeust.URL];
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     
@@ -103,12 +104,9 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
-        id<FTHTTPProtocolDelegate> strongeDelegate;
-        strongeDelegate = [[self class] delegate];
-        if ([strongeDelegate respondsToSelector:@selector(ftTaskCreateWith:)]) {
-            self.taskModel = [[FTTaskInterceptionModel alloc]init];
-            [strongeDelegate ftTaskCreateWith:self.taskModel];
-        }
+        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL];
+        self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
+        [self.traceHandler resourceStart];
     }
     [task resume];
 }
@@ -128,7 +126,7 @@ static id<FTHTTPProtocolDelegate> sDelegate;
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
     if (self.trackUrl) {
-        self.taskModel.data = data;
+        self.traceHandler.data = data;
     }
     [self.client URLProtocol:self didLoadData:data];
 }
@@ -140,20 +138,16 @@ static id<FTHTTPProtocolDelegate> sDelegate;
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    id<FTHTTPProtocolDelegate> strongeDelegate;
-    strongeDelegate = [[self class] delegate];
     if (self.trackUrl) {
-        if ([strongeDelegate respondsToSelector:@selector(ftTaskInterceptionCompleted:)]){
-            self.taskModel.error = error;
-            self.taskModel.task = task;
-            [strongeDelegate ftTaskInterceptionCompleted:self.taskModel];
-        }
+            self.traceHandler.error = error;
+            self.traceHandler.task = task;
+            [self.traceHandler resourceCompleted];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
     if (self.trackUrl) {
-        self.taskModel.metrics = metrics;
+        self.traceHandler.metrics = metrics;
     }
     
 }

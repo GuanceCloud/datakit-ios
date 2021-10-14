@@ -35,7 +35,6 @@
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
-@property (nonatomic, strong) FTTraceConfig *traceConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
@@ -110,11 +109,8 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    if (!_traceConfig) {
-        _traceConfig = [traceConfigOptions copy];
-        _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:_traceConfig.networkTraceType];
-        [[FTMonitorManager sharedInstance] setTraceConfig:_traceConfig];
-    }
+    _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:traceConfigOptions.networkTraceType];
+    [[FTMonitorManager sharedInstance] setTraceConfig:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
@@ -263,7 +259,7 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty tracePropertyWithServiceName:self.traceConfig.service]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }

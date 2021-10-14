@@ -72,8 +72,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
         SEL requestM = @selector(webView:decidePolicyForNavigationAction:decisionHandler:);
         SEL responseM = @selector(webView:decidePolicyForNavigationResponse:decisionHandler:);
         SEL loadErrorM = @selector(webView:didFailProvisionalNavigation:withError:);
-        SEL webViewCommitM = @selector(webView:didCommitNavigation:);
-        SEL navigationFinishM = @selector(webView:didFinishNavigation:);
         
         if(!realClass.dataFlux_className){
             realClass.dataFlux_className = NSStringFromClass(realClass);
@@ -86,12 +84,7 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
             if(![FTSwizzler realDelegateClass:realClass respondsToSelector:loadErrorM]){
                 dataflux_addInstanceMethod(loadErrorM,@selector(dataflux_none_webView:didFailProvisionalNavigation:withError:), WKWebView.class, realClass);
             }
-            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:webViewCommitM]){
-                dataflux_addInstanceMethod(webViewCommitM,@selector(dataflux_none_webView:didCommitNavigation:), WKWebView.class, realClass);
-            }
-            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:navigationFinishM]){
-                dataflux_addInstanceMethod(navigationFinishM,@selector(dataflux_none_webView:didFinishNavigation:), WKWebView.class, realClass);
-            }
+
             [FTSwizzler swizzleSelector:requestM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationAction *navigationAction,id decisionHandler) {
                 if ([FTWKWebViewHandler sharedInstance].enableTrace) {
                     [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
@@ -112,17 +105,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
                 }
             
             } named:@"dataflux_wkwebview_loadError"];
-            [FTSwizzler swizzleSelector:webViewCommitM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation) {
-                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-                    [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
-                }
-            
-            } named:@"dataflux_wkwebview_webViewCommit"];
-            [FTSwizzler swizzleSelector:navigationFinishM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation) {
-                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-                    [[FTWKWebViewHandler sharedInstance] didFinishWithWebview:webView];
-                }
-            } named:@"dataflux_wkwebview_navigationFinish"];
         }
        }
     [self dataflux_setNavigationDelegate:navigationDelegate];
@@ -153,18 +135,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
         [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
     }
 }
-//webView:didCommitNavigation:
--(void)dataflux_webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation{
-    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        [[FTWKWebViewHandler sharedInstance] loadingWebView:webView];
-    }
-}
-//navigation Finish
--(void)dataflux_webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
-    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        [[FTWKWebViewHandler sharedInstance] didFinishWithWebview:webView];
-    }
-}
 // request
 -(void)dataflux_none_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{                                                                                                                                          decisionHandler(WKNavigationActionPolicyAllow);
 }
@@ -175,14 +145,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
 }
 //load error
 -(void)dataflux_none_webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
-    
-}
-//webView:didCommitNavigation:
--(void)dataflux_none_webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation{
-    
-}
-//navigation Finish
--(void)dataflux_none_webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
     
 }
 @end

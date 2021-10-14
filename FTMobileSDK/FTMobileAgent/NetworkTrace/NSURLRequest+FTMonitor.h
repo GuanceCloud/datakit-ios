@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *)ft_getRequestContentDict;
 - (NSString *)ft_getBodyData:(BOOL)allow;
 - (NSString *)ft_getOperationName;
-- (NSString *)ft_getNetworkTraceId;
-- (NSString *)ft_getNetworkSpanID;
+- (NSString *_Nullable)ft_getNetworkTraceId;
+- (NSString *_Nullable)ft_getNetworkSpanID;
 - (NSURLRequest *)ft_NetworkTrace;
 - (BOOL)ft_isAllowedContentType;
 - (NSDictionary *)ft_getRequestHeaders;
