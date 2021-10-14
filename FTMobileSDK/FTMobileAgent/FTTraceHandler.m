@@ -114,7 +114,7 @@
         }.mutableCopy;
         NSDictionary *field = @{FT_KEY_DURATION:duration};
         [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        self.startTime = [FTDateUtil dateTimeNanosecond:start];
+        self.startTime = start;
         [self tracingContent:[FTJSONUtil convertToJsonData:content] tags:tags fileds:field];
     }
 }
@@ -128,7 +128,7 @@
 }
 #pragma mark - RUM 相关操作 -
 //rum resourceStart
--(void)resourceStart{
+-(void)rumResourceStart{
 
     [[FTMonitorManager sharedInstance].rumManger resourceStart:self.identifier];
 }

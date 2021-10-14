@@ -106,7 +106,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     if (self.trackUrl) {
         self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL];
         self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
-        [self.traceHandler resourceStart];
+        [self.traceHandler rumResourceStart];
     }
     [task resume];
 }
