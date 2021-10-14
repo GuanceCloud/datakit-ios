@@ -585,6 +585,54 @@
     }
 
 }
+- (void)testNotTraceLinkRumData{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
+    traceConfig.enableLinkRumData = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [self.testVC viewDidAppear:NO];
+
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+   __block BOOL isError = NO;
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        if (error) {
+            isError = YES;
+        }
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasResourceData;
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:@"resource"]) {
+            NSDictionary *tags = opdata[@"tags"];
+            XCTAssertFalse([tags.allKeys containsObject:@"span_id"]);
+            XCTAssertFalse([tags.allKeys containsObject:@"trace_id"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    if (!isError) {
+        XCTAssertTrue(hasResourceData == YES);
+    }
+
+}
 - (void)testRUMGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
