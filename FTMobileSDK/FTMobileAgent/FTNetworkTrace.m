@@ -54,9 +54,11 @@
 
 }
 - (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url{
+    // 用来判断是否开启 trace
     if (!self.service) {
         return nil;
     }
+    // 判断是否是 SDK 的 URL
     if (![self isTraceUrl:url]) {
         return nil;
     }

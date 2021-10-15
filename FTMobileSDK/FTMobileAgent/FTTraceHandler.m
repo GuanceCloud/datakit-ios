@@ -48,6 +48,15 @@
     self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     return self.requestHeader;
 }
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
+    if (self.isSampling) {
+        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
+        [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
+        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fileds tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
+    }
+}
+#pragma mark - private -
 -(void)setRequestHeader:(NSDictionary *)requestHeader{
     _requestHeader = requestHeader;
     [self resolveRequestHeader];
@@ -125,14 +134,7 @@
         [self tracingContent:[FTJSONUtil convertToJsonData:content] tags:tags fileds:field];
     }
 }
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
-    if (self.isSampling) {
-        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-        [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fileds tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
-    }
-}
+
 #pragma mark - RUM 相关操作 -
 //rum resourceStart
 -(void)rumResourceStart{
@@ -232,8 +234,5 @@
         [self rumResourceCompletedWithTags:tags fields:fields];
     }
 
-}
--(void)dealloc{
-    
 }
 @end
