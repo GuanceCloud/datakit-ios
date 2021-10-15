@@ -10,9 +10,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMViewHandler : FTRUMHandler
-@property (nonatomic, strong, readonly) FTRUMDataModel *model;
+@property (nonatomic, strong,readonly) FTRUMContext *context;
 
--(instancetype)initWithModel:(FTRUMDataModel *)model;
+-(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context;
 @end
 
 NS_ASSUME_NONNULL_END

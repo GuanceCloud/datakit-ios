@@ -14,10 +14,11 @@ typedef void(^FTErrorEventSent)(void);
 
 @interface FTRUMResourceHandler : FTRUMHandler
 @property (nonatomic, copy,readonly) NSString *identifier;
+@property (nonatomic, strong) FTRUMContext *context;
 
 @property (nonatomic, copy) FTResourceEventSent resourceHandler;
 @property (nonatomic, copy) FTErrorEventSent errorHandler;
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model;
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context;
 @end
 
 NS_ASSUME_NONNULL_END

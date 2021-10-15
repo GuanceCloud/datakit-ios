@@ -16,7 +16,11 @@
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
-@property (nonatomic, strong,readwrite) FTRUMDataModel *model;
+@property (nonatomic, assign) FTRUMDataType type;
+@property (nonatomic, strong) FTRUMContext *context;
+@property (nonatomic, copy) NSString *action_name;
+@property (nonatomic, copy) NSString *action_type;
+@property (nonatomic, copy) NSString *action_id;
 //field
 @property (nonatomic, strong) NSDate *actionStartTime;
 @property (nonatomic, strong) NSNumber *duration;
@@ -29,12 +33,21 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 @end
 @implementation FTRUMActionHandler
 
--(instancetype)initWithModel:(FTRUMDataModel *)model{
+-(instancetype)initWithModel:(FTRUMActionModel *)model context:(FTRUMContext *)context{
     self = [super init];
     if (self) {
         self.assistant = self;
         self.actionStartTime = model.time;
-        self.model = model;
+        self.action_id = [NSUUID UUID].UUIDString;
+        self.action_name = model.action_name;
+        self.action_type = model.action_type;
+        self.type = model.type;
+        if ([model isKindOfClass:FTRUMLaunchDataModel.class]) {
+            FTRUMLaunchDataModel *launchModel = (FTRUMLaunchDataModel*)model;
+            self.duration =launchModel.duration;
+        }
+        self.context = [context copy];
+        self.context.action_id = self.action_id;
     }
     return  self;
 }
@@ -85,16 +98,15 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     return self.activeResourcesCount<=0;
 }
 -(void)writeActionData:(NSDate *)endDate{
-    if (self.model.type == FTRUMDataLaunchHot ||self.model.type == FTRUMDataLaunchCold ) {
-        FTRUMLaunchDataModel *model = (FTRUMLaunchDataModel *)self.model;
-        self.duration =model.duration;
-    }else{
-    self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondtimeIntervalSinceDate:self.actionStartTime toDate:endDate];
-        
+    if (self.type == FTRUMDataClick) {
+        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondtimeIntervalSinceDate:self.actionStartTime toDate:endDate];
     }
-    NSDictionary *sessionViewTag = [self.model getGlobalSessionViewTags];
+    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewTags];
 
-    NSDictionary *actiontags = [self.model.baseActionData getActionTags];
+    NSDictionary *actiontags = @{@"action_id":self.action_id,
+                                 @"action_name":self.action_name,
+                                 @"action_type":self.action_type
+    };
     NSDictionary *fields = @{@"duration":self.duration,
                              @"action_long_task_count":[NSNumber numberWithInteger:self.actionLongTaskCount],
                              @"action_resource_count":[NSNumber numberWithInteger:self.actionResourcesCount],

@@ -13,10 +13,11 @@
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
+@property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) NSDate *sessionStartTime;
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
-@property (nonatomic, strong) FTRUMSessionModel *sessionModel;
+
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, assign) BOOL sampling;
 @end
@@ -29,12 +30,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sampling = [FTBaseInfoHander randomSampling:rumConfig.samplerate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
-        self.sessionModel = [[FTRUMSessionModel alloc]initWithSessionID:[NSUUID UUID].UUIDString];
+        self.context = [FTRUMContext new];
     }
     return  self;
 }
 -(void)refreshWithDate:(NSDate *)date{
-    self.sessionModel.session_id = [NSUUID UUID].UUIDString;
+    self.context.session_id = [NSUUID UUID].UUIDString;
     self.sessionStartTime = date;
     self.lastInteractionTime = date;
     self.sampling = [FTBaseInfoHander randomSampling:self.rumConfig.samplerate];
@@ -47,9 +48,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return YES;
     }
     _lastInteractionTime = [NSDate date];
-    //数据与session绑定
-    model.baseSessionData = self.sessionModel;
-  
+   
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
@@ -72,7 +71,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 -(void)startView:(FTRUMDataModel *)model{
     
-    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:model];
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context];
     [self.viewHandlers addObject:viewHandler];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
@@ -87,7 +86,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {
-        return [view.model getGlobalSessionViewTags];
+        return [view.context getGlobalSessionViewTags];
     }
     return @{};
 }

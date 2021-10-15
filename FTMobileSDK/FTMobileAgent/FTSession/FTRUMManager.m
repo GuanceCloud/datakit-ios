@@ -45,13 +45,12 @@
     //viewModel
     [self startView:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
 }
--(void)startView:(NSString *)viewID viewName:(NSString *)viewName    viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+-(void)startView:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
     dispatch_async(self.serialQueue, ^{
         FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:viewName viewReferrer:viewReferrer];
         viewModel.loading_time = loadDuration;
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStart time:[NSDate date]];
-        model.baseViewData = viewModel;
-        [self process:model];
+        viewModel.type = FTRUMDataViewStart;
+        [self process:viewModel];
     });
 }
 -(void)stopView:(UIViewController *)viewController{
@@ -61,9 +60,8 @@
 - (void)stopViewWithViewID:(NSString *)viewID{
     dispatch_async(self.serialQueue, ^{
         FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:@"" viewReferrer:@""];
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataViewStop time:[NSDate date]];
-        model.baseViewData = viewModel;
-        [self process:model];
+        viewModel.type = FTRUMDataViewStop;
+        [self process:viewModel];
     });
 }
 #pragma mark - Action -
@@ -83,10 +81,9 @@
         return;
     }
     dispatch_async(self.serialQueue, ^{
-        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:@"click"];
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataClick time:[NSDate date]];
-        model.baseActionData = actionModel;
-        [self process:model];
+        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:@"click"];
+        actionModel.type = FTRUMDataClick;
+        [self process:actionModel];
     });
 }
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
@@ -96,14 +93,14 @@
     dispatch_async(self.serialQueue, ^{
         NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
         NSString *actionType = isHot?@"launch_hot":@"launch_cold";
-        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc]initWithActionID:[NSUUID UUID].UUIDString actionName:actionName actionType:actionType];
         FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
         FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
-        launchModel.baseActionData =actionModel;
+        launchModel.action_name = actionName;
+        launchModel.action_type = actionType;
         [self process:launchModel];
     });
 }
-- (void)ftApplicationWillTerminate{
+- (void)applicationWillTerminate{
     dispatch_sync(self.serialQueue, ^{
     });
 }
