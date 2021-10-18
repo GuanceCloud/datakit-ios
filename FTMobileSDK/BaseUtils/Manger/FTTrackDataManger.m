@@ -144,6 +144,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     }  @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
-    
+
+    return NO;
 }
 @end
