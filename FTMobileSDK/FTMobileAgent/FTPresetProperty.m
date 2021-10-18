@@ -104,7 +104,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return self;
 }
--(NSDictionary *)webCommonPropertyTags{
+-(NSMutableDictionary *)webCommonPropertyTags{
     if(!_webCommonPropertyTags){
         @synchronized (self) {
             if (!_webCommonPropertyTags) {
@@ -117,7 +117,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return _webCommonPropertyTags;
 }
--(NSDictionary *)rumCommonPropertyTags{
+-(NSMutableDictionary *)rumCommonPropertyTags{
     if (!_rumCommonPropertyTags) {
         @synchronized (self) {
             if (!_rumCommonPropertyTags) {
