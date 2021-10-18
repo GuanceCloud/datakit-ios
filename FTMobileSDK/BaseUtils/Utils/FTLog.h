@@ -23,8 +23,6 @@ FTLOG_MACRO(FTLogLevelInfo,(frmt), ## __VA_ARGS__)
 #define ZYErrorLog(frmt,...)\
 FTLOG_MACRO(FTLogLevelError,(frmt), ## __VA_ARGS__)
 
-#define ZYDESCLog(frmt,...)\
-FTLOG_MACRO(FTLogLevelDescInfo,(frmt), ## __VA_ARGS__)
 #ifndef __OPTIMIZE__
 #define FTLogger(...) NSLog(__VA_ARGS__)
 #else
@@ -36,13 +34,11 @@ typedef NS_ENUM(NSUInteger, FTLogLevel){
     FTLogLevelInfo     = 1,
     FTLogLevelError,
     FTLogLevelWarning,
-    FTLogLevelDescInfo
 };
 @interface FTLog : NSObject
 
 + (instancetype)sharedInstance;
 + (void)enableLog:(BOOL)enableLog;
-+ (void)enableDescLog:(BOOL)enableLog;
 + (void)log:(BOOL)asynchronous
       level:(NSInteger)level
        file:(const char *)file
