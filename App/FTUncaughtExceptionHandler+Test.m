@@ -12,7 +12,7 @@
 #include <execinfo.h>
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
-#import <FTMobileAgent/FTBaseInfoHander.h>
+#import <FTMobileAgent/FTBaseInfoHandler.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     NSString *info = @"";
@@ -40,7 +40,7 @@
     signal(SIGPIPE,SIG_DFL);
     signal(SIGSYS,SIG_DFL);
     __block BOOL testSuccess = NO;
-    UIWindow *window = [FTBaseInfoHander keyWindow];
+    UIWindow *window = [FTBaseInfoHandler keyWindow];
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Crash" message:info preferredStyle:UIAlertControllerStyleAlert];

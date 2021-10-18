@@ -13,10 +13,10 @@
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
 #import "FTMonitorManager.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import <mach-o/ldsyms.h>
 #import "FTConstants.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #include <limits.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>

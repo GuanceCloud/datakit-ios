@@ -10,9 +10,6 @@
 #endif
 #import "FTLogHook.h"
 #import "FTfishhook.h"
-#import "FTMobileAgent+Private.h"
-#import "FTConstants.h"
-#import "FTBaseInfoHander.h"
 #import "FTDateUtil.h"
 static FTFishHookCallBack FTHookCallBack;
 
@@ -61,7 +58,7 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
         FTHookCallBack(string,[FTDateUtil currentTimeNanosecond]);
     }
-    // invoke orign fprintf
+    // invoke origin fprintf
     int result = origin_fprintf(file, [string UTF8String]);
     
     va_end(args);

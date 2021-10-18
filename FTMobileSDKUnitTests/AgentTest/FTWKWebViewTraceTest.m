@@ -10,7 +10,7 @@
 #import "TestWKWebViewVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTBaseInfoHander.h>
+#import <FTBaseInfoHandler.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTBaseInfoHander.h>

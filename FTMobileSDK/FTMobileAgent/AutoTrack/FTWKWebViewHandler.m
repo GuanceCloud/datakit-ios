@@ -101,7 +101,7 @@ static dispatch_once_t onceToken;
     // 判断是否是SDK添加链路追踪信息的request
     // wkwebview 使用loadRequest 与 reload 发起的请求
     if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         [self ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
     }
 }
@@ -144,7 +144,7 @@ static dispatch_once_t onceToken;
     }
     [self.lock unlock];
     if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanosecondtimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
+        NSNumber  *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
         [self ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
     }
 }

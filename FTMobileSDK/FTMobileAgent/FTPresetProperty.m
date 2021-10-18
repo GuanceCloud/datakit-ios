@@ -7,7 +7,7 @@
 //
 
 #import "FTPresetProperty.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTConstants.h"
 #import "FTMobileAgentVersion.h"
@@ -99,7 +99,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     if (self) {
         _version = version;
         _env = env;
-        _isSignin = [FTBaseInfoHander userId]?YES:NO;
+        _isSignin = [FTBaseInfoHandler userId]?YES:NO;
         _mobileDevice = [[MobileDevice alloc]init];
     }
     return self;
@@ -150,7 +150,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 - (NSDictionary *)loggerPropertyWithStatus:(FTStatus)status serviceName:(NSString *)serviceName{
     NSMutableDictionary *tag = [NSMutableDictionary dictionaryWithDictionary:self.baseCommonPropertyTags];
-    [tag setValue:[FTBaseInfoHander statusStrWithStatus:status] forKey:FT_KEY_STATUS];
+    [tag setValue:[FTBaseInfoHandler statusStrWithStatus:status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
@@ -163,7 +163,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 - (void)resetWithVersion:(NSString *)version env:(NSString *)env{
     self.version = version;
     self.env = env;
-    _isSignin = [FTBaseInfoHander userId]?YES:NO;
+    _isSignin = [FTBaseInfoHandler userId]?YES:NO;
 }
 - (NSDictionary *)rumPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.rumCommonPropertyTags];
@@ -458,9 +458,9 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 
 + (NSString *)userid{
-    NSString *useridStr = [FTBaseInfoHander userId];
+    NSString *useridStr = [FTBaseInfoHandler userId];
     if (!useridStr) {
-        useridStr = [FTBaseInfoHander sessionId];
+        useridStr = [FTBaseInfoHandler sessionId];
     }
     return  useridStr;
 }

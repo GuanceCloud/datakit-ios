@@ -8,19 +8,14 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
-#import "FTBaseInfoHander.h"
-#import <sys/utsname.h>
+#import "FTBaseInfoHandler.h"
 #import <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
-#import "FTLog.h"
-#import "FTConstants.h"
 #import "NSString+FTAdd.h"
-#import "FTJSONUtil.h"
 #include <mach-o/dyld.h>
-#include <mach-o/nlist.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-@implementation FTBaseInfoHander : NSObject
+@implementation FTBaseInfoHandler : NSObject
 
 #pragma mark ========== 请求加密 ==========
 +(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
@@ -50,9 +45,9 @@
 }
 + (NSString *)currentPageName{
     __block UIViewController *result = nil;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    [FTBaseInfoHandler performBlockDispatchMainSyncSafe:^{
         
-        UIWindow * window = [FTBaseInfoHander keyWindow];
+        UIWindow * window = [FTBaseInfoHandler keyWindow];
         
         UIView *frontView = [[window subviews] objectAtIndex:0];
         id nextResponder = [frontView nextResponder];

@@ -17,7 +17,7 @@
 #import <FTMobileAgent/FTMonitorUtils.h>
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTRecordModel.h>
-#import <FTBaseInfoHander.h>
+#import <FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
 #import "FTSessionConfiguration+Test.h"
 #import <FTMobileAgent/FTConstants.h>

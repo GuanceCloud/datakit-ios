@@ -6,7 +6,7 @@
 //  Copyright © 2021 hll. All rights reserved.
 //
 #import "FTRUMManager.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "NSURLResponse+FTMonitor.h"

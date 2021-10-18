@@ -11,7 +11,7 @@
 #import "UIViewController+FTAutoTrack.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "NSString+FTAdd.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTLog.h"
@@ -46,19 +46,6 @@ static char *viewLoadDuration = "viewLoadDuration";
 -(void)setFt_viewUUID:(NSString *)ft_viewUUID{
     objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
-+ (NSString *)ft_getRootViewController{
-    __block NSString *name;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
-     UIWindow* window =[FTBaseInfoHander keyWindow];
-    name = NSStringFromClass([window.rootViewController class]);
-    }];
-    if( [name isKindOfClass:NSNull.class]
-       ||name==nil){
-        return FT_NULL_VALUE;
-    }else{
-        return  name;
-    }
-}
 -(NSString *)ft_parentVC{
     UIViewController *viewController =[self parentViewController];
     if (viewController == nil) {
@@ -68,17 +55,6 @@ static char *viewLoadDuration = "viewLoadDuration";
         return FT_NULL_VALUE;
     }
     return NSStringFromClass(viewController.class);
-}
--(NSString *)ft_VCPath{
-    UIViewController *viewController =self;
-    NSMutableString *viewPaths = [NSMutableString new];
-    [viewPaths insertString:[FTBaseInfoHander itemHeatMapPathForResponder:viewController] atIndex:0];
-    viewController = (UIViewController *)viewController.parentViewController;
-    while (viewController){
-        [viewPaths insertString:[NSString stringWithFormat:@"%@/",[FTBaseInfoHander itemHeatMapPathForResponder:viewController]] atIndex:0];
-        viewController = (UIViewController *)viewController.parentViewController;
-    }
-   return viewPaths;
 }
 - (BOOL)isBlackListContainsViewController{
     static NSSet * blacklistedClasses  = nil;
@@ -116,7 +92,7 @@ static char *viewLoadDuration = "viewLoadDuration";
         if ([FTMonitorManager sharedInstance].currentController != self) {
             [FTMonitorManager sharedInstance].currentController = self;
             if(self.ft_viewLoadStartTime){
-                NSNumber *loadTime = [FTDateUtil nanosecondtimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
+                NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
             }else{

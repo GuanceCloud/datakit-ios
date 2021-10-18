@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMonitorManager.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTMobileConfig.h"
 #import "FTURLProtocol.h"
 #import "FTLog.h"
@@ -121,7 +121,7 @@ static dispatch_once_t onceToken;
         _pingThread = [[FTPingThread alloc]init];
         __weak typeof(self) weakSelf = self;
         _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
-            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanosecondtimeIntervalSinceDate:startDate toDate:endDate]];
+            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanosecondTimeIntervalSinceDate:startDate toDate:endDate]];
         };
     }
     return _pingThread;
@@ -217,7 +217,7 @@ static dispatch_once_t onceToken;
         self.currentController.ft_viewUUID = viewid;
         [self.rumManger startView:self.currentController];
         
-        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         
     }
     @catch (NSException *exception) {
@@ -255,7 +255,7 @@ static dispatch_once_t onceToken;
     //记录冷启动 是在第一个页面显示出来后
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
-        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondtimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         _appRelaunched = YES;
     }
 }

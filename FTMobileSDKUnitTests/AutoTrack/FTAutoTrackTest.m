@@ -15,7 +15,7 @@
 #import <objc/runtime.h>
 #import <FTTrack.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTBaseInfoHander.h>
+#import <FTBaseInfoHandler.h>
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
 @interface FTAutoTrackTest : XCTestCase

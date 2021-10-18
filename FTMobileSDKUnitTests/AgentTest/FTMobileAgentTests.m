@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTBaseInfoHander.h>
+#import <FTBaseInfoHandler.h>
 #import <FTRecordModel.h>
 #import <FTLocationManager.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>

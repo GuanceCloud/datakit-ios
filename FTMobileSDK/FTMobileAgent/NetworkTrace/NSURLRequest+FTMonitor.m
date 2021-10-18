@@ -12,7 +12,7 @@
 #import "FTConstants.h"
 #import "FTMonitorManager.h"
 #import "NSString+FTAdd.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import <objc/runtime.h>
 #import "FTNetworkTrace.h"
 @implementation NSURLRequest (FTMonitor)

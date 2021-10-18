@@ -9,7 +9,7 @@
 #import "FTRUMSessionHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTRUMViewHandler.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -27,7 +27,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if (self) {
         self.assistant = self;
         self.rumConfig = rumConfig;
-        self.sampling = [FTBaseInfoHander randomSampling:rumConfig.samplerate];
+        self.sampling = [FTBaseInfoHandler randomSampling:rumConfig.samplerate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.context = [FTRUMContext new];
@@ -38,7 +38,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     self.context.session_id = [NSUUID UUID].UUIDString;
     self.sessionStartTime = date;
     self.lastInteractionTime = date;
-    self.sampling = [FTBaseInfoHander randomSampling:self.rumConfig.samplerate];
+    self.sampling = [FTBaseInfoHandler randomSampling:self.rumConfig.samplerate];
 }
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {

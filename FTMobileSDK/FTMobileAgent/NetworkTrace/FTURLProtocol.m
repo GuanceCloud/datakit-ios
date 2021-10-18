@@ -11,7 +11,7 @@
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
 #import "FTMonitorManager.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTTraceHandler.h"

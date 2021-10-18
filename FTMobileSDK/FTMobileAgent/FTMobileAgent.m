@@ -9,10 +9,9 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileAgent.h"
-#import <UIKit/UIKit.h>
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
@@ -23,8 +22,6 @@
 #import "FTPresetProperty.h"
 #import "FTMonitorUtils.h"
 #import "FTLogHook.h"
-#import "FTMonitorUtils.h"
-#import "FTConstants.h"
 #import "FTReachability.h"
 #import "FTConfigManager.h"
 #import "FTTrackDataManger.h"
@@ -73,7 +70,7 @@ static dispatch_once_t onceToken;
             //开启网络监听
             [[FTReachability sharedInstance] startNotifier];
             [self setUpListeners];
-            _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
+            _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
@@ -85,9 +82,9 @@ static dispatch_once_t onceToken;
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTConfigManager sharedInstance] setTrackConfig:config];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
+        [self.presetProperty resetWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHander envStrWithEnv:config.env]];
+        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
@@ -109,7 +106,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    _netTraceStr = [FTBaseInfoHander networkTraceTypeStrWithType:traceConfigOptions.networkTraceType];
+    _netTraceStr = [FTBaseInfoHandler networkTraceTypeStrWithType:traceConfigOptions.networkTraceType];
     [[FTMonitorManager sharedInstance] setTraceConfig:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
@@ -143,7 +140,7 @@ static dispatch_once_t onceToken;
                             NSString *crash_stack = field[@"crash_stack"];
                             if (crash_stack && crash_message) {
                                 NSString *info = [NSString stringWithFormat:@"Exception Reason:%@\n%@",crash_message,crash_stack];
-                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHander applicationUUID]} field:field tm:tm.longLongValue];
+                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHandler applicationUUID]} field:field tm:tm.longLongValue];
                             }
                         }
                     }else{
@@ -177,13 +174,13 @@ static dispatch_once_t onceToken;
 - (void)bindUserWithUserID:(NSString *)Id{
     NSParameterAssert(Id);
     self.presetProperty.isSignin = YES;
-    [FTBaseInfoHander setUserId:Id];
+    [FTBaseInfoHandler setUserId:Id];
     ZYDebug(@"Bind User ID : %@",Id);
 }
 //用户注销
 - (void)logout{
     self.presetProperty.isSignin = NO;
-    [FTBaseInfoHander setUserId:nil];
+    [FTBaseInfoHandler setUserId:nil];
     ZYDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
@@ -228,7 +225,7 @@ static dispatch_once_t onceToken;
         ZYDebug(@"经过过滤算法判断-此条日志不采集");
         return;
     }
-    if (![FTBaseInfoHander randomSampling:self.loggerConfig.samplerate]){
+    if (![FTBaseInfoHandler randomSampling:self.loggerConfig.samplerate]){
         ZYDebug(@"经过采集算法判断-此条日志不采集");
         return;
     }

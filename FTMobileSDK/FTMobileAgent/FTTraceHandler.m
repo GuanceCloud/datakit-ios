@@ -7,7 +7,7 @@
 //
 
 #import "FTTraceHandler.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTConfigManager.h"
 #import "FTMonitorManager.h"
 #import "FTConstants.h"
@@ -114,7 +114,7 @@
             }
             responseDict = response?[response ft_getResponseDict]:responseDict;
         }
-        NSString *statusStr = [FTBaseInfoHander statusStrWithStatus:status];
+        NSString *statusStr = [FTBaseInfoHandler statusStrWithStatus:status];
         NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
         NSDictionary *responseDic = responseDict?responseDict:@{};
         NSDictionary *content = @{
@@ -168,7 +168,7 @@
     NSError *error = self.error?:response.ft_getResponseError;
     NSMutableDictionary *tags = [NSMutableDictionary new];
     NSMutableDictionary *fields = [NSMutableDictionary new];
-    NSString *url_path_group = [FTBaseInfoHander replaceNumberCharByUrl:self.task.originalRequest.URL];
+    NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:self.task.originalRequest.URL];
     tags[@"resource_url_path_group"] =url_path_group;
     tags[@"resource_url"] = self.task.originalRequest.URL.absoluteString;
     tags[@"resource_url_host"] = self.task.originalRequest.URL.host;
@@ -194,7 +194,7 @@
             tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
         }
         tags[@"resource_type"] = response.MIMEType;
-        NSString *response_server = [FTBaseInfoHander getIPWithHostName:self.task.originalRequest.URL.host];
+        NSString *response_server = [FTBaseInfoHandler getIPWithHostName:self.task.originalRequest.URL.host];
         if (response_server) {
             tags[@"response_server"] = response_server;
         }
@@ -208,14 +208,14 @@
             tags[@"resource_status_group"] = group;
         }
         
-        NSNumber *dnsTime = [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
-        NSNumber *tcpTime = [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
+        NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
+        NSNumber *tcpTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
         
-        NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.secureConnectionStartDate toDate:taskMes.connectEndDate]:@0;
-        NSNumber *ttfbTime = [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseStartDate];
-        NSNumber *transTime =[FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
-        NSNumber *durationTime = [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
-        NSNumber *resourceFirstByteTime = [FTDateUtil nanosecondtimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
+        NSNumber *tlsTime = taskMes.secureConnectionStartDate!=nil ? [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.secureConnectionStartDate toDate:taskMes.connectEndDate]:@0;
+        NSNumber *ttfbTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseStartDate];
+        NSNumber *transTime =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
+        NSNumber *durationTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
+        NSNumber *resourceFirstByteTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
         fields[@"resource_first_byte"] = resourceFirstByteTime;
         fields[@"resource_size"] =[NSNumber numberWithLongLong:self.task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]];
         fields[@"duration"] =durationTime;
@@ -225,8 +225,8 @@
         fields[@"resource_ttfb"] = ttfbTime;
         fields[@"resource_trans"] = transTime;
         if (response) {
-            fields[@"response_header"] =[FTBaseInfoHander convertToStringData:response.allHeaderFields];
-            fields[@"request_header"] = [FTBaseInfoHander convertToStringData:[_task.currentRequest ft_getRequestHeaders]];
+            fields[@"response_header"] =[FTBaseInfoHandler convertToStringData:response.allHeaderFields];
+            fields[@"request_header"] = [FTBaseInfoHandler convertToStringData:[_task.currentRequest ft_getRequestHeaders]];
         }
         tags[@"resource_url"] = self.task.originalRequest.URL.absoluteString;
         tags[@"resource_url_query"] =[_task.originalRequest.URL query];

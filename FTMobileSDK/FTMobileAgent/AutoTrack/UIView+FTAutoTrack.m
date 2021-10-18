@@ -9,12 +9,12 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "UIView+FTAutoTrack.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 
 @implementation UIView (FTAutoTrack)
 -(UIViewController *)ft_currentViewController{
     __block UIResponder *next = nil;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    [FTBaseInfoHandler performBlockDispatchMainSyncSafe:^{
         next = [self nextResponder];
         do {
             if ([next isKindOfClass:[UIViewController class]]) {
@@ -82,15 +82,4 @@
     }
     return NO;
 }
-- (UIViewController*)datafluxHelper_viewController {
-    UIResponder *curNode = self.nextResponder;
-    while (curNode) {
-        if ([curNode isKindOfClass:[UIViewController class]]) {
-            return (id)curNode;
-        }
-        curNode = [curNode nextResponder];
-    }
-    return nil;
-}
-
 @end

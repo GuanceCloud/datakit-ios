@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileConfig.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 @implementation FTRumConfig
 - (instancetype)init{
@@ -96,7 +96,7 @@
     if (self = [super init]) {
         _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
-        _XDataKitUUID = [FTBaseInfoHander XDataKitUUID];
+        _XDataKitUUID = [FTBaseInfoHandler XDataKitUUID];
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _env = FTEnvProd;
     }

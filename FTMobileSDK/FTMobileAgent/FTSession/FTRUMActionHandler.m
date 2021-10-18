@@ -11,7 +11,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTRUMViewHandler.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
@@ -99,7 +99,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 }
 -(void)writeActionData:(NSDate *)endDate{
     if (self.type == FTRUMDataClick) {
-        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondtimeIntervalSinceDate:self.actionStartTime toDate:endDate];
+        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondTimeIntervalSinceDate:self.actionStartTime toDate:endDate];
     }
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewTags];
 

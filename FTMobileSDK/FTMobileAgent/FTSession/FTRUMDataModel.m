@@ -7,7 +7,7 @@
 //
 
 #import "FTRUMDataModel.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 
 @implementation FTRUMDataModel
 -(instancetype)init{

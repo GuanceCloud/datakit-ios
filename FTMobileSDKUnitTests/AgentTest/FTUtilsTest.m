@@ -11,7 +11,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTRecordModel.h>
-#import <FTMobileAgent/FTBaseInfoHander.h>
+#import <FTMobileAgent/FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
@@ -42,7 +42,7 @@
 }
 - (void)testSignature{
     NSString *date =@"Wed, 02 Sep 2020 09:41:24 GMT";
-    NSString *signature = [FTBaseInfoHander signatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
+    NSString *signature = [FTBaseInfoHandler signatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
     
     XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
 }
@@ -147,7 +147,7 @@
 }
 - (void)testReplaceUrlGroupNumberChar{
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
-    NSString *replace = [FTBaseInfoHander replaceNumberCharByUrl:[NSURL URLWithString:urlStr]];
+    NSString *replace = [FTBaseInfoHandler replaceNumberCharByUrl:[NSURL URLWithString:urlStr]];
     XCTAssertTrue([replace isEqualToString:@"/data/sk/?"]);
 }
 @end

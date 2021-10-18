@@ -11,7 +11,7 @@
 #import "NSString+FTAdd.h"
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
-#import "FTBaseInfoHander.h"
+#import "FTBaseInfoHandler.h"
 #import "FTConfigManager.h"
 @interface FTNetworkTrace ()
 @property (nonatomic, strong) NSLock *lock;
@@ -62,7 +62,7 @@
     if (![self isTraceUrl:url]) {
         return nil;
     }
-    BOOL sampled = [FTBaseInfoHander randomSampling:self.samplerate];
+    BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
             return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTrace networkTraceID],[FTNetworkTrace networkSpanID],[NSNumber numberWithBool:sampled]]};
