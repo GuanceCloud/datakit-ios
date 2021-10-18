@@ -36,18 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)currentTimeGMT;
 /**
  *  @abstract
- *  获取时间间隔 微秒级
- *
- *  @return 时间间隔
-*/
-+ (NSNumber *)microsecondtimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
-/**
- *  @abstract
  *  获取时间间隔 纳秒级
  *
  *  @return 时间间隔
 */
-+ (NSNumber *)nanosecondtimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
++ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
 @end
 
 NS_ASSUME_NONNULL_END

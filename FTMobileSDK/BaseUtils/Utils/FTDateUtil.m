@@ -34,10 +34,7 @@
     
     return [iosDateFormater stringFromDate:[NSDate date]];
 }
-+ (NSNumber *)microsecondtimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate{
-    return  [NSNumber numberWithLong:[toDate timeIntervalSinceDate:anotherDate]*1000000];
-}
-+ (NSNumber *)nanosecondtimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate{
++ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate{
     return  [NSNumber numberWithLong:[toDate timeIntervalSinceDate:anotherDate]*1000000000];
 }
 @end
