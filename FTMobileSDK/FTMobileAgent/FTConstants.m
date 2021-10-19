@@ -7,6 +7,10 @@
 //
 
 #import "FTConstants.h"
+NSString * const FT_DATA_TYPE_RUM = @"RUM";
+NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
+NSString * const FT_DATA_TYPE_TRACING = @"Tracing";
+NSString * const FT_DATA_TYPE_OBJECT = @"Object";
 
 NSString * const FT_AGENT_MEASUREMENT  = @"measurement";
 NSString * const FT_AGENT_FIELD  = @"field";
