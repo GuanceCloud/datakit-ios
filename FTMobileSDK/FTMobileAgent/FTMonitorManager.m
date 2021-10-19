@@ -17,8 +17,6 @@
 #import "FTConstants.h"
 #import "FTURLProtocol.h"
 #import "FTMobileAgent+Private.h"
-#import "NSURLRequest+FTMonitor.h"
-#import "NSURLResponse+FTMonitor.h"
 #import "NSString+FTAdd.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"

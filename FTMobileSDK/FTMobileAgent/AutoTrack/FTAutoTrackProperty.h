@@ -9,7 +9,6 @@
 
 @protocol FTAutoTrackViewControllerProperty <NSObject>
 @property (nonatomic,strong) NSDate * ft_viewLoadStartTime;
-@property (nonatomic, copy, readonly) NSString *ft_viewControllerId;
 @property (nonatomic, copy, readonly) NSString *ft_parentVC;
 @property (nonatomic,strong) NSNumber *ft_loadDuration;
 @property (nonatomic, copy) NSString *ft_viewUUID;
@@ -18,7 +17,6 @@
 @protocol FTAutoTrackViewProperty <NSObject>
 
 @property (nonatomic, readonly) UIViewController *ft_currentViewController;
-@property (nonatomic, copy, readonly) NSString *ft_parentsView;
 @property (nonatomic, assign) BOOL isAlertView;
 @property (nonatomic, assign) BOOL isAlertClick;
 @end

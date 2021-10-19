@@ -21,7 +21,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
-@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
 @property (nonatomic, assign) BOOL trackUrl;
 @property (nonatomic, strong) FTTraceHandler *traceHandler;
 @end

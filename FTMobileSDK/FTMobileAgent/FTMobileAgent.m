@@ -18,9 +18,7 @@
 #import "FTLog.h"
 #import "NSString+FTAdd.h"
 #import "FTDateUtil.h"
-#import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
-#import "FTMonitorUtils.h"
 #import "FTLogHook.h"
 #import "FTReachability.h"
 #import "FTConfigManager.h"
@@ -202,7 +200,7 @@ static dispatch_once_t onceToken;
             [baseTags addEntriesFromDictionary:self.rumConfig.globalContext];
         }
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
-        [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
+        [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:terminal]];
         [baseTags addEntriesFromDictionary:tags];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];

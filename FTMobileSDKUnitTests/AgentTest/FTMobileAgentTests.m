@@ -11,7 +11,6 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTBaseInfoHandler.h>
 #import <FTRecordModel.h>
-#import <FTLocationManager.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTDateUtil.h>
@@ -48,7 +47,6 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
-//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }

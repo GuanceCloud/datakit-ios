@@ -17,7 +17,6 @@
 
 
 @interface FTMobileAgent (Private)
-@property (nonatomic, strong) FTUploadTool *upTool;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 
 

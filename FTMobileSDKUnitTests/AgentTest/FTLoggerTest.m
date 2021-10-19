@@ -217,7 +217,6 @@
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-//    [FTMobileAgent sharedInstance].upTool.isUploading = YES;
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [NSThread sleepForTimeInterval:1];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];

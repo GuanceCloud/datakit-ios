@@ -165,7 +165,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     self.env = env;
     _isSignin = [FTBaseInfoHandler userId]?YES:NO;
 }
-- (NSDictionary *)rumPropertyWithType:(NSString *)type terminal:(NSString *)terminal{
+- (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:@"app"]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
@@ -444,19 +444,10 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         return mCarrier;
     }
 }
-+ (NSString *)appName{
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return   [infoDictionary objectForKey:@"CFBundleDisplayName"] ?:[infoDictionary objectForKey:@"CFBundleName"];
-}
-
 + (NSString *)appIdentifier{
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     return [infoDictionary objectForKey:@"CFBundleIdentifier"];
 }
-+ (NSString *)originID{
-    return  [[UIDevice currentDevice] identifierForVendor].UUIDString;
-}
-
 + (NSString *)userid{
     NSString *useridStr = [FTBaseInfoHandler userId];
     if (!useridStr) {

@@ -9,6 +9,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "ZY_FMDB.h"
 #import "FTRecordModel.h"
+#import "FTConstants.h"
 #import "FTLog.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
@@ -39,7 +40,7 @@ static dispatch_once_t onceToken;
         ZY_FMDatabaseQueue *dbQueue = [ZY_FMDatabaseQueue databaseQueueWithPath:path];
         ZY_FMDatabase *fmdb = [dbQueue valueForKey:@"_db"];
         if ([fmdb  open]) {
-            dbTool = FTTrackerEventDBTool.new;
+            dbTool = [[FTTrackerEventDBTool alloc]init];
             dbTool.db = fmdb;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);

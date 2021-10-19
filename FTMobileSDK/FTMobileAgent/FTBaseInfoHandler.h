@@ -25,10 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
  * 主线程同步执行
  */
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
-+ (NSString *)currentPageName;
 + (NSString *)applicationUUID;
 + (UIWindow *)keyWindow;
-+ (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder;
 /**
  *  @abstract
  *  FTStatus 字符串转换

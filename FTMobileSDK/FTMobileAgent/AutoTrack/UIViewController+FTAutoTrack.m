@@ -34,9 +34,6 @@ static char *viewLoadDuration = "viewLoadDuration";
 -(void)setFt_loadDuration:(NSNumber *)ft_loadDuration{
     objc_setAssociatedObject(self, &viewLoadDuration, ft_loadDuration, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSString *)ft_viewControllerId{
-    return [self.ft_viewControllerName ft_md5HashToUpper32Bit];
-}
 - (NSString *)ft_viewControllerName{
     return NSStringFromClass([self class]);
 }

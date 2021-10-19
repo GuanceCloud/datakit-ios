@@ -43,39 +43,6 @@
         dispatch_sync(dispatch_get_main_queue(), block);
     }
 }
-+ (NSString *)currentPageName{
-    __block UIViewController *result = nil;
-    [FTBaseInfoHandler performBlockDispatchMainSyncSafe:^{
-        
-        UIWindow * window = [FTBaseInfoHandler keyWindow];
-        
-        UIView *frontView = [[window subviews] objectAtIndex:0];
-        id nextResponder = [frontView nextResponder];
-        
-        if ([nextResponder isKindOfClass:[UIViewController class]])
-            result = nextResponder;
-        else
-            result = window.rootViewController;
-        
-        if ([result isKindOfClass:[UITabBarController class]]) {
-            
-            UIViewController  *tabSelectVC = ((UITabBarController*)result).selectedViewController;
-            
-            if ([tabSelectVC isKindOfClass:[UINavigationController class]]) {
-                result=((UINavigationController*)tabSelectVC).viewControllers.lastObject ;
-            }else{
-                result=  tabSelectVC;
-            }
-        }else
-            if ([result isKindOfClass:[UINavigationController class]]) {
-                result = ((UINavigationController*)result).viewControllers.lastObject;
-            }
-    }];
-    if (result) {
-        return  NSStringFromClass(result.class);
-    }
-    return FT_NULL_VALUE;
-}
 + (NSString *)applicationUUID{
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();
@@ -162,31 +129,6 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         }
     }
     return foundWindow;
-}
-+ (NSString *)itemHeatMapPathForResponder:(UIResponder *)responder {
-    NSString *classString = NSStringFromClass(responder.class);
-
-    NSArray *subResponder = nil;
-    if ([responder isKindOfClass:UIView.class]) {
-        UIResponder *next = [responder nextResponder];
-        if ([next isKindOfClass:UIView.class]) {
-            subResponder = [(UIView *)next subviews];
-        }
-    } else if ([responder isKindOfClass:UIViewController.class]) {
-        subResponder = [(UIViewController *)responder parentViewController].childViewControllers;
-    }
-
-    NSInteger count = 0;
-    NSInteger index = -1;
-    for (UIResponder *res in subResponder) {
-        if ([classString isEqualToString:NSStringFromClass(res.class)]) {
-            count++;
-        }
-        if (res == responder) {
-            index = count - 1;
-        }
-    }
-    return count <= 1 ? classString : [NSString stringWithFormat:@"%@[%ld]", classString, (long)index];
 }
 +(NSString *)statusStrWithStatus:(FTStatus)status{
     NSString *str = nil;

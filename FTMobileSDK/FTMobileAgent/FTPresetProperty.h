@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 获取 Rum ES 公共Tag
 */
-- (NSDictionary *)rumPropertyWithType:(NSString *)type terminal:(NSString *)terminal;
+- (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal;
 /**
  * 获取 logger base Tag
  */
