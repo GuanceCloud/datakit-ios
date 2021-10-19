@@ -12,8 +12,6 @@
 @protocol FTRUMSessionActionDelegate <NSObject>
 - (void)ftApplicationDidBecomeActive:(BOOL)isHot duration:(NSNumber *)duration;
 - (void)ftApplicationWillTerminate;
-- (void)ftViewDidAppear:(UIViewController *)viewController;
-- (void)ftViewDidDisappear:(UIViewController *)viewController;
 - (void)ftClickView:(UIView *)clickView;
 @end
 @protocol FTRUMSessionViewDelegate <NSObject>

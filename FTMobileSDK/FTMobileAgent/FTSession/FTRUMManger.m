@@ -60,6 +60,9 @@
 }
 #pragma mark - FTRUMSessionActionDelegate -
 -(void)ftViewDidAppear:(UIViewController *)viewController{
+    if(!viewController){
+        return;
+    }
     NSDate *time = [NSDate date];
     NSString *viewReferrer = viewController.ft_parentVC;
     NSString *viewID = viewController.ft_viewUUID;
@@ -74,6 +77,9 @@
     });
 }
 -(void)ftViewDidDisappear:(UIViewController *)viewController{
+    if (!viewController) {
+        return;
+    }
     NSDate *time = [NSDate date];
     NSString *viewReferrer = viewController.ft_parentVC;
     NSString *viewID = viewController.ft_viewUUID;

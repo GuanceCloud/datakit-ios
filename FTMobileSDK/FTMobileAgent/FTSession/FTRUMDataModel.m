@@ -31,15 +31,12 @@
     return self;
 }
 -(NSDictionary *)getGlobalSessionViewTags{
-    NSDictionary *sessionTag = @{@"session_id":self.baseSessionData.session_id,
-                                 @"session_type":self.baseSessionData.session_type,
-    };
-    NSDictionary *viewTag = self.baseViewData?@{@"view_id":self.baseViewData.view_id,
-                                                @"view_name":self.baseViewData.view_name,
-                                                @"view_referrer":self.baseViewData.view_referrer,
-    }:@{};
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
-    [dict addEntriesFromDictionary:viewTag];
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:self.baseSessionData.session_id forKey:@"session_id"];
+    [dict setValue:self.baseSessionData.session_type forKey:@"session_type"];
+    [dict setValue:self.baseViewData.view_id forKey:@"view_id"];
+    [dict setValue:self.baseViewData.view_name forKey:@"view_name"];
+    [dict setValue:self.baseViewData.view_referrer forKey:@"view_referrer"];
     return dict;
 }
 @end

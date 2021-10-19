@@ -409,8 +409,8 @@ static dispatch_once_t onceToken;
         return;
     }
     _running = NO;
-    if (self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidAppear:)]) {
-        [self.sessionSourceDelegate ftViewDidAppear:self.currentController];
+    if (self.currentController && self.sessionSourceDelegate&&[self.sessionSourceDelegate respondsToSelector:@selector(ftViewDidDisappear:)]) {
+        [self.sessionSourceDelegate ftViewDidDisappear:self.currentController];
     }
     _applicationWillResignActive = NO;
 }
