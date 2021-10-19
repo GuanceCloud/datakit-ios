@@ -49,6 +49,9 @@
     return self.requestHeader;
 }
 -(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
+    if(!content){
+        return;
+    }
     if (self.isSampling) {
         NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];

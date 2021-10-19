@@ -227,7 +227,7 @@ static dispatch_once_t onceToken;
         return;
     }
     _running = NO;
-    [self.rumManger startView:self.currentController];
+    [self.rumManger stopView:self.currentController];
     _applicationWillResignActive = NO;
 }
 - (void)applicationWillResignActive{

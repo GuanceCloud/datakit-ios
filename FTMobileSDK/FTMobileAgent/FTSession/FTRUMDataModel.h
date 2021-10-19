@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-@class FTTaskInterceptionModel;
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataLaunchHot,
     FTRUMDataLaunchCold,

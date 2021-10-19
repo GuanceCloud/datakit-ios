@@ -46,9 +46,12 @@
     [self startView:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
 }
 -(void)startView:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+    if (!(viewID&&viewName&&viewReferrer)) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:viewName viewReferrer:viewReferrer];
-        viewModel.loading_time = loadDuration;
+        viewModel.loading_time = loadDuration?:@0;
         viewModel.type = FTRUMDataViewStart;
         [self process:viewModel];
     });
@@ -58,6 +61,9 @@
     [self stopViewWithViewID:viewID];
 }
 - (void)stopViewWithViewID:(NSString *)viewID{
+    if (!viewID) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:@"" viewReferrer:@""];
         viewModel.type = FTRUMDataViewStop;
@@ -77,6 +83,9 @@
     [self addActionWithActionName:actionName];
 }
 - (void)addActionWithActionName:(NSString *)actionName{
+    if (!actionName) {
+        return;
+    }
     if (!self.rumConfig.enableTraceUserAction) {
         return;
     }
@@ -107,6 +116,9 @@
 
 #pragma mark - Resource -
 - (void)resourceStart:(NSString *)identifier{
+    if (!identifier) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMResourceDataModel *resourceStrat = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
         
@@ -114,6 +126,9 @@
     });
 }
 - (void)resourceCompleted:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
+    if (!identifier) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:identifier];
         resourceSuccess.time = time;
@@ -123,6 +138,9 @@
     });
 }
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
+    if (!identifier) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
         NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errrorMonitorInfo]];
@@ -135,6 +153,9 @@
 }
 #pragma mark - error 、 long_task -
 - (void)addError:(NSDictionary *)tags field:(NSDictionary *)field{
+    if (!field) {
+        return;
+    }
     NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
     [errorTag addEntriesFromDictionary:[self errrorMonitorInfo]];
     dispatch_sync(self.serialQueue, ^{
@@ -145,6 +166,9 @@
     });
 }
 - (void)addLongTask:(NSDictionary *)tags field:(NSDictionary *)field{
+    if (!field) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
         model.tags = tags;
@@ -174,6 +198,9 @@
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    if (!measurement) {
+        return;
+    }
     dispatch_async(self.serialQueue, ^{
         FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
         webModel.tags = tags;

@@ -8,7 +8,8 @@
 
 #import "FTRUMDataModel.h"
 #import "FTBaseInfoHandler.h"
-
+@interface FTRUMDataModel()
+@end
 @implementation FTRUMDataModel
 -(instancetype)init{
     self = [super init];
@@ -25,6 +26,13 @@
     }
     return self;
 }
+-(void)setTime:(NSDate *)time{
+    if (!time) {
+        _time = [NSDate date];
+    }else{
+        _time = time;
+    }
+}
 @end
 @implementation FTRUMViewModel
 -(instancetype)initWithViewID:(NSString *)viewid viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
@@ -36,7 +44,6 @@
     }
     return self;
 }
-
 @end
 @implementation FTRUMActionModel
 
@@ -103,10 +110,9 @@
     return context;
 }
 -(NSDictionary *)getGlobalSessionViewTags{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
-        @"session_id":self.session_id,
-        @"session_type":self.session_type,
-    }];
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict setValue:self.session_id forKey:@"session_id"];
+    [dict setValue:self.session_type forKey:@"session_type"];
     [dict setValue:self.view_id forKey:@"view_id"];
     [dict setValue:self.view_referrer forKey:@"view_referrer"];
     [dict setValue:self.view_name forKey:@"view_name"];
