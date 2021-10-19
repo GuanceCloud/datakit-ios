@@ -13,7 +13,7 @@
 #import <FTBaseInfoHandler.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTConstants.h>
-#import <FTBaseInfoHander.h>
+//#import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTMonitorManager.h>
 #import <FTDateUtil.h>
@@ -131,7 +131,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     __block NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testParentVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
+    [self.testParentVC ft_load:@"https://www.baidu.com"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
         XCTAssertTrue(newCount-lastCount == 1);
@@ -152,7 +152,7 @@
     [self.testParentVC setDelegateProxy];
 
     __block NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testParentVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
+    [self.testParentVC ft_load:@"https://www.baidu.com"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
         XCTAssertTrue(newCount-lastCount == 1);
@@ -178,7 +178,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_TRACING];
-    [self.testVC ft_load:@"https://auth.dataflux.cn/loginpsw"];
+    [self.testVC ft_load:@"https://map.baidu.com/"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.testVC ft_testNextLink];
         [self performSelector:@selector(webviewReload:) withObject:expectation afterDelay:5];
