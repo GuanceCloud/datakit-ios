@@ -16,7 +16,7 @@
 #import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
 #import <NSString+FTAdd.h>
-#import "FTBaseInfoHander.h"
+//#import "FTBaseInfoHander.h"
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>

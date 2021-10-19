@@ -59,7 +59,7 @@
     [self setRightSDKConfig];
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
-    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
     NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
@@ -70,12 +70,12 @@
 -(void)testChangeUser{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser1"];
-     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
      NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testChangeUser1"]);
 
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser2"];
-    NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 
@@ -90,7 +90,7 @@
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
     
     [[FTMobileAgent sharedInstance] logout];
-    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
     NSString *userid = dict[@"userid"];
    XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
 }

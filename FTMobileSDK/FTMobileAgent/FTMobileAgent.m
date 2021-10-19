@@ -233,7 +233,7 @@ static dispatch_once_t onceToken;
             [tagDict addEntriesFromDictionary:tags];
         }
         if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:@"logging" terminal:@"app"]];
+            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:@"app"]];
             NSDictionary *rumTag = [[FTMonitorManager sharedInstance].rumManger getCurrentSessionInfo];
             [tagDict addEntriesFromDictionary:rumTag];
         }

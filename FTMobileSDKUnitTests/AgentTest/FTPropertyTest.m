@@ -48,7 +48,7 @@
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -57,7 +57,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithType:@"view" terminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] resetInstance];
