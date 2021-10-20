@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置全局 tag
  * 特殊 key : track_id (用于追踪功能)
  */
-@property (nonatomic, strong) NSDictionary *globalContext;
+@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 @end
 @interface FTTraceConfig : NSObject
 /// 禁用 new 初始化
