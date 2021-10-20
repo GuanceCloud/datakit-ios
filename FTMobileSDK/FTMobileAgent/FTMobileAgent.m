@@ -210,6 +210,10 @@ static dispatch_once_t onceToken;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
         if (self.rumConfig.globalContext) {
             [baseTags addEntriesFromDictionary:self.rumConfig.globalContext];
+            NSArray *allKeys = self.rumConfig.globalContext.allKeys;
+            if (allKeys && allKeys.count>0) {
+                [baseTags setValue:[FTJSONUtil convertToJsonDataWithArray:allKeys] forKey:@"custom_keys"];
+            }
         }
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithType:type terminal:terminal]];
