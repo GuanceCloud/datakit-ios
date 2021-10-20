@@ -1,5 +1,6 @@
-# 1.2.7-alpha.1
+# 1.2.7-alpha.2
 1.RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+2.追踪 ID 算法修正
 ---
 # 1.2.6-alpha.2
 1.RUM 用户自设全局 tag 功能添加
