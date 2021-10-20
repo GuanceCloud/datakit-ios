@@ -466,7 +466,8 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     __block NSInteger resErrorCount = 0;
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-        if (error) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if (error || httpResponse.statusCode>=400) {
             resErrorCount = 1;
         }
         [expectation fulfill];
