@@ -65,6 +65,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             }
             break;
         default:
+            if (self.viewHandlers.count == 0) {
+                [self startView:model];
+            }
             break;
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];

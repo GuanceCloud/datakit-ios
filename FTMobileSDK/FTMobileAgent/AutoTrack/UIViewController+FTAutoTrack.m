@@ -17,6 +17,7 @@
 #import "FTLog.h"
 #import "FTMonitorManager.h"
 #import "FTDateUtil.h"
+#import "FTThreadDispatchManager.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
@@ -48,7 +49,7 @@ static char *viewLoadDuration = "viewLoadDuration";
 }
 + (NSString *)ft_getRootViewController{
     __block NSString *name;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
      UIWindow* window =[FTBaseInfoHander keyWindow];
     name = NSStringFromClass([window.rootViewController class]);
     }];

@@ -20,6 +20,7 @@
 #include <mach-o/nlist.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#import "FTThreadDispatchManager.h"
 @implementation FTBaseInfoHander : NSObject
 
 #pragma mark ========== 请求加密 ==========
@@ -41,16 +42,9 @@
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
 }
-+ (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block{
-    if (NSThread.isMainThread) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
 + (NSString *)currentPageName{
     __block UIViewController *result = nil;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
         
         UIWindow * window = [FTBaseInfoHander keyWindow];
         

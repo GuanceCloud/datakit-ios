@@ -10,11 +10,11 @@
 #endif
 #import "UIView+FTAutoTrack.h"
 #import "FTBaseInfoHander.h"
-
+#import "FTThreadDispatchManager.h"
 @implementation UIView (FTAutoTrack)
 -(UIViewController *)ft_currentViewController{
     __block UIResponder *next = nil;
-    [FTBaseInfoHander performBlockDispatchMainSyncSafe:^{
+    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
         next = [self nextResponder];
         do {
             if ([next isKindOfClass:[UIViewController class]]) {
