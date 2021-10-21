@@ -7,7 +7,6 @@
 //
 
 #import "FTThreadDispatchManager.h"
-#import "FTConstants.h"
 #import "FTRumThread.h"
 @implementation FTThreadDispatchManager
 + (void)dispatchInRUMThread:(void (^_Nullable)(void))block {
