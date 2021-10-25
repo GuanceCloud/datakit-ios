@@ -1,5 +1,5 @@
 //
-//  FTMoniorUtils.m
+//  FTMonitorUtils.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2020/4/28.
@@ -10,20 +10,10 @@
 #endif
 #import "FTMonitorUtils.h"
 #import <SystemConfiguration/CaptiveNetwork.h>
-#import <CoreLocation/CLLocationManager.h>
-#import "FTLog.h"
 #include <arpa/inet.h>
-#include <resolv.h>
-#include <dns.h>
 #import <ifaddrs.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <sys/socket.h>
-#import <sys/sysctl.h>
 #include <net/if.h>
 #import <mach/mach.h>
-#import <assert.h>
-#import <AVFoundation/AVFoundation.h>
 #import "FTConstants.h"
 #define IOS_CELLULAR    @"pdp_ip0"
 #define IOS_WIFI        @"en0"

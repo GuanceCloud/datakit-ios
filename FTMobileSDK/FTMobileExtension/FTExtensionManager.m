@@ -25,10 +25,10 @@ static FTExtensionManager *sharedInstance = nil;
     });
 
 }
--(instancetype)initWithGroupIdentifier:(NSString *)identifer{
+-(instancetype)initWithGroupIdentifier:(NSString *)identifier{
     self = [super init];
     if (self) {
-        self.pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:identifer] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
+        self.pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:identifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
         [self startTrackCrash];
     }
     return self;

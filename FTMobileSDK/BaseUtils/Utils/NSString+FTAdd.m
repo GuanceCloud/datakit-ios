@@ -10,7 +10,6 @@
 #endif
 #import "NSString+FTAdd.h"
 #import <CommonCrypto/CommonDigest.h>
-#import "FTLog.h"
 @implementation NSString (FTAdd)
 -(NSString *)ft_md5HashToLower16Bit{
     NSString *md5Str = [self ft_md5HashToLower32Bit];
@@ -55,7 +54,7 @@
     //2、把二进制数据转换成字符串
     return [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
 }
-- (NSUInteger)ft_charactorNumber
+- (NSUInteger)ft_characterNumber
 {
     NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
     return [self lengthOfBytesUsingEncoding:encoding];

@@ -14,9 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *    @brief  设置开启采集 Crash。在初始化方法
  *
- *    @param groupIdentifer 设置文件共享 Group Identifier。
+ *    @param groupIdentifier 设置文件共享 Group Identifier。
 */
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifer;
++ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
 /**
  *    @brief  设置是否开启打印 sdk 的 log 信息，默认关闭。在初始化方法之前调用
  *

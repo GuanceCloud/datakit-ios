@@ -31,7 +31,6 @@
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
-@property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTMobileAgent
@@ -61,7 +60,6 @@ static dispatch_once_t onceToken;
         if (self) {
             //基础类型的记录
             [[FTConfigManager sharedInstance] setTrackConfig:config];
-            _lock = [[NSLock alloc]init];
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
@@ -215,7 +213,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"请先设置 FTLoggerConfig");
         return;
     }
-    if (!content || content.length == 0 || [content ft_charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }
@@ -249,7 +247,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content ft_charactorNumber]>FT_LOGGING_CONTENT_SIZE) {
+    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;
     }

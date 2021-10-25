@@ -26,13 +26,13 @@
     
     [NSTimeZone setDefaultTimeZone:tzGMT];
     
-    NSDateFormatter *iosDateFormater=[[NSDateFormatter alloc]init];
+    NSDateFormatter *iosDateFormatter=[[NSDateFormatter alloc]init];
     
-    iosDateFormater.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
+    iosDateFormatter.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
     
-    iosDateFormater.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
+    iosDateFormatter.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
     
-    return [iosDateFormater stringFromDate:[NSDate date]];
+    return [iosDateFormatter stringFromDate:[NSDate date]];
 }
 + (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate{
     return  [NSNumber numberWithLong:[toDate timeIntervalSinceDate:anotherDate]*1000000000];

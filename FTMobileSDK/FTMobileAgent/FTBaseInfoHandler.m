@@ -1,5 +1,5 @@
 //
-//  FTBaseInfoHander.m
+//  FTBaseInfoHandler.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2019/12/3.

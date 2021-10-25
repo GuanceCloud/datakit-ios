@@ -11,7 +11,7 @@
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
-    FTParameterTypetTag      = 1,
+    FTParameterTypeTag      = 1,
     FTParameterTypeField     = 2 ,
 };
 @interface FTQueryStringPair : NSObject
@@ -34,28 +34,28 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=%@", [self repleacingSpecialCharacters:self.field],@""];
+        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],@""];
     } else {
-        return [NSString stringWithFormat:@"%@=%@", [self repleacingSpecialCharacters:self.field], [self repleacingSpecialCharacters:self.value]];
+        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=%@", [self repleacingSpecialCharacters:self.field],@"NULL"];
+        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],@"NULL"];
     }else{
         if([self.value isKindOfClass:NSString.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self repleacingSpecialCharacters:self.field], [self repleacingSpecialCharactersField:self.value]];
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
         }else if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
             if (strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0)
             {
-                return  [NSString stringWithFormat:@"%@=%.1f", [self repleacingSpecialCharacters:self.field], number.floatValue];
+                return  [NSString stringWithFormat:@"%@=%.1f", [self replacingSpecialCharacters:self.field], number.floatValue];
             }
         }
-        return [NSString stringWithFormat:@"%@=%@i", [self repleacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
     }
 }
-- (id)repleacingSpecialCharacters:(id )str{
+- (id)replacingSpecialCharacters:(id )str{
     if ([str isKindOfClass:NSString.class]) {
         NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
         reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
@@ -67,7 +67,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }
     
 }
-- (id)repleacingSpecialCharactersField:(id )str{
+- (id)replacingSpecialCharactersField:(id )str{
     if ([str isKindOfClass:NSString.class]) {
         NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
         reStr = [reStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
@@ -135,7 +135,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         if ([[opdata allKeys] containsObject:@"field"]) {
             field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
         }
-        NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypetTag):nil;
+        NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypeTag):nil;
       
         NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagsStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
         if (idx==0) {
