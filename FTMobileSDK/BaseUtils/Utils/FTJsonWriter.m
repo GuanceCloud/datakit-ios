@@ -133,8 +133,8 @@
     if (self) {
         kPositiveInfinity = [NSNumber numberWithDouble:+HUGE_VAL];
         kNegativeInfinity = [NSNumber numberWithDouble:-HUGE_VAL];
-        kTrue = [NSNumber numberWithBool:YES];
-        kFalse = [NSNumber numberWithBool:NO];
+        kTrue = @YES;
+        kFalse = @NO;
         
         _stateObjectStart = [[FTJsonWriterStateObjectStart alloc] init];
         _stateObjectKey = [[FTJsonWriterStateObjectKey alloc] init];
@@ -333,7 +333,7 @@
             [buf appendBytes:utf8 + written length:i - written];
         
         [buf appendBytes:"\"" length:1];
-        [cache setObject:buf forKey:string];
+        cache[string] = buf;
     }
     
     [_delegate writer:self appendBytes:[buf bytes] length:[buf length]];

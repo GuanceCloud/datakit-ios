@@ -10,8 +10,6 @@
 #import "FTDateUtil.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "FTRUMViewHandler.h"
-#import "FTBaseInfoHandler.h"
 
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
@@ -108,9 +106,9 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
                                  @"action_type":self.action_type
     };
     NSDictionary *fields = @{@"duration":self.duration,
-                             @"action_long_task_count":[NSNumber numberWithInteger:self.actionLongTaskCount],
-                             @"action_resource_count":[NSNumber numberWithInteger:self.actionResourcesCount],
-                             @"action_error_count":[NSNumber numberWithInteger:self.actionErrorCount],
+                             @"action_long_task_count":@(self.actionLongTaskCount),
+                             @"action_resource_count":@(self.actionResourcesCount),
+                             @"action_error_count":@(self.actionErrorCount),
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
