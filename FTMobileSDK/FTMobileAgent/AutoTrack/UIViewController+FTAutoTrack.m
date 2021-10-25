@@ -11,8 +11,6 @@
 #import "UIViewController+FTAutoTrack.h"
 #import <objc/runtime.h>
 #import "FTConstants.h"
-#import "FTBaseInfoHandler.h"
-#import "NSString+FTAdd.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTLog.h"
 #import "FTMonitorManager.h"

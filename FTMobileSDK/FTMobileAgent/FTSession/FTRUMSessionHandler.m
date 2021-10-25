@@ -7,7 +7,6 @@
 //
 
 #import "FTRUMSessionHandler.h"
-#import <UIKit/UIKit.h>
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes

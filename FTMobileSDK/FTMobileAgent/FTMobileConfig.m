@@ -10,7 +10,6 @@
 #endif
 #import "FTMobileConfig.h"
 #import "FTBaseInfoHandler.h"
-#import "FTConstants.h"
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];

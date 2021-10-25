@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 记录 trace 数据
  */
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds;
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
 /**
  * RUM ResourceStart

@@ -7,7 +7,6 @@
 //
 
 #import "FTRUMDataModel.h"
-#import "FTBaseInfoHandler.h"
 @interface FTRUMDataModel()
 @end
 @implementation FTRUMDataModel

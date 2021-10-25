@@ -10,7 +10,6 @@
 #import "FTRecordModel.h"
 #import "FTReachability.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTReachability.h"
 #import "FTLog.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
@@ -19,13 +18,11 @@
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
 @interface FTTrackDataManger ()
-@property (nonatomic, strong) FTReachability *reachability;
 @property (nonatomic, strong) FTThread *ftThread;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @end
 @implementation FTTrackDataManger{
-    dispatch_semaphore_t _lock;
 }
 +(instancetype)sharedInstance{
     static  FTTrackDataManger *sharedInstance;
@@ -42,7 +39,6 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _lock = dispatch_semaphore_create(1);
         self.ftThread = [[FTThread alloc]init];
         [self.ftThread start];
         [self listenNetworkChange];

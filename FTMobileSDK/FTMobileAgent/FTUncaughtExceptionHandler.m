@@ -9,18 +9,11 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTUncaughtExceptionHandler.h"
-#import "FTLog.h"
-#include <libkern/OSAtomic.h>
 #include <execinfo.h>
 #import "FTMonitorManager.h"
-#import "FTBaseInfoHandler.h"
 #import <mach-o/ldsyms.h>
-#import "FTConstants.h"
-#import "FTBaseInfoHandler.h"
-#include <limits.h>
 #include <mach-o/dyld.h>
-#include <mach-o/nlist.h>
-#include <string.h>
+
 
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
@@ -45,7 +38,6 @@ static SignalHandler previousTRAPSignalHandler = NULL;
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 @interface FTUncaughtExceptionHandler()
-@property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
 @implementation FTUncaughtExceptionHandler
 
@@ -129,7 +121,6 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
         [self installUncaughtExceptionHandler];
         [self installSignalHandler];

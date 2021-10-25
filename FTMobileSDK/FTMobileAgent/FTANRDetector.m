@@ -12,11 +12,6 @@
 #import "FTLog.h"
 #import "FTCallStack.h"
 #import "FTConstants.h"
-#include <signal.h>
-#include <pthread.h>
-
-#include <libkern/OSAtomic.h>
-#include <execinfo.h>
 
 // minimum
 static const NSInteger MXRMonitorRunloopMinOneStandstillMillisecond = 20;

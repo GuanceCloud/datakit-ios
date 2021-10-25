@@ -7,7 +7,6 @@
 //
 
 #import "FTRequest.h"
-#import "FTRequestBody.h"
 #import "FTDateUtil.h"
 #import "FTNetworkInfoManger.h"
 #import "FTRecordModel.h"

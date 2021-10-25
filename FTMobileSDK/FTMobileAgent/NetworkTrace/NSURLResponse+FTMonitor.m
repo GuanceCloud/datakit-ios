@@ -10,7 +10,6 @@
 #endif
 #import "NSURLResponse+FTMonitor.h"
 #import "FTConstants.h"
-#include <dlfcn.h>
 #import "FTMonitorManager.h"
 #import "FTLog.h"
 @implementation NSURLResponse (FTMonitor)

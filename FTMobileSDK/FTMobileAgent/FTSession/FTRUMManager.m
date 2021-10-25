@@ -9,14 +9,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "UIViewController+FTAutoTrack.h"
-#import "NSURLResponse+FTMonitor.h"
-#import "NSURLRequest+FTMonitor.h"
-#import "FTDateUtil.h"
-#import "FTLog.h"
-#import "FTJSONUtil.h"
-#import "FTMobileConfig.h"
 #import "FTMonitorUtils.h"
-#import "FTConstants.h"
 #import "FTPresetProperty.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -120,9 +113,9 @@
         return;
     }
     dispatch_async(self.serialQueue, ^{
-        FTRUMResourceDataModel *resourceStrat = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
+        FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
         
-        [self process:resourceStrat];
+        [self process:resourceStart];
     });
 }
 - (void)resourceCompleted:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
@@ -143,7 +136,7 @@
     }
     dispatch_async(self.serialQueue, ^{
         FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
-        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errrorMonitorInfo]];
+        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errorMonitorInfo]];
         [newTags addEntriesFromDictionary:tags];
         resourceError.time = time;
         resourceError.tags = newTags;
@@ -157,7 +150,7 @@
         return;
     }
     NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-    [errorTag addEntriesFromDictionary:[self errrorMonitorInfo]];
+    [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
     dispatch_sync(self.serialQueue, ^{
         FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
         model.tags = errorTag;
@@ -177,7 +170,7 @@
     });
     
 }
-- (NSDictionary *)errrorMonitorInfo{
+- (NSDictionary *)errorMonitorInfo{
     NSMutableDictionary *errorTag = [NSMutableDictionary new];
     FTMonitorInfoType monitorType = self.rumConfig.monitorInfoType;
     if (monitorType & FTMonitorInfoTypeMemory) {

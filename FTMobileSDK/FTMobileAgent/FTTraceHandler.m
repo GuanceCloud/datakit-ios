@@ -8,12 +8,9 @@
 
 #import "FTTraceHandler.h"
 #import "FTBaseInfoHandler.h"
-#import "FTConfigManager.h"
 #import "FTMonitorManager.h"
-#import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
-#import "NSString+FTAdd.h"
 #import "FTNetworkTrace.h"
 #import "NSURLResponse+FTMonitor.h"
 #import "NSURLRequest+FTMonitor.h"
@@ -48,7 +45,7 @@
     self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     return self.requestHeader;
 }
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fileds:(NSDictionary *)fileds{
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     if(!content){
         return;
     }
@@ -56,7 +53,7 @@
         NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
         [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fileds tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
+        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
     }
 }
 #pragma mark - private -
@@ -134,7 +131,7 @@
         NSDictionary *field = @{FT_KEY_DURATION:duration};
         [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
         self.startTime = start;
-        [self tracingContent:[FTJSONUtil convertToJsonData:content] tags:tags fileds:field];
+        [self tracingContent:[FTJSONUtil convertToJsonData:content] tags:tags fields:field];
     }
 }
 

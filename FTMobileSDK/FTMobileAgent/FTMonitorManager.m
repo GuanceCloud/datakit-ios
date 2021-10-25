@@ -9,21 +9,13 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMonitorManager.h"
-#import "FTBaseInfoHandler.h"
-#import "FTMobileConfig.h"
-#import "FTURLProtocol.h"
-#import "FTLog.h"
-#import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTURLProtocol.h"
-#import "FTMobileAgent+Private.h"
-#import "NSString+FTAdd.h"
+#import "FTLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
 #import "FTANRDetector.h"
 #import "FTJSONUtil.h"
-#import "FTCallStack.h"
-#import "FTWeakProxy.h"
 #import "FTPingThread.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
@@ -32,11 +24,9 @@
 #import "FTAppLifeCycle.h"
 #import "FTNetworkTrace.h"
 @interface FTMonitorManager ()<FTANRDetectorDelegate,FTWKWebViewTraceDelegate,FTAppLifeCycleDelegate>
-@property (nonatomic, strong) FTWKWebViewHandler *webViewHandler;
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
-@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) CFTimeInterval launch;
@@ -238,7 +228,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
-- (void)applicationWillTerminateNotification{
+- (void)applicationWillTerminate{
     @try {
         [self.rumManger stopView:self.currentController];
         [self.rumManger applicationWillTerminate];

@@ -7,12 +7,9 @@
 //
 
 #import "FTRUMResourceHandler.h"
-#import "FTRUMViewHandler.h"
-#import "FTRUMDataModel.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
-#import "FTBaseInfoHandler.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
