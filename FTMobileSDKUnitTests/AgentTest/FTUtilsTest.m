@@ -133,7 +133,7 @@
     FTRecordModel *model = [array lastObject];
     
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTRequest *request = [[FTRequest alloc]initWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
