@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
+extern NSString * const FT_DATA_TYPE_RUM;
+extern NSString * const FT_DATA_TYPE_LOGGING;
+extern NSString * const FT_DATA_TYPE_TRACING;
+extern NSString * const FT_DATA_TYPE_OBJECT;
 
 @interface FTRecordModel : NSObject
 

@@ -14,10 +14,7 @@ typedef enum FTError : NSInteger {
   FileIOException = 103,         //文件 IO 问题
   UnknownException = 104,        //未知问题
 } FTError;
-extern NSString * const FT_DATA_TYPE_RUM;
-extern NSString * const FT_DATA_TYPE_LOGGING;
-extern NSString * const FT_DATA_TYPE_TRACING;
-extern NSString * const FT_DATA_TYPE_OBJECT;
+
 #pragma mark ========== agent ==========
 extern NSString * const FT_AGENT_MEASUREMENT;
 extern NSString * const FT_AGENT_FIELD;

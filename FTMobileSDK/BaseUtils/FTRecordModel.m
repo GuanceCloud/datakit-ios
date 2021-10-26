@@ -12,7 +12,11 @@
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTLog.h"
-
+//防止在 FTMobileSDK/Common 中添加 FTConstants.h
+NSString * const FT_DATA_TYPE_RUM = @"RUM";
+NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
+NSString * const FT_DATA_TYPE_TRACING = @"Tracing";
+NSString * const FT_DATA_TYPE_OBJECT = @"Object";
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
