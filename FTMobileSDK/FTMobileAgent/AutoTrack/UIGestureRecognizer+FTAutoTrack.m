@@ -10,6 +10,7 @@
 #import "FTLog.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTMonitorManager.h"
+#import "FTRUMManager.h"
 @implementation UIGestureRecognizer (FTAutoTrack)
 
 - (void)ftTrackGestureRecognizerAppClick:(UIGestureRecognizer *)gesture{

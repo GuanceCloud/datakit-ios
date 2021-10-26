@@ -9,6 +9,7 @@
 #import "UIScrollView+FTAutoTrack.h"
 #import "FTSwizzler.h"
 #import "FTMonitorManager.h"
+#import "FTRUMManager.h"
 @implementation UITableView (FTAutoTrack)
 
 - (void)dataflux_setDelegate:(id <UITableViewDelegate>)delegate {

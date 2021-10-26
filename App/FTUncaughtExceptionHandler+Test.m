@@ -13,6 +13,7 @@
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <FTMobileAgent/FTBaseInfoHandler.h>
+#import <FTRUMManager.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
     NSString *info = @"";

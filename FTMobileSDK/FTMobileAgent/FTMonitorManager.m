@@ -23,6 +23,7 @@
 #import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTNetworkTrace.h"
+#import "FTRUMManager.h"
 @interface FTMonitorManager ()<FTANRDetectorDelegate,FTWKWebViewTraceDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;

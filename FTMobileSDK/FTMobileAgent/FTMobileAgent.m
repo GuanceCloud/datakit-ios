@@ -24,7 +24,7 @@
 #import "FTConfigManager.h"
 #import "FTTrackDataManger.h"
 #import "FTAppLifeCycle.h"
-
+#import "FTRUMManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;

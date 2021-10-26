@@ -77,17 +77,6 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }
     
 }
-NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
-    NSMutableArray *mutablePairs = [NSMutableArray array];
-    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,type)) {
-        if (type == FTParameterTypeField) {
-            [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
-        }else{
-            [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
-        }
-    }
-    return [mutablePairs componentsJoinedByString:@","];
-}
 NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterType type) {
     NSMutableArray *mutableQueryStringComponents = [NSMutableArray array];
     if ([value isKindOfClass:[NSDictionary class]]) {
@@ -102,6 +91,17 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:key value:value]];
     }
     return mutableQueryStringComponents;
+}
+NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
+    NSMutableArray *mutablePairs = [NSMutableArray array];
+    for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(nil,parameters,type)) {
+        if (type == FTParameterTypeField) {
+            [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
+        }else{
+            [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
+        }
+    }
+    return [mutablePairs componentsJoinedByString:@","];
 }
 @end
 

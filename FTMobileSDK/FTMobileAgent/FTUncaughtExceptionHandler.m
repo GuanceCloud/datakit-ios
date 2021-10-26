@@ -13,7 +13,7 @@
 #import "FTMonitorManager.h"
 #import <mach-o/ldsyms.h>
 #include <mach-o/dyld.h>
-
+#import "FTRUMManager.h"
 
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";

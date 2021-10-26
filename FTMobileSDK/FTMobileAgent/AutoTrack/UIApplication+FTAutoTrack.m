@@ -9,6 +9,7 @@
 #import "UIApplication+FTAutoTrack.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTMonitorManager.h"
+#import "FTRUMManager.h"
 @implementation UIApplication (FTAutoTrack)
 -(BOOL)dataflux_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
     [self ftTrack:action to:target from:sender forEvent:event];

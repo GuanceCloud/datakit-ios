@@ -15,6 +15,7 @@
 #import "NSURLResponse+FTMonitor.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
+#import "FTRUMManager.h"
 @interface FTTraceHandler ()
 @property (nonatomic, assign) BOOL isSampling;
 @property (nonatomic, strong, readwrite) NSURL *url;
@@ -121,11 +122,11 @@
             FT_NETWORK_RESPONSE_CONTENT:responseDic,
             FT_NETWORK_REQUEST_CONTENT:requestDict
         };
-        NSString *opreation = [request ft_getOperationName];
-        NSMutableDictionary *tags = @{FT_KEY_OPERATION:opreation,
+        NSString *operation = [request ft_getOperationName];
+        NSMutableDictionary *tags = @{FT_KEY_OPERATION:operation,
                                       FT_TRACING_STATUS:statusStr,
                                       FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
-                                      FT_TYPE_RESOURCE:opreation,
+                                      FT_TYPE_RESOURCE:operation,
                                       FT_TYPE:@"custom",
         }.mutableCopy;
         NSDictionary *field = @{FT_KEY_DURATION:duration};

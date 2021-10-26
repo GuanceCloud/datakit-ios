@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
-@property (nonatomic, copy) NSString *action_id;
+@property (nonatomic, copy, nullable) NSString *action_id;
 
 -(NSDictionary *)getGlobalSessionViewTags;
 -(NSDictionary *)getGlobalSessionViewActionTags;

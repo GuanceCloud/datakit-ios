@@ -8,10 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTMobileConfig.h"
-#import "FTRUMManager.h"
 NS_ASSUME_NONNULL_BEGIN
-@class  FTNetworkTrace;
+@class  FTNetworkTrace,FTMobileConfig,FTRUMManager,FTTraceConfig,FTRumConfig;
 // 用于 开启各项数据的采集 
 @interface FTMonitorManager : NSObject
 @property (nonatomic, strong) FTRUMManager *rumManger;

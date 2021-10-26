@@ -13,7 +13,7 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class FTRecordModel,FTUploadTool,FTPresetProperty,FTRUMManager;
+@class FTRecordModel,FTPresetProperty,FTRUMManager;
 
 
 @interface FTMobileAgent (Private)

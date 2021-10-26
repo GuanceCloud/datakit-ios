@@ -39,7 +39,6 @@
                     }
                     return NO;
                 }
-                    break;
                 case FTRUMDataResourceSuccess:{
                     [self writeResourceData:data];
                     if (self.resourceHandler) {
@@ -48,7 +47,6 @@
                     
                     return NO;
                 }
-                    break;
                 default:
                     break;
             }
