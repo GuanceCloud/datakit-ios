@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTRequestProtocol <NSObject>
 @required
 
-@property (nonatomic, strong, readonly) NSURL *absoluteURL;
-@property (nonatomic, copy, readonly) NSString *path;
+@property (nonatomic, strong, readonly) NSURL * _Nullable absoluteURL;
+@property (nonatomic, copy, readonly) NSString * _Nullable path;
 @property (nonatomic, copy, readonly) NSString *contentType;
 @property (nonatomic, copy, readonly) NSString *httpMethod;
 @optional
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRequest : NSObject<FTRequestProtocol>
 
--(instancetype)initWithEvents:(NSArray <FTRecordModel*>*)events type:(NSString *)type;
++(FTRequest * _Nullable)createRequestWithEvents:(NSArray <FTRecordModel*>*)events type:(NSString *)type;
 @end
 
 @interface FTLoggingRequest : FTRequest

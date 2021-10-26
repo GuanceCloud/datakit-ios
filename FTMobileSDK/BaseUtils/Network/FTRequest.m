@@ -16,7 +16,7 @@
 
 @end
 @implementation FTRequest
--(instancetype)initWithEvents:(NSArray *)events type:(NSString *)type{
++(FTRequest * _Nullable)createRequestWithEvents:(NSArray *)events type:(NSString *)type{
     if ([type isEqualToString:FT_DATA_TYPE_RUM]) {
         return [[FTRumRequest alloc]initWithEvents:events];
     }else if ([type isEqualToString:FT_DATA_TYPE_LOGGING]){

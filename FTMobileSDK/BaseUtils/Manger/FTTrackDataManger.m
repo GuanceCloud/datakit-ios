@@ -120,7 +120,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         ZYDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
-        FTRequest *request = [[FTRequest alloc]initWithEvents:events type:type];
+        FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
       
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
