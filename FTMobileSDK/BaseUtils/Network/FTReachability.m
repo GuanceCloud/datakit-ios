@@ -71,30 +71,39 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     
     NSArray *typeStrings4G = @[CTRadioAccessTechnologyLTE];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-        CTTelephonyNetworkInfo *teleInfo= [[CTTelephonyNetworkInfo alloc] init];
-        NSString *accessString = teleInfo.currentRadioAccessTechnology;
-        if (@available(iOS 14.1, *)) {
-            NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
-                                       CTRadioAccessTechnologyNR];
-            if ([typeStrings5G containsObject:accessString]) {
-                return @"5G";
+    CTTelephonyNetworkInfo *info= [[CTTelephonyNetworkInfo alloc] init];
+    NSString *currentStatus = nil;
+    if (@available(iOS 12.1, *)) {
+        if (info && [info respondsToSelector:@selector(serviceCurrentRadioAccessTechnology)]) {
+            NSDictionary *radioDic = [info serviceCurrentRadioAccessTechnology];
+            if (radioDic.allKeys.count) {
+                currentStatus = [radioDic objectForKey:radioDic.allKeys[0]];
             }
         }
-        if ([typeStrings4G containsObject:accessString]) {
-            return @"4G";
-        } else if ([typeStrings3G containsObject:accessString]) {
-            return @"3G";
-        } else if ([typeStrings2G containsObject:accessString]) {
-            return @"2G";
-        } else {
-            return @"unknown";
+    }else{
+        currentStatus = info.currentRadioAccessTechnology;
+    }
+    if (!currentStatus) {
+        return @"unknown";
+    }
+    if (@available(iOS 14.1, *)) {
+        NSArray *typeStrings5G = @[CTRadioAccessTechnologyNRNSA,
+                                   CTRadioAccessTechnologyNR];
+        if ([typeStrings5G containsObject:currentStatus]) {
+            return @"5G";
         }
+    }
+    if ([typeStrings4G containsObject:currentStatus]) {
+        return @"4G";
+    } else if ([typeStrings3G containsObject:currentStatus]) {
+        return @"3G";
+    } else if ([typeStrings2G containsObject:currentStatus]) {
+        return @"2G";
     } else {
         return @"unknown";
     }
 #endif
-
+    
     return @"unreachable";
 }
 
