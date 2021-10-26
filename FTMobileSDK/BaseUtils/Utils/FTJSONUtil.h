@@ -38,6 +38,15 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 转化后得到的字符串
  */
 - (NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
+/**
+ *  @abstract
+ *  把一个array转成Json字符串
+ *
+ *  @param array 要转化的数组
+ *
+ *  @return 转化后得到的字符串
+ */
++ (NSString *)convertToJsonDataWithArray:(NSArray *)array;
 
 @end
 

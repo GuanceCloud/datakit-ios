@@ -25,6 +25,7 @@
 #import "FTTrackDataManger.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
+#import "FTJSONUtil.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -196,6 +197,10 @@ static dispatch_once_t onceToken;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
         if (self.rumConfig.globalContext) {
             [baseTags addEntriesFromDictionary:self.rumConfig.globalContext];
+            NSArray *allKeys = self.rumConfig.globalContext.allKeys;
+            if (allKeys && allKeys.count>0) {
+                [baseTags setValue:[FTJSONUtil convertToJsonDataWithArray:allKeys] forKey:@"custom_keys"];
+            }
         }
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:terminal]];

@@ -15,6 +15,7 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#import "FTThreadDispatchManager.h"
 @implementation FTBaseInfoHandler : NSObject
 
 #pragma mark ========== 请求加密 ==========
@@ -36,13 +37,7 @@
     NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
     return [HMAC base64EncodedStringWithOptions:0];
 }
-+ (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block{
-    if (NSThread.isMainThread) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
+
 + (NSString *)applicationUUID{
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();

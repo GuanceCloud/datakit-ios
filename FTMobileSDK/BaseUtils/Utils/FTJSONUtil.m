@@ -71,5 +71,12 @@
     }
     return dic;
 }
-
++ (NSString *)convertToJsonDataWithArray:(NSArray *)array{
+    if (array == nil) {
+        return nil;
+    }
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
+    NSString *strJson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return strJson;
+}
 @end

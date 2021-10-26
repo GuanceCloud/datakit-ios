@@ -16,10 +16,8 @@
 #import "RootTabbarVC.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
-#define Track_id       @"0000000001"
 #define STATIC_TAG     @"preprod"
 #else
-#define Track_id       @"0000000002"
 #define STATIC_TAG     @"formal"
 #endif
 @interface AppDelegate ()
@@ -48,12 +46,13 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
+    NSString *trackid = [processInfo environment][@"TRACK_ID"]?:@"NULL_VALUE";
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( url && !isUnitTests && !isUITests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
-        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NO_VALUE";
+        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
         rumConfig.appid = appid;
@@ -61,7 +60,7 @@
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
-        rumConfig.globalContext = @{@"track_id":Track_id,
+        rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
                                     @"dynamic_tag":dynamicTag};
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];

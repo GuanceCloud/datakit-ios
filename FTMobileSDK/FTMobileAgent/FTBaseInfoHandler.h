@@ -21,10 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 +(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
 
-/**
- * 主线程同步执行
- */
-+ (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;
 + (NSString *)applicationUUID;
 + (UIWindow *)keyWindow;
 /**
