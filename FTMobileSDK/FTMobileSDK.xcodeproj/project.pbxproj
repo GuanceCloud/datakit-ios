@@ -107,6 +107,8 @@
 		7C69CFB2272812120065638F /* FTRumThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C69CFB0272812120065638F /* FTRumThread.m */; };
 		7C69CFBE27281D820065638F /* FTThreadDispatchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C69CFBC27281D810065638F /* FTThreadDispatchManager.m */; };
 		7C69CFBF27281D820065638F /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C69CFBD27281D810065638F /* FTThreadDispatchManager.h */; };
+		7C69CFE727294FEF0065638F /* FTResourceContentModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C69CFE527294FEF0065638F /* FTResourceContentModel.h */; };
+		7C69CFE827294FEF0065638F /* FTResourceContentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C69CFE627294FEF0065638F /* FTResourceContentModel.m */; };
 		7C81952A26C4B90F00D0D8C4 /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C81952826C4B90F00D0D8C4 /* FTDateUtil.h */; };
 		7C81952B26C4B90F00D0D8C4 /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C81952926C4B90F00D0D8C4 /* FTDateUtil.m */; };
 		7CA1803026CF4E610035DDF0 /* FTThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1802E26CF4E600035DDF0 /* FTThread.m */; };
@@ -253,6 +255,8 @@
 		7C69CFB0272812120065638F /* FTRumThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRumThread.m; path = ../../../../FTRumThread.m; sourceTree = "<group>"; };
 		7C69CFBC27281D810065638F /* FTThreadDispatchManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchManager.m; sourceTree = "<group>"; };
 		7C69CFBD27281D810065638F /* FTThreadDispatchManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTThreadDispatchManager.h; sourceTree = "<group>"; };
+		7C69CFE527294FEF0065638F /* FTResourceContentModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTResourceContentModel.h; sourceTree = "<group>"; };
+		7C69CFE627294FEF0065638F /* FTResourceContentModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceContentModel.m; sourceTree = "<group>"; };
 		7C81952826C4B90F00D0D8C4 /* FTDateUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTDateUtil.h; sourceTree = "<group>"; };
 		7C81952926C4B90F00D0D8C4 /* FTDateUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDateUtil.m; sourceTree = "<group>"; };
 		7CA1802E26CF4E600035DDF0 /* FTThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTThread.m; sourceTree = "<group>"; };
@@ -370,6 +374,8 @@
 				4A2D57EE2458141300478547 /* FTMonitorUtils.m */,
 				7C295C6F2716D8BF004B6653 /* FTTraceHandler.h */,
 				7C295C702716D8BF004B6653 /* FTTraceHandler.m */,
+				7C69CFE527294FEF0065638F /* FTResourceContentModel.h */,
+				7C69CFE627294FEF0065638F /* FTResourceContentModel.m */,
 				7C295C7B2717CA2F004B6653 /* FTNetworkTrace.h */,
 				7C295C7A2717CA2F004B6653 /* FTNetworkTrace.m */,
 				4A297BD8246BBF340028645B /* FTConstants.h */,
@@ -667,6 +673,7 @@
 				7CA1808226CFAE430035DDF0 /* FTTrackDataManger.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
+				7C69CFE727294FEF0065638F /* FTResourceContentModel.h in Headers */,
 				7C28B91526611B3800CECBA6 /* FTRUMSessionHandler.h in Headers */,
 				4A8842A5239E5768001B44C3 /* ZY_FMDatabase.h in Headers */,
 				4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */,
@@ -837,6 +844,7 @@
 				7CA1808326CFAE430035DDF0 /* FTTrackDataManger.m in Sources */,
 				4A2C827024F3D2E2006D4FC6 /* NSURLResponse+FTMonitor.m in Sources */,
 				7CF4E08326A7EB080076D238 /* UIApplication+FTAutoTrack.m in Sources */,
+				7C69CFE827294FEF0065638F /* FTResourceContentModel.m in Sources */,
 				4A88429D239E5768001B44C3 /* ZY_FMResultSet.m in Sources */,
 				7C295C722716D8BF004B6653 /* FTTraceHandler.m in Sources */,
 				7CF5875025E3B5B200EE372E /* FTUncaughtExceptionHandler.m in Sources */,

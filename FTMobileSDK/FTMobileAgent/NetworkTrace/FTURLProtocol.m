@@ -100,9 +100,8 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
-        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL];
+        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL HTTPMethod:mutableReqeust.HTTPMethod];
         self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
-        [self.traceHandler rumResourceStart];
     }
     [task resume];
 }

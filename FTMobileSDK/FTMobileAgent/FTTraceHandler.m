@@ -16,7 +16,13 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
+#import "FTResourceContentModel.h"
 @interface FTTraceHandler ()
+@property (nonatomic, strong) NSDictionary *requestHeader;
+@property (nonatomic, strong,nullable) NSError *error;
+@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
+@property (nonatomic, strong) NSURLSessionTask *task;
+@property (nonatomic, strong) NSData *data;
 @property (nonatomic, assign) BOOL isSampling;
 @property (nonatomic, strong, readwrite) NSURL *url;
 @property (nonatomic, copy) NSString *span_id;
@@ -24,20 +30,19 @@
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, strong) NSDate *startTime;
 @property (nonatomic, strong) NSDate *endTime;
-
+@property (nonatomic, copy) NSString *HTTPMethod;
 @end
 @implementation FTTraceHandler
--(instancetype)initWithUrl:(NSURL *)url{
+-(instancetype)initWithUrl:(NSURL *)url HTTPMethod:(NSString *)HTTPMethod{
     self = [super init];
     if (self) {
+        self.HTTPMethod = HTTPMethod;
         self.url = url;
         self.startTime = [NSDate date];
         self.identifier = [[NSUUID UUID] UUIDString];
+        [self rumResourceStart];
     }
     return self;
-}
--(instancetype)init{
-    return [self initWithUrl:nil];
 }
 - (NSDictionary *)getTraceHeader{
     if (!self.url) {
@@ -46,18 +51,43 @@
     self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     return self.requestHeader;
 }
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+-(void)tracingContent:(NSString *)content isError:(BOOL)isError{
     if(!content){
         return;
     }
-    if (self.isSampling) {
-        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-        [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-        [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
+    NSString *operation = [NSString stringWithFormat:@"%@ %@",self.HTTPMethod,self.url.path];
+    FTStatus status = isError? FTStatusOk:FTStatusError;
+    NSString *statusStr = [FTBaseInfoHandler statusStrWithStatus:status];
+    
+    NSMutableDictionary *tags = @{FT_KEY_OPERATION:operation,
+                                  FT_TRACING_STATUS:statusStr,
+                                  FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
+                                  FT_TYPE_RESOURCE:operation,
+                                  FT_TYPE:@"custom",
+    }.mutableCopy;
+    NSDictionary *fields = @{FT_KEY_DURATION:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
+    [tags addEntriesFromDictionary:[self getTraceSpanID]];
+    [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
+    [self tracingContent:content tags:tags fields:fields];
+}
+
+-(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
+    if (isError) {
+        [self rumResourceCompletedErrorWithTags:[model getResourceErrorTags] fields:[model getResourceErrorFields]];
+    }else{
+        [self rumResourceCompletedWithTags:[model getResourceSuccessTags] fields:[model getResourceSuccessFields]];
     }
 }
+
 #pragma mark - private -
+-(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    if (self.isSampling) {
+    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+    [newTags addEntriesFromDictionary:[self getTraceSpanID]];
+    [newTags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
+    [[FTMobileAgent sharedInstance] tracing:content tags:newTags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
+    }
+}
 -(void)setRequestHeader:(NSDictionary *)requestHeader{
     _requestHeader = requestHeader;
     [self resolveRequestHeader];
@@ -148,7 +178,7 @@
     if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
         [newTags addEntriesFromDictionary:[self getTraceSpanID]];
     }
-    [[FTMonitorManager sharedInstance].rumManger resourceCompleted:self.identifier tags:newTags fields:fields time:self.endTime];
+    [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:newTags fields:fields time:self.endTime];
 }
 -(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
@@ -163,52 +193,32 @@
     if (![FTMonitorManager sharedInstance].rumManger) {
         return;
     }
+    FTResourceContentModel *model = [[FTResourceContentModel alloc]init];
     NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
     self.endTime = taskMes.responseEndDate;
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)self.task.response;
     NSError *error = self.error?:response.ft_getResponseError;
-    NSMutableDictionary *tags = [NSMutableDictionary new];
-    NSMutableDictionary *fields = [NSMutableDictionary new];
+    NSString *statusStr = [NSString stringWithFormat:@"%@",error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode]];
     NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:self.task.originalRequest.URL];
-    tags[@"resource_url_path_group"] =url_path_group;
-    tags[@"resource_url"] = self.task.originalRequest.URL.absoluteString;
-    tags[@"resource_url_host"] = self.task.originalRequest.URL.host;
-    tags[@"resource_url_path"] = self.task.originalRequest.URL.path;
-    tags[@"resource_method"] = self.task.originalRequest.HTTPMethod;
-    tags[@"resource_status"] = error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode];
+    model.setResource_url_path_group(url_path_group)
+    .setResource_url(self.task.originalRequest.URL.absoluteString)
+    .setResource_url_host(self.task.originalRequest.URL.host)
+    .setResource_url_path(self.task.originalRequest.URL.path)
+    .setResource_method(self.task.originalRequest.HTTPMethod)
+    .setResource_status(statusStr);
     if(error){
-        tags[@"error_source"] = @"network";
-        tags[@"error_type"] = [NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code];
-        
-        NSMutableDictionary *field = @{
-            @"error_message":[NSString stringWithFormat:@"[%ld][%@]",(long)error.code,self.task.originalRequest.URL],
-        }.mutableCopy;
+        model.setError_type([NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code])
+        .setError_message([NSString stringWithFormat:@"[%ld][%@]",(long)error.code,self.task.originalRequest.URL]);
+    
         if (self.data) {
             NSError *errors;
             id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
-            [field setValue:responseObject forKey:@"error_stack"];
+            model.error_stack = responseObject;
         }
-        [self rumResourceCompletedErrorWithTags:tags fields:field];
+        [self uploadResourceWithContentModel:model isError:YES];
     }else{
         NSDictionary *responseHeader = response.allHeaderFields;
-        if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
-            tags[@"response_connection"] =responseHeader[@"Proxy-Connection"];
-        }
-        tags[@"resource_type"] = response.MIMEType;
-        NSString *response_server = [FTBaseInfoHandler getIPWithHostName:self.task.originalRequest.URL.host];
-        if (response_server) {
-            tags[@"response_server"] = response_server;
-        }
-        
-        tags[@"response_content_type"] =response.MIMEType;
-        if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
-            tags[@"response_content_encoding"] = responseHeader[@"Content-Encoding"];
-        }
         NSString *group =  [response ft_getResourceStatusGroup];
-        if (group) {
-            tags[@"resource_status_group"] = group;
-        }
-        
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
         NSNumber *tcpTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
         
@@ -217,22 +227,20 @@
         NSNumber *transTime =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
         NSNumber *durationTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
         NSNumber *resourceFirstByteTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
-        fields[@"resource_first_byte"] = resourceFirstByteTime;
-        fields[@"resource_size"] =[NSNumber numberWithLongLong:self.task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]];
-        fields[@"duration"] =durationTime;
-        fields[@"resource_dns"] = dnsTime;
-        fields[@"resource_tcp"] = tcpTime;
-        fields[@"resource_ssl"] = tlsTime;
-        fields[@"resource_ttfb"] = ttfbTime;
-        fields[@"resource_trans"] = transTime;
-        if (response) {
-            fields[@"response_header"] =[FTBaseInfoHandler convertToStringData:response.allHeaderFields];
-            fields[@"request_header"] = [FTBaseInfoHandler convertToStringData:[_task.currentRequest ft_getRequestHeaders]];
-        }
-        tags[@"resource_url"] = self.task.originalRequest.URL.absoluteString;
-        tags[@"resource_url_query"] =[_task.originalRequest.URL query];
-        tags[@"resource_url_path_group"] = url_path_group;
-        [self rumResourceCompletedWithTags:tags fields:fields];
+        model.setResource_type(response.MIMEType)
+        .setResource_status_group(group)
+        .setResource_first_byte(resourceFirstByteTime)
+        .setResource_size([NSNumber numberWithLongLong:self.task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]])
+        .setResource_dns(dnsTime)
+        .setResource_tcp(tcpTime)
+        .setResource_ssl(tlsTime)
+        .setResource_ttfb(ttfbTime)
+        .setResource_trans(transTime)
+        .setDuration(durationTime)
+        .setResource_url(self.task.originalRequest.URL.absoluteString)
+        .setResource_url_query([_task.originalRequest.URL query])
+        .setResource_url_path_group(url_path_group);
+        [self uploadResourceWithContentModel:model isError:NO];
     }
 
 }

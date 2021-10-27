@@ -7,19 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class FTResourceContentModel;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTraceHandler : NSObject
-@property (nonatomic, strong,nullable) NSError *error;
-@property (nonatomic, strong) NSURLSessionTask *task;
-@property (nonatomic, strong) NSData *data;
-@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
 
-@property (nonatomic, assign, readonly) BOOL isSampling;
-@property (nonatomic, strong, readonly) NSURL *url;
-@property (nonatomic, strong) NSDictionary *requestHeader;
-
--(instancetype)initWithUrl:(NSURL *)url;
+-(instancetype)initWithUrl:(NSURL *)url HTTPMethod:(NSString *)HTTPMethod;
 /**
  * 获取 trace 添加的请求头参数
  */
@@ -27,22 +19,20 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 记录 trace 数据
  */
--(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+-(void)tracingContent:(NSString *)content isError:(BOOL)isError;
 
-/**
- * RUM ResourceStart
- */
--(void)rumResourceStart;
-/**
- * RUM Resource Completed
- */
--(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields;
-/**
- * RUM Resource Completed Error
- */
--(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+-(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
+ 
+@end
 
-    
+
+
+@interface FTTraceHandler (Private)
+@property (nonatomic, strong,nullable) NSError *error;
+@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
+@property (nonatomic, strong) NSURLSessionTask *task;
+@property (nonatomic, strong) NSData *data;
+@property (nonatomic, strong) NSDictionary *requestHeader;
 /**
  * 从 FTURLProtocol 记录resourceCompleted
  */
@@ -52,5 +42,4 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error;
 @end
-
 NS_ASSUME_NONNULL_END
