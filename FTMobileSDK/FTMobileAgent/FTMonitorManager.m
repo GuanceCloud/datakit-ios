@@ -126,10 +126,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    NSMutableDictionary *fields = @{@"duration":duration}.mutableCopy;
-    
-    fields[@"long_task_stack"] = stack;
-    [self.rumManger addLongTask:@{} field:fields];
+    [self.rumManger addLongTaskWithStack:stack duration:duration];
 }
 -(void)stopMonitor{
 //    [FTURLProtocol stopMonitor];
@@ -182,9 +179,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    NSMutableDictionary *fields = @{@"duration":[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]}.mutableCopy;
-    fields[@"long_task_stack"] = slowStack;
-    [self.rumManger addLongTask:@{} field:fields];
+    [self.rumManger addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]];
+
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillEnterForeground{

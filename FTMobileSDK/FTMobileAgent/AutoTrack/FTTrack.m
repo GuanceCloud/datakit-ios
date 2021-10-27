@@ -9,7 +9,6 @@
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "FTLog.h"
-#import "FTMonitorManager.h"
 #import "FTSwizzle.h"
 #import "UIApplication+FTAutoTrack.h"
 #import "UIViewController+FTAutoTrack.h"

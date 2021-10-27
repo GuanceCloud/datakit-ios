@@ -77,6 +77,13 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
     return timedOut || expired;
 }
+-(NSString *)getCurrentViewID{
+    FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
+    if (view) {
+        return view.context.view_id;
+    }
+    return @"";
+}
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {

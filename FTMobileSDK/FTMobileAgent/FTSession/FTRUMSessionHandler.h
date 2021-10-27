@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig;
 -(void)refreshWithDate:(NSDate *)date;
+-(NSString *)getCurrentViewID;
 -(NSDictionary *)getCurrentSessionInfo;
 @end
 

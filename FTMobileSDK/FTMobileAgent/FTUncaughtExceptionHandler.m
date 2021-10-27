@@ -270,7 +270,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         @"error_source":@"logger",
         @"crash_situation":run
     };
-    [[FTMonitorManager sharedInstance].rumManger addError:tags field:field];
+    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:run message:[exception reason] stack:info];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
     

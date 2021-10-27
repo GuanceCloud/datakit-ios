@@ -11,9 +11,10 @@
 #import "UIViewController+FTAutoTrack.h"
 #import "FTMonitorUtils.h"
 #import "FTPresetProperty.h"
+#import "FTThreadDispatchManager.h"
+#import "FTLog.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
-@property (nonatomic, strong) dispatch_queue_t serialQueue;
 
 @end
 @implementation FTRUMManager
@@ -23,7 +24,6 @@
     if (self) {
         self.rumConfig = rumConfig;
         self.assistant = self;
-        self.serialQueue= dispatch_queue_create([@"io.serialQueue.rum" UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -38,30 +38,45 @@
     //viewModel
     [self startView:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
 }
+-(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+    [self startView:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+}
 -(void)startView:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
     if (!(viewID&&viewName&&viewReferrer)) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:viewName viewReferrer:viewReferrer];
-        viewModel.loading_time = loadDuration?:@0;
-        viewModel.type = FTRUMDataViewStart;
-        [self process:viewModel];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:viewName viewReferrer:viewReferrer];
+            viewModel.loading_time = loadDuration?:@0;
+            viewModel.type = FTRUMDataViewStart;
+            [self process:viewModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 -(void)stopView:(UIViewController *)viewController{
     NSString *viewID = viewController.ft_viewUUID;
+    [self stopViewWithViewID:viewID];
+}
+-(void)stopView{
+    NSString *viewID = [self.sessionHandler getCurrentViewID]?:[NSUUID UUID].UUIDString;
     [self stopViewWithViewID:viewID];
 }
 - (void)stopViewWithViewID:(NSString *)viewID{
     if (!viewID) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:@"" viewReferrer:@""];
-        viewModel.type = FTRUMDataViewStop;
-        [self process:viewModel];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:@"" viewReferrer:@""];
+            viewModel.type = FTRUMDataViewStop;
+            [self process:viewModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 #pragma mark - Action -
 
@@ -82,29 +97,38 @@
     if (!self.rumConfig.enableTraceUserAction) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:@"click"];
-        actionModel.type = FTRUMDataClick;
-        [self process:actionModel];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:@"click"];
+            actionModel.type = FTRUMDataClick;
+            [self process:actionModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
     if (!self.rumConfig.enableTraceUserAction) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
-        NSString *actionType = isHot?@"launch_hot":@"launch_cold";
-        FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
-        FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
-        launchModel.action_name = actionName;
-        launchModel.action_type = actionType;
-        [self process:launchModel];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
+            NSString *actionType = isHot?@"launch_hot":@"launch_cold";
+            FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
+            FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
+            launchModel.action_name = actionName;
+            launchModel.action_type = actionType;
+            [self process:launchModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 - (void)applicationWillTerminate{
-    dispatch_sync(self.serialQueue, ^{
-    });
+    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
+        
+    }];
 }
 
 #pragma mark - Resource -
@@ -112,62 +136,97 @@
     if (!identifier) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
-        
-        [self process:resourceStart];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
+            
+            [self process:resourceStart];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
-- (void)resourceCompleted:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
+- (void)resourceSuccess:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
     if (!identifier) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:identifier];
-        resourceSuccess.time = time;
-        resourceSuccess.tags = tags;
-        resourceSuccess.fields = fields;
-        [self process:resourceSuccess];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:identifier];
+            resourceSuccess.time = time;
+            resourceSuccess.tags = tags;
+            resourceSuccess.fields = fields;
+            [self process:resourceSuccess];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
     if (!identifier) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
-        NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errorMonitorInfo]];
-        [newTags addEntriesFromDictionary:tags];
-        resourceError.time = time;
-        resourceError.tags = newTags;
-        resourceError.fields = fields;
-        [self process:resourceError];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
+            NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errorMonitorInfo]];
+            [newTags addEntriesFromDictionary:tags];
+            resourceError.time = time;
+            resourceError.tags = newTags;
+            resourceError.fields = fields;
+            [self process:resourceError];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 #pragma mark - error 、 long_task -
-- (void)addError:(NSDictionary *)tags field:(NSDictionary *)field{
-    if (!field) {
+- (void)addErrorWithType:(NSString *)type situation:(NSString *)situation message:(NSString *)message stack:(NSString *)stack{
+    if (!(type && situation && message && stack)) {
         return;
     }
-    NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-    [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
-    dispatch_sync(self.serialQueue, ^{
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
-        model.tags = errorTag;
-        model.fields = field;
-        [self process:model];
-    });
+    @try {
+        NSDictionary *field = @{ @"error_message":message,
+                                 @"error_stack":stack,
+        };
+        NSDictionary *tags = @{
+            @"error_type":type,
+            @"error_source":@"logger",
+            @"crash_situation":situation
+        };
+        NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
+        [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
+            model.tags = errorTag;
+            model.fields = field;
+            [self process:model];
+        }];
+
+        [FTThreadDispatchManager dispatchSyncInRUMThread:^{
+            
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
-- (void)addLongTask:(NSDictionary *)tags field:(NSDictionary *)field{
-    if (!field) {
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
+    if (!stack || !duration) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
-        model.tags = tags;
-        model.fields = field;
-        [self process:model];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            NSDictionary *fields = @{@"duration":duration,
+                                     @"long_task_stack":stack
+            };
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
+            model.tags = @{};
+            model.fields = fields;
+            [self process:model];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
     
 }
 - (NSDictionary *)errorMonitorInfo{
@@ -194,12 +253,16 @@
     if (!measurement) {
         return;
     }
-    dispatch_async(self.serialQueue, ^{
-        FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
-        webModel.tags = tags;
-        webModel.fields = fields;
-        [self process:webModel];
-    });
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
+            webModel.tags = tags;
+            webModel.fields = fields;
+            [self process:webModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 
 #pragma mark - FTRUMSessionProtocol -

@@ -15,7 +15,6 @@
 #import "FTLog.h"
 #import "FTMonitorManager.h"
 #import "FTDateUtil.h"
-#import "FTThreadDispatchManager.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
