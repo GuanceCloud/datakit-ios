@@ -12,16 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceContentModel : NSObject
 #pragma mark - RUM Resource Success 属性 -
-@property (nonatomic, copy) NSString *resource_url_query;
 @property (nonatomic, copy) NSString *resource_type;
-@property (nonatomic, copy) NSString *resource_status_group;
 @property (nonatomic, copy) NSString *resource_status;
 
 #pragma mark - RUM Resource Success、Error 属性 -
-@property (nonatomic, copy) NSString *resource_url;
-@property (nonatomic, copy) NSString *resource_url_host;
-@property (nonatomic, copy) NSString *resource_url_path;
-@property (nonatomic, copy) NSString *resource_url_path_group;
 @property (nonatomic, copy) NSString *resource_method;
 
 #pragma mark - RUM Resource Success 指标 -
@@ -43,15 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *error_stack;
 
 
-- (FTResourceContentModel *(^)(NSString *value))setResource_url_query;
 - (FTResourceContentModel *(^)(NSString *value))setResource_type;
-- (FTResourceContentModel *(^)(NSString *value))setResource_status_group;
 - (FTResourceContentModel *(^)(NSString *value))setResource_status;
 
-- (FTResourceContentModel *(^)(NSString *value))setResource_url;
-- (FTResourceContentModel *(^)(NSString *value))setResource_url_host;
-- (FTResourceContentModel *(^)(NSString *value))setResource_url_path;
-- (FTResourceContentModel *(^)(NSString *value))setResource_url_path_group;
+
 - (FTResourceContentModel *(^)(NSString *value))setResource_method;
 
 - (FTResourceContentModel *(^)(NSNumber *value))setResource_size;

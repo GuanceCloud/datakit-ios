@@ -23,12 +23,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resourceStart:(NSString *)identifier;
 /**
  * resource Success
+ * 写入 resource Metrics
  */
 - (void)resourceSuccess:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
 /**
  * resource Error
  */
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
+/**
+ * resource Complete
+ */
 - (void)resourceComplete:(NSString *)identifier;
 #pragma mark - webview js -
 

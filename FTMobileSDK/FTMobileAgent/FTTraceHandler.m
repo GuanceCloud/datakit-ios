@@ -71,22 +71,30 @@
 }
 
 -(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
-    NSMutableDictionary *tags = [[NSMutableDictionary alloc]init];
-    NSMutableDictionary *fields = [[NSMutableDictionary alloc]init];
+    if (!self.url) {
+        return;
+    }
+   //公共 tags
+    NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:self.task.originalRequest.URL];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:@{
+        @"resource_url":self.url.absoluteString,
+        @"resource_url_host":self.url.host,
+        @"resource_url_path":self.url.path,
+        @"resource_url_path_group":url_path_group
+    }];
     // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
     if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
         [tags addEntriesFromDictionary:[self getTraceSpanID]];
     }
     if (isError) {
         [tags addEntriesFromDictionary:[model getResourceErrorTags]];
-        [fields addEntriesFromDictionary:[model getResourceErrorFields]];
-        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:fields time:self.endTime];
+        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:[model getResourceErrorFields] time:self.endTime];
     }else{
+        [tags setValue:[self getResourceStatusGroup:model.resource_status] forKey:@"resource_status_group"];
+        [tags setValue:[self.url query] forKey:@"resource_url_query"];
         [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
-        [fields addEntriesFromDictionary:[model getResourceSuccessFields]];
-        [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:fields time:self.endTime];
+        [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:[model getResourceSuccessFields] time:self.endTime];
     }
-   
 }
 - (void)resourceCompleted{
     [[FTMonitorManager sharedInstance].rumManger resourceComplete:self.identifier];
@@ -120,6 +128,14 @@
     }else{
         return nil;
     }
+}
+- (NSString *)getResourceStatusGroup:(NSString *)status{
+    int statusCode = [status intValue]?:0;
+    if (statusCode>=0 && statusCode<1000) {
+        NSInteger a = statusCode/100;
+        return  [NSString stringWithFormat:@"%ldxx",(long)a];
+    }
+    return nil;
 }
 -(NSDate *)endTime{
     if (!_endTime) {
@@ -194,14 +210,7 @@
     self.endTime = taskMes.responseEndDate;
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)self.task.response;
     NSError *error = self.error?:response.ft_getResponseError;
-    NSString *statusStr = [NSString stringWithFormat:@"%@",error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode]];
-    NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:self.task.originalRequest.URL];
-    model.setResource_url_path_group(url_path_group)
-    .setResource_url(self.task.originalRequest.URL.absoluteString)
-    .setResource_url_host(self.task.originalRequest.URL.host)
-    .setResource_url_path(self.task.originalRequest.URL.path)
-    .setResource_method(self.task.originalRequest.HTTPMethod)
-    .setResource_status(statusStr);
+    model.setResource_method(self.task.originalRequest.HTTPMethod);
     if(error){
         NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
         model.setError_type([NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code])
@@ -214,7 +223,7 @@
         }
         [self uploadResourceWithContentModel:model isError:YES];
     }else{
-        NSString *group =  [response ft_getResourceStatusGroup];
+        NSString *statusStr = [NSString stringWithFormat:@"%@",error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode]];
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
         NSNumber *tcpTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
         
@@ -224,7 +233,7 @@
         NSNumber *durationTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
         NSNumber *resourceFirstByteTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
         model.setResource_type(response.MIMEType)
-        .setResource_status_group(group)
+        .setResource_status(statusStr)
         .setResource_first_byte(resourceFirstByteTime)
         .setResource_size([NSNumber numberWithLongLong:self.task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]])
         .setResource_dns(dnsTime)
@@ -232,10 +241,7 @@
         .setResource_ssl(tlsTime)
         .setResource_ttfb(ttfbTime)
         .setResource_trans(transTime)
-        .setDuration(durationTime)
-        .setResource_url(self.task.originalRequest.URL.absoluteString)
-        .setResource_url_query([_task.originalRequest.URL query])
-        .setResource_url_path_group(url_path_group);
+        .setDuration(durationTime);
         [self uploadResourceWithContentModel:model isError:NO];
     }
 

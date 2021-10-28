@@ -25,10 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)rumResourceStart;
 
+-(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
+
 - (void)resourceCompleted;
 
--(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
- 
 @end
 
 
