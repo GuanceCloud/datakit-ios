@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTraceHandler : NSObject
 
--(instancetype)initWithUrl:(NSURL *)url HTTPMethod:(NSString *)HTTPMethod;
+-(instancetype)initWithUrl:(NSURL *)url;
 /**
  * 获取 trace 添加的请求头参数
  */
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 记录 trace 数据
  */
--(void)tracingContent:(NSString *)content isError:(BOOL)isError;
+-(void)tracingContent:(NSString *)content HTTPMethod:(NSString *)HTTPMethod isError:(BOOL)isError;
 
 -(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
  

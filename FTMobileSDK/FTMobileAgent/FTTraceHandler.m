@@ -30,13 +30,11 @@
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, strong) NSDate *startTime;
 @property (nonatomic, strong) NSDate *endTime;
-@property (nonatomic, copy) NSString *HTTPMethod;
 @end
 @implementation FTTraceHandler
--(instancetype)initWithUrl:(NSURL *)url HTTPMethod:(NSString *)HTTPMethod{
+-(instancetype)initWithUrl:(NSURL *)url{
     self = [super init];
     if (self) {
-        self.HTTPMethod = HTTPMethod;
         self.url = url;
         self.startTime = [NSDate date];
         self.identifier = [[NSUUID UUID] UUIDString];
@@ -51,11 +49,11 @@
     self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     return self.requestHeader;
 }
--(void)tracingContent:(NSString *)content isError:(BOOL)isError{
+-(void)tracingContent:(NSString *)content HTTPMethod:(NSString *)HTTPMethod isError:(BOOL)isError{
     if(!content){
         return;
     }
-    NSString *operation = [NSString stringWithFormat:@"%@ %@",self.HTTPMethod,self.url.path];
+    NSString *operation = [NSString stringWithFormat:@"%@ %@",HTTPMethod,self.url.path];
     FTStatus status = isError? FTStatusOk:FTStatusError;
     NSString *statusStr = [FTBaseInfoHandler statusStrWithStatus:status];
     
