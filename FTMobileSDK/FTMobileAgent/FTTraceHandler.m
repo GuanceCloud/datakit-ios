@@ -70,7 +70,7 @@
     [self tracingContent:content tags:tags fields:fields];
 }
 
--(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
+-(void)rumUploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
     if (!self.url) {
         return;
     }
@@ -96,7 +96,7 @@
         [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:[model getResourceSuccessFields] time:self.endTime];
     }
 }
-- (void)resourceCompleted{
+- (void)rumResourceCompleted{
     [[FTMonitorManager sharedInstance].rumManger resourceComplete:self.identifier];
 }
 #pragma mark - private -
@@ -150,7 +150,7 @@
     [self traceRequest:self.task.currentRequest response:(NSHTTPURLResponse *)self.task.response startDate:taskMes.requestStartDate taskDuration:[NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000] error:self.error];
     
     [self rumDataWrite];
-    [self resourceCompleted];
+    [self rumResourceCompleted];
 }
 - (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
     if (self.isSampling) {
@@ -221,7 +221,7 @@
             id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
             model.error_stack = responseObject;
         }
-        [self uploadResourceWithContentModel:model isError:YES];
+        [self rumUploadResourceWithContentModel:model isError:YES];
     }else{
         NSString *statusStr = [NSString stringWithFormat:@"%@",error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode]];
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
@@ -242,7 +242,7 @@
         .setResource_ttfb(ttfbTime)
         .setResource_trans(transTime)
         .setDuration(durationTime);
-        [self uploadResourceWithContentModel:model isError:NO];
+        [self rumUploadResourceWithContentModel:model isError:NO];
     }
 
 }
