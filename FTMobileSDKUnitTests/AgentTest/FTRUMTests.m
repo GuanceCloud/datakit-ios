@@ -21,7 +21,7 @@
 #import <FTRUMSessionHandler.h>
 #import <FTMonitorManager.h>
 #import "FTTrackDataManger+Test.h"
-
+#import "UIView+FTAutoTrack.h"
 @interface FTRUMTests : XCTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -675,7 +675,7 @@
     [[FTMonitorManager sharedInstance].rumManger addLongTaskWithStack:stack duration:dutation];
 }
 - (void)mockBtnClick{
-    [[FTMonitorManager sharedInstance].rumManger addAction:self.testVC.firstButton];
+    [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:self.testVC.firstButton.ft_actionName];
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];

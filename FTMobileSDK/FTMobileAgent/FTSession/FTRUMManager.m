@@ -14,6 +14,7 @@
 #import "FTThreadDispatchManager.h"
 #import "FTLog.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
+@property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 
 @end
@@ -31,23 +32,16 @@
     _rumConfig = rumConfig;
 }
 #pragma mark - View -
--(void)startView:(UIViewController *)viewController{
-    NSString *viewReferrer = viewController.ft_parentVC;
-    NSString *viewID = viewController.ft_viewUUID;
-    NSString *className = NSStringFromClass(viewController.class);
-    //viewModel
-    [self startView:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
-}
 -(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [self startView:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
 }
--(void)startView:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    if (!(viewID&&viewName&&viewReferrer)) {
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+    if (!(viewId&&viewName&&viewReferrer)) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:viewName viewReferrer:viewReferrer];
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:viewReferrer];
             viewModel.loading_time = loadDuration?:@0;
             viewModel.type = FTRUMDataViewStart;
             [self process:viewModel];
@@ -56,21 +50,18 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)stopView:(UIViewController *)viewController{
-    NSString *viewID = viewController.ft_viewUUID;
-    [self stopViewWithViewID:viewID];
-}
+
 -(void)stopView{
     NSString *viewID = [self.sessionHandler getCurrentViewID]?:[NSUUID UUID].UUIDString;
     [self stopViewWithViewID:viewID];
 }
-- (void)stopViewWithViewID:(NSString *)viewID{
-    if (!viewID) {
+-(void)stopViewWithViewID:(NSString *)viewId{
+    if (!viewId) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewID viewName:@"" viewReferrer:@""];
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
             viewModel.type = FTRUMDataViewStop;
             [self process:viewModel];
         }];
@@ -79,18 +70,7 @@
     }
 }
 #pragma mark - Action -
-
-- (void)addAction:(UIView *)clickView{
-    NSString *viewTitle = @"";
-    if ([clickView isKindOfClass:UIButton.class]) {
-        UIButton *btn =(UIButton *)clickView;
-        viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
-    }
-    NSString *className = NSStringFromClass(clickView.class);
-    NSString *actionName = [NSString stringWithFormat:@"[%@]%@",className,viewTitle];
-    [self addActionWithActionName:actionName];
-}
-- (void)addActionWithActionName:(NSString *)actionName{
+- (void)addClickActionWithName:(NSString *)actionName{
     if (!actionName) {
         return;
     }

@@ -10,6 +10,7 @@
 #import "FTSwizzler.h"
 #import "FTMonitorManager.h"
 #import "FTRUMManager.h"
+#import "UIView+FTAutoTrack.h"
 @implementation UITableView (FTAutoTrack)
 
 - (void)dataflux_setDelegate:(id <UITableViewDelegate>)delegate {
@@ -25,7 +26,7 @@
             
             if (tableView && indexPath) {
                 UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                [[FTMonitorManager sharedInstance].rumManger addAction:cell];
+                [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:cell.ft_actionName];
             }
         };
         
@@ -56,7 +57,7 @@
             
             if (collectionView && indexPath) {
                 UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                [[FTMonitorManager sharedInstance].rumManger addAction:cell];
+                [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:cell.ft_actionName];
             }
         };
         

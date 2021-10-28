@@ -72,11 +72,22 @@
 }
 
 -(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
+    NSMutableDictionary *tags = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary *fields = [[NSMutableDictionary alloc]init];
+
     if (isError) {
-        [self rumResourceCompletedErrorWithTags:[model getResourceErrorTags] fields:[model getResourceErrorFields]];
+        [tags addEntriesFromDictionary:[model getResourceErrorTags]];
+        [fields addEntriesFromDictionary:[model getResourceErrorFields]];
+
     }else{
-        [self rumResourceCompletedWithTags:[model getResourceSuccessTags] fields:[model getResourceSuccessFields]];
+        [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
+        [fields addEntriesFromDictionary:[model getResourceSuccessFields]];
     }
+    // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
+    if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
+        [tags addEntriesFromDictionary:[self getTraceSpanID]];
+    }
+    [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:fields time:self.endTime];
 }
 
 #pragma mark - private -
@@ -166,27 +177,10 @@
     }
 }
 
-#pragma mark - RUM 相关操作 -
 //rum resourceStart
 -(void)rumResourceStart{
 
     [[FTMonitorManager sharedInstance].rumManger resourceStart:self.identifier];
-}
--(void)rumResourceCompletedWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-    // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
-    if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-    }
-    [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:newTags fields:fields time:self.endTime];
-}
--(void)rumResourceCompletedErrorWithTags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-    // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
-    if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
-        [newTags addEntriesFromDictionary:[self getTraceSpanID]];
-    }
-    [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:newTags fields:fields time:self.endTime];
 }
 - (void)rumDataWrite{
     //  RUM 未开启时 rumManger == nil
@@ -207,9 +201,10 @@
     .setResource_method(self.task.originalRequest.HTTPMethod)
     .setResource_status(statusStr);
     if(error){
+        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
         model.setError_type([NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code])
-        .setError_message([NSString stringWithFormat:@"[%ld][%@]",(long)error.code,self.task.originalRequest.URL]);
-    
+        .setError_message([NSString stringWithFormat:@"[%ld][%@]",(long)error.code,self.task.originalRequest.URL])
+        .setError_situation(run);
         if (self.data) {
             NSError *errors;
             id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
@@ -217,7 +212,6 @@
         }
         [self uploadResourceWithContentModel:model isError:YES];
     }else{
-        NSDictionary *responseHeader = response.allHeaderFields;
         NSString *group =  [response ft_getResourceStatusGroup];
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
         NSNumber *tcpTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];

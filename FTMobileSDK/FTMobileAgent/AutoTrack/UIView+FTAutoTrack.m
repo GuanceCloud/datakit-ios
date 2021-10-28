@@ -12,6 +12,16 @@
 #import "FTThreadDispatchManager.h"
 
 @implementation UIView (FTAutoTrack)
+-(NSString *)ft_actionName{
+    NSString *viewTitle = @"";
+    if ([self isKindOfClass:UIButton.class]) {
+        UIButton *btn =(UIButton *)self;
+        viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
+    }
+    NSString *className = NSStringFromClass(self.class);
+    NSString *actionName = [NSString stringWithFormat:@"[%@]%@",className,viewTitle];
+    return actionName;
+}
 -(UIViewController *)ft_currentViewController{
     __block UIResponder *next = nil;
     [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{

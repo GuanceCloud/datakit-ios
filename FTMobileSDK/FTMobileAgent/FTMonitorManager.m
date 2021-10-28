@@ -198,12 +198,13 @@ static dispatch_once_t onceToken;
         if (!_applicationLoadFirstViewController) {
             return;
         }
-        NSString *viewid = [NSUUID UUID].UUIDString;
-        self.currentController.ft_viewUUID = viewid;
-        [self.rumManger startView:self.currentController];
-        
-        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        
+        if (self.currentController) {
+            NSString *viewid = [NSUUID UUID].UUIDString;
+            self.currentController.ft_viewUUID = viewid;
+            [self.rumManger startViewWithViewID:viewid viewName:NSStringFromClass(self.currentController.class) viewReferrer:self.currentController.ft_parentVC loadDuration:self.currentController.ft_loadDuration];
+            
+            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        }
     }
     @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -214,7 +215,9 @@ static dispatch_once_t onceToken;
         return;
     }
     _running = NO;
-    [self.rumManger stopView:self.currentController];
+    if (self.currentController) {
+        [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
+    }
     _applicationWillResignActive = NO;
 }
 - (void)applicationWillResignActive{
@@ -227,7 +230,9 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationWillTerminate{
     @try {
-        [self.rumManger stopView:self.currentController];
+        if (self.currentController) {
+            [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
+        }
         [self.rumManger applicationWillTerminate];
         
     }@catch (NSException *exception) {
@@ -235,8 +240,10 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
-    
-    [self.rumManger startView:viewController];
+    NSString *viewReferrer = viewController.ft_parentVC;
+    NSString *viewID = viewController.ft_viewUUID;
+    NSString *className = NSStringFromClass(viewController.class);
+    [self.rumManger startViewWithViewID:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
     //记录冷启动 是在第一个页面显示出来后
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
@@ -246,7 +253,7 @@ static dispatch_once_t onceToken;
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){
-        [self.rumManger stopView:viewController];
+        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
     }
 }
 

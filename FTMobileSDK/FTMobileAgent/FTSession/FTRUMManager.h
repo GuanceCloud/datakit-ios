@@ -12,23 +12,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManager : FTRUMHandler
-@property (nonatomic, strong) FTRumConfig *rumConfig;
+#pragma mark - init -
+
 -(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
-/**
- * 进入页面
- * @param viewController  进入页面控制器
- */
--(void)startView:(UIViewController *)viewController;
-/**
- * 离开页面
- * @param viewController  控制器
- */
--(void)stopView:(UIViewController *)viewController;
-/**
- * 点击事件
- * @param clickView  点击的view
- */
-- (void)addAction:(UIView *)clickView;
+
+#pragma mark - resource -
 /**
  * resource Start
  */
@@ -41,31 +29,43 @@ NS_ASSUME_NONNULL_BEGIN
  * resource Error
  */
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
+#pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
-/**
- * 当 traceConfig 开启 enableLinkRumData 时 获取 rum 信息
- */
--(NSDictionary *)getCurrentSessionInfo;
-
-#pragma mark - flutter api -
+#pragma mark - view -
 /**
  * 进入页面
+ * @param viewId          页面id
+ * @param viewName        页面名称
+ * @param viewReferrer    页面父视图
+ * @param loadDuration    页面的加载时长
+ */
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
+/**
+ * 进入页面 viewId 内部管理
  * @param viewName        页面名称
  * @param viewReferrer    页面父视图
  * @param loadDuration    页面的加载时长
  */
 -(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
-
 /**
  * 离开页面
+ * @param viewId         页面id
+ */
+-(void)stopViewWithViewID:(NSString *)viewId;
+/**
+ * 离开页面
+ * viewId 内部管理
  */
 -(void)stopView;
+
+#pragma mark - action -
+
 /**
  * 点击事件
  * @param actionName 点击的事件名称
  */
-- (void)addActionWithActionName:(NSString *)actionName;
+- (void)addClickActionWithName:(NSString *)actionName;
 /**
  * 应用启动
  * @param isHot     是否是热启动
@@ -76,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
  * 应用终止使用
  */
 - (void)applicationWillTerminate;
+#pragma mark - Error / Long Task -
 /**
  * 崩溃
  * @param type       错误类型:java_crash/native_crash/abort/ios_crash
@@ -90,7 +91,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param duration   卡顿时长
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
+#pragma mark - get LinkRumData -
 
+/**
+ * 当 traceConfig 开启 enableLinkRumData 时 获取 rum 信息
+ */
+-(NSDictionary *)getCurrentSessionInfo;
 @end
 
 NS_ASSUME_NONNULL_END

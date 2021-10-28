@@ -10,6 +10,7 @@
 #import "UIViewController+FTAutoTrack.h"
 #import "FTMonitorManager.h"
 #import "FTRUMManager.h"
+#import "UIView+FTAutoTrack.h"
 @implementation UIApplication (FTAutoTrack)
 -(BOOL)dataflux_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
     [self ftTrack:action to:target from:sender forEvent:event];
@@ -25,13 +26,16 @@
             return;
         }
     }
-    
+    if(![sender isKindOfClass:UIView.class]){
+        return;
+    }
+    UIView *view = (UIView *)sender;
     if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
         [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        [[FTMonitorManager sharedInstance].rumManger addAction:sender];
+        [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:view.ft_actionName];
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        [[FTMonitorManager sharedInstance].rumManger addAction:sender];
+        [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:view.ft_actionName];
     }
     
 }

@@ -29,7 +29,7 @@
         BOOL isAlterType = [view isAlertClick];
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
-            [[FTMonitorManager sharedInstance].rumManger addAction:view];
+            [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:view.ft_actionName];
         }
         
     }@catch (NSException *exception) {
