@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
  * resource Error
  */
 - (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
+- (void)resourceComplete:(NSString *)identifier;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

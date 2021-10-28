@@ -27,18 +27,19 @@
 @property (nonatomic, strong, readwrite) NSURL *url;
 @property (nonatomic, copy) NSString *span_id;
 @property (nonatomic, copy) NSString *trace_id;
-@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, strong) NSDate *startTime;
 @property (nonatomic, strong) NSDate *endTime;
 @end
 @implementation FTTraceHandler
 -(instancetype)initWithUrl:(NSURL *)url{
+    return [self initWithUrl:url identifier:[NSUUID UUID].UUIDString];
+}
+-(instancetype)initWithUrl:(NSURL *)url identifier:(NSString *)identifier{
     self = [super init];
     if (self) {
         self.url = url;
         self.startTime = [NSDate date];
-        self.identifier = [[NSUUID UUID] UUIDString];
-        [self rumResourceStart];
+        self.identifier = identifier;
     }
     return self;
 }
@@ -72,22 +73,24 @@
 -(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError{
     NSMutableDictionary *tags = [[NSMutableDictionary alloc]init];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]init];
-
-    if (isError) {
-        [tags addEntriesFromDictionary:[model getResourceErrorTags]];
-        [fields addEntriesFromDictionary:[model getResourceErrorFields]];
-
-    }else{
-        [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
-        [fields addEntriesFromDictionary:[model getResourceSuccessFields]];
-    }
     // trace 开启 enableLinkRumData 时 添加 span_id、trace_id tag
     if (self.isSampling && [FTNetworkTrace sharedInstance].enableLinkRumData) {
         [tags addEntriesFromDictionary:[self getTraceSpanID]];
     }
-    [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:fields time:self.endTime];
+    if (isError) {
+        [tags addEntriesFromDictionary:[model getResourceErrorTags]];
+        [fields addEntriesFromDictionary:[model getResourceErrorFields]];
+        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:fields time:self.endTime];
+    }else{
+        [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
+        [fields addEntriesFromDictionary:[model getResourceSuccessFields]];
+        [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:fields time:self.endTime];
+    }
+   
 }
-
+- (void)resourceCompleted{
+    [[FTMonitorManager sharedInstance].rumManger resourceComplete:self.identifier];
+}
 #pragma mark - private -
 -(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     if (self.isSampling) {
@@ -124,13 +127,14 @@
     }
     return _endTime;
 }
-- (void)resourceCompleted{
+- (void)dealResourceDatas{
 
     NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
 
     [self traceRequest:self.task.currentRequest response:(NSHTTPURLResponse *)self.task.response startDate:taskMes.requestStartDate taskDuration:[NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000] error:self.error];
     
     [self rumDataWrite];
+    [self resourceCompleted];
 }
 - (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
     if (self.isSampling) {

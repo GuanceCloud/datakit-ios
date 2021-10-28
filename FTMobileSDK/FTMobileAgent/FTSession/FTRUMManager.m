@@ -160,6 +160,19 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
+- (void)resourceComplete:(NSString *)identifier{
+    if (!identifier) {
+        return;
+    }
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
+            [self process:resourceError];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
 #pragma mark - error 、 long_task -
 - (void)addErrorWithType:(NSString *)type situation:(NSString *)situation message:(NSString *)message stack:(NSString *)stack{
     if (!(type && situation && message && stack)) {

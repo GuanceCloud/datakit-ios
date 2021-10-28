@@ -101,6 +101,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
         self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL];
+        [self.traceHandler rumResourceStart];
         self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
     }
     [task resume];
@@ -136,7 +137,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     if (self.trackUrl) {
             self.traceHandler.error = error;
             self.traceHandler.task = task;
-            [self.traceHandler resourceCompleted];
+            [self.traceHandler dealResourceDatas];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){

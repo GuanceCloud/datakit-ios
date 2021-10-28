@@ -10,8 +10,10 @@
 @class FTResourceContentModel;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTraceHandler : NSObject
+@property (nonatomic, copy, readwrite) NSString *identifier;
 
 -(instancetype)initWithUrl:(NSURL *)url;
+-(instancetype)initWithUrl:(NSURL *)url identifier:(NSString *)identifier;
 /**
  * 获取 trace 添加的请求头参数
  */
@@ -20,6 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 记录 trace 数据
  */
 -(void)tracingContent:(NSString *)content HTTPMethod:(NSString *)HTTPMethod isError:(BOOL)isError;
+
+-(void)rumResourceStart;
+
+- (void)resourceCompleted;
 
 -(void)uploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
  
@@ -36,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 从 FTURLProtocol 记录resourceCompleted
  */
--(void)resourceCompleted;
+-(void)dealResourceDatas;
 /**
  * WKWebview trace 调用方法
  */

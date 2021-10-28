@@ -70,12 +70,13 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
             self.activeResourcesCount += 1;
             break;
         case FTRUMDataResourceSuccess:
-            self.activeResourcesCount -= 1;
             self.actionResourcesCount += 1;
             break;
         case FTRUMDataResourceError:
-            self.activeResourcesCount -= 1;
             self.actionErrorCount += 1;
+            break;
+        case FTRUMDataResourceComplete:
+            self.activeResourcesCount -= 1;
             break;
         case FTRUMDataLongTask:
             self.actionLongTaskCount++;
