@@ -137,19 +137,7 @@
         return self;
     };
 }
-/**
- @property (nonatomic, copy) NSString *resource_url_query;
- @property (nonatomic, copy) NSString *resource_type;
- @property (nonatomic, copy) NSString *resource_status_group;
- @property (nonatomic, copy) NSString *resource_status;
 
- #pragma mark - RUM Resource Success、Error 属性 -
- @property (nonatomic, copy) NSString *resource_url;
- @property (nonatomic, copy) NSString *resource_url_host;
- @property (nonatomic, copy) NSString *resource_url_path;
- @property (nonatomic, copy) NSString *resource_url_path_group;
- @property (nonatomic, copy) NSString *resource_method;
- */
 - (NSDictionary *)getResourceSuccessTags{
     NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
     [dict setValue:self.resource_url_query forKey:@"resource_url_query"];
