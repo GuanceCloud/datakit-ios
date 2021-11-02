@@ -9,12 +9,7 @@
 #import "FTResourceContentModel.h"
 #import "FTConstants.h"
 @implementation FTResourceContentModel
-/**
- - (FTResourceContentModel *(^)(NSString *value))setResourceType;
- - (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode;
- - (FTResourceContentModel *(^)(NSInteger value))setErrorCode;
- - (FTResourceContentModel *(^)(NSData *value))setResponseData;
- */
+
 - (FTResourceContentModel *(^)(NSString *value))setHttpMethod{
     return ^(NSString *value) {
         self->_httpMethod = value;
@@ -39,9 +34,9 @@
         return self;
     };
 }
-- (FTResourceContentModel *(^)(NSData *value))setResponseData{
-    return ^(NSData *value) {
-        self->_responseData = value;
+- (FTResourceContentModel *(^)(NSString *value))setResponseDataJsonStr{
+    return ^(NSString *value) {
+        self->_responseBody = value;
         return self;
     };
 }
@@ -125,12 +120,8 @@
 }
 - (NSDictionary *)getResourceErrorFields{
     NSMutableDictionary *dict = @{}.mutableCopy;
-
-    if (self.responseData) {
-        NSError *errors;
-        id responseObject = [NSJSONSerialization JSONObjectWithData:self.responseData options:NSJSONReadingMutableContainers error:&errors];
-        [dict setValue:responseObject forKey:@"error_stack"];
-
+    if (self.responseBody) {
+        [dict setValue:self.responseBody forKey:@"error_stack"];
     }
     return dict;
 }

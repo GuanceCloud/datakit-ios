@@ -98,8 +98,7 @@
         [tags setValue:[self getResourceStatusGroup:model.httpStatusCode] forKey:@"resource_status_group"];
         [tags setValue:[self.url query] forKey:@"resource_url_query"];
         [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
-        NSDictionary *fields = [model getResourceSuccessFields];
-        if (model.duration == @0) {
+        if ([model.duration  isEqual: @0]) {
             model.duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:self.endTime];
         }
         [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:[model getResourceSuccessFields] time:self.endTime];
@@ -221,7 +220,9 @@
     model.setHttpMethod(self.task.originalRequest.HTTPMethod);
     if(error){
         model.errorCode = error.code;
-        model.responseData = self.data;
+        NSError *errors;
+        id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
+        model.responseBody = responseObject;
         [self rumUploadResourceWithContentModel:model isError:YES];
     }else{
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];

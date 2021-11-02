@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *httpMethod;
 @property (nonatomic, copy) NSString *resourceType;
 @property (nonatomic, assign) NSInteger httpStatusCode;
-@property (nonatomic, strong) NSData *responseData;
+@property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger errorCode;
 #pragma mark - Metrics -
 //资源大小，默认单位：byte
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTResourceContentModel *(^)(NSString *value))setResourceType;
 - (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode;
 - (FTResourceContentModel *(^)(NSInteger value))setErrorCode;
-- (FTResourceContentModel *(^)(NSData *value))setResponseData;
+- (FTResourceContentModel *(^)(NSString *value))setResponseDataJsonStr;
 
 
 - (FTResourceContentModel *(^)(NSNumber *value))setResource_size;
