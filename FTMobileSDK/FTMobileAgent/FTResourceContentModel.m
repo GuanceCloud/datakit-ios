@@ -9,22 +9,39 @@
 #import "FTResourceContentModel.h"
 #import "FTConstants.h"
 @implementation FTResourceContentModel
-
-- (FTResourceContentModel *(^)(NSString *value))setResource_type{
+/**
+ - (FTResourceContentModel *(^)(NSString *value))setResourceType;
+ - (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode;
+ - (FTResourceContentModel *(^)(NSInteger value))setErrorCode;
+ - (FTResourceContentModel *(^)(NSData *value))setResponseData;
+ */
+- (FTResourceContentModel *(^)(NSString *value))setHttpMethod{
     return ^(NSString *value) {
-        self->_resource_type = value;
+        self->_httpMethod = value;
         return self;
     };
 }
-- (FTResourceContentModel *(^)(NSString *value))setResource_status{
+- (FTResourceContentModel *(^)(NSString *value))setResourceType{
     return ^(NSString *value) {
-        self->_resource_status = value;
+        self->_resourceType = value;
         return self;
     };
 }
-- (FTResourceContentModel *(^)(NSString *value))setResource_method{
-    return ^(NSString *value) {
-        self->_resource_method = value;
+- (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode{
+    return ^(NSInteger value) {
+        self->_httpStatusCode = value;
+        return self;
+    };
+}
+- (FTResourceContentModel *(^)(NSInteger value))setErrorCode{
+    return ^(NSInteger value) {
+        self->_errorCode = value;
+        return self;
+    };
+}
+- (FTResourceContentModel *(^)(NSData *value))setResponseData{
+    return ^(NSData *value) {
+        self->_responseData = value;
         return self;
     };
 }
@@ -76,37 +93,13 @@
         return self;
     };
 }
-- (FTResourceContentModel *(^)(NSString *value))setError_type{
-    return ^(NSString *value) {
-        self->_error_type = value;
-        return self;
-    };
-}
-- (FTResourceContentModel *(^)(NSString *value))setError_situation{
-    return ^(NSString *value) {
-        self->_error_situation = value;
-        return self;
-    };
-}
-
-- (FTResourceContentModel *(^)(NSString *value))setError_message{
-    return ^(NSString *value) {
-        self->_error_message = value;
-        return self;
-    };
-}
-- (FTResourceContentModel *(^)(NSString *value))setError_stack{
-    return ^(NSString *value) {
-        self->_error_stack = value;
-        return self;
-    };
-}
 
 - (NSDictionary *)getResourceSuccessTags{
     NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-    [dict setValue:self.resource_type forKey:@"resource_type"];
-    [dict setValue:self.resource_status forKey:@"resource_status"];
-    [dict setValue:self.resource_method forKey:@"resource_method"];
+    [dict setValue:self.httpMethod forKey:@"resource_method"];
+    [dict setValue:self.resourceType forKey:@"resource_type"];
+    [dict setValue:@(self.httpStatusCode) forKey:@"resource_status"];
+    [dict setValue:self.httpMethod forKey:@"resource_method"];
     return dict;
 }
 - (NSDictionary *)getResourceSuccessFields{
@@ -124,16 +117,21 @@
 
 - (NSDictionary *)getResourceErrorTags{
     NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-    [dict setValue:self.resource_method forKey:@"resource_method"];
+    [dict setValue:self.httpMethod forKey:@"resource_method"];
+    [dict setValue:@(self.httpStatusCode) forKey:@"resource_status"];
     [dict setValue:@"network" forKey:@"error_source"];
-    [dict setValue:self.error_type forKey:@"error_type"];
-    [dict setValue:self.error_situation forKey:@"error_situation"];
+    [dict setValue:@"network" forKey:@"error_type"];
     return dict;
 }
 - (NSDictionary *)getResourceErrorFields{
-    NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-    [dict setValue:self.error_message forKey:@"error_message"];
-    [dict setValue:self.error_stack forKey:@"error_stack"];
+    NSMutableDictionary *dict = @{}.mutableCopy;
+
+    if (self.responseData) {
+        NSError *errors;
+        id responseObject = [NSJSONSerialization JSONObjectWithData:self.responseData options:NSJSONReadingMutableContainers error:&errors];
+        [dict setValue:responseObject forKey:@"error_stack"];
+
+    }
     return dict;
 }
 @end

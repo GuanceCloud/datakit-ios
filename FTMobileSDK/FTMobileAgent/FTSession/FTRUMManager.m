@@ -112,7 +112,7 @@
 }
 
 #pragma mark - Resource -
-- (void)resourceStart:(NSString *)identifier{
+- (void)startResource:(NSString *)identifier{
     if (!identifier) {
         return;
     }
@@ -160,13 +160,13 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)resourceComplete:(NSString *)identifier{
+- (void)stopResource:(NSString *)identifier{
     if (!identifier) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:identifier];
             [self process:resourceError];
         }];
     } @catch (NSException *exception) {

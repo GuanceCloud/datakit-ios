@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * resource Start
  */
-- (void)resourceStart:(NSString *)identifier;
+- (void)startResource:(NSString *)identifier;
 /**
  * resource Success
  * 写入 resource Metrics
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * resource Complete
  */
-- (void)resourceComplete:(NSString *)identifier;
+- (void)stopResource:(NSString *)identifier;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

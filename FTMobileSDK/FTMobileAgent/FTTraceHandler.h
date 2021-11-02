@@ -23,11 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 -(void)tracingContent:(NSString *)content HTTPMethod:(NSString *)HTTPMethod isError:(BOOL)isError;
 
--(void)rumResourceStart;
+-(void)startResource;
 
 -(void)rumUploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
 
-- (void)rumResourceCompleted;
+- (void)stopResource;
 
 @end
 

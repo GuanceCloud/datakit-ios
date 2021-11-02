@@ -87,17 +87,26 @@
         [tags addEntriesFromDictionary:[self getTraceSpanID]];
     }
     if (isError) {
+        NSInteger code = model.httpStatusCode == 0?:model.errorCode;
+        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
+        NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:[model getResourceErrorFields]];
+        [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,self.url.absoluteString] forKey:@"error_message"];
+        [tags setValue:run forKey:@"error_situation"];
         [tags addEntriesFromDictionary:[model getResourceErrorTags]];
-        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:[model getResourceErrorFields] time:self.endTime];
+        [[FTMonitorManager sharedInstance].rumManger resourceError:self.identifier tags:tags fields:fields time:self.endTime];
     }else{
-        [tags setValue:[self getResourceStatusGroup:model.resource_status] forKey:@"resource_status_group"];
+        [tags setValue:[self getResourceStatusGroup:model.httpStatusCode] forKey:@"resource_status_group"];
         [tags setValue:[self.url query] forKey:@"resource_url_query"];
         [tags addEntriesFromDictionary:[model getResourceSuccessTags]];
+        NSDictionary *fields = [model getResourceSuccessFields];
+        if (model.duration == @0) {
+            model.duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:self.endTime];
+        }
         [[FTMonitorManager sharedInstance].rumManger resourceSuccess:self.identifier tags:tags fields:[model getResourceSuccessFields] time:self.endTime];
     }
 }
-- (void)rumResourceCompleted{
-    [[FTMonitorManager sharedInstance].rumManger resourceComplete:self.identifier];
+- (void)stopResource{
+    [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier];
 }
 #pragma mark - private -
 -(void)tracingContent:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -129,10 +138,9 @@
         return nil;
     }
 }
-- (NSString *)getResourceStatusGroup:(NSString *)status{
-    int statusCode = [status intValue]?:0;
-    if (statusCode>=0 && statusCode<1000) {
-        NSInteger a = statusCode/100;
+- (NSString *)getResourceStatusGroup:(NSInteger )status{
+    if (status>=0 && status<1000) {
+        NSInteger a = status/100;
         return  [NSString stringWithFormat:@"%ldxx",(long)a];
     }
     return nil;
@@ -150,7 +158,7 @@
     [self traceRequest:self.task.currentRequest response:(NSHTTPURLResponse *)self.task.response startDate:taskMes.requestStartDate taskDuration:[NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000] error:self.error];
     
     [self rumDataWrite];
-    [self rumResourceCompleted];
+    [self stopResource];
 }
 - (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
     if (self.isSampling) {
@@ -196,9 +204,9 @@
 }
 
 //rum resourceStart
--(void)rumResourceStart{
+-(void)startResource{
 
-    [[FTMonitorManager sharedInstance].rumManger resourceStart:self.identifier];
+    [[FTMonitorManager sharedInstance].rumManger startResource:self.identifier];
 }
 - (void)rumDataWrite{
     //  RUM 未开启时 rumManger == nil
@@ -210,20 +218,12 @@
     self.endTime = taskMes.responseEndDate;
     NSHTTPURLResponse *response = (NSHTTPURLResponse *)self.task.response;
     NSError *error = self.error?:response.ft_getResponseError;
-    model.setResource_method(self.task.originalRequest.HTTPMethod);
+    model.setHttpMethod(self.task.originalRequest.HTTPMethod);
     if(error){
-        NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
-        model.setError_type([NSString stringWithFormat:@"%@_%ld",error.domain,(long)error.code])
-        .setError_message([NSString stringWithFormat:@"[%ld][%@]",(long)error.code,self.task.originalRequest.URL])
-        .setError_situation(run);
-        if (self.data) {
-            NSError *errors;
-            id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
-            model.error_stack = responseObject;
-        }
+        model.errorCode = error.code;
+        model.responseData = self.data;
         [self rumUploadResourceWithContentModel:model isError:YES];
     }else{
-        NSString *statusStr = [NSString stringWithFormat:@"%@",error ?[NSNumber numberWithInteger:error.code] : [response ft_getResponseStatusCode]];
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];
         NSNumber *tcpTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.connectStartDate toDate:taskMes.connectEndDate];
         
@@ -232,8 +232,8 @@
         NSNumber *transTime =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
         NSNumber *durationTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
         NSNumber *resourceFirstByteTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
-        model.setResource_type(response.MIMEType)
-        .setResource_status(statusStr)
+        model.setResourceType(response.MIMEType)
+        .setHttpStatusCode(response.statusCode)
         .setResource_first_byte(resourceFirstByteTime)
         .setResource_size([NSNumber numberWithLongLong:self.task.countOfBytesReceived+[response ft_getResponseHeaderDataSize]])
         .setResource_dns(dnsTime)

@@ -11,37 +11,38 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceContentModel : NSObject
-#pragma mark - RUM Resource Success 属性 -
-@property (nonatomic, copy) NSString *resource_type;
-@property (nonatomic, copy) NSString *resource_status;
 
-#pragma mark - RUM Resource Success、Error 属性 -
-@property (nonatomic, copy) NSString *resource_method;
-
-#pragma mark - RUM Resource Success 指标 -
+@property (nonatomic, copy) NSString *httpMethod;
+@property (nonatomic, copy) NSString *resourceType;
+@property (nonatomic, assign) NSInteger httpStatusCode;
+@property (nonatomic, strong) NSData *responseData;
+@property (nonatomic, assign) NSInteger errorCode;
+#pragma mark - Metrics -
+//资源大小，默认单位：byte
 @property (nonatomic, strong) NSNumber *resource_size;
+//资源加载DNS解析时间 domainLookupEnd - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_dns;
+//资源加载TCP连接时间 connectEnd - connectStart
 @property (nonatomic, strong) NSNumber *resource_tcp;
+//资源加载SSL连接时间 connectEnd - secureConnectStart
 @property (nonatomic, strong) NSNumber *resource_ssl;
+//资源加载请求响应时间 responseStart - requestStart
 @property (nonatomic, strong) NSNumber *resource_ttfb;
+//资源加载内容传输时间 responseEnd - responseStart
 @property (nonatomic, strong) NSNumber *resource_trans;
+//资源加载首包时间 responseStart - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_first_byte;
+//资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
 
-#pragma mark - Network Error 属性 -
-@property (nonatomic, copy) NSString *error_type;
-@property (nonatomic, copy) NSString *error_situation;
-
-#pragma mark - Network Error 指标 -
-@property (nonatomic, copy) NSString *error_message;
-@property (nonatomic, copy) NSString *error_stack;
 
 
-- (FTResourceContentModel *(^)(NSString *value))setResource_type;
-- (FTResourceContentModel *(^)(NSString *value))setResource_status;
+- (FTResourceContentModel *(^)(NSString *value))setHttpMethod;
+- (FTResourceContentModel *(^)(NSString *value))setResourceType;
+- (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode;
+- (FTResourceContentModel *(^)(NSInteger value))setErrorCode;
+- (FTResourceContentModel *(^)(NSData *value))setResponseData;
 
-
-- (FTResourceContentModel *(^)(NSString *value))setResource_method;
 
 - (FTResourceContentModel *(^)(NSNumber *value))setResource_size;
 - (FTResourceContentModel *(^)(NSNumber *value))setResource_dns;
@@ -52,11 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTResourceContentModel *(^)(NSNumber *value))setResource_first_byte;
 - (FTResourceContentModel *(^)(NSNumber *value))setDuration;
 
-- (FTResourceContentModel *(^)(NSString *value))setError_type;
-- (FTResourceContentModel *(^)(NSString *value))setError_situation;
 
-- (FTResourceContentModel *(^)(NSString *value))setError_message;
-- (FTResourceContentModel *(^)(NSString *value))setError_stack;
+
 
 
 - (NSDictionary *)getResourceSuccessTags;

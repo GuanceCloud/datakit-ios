@@ -132,7 +132,7 @@
         default:
             break;
     }
-    if (model.type == FTRUMDataResourceError || model.type == FTRUMDataResourceSuccess || model.type == FTRUMDataResourceComplete) {
+    if (model.type == FTRUMDataResourceError || model.type == FTRUMDataResourceSuccess || model.type == FTRUMDataResourceStop) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
         self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model];
