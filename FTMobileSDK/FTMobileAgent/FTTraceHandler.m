@@ -56,7 +56,7 @@
     }
     NSString *operation = [NSString stringWithFormat:@"%@ %@",HTTPMethod,self.url.path];
     FTStatus status = isError? FTStatusOk:FTStatusError;
-    NSString *statusStr = [FTBaseInfoHandler statusStrWithStatus:status];
+    NSString *statusStr = FTStatusStringMap[status];
     
     NSMutableDictionary *tags = @{FT_KEY_OPERATION:operation,
                                   FT_TRACING_STATUS:statusStr,
@@ -181,7 +181,7 @@
             }
             responseDict = response?[response ft_getResponseDict]:responseDict;
         }
-        NSString *statusStr = [FTBaseInfoHandler statusStrWithStatus:status];
+        NSString *statusStr = FTStatusStringMap[status];
         NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
         NSDictionary *responseDic = responseDict?responseDict:@{};
         NSDictionary *content = @{
@@ -221,8 +221,10 @@
     if(error){
         model.errorCode = error.code;
         NSError *errors;
-        id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
-        model.responseBody = responseObject;
+        if (self.data) {
+            id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
+            model.responseBody = responseObject;
+        }
         [self rumUploadResourceWithContentModel:model isError:YES];
     }else{
         NSNumber *dnsTime = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.domainLookupEndDate];

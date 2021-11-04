@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "FTConstants.h"
 NS_ASSUME_NONNULL_BEGIN
 @class  FTNetworkTrace,FTMobileConfig,FTRUMManager,FTTraceConfig,FTRumConfig;
 // 用于 开启各项数据的采集 
@@ -15,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMManager *rumManger;
 @property (nonatomic, strong) NSSet *netContentType;
 @property (nonatomic, weak) UIViewController *currentController;
-@property (nonatomic, assign) BOOL running; //正在运行
+@property (nonatomic, assign) AppState running; //正在运行
 
 /**
  * 获取 FTMonitorManager 单例

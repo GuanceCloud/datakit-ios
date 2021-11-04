@@ -46,7 +46,7 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _running = NO;
+        _running = STARTUP;
         _appRelaunched = NO;
         _launchTime = [NSDate date];
         _track = [[FTTrack alloc]init];
@@ -194,7 +194,7 @@ static dispatch_once_t onceToken;
             _applicationWillResignActive = NO;
             return;
         }
-        _running = YES;
+        _running = RUN;
         if (!_applicationLoadFirstViewController) {
             return;
         }
@@ -214,7 +214,6 @@ static dispatch_once_t onceToken;
     if (!_applicationWillResignActive) {
         return;
     }
-    _running = NO;
     if (self.currentController) {
         [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
     }

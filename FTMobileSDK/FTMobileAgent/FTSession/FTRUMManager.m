@@ -174,7 +174,7 @@
     }
 }
 #pragma mark - error 、 long_task -
-- (void)addErrorWithType:(NSString *)type situation:(NSString *)situation message:(NSString *)message stack:(NSString *)stack{
+- (void)addErrorWithType:(NSString *)type situation:(AppState )situation message:(NSString *)message stack:(NSString *)stack{
     if (!(type && situation && message && stack)) {
         return;
     }
@@ -185,7 +185,7 @@
         NSDictionary *tags = @{
             @"error_type":type,
             @"error_source":@"logger",
-            @"crash_situation":situation
+            @"crash_situation":AppStateStringMap[situation]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];

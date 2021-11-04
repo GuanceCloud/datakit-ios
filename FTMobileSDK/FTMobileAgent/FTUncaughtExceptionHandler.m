@@ -261,9 +261,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
     NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
  
-    NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
   
-    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:run message:[exception reason] stack:info];
+    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTMonitorManager sharedInstance].running message:[exception reason] stack:info];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
     

@@ -23,13 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)applicationUUID;
 + (UIWindow *)keyWindow;
-/**
- *  @abstract
- *  FTStatus 字符串转换
-*/
-+ (NSString *)statusStrWithStatus:(FTStatus)status;
-+ (NSString *)envStrWithEnv:(FTEnv)env;
-+ (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type;
 + (NSString *)XDataKitUUID;
 + (NSString *)sessionId;
 + (NSString *)userId;

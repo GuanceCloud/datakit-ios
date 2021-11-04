@@ -8,6 +8,7 @@
 
 #import "FTRUMHandler.h"
 #import <UIKit/UIKit.h>
+#import "FTConstants.h"
 @class FTRumConfig;
 NS_ASSUME_NONNULL_BEGIN
 
@@ -89,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param message    错误信息
  * @param stack      错误堆栈
  */
-- (void)addErrorWithType:(NSString *)type situation:(NSString *)situation message:(NSString *)message stack:(NSString *)stack;
+- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack;
 /**
  * 卡顿
  * @param stack      卡顿堆栈

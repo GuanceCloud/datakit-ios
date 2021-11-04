@@ -7,8 +7,31 @@
 //
 
 #import "FTConstants.h"
-
-
+#import "FTMobileConfig.h"
+NSString * const AppStateStringMap[] = {
+    [UNKNOWN] = @"正常",
+    [STARTUP] = @"连接中",
+    [RUN] = @"成功",
+};
+NSString * const FTStatusStringMap[] = {
+    [FTStatusInfo] = @"info",
+    [FTStatusWarning] = @"warning中",
+    [FTStatusError] = @"error",
+    [FTStatusCritical] = @"critical",
+    [FTStatusOk] = @"ok"
+};
+NSString * const FTNetworkTraceStringMap[] = {
+    [FTNetworkTraceTypeZipkin] = @"zipkin",
+    [FTNetworkTraceTypeJaeger] = @"jaeger",
+    [FTNetworkTraceTypeDDtrace] = @"ddtrace",
+};
+NSString * const FTEnvStringMap[] = {
+    [FTEnvProd] = @"prod",
+    [FTEnvGray] = @"gray",
+    [FTEnvPre] = @"pre",
+    [FTEnvCommon] = @"common",
+    [FTEnvLocal] = @"local",
+};
 NSString * const FT_AGENT_MEASUREMENT  = @"measurement";
 NSString * const FT_AGENT_FIELD  = @"field";
 NSString * const FT_AGENT_TAGS  = @"tags";

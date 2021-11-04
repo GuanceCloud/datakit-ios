@@ -146,7 +146,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 - (NSDictionary *)loggerPropertyWithStatus:(FTStatus)status serviceName:(NSString *)serviceName{
     NSMutableDictionary *tag = [NSMutableDictionary dictionaryWithDictionary:self.baseCommonPropertyTags];
-    [tag setValue:[FTBaseInfoHandler statusStrWithStatus:status] forKey:FT_KEY_STATUS];
+    [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;

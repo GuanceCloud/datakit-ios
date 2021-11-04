@@ -21,9 +21,8 @@
     info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
     //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
   
-    NSString *run = [FTMonitorManager sharedInstance].running?@"run":@"startup";
 
-    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:run message:[exception reason] stack:info];
+    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTMonitorManager sharedInstance].running message:[exception reason] stack:info];
     
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

@@ -67,7 +67,7 @@ static dispatch_once_t onceToken;
             //开启网络监听
             [[FTReachability sharedInstance] startNotifier];
             [self setUpListeners];
-            _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
+            _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
@@ -79,9 +79,9 @@ static dispatch_once_t onceToken;
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTConfigManager sharedInstance] setTrackConfig:config];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
+        [self.presetProperty resetWithVersion:config.version env:FTEnvStringMap[config.env]];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:[FTBaseInfoHandler envStrWithEnv:config.env]];
+        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
@@ -103,7 +103,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    _netTraceStr = [FTBaseInfoHandler networkTraceTypeStrWithType:traceConfigOptions.networkTraceType];
+    _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [[FTMonitorManager sharedInstance] setTraceConfig:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========

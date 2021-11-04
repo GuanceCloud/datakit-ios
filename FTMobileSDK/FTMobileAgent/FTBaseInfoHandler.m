@@ -125,64 +125,6 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     }
     return foundWindow;
 }
-+(NSString *)statusStrWithStatus:(FTStatus)status{
-    NSString *str = nil;
-    switch (status) {
-        case FTStatusInfo:
-            str = @"info";
-            break;
-        case FTStatusWarning:
-            str = @"warning";
-            break;
-        case FTStatusError:
-            str = @"error";
-            break;
-        case FTStatusCritical:
-            str = @"critical";
-            break;
-        case FTStatusOk:
-            str = @"ok";
-            break;
-    }
-    return str;
-    
-}
-+ (NSString *)envStrWithEnv:(FTEnv)env{
-   NSString *str = nil;
-    switch (env) {
-        case FTEnvProd:
-            str = @"prod";
-            break;
-        case FTEnvGray:
-            str = @"gray";
-            break;
-        case FTEnvPre:
-            str = @"pre";
-            break;
-        case FTEnvCommon:
-            str = @"common";
-            break;
-        case FTEnvLocal:
-            str = @"local";
-            break;
-    }
-   return str;
-}
-+ (NSString *)networkTraceTypeStrWithType:(FTNetworkTraceType)type{
-    NSString *str = nil;
-    switch (type) {
-        case FTNetworkTraceTypeJaeger:
-            str = @"jaeger";
-            break;
-        case FTNetworkTraceTypeZipkin:
-            str = @"zipkin";
-            break;
-        case FTNetworkTraceTypeDDtrace:
-            str = @"ddtrace";
-            break;
-    }
-    return  str;
-}
 + (NSString *)XDataKitUUID{
     NSString *deviceId;
     deviceId = [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"];
