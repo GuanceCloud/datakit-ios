@@ -50,18 +50,17 @@
     self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     return self.requestHeader;
 }
--(void)tracingContent:(NSString *)content HTTPMethod:(NSString *)HTTPMethod isError:(BOOL)isError{
+-(void)tracingContent:(NSString *)content operationName:(NSString *)operationName isError:(BOOL)isError{
     if(!content){
         return;
     }
-    NSString *operation = [NSString stringWithFormat:@"%@ %@",HTTPMethod,self.url.path];
     FTStatus status = isError? FTStatusOk:FTStatusError;
     NSString *statusStr = FTStatusStringMap[status];
     
-    NSMutableDictionary *tags = @{FT_KEY_OPERATION:operation,
+    NSMutableDictionary *tags = @{FT_KEY_OPERATION:operationName,
                                   FT_TRACING_STATUS:statusStr,
                                   FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
-                                  FT_TYPE_RESOURCE:operation,
+                                  FT_TYPE_RESOURCE:operationName,
                                   FT_TYPE:@"custom",
     }.mutableCopy;
     NSDictionary *fields = @{FT_KEY_DURATION:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
@@ -128,6 +127,12 @@
         weakSelf.isSampling = sampled;
     }];
 }
+-(NSString *)getSpanID{
+    return self.span_id;
+}
+-(NSString *)getTraceID{
+    return self.trace_id;
+}
 - (NSDictionary *)getTraceSpanID{
     if (self.span_id&&self.trace_id) {
         return @{@"span_id":self.span_id,
@@ -168,12 +173,10 @@
             NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
             NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
             responseDict = @{FT_NETWORK_HEADERS:@{},
-                             FT_NETWORK_BODY:@{},
-                             FT_NETWORK_ERROR:@{@"errorCode":[NSNumber numberWithInteger:error.code],
+                             FT_NETWORK_ERROR:@{@"errorCode":errorCode,
                                                 @"errorDomain":error.domain,
                                                 @"errorDescription":errorDescription,
                              },
-                             FT_NETWORK_CODE:errorCode,
             };
         }else{
             if( [[response ft_getResponseStatusCode] integerValue] >=400){
