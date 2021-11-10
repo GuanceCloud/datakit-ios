@@ -11,15 +11,23 @@
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
 #import "NSURLRequest+FTMonitor.h"
+#import "FTResourceContentModel.h"
 #import "FTTraceHandler.h"
 #import "FTNetworkTrace.h"
+#import "FTMonitorManager.h"
+#import "FTRUMManager.h"
+#import "FTBaseInfoHandler.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
+@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
+
 @property (nonatomic, assign) BOOL trackUrl;
 @property (nonatomic, strong) FTTraceHandler *traceHandler;
+@property (nonatomic, copy) NSString *identifier;
 @end
 @implementation FTURLProtocol
 //static id<FTHTTPProtocolDelegate> sDelegate;
@@ -100,8 +108,10 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
-        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL];
-        [self.traceHandler startResource];
+        self.identifier = [NSUUID UUID].UUIDString;
+        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL identifier:self.identifier];
+        [[FTMonitorManager sharedInstance].rumManger startResource:self.identifier];
+
         self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
     }
     [task resume];
@@ -122,7 +132,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
     if (self.trackUrl) {
-        self.traceHandler.data = data;
+        self.data = data;
     }
     [self.client URLProtocol:self didLoadData:data];
 }
@@ -135,15 +145,51 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         [self.client URLProtocolDidFinishLoading:self];
     }
     if (self.trackUrl) {
-            self.traceHandler.error = error;
-            self.traceHandler.task = task;
-            [self.traceHandler dealResourceDatas];
+        NSDate *start = nil;
+        NSNumber *duration = @(-1);
+        if (@available(iOS 11.0, *)) {
+            if (self.metrics) {
+                NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
+                start = taskMes.requestStartDate;
+                duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000];
+            }
+        }
+        [self.traceHandler traceRequest:task.originalRequest response:task.response startDate:start taskDuration:duration error:error];
+        if (![FTMonitorManager sharedInstance].rumManger) {
+            return;
+        }
+        FTResourceContentModel *model = [FTResourceContentModel new];
+        model.url = self.request.URL;
+        model.requestHeader = [FTBaseInfoHandler convertToStringData:self.request.allHTTPHeaderFields];
+        model.resourceMethod = self.request.HTTPMethod;
+        NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
+        if (response) {
+            NSDictionary *responseHeader = response.allHeaderFields;
+            model.responseHeader = [FTBaseInfoHandler convertToStringData:responseHeader];
+            if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
+                model.responseConnection =responseHeader[@"Proxy-Connection"];
+            }
+            model.responseContentType = response.MIMEType;
+            model.httpStatusCode = response.statusCode;
+            if (self.data) {
+                NSError *errors;
+                id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
+                model.responseBody = responseObject;
+            }
+            if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
+                model.responseContentEncoding = responseHeader[@"Content-Encoding"];
+            }
+        }
+        model.error = error;
+        [[FTMonitorManager sharedInstance].rumManger addResourceContent:self.identifier content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
+        [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
     if (self.trackUrl) {
-        self.traceHandler.metrics = metrics;
+        self.metrics = metrics;
+        [[FTMonitorManager sharedInstance].rumManger addResourceMetrics:self.traceHandler.identifier metrics:metrics];
     }
     
 }

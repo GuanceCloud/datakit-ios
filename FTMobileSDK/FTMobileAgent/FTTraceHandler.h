@@ -22,31 +22,23 @@ NS_ASSUME_NONNULL_BEGIN
  * 记录 trace 数据
  */
 -(void)tracingContent:(NSString *)content operationName:(NSString *)operationName isError:(BOOL)isError;
-
+/**
+ * 获取 span_id
+ */
 -(NSString *)getSpanID;
+/**
+ * 获取 trace_id
+ */
 -(NSString *)getTraceID;
--(void)startResource;
-
--(void)rumUploadResourceWithContentModel:(FTResourceContentModel *)model isError:(BOOL)isError;
-
-- (void)stopResource;
 
 @end
 
 
 
 @interface FTTraceHandler (Private)
-@property (nonatomic, strong,nullable) NSError *error;
-@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
-@property (nonatomic, strong) NSURLSessionTask *task;
-@property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSDictionary *requestHeader;
 /**
- * 从 FTURLProtocol 记录resourceCompleted
- */
--(void)dealResourceDatas;
-/**
- * WKWebview trace 调用方法
+ *FTURLProtocol  WKWebview trace 调用方法
  */
 - (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error;
 @end

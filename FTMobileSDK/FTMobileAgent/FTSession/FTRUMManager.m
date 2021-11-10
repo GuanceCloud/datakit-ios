@@ -13,6 +13,9 @@
 #import "FTPresetProperty.h"
 #import "FTThreadDispatchManager.h"
 #import "FTLog.h"
+#import "FTResourceContentModel.h"
+#import "FTConfigManager.h"
+#import "FTMonitorManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -125,6 +128,84 @@
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
+}
+- (void)addResourceMetrics:(NSString *)identifier metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
+    if (!identifier) {
+        return;
+    }
+    FTResourceMetricsModel *model = [[FTResourceMetricsModel alloc]initWithTaskMetrics:metrics];
+    [self addResourceMetricsModel:identifier model:model];
+}
+- (void)addResourceMetricsModel:(NSString *)identifier model:(FTResourceMetricsModel *)model{
+    if (!identifier) {
+        return;
+    }
+    @try {
+        [FTThreadDispatchManager dispatchInRUMThread:^{
+            FTRUMResourceMetricsModel *metricsModel = [[FTRUMResourceMetricsModel alloc]initWithType:FTRUMDataResourceMetrics identifier:identifier];
+            metricsModel.metrics = model;
+            [self process:metricsModel];
+        }];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
+- (void)addResourceContent:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID{
+    if (!identifier) {
+        return;
+    }
+    @try {
+        NSDate *time = [NSDate date];
+        NSMutableDictionary *tags = [NSMutableDictionary new];
+        NSMutableDictionary *fields = [NSMutableDictionary new];
+        NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:model.url];
+        [tags setValue:model.url.absoluteString forKey:@"resource_url"];
+        [tags setValue:model.url.host forKey:@"resource_url_host"];
+        [tags setValue:model.url.path forKey:@"resource_url_path"];
+        [tags setValue:url_path_group forKey:@"resource_url_path_group"];
+        [fields setValue:@0 forKey:@"resource_size"];
+        if (model.responseBody) {
+            NSData *data = [model.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+            [fields setValue:@(data.length) forKey:@"resource_size"];
+        }
+        if ([FTConfigManager sharedInstance].traceConfig.enableLinkRumData) {
+            [tags setValue:spanID forKey:@"span_id"];
+            [tags setValue:traceID forKey:@"trace_id"];
+        }
+    if (model.error || model.httpStatusCode>=400) {
+        NSInteger code = model.httpStatusCode == -1?:model.error.code;
+        NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
+        [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,model.url.absoluteString] forKey:@"error_message"];
+               [tags setValue:run forKey:@"error_situation"];
+        [tags setValue:model.resourceMethod forKey:@"resource_method"];
+        [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
+        [tags setValue:@"network" forKey:@"error_source"];
+        [tags setValue:@"network" forKey:@"error_type"];
+        if (model.responseBody) {
+            [fields setValue:model.responseBody forKey:@"error_stack"];
+        }
+        [self resourceError:identifier tags:tags fields:fields time:time];
+    }else{
+        [tags setValue:[self getResourceStatusGroup:model.httpStatusCode] forKey:@"resource_status_group"];
+        [tags setValue:[model.url query] forKey:@"resource_url_query"];
+        [tags setValue:model.resourceMethod forKey:@"resource_method"];
+        [tags setValue:model.responseContentType forKey:@"resource_type"];
+        [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
+        
+        [self resourceSuccess:identifier tags:tags fields:fields time:time];
+
+    }
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+    
+}
+- (NSString *)getResourceStatusGroup:(NSInteger )status{
+    if (status>=0 && status<1000) {
+        NSInteger a = status/100;
+        return  [NSString stringWithFormat:@"%ldxx",(long)a];
+    }
+    return nil;
 }
 - (void)resourceSuccess:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time{
     if (!identifier) {

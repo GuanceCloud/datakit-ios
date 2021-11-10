@@ -16,6 +16,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataLongTask,
     FTRUMDataError,
     FTRUMDataResourceStart,
+    FTRUMDataResourceMetrics,
     FTRUMDataResourceSuccess,
     FTRUMDataResourceError,
     FTRUMDataResourceStop,
@@ -23,6 +24,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
 };
 
 NS_ASSUME_NONNULL_BEGIN
+@class FTResourceMetricsModel;
 @interface FTRUMDataModel : NSObject
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, assign) FTRUMDataType type;
@@ -51,6 +53,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *identifier;
 
 -(instancetype)initWithType:(FTRUMDataType)type identifier:(NSString *)identifier;
+@end
+@interface FTRUMResourceMetricsModel : FTRUMResourceDataModel
+@property (nonatomic, strong) FTResourceMetricsModel *metrics;
 @end
 @interface FTRUMLaunchDataModel : FTRUMActionModel
 @property (nonatomic, strong) NSNumber *duration;

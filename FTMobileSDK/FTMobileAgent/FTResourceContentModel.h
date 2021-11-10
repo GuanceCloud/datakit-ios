@@ -11,15 +11,20 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceContentModel : NSObject
-
-@property (nonatomic, copy) NSString *httpMethod;
-@property (nonatomic, copy) NSString *resourceType;
+@property (nonatomic, strong) NSURL *url;
+@property (nonatomic, copy) NSString *requestHeader;
+@property (nonatomic, copy) NSString *responseHeader;
+@property (nonatomic, copy) NSString *responseConnection;
+@property (nonatomic, copy) NSString *responseContentType;
+@property (nonatomic, copy) NSString *responseContentEncoding;
+@property (nonatomic, copy) NSString *resourceMethod;
 @property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger httpStatusCode;
-@property (nonatomic, assign) NSInteger errorCode;
-#pragma mark - Metrics -
-//资源大小，默认单位：byte
-@property (nonatomic, strong) NSNumber *resource_size;
+
+@property (nonatomic, strong) NSError *error;
+@end
+
+@interface FTResourceMetricsModel : NSObject
 //资源加载DNS解析时间 domainLookupEnd - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_dns;
 //资源加载TCP连接时间 connectEnd - connectStart
@@ -34,35 +39,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *resource_first_byte;
 //资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics;
 
-
-
-- (FTResourceContentModel *(^)(NSString *value))setHttpMethod;
-- (FTResourceContentModel *(^)(NSString *value))setResourceType;
-- (FTResourceContentModel *(^)(NSInteger value))setHttpStatusCode;
-- (FTResourceContentModel *(^)(NSInteger value))setErrorCode;
-- (FTResourceContentModel *(^)(NSString *value))setResponseDataJsonStr;
-
-
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_size;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_dns;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_tcp;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_ssl;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_ttfb;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_trans;
-- (FTResourceContentModel *(^)(NSNumber *value))setResource_first_byte;
-- (FTResourceContentModel *(^)(NSNumber *value))setDuration;
-
-
-
-
-
-- (NSDictionary *)getResourceSuccessTags;
-- (NSDictionary *)getResourceSuccessFields;
-
-- (NSDictionary *)getResourceErrorTags;
-- (NSDictionary *)getResourceErrorFields;
+-(void)setDnsStart:(long)start end:(long)end;
+-(void)setTcpStart:(long)start end:(long)end;
+-(void)setSslStart:(long)start end:(long)end;
+-(void)setTtfbStart:(long)start end:(long)end;
+-(void)setTransStart:(long)start end:(long)end;
+-(void)setFirstByteStart:(long)start end:(long)end;
+-(void)setDurationStart:(long)start end:(long)end;
 
 @end
-
 NS_ASSUME_NONNULL_END

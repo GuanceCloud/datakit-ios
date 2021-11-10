@@ -9,7 +9,7 @@
 #import "FTRUMHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTConstants.h"
-@class FTRumConfig;
+@class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManager : FTRUMHandler
@@ -23,14 +23,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)startResource:(NSString *)identifier;
 /**
- * resource Success
- * 写入 resource Metrics
+ * resource metrics
  */
-- (void)resourceSuccess:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
+- (void)addResourceMetrics:(NSString *)identifier metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 /**
- * resource Error
+ * resource metrics
  */
-- (void)resourceError:(NSString *)identifier tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(NSDate *)time;
+- (void)addResourceMetricsModel:(NSString *)identifier model:(FTResourceMetricsModel *)model;
+/**
+ * resource content
+ */
+- (void)addResourceContent:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID;
 /**
  * resource Complete
  */
