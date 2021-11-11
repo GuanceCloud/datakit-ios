@@ -13,12 +13,6 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.url = nil;
-        self.requestHeader = @"";
-        self.responseHeader = @"";
-        self.responseConnection = @"";
-        self.responseContentType = @"";
-        self.responseContentEncoding = @"";
         self.resourceMethod = @"";
         self.responseBody = @"";
         self.httpStatusCode = -1;

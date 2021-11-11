@@ -163,6 +163,8 @@
         [tags setValue:model.url.host forKey:@"resource_url_host"];
         [tags setValue:model.url.path forKey:@"resource_url_path"];
         [tags setValue:url_path_group forKey:@"resource_url_path_group"];
+        [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
+        [tags setValue:[self getResourceStatusGroup:model.httpStatusCode] forKey:@"resource_status_group"];
         [fields setValue:@0 forKey:@"resource_size"];
         if (model.responseBody) {
             NSData *data = [model.responseBody dataUsingEncoding:NSUTF8StringEncoding];
@@ -181,17 +183,21 @@
         [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
         [tags setValue:@"network" forKey:@"error_source"];
         [tags setValue:@"network" forKey:@"error_type"];
-        if (model.responseBody) {
+        if (model.responseBody.length>0) {
             [fields setValue:model.responseBody forKey:@"error_stack"];
         }
         [self resourceError:identifier tags:tags fields:fields time:time];
     }else{
-        [tags setValue:[self getResourceStatusGroup:model.httpStatusCode] forKey:@"resource_status_group"];
+       
         [tags setValue:[model.url query] forKey:@"resource_url_query"];
         [tags setValue:model.resourceMethod forKey:@"resource_method"];
-        [tags setValue:model.responseContentType forKey:@"resource_type"];
-        [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
-        
+        [tags setValue:model.responseHeader[@"Connection"] forKey:@"response_connection"];
+        [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
+        [tags setValue:model.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
+        [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"resource_type"];
+        [fields setValue:[FTBaseInfoHandler convertToStringData:model.requestHeader] forKey:@"request_header"];
+        [fields setValue:[FTBaseInfoHandler convertToStringData:model.responseHeader] forKey:@"response_header"];
+
         [self resourceSuccess:identifier tags:tags fields:fields time:time];
 
     }

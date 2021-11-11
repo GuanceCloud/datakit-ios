@@ -12,11 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceContentModel : NSObject
 @property (nonatomic, strong) NSURL *url;
-@property (nonatomic, copy) NSString *requestHeader;
-@property (nonatomic, copy) NSString *responseHeader;
-@property (nonatomic, copy) NSString *responseConnection;
-@property (nonatomic, copy) NSString *responseContentType;
-@property (nonatomic, copy) NSString *responseContentEncoding;
+@property (nonatomic, strong) NSDictionary *requestHeader;
+@property (nonatomic, strong) NSDictionary *responseHeader;
 @property (nonatomic, copy) NSString *resourceMethod;
 @property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger httpStatusCode;

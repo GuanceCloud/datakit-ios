@@ -160,24 +160,15 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         }
         FTResourceContentModel *model = [FTResourceContentModel new];
         model.url = self.request.URL;
-        model.requestHeader = [FTBaseInfoHandler convertToStringData:self.request.allHTTPHeaderFields];
+        model.requestHeader = self.request.allHTTPHeaderFields;
         model.resourceMethod = self.request.HTTPMethod;
         NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
         if (response) {
             NSDictionary *responseHeader = response.allHeaderFields;
-            model.responseHeader = [FTBaseInfoHandler convertToStringData:responseHeader];
-            if ([responseHeader.allKeys containsObject:@"Proxy-Connection"]) {
-                model.responseConnection =responseHeader[@"Proxy-Connection"];
-            }
-            model.responseContentType = response.MIMEType;
+            model.responseHeader = responseHeader;
             model.httpStatusCode = response.statusCode;
             if (self.data) {
-                NSError *errors;
-                id responseObject = [NSJSONSerialization JSONObjectWithData:self.data options:NSJSONReadingMutableContainers error:&errors];
-                model.responseBody = responseObject;
-            }
-            if ([responseHeader.allKeys containsObject:@"Content-Encoding"]) {
-                model.responseContentEncoding = responseHeader[@"Content-Encoding"];
+                model.responseBody = [[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
             }
         }
         model.error = error;
