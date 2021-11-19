@@ -1,25 +1,14 @@
 //
-//  FTResourceContentModel.h
+//  FTResourceMetricsModel.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/10/27.
+//  Created by 胡蕾蕾 on 2021/11/19.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface FTResourceContentModel : NSObject
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSDictionary *requestHeader;
-@property (nonatomic, strong) NSDictionary *responseHeader;
-@property (nonatomic, copy) NSString *resourceMethod;
-@property (nonatomic, copy) NSString *responseBody;
-@property (nonatomic, assign) NSInteger httpStatusCode;
-
-@property (nonatomic, strong) NSError *error;
-@end
 
 @interface FTResourceMetricsModel : NSObject
 //资源加载DNS解析时间 domainLookupEnd - domainLookupStart
@@ -36,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *resource_first_byte;
 //资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics;
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 
 -(void)setDnsStart:(long)start end:(long)end;
 -(void)setTcpStart:(long)start end:(long)end;
@@ -47,4 +36,5 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setDurationStart:(long)start end:(long)end;
 
 @end
+
 NS_ASSUME_NONNULL_END

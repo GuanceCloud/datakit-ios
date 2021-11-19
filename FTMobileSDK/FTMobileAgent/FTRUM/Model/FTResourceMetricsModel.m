@@ -1,29 +1,17 @@
 //
-//  FTResourceContentModel.m
+//  FTResourceMetricsModel.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/10/27.
+//  Created by 胡蕾蕾 on 2021/11/19.
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTResourceContentModel.h"
+#import "FTResourceMetricsModel.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
-@implementation FTResourceContentModel
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        self.resourceMethod = @"";
-        self.responseBody = @"";
-        self.httpStatusCode = -1;
-    }
-    return self;
-}
-@end
-
 @implementation FTResourceMetricsModel
 
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics{
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     self = [super init];
     if (self) {
       NSURLSessionTaskTransactionMetrics *taskMes = [metrics.transactionMetrics lastObject];

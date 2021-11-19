@@ -33,11 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * resource content
  */
-- (void)addResourceContent:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID;
-/**
- * resource Complete
- */
-- (void)stopResource:(NSString *)identifier;
+- (void)stopResource:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

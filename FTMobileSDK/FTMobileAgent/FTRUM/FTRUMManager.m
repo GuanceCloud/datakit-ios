@@ -16,6 +16,7 @@
 #import "FTResourceContentModel.h"
 #import "FTConfigManager.h"
 #import "FTMonitorManager.h"
+#import "FTResourceMetricsModel.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -150,7 +151,7 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)addResourceContent:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID{
+- (void)stopResource:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID{
     if (!identifier) {
         return;
     }
@@ -219,7 +220,7 @@
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:identifier];
+            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:identifier];
             resourceSuccess.time = time;
             resourceSuccess.tags = tags;
             resourceSuccess.fields = fields;
@@ -235,7 +236,7 @@
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStopWithError identifier:identifier];
             NSMutableDictionary *newTags = [NSMutableDictionary dictionaryWithDictionary:[self errorMonitorInfo]];
             [newTags addEntriesFromDictionary:tags];
             resourceError.time = time;

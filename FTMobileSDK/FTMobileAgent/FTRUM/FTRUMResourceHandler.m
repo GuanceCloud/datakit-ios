@@ -11,6 +11,7 @@
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import "FTResourceContentModel.h"
+#import "FTResourceMetricsModel.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
@@ -33,14 +34,14 @@
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if (newData.identifier == self.identifier) {
             switch (data.type) {
-                case FTRUMDataResourceError:{
+                case FTRUMDataResourceStopWithError:{
                     [self writeErrorData:data];
                     if (self.errorHandler) {
                         self.errorHandler();
                     }
                     return NO;
                 }
-                case FTRUMDataResourceSuccess:{
+                case FTRUMDataResourceStop:{
                     [self writeResourceData:data];
                     if (self.resourceHandler) {
                         self.resourceHandler();
