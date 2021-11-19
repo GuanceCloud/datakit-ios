@@ -15,7 +15,7 @@ NSString * const AppStateStringMap[] = {
 };
 NSString * const FTStatusStringMap[] = {
     [FTStatusInfo] = @"info",
-    [FTStatusWarning] = @"warning中",
+    [FTStatusWarning] = @"warning",
     [FTStatusError] = @"error",
     [FTStatusCritical] = @"critical",
     [FTStatusOk] = @"ok"
