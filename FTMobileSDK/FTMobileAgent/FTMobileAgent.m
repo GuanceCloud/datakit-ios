@@ -105,7 +105,6 @@ static dispatch_once_t onceToken;
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [[FTMonitorManager sharedInstance] setTraceConfig:traceConfigOptions];
-    [FTConfigManager sharedInstance].traceConfig = [traceConfigOptions copy];
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{

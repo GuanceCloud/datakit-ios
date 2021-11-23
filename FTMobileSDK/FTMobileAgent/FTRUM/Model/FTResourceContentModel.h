@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger httpStatusCode;
 
 @property (nonatomic, strong) NSError *error;
+@property (nonatomic, strong) NSNumber *duration;
 @end
 
 NS_ASSUME_NONNULL_END

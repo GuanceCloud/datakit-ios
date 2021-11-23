@@ -12,7 +12,6 @@
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
 #import "FTNetworkTrace.h"
-#import "NSURLResponse+FTMonitor.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
@@ -28,7 +27,6 @@
 @property (nonatomic, copy) NSString *span_id;
 @property (nonatomic, copy) NSString *trace_id;
 @property (nonatomic, strong) NSDate *startTime;
-@property (nonatomic, strong) NSDate *endTime;
 @property (nonatomic, strong) NSNumber *duration;
 
 @end
@@ -50,17 +48,49 @@
     if (!self.url) {
         return nil;
     }
-    self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
-    return self.requestHeader;
+    if (!_requestHeader) {
+        _requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
+    }
+    return _requestHeader;
 }
--(void)tracingContent:(NSString *)content operationName:(NSString *)operationName isError:(BOOL)isError{
-    if(!content){
+-(void)tracingWithModel:(FTResourceContentModel *)model{
+    if (!self.isSampling) {
         return;
     }
-    if (self.isSampling) {
-        FTStatus status = isError? FTStatusError:FTStatusOk;
+    NSDictionary *responseDict = @{};
+    BOOL isError = NO;
+    if (model.error) {
+        isError = YES;
+        NSString *errorDescription=[[model.error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?model.error.userInfo[@"NSLocalizedDescription"]:@"";
+        NSNumber *errorCode = [NSNumber numberWithInteger:model.error.code];
+        responseDict = @{FT_NETWORK_HEADERS:@{},
+                         FT_NETWORK_ERROR:@{@"errorCode":errorCode,
+                                            @"errorDomain":model.error.domain,
+                                            @"errorDescription":errorDescription,
+                         },
+        };
+    }else{
+        if( model.httpStatusCode >=400){
+            isError = YES;
+        }
+        if(model.responseHeader && model.httpStatusCode){
+            responseDict = @{FT_NETWORK_HEADERS:model.responseHeader,
+                             FT_NETWORK_CODE:@(model.httpStatusCode)
+            };
+        }
+    }
+    NSMutableDictionary *requestDict =@{@"method":model.resourceMethod,
+                                        FT_NETWORK_HEADERS:model.requestHeader,
+                                        @"url":model.url.absoluteString,
+    }.mutableCopy;;
+    NSDictionary *content = @{
+        FT_NETWORK_RESPONSE_CONTENT:responseDict,
+        FT_NETWORK_REQUEST_CONTENT:requestDict
+    };
+    NSString *operationName = [NSString stringWithFormat:@"%@ %@",model.resourceMethod,model.url.path];
+    NSString *contentStr = [FTJSONUtil convertToJsonData:content];
+    FTStatus status = isError? FTStatusError:FTStatusOk;
     NSString *statusStr = FTStatusStringMap[status];
-    
     NSMutableDictionary *tags = @{FT_KEY_OPERATION:operationName,
                                   FT_TRACING_STATUS:statusStr,
                                   FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
@@ -70,9 +100,9 @@
     NSDictionary *fields = @{FT_KEY_DURATION:[self.duration intValue]>0?self.duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
     [tags addEntriesFromDictionary:[self getTraceSpanID]];
     [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
-    [[FTMobileAgent sharedInstance] tracing:content tags:tags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
-    }
+    [[FTMobileAgent sharedInstance] tracing:contentStr tags:tags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
 }
+
 #pragma mark - private -
 -(void)setRequestHeader:(NSDictionary *)requestHeader{
     _requestHeader = requestHeader;
@@ -100,44 +130,5 @@
     }else{
         return nil;
     }
-}
--(NSDate *)endTime{
-    if (!_endTime) {
-        _endTime = [NSDate date];
-    }
-    return _endTime;
-}
-
-- (void)traceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
-    if (start) {
-        self.startTime = start;
-    }
-    self.duration = duration;
-    NSDictionary *responseDict = @{};
-    BOOL isError = NO;
-    if (error) {
-        isError = YES;
-        NSString *errorDescription=[[error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?error.userInfo[@"NSLocalizedDescription"]:@"";
-        NSNumber *errorCode = [NSNumber numberWithInteger:error.code];
-        responseDict = @{FT_NETWORK_HEADERS:@{},
-                         FT_NETWORK_ERROR:@{@"errorCode":errorCode,
-                                            @"errorDomain":error.domain,
-                                            @"errorDescription":errorDescription,
-                         },
-        };
-    }else{
-        if( [[response ft_getResponseStatusCode] integerValue] >=400){
-            isError = YES;
-        }
-        responseDict = response?[response ft_getResponseDict]:responseDict;
-    }
-    NSMutableDictionary *requestDict = [request ft_getRequestContentDict].mutableCopy;
-    NSDictionary *responseDic = responseDict?responseDict:@{};
-    NSDictionary *content = @{
-        FT_NETWORK_RESPONSE_CONTENT:responseDic,
-        FT_NETWORK_REQUEST_CONTENT:requestDict
-    };
-    NSString *operation = [request ft_getOperationName];
-    [self tracingContent:[FTJSONUtil convertToJsonData:content] operationName:operation isError:isError];
 }
 @end

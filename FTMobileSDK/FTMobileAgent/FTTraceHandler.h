@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 记录 trace 数据
  */
--(void)tracingContent:(NSString *)content operationName:(NSString *)operationName isError:(BOOL)isError;
+-(void)tracingWithModel:(FTResourceContentModel *)model;
 /**
  * 获取 span_id
  */

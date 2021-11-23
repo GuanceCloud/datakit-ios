@@ -154,10 +154,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
                 duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000];
             }
         }
-        [self.traceHandler traceRequest:task.originalRequest response:task.response startDate:start taskDuration:duration error:error];
-        if (![FTMonitorManager sharedInstance].rumManger) {
-            return;
-        }
         FTResourceContentModel *model = [FTResourceContentModel new];
         model.url = self.request.URL;
         model.requestHeader = self.request.allHTTPHeaderFields;
@@ -172,6 +168,11 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
             }
         }
         model.error = error;
+        model.duration = duration;
+        [self.traceHandler tracingWithModel:model];
+        if (![FTMonitorManager sharedInstance].rumManger) {
+            return;
+        }
         [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
     }
 }

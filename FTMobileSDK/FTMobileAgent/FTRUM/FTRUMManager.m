@@ -17,6 +17,7 @@
 #import "FTConfigManager.h"
 #import "FTMonitorManager.h"
 #import "FTResourceMetricsModel.h"
+#import "FTNetworkTrace.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -75,10 +76,11 @@
 }
 #pragma mark - Action -
 - (void)addClickActionWithName:(NSString *)actionName{
-    if (!actionName) {
+    if (!self.rumConfig.enableTraceUserAction) {
+        ZYDebug(@"enableTraceUserAction:NO");
         return;
     }
-    if (!self.rumConfig.enableTraceUserAction) {
+    if (!actionName) {
         return;
     }
     @try {
@@ -93,6 +95,7 @@
 }
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
     if (!self.rumConfig.enableTraceUserAction) {
+        ZYDebug(@"enableTraceUserAction:NO");
         return;
     }
     @try {
@@ -171,37 +174,37 @@
             NSData *data = [model.responseBody dataUsingEncoding:NSUTF8StringEncoding];
             [fields setValue:@(data.length) forKey:@"resource_size"];
         }
-        if ([FTConfigManager sharedInstance].traceConfig.enableLinkRumData) {
+        if ([FTNetworkTrace sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:@"span_id"];
             [tags setValue:traceID forKey:@"trace_id"];
         }
-    if (model.error || model.httpStatusCode>=400) {
-        NSInteger code = model.httpStatusCode == -1?:model.error.code;
-        NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
-        [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,model.url.absoluteString] forKey:@"error_message"];
-               [tags setValue:run forKey:@"error_situation"];
-        [tags setValue:model.resourceMethod forKey:@"resource_method"];
-        [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
-        [tags setValue:@"network" forKey:@"error_source"];
-        [tags setValue:@"network" forKey:@"error_type"];
-        if (model.responseBody.length>0) {
-            [fields setValue:model.responseBody forKey:@"error_stack"];
+        if (model.error || model.httpStatusCode>=400) {
+            NSInteger code = model.httpStatusCode == -1?:model.error.code;
+            NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
+            [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,model.url.absoluteString] forKey:@"error_message"];
+            [tags setValue:run forKey:@"error_situation"];
+            [tags setValue:model.resourceMethod forKey:@"resource_method"];
+            [tags setValue:@(model.httpStatusCode) forKey:@"resource_status"];
+            [tags setValue:@"network" forKey:@"error_source"];
+            [tags setValue:@"network" forKey:@"error_type"];
+            if (model.responseBody.length>0) {
+                [fields setValue:model.responseBody forKey:@"error_stack"];
+            }
+            [self resourceError:identifier tags:tags fields:fields time:time];
+        }else{
+            
+            [tags setValue:[model.url query] forKey:@"resource_url_query"];
+            [tags setValue:model.resourceMethod forKey:@"resource_method"];
+            [tags setValue:model.responseHeader[@"Connection"] forKey:@"response_connection"];
+            [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
+            [tags setValue:model.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
+            [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"resource_type"];
+            [fields setValue:[FTBaseInfoHandler convertToStringData:model.requestHeader] forKey:@"request_header"];
+            [fields setValue:[FTBaseInfoHandler convertToStringData:model.responseHeader] forKey:@"response_header"];
+            
+            [self resourceSuccess:identifier tags:tags fields:fields time:time];
+            
         }
-        [self resourceError:identifier tags:tags fields:fields time:time];
-    }else{
-       
-        [tags setValue:[model.url query] forKey:@"resource_url_query"];
-        [tags setValue:model.resourceMethod forKey:@"resource_method"];
-        [tags setValue:model.responseHeader[@"Connection"] forKey:@"response_connection"];
-        [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
-        [tags setValue:model.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
-        [tags setValue:model.responseHeader[@"Content-Type"] forKey:@"resource_type"];
-        [fields setValue:[FTBaseInfoHandler convertToStringData:model.requestHeader] forKey:@"request_header"];
-        [fields setValue:[FTBaseInfoHandler convertToStringData:model.responseHeader] forKey:@"response_header"];
-
-        [self resourceSuccess:identifier tags:tags fields:fields time:time];
-
-    }
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -283,7 +286,7 @@
             model.fields = field;
             [self process:model];
         }];
-
+        
         [FTThreadDispatchManager dispatchSyncInRUMThread:^{
             
         }];

@@ -13,12 +13,12 @@
 #import "FTLog.h"
 #import "FTDateUtil.h"
 #import "WKWebView+FTAutoTrack.h"
-#import "NSURLResponse+FTMonitor.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTMobileAgent+Private.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTTraceHandler.h"
+#import "FTResourceContentModel.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成
@@ -152,7 +152,16 @@ static dispatch_once_t onceToken;
 - (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
     FTTraceHandler *trace = [[FTTraceHandler alloc]init];
     trace.requestHeader = request.allHTTPHeaderFields;
-    [trace traceRequest:request response:response startDate:start taskDuration:duration error:error];
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+    FTResourceContentModel *model = [[FTResourceContentModel alloc]init];
+    model.requestHeader = request.ft_getRequestHeaders;
+    model.resourceMethod = request.HTTPMethod;
+    model.responseHeader = httpResponse.allHeaderFields;
+    model.httpStatusCode = httpResponse.statusCode;
+    model.error = error;
+    model.url = request.URL;
+    model.duration = duration;
+    [trace tracingWithModel:model];
 }
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
     if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
