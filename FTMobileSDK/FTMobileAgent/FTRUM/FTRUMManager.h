@@ -23,17 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)startResource:(NSString *)identifier;
 /**
- * resource metrics
+ * add resource metrics content
  */
-- (void)addResourceMetrics:(NSString *)identifier metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
+- (void)addResource:(NSString *)identifier model:(nullable FTResourceMetricsModel *)model content:(FTResourceContentModel *)contentModel spanID:(NSString *)spanID traceID:(NSString *)traceID;
 /**
- * resource metrics
+ * resource Stop
  */
-- (void)addResourceMetricsModel:(NSString *)identifier model:(FTResourceMetricsModel *)model;
-/**
- * resource content
- */
-- (void)stopResource:(NSString *)identifier content:(FTResourceContentModel *)model spanID:(NSString *)spanID traceID:(NSString *)traceID;
+- (void)stopResource:(NSString *)identifier;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

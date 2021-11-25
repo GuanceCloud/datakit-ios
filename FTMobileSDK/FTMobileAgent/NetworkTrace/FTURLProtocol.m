@@ -17,6 +17,7 @@
 #import "FTMonitorManager.h"
 #import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"
+#import "FTResourceMetricsModel.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -173,14 +174,20 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         if (![FTMonitorManager sharedInstance].rumManger) {
             return;
         }
-        [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
+        FTResourceMetricsModel *metricsModel = nil;
+        if (@available(iOS 10.0, *)) {
+            if (self.metrics) {
+                metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
+            }
+        }
+        [[FTMonitorManager sharedInstance].rumManger addResource:self.identifier model:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
+        [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
     if (self.trackUrl) {
         self.metrics = metrics;
-        [[FTMonitorManager sharedInstance].rumManger addResourceMetrics:self.traceHandler.identifier metrics:metrics];
     }
     
 }

@@ -74,7 +74,7 @@
 - (void)startResourceWithKey:(NSString *)key{
     [FTMonitorManager.sharedInstance.rumManger startResource:key];
 }
-- (void)stopResourceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model{
+- (void)addResourceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model{
     __block NSString *traceIdStr,*spanIDStr;
     if([FTNetworkTrace sharedInstance].enableLinkRumData){
         [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:model.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
@@ -82,6 +82,10 @@
             spanIDStr = spanID;
         }];
     }
-    [FTMonitorManager.sharedInstance.rumManger stopResource:key content:model spanID:spanIDStr traceID:traceIdStr];
+    [FTMonitorManager.sharedInstance.rumManger addResource:key model:nil content:model spanID:spanIDStr traceID:traceIdStr];
+}
+
+- (void)stopResourceWithKey:(nonnull NSString *)key {
+    [FTMonitorManager.sharedInstance.rumManger stopResource:key];
 }
 @end

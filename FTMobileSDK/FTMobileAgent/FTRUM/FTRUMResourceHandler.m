@@ -15,7 +15,6 @@
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
-@property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context{
@@ -34,25 +33,19 @@
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if (newData.identifier == self.identifier) {
             switch (data.type) {
-                case FTRUMDataResourceStopWithError:{
+                case FTRUMDataResourceError:{
                     [self writeErrorData:data];
-                    if (self.errorHandler) {
-                        self.errorHandler();
-                    }
-                    return NO;
+                    return YES;
+                }
+                case FTRUMDataResourceSuccess:{
+                    [self writeResourceData:data];
+                    return YES;
                 }
                 case FTRUMDataResourceStop:{
-                    [self writeResourceData:data];
                     if (self.resourceHandler) {
                         self.resourceHandler();
                     }
-                    
                     return NO;
-                }
-                case FTRUMDataResourceMetrics:{
-                    FTRUMResourceMetricsModel *model = (FTRUMResourceMetricsModel *)data;
-                    self.metricsModel = model.metrics;
-                    return YES;
                 }
                 default:
                     break;
@@ -63,19 +56,20 @@
     return YES;
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
+    FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:data.fields];
     [fields setValue:[FTDateUtil nanosecondTimeIntervalSinceDate:self.time toDate:data.time] forKey:@"duration"];
-    if(self.metricsModel){
-        [fields setValue:self.metricsModel.resource_ttfb forKey:@"resource_ttfb"];
-        [fields setValue:self.metricsModel.resource_ssl forKey:@"resource_ssl"];
-        [fields setValue:self.metricsModel.resource_tcp forKey:@"resource_tcp"];
-        [fields setValue:self.metricsModel.resource_dns forKey:@"resource_dns"];
-        [fields setValue:self.metricsModel.resource_first_byte forKey:@"resource_first_byte"];
-        if ([self.metricsModel.duration intValue]>0) {
-            [fields setValue:self.metricsModel.duration forKey:@"duration"];
+    if(model.metrics){
+        [fields setValue:model.metrics.resource_ttfb forKey:@"resource_ttfb"];
+        [fields setValue:model.metrics.resource_ssl forKey:@"resource_ssl"];
+        [fields setValue:model.metrics.resource_tcp forKey:@"resource_tcp"];
+        [fields setValue:model.metrics.resource_dns forKey:@"resource_dns"];
+        [fields setValue:model.metrics.resource_first_byte forKey:@"resource_first_byte"];
+        if ([model.metrics.duration intValue]>0) {
+            [fields setValue:model.metrics.duration forKey:@"duration"];
         }
-        [fields setValue:self.metricsModel.resource_trans forKey:@"resource_trans"];
+        [fields setValue:model.metrics.resource_trans forKey:@"resource_trans"];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];

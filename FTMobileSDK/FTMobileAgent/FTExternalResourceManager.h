@@ -16,7 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @protocol FTExternalRum <NSObject>
 - (void)startResourceWithKey:(NSString *)key;
-- (void)stopResourceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model;
+- (void)addResourceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model;
+- (void)stopResourceWithKey:(NSString *)key;
 @end
 @interface FTExternalResourceManager : NSObject<FTExternalTracing,FTExternalRum>
 + (instancetype)sharedManager;
