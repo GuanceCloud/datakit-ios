@@ -133,7 +133,7 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)addResource:(NSString *)identifier model:(FTResourceMetricsModel *)metricsModel content:(FTResourceContentModel *)contentModel spanID:(NSString *)spanID traceID:(NSString *)traceID{
+- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
     if (!identifier) {
         return;
     }
@@ -141,33 +141,33 @@
         NSDate *time = [NSDate date];
         NSMutableDictionary *tags = [NSMutableDictionary new];
         NSMutableDictionary *fields = [NSMutableDictionary new];
-        NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:contentModel.url];
-        [tags setValue:contentModel.url.absoluteString forKey:@"resource_url"];
-        [tags setValue:contentModel.url.host forKey:@"resource_url_host"];
-        [tags setValue:contentModel.url.path forKey:@"resource_url_path"];
+        NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
+        [tags setValue:content.url.absoluteString forKey:@"resource_url"];
+        [tags setValue:content.url.host forKey:@"resource_url_host"];
+        [tags setValue:content.url.path forKey:@"resource_url_path"];
         [tags setValue:url_path_group forKey:@"resource_url_path_group"];
-        [tags setValue:@(contentModel.httpStatusCode) forKey:@"resource_status"];
-        [tags setValue:[self getResourceStatusGroup:contentModel.httpStatusCode] forKey:@"resource_status_group"];
+        [tags setValue:@(content.httpStatusCode) forKey:@"resource_status"];
+        [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:@"resource_status_group"];
         [fields setValue:@0 forKey:@"resource_size"];
-        if (contentModel.responseBody) {
-            NSData *data = [contentModel.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+        if (content.responseBody) {
+            NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
             [fields setValue:@(data.length) forKey:@"resource_size"];
         }
         if ([FTNetworkTrace sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:@"span_id"];
             [tags setValue:traceID forKey:@"trace_id"];
         }
-        if (contentModel.error || contentModel.httpStatusCode>=400) {
-            NSInteger code = contentModel.httpStatusCode == -1?:contentModel.error.code;
+        if (content.error || content.httpStatusCode>=400) {
+            NSInteger code = content.httpStatusCode == -1?:content.error.code;
             NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
-            [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,contentModel.url.absoluteString] forKey:@"error_message"];
+            [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:@"error_message"];
             [tags setValue:run forKey:@"error_situation"];
-            [tags setValue:contentModel.resourceMethod forKey:@"resource_method"];
-            [tags setValue:@(contentModel.httpStatusCode) forKey:@"resource_status"];
+            [tags setValue:content.resourceMethod forKey:@"resource_method"];
+            [tags setValue:@(content.httpStatusCode) forKey:@"resource_status"];
             [tags setValue:@"network" forKey:@"error_source"];
             [tags setValue:@"network" forKey:@"error_type"];
-            if (contentModel.responseBody.length>0) {
-                [fields setValue:contentModel.responseBody forKey:@"error_stack"];
+            if (content.responseBody.length>0) {
+                [fields setValue:content.responseBody forKey:@"error_stack"];
             }
             [FTThreadDispatchManager dispatchInRUMThread:^{
                 FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceError identifier:identifier];
@@ -180,18 +180,18 @@
             }];
         }else{
             
-            [tags setValue:[contentModel.url query] forKey:@"resource_url_query"];
-            [tags setValue:contentModel.resourceMethod forKey:@"resource_method"];
-            [tags setValue:contentModel.responseHeader[@"Connection"] forKey:@"response_connection"];
-            [tags setValue:contentModel.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
-            [tags setValue:contentModel.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
-            [tags setValue:contentModel.responseHeader[@"Content-Type"] forKey:@"resource_type"];
-            [fields setValue:[FTBaseInfoHandler convertToStringData:contentModel.requestHeader] forKey:@"request_header"];
-            [fields setValue:[FTBaseInfoHandler convertToStringData:contentModel.responseHeader] forKey:@"response_header"];
+            [tags setValue:[content.url query] forKey:@"resource_url_query"];
+            [tags setValue:content.resourceMethod forKey:@"resource_method"];
+            [tags setValue:content.responseHeader[@"Connection"] forKey:@"response_connection"];
+            [tags setValue:content.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
+            [tags setValue:content.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
+            [tags setValue:content.responseHeader[@"Content-Type"] forKey:@"resource_type"];
+            [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:@"request_header"];
+            [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
             
             [FTThreadDispatchManager dispatchInRUMThread:^{
                 FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceSuccess identifier:identifier];
-                resourceSuccess.metrics = metricsModel;
+                resourceSuccess.metrics = metrics;
                 resourceSuccess.time = time;
                 resourceSuccess.tags = tags;
                 resourceSuccess.fields = fields;

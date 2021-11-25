@@ -6,22 +6,22 @@
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTExternalResourceManager.h"
+#import "FTExternalDataManager.h"
 #import "FTTraceHandler.h"
 #import "FTMonitorManager.h"
 #import "FTRUMManager.h"
 #import "FTNetworkTrace.h"
 #import "FTResourceContentModel.h"
-@interface FTExternalResourceManager()
+@interface FTExternalDataManager()
 @property (nonatomic, strong) NSMutableDictionary<NSString *,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @end
-@implementation FTExternalResourceManager
+@implementation FTExternalDataManager
 + (instancetype)sharedManager{
     static dispatch_once_t onceToken;
-    static FTExternalResourceManager *sharedManager = nil;
+    static FTExternalDataManager *sharedManager = nil;
     dispatch_once(&onceToken, ^{
-        sharedManager = [[FTExternalResourceManager alloc]init];
+        sharedManager = [[FTExternalDataManager alloc]init];
     });
     return sharedManager;
 }
@@ -62,27 +62,43 @@
     [self.traceHandlers removeObjectForKey:key];
     dispatch_semaphore_signal(self.lock);
 }
-- (void)traceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model{
+- (void)traceWithKey:(NSString *)key content:(FTResourceContentModel *)content{
     FTTraceHandler *handler = [self getTraceHandler:key];
     if (handler) {
-        [handler tracingWithModel:model];
+        [handler tracingWithModel:content];
         [self removeTraceHandlerWithKey:key];
     }
 }
 
 #pragma mark - Rum -
+
+-(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+    [FTMonitorManager.sharedInstance.rumManger startViewWithName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+}
+-(void)stopView{
+    [FTMonitorManager.sharedInstance.rumManger stopView];
+
+}
+- (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
+    if ([actionType isEqualToString:@"click"]) {
+        [FTMonitorManager.sharedInstance.rumManger addClickActionWithName:actionName];
+    }
+}
+- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack{
+    [FTMonitorManager.sharedInstance.rumManger addErrorWithType:type situation:situation message:message stack:stack];
+}
 - (void)startResourceWithKey:(NSString *)key{
     [FTMonitorManager.sharedInstance.rumManger startResource:key];
 }
-- (void)addResourceWithKey:(NSString *)key contentModel:(FTResourceContentModel *)model{
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     __block NSString *traceIdStr,*spanIDStr;
     if([FTNetworkTrace sharedInstance].enableLinkRumData){
-        [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:model.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+        [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
             traceIdStr = traceId;
             spanIDStr = spanID;
         }];
     }
-    [FTMonitorManager.sharedInstance.rumManger addResource:key model:nil content:model spanID:spanIDStr traceID:traceIdStr];
+    [FTMonitorManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
 }
 
 - (void)stopResourceWithKey:(nonnull NSString *)key {

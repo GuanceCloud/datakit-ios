@@ -70,7 +70,7 @@
                          },
         };
     }else{
-        if( model.httpStatusCode >=400){
+        if(model.httpStatusCode<0 || model.httpStatusCode >=400){
             isError = YES;
         }
         if(model.responseHeader && model.httpStatusCode){

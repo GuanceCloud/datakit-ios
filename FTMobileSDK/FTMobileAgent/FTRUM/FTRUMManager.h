@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * add resource metrics content
  */
-- (void)addResource:(NSString *)identifier model:(nullable FTResourceMetricsModel *)model content:(FTResourceContentModel *)contentModel spanID:(NSString *)spanID traceID:(NSString *)traceID;
+- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
 /**
  * resource Stop
  */

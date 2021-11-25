@@ -180,7 +180,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
                 metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
             }
         }
-        [[FTMonitorManager sharedInstance].rumManger addResource:self.identifier model:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
+        [[FTMonitorManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
         [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier];
     }
 }
