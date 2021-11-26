@@ -57,18 +57,25 @@
     if (!self.isSampling) {
         return;
     }
+    model.url = model.url?:self.url;
     NSDictionary *responseDict = @{};
     BOOL isError = NO;
-    if (model.error) {
+    if (model.error || model.errorMessage) {
         isError = YES;
-        NSString *errorDescription=[[model.error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?model.error.userInfo[@"NSLocalizedDescription"]:@"";
-        NSNumber *errorCode = [NSNumber numberWithInteger:model.error.code];
-        responseDict = @{FT_NETWORK_HEADERS:@{},
-                         FT_NETWORK_ERROR:@{@"errorCode":errorCode,
-                                            @"errorDomain":model.error.domain,
-                                            @"errorDescription":errorDescription,
-                         },
-        };
+        if (model.error) {
+            NSString *errorDescription=[[model.error.userInfo allKeys] containsObject:@"NSLocalizedDescription"]?model.error.userInfo[@"NSLocalizedDescription"]:@"";
+            NSNumber *errorCode = [NSNumber numberWithInteger:model.error.code];
+            responseDict = @{FT_NETWORK_HEADERS:@{},
+                             FT_NETWORK_ERROR:@{@"errorCode":errorCode,
+                                                @"errorDomain":model.error.domain,
+                                                @"errorDescription":errorDescription,
+                             },
+            };
+        }else{
+            responseDict = @{FT_NETWORK_HEADERS:@{},
+                             FT_NETWORK_ERROR:model.errorMessage,
+            };
+        }
     }else{
         if(model.httpStatusCode<0 || model.httpStatusCode >=400){
             isError = YES;

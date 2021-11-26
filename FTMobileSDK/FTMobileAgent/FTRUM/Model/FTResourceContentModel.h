@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *httpMethod;
 @property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger httpStatusCode;
+@property (nonatomic, copy) NSString *errorMessage;
 
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, strong) NSNumber *duration;
