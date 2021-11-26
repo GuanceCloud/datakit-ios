@@ -31,7 +31,7 @@
 - (BOOL)process:(nonnull FTRUMDataModel *)data {
     if ([data isKindOfClass:FTRUMResourceDataModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
-        if (newData.identifier == self.identifier) {
+        if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
                 case FTRUMDataResourceError:{
                     [self writeErrorData:data];
