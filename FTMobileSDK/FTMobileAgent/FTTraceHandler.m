@@ -49,7 +49,7 @@
         return nil;
     }
     if (!_requestHeader) {
-        _requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
+        self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
     }
     return _requestHeader;
 }
@@ -79,7 +79,7 @@
             };
         }
     }
-    NSMutableDictionary *requestDict =@{@"method":model.resourceMethod,
+    NSMutableDictionary *requestDict =@{@"method":model.httpMethod,
                                         FT_NETWORK_HEADERS:model.requestHeader,
                                         @"url":model.url.absoluteString,
     }.mutableCopy;;
@@ -87,7 +87,7 @@
         FT_NETWORK_RESPONSE_CONTENT:responseDict,
         FT_NETWORK_REQUEST_CONTENT:requestDict
     };
-    NSString *operationName = [NSString stringWithFormat:@"%@ %@",model.resourceMethod,model.url.path];
+    NSString *operationName = [NSString stringWithFormat:@"%@ %@",model.httpMethod,model.url.path];
     NSString *contentStr = [FTJSONUtil convertToJsonData:content];
     FTStatus status = isError? FTStatusError:FTStatusOk;
     NSString *statusStr = FTStatusStringMap[status];

@@ -12,7 +12,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.resourceMethod = @"";
+        self.httpMethod = @"";
         self.responseBody = @"";
         self.httpStatusCode = -1;
     }

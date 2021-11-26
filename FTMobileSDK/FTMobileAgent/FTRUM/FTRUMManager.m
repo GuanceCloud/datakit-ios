@@ -162,7 +162,7 @@
             NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
             [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:@"error_message"];
             [tags setValue:run forKey:@"error_situation"];
-            [tags setValue:content.resourceMethod forKey:@"resource_method"];
+            [tags setValue:content.httpMethod forKey:@"resource_method"];
             [tags setValue:@(content.httpStatusCode) forKey:@"resource_status"];
             [tags setValue:@"network" forKey:@"error_source"];
             [tags setValue:@"network" forKey:@"error_type"];
@@ -181,7 +181,7 @@
         }else{
             
             [tags setValue:[content.url query] forKey:@"resource_url_query"];
-            [tags setValue:content.resourceMethod forKey:@"resource_method"];
+            [tags setValue:content.httpMethod forKey:@"resource_method"];
             [tags setValue:content.responseHeader[@"Connection"] forKey:@"response_connection"];
             [tags setValue:content.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
             [tags setValue:content.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];

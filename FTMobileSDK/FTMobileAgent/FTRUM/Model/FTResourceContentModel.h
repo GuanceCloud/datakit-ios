@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSDictionary *requestHeader;
 @property (nonatomic, strong) NSDictionary *responseHeader;
-@property (nonatomic, copy) NSString *resourceMethod;
+@property (nonatomic, copy) NSString *httpMethod;
 @property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger httpStatusCode;
 

@@ -158,7 +158,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         FTResourceContentModel *model = [FTResourceContentModel new];
         model.url = self.request.URL;
         model.requestHeader = self.request.allHTTPHeaderFields;
-        model.resourceMethod = self.request.HTTPMethod;
+        model.httpMethod = self.request.HTTPMethod;
         NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
         if (response) {
             NSDictionary *responseHeader = response.allHeaderFields;

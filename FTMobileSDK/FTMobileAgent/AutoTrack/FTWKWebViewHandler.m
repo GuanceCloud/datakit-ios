@@ -155,7 +155,7 @@ static dispatch_once_t onceToken;
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
     FTResourceContentModel *model = [[FTResourceContentModel alloc]init];
     model.requestHeader = request.ft_getRequestHeaders;
-    model.resourceMethod = request.HTTPMethod;
+    model.httpMethod = request.HTTPMethod;
     model.responseHeader = httpResponse.allHeaderFields;
     model.httpStatusCode = httpResponse.statusCode;
     model.error = error;
