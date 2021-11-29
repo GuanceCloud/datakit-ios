@@ -35,17 +35,16 @@
             switch (data.type) {
                 case FTRUMDataResourceError:{
                     [self writeErrorData:data];
-                    return YES;
+                    return NO;
                 }
                 case FTRUMDataResourceSuccess:{
                     [self writeResourceData:data];
-                    return YES;
+                    return NO;
                 }
                 case FTRUMDataResourceStop:{
                     if (self.resourceHandler) {
                         self.resourceHandler();
                     }
-                    return NO;
                 }
                 default:
                     break;

@@ -180,8 +180,9 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
                 metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
             }
         }
-        [[FTMonitorManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
         [[FTMonitorManager sharedInstance].rumManger stopResource:self.identifier];
+
+        [[FTMonitorManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
