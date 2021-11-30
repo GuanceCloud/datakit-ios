@@ -105,7 +105,6 @@
         case FTRUMDataError:{
             if (self.isActiveView) {
                 self.viewErrorCount++;
-                [self writeErrorData:model];
                 [self.actionHandler writeActionData:[NSDate date]];
                 self.needUpdateView = YES;
             }
@@ -119,7 +118,6 @@
         case FTRUMDataLongTask:{
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
-                [self writeErrorData:model];
                 self.needUpdateView = YES;
             }
         }
@@ -177,14 +175,6 @@
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
-}
-- (void)writeErrorData:(FTRUMDataModel *)model{
-    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    [tags addEntriesFromDictionary:model.tags];
-    NSString *error = model.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
-    
-    [[FTMobileAgent sharedInstance] rumWrite:error terminal:@"app" tags:tags fields:model.fields];
 }
 - (void)writeViewData{
     //判断冷启动 冷启动可能没有viewModel

@@ -501,6 +501,26 @@
     XCTAssertTrue(hasActionData);
 
 }
+- (void)testErrorData{
+    [self setRumConfig];
+    [self addErrorData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasErrorData = NO;
+
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:@"error"]) {
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
 - (void)testSampleRate0{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];

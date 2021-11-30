@@ -9,6 +9,7 @@
 #import "FTRUMSessionHandler.h"
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
+#import "FTMobileAgent+Private.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -58,9 +59,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             }
             break;
         case FTRUMDataError:
-            if (self.viewHandlers.count == 0) {
-                [self startView:model];
-            }
+            [self writeErrorData:model];
+            break;
+        case FTRUMDataLongTask:
+            [self writeErrorData:model];
+            break;
         default:
             break;
     }
@@ -81,6 +84,14 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
     return timedOut || expired;
 }
+- (void)writeErrorData:(FTRUMDataModel *)model{
+    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    [tags addEntriesFromDictionary:model.tags];
+    NSString *error = model.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
+    
+    [[FTMobileAgent sharedInstance] rumWrite:error terminal:@"app" tags:tags fields:model.fields];
+}
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {
@@ -93,6 +104,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     if (view) {
         return [view.context getGlobalSessionViewTags];
     }
-    return @{};
+    return [self.context getGlobalSessionViewTags];
 }
 @end
