@@ -49,7 +49,6 @@ static dispatch_once_t onceToken;
         _running = STARTUP;
         _appRelaunched = NO;
         _launchTime = [NSDate date];
-        _track = [[FTTrack alloc]init];
         [self startMonitorNetwork];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
@@ -81,6 +80,8 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
         return;
     }
+    self.track = [[FTTrack alloc]init];
+    
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig];
     if(rumConfig.enableTrackAppCrash){
         [FTUncaughtExceptionHandler sharedHandler];
@@ -129,7 +130,7 @@ static dispatch_once_t onceToken;
     [self.rumManger addLongTaskWithStack:stack duration:duration];
 }
 -(void)stopMonitor{
-//    [FTURLProtocol stopMonitor];
+    //    [FTURLProtocol stopMonitor];
     [self stopPingThread];
 }
 - (void)startMonitorNetwork{
@@ -198,12 +199,13 @@ static dispatch_once_t onceToken;
         if (!_applicationLoadFirstViewController) {
             return;
         }
-        if (self.currentController) {
+        if (self.currentController&&self.rumConfig.enableTraceUserView) {
             NSString *viewid = [NSUUID UUID].UUIDString;
             self.currentController.ft_viewUUID = viewid;
             [self.rumManger startViewWithViewID:viewid viewName:NSStringFromClass(self.currentController.class) viewReferrer:self.currentController.ft_parentVC loadDuration:self.currentController.ft_loadDuration];
-            
-            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+            if(self.rumConfig.enableTraceUserAction){
+                [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+            }
         }
     }
     @catch (NSException *exception) {
@@ -214,7 +216,7 @@ static dispatch_once_t onceToken;
     if (!_applicationWillResignActive) {
         return;
     }
-    if (self.currentController) {
+    if (self.currentController&&self.rumConfig.enableTraceUserView) {
         [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
     }
     _applicationWillResignActive = NO;
@@ -229,7 +231,7 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationWillTerminate{
     @try {
-        if (self.currentController) {
+        if (self.currentController && self.rumConfig.enableTraceUserView) {
             [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
         }
         [self.rumManger applicationWillTerminate];
@@ -246,7 +248,9 @@ static dispatch_once_t onceToken;
     //记录冷启动 是在第一个页面显示出来后
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;
-        [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        if (self.rumConfig.enableTraceUserAction) {
+            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        }
         _appRelaunched = YES;
     }
 }

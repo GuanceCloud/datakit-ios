@@ -76,10 +76,6 @@
 }
 #pragma mark - Action -
 - (void)addClickActionWithName:(NSString *)actionName{
-    if (!self.rumConfig.enableTraceUserAction) {
-        ZYDebug(@"enableTraceUserAction:NO");
-        return;
-    }
     if (!actionName) {
         return;
     }
@@ -94,10 +90,6 @@
     }
 }
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
-    if (!self.rumConfig.enableTraceUserAction) {
-        ZYDebug(@"enableTraceUserAction:NO");
-        return;
-    }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
             NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";

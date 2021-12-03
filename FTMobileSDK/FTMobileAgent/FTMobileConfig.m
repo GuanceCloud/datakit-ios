@@ -23,6 +23,7 @@
         _enableTrackAppFreeze = NO;
         _enableTrackAppANR = NO;
         _enableTraceUserAction = NO;
+        _enableTraceUserView = NO;
     }
     return self;
 }
@@ -33,6 +34,7 @@
     options.enableTrackAppFreeze = self.enableTrackAppFreeze;
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.enableTraceUserAction = self.enableTraceUserAction;
+    options.enableTraceUserView = self.enableTraceUserView;
     options.appid = self.appid;
     options.monitorInfoType = self.monitorInfoType;
     options.globalContext = self.globalContext;

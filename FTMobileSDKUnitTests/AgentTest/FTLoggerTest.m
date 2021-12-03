@@ -252,6 +252,7 @@
     loggerConfig.enableLinkRumData = YES;
     loggerConfig.enableCustomLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [self.testVC view];

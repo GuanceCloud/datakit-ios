@@ -125,9 +125,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) int samplerate;
 /**
- * 设置是否追踪用户操作，目前支持应用启动和点击操作
+ * 设置是否追踪用户操作，目前支持应用启动和点击操作，
+ * 在 enableTraceUserView 开启的状况下 开启才能生效（仅作用于autotrack）
  */
 @property (nonatomic, assign) BOOL enableTraceUserAction;
+/**
+ * 设置是否追踪页面生命周期 （仅作用于autotrack）
+ */
+@property (nonatomic, assign) BOOL enableTraceUserView;
 /**
  * 设置是否需要采集崩溃日志
  */

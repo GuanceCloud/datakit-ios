@@ -87,6 +87,7 @@ static dispatch_once_t onceToken;
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     if (!_rumConfig) {
         _rumConfig = [rumConfigOptions copy];
+        [FTConfigManager sharedInstance].rumConfig = _rumConfig;
         [self.presetProperty setAppid:_rumConfig.appid];
         [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig];
     }

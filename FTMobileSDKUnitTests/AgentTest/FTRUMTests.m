@@ -611,6 +611,7 @@
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = NO;
@@ -695,6 +696,7 @@
     [[FTMonitorManager sharedInstance].rumManger addLongTaskWithStack:stack duration:dutation];
 }
 - (void)mockBtnClick{
+//    [self.testVC.firstButton ]
     [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:self.testVC.firstButton.ft_actionName];
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
@@ -750,6 +752,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];

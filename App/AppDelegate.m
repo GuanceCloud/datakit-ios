@@ -86,6 +86,7 @@
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
+        rumConfig.enableTraceUserView = YES;
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
