@@ -49,7 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param stack      堆栈信息
  */
 - (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack;
-
+/**
+ * 添加 卡顿 事件
+ * @param stack      卡顿堆栈
+ * @param duration   卡顿时长
+ */
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
 /**
  * 请求开始
  * @param key       请求标识

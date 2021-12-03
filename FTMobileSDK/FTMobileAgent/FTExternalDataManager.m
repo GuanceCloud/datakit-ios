@@ -82,10 +82,17 @@
 - (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
     if ([actionType isEqualToString:@"click"]) {
         [FTMonitorManager.sharedInstance.rumManger addClickActionWithName:actionName];
+    }else if([actionType isEqualToString:@"launch_hot"]){
+        [FTMonitorManager.sharedInstance.rumManger addLaunch:YES duration:@0];
+    }else if([actionType isEqualToString:@"launch_cold"]){
+        [FTMonitorManager.sharedInstance.rumManger addLaunch:NO duration:@0];
     }
 }
 - (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack{
     [FTMonitorManager.sharedInstance.rumManger addErrorWithType:type situation:situation message:message stack:stack];
+}
+-(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
+    [FTMonitorManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
 }
 - (void)startResourceWithKey:(NSString *)key{
     [FTMonitorManager.sharedInstance.rumManger startResource:key];
