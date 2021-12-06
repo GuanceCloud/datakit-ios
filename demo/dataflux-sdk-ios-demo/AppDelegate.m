@@ -43,6 +43,7 @@
     rumConfig.enableTrackAppANR = YES;
     rumConfig.enableTrackAppFreeze = YES;
     rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
     rumConfig.globalContext = @{@"track_id":Track_id,
                                 @"static_tag":STATIC_TAG,
                                 @"dynamic_tag":dynamicTag};
@@ -58,6 +59,7 @@
     //开启 trace
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableLinkRumData = YES;
+    traceConfig.enableAutoTrace = YES;
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     return YES;

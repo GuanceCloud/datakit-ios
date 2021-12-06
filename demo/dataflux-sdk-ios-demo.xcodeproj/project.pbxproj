@@ -26,6 +26,7 @@
 		7C02F52A2689AE3000A0FE90 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
 		7C02F52B2689AE3000A0FE90 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
 		7C02F52C2689AE3000A0FE90 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
+		7C6400A9275DDF9700B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */; };
 		7CCD69882711964600E57A6F /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
 		7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
 		7CCD698A2711964600E57A6F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
@@ -41,13 +42,14 @@
 		7CCD69942711964600E57A6F /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5172689AE2000A0FE90 /* RootTabbarVC.m */; };
 		7CCD69952711964600E57A6F /* PrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5092689AD5000A0FE90 /* PrintHookTest.swift */; };
 		7CCD69962711964600E57A6F /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
-		7CCD69982711964600E57A6F /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */; };
 		7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4FA2689ACEA00A0FE90 /* LaunchScreen.storyboard */; };
 		7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F82689ACEA00A0FE90 /* Assets.xcassets */; };
 		7CCD699C2711964600E57A6F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F52689ACE700A0FE90 /* Main.storyboard */; };
+		95EE8C1D824E751FD763FAB0 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.release.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.release.xcconfig"; sourceTree = "<group>"; };
 		7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C02F4EC2689ACE700A0FE90 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -82,9 +84,10 @@
 		7C02F5242689AE2F00A0FE90 /* TestANRVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
 		7C02F5252689AE2F00A0FE90 /* UITestVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestVC.h; sourceTree = "<group>"; };
 		7C02F5262689AE3000A0FE90 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
+		7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ManualRumAndTraceDataAdd.m; path = ../../App/ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
+		7C6400A8275DDF9700B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ManualRumAndTraceDataAdd.h; path = ../../App/ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
 		7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demoPreMade.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.release.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.release.xcconfig"; sourceTree = "<group>"; };
-		D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.debug.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.debug.xcconfig"; sourceTree = "<group>"; };
+		B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.debug.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.debug.xcconfig"; sourceTree = "<group>"; };
 		F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dataflux_sdk_ios_demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -94,6 +97,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2282DE0A7602553A5B67E8B4 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
+				95EE8C1D824E751FD763FAB0 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7CCD69982711964600E57A6F /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +157,8 @@
 				7C02F5142689AE1200A0FE90 /* DemoViewController.mm */,
 				7C02F51B2689AE2F00A0FE90 /* SecondViewController.h */,
 				7C02F5262689AE3000A0FE90 /* SecondViewController.m */,
+				7C6400A8275DDF9700B2708B /* ManualRumAndTraceDataAdd.h */,
+				7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */,
 				7C02F5232689AE2F00A0FE90 /* TableViewCellItem.h */,
 				7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */,
 				7C02F5242689AE2F00A0FE90 /* TestANRVC.h */,
@@ -178,8 +183,8 @@
 		82DA04D9B2E47C5ED045EB68 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */,
-				CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */,
+				B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */,
+				33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -210,11 +215,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */;
 			buildPhases = (
-				7CCD69862711964600E57A6F /* [CP] Check Pods Manifest.lock */,
 				7CCD69872711964600E57A6F /* Sources */,
 				7CCD69972711964600E57A6F /* Frameworks */,
 				7CCD69992711964600E57A6F /* Resources */,
-				7CCD699D2711964600E57A6F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -304,45 +307,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		7CCD69862711964600E57A6F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-dataflux-sdk-ios-demo-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7CCD699D2711964600E57A6F /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		968F6FAA1B5AD4798F529085 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -379,6 +343,7 @@
 				7C02F5272689AE3000A0FE90 /* TestJsbridgeData.m in Sources */,
 				7C02F5112689ADFE00A0FE90 /* CrashVC.m in Sources */,
 				7C02F5282689AE3000A0FE90 /* TestANRVC.m in Sources */,
+				7C6400A9275DDF9700B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
 				7C02F5192689AE2000A0FE90 /* RootTabbarVC.m in Sources */,
 				7C02F50A2689AD5000A0FE90 /* PrintHookTest.swift in Sources */,
 				7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */,
@@ -543,7 +508,7 @@
 		};
 		7C02F5032689ACEA00A0FE90 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */;
+			baseConfigurationReference = B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -565,7 +530,7 @@
 		};
 		7C02F5042689ACEA00A0FE90 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */;
+			baseConfigurationReference = 33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -586,7 +551,6 @@
 		};
 		7CCD699F2711964600E57A6F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D8F994DECEB4CACF5D365820 /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -614,7 +578,6 @@
 		};
 		7CCD69A02711964600E57A6F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CF2D536E5F17985E73BEB9BD /* Pods-dataflux-sdk-ios-demo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

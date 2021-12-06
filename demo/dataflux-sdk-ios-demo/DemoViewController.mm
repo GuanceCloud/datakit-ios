@@ -16,6 +16,7 @@
 #import "CrashVC.h"
 #import "TableViewCellItem.h"
 #import "TestJsbridgeData.h"
+#import "ManualRumAndTraceDataAdd.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -75,8 +76,11 @@
         NSInteger i = arc4random();
         [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithFormat:@"dynamic_tags%ld",(long)i] forKey:@"DYNAMIC_TAG"];
     }];
-   
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10]];
+    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"Manual Rum、Trace Data Add" handler:^{
+        [weakSelf.navigationController pushViewController:[ManualRumAndTraceDataAdd new] animated:YES];
+
+    }];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
