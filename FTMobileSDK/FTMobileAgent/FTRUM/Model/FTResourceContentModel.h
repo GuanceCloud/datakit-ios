@@ -15,11 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSDictionary *requestHeader;
 @property (nonatomic, strong) NSDictionary *responseHeader;
 @property (nonatomic, copy) NSString *httpMethod;
-@property (nonatomic, copy) NSString *responseBody;
 @property (nonatomic, assign) NSInteger httpStatusCode;
 @property (nonatomic, copy) NSString *errorMessage;
 
+//trace ios native
 @property (nonatomic, strong) NSError *error;
+
+//rum
+@property (nonatomic, copy) NSString *responseBody;
+//ios native
 @property (nonatomic, strong) NSNumber *duration;
 @end
 

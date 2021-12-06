@@ -13,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTNetworkTrace : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, copy) NSString *service;
+@property (nonatomic, assign) FTNetworkTraceType networkTraceType;
+@property (nonatomic, assign) BOOL enableAutoTrace;
+
 
 + (instancetype)sharedInstance;
 - (BOOL)isTraceUrl:(NSURL *)url;

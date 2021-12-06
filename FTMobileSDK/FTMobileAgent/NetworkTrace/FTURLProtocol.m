@@ -108,12 +108,11 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
-    if (self.trackUrl) {
+    if (self.trackUrl && [FTNetworkTrace sharedInstance].enableAutoTrace) {
         self.identifier = [NSUUID UUID].UUIDString;
         self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL identifier:self.identifier];
-        [[FTMonitorManager sharedInstance].rumManger startResource:self.identifier];
-
         self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
+        [[FTMonitorManager sharedInstance].rumManger startResource:self.identifier];
     }
     [task resume];
 }
@@ -132,7 +131,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    if (self.trackUrl) {
+    if (self.trackUrl && [FTNetworkTrace sharedInstance].enableAutoTrace) {
         self.data = data;
     }
     [self.client URLProtocol:self didLoadData:data];
@@ -145,7 +144,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    if (self.trackUrl) {
+    if (self.trackUrl && [FTNetworkTrace sharedInstance].enableAutoTrace) {
         NSDate *start = nil;
         NSNumber *duration = @(-1);
         if (@available(iOS 11.0, *)) {
@@ -187,7 +186,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     
-    if (self.trackUrl) {
+    if (self.trackUrl && [FTNetworkTrace sharedInstance].enableAutoTrace) {
         self.metrics = metrics;
     }
     

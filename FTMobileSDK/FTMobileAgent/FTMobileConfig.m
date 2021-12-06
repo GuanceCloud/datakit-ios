@@ -89,6 +89,7 @@
     options.service = self.service;
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
+    options.enableAutoTrace = self.enableAutoTrace;
     return options;
 }
 @end

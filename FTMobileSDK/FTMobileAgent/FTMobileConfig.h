@@ -176,6 +176,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 仅在 FTNetworkTraceType 设置为 FTNetworkTraceTypeDDtrace 时生效
  */
 @property (nonatomic, assign) BOOL enableLinkRumData;
+/**
+ * 设置是否开启自动 http trace
+ */
+@property (nonatomic, assign) BOOL enableAutoTrace;
 @end
 
 @interface FTMobileConfig : NSObject

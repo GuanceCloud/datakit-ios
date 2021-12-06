@@ -49,7 +49,6 @@ static dispatch_once_t onceToken;
         _running = STARTUP;
         _appRelaunched = NO;
         _launchTime = [NSDate date];
-        [self startMonitorNetwork];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;
@@ -104,7 +103,11 @@ static dispatch_once_t onceToken;
 }
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     [[FTNetworkTrace sharedInstance] setNetworkTrace:traceConfig];
-    [FTWKWebViewHandler sharedInstance].enableTrace = YES;
+    if (traceConfig.enableAutoTrace) {
+        [FTWKWebViewHandler sharedInstance].enableTrace = YES;
+        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+        [FTURLProtocol startMonitor];
+    }
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -132,11 +135,6 @@ static dispatch_once_t onceToken;
 -(void)stopMonitor{
     //    [FTURLProtocol stopMonitor];
     [self stopPingThread];
-}
-- (void)startMonitorNetwork{
-    [FTURLProtocol startMonitor];
-    //jsBridge
-    [FTWKWebViewHandler sharedInstance].traceDelegate = self;
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{

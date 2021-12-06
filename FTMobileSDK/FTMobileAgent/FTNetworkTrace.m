@@ -50,6 +50,9 @@
     self.type = traceConfig.networkTraceType;
     self.samplerate = traceConfig.samplerate;
     self.enableLinkRumData = traceConfig.enableLinkRumData;
+    self.networkTraceType = traceConfig.networkTraceType;
+    self.enableAutoTrace = traceConfig.enableAutoTrace;
+
     self.service = traceConfig.service;
 
 }

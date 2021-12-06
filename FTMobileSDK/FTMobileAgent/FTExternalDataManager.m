@@ -99,7 +99,7 @@
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     __block NSString *traceIdStr,*spanIDStr;
-    if([FTNetworkTrace sharedInstance].enableLinkRumData){
+    if([FTNetworkTrace sharedInstance].enableLinkRumData && [FTNetworkTrace sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
         [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
             traceIdStr = traceId;
             spanIDStr = spanID;

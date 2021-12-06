@@ -46,6 +46,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
+    traceConfig.enableAutoTrace = YES;
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
@@ -141,6 +142,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
+    traceConfig.enableAutoTrace = YES;
     traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
@@ -158,6 +160,31 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
     XCTAssertTrue(newArray.count > oldArray.count);
 
+}
+- (void)testDisableAutoTrace{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.service = @"iOSTestService";
+    traceConfig.enableAutoTrace = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+
+    [self networkUpload:@"" handler:^(NSDictionary *header) {
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+    XCTAssertTrue(newArray.count == oldArray.count);
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
