@@ -26,7 +26,7 @@
 		7C02F52A2689AE3000A0FE90 /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
 		7C02F52B2689AE3000A0FE90 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
 		7C02F52C2689AE3000A0FE90 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
-		7C6400A9275DDF9700B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */; };
+		7C6400B9275DF57200B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */; };
 		7CCD69882711964600E57A6F /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
 		7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
 		7CCD698A2711964600E57A6F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
@@ -84,8 +84,8 @@
 		7C02F5242689AE2F00A0FE90 /* TestANRVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
 		7C02F5252689AE2F00A0FE90 /* UITestVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITestVC.h; sourceTree = "<group>"; };
 		7C02F5262689AE3000A0FE90 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
-		7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ManualRumAndTraceDataAdd.m; path = ../../App/ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
-		7C6400A8275DDF9700B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ManualRumAndTraceDataAdd.h; path = ../../App/ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
+		7C6400B7275DF57200B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
+		7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
 		7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demoPreMade.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.debug.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.debug.xcconfig"; sourceTree = "<group>"; };
 		F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dataflux_sdk_ios_demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -157,8 +157,8 @@
 				7C02F5142689AE1200A0FE90 /* DemoViewController.mm */,
 				7C02F51B2689AE2F00A0FE90 /* SecondViewController.h */,
 				7C02F5262689AE3000A0FE90 /* SecondViewController.m */,
-				7C6400A8275DDF9700B2708B /* ManualRumAndTraceDataAdd.h */,
-				7C6400A7275DDF9700B2708B /* ManualRumAndTraceDataAdd.m */,
+				7C6400B7275DF57200B2708B /* ManualRumAndTraceDataAdd.h */,
+				7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */,
 				7C02F5232689AE2F00A0FE90 /* TableViewCellItem.h */,
 				7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */,
 				7C02F5242689AE2F00A0FE90 /* TestANRVC.h */,
@@ -343,7 +343,7 @@
 				7C02F5272689AE3000A0FE90 /* TestJsbridgeData.m in Sources */,
 				7C02F5112689ADFE00A0FE90 /* CrashVC.m in Sources */,
 				7C02F5282689AE3000A0FE90 /* TestANRVC.m in Sources */,
-				7C6400A9275DDF9700B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
+				7C6400B9275DF57200B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
 				7C02F5192689AE2000A0FE90 /* RootTabbarVC.m in Sources */,
 				7C02F50A2689AD5000A0FE90 /* PrintHookTest.swift in Sources */,
 				7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */,
