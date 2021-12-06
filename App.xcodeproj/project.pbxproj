@@ -47,6 +47,7 @@
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
 		7C28B8B62660B29500CECBA6 /* sample1.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B8B52660B29400CECBA6 /* sample1.html */; };
 		7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */; };
+		7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
 		7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E925225E35E9700D12C12 /* Crasher.mm */; };
@@ -252,6 +253,8 @@
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		7C57E8BC26D3A40F002DA85B /* FTTrackDataManger+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackDataManger+Test.h"; sourceTree = "<group>"; };
 		7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTTrackDataManger+Test.m"; sourceTree = "<group>"; };
+		7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
+		7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
 		7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CrashVC.m; sourceTree = "<group>"; };
 		7C6E8F1225DF684600D12C12 /* TableViewCellItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TableViewCellItem.h; sourceTree = "<group>"; };
@@ -366,6 +369,8 @@
 				4A11695D239113B600C0BC4E /* SceneDelegate.m */,
 				4A1169822391145B00C0BC4E /* DemoViewController.h */,
 				4A1169832391145B00C0BC4E /* DemoViewController.mm */,
+				7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */,
+				7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */,
 				7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */,
 				7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */,
 				7C6E925325E35E9800D12C12 /* Crasher.h */,
@@ -848,6 +853,7 @@
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */,
 				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
+				7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
 				7CA16CD426B8ECD10079840D /* TestWkWebViewHandler.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 				7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */,
