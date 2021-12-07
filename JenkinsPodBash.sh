@@ -16,14 +16,20 @@ replaceVersion(){
 git config remote.github.url >&- || git remote add github git@github.com:DataFlux-cn/datakit-ios.git
 git push github --tags
 
-#echo "version:$VERSION"
-#echo "type:$FT_PROD_TYPE"
+if [[ $? -eq 0 ]];then
+  #echo "version:$VERSION"
+  #echo "type:$FT_PROD_TYPE"
 
-VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*\///g' | sed -e 's/~.*//g' )
+  VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*\///g' | sed -e 's/~.*//g' )
 
-replaceVersion "FTAutoTrack"
-replaceVersion "FTMobileAgent"
+  replaceVersion "FTAutoTrack"
+  replaceVersion "FTMobileAgent"
 
-sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
+  sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
 
-pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
+  pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
+fi
+
+
+
+
