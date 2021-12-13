@@ -1,3 +1,7 @@
+# 1.3.1-alpha.7
+1. RUM、Trace 数据整理，提供对外调用 API
+2. RUM Config 添加 enableTraceUserResource 方法
+---
 # 1.3.1-alpha.6
 1. RUM、Trace 数据整理，提供对外调用 API
 ---
