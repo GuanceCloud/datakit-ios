@@ -53,7 +53,7 @@
         [[FTExternalDataManager sharedManager] addActionWithName:@"UITableViewCell click" actionType:@"click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"" situation:RUN message:@"" stack:@""];
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"" situation:AppStateRun message:@"" stack:@""];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
         [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"" duration:@1000000000];

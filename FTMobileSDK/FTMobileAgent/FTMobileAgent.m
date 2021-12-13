@@ -12,7 +12,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
@@ -26,6 +26,7 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
+#import "FTNetworkTraceManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -67,7 +68,6 @@ static dispatch_once_t onceToken;
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
-            [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -88,7 +88,7 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [FTConfigManager sharedInstance].rumConfig = _rumConfig;
         [self.presetProperty setAppid:_rumConfig.appid];
-        [[FTMonitorManager sharedInstance] setRumConfig:_rumConfig];
+        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -104,7 +104,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
-    [[FTMonitorManager sharedInstance] setTraceConfig:traceConfigOptions];
+    [[FTNetworkTraceManager sharedInstance] setNetworkTrace:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
@@ -237,7 +237,7 @@ static dispatch_once_t onceToken;
         }
         if (self.loggerConfig.enableLinkRumData) {
             [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:@"app"]];
-            NSDictionary *rumTag = [[FTMonitorManager sharedInstance].rumManger getCurrentSessionInfo];
+            NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
             [tagDict addEntriesFromDictionary:rumTag];
         }
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
@@ -301,7 +301,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)resetInstance{
-    [[FTMonitorManager sharedInstance] resetInstance];
+    [[FTGlobalRumManager sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     onceToken = 0;

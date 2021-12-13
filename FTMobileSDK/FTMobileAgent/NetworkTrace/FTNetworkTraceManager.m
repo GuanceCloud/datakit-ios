@@ -1,19 +1,21 @@
 //
-//  FTNetworkTrace.m
+//  FTNetworkTraceManager.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/3/17.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTNetworkTrace.h"
+#import "FTNetworkTraceManager.h"
 #import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTConfigManager.h"
-@interface FTNetworkTrace ()
+#import "FTWKWebViewHandler.h"
+#import "FTURLProtocol.h"
+@interface FTNetworkTraceManager ()
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *traceId;
 @property (nonatomic, copy) NSString *parentInstance;
@@ -21,12 +23,12 @@
 @property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, assign) int samplerate;
 @end
-@implementation FTNetworkTrace{
+@implementation FTNetworkTraceManager{
     NSUInteger _skywalkingSeq;
     NSUInteger _skywalkingv2;
 }
 + (instancetype)sharedInstance {
-    static FTNetworkTrace *sharedInstance = nil;
+    static FTNetworkTraceManager *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
@@ -54,6 +56,10 @@
     self.enableAutoTrace = traceConfig.enableAutoTrace;
 
     self.service = traceConfig.service;
+    if (traceConfig.enableAutoTrace) {
+        [FTWKWebViewHandler sharedInstance].enableTrace = YES;
+        [FTURLProtocol startMonitor];
+    }
 
 }
 - (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url{
@@ -68,11 +74,11 @@
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
-            return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTrace networkTraceID],[FTNetworkTrace networkSpanID],@(sampled)]};
+            return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],@(sampled)]};
         case FTNetworkTraceTypeZipkin:
             return @{FT_NETWORK_ZIPKIN_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
-                     FT_NETWORK_ZIPKIN_SPANID:[FTNetworkTrace networkSpanID],
-                     FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTrace networkTraceID],
+                     FT_NETWORK_ZIPKIN_SPANID:[FTNetworkTraceManager networkSpanID],
+                     FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTraceManager networkTraceID],
             };
         case FTNetworkTraceTypeDDtrace:
             return @{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
@@ -187,13 +193,13 @@
 
 -(NSString *)traceId{
     if (!_traceId) {
-        _traceId = [FTNetworkTrace networkTraceID];
+        _traceId = [FTNetworkTraceManager networkTraceID];
     }
     return _traceId;
 }
 -(NSString *)parentInstance{
     if (!_parentInstance) {
-        _parentInstance = [FTNetworkTrace networkTraceID];
+        _parentInstance = [FTNetworkTraceManager networkTraceID];
     }
     return _parentInstance;
 }

@@ -15,9 +15,9 @@
 @end
 
 @protocol FTAutoTrackViewProperty <NSObject>
-@property (nonatomic, copy) NSString *ft_actionName;
 @property (nonatomic, readonly) UIViewController *ft_currentViewController;
-@property (nonatomic, assign) BOOL isAlertView;
-@property (nonatomic, assign) BOOL isAlertClick;
+- (NSString *)ft_actionName;
+- (BOOL)isAlertView;
+- (BOOL)isAlertClick;
 @end
 

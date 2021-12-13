@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTLog.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTDateUtil.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
@@ -84,8 +84,8 @@ static char *viewLoadDuration = "viewLoadDuration";
     [self dataflux_viewDidAppear:animated];
     if(![self isBlackListContainsViewController]){
         // 预防撤回侧滑
-        if ([FTMonitorManager sharedInstance].currentController != self) {
-            [FTMonitorManager sharedInstance].currentController = self;
+        if ([FTGlobalRumManager sharedInstance].currentController != self) {
+            [FTGlobalRumManager sharedInstance].currentController = self;
             if(self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
@@ -95,7 +95,7 @@ static char *viewLoadDuration = "viewLoadDuration";
                 self.ft_loadDuration = loadTime;
             }
             self.ft_viewUUID = [NSUUID UUID].UUIDString;
-            [[FTMonitorManager sharedInstance] trackViewDidAppear:self];
+            [[FTGlobalRumManager sharedInstance] trackViewDidAppear:self];
         }
       
     }
@@ -105,8 +105,8 @@ static char *viewLoadDuration = "viewLoadDuration";
     if([self isBlackListContainsViewController]){
         return;
     }
-    if ([FTMonitorManager sharedInstance].currentController == self) {
-        [[FTMonitorManager sharedInstance] trackViewDidDisappear:self];
+    if ([FTGlobalRumManager sharedInstance].currentController == self) {
+        [[FTGlobalRumManager sharedInstance] trackViewDidDisappear:self];
     }
 }
 @end

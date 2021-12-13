@@ -8,7 +8,7 @@
 
 #import "FTUncaughtExceptionHandler+Test.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMonitorManager.h>
+#import <FTGlobalRumManager.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
 #import <FTMobileAgent/FTConstants.h>
@@ -22,7 +22,7 @@
     //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
   
 
-    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTMonitorManager sharedInstance].running message:[exception reason] stack:info];
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTGlobalRumManager sharedInstance].appState message:[exception reason] stack:info];
     
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

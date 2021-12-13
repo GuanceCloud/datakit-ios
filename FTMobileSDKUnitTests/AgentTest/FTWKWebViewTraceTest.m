@@ -15,7 +15,7 @@
 #import <FTMobileAgent/FTConstants.h>
 //#import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
-#import <FTMonitorManager.h>
+#import <FTGlobalRumManager.h>
 #import <FTDateUtil.h>
 #import <FTJSONUtil.h>
 #import "TestWKParentVC.h"
@@ -59,7 +59,6 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTMonitorManager sharedInstance] setMobileConfig:config];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [self setWKWebview];
 }

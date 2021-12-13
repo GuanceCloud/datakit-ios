@@ -9,7 +9,6 @@
 #import "AppDelegate.h"
 #import <FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTBaseInfoHandler.h>
-#import <FTMobileAgent/FTMonitorManager.h>
 #import <FTDateUtil.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import "DemoViewController.h"
