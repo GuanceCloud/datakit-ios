@@ -64,9 +64,8 @@ static dispatch_once_t onceToken;
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
-            //开启网络监听
-            [[FTReachability sharedInstance] startNotifier];
-            [self setUpListeners];
+            //开启数据处理管理器
+            [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
             [[FTMonitorManager sharedInstance] setMobileConfig:config];
         }
@@ -152,7 +151,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)logging:(NSString *)content status:(FTStatus)status{
+-(void)logging:(NSString *)content status:(FTLogStatus)status{
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;
     }
@@ -214,7 +213,7 @@ static dispatch_once_t onceToken;
 }
 
 // FT_DATA_TYPE_LOGGING
--(void)loggingWithType:(FTAddDataType)type status:(FTStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(void)loggingWithType:(FTAddDataType)type status:(FTLogStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     if (!self.loggerConfig) {
         ZYErrorLog(@"请先设置 FTLoggerConfig");
         return;
@@ -299,43 +298,6 @@ static dispatch_once_t onceToken;
         return YES;
     }
     return NO;
-}
-#pragma mark - 网络与App的生命周期
-- (void)setUpListeners{
-    __weak typeof(self) weakSelf = self;
-    [FTReachability sharedInstance].networkChanged = ^(){
-        if([FTReachability sharedInstance].isReachable){
-            [weakSelf uploadFlush];
-        }
-    };
-    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-}
--(void)applicationDidBecomeActive{
-    @try {
-        [self uploadFlush];
-    }
-    @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
--(void)applicationWillResignActive{
-    @try {
-       [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    }
-    @catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
-    }
-}
--(void)applicationWillTerminate{
-    @try {
-        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
-#pragma mark - 上报策略
-- (void)uploadFlush{
-    [[FTTrackDataManger sharedInstance] uploadTrackData];
 }
 #pragma mark - SDK注销
 - (void)resetInstance{
