@@ -78,7 +78,7 @@
 		4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AED6B252473AFEC00E04AE2 /* FTLog.m */; };
 		7C0FBD2D274753EB007CD0D3 /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C0FBD2B274753EB007CD0D3 /* FTResourceMetricsModel.h */; };
 		7C0FBD2E274753EB007CD0D3 /* FTResourceMetricsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C0FBD2C274753EB007CD0D3 /* FTResourceMetricsModel.m */; };
-		7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */; };
+		7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7C0FBD3D274B89BA007CD0D3 /* FTExternalDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C0FBD3B274B89BA007CD0D3 /* FTExternalDataManager.m */; };
 		7C28B8592660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C28B8532660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h */; };
 		7C28B85A2660980000CECBA6 /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B8542660980000CECBA6 /* FTWKWebViewJavascriptBridge.m */; };
@@ -632,6 +632,7 @@
 			files = (
 				7CF4E11126B1265E0076D238 /* WKWebView+FTAutoTrack.h in Headers */,
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
+				7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */,
 				7C28B92126611B3800CECBA6 /* FTRUMDataModel.h in Headers */,
 				7C69CFBF27281D820065638F /* FTThreadDispatchManager.h in Headers */,
 				7CF4E11E26B145C90076D238 /* NSObject+FTAutoTrack.h in Headers */,
@@ -667,7 +668,6 @@
 				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
 				7C0FBD2D274753EB007CD0D3 /* FTResourceMetricsModel.h in Headers */,
 				4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */,
-				7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */,
 				4A297BEA246CF6A00028645B /* FTMobileAgent+Private.h in Headers */,
 				7CA1807026CFA7830035DDF0 /* FTRequestBody.h in Headers */,
 				4A8842A3239E5768001B44C3 /* ZY_FMResultSet.h in Headers */,
