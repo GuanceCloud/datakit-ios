@@ -99,7 +99,9 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    
+    if(rumConfig.enableTraceUserResource){
+        [FTURLProtocol startMonitor];
+    }
 }
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     [[FTNetworkTrace sharedInstance] setNetworkTrace:traceConfig];
@@ -133,7 +135,6 @@ static dispatch_once_t onceToken;
     [self.rumManger addLongTaskWithStack:stack duration:duration];
 }
 -(void)stopMonitor{
-    //    [FTURLProtocol stopMonitor];
     [self stopPingThread];
 }
 #pragma mark ========== jsBridge ==========

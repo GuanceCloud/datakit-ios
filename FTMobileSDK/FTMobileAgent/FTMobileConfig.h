@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 ///事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
-typedef NS_ENUM(NSInteger, FTStatus) {
+typedef NS_ENUM(NSInteger, FTLogStatus) {
     FTStatusInfo         = 0,
     FTStatusWarning,
     FTStatusError,
@@ -133,6 +133,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置是否追踪页面生命周期 （仅作用于autotrack）
  */
 @property (nonatomic, assign) BOOL enableTraceUserView;
+/**
+ * 设置是否追踪用户网络请求  (仅作用于native http)
+ */
+@property (nonatomic, assign) BOOL enableTraceUserResource;
 /**
  * 设置是否需要采集崩溃日志
  */

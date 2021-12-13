@@ -14,9 +14,10 @@
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTThread.h"
+#import "FTAppLifeCycle.h"
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
-@interface FTTrackDataManger ()
+@interface FTTrackDataManger ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTThread *ftThread;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
@@ -40,16 +41,43 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     if (self) {
         self.ftThread = [[FTThread alloc]init];
         [self.ftThread start];
-        [self listenNetworkChange];
+        [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
 }
 //监听网络状态 网络连接成功 触发一次上传操作
-- (void)listenNetworkChange{
+- (void)listenNetworkChangeAndAppLifeCycle{
+    [[FTReachability sharedInstance] startNotifier];
     __weak typeof(self) weakSelf = self;
     [FTReachability sharedInstance].networkChanged = ^(){
-        [weakSelf uploadTrackData];
+        if([FTReachability sharedInstance].isReachable){
+            [weakSelf uploadTrackData];
+        }
     };
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+}
+-(void)applicationDidBecomeActive{
+    @try {
+        [self uploadTrackData];
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
+}
+-(void)applicationWillResignActive{
+    @try {
+       [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+    }
+    @catch (NSException *exception) {
+        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+    }
+}
+-(void)applicationWillTerminate{
+    @try {
+        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"exception %@",exception);
+    }
 }
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
     //数据写入不用做额外的线程处理，数据采集组合除了崩溃数据，都是在子线程进行的

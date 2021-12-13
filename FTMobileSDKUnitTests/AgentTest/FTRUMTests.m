@@ -563,6 +563,8 @@
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
@@ -613,10 +615,10 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = NO;
-    traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
@@ -755,10 +757,8 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    FTTraceConfig *trace = [[FTTraceConfig alloc]init];
-    trace.enableAutoTrace = YES;
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
 
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];

@@ -96,7 +96,7 @@
     };
     NSString *operationName = [NSString stringWithFormat:@"%@ %@",model.httpMethod,model.url.path];
     NSString *contentStr = [FTJSONUtil convertToJsonData:content];
-    FTStatus status = isError? FTStatusError:FTStatusOk;
+    FTLogStatus status = isError? FTStatusError:FTStatusOk;
     NSString *statusStr = FTStatusStringMap[status];
     NSMutableDictionary *tags = @{FT_KEY_OPERATION:operationName,
                                   FT_TRACING_STATUS:statusStr,
