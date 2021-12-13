@@ -8,10 +8,10 @@
 
 #import "FTTraceHandler.h"
 #import "FTBaseInfoHandler.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
-#import "FTNetworkTrace.h"
+#import "FTNetworkTraceManager.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
@@ -49,7 +49,7 @@
         return nil;
     }
     if (!_requestHeader) {
-        self.requestHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:self.url];
+        self.requestHeader = [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:self.url];
     }
     return _requestHeader;
 }
@@ -106,7 +106,7 @@
     }.mutableCopy;
     NSDictionary *fields = @{FT_KEY_DURATION:[self.duration intValue]>0?self.duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
     [tags addEntriesFromDictionary:[self getTraceSpanID]];
-    [tags setValue:[FTNetworkTrace sharedInstance].service forKey:FT_KEY_SERVICE];
+    [tags setValue:[FTNetworkTraceManager sharedInstance].service forKey:FT_KEY_SERVICE];
     [[FTMobileAgent sharedInstance] tracing:contentStr tags:tags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
 }
 
@@ -117,7 +117,7 @@
 }
 - (void)resolveRequestHeader{
     __weak typeof(self) weakSelf = self;
-    [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:self.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+    [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:self.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
         weakSelf.trace_id = traceId;
         weakSelf.span_id = spanID;
         weakSelf.isSampling = sampled;

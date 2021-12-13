@@ -9,9 +9,9 @@
 #import "FTConstants.h"
 #import "FTMobileConfig.h"
 NSString * const AppStateStringMap[] = {
-    [UNKNOWN] = @"正常",
-    [STARTUP] = @"连接中",
-    [RUN] = @"成功",
+    [AppStateUnknown] = @"unknown",
+    [AppStateStartUp] = @"startup",
+    [AppStateRun] = @"run",
 };
 NSString * const FTStatusStringMap[] = {
     [FTStatusInfo] = @"info",

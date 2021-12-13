@@ -8,9 +8,9 @@
 
 #import "FTExternalDataManager.h"
 #import "FTTraceHandler.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
-#import "FTNetworkTrace.h"
+#import "FTNetworkTraceManager.h"
 #import "FTResourceContentModel.h"
 @interface FTExternalDataManager()
 @property (nonatomic, strong) NSMutableDictionary<NSString *,FTTraceHandler *> *traceHandlers;
@@ -73,42 +73,42 @@
 #pragma mark - Rum -
 
 -(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [FTMonitorManager.sharedInstance.rumManger startViewWithName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
 }
 -(void)stopView{
-    [FTMonitorManager.sharedInstance.rumManger stopView];
+    [FTGlobalRumManager.sharedInstance.rumManger stopView];
 
 }
 - (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
     if ([actionType isEqualToString:@"click"]) {
-        [FTMonitorManager.sharedInstance.rumManger addClickActionWithName:actionName];
+        [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
     }else if([actionType isEqualToString:@"launch_hot"]){
-        [FTMonitorManager.sharedInstance.rumManger addLaunch:YES duration:@0];
+        [FTGlobalRumManager.sharedInstance.rumManger addLaunch:YES duration:@0];
     }else if([actionType isEqualToString:@"launch_cold"]){
-        [FTMonitorManager.sharedInstance.rumManger addLaunch:NO duration:@0];
+        [FTGlobalRumManager.sharedInstance.rumManger addLaunch:NO duration:@0];
     }
 }
 - (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack{
-    [FTMonitorManager.sharedInstance.rumManger addErrorWithType:type situation:situation message:message stack:stack];
+    [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type situation:situation message:message stack:stack];
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [FTMonitorManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
+    [FTGlobalRumManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
 }
 - (void)startResourceWithKey:(NSString *)key{
-    [FTMonitorManager.sharedInstance.rumManger startResource:key];
+    [FTGlobalRumManager.sharedInstance.rumManger startResource:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     __block NSString *traceIdStr,*spanIDStr;
-    if([FTNetworkTrace sharedInstance].enableLinkRumData && [FTNetworkTrace sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
-        [[FTNetworkTrace sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+    if([FTNetworkTraceManager sharedInstance].enableLinkRumData && [FTNetworkTraceManager sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
+        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
             traceIdStr = traceId;
             spanIDStr = spanID;
         }];
     }
-    [FTMonitorManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
+    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
 }
 
 - (void)stopResourceWithKey:(nonnull NSString *)key {
-    [FTMonitorManager.sharedInstance.rumManger stopResource:key];
+    [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
 }
 @end

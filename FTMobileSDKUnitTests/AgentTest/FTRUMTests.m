@@ -19,7 +19,7 @@
 #import <FTJSONUtil.h>
 #import <FTRUMManager.h>
 #import <FTRUMSessionHandler.h>
-#import <FTMonitorManager.h>
+#import <FTGlobalRumManager.h>
 #import "FTTrackDataManger+Test.h"
 #import "UIView+FTAutoTrack.h"
 @interface FTRUMTests : XCTestCase
@@ -92,7 +92,7 @@
     [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRUMManager *rum = [FTMonitorManager sharedInstance].rumManger;
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManger;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     //把session上次记录数据改为15分钟前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
@@ -128,7 +128,7 @@
     [self mockBtnClick];
     [NSThread sleepForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    FTRUMManager *rum = [FTMonitorManager sharedInstance].rumManger;
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManger;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     //把session开始时间改为四小时前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
@@ -281,8 +281,7 @@
  */
 - (void)testActionTimedOut{
     [self setRumConfig];
-    [self.testVC viewDidDisappear:NO];
-    [self.testVC view];
+    [self.testVC viewDidLoad];
     [self.testVC viewDidAppear:NO];
     [self mockBtnClick];
     [NSThread sleepForTimeInterval:10];
@@ -461,7 +460,7 @@
  */
 - (void)testActionUpdate{
     [self setRumConfig];
-    [self.testVC view];
+    [self.testVC viewDidLoad];
     [self.testVC viewDidAppear:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     __block NSInteger resErrorCount = 0;
@@ -685,23 +684,142 @@
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 
 }
+- (void)testAbleTraceUserView{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidAppear:NO];
+    [NSThread sleepForTimeInterval:1];
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count - oldArray.count  == 1);
+}
+- (void)testDisableTraceUserView{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidAppear:NO];
+    [NSThread sleepForTimeInterval:1];
+    [self.testVC viewDidDisappear:NO];
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+}
+- (void)testAbleTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidLoad];
+    [self.testVC viewDidAppear:NO];
+    [self mockBtnClick];
+    [self mockBtnClick];
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count > oldArray.count);
+}
+- (void)testDisableTraceUserAction{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserAction = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidAppear:NO];
+    [self.testVC.firstButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self.testVC.secondButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+}
+- (void)testAbleTraceUserResource{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidAppear:NO];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count > oldArray.count);
+    
+}
+- (void)testDisableTraceUserResource{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    [self.testVC viewDidAppear:NO];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count == oldArray.count);
+}
 - (void)addErrorData{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
     NSString *error_stack = @"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15";
     NSString *error_type = @"ios_crash";
    
-   [[FTMonitorManager sharedInstance].rumManger addErrorWithType:error_type situation:RUN message:error_message stack:error_stack];
+   [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:error_type situation:    AppStateRun message:error_message stack:error_stack];
 }
 - (void)addLongTaskData{
     NSString *stack = @"Backtrace of Thread 771:\n0 libsystem_kernel.dylib          0x7fff6112d756 __semwait_signal + 10\n1 libsystem_c.dylib               0x7fff200f7500 usleep + 53\n2 SampleApp                       0x1038b9a96 -[TestANRVC tableView:cellForRowAtIndexPath:] + 230\n3 UIKitCore                       0x7fff248ce1af -[UITableView _createPreparedCellForGlobalRow:withIndexPath:willDisplay:] + 865\n4 UIKitCore                       0x7fff248ce637 -[UITableView _createPreparedCellForRowAtIndexPath:willDisplay:] + 80\n5 UIKitCore                       0x7fff248dab61 -[UITableView _heightForRowAtIndexPath:] + 204\n6 UIKitCore                       0x7fff248eea95 -[UISectionRowData heightForRow:inSection:canGuess:] + 220\n7 UIKitCore                       0x7fff248f40ca -[UITableViewRowData heightForRow:inSection:canGuess:adjustForReorderedRow:] + 238\n8 UIKitCore                       0x7fff248f7c1a -[UITableViewRowData ensureHeightsFaultedInForScrollToIndexPath:boundsHeight:] + 864\n9 UIKitCore                       0x7fff248ad10f -[UITableView _contentOffsetForScrollingToRowAtIndexPath:atScrollPosition:usingPresentationValues:] + 1138\n10 UIKitCore                       0x7fff248ae07c -[UITableView _scrollToRowAtIndexPath:atScrollPosition:animated:usingPresentationValues:] + 142\n11 UIKitCore                       0x7fff248b18dc -[UITableView _selectRowAtIndexPath:animated:scrollPosition:notifyDelegate:isCellMultiSelect:] + 719\n12 UIKitCore                       0x7fff248b2004 -[UITableView selectRowAtIndexPath:animated:scrollPosition:] + 91\n";
     NSNumber *dutation = @5000000000;
     
     
-    [[FTMonitorManager sharedInstance].rumManger addLongTaskWithStack:stack duration:dutation];
+    [[FTGlobalRumManager sharedInstance].rumManger addLongTaskWithStack:stack duration:dutation];
 }
 - (void)mockBtnClick{
-//    [self.testVC.firstButton ]
-    [[FTMonitorManager sharedInstance].rumManger addClickActionWithName:self.testVC.firstButton.ft_actionName];
+    
+    [[FTGlobalRumManager sharedInstance].rumManger addClickActionWithName:self.testVC.firstButton.ft_actionName];
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
