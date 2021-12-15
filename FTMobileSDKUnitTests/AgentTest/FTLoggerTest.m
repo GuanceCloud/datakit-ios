@@ -6,7 +6,7 @@
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import <XCTest/XCTest.h>
+#import <KIF/KIF.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
@@ -17,11 +17,8 @@
 #import "UITestVC.h"
 #import "FTTrackDataManger+Test.h"
 
-@interface FTLoggerTest : XCTestCase
-@property (nonatomic, strong) UIWindow *window;
-@property (nonatomic, strong) UITestVC *testVC;
-@property (nonatomic, strong) UINavigationController *navigationController;
-@property (nonatomic, strong) UITabBarController *tabBarController;
+@interface FTLoggerTest : KIFTestCase
+
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
 @end
@@ -30,21 +27,6 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-    self.window.backgroundColor = [UIColor whiteColor];
-    
-    self.testVC = [[UITestVC alloc] init];
-    
-    self.tabBarController = [[UITabBarController alloc] init];
-    
-    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
-    self.navigationController.tabBarItem.title = @"UITestVC";
-    
-    UITableViewController *firstViewController = [[UITableViewController alloc] init];
-    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
-    
-    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
-    self.window.rootViewController = self.tabBarController;
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
@@ -255,8 +237,8 @@
     rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
+    [[viewTester usingLabel:@"EventFlowLog"] tap];
+
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
 
     [NSThread sleepForTimeInterval:2];
@@ -277,8 +259,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [self.testVC view];
-    [self.testVC viewDidAppear:NO];
+   
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
 
     [NSThread sleepForTimeInterval:1];

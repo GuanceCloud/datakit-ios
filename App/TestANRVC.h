@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TestANRVC : UIViewController
-- (void)testAnrBlock;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -14,7 +14,9 @@
 @end
 
 @implementation UITestVC
-
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -22,7 +24,6 @@
     [self createUI];
 }
 -(void)createUI{
-    self.title = @"TestAutoTrack";
     CGFloat x = 16;
     CGFloat y = 16;
     CGFloat width = self.view.frame.size.width - 2 * x;
@@ -36,13 +37,16 @@
     [_firstButton setTitle:@"FirstButton" forState:UIControlStateNormal];
     [_firstButton setTitle:@"SelectedFirstButton" forState:UIControlStateSelected];
     [_firstButton addTarget:self action:@selector(firstAction:) forControlEvents:UIControlEventTouchUpInside];
+    _firstButton.isAccessibilityElement = YES;
     [_scrollView addSubview:_firstButton];
     UIButton *result = [UIButton buttonWithType:UIButtonTypeCustom];
     result.frame = CGRectMake(width-100, 26, 100, 44);
     [result setTitle:@"result" forState:UIControlStateNormal];
     [result setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [result addTarget:self action:@selector(resultAction:) forControlEvents:UIControlEventTouchUpInside];
-    [_scrollView addSubview:result];
+    result.accessibilityLabel = @"NEXT_CLICK";
+    result.isAccessibilityElement = YES;
+    [self.scrollView addSubview:result];
     
     y = CGRectGetMaxY(_firstButton.frame) + 16;
     _secondButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -50,6 +54,7 @@
     [_secondButton setTitle:@"SecondButton" forState:UIControlStateNormal];
     [_secondButton setTitle:@"SelectedSecondButton" forState:UIControlStateSelected];
     [_secondButton addTarget:self action:@selector(secondAction:) forControlEvents:UIControlEventTouchUpInside];
+    _secondButton.isAccessibilityElement = YES;
     [_scrollView addSubview:_secondButton];
     UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(x+200, y, 100, 44)];
     text.backgroundColor = [UIColor grayColor];
@@ -112,17 +117,18 @@
 }
 
 - (void)firstAction:(UIButton *)sender {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"测试" message:@"测试alert按钮点击" preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"点击OK");
-    }];
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"CANCEL" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"点击CANCEL");
-    }];
-    [alert addAction:action];
-    [alert addAction:cancel];
-    [self presentViewController:alert animated:YES completion:nil];
-    
+//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"测试" message:@"测试alert按钮点击" preferredStyle:UIAlertControllerStyleAlert];
+//    UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+//        NSLog(@"点击OK");
+//    }];
+//    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"CANCEL" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+//        NSLog(@"点击CANCEL");
+//    }];
+//    [alert addAction:action];
+//    [alert addAction:cancel];
+//    [self presentViewController:alert animated:YES completion:nil];
+    NSLog(@"%@ Touch Up Inside", sender.currentTitle);
+
 }
 
 - (void)secondAction:(UIButton *)sender {
@@ -130,9 +136,7 @@
 }
 - (void)resultAction:(UIButton *)sender{
     
-    self.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:[ResultVC new] animated:YES];
-    self.hidesBottomBarWhenPushed = YES;
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);
@@ -167,6 +171,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell" forIndexPath:indexPath];
     cell.textLabel.text = [NSString stringWithFormat:@"Section: %ld, Row: %ld", indexPath.section, indexPath.row];
+    cell.accessibilityLabel =[NSString stringWithFormat:@"Row: %ld", indexPath.row];
+    cell.isAccessibilityElement = YES;
     return cell;
 }
 

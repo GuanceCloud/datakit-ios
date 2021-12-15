@@ -16,34 +16,16 @@
 #import <FTJSONUtil.h>
 #import <FTMobileAgent/FTConstants.h>
 #import "FTTrackDataManger+Test.h"
+#import <KIF/KIF.h>
 
-@interface FTANRTest : XCTestCase
-@property (nonatomic, strong) TestANRVC *testVC;
+@interface FTANRTest : KIFTestCase
 
 @end
-
 @implementation FTANRTest
-
-- (void)setUp {
-    UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-    window.backgroundColor = [UIColor whiteColor];
-    
-    self.testVC = [[TestANRVC alloc] init];
-    
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
-    navigationController.tabBarItem.title = @"UITestVC";
-    
-    UITableViewController *firstViewController = [[UITableViewController alloc] init];
-    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
-    
-    tabBarController.viewControllers = @[firstNavigationController, navigationController];
-    window.rootViewController = tabBarController;
-    
-    [self.testVC view];
-    [self.testVC viewWillAppear:NO];
-    
+-(void)tearDown{
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [tester waitForTimeInterval:2];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -62,10 +44,11 @@
 }
 - (void)testTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:YES];
-    [self.testVC viewDidAppear:NO];
-    [NSThread sleepForTimeInterval:2];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
-    [self.testVC testAnrBlock];
+
+    [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
+    [tester waitForTimeInterval:1];
+
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
@@ -82,7 +65,6 @@
             if ([measurement isEqualToString:@"long_task"]) {
                 NSDictionary *field = [opdata valueForKey:@"field"];
                 XCTAssertTrue([field.allKeys containsObject:@"long_task_stack"]&&[field.allKeys containsObject:@"duration"]);
-                //[field.allKeys containsObject:@"long_task_message"]
             }
         }
         [expect fulfill];
@@ -90,14 +72,12 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-//    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 - (void)testNoTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:NO];
-    [self.testVC viewDidAppear:NO];
-    [NSThread sleepForTimeInterval:2];
-    [self.testVC testAnrBlock];
+    [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
+    [tester waitForTimeInterval:1];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -119,6 +99,5 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 @end

@@ -12,6 +12,7 @@ target 'FTMobileSDKUnitTests' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
    pod 'OHHTTPStubs','8.0.0'
+   pod 'KIF'
   # Pods for SampleApp
 
 end

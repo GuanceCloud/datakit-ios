@@ -13,7 +13,6 @@
 #import <FTBaseInfoHandler.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTConstants.h>
-//#import <FTBaseInfoHander.h>
 #import <FTRecordModel.h>
 #import <FTGlobalRumManager.h>
 #import <FTDateUtil.h>

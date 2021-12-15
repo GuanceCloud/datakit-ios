@@ -1,6 +1,6 @@
 #import "SceneDelegate.h"
 #import "DemoViewController.h"
-#import "RootTabbarVC.h"
+#import "UITestVC.h"
 @interface SceneDelegate ()
 
 @end
@@ -16,11 +16,17 @@
     rootVC.title = @"home";
    
     UINavigationController *rootNav = [[UINavigationController alloc] initWithRootViewController:rootVC];
-    RootTabbarVC *second =  [RootTabbarVC new];
-    second.title = @"second";
-    tab.viewControllers = @[rootNav,second];
-   
+    UITestVC *second =  [UITestVC new];
+    second.title = @"uitest";
+    UINavigationController *rootNav2 = [[UINavigationController alloc] initWithRootViewController:second];
+
+    tab.viewControllers = @[rootNav,rootNav2];
+    tab.tabBar.items.firstObject.title = @"home";
+    tab.tabBar.items.firstObject.isAccessibilityElement = YES;
+    tab.tabBar.items.lastObject.title = @"UITEST";
+    tab.tabBar.items.lastObject.isAccessibilityElement = YES;
     self.window.rootViewController = tab;
+    
     [self.window makeKeyAndVisible];
 }
 

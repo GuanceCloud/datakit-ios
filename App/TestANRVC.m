@@ -21,7 +21,9 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:self.myTableView];
-    
+#if FTSDKUNITTEST
+    [self testAnrBlock];
+#endif
 }
 - (void)testAnrBlock{
     //单元测试时 使用GCD唤醒runloop

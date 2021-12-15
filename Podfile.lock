@@ -1,4 +1,7 @@
 PODS:
+  - KIF (3.8.5):
+    - KIF/Core (= 3.8.5)
+  - KIF/Core (3.8.5)
   - OHHTTPStubs (8.0.0):
     - OHHTTPStubs/Default (= 8.0.0)
   - OHHTTPStubs/Core (8.0.0)
@@ -14,15 +17,18 @@ PODS:
   - OHHTTPStubs/OHPathHelpers (8.0.0)
 
 DEPENDENCIES:
+  - KIF
   - OHHTTPStubs (= 8.0.0)
 
 SPEC REPOS:
   trunk:
+    - KIF
     - OHHTTPStubs
 
 SPEC CHECKSUMS:
+  KIF: b7fe836710720f84e4804767fba0a35ffc770b78
   OHHTTPStubs: 9cbce6364bec557cc3439aa6bb7514670d780881
 
-PODFILE CHECKSUM: eade547b2228e77d9d81ba3bf02700379ee6f889
+PODFILE CHECKSUM: f45bc013aca697e889b5b8e8a098dba3175a91e9
 
 COCOAPODS: 1.10.1

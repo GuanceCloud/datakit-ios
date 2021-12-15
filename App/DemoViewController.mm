@@ -105,6 +105,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell" forIndexPath:indexPath];
     cell.textLabel.text = self.dataSource[indexPath.row].title;
+    cell.accessibilityLabel = self.dataSource[indexPath.row].title;
+    cell.isAccessibilityElement = YES;
     return cell;
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -113,14 +115,8 @@
         item.handler();
     }
 }
-
--(void)viewWillAppear:(BOOL)animated{
-    [super viewWillAppear:animated];
-    self.tabBarController.tabBar.hidden = NO;
-}
--(void)viewWillDisappear:(BOOL)animated{
-    [super viewWillDisappear:animated];
-    self.tabBarController.tabBar.hidden = YES;
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
 }
 /*
  #pragma mark - Navigation
