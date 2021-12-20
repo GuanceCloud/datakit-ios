@@ -24,6 +24,7 @@
         _enableTrackAppANR = NO;
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
+        _enableTraceUserResource = NO;
     }
     return self;
 }
@@ -35,6 +36,7 @@
     options.enableTrackAppANR = self.enableTrackAppANR;
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.enableTraceUserView = self.enableTraceUserView;
+    options.enableTraceUserResource = self.enableTraceUserResource;
     options.appid = self.appid;
     options.monitorInfoType = self.monitorInfoType;
     options.globalContext = self.globalContext;

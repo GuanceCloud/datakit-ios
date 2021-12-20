@@ -10,7 +10,7 @@
 #endif
 #import "FTUncaughtExceptionHandler.h"
 #include <execinfo.h>
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import <mach-o/ldsyms.h>
 #include <mach-o/dyld.h>
 #import "FTRUMManager.h"
@@ -262,7 +262,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
  
   
-    [[FTMonitorManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTMonitorManager sharedInstance].running message:[exception reason] stack:info];
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTGlobalRumManager sharedInstance].appState message:[exception reason] stack:info];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
     

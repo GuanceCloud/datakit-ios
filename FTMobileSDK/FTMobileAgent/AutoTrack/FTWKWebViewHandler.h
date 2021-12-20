@@ -11,7 +11,7 @@
 #import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTWKWebViewTraceDelegate <NSObject>
+@protocol FTWKWebViewRumDelegate <NSObject>
 @optional
 
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView;
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL enableTrace;
-@property (nonatomic, weak) id<FTWKWebViewTraceDelegate> traceDelegate;
+@property (nonatomic, weak) id<FTWKWebViewRumDelegate> traceDelegate;
 + (instancetype)sharedInstance;
 - (void)addWebView:(WKWebView *)webView;
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;

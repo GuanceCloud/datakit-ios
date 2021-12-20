@@ -1,5 +1,5 @@
 //
-//  FTMonitorManager.m
+//  FTGlobalRumManager.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2020/4/14.
@@ -8,7 +8,7 @@
 #if ! __has_feature(objc_arc)
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTConstants.h"
 #import "FTURLProtocol.h"
 #import "FTLog.h"
@@ -22,9 +22,8 @@
 #import "UIViewController+FTAutoTrack.h"
 #import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
-#import "FTNetworkTrace.h"
 #import "FTRUMManager.h"
-@interface FTMonitorManager ()<FTANRDetectorDelegate,FTWKWebViewTraceDelegate,FTAppLifeCycleDelegate>
+@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -34,19 +33,19 @@
 @property (nonatomic, strong) NSDate *launchTime;
 @end
 
-@implementation FTMonitorManager{
+@implementation FTGlobalRumManager{
     BOOL _appRelaunched;          // App 从后台恢复
     //进入非活动状态，比如双击 home、系统授权弹框
     BOOL _applicationWillResignActive;
     BOOL _applicationLoadFirstViewController;
     
 }
-static FTMonitorManager *sharedInstance = nil;
+static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _running = STARTUP;
+        _appState = AppStateStartUp;
         _appRelaunched = NO;
         _launchTime = [NSDate date];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
@@ -69,9 +68,6 @@ static dispatch_once_t onceToken;
 
 - (id)mutableCopyWithZone:(NSZone *)zone {
     return self;
-}
--(void)setMobileConfig:(FTMobileConfig *)config{
-    _config = config;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
@@ -99,15 +95,10 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    
-}
--(void)setTraceConfig:(FTTraceConfig *)traceConfig{
-    [[FTNetworkTrace sharedInstance] setNetworkTrace:traceConfig];
-    if (traceConfig.enableAutoTrace) {
-        [FTWKWebViewHandler sharedInstance].enableTrace = YES;
-        [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    if(rumConfig.enableTraceUserResource){
         [FTURLProtocol startMonitor];
     }
+    [FTWKWebViewHandler sharedInstance].traceDelegate = self;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -133,7 +124,6 @@ static dispatch_once_t onceToken;
     [self.rumManger addLongTaskWithStack:stack duration:duration];
 }
 -(void)stopMonitor{
-    //    [FTURLProtocol stopMonitor];
     [self stopPingThread];
 }
 #pragma mark ========== jsBridge ==========
@@ -193,7 +183,7 @@ static dispatch_once_t onceToken;
             _applicationWillResignActive = NO;
             return;
         }
-        _running = RUN;
+        _appState = AppStateRun;
         if (!_applicationLoadFirstViewController) {
             return;
         }
@@ -260,7 +250,6 @@ static dispatch_once_t onceToken;
 
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
-    _config = nil;
     _rumManger = nil;
     onceToken = 0;
     sharedInstance =nil;

@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTMobileAgent/FTMonitorManager.h>
+#import <FTGlobalRumManager.h>
 #import <FTMobileAgent/FTConstants.h>
 #import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"

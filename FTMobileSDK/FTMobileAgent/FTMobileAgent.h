@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
 
  */
--(void)logging:(NSString *)content status:(FTStatus)status;
+-(void)logging:(NSString *)content status:(FTLogStatus)status;
 
 /**
  * @abstract

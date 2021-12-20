@@ -1,5 +1,5 @@
 //
-//  FTNetworkTrace.h
+//  FTNetworkTraceManager.h
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/3/17.
@@ -10,7 +10,7 @@
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTNetworkTrace : NSObject
+@interface FTNetworkTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, copy) NSString *service;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;

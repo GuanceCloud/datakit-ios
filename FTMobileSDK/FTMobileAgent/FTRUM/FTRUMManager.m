@@ -15,9 +15,9 @@
 #import "FTLog.h"
 #import "FTResourceContentModel.h"
 #import "FTConfigManager.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
-#import "FTNetworkTrace.h"
+#import "FTNetworkTraceManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -145,13 +145,13 @@
             NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
             [fields setValue:@(data.length) forKey:@"resource_size"];
         }
-        if ([FTNetworkTrace sharedInstance].enableLinkRumData) {
+        if ([FTNetworkTraceManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:@"span_id"];
             [tags setValue:traceID forKey:@"trace_id"];
         }
         if (content.error || content.httpStatusCode>=400) {
             NSInteger code = content.httpStatusCode == -1?:content.error.code;
-            NSString *run = AppStateStringMap[[FTMonitorManager sharedInstance].running];
+            NSString *run = AppStateStringMap[[FTGlobalRumManager sharedInstance].appState];
             [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:@"error_message"];
             [tags setValue:run forKey:@"error_situation"];
             [tags setValue:content.httpMethod forKey:@"resource_method"];

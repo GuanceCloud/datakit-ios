@@ -9,9 +9,9 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSUInteger, AppState) {
-    UNKNOWN,
-    STARTUP,
-    RUN,
+    AppStateUnknown,
+    AppStateStartUp,
+    AppStateRun,
 };
 
 typedef enum FTError : NSInteger {

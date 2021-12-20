@@ -10,9 +10,9 @@
 #endif
 #import "NSURLRequest+FTMonitor.h"
 #import "FTConstants.h"
-#import "FTMonitorManager.h"
+#import "FTGlobalRumManager.h"
 #import <objc/runtime.h>
-#import "FTNetworkTrace.h"
+#import "FTNetworkTraceManager.h"
 @implementation NSURLRequest (FTMonitor)
 -(NSDate *)ftRequestStartDate{
     return objc_getAssociatedObject(self, @"ft_requestStartDate");
@@ -43,7 +43,7 @@
 
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    NSDictionary *traceHeader = [[FTNetworkTrace sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL];
+    NSDictionary *traceHeader = [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
             [mutableReqeust setValue:value forHTTPHeaderField:field];
