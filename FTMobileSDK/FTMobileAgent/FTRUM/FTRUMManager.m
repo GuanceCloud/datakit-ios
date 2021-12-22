@@ -150,7 +150,7 @@
             [tags setValue:traceID forKey:@"trace_id"];
         }
         if (content.error || content.httpStatusCode>=400) {
-            NSInteger code = content.httpStatusCode == -1?:content.error.code;
+            NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
             NSString *run = AppStateStringMap[[FTGlobalRumManager sharedInstance].appState];
             [fields setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:@"error_message"];
             [tags setValue:run forKey:@"error_situation"];
@@ -217,7 +217,7 @@
 }
 #pragma mark - error 、 long_task -
 - (void)addErrorWithType:(NSString *)type situation:(AppState )situation message:(NSString *)message stack:(NSString *)stack{
-    if (!(type && situation && message && stack)) {
+    if (!(type && message && stack)) {
         return;
     }
     @try {
