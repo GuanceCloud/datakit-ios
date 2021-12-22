@@ -121,7 +121,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }
 }
 -(void)setBadMetricsUrl{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://162.215.252.78"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://baidu.com"];
     config.enableSDKDebugLog = YES;
     [[FTConfigManager sharedInstance] setTrackConfig:config];
 
