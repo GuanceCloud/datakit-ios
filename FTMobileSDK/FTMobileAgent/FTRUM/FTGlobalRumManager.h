@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FTConstants.h"
+#import "FTEnumConstant.h"
 NS_ASSUME_NONNULL_BEGIN
 @class  FTRUMManager,FTRumConfig;
 // 用于 开启各项数据的采集 

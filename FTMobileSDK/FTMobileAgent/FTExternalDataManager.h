@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTConstants.h"
+#import "FTEnumConstant.h"
 @class FTResourceContentModel,FTResourceMetricsModel;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTExternalTracing <NSObject>

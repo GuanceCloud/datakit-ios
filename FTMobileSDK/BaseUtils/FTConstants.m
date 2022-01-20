@@ -7,31 +7,7 @@
 //
 
 #import "FTConstants.h"
-#import "FTMobileConfig.h"
-NSString * const AppStateStringMap[] = {
-    [AppStateUnknown] = @"unknown",
-    [AppStateStartUp] = @"startup",
-    [AppStateRun] = @"run",
-};
-NSString * const FTStatusStringMap[] = {
-    [FTStatusInfo] = @"info",
-    [FTStatusWarning] = @"warning",
-    [FTStatusError] = @"error",
-    [FTStatusCritical] = @"critical",
-    [FTStatusOk] = @"ok"
-};
-NSString * const FTNetworkTraceStringMap[] = {
-    [FTNetworkTraceTypeZipkin] = @"zipkin",
-    [FTNetworkTraceTypeJaeger] = @"jaeger",
-    [FTNetworkTraceTypeDDtrace] = @"ddtrace",
-};
-NSString * const FTEnvStringMap[] = {
-    [FTEnvProd] = @"prod",
-    [FTEnvGray] = @"gray",
-    [FTEnvPre] = @"pre",
-    [FTEnvCommon] = @"common",
-    [FTEnvLocal] = @"local",
-};
+
 NSString * const FT_DATA_TYPE_RUM = @"RUM";
 NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
 NSString * const FT_DATA_TYPE_TRACING = @"Tracing";

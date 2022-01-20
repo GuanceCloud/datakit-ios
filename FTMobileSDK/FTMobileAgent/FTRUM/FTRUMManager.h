@@ -8,7 +8,7 @@
 
 #import "FTRUMHandler.h"
 #import <UIKit/UIKit.h>
-#import "FTConstants.h"
+#import "FTEnumConstant.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel;
 NS_ASSUME_NONNULL_BEGIN
 
