@@ -60,6 +60,7 @@
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
+        rumConfig.enableTraceUserResource = YES;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
                                     @"dynamic_tag":dynamicTag};
