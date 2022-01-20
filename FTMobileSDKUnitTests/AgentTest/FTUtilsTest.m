@@ -13,7 +13,7 @@
 #import <FTRecordModel.h>
 #import <FTMobileAgent/FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTJSONUtil.h>
 #import <NSString+FTAdd.h>
 //#import "FTBaseInfoHander.h"
@@ -48,9 +48,9 @@
 }
 - (void)testLineProtocol{
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"testLineProtocol"},
-        FT_AGENT_TAGS:@{@"name":@"testLineProtocol"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"testLineProtocol"},
+        FT_TAGS:@{@"name":@"testLineProtocol"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_RUM,
                           FT_AGENT_OPDATA:dict,

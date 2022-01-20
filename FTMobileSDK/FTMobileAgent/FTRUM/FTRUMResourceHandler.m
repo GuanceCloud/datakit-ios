@@ -33,11 +33,7 @@
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
-                case FTRUMDataResourceError:{
-                    [self writeErrorData:data];
-                    return NO;
-                }
-                case FTRUMDataResourceSuccess:{
+                case FTRUMDataResourceComplete:{
                     [self writeResourceData:data];
                     return NO;
                 }
@@ -58,27 +54,21 @@
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
     NSMutableDictionary *fields = [NSMutableDictionary new];
     [fields addEntriesFromDictionary:data.fields];
-    [fields setValue:[FTDateUtil nanosecondTimeIntervalSinceDate:self.time toDate:data.time] forKey:@"duration"];
+    [fields setValue:[FTDateUtil nanosecondTimeIntervalSinceDate:self.time toDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
-        [fields setValue:model.metrics.resource_ttfb forKey:@"resource_ttfb"];
-        [fields setValue:model.metrics.resource_ssl forKey:@"resource_ssl"];
-        [fields setValue:model.metrics.resource_tcp forKey:@"resource_tcp"];
-        [fields setValue:model.metrics.resource_dns forKey:@"resource_dns"];
-        [fields setValue:model.metrics.resource_first_byte forKey:@"resource_first_byte"];
+        [fields setValue:model.metrics.resource_ttfb forKey:FT_RUM_KEY_RESOURCE_TTFB];
+        [fields setValue:model.metrics.resource_ssl forKey:FT_RUM_KEY_RESOURCE_SSL];
+        [fields setValue:model.metrics.resource_tcp forKey:FT_RUM_KEY_RESOURCE_TCP];
+        [fields setValue:model.metrics.resource_dns forKey:FT_RUM_KEY_RESOURCE_DNS];
+        [fields setValue:model.metrics.resource_first_byte forKey:FT_RUM_KEY_RESOURCE_FIRST_BYTE];
         if ([model.metrics.duration intValue]>0) {
-            [fields setValue:model.metrics.duration forKey:@"duration"];
+            [fields setValue:model.metrics.duration forKey:FT_DURATION];
         }
-        [fields setValue:model.metrics.resource_trans forKey:@"resource_trans"];
+        [fields setValue:model.metrics.resource_trans forKey:FT_RUM_KEY_RESOURCE_TRANS];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_RESOURCE terminal:@"app" tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
-}
-- (void)writeErrorData:(FTRUMDataModel *)data{
-    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-        NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ERROR terminal:@"app" tags:tags fields:data.fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
 }
 @end

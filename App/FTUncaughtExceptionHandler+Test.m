@@ -11,7 +11,7 @@
 #import <FTGlobalRumManager.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTMobileAgent/FTBaseInfoHandler.h>
 #import <FTRUMManager.h>
 @implementation FTUncaughtExceptionHandler (Test)

@@ -126,12 +126,12 @@ static dispatch_once_t onceToken;
                     ZYLog(@"Group file delete success %@",result);
                 }
                 [array enumerateObjectsUsingBlock:^(NSDictionary  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    NSDictionary *field = [obj valueForKey:@"field"];
+                    NSDictionary *field = [obj valueForKey:FT_FIELDS];
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (field && field.allKeys.count>0 && tm) {
                         if ([self judgeRUMTraceOpen]) {
                           
-                            [self rumWrite:FT_TYPE_ERROR terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
+                            [self rumWrite:FT_MEASUREMENT_RUM_ERROR terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                         }else{
                             NSString *crash_message = field[@"crash_message"];
                             NSString *crash_stack = field[@"crash_stack"];
@@ -236,7 +236,7 @@ static dispatch_once_t onceToken;
             [tagDict addEntriesFromDictionary:tags];
         }
         if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:@"app"]];
+            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
             NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
             [tagDict addEntriesFromDictionary:rumTag];
         }

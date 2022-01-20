@@ -101,10 +101,10 @@
     NSMutableDictionary *tags = @{FT_KEY_OPERATION:operationName,
                                   FT_TRACING_STATUS:statusStr,
                                   FT_KEY_SPANTYPE:FT_SPANTYPE_ENTRY,
-                                  FT_TYPE_RESOURCE:operationName,
+                                  FT_MEASUREMENT_RUM_RESOURCE:operationName,
                                   FT_TYPE:@"custom",
     }.mutableCopy;
-    NSDictionary *fields = @{FT_KEY_DURATION:[self.duration intValue]>0?self.duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
+    NSDictionary *fields = @{FT_DURATION:[self.duration intValue]>0?self.duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]]};
     [tags addEntriesFromDictionary:[self getTraceSpanID]];
     [tags setValue:[FTNetworkTraceManager sharedInstance].service forKey:FT_KEY_SERVICE];
     [[FTMobileAgent sharedInstance] tracing:contentStr tags:tags field:fields tm:[FTDateUtil dateTimeNanosecond:self.startTime]];
@@ -131,8 +131,8 @@
 }
 - (NSDictionary *)getTraceSpanID{
     if (self.span_id&&self.trace_id) {
-        return @{@"span_id":self.span_id,
-                 @"trace_id":self.trace_id
+        return @{FT_KEY_SPANID:self.span_id,
+                 FT_KEY_TRACEID:self.trace_id
         };
     }else{
         return nil;

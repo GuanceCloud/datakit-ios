@@ -37,15 +37,15 @@
         [datas enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
             NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
             NSDictionary *opdata = dict[@"opdata"];
-            NSString *measurement = opdata[@"measurement"];
-            if ([measurement isEqualToString:@"action"]) {
+            NSString *measurement = opdata[FT_MEASUREMENT];
+            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
                 actionCount++;
-            }else if([measurement isEqualToString:@"view"]){
+            }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]){
                 viewCount ++;
                 [viewAry addObject:obj];
-            }else if([measurement isEqualToString:@"long_task"]){
+            }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]){
                 longTaskCount ++;
-            }else if([measurement isEqualToString:@"resource"]){
+            }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]){
                 resourceCount ++;
             }
         }];

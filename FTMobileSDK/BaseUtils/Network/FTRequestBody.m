@@ -10,6 +10,7 @@
 #import "FTLog.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
+#import "FTConstants.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeTag      = 1,
     FTParameterTypeField     = 2 ,
@@ -34,14 +35,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],@""];
-    } else {
+        return [NSString stringWithFormat:@"%@=NULL", [self replacingSpecialCharacters:self.field]];
+    }else{
         return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]]) {
-        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],@"NULL"];
+        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],@"NULL"];
     }else{
         if([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
@@ -129,11 +130,11 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         
         NSString *source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"source"]];
         if (!source) {
-            source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"measurement"]];
+            source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
         }
-        NSDictionary *tagDict = opdata[@"tags"];
-        if ([[opdata allKeys] containsObject:@"field"]) {
-            field=FTQueryStringFromParameters(opdata[@"field"],FTParameterTypeField);
+        NSDictionary *tagDict = opdata[FT_TAGS];
+        if ([[opdata allKeys] containsObject:FT_FIELDS]) {
+            field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
         }
         NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypeTag):nil;
       

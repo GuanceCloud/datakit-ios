@@ -11,7 +11,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTRecordModel.h>
 #import "OHHTTPStubs.h"
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <FTJSONUtil.h>
 #import "FTConfigManager.h"
@@ -136,9 +136,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -168,9 +168,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self setRightConfigWithTestType:FTNetworkTestBad];
     
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -202,9 +202,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -234,9 +234,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -265,9 +265,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestEmptyResponseData];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -293,9 +293,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setRightConfigWithTestType:FTNetworkTestErrorResponse];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -321,9 +321,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setBadMetricsUrl];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,
@@ -349,9 +349,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestErrorNet];
     NSDictionary *dict = @{
-        FT_AGENT_MEASUREMENT:@"iOSTest",
-        FT_AGENT_FIELD:@{@"event":@"FTNetworkTests"},
-        FT_AGENT_TAGS:@{@"name":@"FTNetworkTests"},
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"FTNetworkTests"},
+        FT_TAGS:@{@"name":@"FTNetworkTests"},
     };
     NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
                           FT_AGENT_OPDATA:dict,

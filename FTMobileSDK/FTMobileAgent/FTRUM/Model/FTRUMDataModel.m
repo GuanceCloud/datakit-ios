@@ -7,6 +7,7 @@
 //
 
 #import "FTRUMDataModel.h"
+#import "FTConstants.h"
 @interface FTRUMDataModel()
 @end
 @implementation FTRUMDataModel
@@ -65,7 +66,7 @@
     }
     return self;
 }
-    
+
 @end
 
 @implementation FTRUMResourceDataModel
@@ -114,16 +115,19 @@
 }
 -(NSDictionary *)getGlobalSessionViewTags{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:self.session_id forKey:@"session_id"];
-    [dict setValue:self.session_type forKey:@"session_type"];
-    [dict setValue:self.view_id forKey:@"view_id"];
-    [dict setValue:self.view_referrer forKey:@"view_referrer"];
-    [dict setValue:self.view_name forKey:@"view_name"];
+    [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
+    [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
+    [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
+    if(self.view_referrer.length>0){
+        [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];
+    }
+    [dict setValue:self.view_name forKey:FT_KEY_VIEW_NAME];
     return dict;
 }
 -(NSDictionary *)getGlobalSessionViewActionTags{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self getGlobalSessionViewTags]];
-    [dict setValue:self.action_id forKey:@"action_id"];
+    [dict setValue:self.action_id forKey:FT_RUM_KEY_ACTION_ID];
     return dict;
 }
 @end
+

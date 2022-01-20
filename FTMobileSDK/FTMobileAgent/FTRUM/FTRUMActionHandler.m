@@ -69,15 +69,9 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         case FTRUMDataResourceStart:
             self.activeResourcesCount += 1;
             break;
-        case FTRUMDataResourceSuccess:
+        case FTRUMDataResourceComplete:
             self.actionResourcesCount += 1;
             self.activeResourcesCount -= 1;
-
-            break;
-        case FTRUMDataResourceError:
-            self.actionErrorCount += 1;
-            self.activeResourcesCount -= 1;
-
             break;
         case FTRUMDataLongTask:
             self.actionLongTaskCount++;
@@ -103,18 +97,18 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     }
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewTags];
 
-    NSDictionary *actiontags = @{@"action_id":self.action_id,
-                                 @"action_name":self.action_name,
-                                 @"action_type":self.action_type
+    NSDictionary *actiontags = @{FT_RUM_KEY_ACTION_ID:self.action_id,
+                                 FT_RUM_KEY_ACTION_NAME:self.action_name,
+                                 FT_RUM_KEY_ACTION_TYPE:self.action_type
     };
-    NSDictionary *fields = @{@"duration":self.duration,
-                             @"action_long_task_count":@(self.actionLongTaskCount),
-                             @"action_resource_count":@(self.actionResourcesCount),
-                             @"action_error_count":@(self.actionErrorCount),
+    NSDictionary *fields = @{FT_DURATION:self.duration,
+                             FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
+                             FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
+                             FT_RUM_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_ACTION terminal:@"app" tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }

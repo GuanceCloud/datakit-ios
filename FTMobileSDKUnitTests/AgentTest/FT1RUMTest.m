@@ -10,7 +10,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTBaseInfoHandler.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTDateUtil.h>
 #import "NSString+FTAdd.h"
@@ -54,8 +54,8 @@
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
-        NSDictionary *tags = opdata[@"tags"];
-        XCTAssertTrue([tags.allKeys containsObject:@"session_id"]);
+        NSDictionary *tags = opdata[FT_TAGS];
+        XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
         
     }];
 }
@@ -88,13 +88,13 @@
     FTRecordModel *old = [oldArray lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:old.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    NSString *oldSessionId =tags[@"session_id"];
+    NSDictionary *tags = opdata[FT_TAGS];
+    NSString *oldSessionId =tags[FT_RUM_KEY_SESSION_ID];
     FTRecordModel *new = [newArray lastObject];
     NSDictionary *newDict = [FTJSONUtil dictionaryWithJsonString:new.data];
     NSDictionary *newOpdata = newDict[@"opdata"];
-    NSDictionary *newTags = newOpdata[@"tags"];
-    NSString *newSessionId =newTags[@"session_id"];
+    NSDictionary *newTags = newOpdata[FT_TAGS];
+    NSString *newSessionId =newTags[FT_RUM_KEY_SESSION_ID];
     XCTAssertTrue(oldSessionId);
     XCTAssertTrue(newSessionId);
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
@@ -127,13 +127,13 @@
     FTRecordModel *old = [oldArray lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:old.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    NSString *oldSessionId =tags[@"session_id"];
+    NSDictionary *tags = opdata[FT_TAGS];
+    NSString *oldSessionId =tags[FT_RUM_KEY_SESSION_ID];
     FTRecordModel *new = [newArray lastObject];
     NSDictionary *newDict = [FTJSONUtil dictionaryWithJsonString:new.data];
     NSDictionary *newOpdata = newDict[@"opdata"];
-    NSDictionary *newTags = newOpdata[@"tags"];
-    NSString *newSessionId =newTags[@"session_id"];
+    NSDictionary *newTags = newOpdata[FT_TAGS];
+    NSString *newSessionId =newTags[FT_RUM_KEY_SESSION_ID];
     XCTAssertTrue(oldSessionId);
     XCTAssertTrue(newSessionId);
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
@@ -159,12 +159,12 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"view"]) {
-            NSDictionary *tags = opdata[@"tags"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
+            NSDictionary *tags = opdata[FT_TAGS];
             [self rumTags:tags];
-            NSDictionary *field = opdata[@"field"];
-            XCTAssertTrue([field.allKeys containsObject:@"view_resource_count"]&&[field.allKeys containsObject:@"view_action_count"]&&[field.allKeys containsObject:@"view_long_task_count"]&&[field.allKeys containsObject:@"view_error_count"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"is_active"]&&[tags.allKeys containsObject:@"view_id"]&&[tags.allKeys containsObject:@"view_referrer"]&&[tags.allKeys containsObject:@"view_name"]);
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_REFERRER]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasView = YES;
             *stop = YES;
         }
@@ -175,24 +175,24 @@
  * 验证 source：resource 的数据格式
  */
 - (void)testResourceDataFormatChecks{
-    NSArray *resourceTag = @[@"resource_url",
-                             @"resource_url_host",
-                             @"resource_url_path",
-                             //                             @"resource_url_query",
-                             @"resource_url_path_group",
-                             @"resource_type",
-                             @"resource_method",
-                             @"resource_status",
-                             @"resource_status_group",
+    NSArray *resourceTag = @[FT_RUM_KEY_RESOURCE_URL,
+                             FT_RUM_KEY_RESOURCE_URL_HOST,
+                             FT_RUM_KEY_RESOURCE_URL_PATH,
+                             //                             FT_RUM_KEY_RESOURCE_URL_QUERY,
+                             FT_RUM_KEY_RESOURCE_URL_PATH_GROUP,
+                             FT_RUM_KEY_RESOURCE_TYPE,
+                             FT_RUM_KEY_RESOURCE_METHOD,
+                             FT_RUM_KEY_RESOURCE_STATUS,
+                             FT_RUM_KEY_RESOURCE_STATUS_GROUP,
     ];
-    NSArray *resourceField = @[@"duration",
-                               @"resource_size",
-                               @"resource_dns",
-                               @"resource_tcp",
-                               @"resource_ssl",
-                               @"resource_ttfb",
-                               @"resource_trans",
-                               @"resource_first_byte",
+    NSArray *resourceField = @[FT_DURATION,
+                               FT_RUM_KEY_RESOURCE_SIZE,
+                               FT_RUM_KEY_RESOURCE_DNS,
+                               FT_RUM_KEY_RESOURCE_TCP,
+                               FT_RUM_KEY_RESOURCE_SSL,
+                               FT_RUM_KEY_RESOURCE_TTFB,
+                               FT_RUM_KEY_RESOURCE_TRANS,
+                               FT_RUM_KEY_RESOURCE_FIRST_BYTE,
     ];
     [self setRumConfig];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
@@ -210,9 +210,9 @@
                 XCTAssertTrue([op isEqualToString:@"RUM"]);
                 NSDictionary *opdata = dict[@"opdata"];
                 NSString *measurement = opdata[@"source"];
-                if ([measurement isEqualToString:@"resource"]) {
-                    NSDictionary *tags = opdata[@"tags"];
-                    NSDictionary *field = opdata[@"field"];
+                if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+                    NSDictionary *tags = opdata[FT_TAGS];
+                    NSDictionary *field = opdata[FT_FIELDS];
                     [self rumTags:tags];
                     [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                         XCTAssertTrue([tags.allKeys containsObject:obj]);
@@ -230,6 +230,38 @@
         [expectation fulfill];
     }];
     
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)testErrorResource{
+    [self setRumConfig];
+    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+
+    [tester waitForTimeInterval:1];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self errorNetworkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [tester waitForTimeInterval:2];
+        NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        [array enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            NSString *op = dict[@"op"];
+            XCTAssertTrue([op isEqualToString:@"RUM"]);
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"source"];
+            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
+                NSDictionary *tags = opdata[FT_TAGS];
+                [self rumTags:tags];
+                NSDictionary *field = opdata[FT_FIELDS];
+                NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+                NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+                XCTAssertTrue(errorCount == 1);
+                XCTAssertTrue(resourceCount == 1);
+                *stop = YES;
+            }
+        }];
+        [expectation fulfill];
+    }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -256,16 +288,16 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"action"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            NSDictionary *field = opdata[@"field"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            NSDictionary *field = opdata[FT_FIELDS];
             [self rumTags:tags];
-            XCTAssertTrue([field.allKeys containsObject:@"action_long_task_count"]&&[field.allKeys containsObject:@"action_resource_count"]&&[field.allKeys containsObject:@"action_error_count"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"action_id"]&&[tags.allKeys containsObject:@"action_name"]&&[tags.allKeys containsObject:@"action_type"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"view_id"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"view_referrer"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"view_name"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"session_id"]);
+            XCTAssertTrue([field.allKeys containsObject:FT_RUM_KEY_ACTION_LONG_TASK_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_RESOURCE_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_ERROR_COUNT]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_ACTION_ID]&&[tags.allKeys containsObject:FT_RUM_KEY_ACTION_NAME]&&[tags.allKeys containsObject:FT_RUM_KEY_ACTION_TYPE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_REFERRER]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
         }
     }];
 }
@@ -288,17 +320,17 @@
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        NSDictionary *tags = opdata[@"tags"];
-        NSDictionary *field = opdata[@"field"];
-        if ([measurement isEqualToString:@"action"]) {
-            if([tags[@"action_type"] isEqualToString:@"click"]){
-                XCTAssertTrue([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]"]);
-                XCTAssertTrue([field[@"action_long_task_count"] isEqual:@0]);
-                XCTAssertTrue([field[@"duration"] isEqual:@10000000000]);
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *field = opdata[FT_FIELDS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]){
+                XCTAssertTrue([tags[FT_RUM_KEY_ACTION_NAME] isEqualToString:@"[UIButton][FirstButton]"]);
+                XCTAssertTrue([field[FT_RUM_KEY_ACTION_LONG_TASK_COUNT] isEqual:@0]);
+                XCTAssertTrue([field[FT_DURATION] isEqual:@10000000000]);
                 hasClickAction = YES;
             }
-        }else if([measurement isEqualToString:@"long_task"]){
-            XCTAssertFalse([tags.allKeys containsObject:@"action_id"]);
+        }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]){
+            XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_ACTION_ID]);
             hasLongTask  = YES;
         }
     }];
@@ -324,9 +356,9 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"action"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            if([tags[@"action_type"] isEqualToString:@"launch_cold"]){
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"launch_cold"]){
                 isLaunchCold = YES;
             }
             count ++;
@@ -356,9 +388,9 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"action"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            if([tags[@"action_type"] isEqualToString:@"launch_hot"]){
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"launch_hot"]){
                 isLaunchHot = YES;
             }
             count ++;
@@ -387,9 +419,9 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"action"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            if([tags[@"action_name"] isEqualToString:@"[UIButton][FirstButton]"]){
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            if([tags[FT_RUM_KEY_ACTION_NAME] isEqualToString:@"[UIButton][FirstButton]"]){
                 firstBtnClick = YES;
             }
         }
@@ -427,17 +459,17 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"view"] && hasViewData == NO) {
-            NSDictionary *field = opdata[@"field"];
-            actionCount = [field[@"view_action_count"] integerValue];
-            NSInteger errorCount = [field[@"view_error_count"] integerValue];
-            NSInteger resourceCount = [field[@"view_resource_count"] integerValue];
-            NSInteger longTaskCount = [field[@"view_long_task_count"] integerValue];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            actionCount = [field[FT_KEY_VIEW_ACTION_COUNT] integerValue];
+            NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
+            NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
+            NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
             hasViewData = YES;
             XCTAssertTrue(errorCount == (1+resErrorCount));
             XCTAssertTrue(longTaskCount == 1);
-            XCTAssertTrue(resourceCount == (1-resErrorCount));
-        }else if([measurement isEqualToString:@"action"]){
+            XCTAssertTrue(resourceCount == 1);
+        }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]){
             trueActionCount ++;
         }
     }];
@@ -475,11 +507,11 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"action"]) {
-            NSDictionary *field = opdata[@"field"];
-            NSInteger errorCount = [field[@"action_error_count"] integerValue];
-            NSInteger resourceCount = [field[@"action_resource_count"] integerValue];
-            NSInteger longTaskCount = [field[@"action_long_task_count"] integerValue];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            NSInteger errorCount = [field[FT_RUM_KEY_ACTION_ERROR_COUNT] integerValue];
+            NSInteger resourceCount = [field[FT_RUM_KEY_ACTION_RESOURCE_COUNT] integerValue];
+            NSInteger longTaskCount = [field[FT_RUM_KEY_ACTION_LONG_TASK_COUNT] integerValue];
             XCTAssertTrue(errorCount == (1+resErrorCount));
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == (1-resErrorCount));
@@ -502,7 +534,7 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"error"]) {
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ERROR]) {
             hasErrorData = YES;
             *stop = YES;
         }
@@ -586,10 +618,10 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"resource"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            XCTAssertTrue([tags.allKeys containsObject:@"span_id"]);
-            XCTAssertTrue([tags.allKeys containsObject:@"trace_id"]);
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
             hasResourceData = YES;
             *stop = YES;
         }
@@ -635,10 +667,10 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:@"resource"]) {
-            NSDictionary *tags = opdata[@"tags"];
-            XCTAssertFalse([tags.allKeys containsObject:@"span_id"]);
-            XCTAssertFalse([tags.allKeys containsObject:@"trace_id"]);
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *tags = opdata[FT_TAGS];
+            XCTAssertFalse([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertFalse([tags.allKeys containsObject:FT_KEY_TRACEID]);
             hasResourceData = YES;
             *stop = YES;
         }
@@ -651,7 +683,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
-    rumConfig.globalContext = @{@"session_id":@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
+    rumConfig.globalContext = @{FT_RUM_KEY_SESSION_ID:@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];
@@ -668,8 +700,8 @@
     NSString *op = dict[@"op"];
     XCTAssertTrue([op isEqualToString:@"RUM"]);
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
-    XCTAssertFalse([[tags valueForKey:@"session_id"] isEqualToString:@"testRUMGlobalContext"]);
+    NSDictionary *tags = opdata[FT_TAGS];
+    XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
 - (void)test1AbleTraceUserView{
@@ -817,7 +849,19 @@
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSString *urlStr = @"http://www.baidu.com";
+    NSString *urlStr = @"https://www.baidu.com/more/";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+    
+    __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        completionHandler?completionHandler(response,error):nil;
+    }];
+    
+    [task resume];
+}
+- (void)errorNetworkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    NSString *urlStr = @"https://console-api.guance.com/not/found/";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -833,8 +877,8 @@
                         @"env",
                         @"version",
                         @"userid",
-                        @"session_id",
-                        @"session_type",
+                        FT_RUM_KEY_SESSION_ID,
+                        FT_RUM_KEY_SESSION_TYPE,
                         @"is_signin",
                         @"device",
                         @"model",
@@ -849,18 +893,18 @@
     }];
 }
 - (void)addESData{
-    NSDictionary *field = @{@"action_error_count":@0,
-                            @"action_long_task_count":@0,
-                            @"action_resource_count":@0,
-                            @"duration":@103492975,
+    NSDictionary *field = @{FT_RUM_KEY_ACTION_ERROR_COUNT:@0,
+                            FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@0,
+                            FT_RUM_KEY_ACTION_RESOURCE_COUNT:@0,
+                            FT_DURATION:@103492975,
     };
-    NSDictionary *tags = @{@"action_id":[NSUUID UUID].UUIDString,
-                           @"action_name":@"app_cold_start",
-                           @"action_type":@"launch_cold",
-                           @"session_id":[NSUUID UUID].UUIDString,
-                           @"session_type":@"user",
+    NSDictionary *tags = @{FT_RUM_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
+                           FT_RUM_KEY_ACTION_NAME:@"app_cold_start",
+                           FT_RUM_KEY_ACTION_TYPE:@"launch_cold",
+                           FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+                           FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    [[FTMobileAgent sharedInstance] rumWrite:@"action" terminal:@"app" tags:tags fields:field];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:field];
 }
 
 - (void)setRumConfig{

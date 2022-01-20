@@ -12,11 +12,7 @@
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTLog.h"
-//防止在 FTMobileSDK/Common 中添加 FTConstants.h
-NSString * const FT_DATA_TYPE_RUM = @"RUM";
-NSString * const FT_DATA_TYPE_LOGGING = @"Logging";
-NSString * const FT_DATA_TYPE_TRACING = @"Tracing";
-NSString * const FT_DATA_TYPE_OBJECT = @"Object";
+#import "FTConstants.h"
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
@@ -35,9 +31,9 @@ NSString * const FT_DATA_TYPE_OBJECT = @"Object";
         [tagsDict addEntriesFromDictionary:tags];
         NSMutableDictionary *opdata = @{
             @"source":source,
-            @"field":fieldDict,
+            FT_FIELDS:fieldDict,
         }.mutableCopy;
-        [opdata setValue:tagsDict forKey:@"tags"];
+        [opdata setValue:tagsDict forKey:FT_TAGS];
         NSDictionary *data =@{@"op":op,
                               @"opdata":opdata,
         };

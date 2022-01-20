@@ -12,7 +12,7 @@
 #import <FTBaseInfoHandler.h>
 #import <FTRecordModel.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
@@ -59,7 +59,7 @@
     [self setRightSDKConfig];
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
-    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
@@ -70,12 +70,12 @@
 -(void)testChangeUser{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser1"];
-     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
      NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testChangeUser1"]);
 
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testChangeUser2"];
-    NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+    NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
 
@@ -90,7 +90,7 @@
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
     
     [[FTMobileAgent sharedInstance] logout];
-    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *userid = dict[@"userid"];
    XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
 }

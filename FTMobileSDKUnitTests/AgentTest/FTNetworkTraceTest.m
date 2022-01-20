@@ -10,7 +10,7 @@
 #import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTGlobalRumManager.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
 #import <NSURLRequest+FTMonitor.h>
@@ -20,7 +20,6 @@
 #import <FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
 #import "FTSessionConfiguration+Test.h"
-#import <FTMobileAgent/FTConstants.h>
 #import <FTJSONUtil.h>
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
@@ -224,8 +223,8 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
-    NSDictionary *tags = opdata[@"tags"];
+    NSDictionary *field = opdata[FT_FIELDS];
+    NSDictionary *tags = opdata[FT_TAGS];
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"error"]);
     NSDictionary *content = [FTJSONUtil dictionaryWithJsonString:field[@"message"]];
@@ -250,7 +249,7 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
+    NSDictionary *tags = opdata[FT_TAGS];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
     [self uploadModel:model];
@@ -271,7 +270,7 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
+    NSDictionary *tags = opdata[FT_TAGS];
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"ok"]);
 
@@ -306,8 +305,7 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[@"field"];
-    NSDictionary *tags = opdata[@"tags"];
+    NSDictionary *tags = opdata[FT_TAGS];
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"error"]);
     [self uploadModel:model];
@@ -330,7 +328,7 @@
     FTRecordModel *model = [data lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[@"tags"];
+    NSDictionary *tags = opdata[FT_TAGS];
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"ok"]);
 

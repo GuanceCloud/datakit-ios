@@ -10,6 +10,7 @@
 #import "FTDateUtil.h"
 #import "FTNetworkInfoManger.h"
 #import "FTRecordModel.h"
+#import "FTConstants.h"
 @interface FTRequest()
 @property (nonatomic, strong) NSArray <FTRecordModel *> *events;
 

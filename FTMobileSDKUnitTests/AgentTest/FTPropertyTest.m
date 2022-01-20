@@ -12,7 +12,7 @@
 #import <FTBaseInfoHandler.h>
 #import <FTRecordModel.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
@@ -48,7 +48,7 @@
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"prod"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -57,7 +57,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.env = FTEnvPre;
     [FTMobileAgent startWithConfigOptions:config];
-    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:@"app"];
+    NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *env = dict[@"env"];
     XCTAssertTrue([env isEqualToString:@"pre"]);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -167,17 +167,17 @@
     
 }
 - (void)addRumData{
-    NSDictionary *field = @{@"action_error_count":@0,
-                            @"action_long_task_count":@0,
-                            @"action_resource_count":@0,
-                            @"duration":@103492975,
+    NSDictionary *field = @{FT_RUM_KEY_ACTION_ERROR_COUNT:@0,
+                            FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@0,
+                            FT_RUM_KEY_ACTION_RESOURCE_COUNT:@0,
+                            FT_DURATION:@103492975,
     };
-    NSDictionary *tags = @{@"action_id":[NSUUID UUID].UUIDString,
-                           @"action_name":@"app_cold_start",
-                           @"action_type":@"launch_cold",
-                           @"session_id":[NSUUID UUID].UUIDString,
-                           @"session_type":@"user",
+    NSDictionary *tags = @{FT_RUM_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
+                           FT_RUM_KEY_ACTION_NAME:@"app_cold_start",
+                           FT_RUM_KEY_ACTION_TYPE:@"launch_cold",
+                           FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+                           FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    [[FTMobileAgent sharedInstance] rumWrite:@"action" terminal:@"app" tags:tags fields:field];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:field];
 }
 @end

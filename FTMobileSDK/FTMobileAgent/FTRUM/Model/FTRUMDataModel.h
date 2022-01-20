@@ -16,8 +16,7 @@ typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataLongTask,
     FTRUMDataError,
     FTRUMDataResourceStart,
-    FTRUMDataResourceSuccess,
-    FTRUMDataResourceError,
+    FTRUMDataResourceComplete,
     FTRUMDataResourceStop,
     FTRUMDataWebViewJSBData,
 };

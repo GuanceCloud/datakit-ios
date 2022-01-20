@@ -88,16 +88,16 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
-    NSString *error = model.type == FTRUMDataLongTask?FT_TYPE_LONG_TASK :FT_TYPE_ERROR;
+    NSString *error = model.type == FTRUMDataLongTask?FT_MEASUREMENT_RUM_LONG_TASK :FT_MEASUREMENT_RUM_ERROR;
     
-    [[FTMobileAgent sharedInstance] rumWrite:error terminal:@"app" tags:tags fields:model.fields];
+    [[FTMobileAgent sharedInstance] rumWrite:error terminal:FT_TERMINAL_APP tags:tags fields:model.fields];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
     if (view) {
         return view.context.view_id;
     }
-    return @"";
+    return nil;
 }
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

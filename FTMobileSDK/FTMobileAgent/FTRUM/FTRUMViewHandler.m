@@ -130,7 +130,7 @@
         default:
             break;
     }
-    if (model.type == FTRUMDataResourceStop || model.type == FTRUMDataResourceError || model.type == FTRUMDataResourceSuccess) {
+    if (model.type == FTRUMDataResourceStop || model.type == FTRUMDataResourceComplete) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
         self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model];
@@ -169,8 +169,8 @@
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
-    NSDictionary *sessionTag = @{@"session_id":self.context.session_id,
-                                 @"session_type":self.context.session_type};
+    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
+                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
@@ -183,18 +183,18 @@
     }
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
-    [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:@"is_active"];
-    NSMutableDictionary *field = @{@"view_error_count":@(self.viewErrorCount),
-                                   @"view_resource_count":@(self.viewResourceCount),
-                                   @"view_long_task_count":@(self.viewLongTaskCount),
-                                   @"view_action_count":@(self.viewActionCount),
-                                   @"time_spent":timeSpend,
+    [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:FT_KEY_IS_ACTIVE];
+    NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
+                                   FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
+                                   FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
+                                   FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
+                                   FT_KEY_TIME_SPEND:timeSpend,
                                    
     }.mutableCopy;
     if (![self.loading_time isEqual:@0]) {
-        [field setValue:self.loading_time forKey:@"loading_time"];
+        [field setValue:self.loading_time forKey:FT_RUM_KEY_Loading_time];
     }
-    [[FTMobileAgent sharedInstance] rumWrite:FT_TYPE_VIEW terminal:@"app" tags:sessionViewTag fields:field];
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
 }
 
 @end

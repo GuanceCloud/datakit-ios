@@ -11,7 +11,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTDateUtil.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTJSONUtil.h>
 #import <FTRecordModel.h>
 #import "UITestVC.h"
@@ -206,7 +206,7 @@
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
-    NSDictionary *tags = op[@"tags"];
+    NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue(serviceName.length>0);
 }
@@ -224,7 +224,7 @@
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
-    NSDictionary *tags = op[@"tags"];
+    NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue([serviceName isEqualToString:@"testSetServiceName"]);
 }
@@ -247,9 +247,9 @@
     FTRecordModel *model = [datas lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags =opdata[@"tags"];
-    XCTAssertTrue([tags.allKeys containsObject:@"session_id"]);
-    XCTAssertTrue([tags.allKeys containsObject:@"session_type"]);
+    NSDictionary *tags =opdata[FT_TAGS];
+    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
 }
 - (void)testDisableLinkRumData{
     [self setRightSDKConfig];
@@ -267,9 +267,9 @@
     FTRecordModel *model = [datas lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags =opdata[@"tags"];
-    XCTAssertFalse([tags.allKeys containsObject:@"session_id"]);
-    XCTAssertFalse([tags.allKeys containsObject:@"session_type"]);
+    NSDictionary *tags =opdata[FT_TAGS];
+    XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+    XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
 
 }
 - (void)testSampleRate0{

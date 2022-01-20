@@ -146,9 +146,9 @@ static dispatch_once_t onceToken;
         NSString *name = messageDic[@"name"];
         if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
             NSDictionary *data = messageDic[@"data"];
-            NSString *measurement = data[@"measurement"];
-            NSDictionary *tags = data[@"tags"];
-            NSDictionary *fields = data[@"fields"];
+            NSString *measurement = data[FT_MEASUREMENT];
+            NSDictionary *tags = data[FT_TAGS];
+            NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
             time = time>0?:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {

@@ -163,7 +163,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 - (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.rumCommonPropertyTags];
-    dict[FT_SDK_NAME] = [terminal isEqualToString:@"app"]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
+    dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];

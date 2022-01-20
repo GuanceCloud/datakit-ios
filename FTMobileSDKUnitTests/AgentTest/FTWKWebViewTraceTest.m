@@ -12,7 +12,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTBaseInfoHandler.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import <FTRecordModel.h>
 #import <FTGlobalRumManager.h>
 #import <FTDateUtil.h>
@@ -292,7 +292,7 @@
 - (void)getX_B3_SpanId:(FTRecordModel *)model completionHandler:(void (^)(NSString *spanID,NSString *urlStr))completionHandler{
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *opdata = [dict valueForKey:@"opdata"];
-    NSDictionary *field = [opdata valueForKey:@"field"];
+    NSDictionary *field = [opdata valueForKey:FT_FIELDS];
     NSDictionary *content = [FTJSONUtil dictionaryWithJsonString:[field valueForKey:@"message"]];
     NSDictionary *requestContent = [content valueForKey:@"requestContent"];
     NSDictionary *headers = [requestContent valueForKey:@"headers"];

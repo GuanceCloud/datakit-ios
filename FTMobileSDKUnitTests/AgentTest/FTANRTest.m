@@ -14,7 +14,7 @@
 #import <FTDateUtil.h>
 #import <FTRecordModel.h>
 #import <FTJSONUtil.h>
-#import <FTMobileAgent/FTConstants.h>
+#import <FTConstants.h>
 #import "FTTrackDataManger+Test.h"
 #import <KIF/KIF.h>
 
@@ -61,10 +61,10 @@
            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
 
-            NSString *measurement = opdata[@"measurement"];
-            if ([measurement isEqualToString:@"long_task"]) {
-                NSDictionary *field = [opdata valueForKey:@"field"];
-                XCTAssertTrue([field.allKeys containsObject:@"long_task_stack"]&&[field.allKeys containsObject:@"duration"]);
+            NSString *measurement = opdata[FT_MEASUREMENT];
+            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]) {
+                NSDictionary *field = [opdata valueForKey:FT_FIELDS];
+                XCTAssertTrue([field.allKeys containsObject:FT_RUM_KEY_LONG_TASK_STACK]&&[field.allKeys containsObject:FT_DURATION]);
             }
         }
         [expect fulfill];
@@ -87,8 +87,8 @@
            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
             NSDictionary *opdata = [dict valueForKey:@"opdata"];
 
-            NSString *measurement = opdata[@"measurement"];
-            if ([measurement isEqualToString:@"long_task"]) {
+            NSString *measurement = opdata[FT_MEASUREMENT];
+            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]) {
                 noLongTask = NO;
             }
         }
