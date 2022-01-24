@@ -13,6 +13,7 @@
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <CoreTelephony/CTCarrier.h>
 #import "FTEnumConstant.h"
+#import "FTJSONUtil.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
@@ -87,17 +88,19 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
+@property (nonatomic, strong) NSDictionary *context;
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @end
 @implementation FTPresetProperty
-- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env{
+- (instancetype)initWithMobileConfig:(FTMobileConfig *)config{
     self = [super init];
-    if (self) {
-        _version = version;
-        _env = env;
+    if (self){
+        _version = config.version;
+        _env = FTEnvStringMap[config.env];
         _isSignin = [FTBaseInfoHandler userId]?YES:NO;
         _mobileDevice = [[MobileDevice alloc]init];
+        _context = config.globalContext;
     }
     return self;
 }
@@ -145,25 +148,44 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return _baseCommonPropertyTags;
 }
+-(void)setRumContext:(NSDictionary *)rumContext{
+    if (rumContext) {
+        NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:rumContext];
+        NSArray *allKeys = rumContext.allKeys;
+        if (allKeys && allKeys.count>0) {
+            [tags setValue:[FTJSONUtil convertToJsonDataWithArray:allKeys] forKey:@"custom_keys"];
+        }
+        _rumContext = tags;
+    }
+}
 - (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName{
-    NSMutableDictionary *tag = [NSMutableDictionary dictionaryWithDictionary:self.baseCommonPropertyTags];
+    NSMutableDictionary *tag = [NSMutableDictionary new];
+    [tag addEntriesFromDictionary:self.context];
+    [tag addEntriesFromDictionary:self.logContext];
+    [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
 - (NSDictionary *)traceProperty{
-    NSMutableDictionary *tag = [NSMutableDictionary dictionaryWithDictionary:self.baseCommonPropertyTags];
+    NSMutableDictionary *tag = [NSMutableDictionary new];
+    [tag addEntriesFromDictionary:self.context];
+    [tag addEntriesFromDictionary:self.traceContext];
+    [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     return tag;
 }
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env{
-    self.version = version;
-    self.env = env;
+- (void)resetWithMobileConfig:(FTMobileConfig *)config{
+    self.version = config.version;
+    self.env = FTEnvStringMap[config.env];
     _isSignin = [FTBaseInfoHandler userId]?YES:NO;
 }
 - (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:self.rumCommonPropertyTags];
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict addEntriesFromDictionary:self.context];
+    [dict addEntriesFromDictionary:self.rumContext];
+    [dict addEntriesFromDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[@"userid"] = [FTPresetProperty userid];
     [dict setValue:self.env forKey:FT_ENV];

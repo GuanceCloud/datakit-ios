@@ -12,9 +12,9 @@
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTConfigManager.h"
 #import "FTWKWebViewHandler.h"
 #import "FTURLProtocol.h"
+#import "FTNetworkInfoManger.h"
 @interface FTNetworkTraceManager ()
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *traceId;
@@ -38,7 +38,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.sdkUrlStr = [FTConfigManager sharedInstance].trackConfig.metricsUrl;
+        self.sdkUrlStr = [FTNetworkInfoManger sharedInstance].metricsUrl;
     }
     return self;
 }

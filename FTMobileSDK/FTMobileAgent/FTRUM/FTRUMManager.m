@@ -14,7 +14,6 @@
 #import "FTThreadDispatchManager.h"
 #import "FTLog.h"
 #import "FTResourceContentModel.h"
-#import "FTConfigManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
 #import "FTNetworkTraceManager.h"

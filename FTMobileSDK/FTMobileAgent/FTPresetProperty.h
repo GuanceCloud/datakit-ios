@@ -13,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPresetProperty : NSObject
 @property (nonatomic, assign) BOOL isSignin;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, strong) NSDictionary *traceContext;
+@property (nonatomic, strong) NSDictionary *logContext;
+@property (nonatomic, strong) NSDictionary *rumContext;
 + (NSString *)deviceInfo;
 + (NSString *)appIdentifier;
 + (NSString *)userid;
@@ -20,11 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * 初始化方法
- * @param version 应用版本号
- * @param env     环境
+ * @param config 应用版本号
  * @return 初始化对象
  */
-- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env;
+- (instancetype)initWithMobileConfig:(FTMobileConfig *)config;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -45,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  重新设置
  */
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env;
+- (void)resetWithMobileConfig:(FTMobileConfig *)config;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -67,7 +67,7 @@ static dispatch_once_t onceToken;
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
+            _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -78,9 +78,9 @@ static dispatch_once_t onceToken;
     [FTLog enableLog:config.enableSDKDebugLog];
     [[FTConfigManager sharedInstance] setTrackConfig:config];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:FTEnvStringMap[config.env]];
+        [self.presetProperty resetWithMobileConfig:config];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:FTEnvStringMap[config.env]];
+        self.presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
@@ -88,13 +88,15 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [FTConfigManager sharedInstance].rumConfig = _rumConfig;
         [self.presetProperty setAppid:_rumConfig.appid];
+        self.presetProperty.rumContext = rumConfigOptions.globalContext;
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
-        self.logLevelFilterSet = [NSSet setWithArray:loggerConfigOptions.logLevelFilter];
+        self.presetProperty.logContext = self.loggerConfig.globalContext;
+        self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
         if(self.loggerConfig.enableConsoleLog){
@@ -105,6 +107,7 @@ static dispatch_once_t onceToken;
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [[FTNetworkTraceManager sharedInstance] setNetworkTrace:traceConfigOptions];
+    self.presetProperty.traceContext = traceConfigOptions.globalContext.copy;
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
@@ -195,15 +198,8 @@ static dispatch_once_t onceToken;
     @try {
         FTAddDataType dataType = FTAddDataImmediate;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
-        if (self.rumConfig.globalContext) {
-            [baseTags addEntriesFromDictionary:self.rumConfig.globalContext];
-            NSArray *allKeys = self.rumConfig.globalContext.allKeys;
-            if (allKeys && allKeys.count>0) {
-                [baseTags setValue:[FTJSONUtil convertToJsonDataWithArray:allKeys] forKey:@"custom_keys"];
-            }
-        }
-        baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:terminal]];
+        baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];

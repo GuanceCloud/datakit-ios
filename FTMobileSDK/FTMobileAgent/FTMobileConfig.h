@@ -102,6 +102,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 或 @[@0,@1]
  */
 @property (nonatomic, strong) NSArray<NSNumber*> *logLevelFilter;
+/**
+ * 设置 logger 全局 tag
+ */
+@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
 - (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix;
 @end
@@ -155,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) FTMonitorInfoType monitorInfoType;
 /**
- * 设置全局 tag
+ * 设置 rum 全局 tag
  * 特殊 key : track_id (用于追踪功能)
  */
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
@@ -184,6 +188,11 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置是否开启自动 http trace
  */
 @property (nonatomic, assign) BOOL enableAutoTrace;
+/**
+ * 设置 trace 全局 tag
+ */
+@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
+
 @end
 
 @interface FTMobileConfig : NSObject
@@ -221,6 +230,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 应用版本号。
  */
 @property (nonatomic, copy) NSString *version;
+/**
+ * 设置 SDK 全局 tag
+ */
+@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
 @end
 
