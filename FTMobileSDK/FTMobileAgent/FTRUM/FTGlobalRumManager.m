@@ -31,6 +31,7 @@
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
+@property (atomic, copy, readwrite) NSString *viewReferrer;
 @end
 
 @implementation FTGlobalRumManager{
@@ -187,13 +188,13 @@ static dispatch_once_t onceToken;
         if (!_applicationLoadFirstViewController) {
             return;
         }
-        if (self.currentController&&self.rumConfig.enableTraceUserView) {
+        if (self.viewReferrer&&self.rumConfig.enableTraceUserView) {
             NSString *viewid = [NSUUID UUID].UUIDString;
-            self.currentController.ft_viewUUID = viewid;
-            [self.rumManger startViewWithViewID:viewid viewName:NSStringFromClass(self.currentController.class) viewReferrer:self.currentController.ft_parentVC loadDuration:self.currentController.ft_loadDuration];
-            if(self.rumConfig.enableTraceUserAction){
-                [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-            }
+            NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@0;
+            [self.rumManger startViewWithViewID:viewid viewName:self.viewReferrer viewReferrer:@"" loadDuration:loadDuration];
+        }
+        if(self.rumConfig.enableTraceUserAction){
+            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
         }
     }
     @catch (NSException *exception) {
@@ -204,8 +205,8 @@ static dispatch_once_t onceToken;
     if (!_applicationWillResignActive) {
         return;
     }
-    if (self.currentController&&self.rumConfig.enableTraceUserView) {
-        [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
+    if (self.viewReferrer&&self.rumConfig.enableTraceUserView) {
+        [self.rumManger stopView];
     }
     _applicationWillResignActive = NO;
 }
@@ -219,8 +220,8 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationWillTerminate{
     @try {
-        if (self.currentController && self.rumConfig.enableTraceUserView) {
-            [self.rumManger stopViewWithViewID:self.currentController.ft_viewUUID];
+        if (self.viewReferrer && self.rumConfig.enableTraceUserView) {
+            [self.rumManger stopView];
         }
         [self.rumManger applicationWillTerminate];
         
@@ -229,10 +230,22 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
-    NSString *viewReferrer = viewController.ft_parentVC;
     NSString *viewID = viewController.ft_viewUUID;
     NSString *className = NSStringFromClass(viewController.class);
-    [self.rumManger startViewWithViewID:viewID viewName:className viewReferrer:viewReferrer loadDuration:viewController.ft_loadDuration];
+    [self.rumManger startViewWithViewID:viewID viewName:className viewReferrer:self.viewReferrer loadDuration:viewController.ft_loadDuration];
+    self.viewReferrer = className;
+    //记录冷启动 是在第一个页面显示出来后
+    if (!_applicationLoadFirstViewController) {
+        _applicationLoadFirstViewController = YES;
+        if (self.rumConfig.enableTraceUserAction) {
+            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
+        }
+        _appRelaunched = YES;
+    }
+}
+-(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration{
+    [self.rumManger startViewWithName:viewName viewReferrer:self.viewReferrer loadDuration:loadDuration];
+    self.viewReferrer = viewName;
     //记录冷启动 是在第一个页面显示出来后
     if (!_applicationLoadFirstViewController) {
         _applicationLoadFirstViewController = YES;

@@ -27,10 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 进入页面 viewId 内部管理
  * @param viewName        页面名称
- * @param viewReferrer    页面父视图
  * @param loadDuration    页面的加载时长
  */
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
+-(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
 /**
  * 离开页面
  */

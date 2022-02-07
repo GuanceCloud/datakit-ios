@@ -53,11 +53,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataViewStart:
             [self startView:model];
             break;
-        case FTRUMDataLaunchCold:
-            if (self.viewHandlers.count == 0) {
-                [self startView:model];
-            }
-            break;
         case FTRUMDataError:
             [self writeErrorData:model];
             break;

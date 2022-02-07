@@ -40,7 +40,7 @@
     [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    if (!(viewId&&viewId.length>0&&viewName&&viewReferrer&&viewName.length>0)) {
+    if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         return;
     }
     @try {
