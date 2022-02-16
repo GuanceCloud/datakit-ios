@@ -90,18 +90,6 @@
             }
         }
             break;
-        case FTRUMDataLaunchCold:{
-            if (self.isActiveView && self.actionHandler == nil) {
-                [self startAction:model];
-            }
-        }
-            break;
-        case FTRUMDataLaunchHot:{
-            if (self.isActiveView && self.actionHandler == nil) {
-                [self startAction:model];
-            }
-        }
-            break;
         case FTRUMDataError:{
             if (self.isActiveView) {
                 self.viewErrorCount++;

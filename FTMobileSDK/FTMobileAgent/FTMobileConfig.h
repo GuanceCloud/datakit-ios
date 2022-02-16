@@ -232,6 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *version;
 /**
  * 设置 SDK 全局 tag
+ * 保留标签： sdk_package_flutter、sdk_package_react_native
  */
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 

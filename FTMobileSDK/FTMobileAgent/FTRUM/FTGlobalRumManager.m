@@ -23,7 +23,8 @@
 #import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate>
+#import "FTAppLaunchTracker.h"
+@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -32,6 +33,7 @@
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
 @property (atomic, copy, readwrite) NSString *viewReferrer;
+@property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @end
 
 @implementation FTGlobalRumManager{
@@ -77,7 +79,8 @@ static dispatch_once_t onceToken;
         return;
     }
     self.track = [[FTTrack alloc]init];
-    
+    self.launchTracker = [[FTAppLaunchTracker alloc]init];
+    self.launchTracker.delegate = self;
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig];
     if(rumConfig.enableTrackAppCrash){
         [FTUncaughtExceptionHandler sharedHandler];
@@ -172,59 +175,25 @@ static dispatch_once_t onceToken;
     [self.rumManger addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]];
 
 }
+#pragma mark ========== APP LAUNCH ==========
+-(void)ftAppHotStart:(NSNumber *)duration{
+    _appState = AppStateRun;
+    [self.rumManger addLaunch:YES duration:duration];
+
+}
+-(void)ftAppColdStart:(NSNumber *)duration{
+    [self.rumManger addLaunch:NO duration:duration];
+    if (self.viewReferrer) {
+        NSString *viewid = [NSUUID UUID].UUIDString;
+        NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@0;
+        [self.rumManger startViewWithViewID:viewid viewName:self.viewReferrer viewReferrer:@"" loadDuration:loadDuration];
+    }
+}
 #pragma mark ========== AUTO TRACK ==========
-- (void)applicationWillEnterForeground{
-    if (_appRelaunched){
-        self.launchTime = [NSDate date];
-    }
-}
-- (void)applicationDidBecomeActive{
-    @try {
-        if (_applicationWillResignActive) {
-            _applicationWillResignActive = NO;
-            return;
-        }
-        _appState = AppStateRun;
-        if (!_applicationLoadFirstViewController) {
-            return;
-        }
-        if (self.viewReferrer&&self.rumConfig.enableTraceUserView) {
-            NSString *viewid = [NSUUID UUID].UUIDString;
-            NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@0;
-            [self.rumManger startViewWithViewID:viewid viewName:self.viewReferrer viewReferrer:@"" loadDuration:loadDuration];
-        }
-        if(self.rumConfig.enableTraceUserAction){
-            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        }
-    }
-    @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
-- (void)applicationDidEnterBackground{
-    if (!_applicationWillResignActive) {
-        return;
-    }
-    if (self.viewReferrer&&self.rumConfig.enableTraceUserView) {
-        [self.rumManger stopView];
-    }
-    _applicationWillResignActive = NO;
-}
-- (void)applicationWillResignActive{
-    @try {
-        _applicationWillResignActive = YES;
-    }
-    @catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
-    }
-}
 - (void)applicationWillTerminate{
     @try {
-        if (self.viewReferrer && self.rumConfig.enableTraceUserView) {
-            [self.rumManger stopView];
-        }
+        [self.rumManger stopView];
         [self.rumManger applicationWillTerminate];
-        
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
@@ -234,33 +203,16 @@ static dispatch_once_t onceToken;
     NSString *className = NSStringFromClass(viewController.class);
     [self.rumManger startViewWithViewID:viewID viewName:className viewReferrer:self.viewReferrer loadDuration:viewController.ft_loadDuration];
     self.viewReferrer = className;
-    //记录冷启动 是在第一个页面显示出来后
-    if (!_applicationLoadFirstViewController) {
-        _applicationLoadFirstViewController = YES;
-        if (self.rumConfig.enableTraceUserAction) {
-            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        }
-        _appRelaunched = YES;
-    }
 }
 -(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration{
     [self.rumManger startViewWithName:viewName viewReferrer:self.viewReferrer loadDuration:loadDuration];
     self.viewReferrer = viewName;
-    //记录冷启动 是在第一个页面显示出来后
-    if (!_applicationLoadFirstViewController) {
-        _applicationLoadFirstViewController = YES;
-        if (self.rumConfig.enableTraceUserAction) {
-            [self.rumManger addLaunch:_appRelaunched duration:[FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]]];
-        }
-        _appRelaunched = YES;
-    }
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){
         [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
     }
 }
-
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _rumManger = nil;

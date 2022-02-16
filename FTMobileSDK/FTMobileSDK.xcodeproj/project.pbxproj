@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170CC2E027BA6BA700C9EE34 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 170CC2DE27BA6BA700C9EE34 /* FTAppLaunchTracker.h */; };
+		170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */; };
 		177BDF582799773800DA4EA7 /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 177BDF572799773800DA4EA7 /* FTEnumConstant.m */; };
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
@@ -153,6 +155,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		170CC2DE27BA6BA700C9EE34 /* FTAppLaunchTracker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppLaunchTracker.h; sourceTree = "<group>"; };
+		170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchTracker.m; sourceTree = "<group>"; };
 		177BDF572799773800DA4EA7 /* FTEnumConstant.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTEnumConstant.m; sourceTree = "<group>"; };
 		177BDF592799775F00DA4EA7 /* FTEnumConstant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
@@ -324,6 +328,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		170CC2DD27BA6B7B00C9EE34 /* FTAppLaunch */ = {
+			isa = PBXGroup;
+			children = (
+				170CC2DE27BA6BA700C9EE34 /* FTAppLaunchTracker.h */,
+				170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */,
+			);
+			path = FTAppLaunch;
+			sourceTree = "<group>";
+		};
 		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -399,6 +412,7 @@
 				7C0FBD3B274B89BA007CD0D3 /* FTExternalDataManager.m */,
 				177BDF592799775F00DA4EA7 /* FTEnumConstant.h */,
 				177BDF572799773800DA4EA7 /* FTEnumConstant.m */,
+				170CC2DD27BA6B7B00C9EE34 /* FTAppLaunch */,
 				7C28B90326611B3700CECBA6 /* FTRUM */,
 				7C28B8522660980000CECBA6 /* JSBridge */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
@@ -667,6 +681,7 @@
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
 				7CA1805E26CF99A30035DDF0 /* FTConfigManager.h in Headers */,
 				7CA1803126CF4E610035DDF0 /* FTThread.h in Headers */,
+				170CC2E027BA6BA700C9EE34 /* FTAppLaunchTracker.h in Headers */,
 				177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */,
 				7C28B85E2660980000CECBA6 /* FTWKWebViewJavascriptBridge.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHandler.h in Headers */,
@@ -824,6 +839,7 @@
 				4A299F922521F7F800400931 /* FTANRDetector.m in Sources */,
 				7C28B91926611B3800CECBA6 /* FTRUMDataModel.m in Sources */,
 				7C81952B26C4B90F00D0D8C4 /* FTDateUtil.m in Sources */,
+				170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */,
 				4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
 				4A7135A72574FE1F00444C3D /* UIView+FTAutoTrack.m in Sources */,

@@ -82,10 +82,6 @@
 - (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
     if ([actionType isEqualToString:@"click"]) {
         [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
-    }else if([actionType isEqualToString:@"launch_hot"]){
-        [FTGlobalRumManager.sharedInstance.rumManger addLaunch:YES duration:@0];
-    }else if([actionType isEqualToString:@"launch_cold"]){
-        [FTGlobalRumManager.sharedInstance.rumManger addLaunch:NO duration:@0];
     }
 }
 - (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack{

@@ -10,6 +10,7 @@
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMobileAgent+Private.h"
+#import "FTDateUtil.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -59,6 +60,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataLongTask:
             [self writeErrorData:model];
             break;
+        case FTRUMDataLaunchHot:
+            [self writeLaunchData:(FTRUMLaunchDataModel*)model];
+            break;
+        case FTRUMDataLaunchCold:
+            [self writeLaunchData:(FTRUMLaunchDataModel*)model];
+            break;
         default:
             break;
     }
@@ -78,6 +85,23 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     BOOL expired = sessionDuration >= sessionMaxDuration;
 
     return timedOut || expired;
+}
+- (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
+    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    NSDictionary *actiontags = @{FT_RUM_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
+                                 FT_RUM_KEY_ACTION_NAME:model.action_name,
+                                 FT_RUM_KEY_ACTION_TYPE:model.action_type
+    };
+    NSDictionary *fields = @{FT_DURATION:model.duration,
+                             FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@(0),
+                             FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(0),
+                             FT_RUM_KEY_ACTION_ERROR_COUNT:@(0),
+    };
+    [tags addEntriesFromDictionary:actiontags];
+    
+    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
+
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
