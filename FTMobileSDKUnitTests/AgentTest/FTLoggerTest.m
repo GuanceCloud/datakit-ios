@@ -303,4 +303,22 @@
     XCTAssertTrue(oldDatas.count+2 == newDatas.count);
 
 }
+- (void)testGlobalContext{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableConsoleLog = YES;
+    loggerConfig.globalContext = @{@"logger_id":@"logger_id_1"};
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
+    [NSThread sleepForTimeInterval:2];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
+
+}
 @end
