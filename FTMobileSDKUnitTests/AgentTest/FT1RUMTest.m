@@ -108,7 +108,7 @@
 
     [tester waitForTimeInterval:1];
     [tester tapViewWithAccessibilityLabel:@"SecondButton"];
-
+    [tester tapViewWithAccessibilityLabel:@"FirstButton"];
 
     [tester waitForTimeInterval:2];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -164,7 +164,7 @@
             [self rumTags:tags];
             NSDictionary *field = opdata[FT_FIELDS];
             XCTAssertTrue([field.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[field.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_REFERRER]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasView = YES;
             *stop = YES;
         }
@@ -282,7 +282,7 @@
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
-    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
@@ -290,14 +290,17 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
             NSDictionary *tags = opdata[FT_TAGS];
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]){
             NSDictionary *field = opdata[FT_FIELDS];
             [self rumTags:tags];
             XCTAssertTrue([field.allKeys containsObject:FT_RUM_KEY_ACTION_LONG_TASK_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_RESOURCE_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_ERROR_COUNT]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_ACTION_ID]&&[tags.allKeys containsObject:FT_RUM_KEY_ACTION_NAME]&&[tags.allKeys containsObject:FT_RUM_KEY_ACTION_TYPE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_REFERRER]);
+//            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_REFERRER]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+            *stop = YES;
+            }
         }
     }];
 }
@@ -344,7 +347,6 @@
 - (void)testRumAppLaunchCold{
     [self setRumConfig];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-    [tester tapViewWithAccessibilityLabel:@"SecondButton"];
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block NSInteger count = 0;
@@ -459,6 +461,7 @@
         XCTAssertTrue([op isEqualToString:@"RUM"]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
             NSDictionary *field = opdata[FT_FIELDS];
             actionCount = [field[FT_KEY_VIEW_ACTION_COUNT] integerValue];
@@ -469,7 +472,7 @@
             XCTAssertTrue(errorCount == (1+resErrorCount));
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == 1);
-        }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]){
+        }else if([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]){
             trueActionCount ++;
         }
     }];
@@ -514,7 +517,7 @@
             NSInteger longTaskCount = [field[FT_RUM_KEY_ACTION_LONG_TASK_COUNT] integerValue];
             XCTAssertTrue(errorCount == (1+resErrorCount));
             XCTAssertTrue(longTaskCount == 1);
-            XCTAssertTrue(resourceCount == (1-resErrorCount));
+            XCTAssertTrue(resourceCount == 1);
             hasActionData = YES;
             *stop = YES;
         }
@@ -718,7 +721,7 @@
     [self addErrorData];
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count - oldArray.count  == 2);
+    XCTAssertTrue(newArray.count - oldArray.count  == 3);
 }
 - (void)test0DisableTraceUserView{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -734,7 +737,8 @@
     [self addErrorData];
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count+1);
+    //一个冷启动、一个error
+    XCTAssertTrue(newArray.count == oldArray.count+2);
 
 }
 - (void)test3AbleTraceUserAction{
@@ -778,7 +782,8 @@
     [tester waitForTimeInterval:2];
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count);
+    //app_cold_start 冷热启动与 enableTraceUserAction 无关
+    XCTAssertTrue(newArray.count == oldArray.count+1);
 }
 - (void)testAbleTraceUserResource{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -829,7 +834,8 @@
     [tester waitForTimeInterval:2];
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count);
+    //app_cold_start
+    XCTAssertTrue(newArray.count == oldArray.count + 1);
 }
 - (void)addErrorData{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";

@@ -232,7 +232,6 @@
     NSDictionary *error = responseContent[@"error"];
     NSNumber *errorCode = error[@"errorCode"];
     XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
-    [self uploadModel:model];
 }
 - (void)testRightRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -252,7 +251,7 @@
     NSDictionary *tags = opdata[FT_TAGS];
     BOOL isError = [tags[@"__isError"] boolValue];
     XCTAssertTrue(isError == NO);
-    [self uploadModel:model];
+//    [self uploadModel:model];
 }
 - (void)testNewThread{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -274,7 +273,7 @@
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"ok"]);
 
-    [self uploadModel:model];
+//    [self uploadModel:model];
 }
 
 - (void)testBadResponse{
@@ -308,7 +307,7 @@
     NSDictionary *tags = opdata[FT_TAGS];
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"error"]);
-    [self uploadModel:model];
+//    [self uploadModel:model];
 }
 - (void)testNSURLConnection{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -332,7 +331,7 @@
     NSString *status = tags[@"status"];
     XCTAssertTrue([status isEqualToString:@"ok"]);
 
-    [self uploadModel:model];
+//    [self uploadModel:model];
 }
 - (void)uploadModel:(FTRecordModel *)model{
     XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
