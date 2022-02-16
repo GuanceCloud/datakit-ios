@@ -51,6 +51,7 @@
     if ( url && !isUnitTests && !isUITests) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
+        config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -63,15 +64,17 @@
         rumConfig.enableTraceUserResource = YES;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
-                                    @"dynamic_tag":dynamicTag};
+                                    @"dynamic_tag":dynamicTag};//eg.
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
         loggerConfig.enableConsoleLog = YES;
+        loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
         traceConfig.enableLinkRumData = YES;
         traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
         traceConfig.enableAutoTrace = YES;
+        traceConfig.globalContext = @{@"trace_id":@"trace_id_1"};//eg.
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];

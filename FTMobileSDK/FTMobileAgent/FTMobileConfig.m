@@ -72,6 +72,7 @@
     options.prefix = self.prefix;
     options.logLevelFilter = self.logLevelFilter;
     options.discardType = self.discardType;
+    options.globalContext = self.globalContext;
     return options;
 }
 @end
@@ -92,6 +93,7 @@
     options.enableLinkRumData = self.enableLinkRumData;
     options.networkTraceType = self.networkTraceType;
     options.enableAutoTrace = self.enableAutoTrace;
+    options.globalContext = self.globalContext;
     return options;
 }
 @end
@@ -114,6 +116,7 @@
     options.XDataKitUUID = self.XDataKitUUID;
     options.env = self.env;
     options.version = self.version;
+    options.globalContext = self.globalContext;
     return options;
 }
 @end

@@ -88,14 +88,14 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [FTConfigManager sharedInstance].rumConfig = _rumConfig;
         [self.presetProperty setAppid:_rumConfig.appid];
-        self.presetProperty.rumContext = rumConfigOptions.globalContext;
+        self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
-        self.presetProperty.logContext = self.loggerConfig.globalContext;
+        self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
         self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;

@@ -100,7 +100,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         _env = FTEnvStringMap[config.env];
         _isSignin = [FTBaseInfoHandler userId]?YES:NO;
         _mobileDevice = [[MobileDevice alloc]init];
-        _context = config.globalContext;
+        _context = [config.globalContext copy];
     }
     return self;
 }
