@@ -15,7 +15,10 @@
 #pragma clang diagnostic ignored "-Wstrict-prototypes"
 typedef void (^datafluxSwizzleBlock)();
 #pragma clang diagnostic pop
-
+/**
+ * 使用注意事项：
+ * 判断参数是否为基本常量 若为 则可能需要自行添加替换方法
+ */
 @interface FTSwizzler : NSObject
 
 + (void)swizzleSelector:(SEL)aSelector onClass:(Class)aClass withBlock:(datafluxSwizzleBlock)block named:(NSString *)aName;
