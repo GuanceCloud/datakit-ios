@@ -10,6 +10,6 @@
 #define FTMobileAgentVersion_h
 
 
-#define SDK_VERSION  @"1.3.1-alpha.11"
+#define SDK_VERSION  @"1.3.2-alpha.1"
 
 #endif /* FTMobileAgentVersion_h */
