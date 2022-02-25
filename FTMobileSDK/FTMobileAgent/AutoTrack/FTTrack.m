@@ -40,7 +40,7 @@
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             NSError *error = NULL;
-            [UIViewController ft_swizzleMethod:@selector(viewDidLoad) withMethod:@selector(dataflux_viewDidLoad) error:&error];
+            [UIViewController ft_swizzleMethod:@selector(viewWillAppear:) withMethod:@selector(dataflux_viewWillAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidAppear:) withMethod:@selector(dataflux_viewDidAppear:) error:&error];
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(dataflux_viewDidDisappear:) error:&error];
         });

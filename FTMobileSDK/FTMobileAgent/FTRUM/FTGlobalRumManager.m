@@ -78,10 +78,9 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
         return;
     }
-    self.track = [[FTTrack alloc]init];
-    self.launchTracker = [[FTAppLaunchTracker alloc]init];
-    self.launchTracker.delegate = self;
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig];
+    self.track = [[FTTrack alloc]init];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [FTUncaughtExceptionHandler sharedHandler];
     }
