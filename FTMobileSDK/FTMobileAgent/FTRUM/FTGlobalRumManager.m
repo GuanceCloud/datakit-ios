@@ -32,24 +32,15 @@
 @property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
-@property (atomic, copy, readwrite) NSString *viewReferrer;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @end
 
-@implementation FTGlobalRumManager{
-    BOOL _appRelaunched;          // App 从后台恢复
-    //进入非活动状态，比如双击 home、系统授权弹框
-    BOOL _applicationWillResignActive;
-    BOOL _applicationLoadFirstViewController;
-    
-}
+@implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _appState = AppStateStartUp;
-        _appRelaunched = NO;
         _launchTime = [NSDate date];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
@@ -176,16 +167,17 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
-    _appState = AppStateRun;
+    self.rumManger.appState = AppStateRun;
     [self.rumManger addLaunch:YES duration:duration];
-
 }
 -(void)ftAppColdStart:(NSNumber *)duration{
     [self.rumManger addLaunch:NO duration:duration];
-    if (self.viewReferrer) {
+    if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
         NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@0;
-        [self.rumManger startViewWithViewID:viewid viewName:self.viewReferrer viewReferrer:@"" loadDuration:loadDuration];
+        NSString *viewReferrer =self.rumManger.viewReferrer;
+        self.rumManger.viewReferrer = @"";
+        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer  loadDuration:loadDuration];
     }
 }
 #pragma mark ========== AUTO TRACK ==========
@@ -200,12 +192,7 @@ static dispatch_once_t onceToken;
 - (void)trackViewDidAppear:(UIViewController *)viewController{
     NSString *viewID = viewController.ft_viewUUID;
     NSString *className = NSStringFromClass(viewController.class);
-    [self.rumManger startViewWithViewID:viewID viewName:className viewReferrer:self.viewReferrer loadDuration:viewController.ft_loadDuration];
-    self.viewReferrer = className;
-}
--(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration{
-    [self.rumManger startViewWithName:viewName viewReferrer:self.viewReferrer loadDuration:loadDuration];
-    self.viewReferrer = viewName;
+    [self.rumManger startViewWithViewID:viewID viewName:className  loadDuration:viewController.ft_loadDuration];
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){

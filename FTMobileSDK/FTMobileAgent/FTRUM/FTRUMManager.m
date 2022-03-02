@@ -29,6 +29,7 @@
     if (self) {
         self.rumConfig = rumConfig;
         self.assistant = self;
+        self.appState = AppStateStartUp;
     }
     return self;
 }
@@ -36,18 +37,19 @@
     _rumConfig = rumConfig;
 }
 #pragma mark - View -
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+-(void)startViewWithName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration{
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:loadDuration];
 }
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration{
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:viewReferrer];
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.loading_time = loadDuration?:@0;
             viewModel.type = FTRUMDataViewStart;
+            self.viewReferrer = viewName;
             [self process:viewModel];
         }];
     } @catch (NSException *exception) {
@@ -123,6 +125,16 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
+- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    __block NSString *spanIDStr,*traceIdStr;
+    if([FTNetworkTraceManager sharedInstance].enableLinkRumData && [FTNetworkTraceManager sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
+        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+            spanIDStr = traceId;
+            traceIdStr = spanID;
+        }];
+    }
+    [self addResource:identifier metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
+}
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
     if (!identifier) {
         return;
@@ -145,7 +157,7 @@
         
         if (content.error || content.httpStatusCode>=400) {
             NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
-            NSString *run = AppStateStringMap[[FTGlobalRumManager sharedInstance].appState];
+            NSString *run = AppStateStringMap[self.appState];
             NSMutableDictionary *errorField = [NSMutableDictionary new];
             NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
             [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_RUM_KEY_ERROR_MESSAGE];
@@ -221,7 +233,7 @@
     }
 }
 #pragma mark - error 、 long_task -
-- (void)addErrorWithType:(NSString *)type situation:(AppState )situation message:(NSString *)message stack:(NSString *)stack{
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     if (!(type && message && stack)) {
         return;
     }
@@ -232,7 +244,7 @@
         NSDictionary *tags = @{
             FT_RUM_KEY_ERROR_TYPE:type,
             FT_RUM_KEY_ERROR_SOURCE:@"logger",
-            FT_RUM_KEY_ERROR_TYPE:AppStateStringMap[situation]
+            FT_RUM_KEY_ERROR_TYPE:AppStateStringMap[self.appState]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];

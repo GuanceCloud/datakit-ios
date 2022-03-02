@@ -16,8 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMManager *rumManger;
 // 仅在主线程使用 所以无多线程调用问题
 @property (nonatomic, weak) UIViewController *currentController;
-@property (nonatomic, assign) AppState appState; //正在运行
-
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
@@ -28,12 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)trackViewDidDisappear:(UIViewController *)viewController;
 - (void)trackViewDidAppear:(UIViewController *)viewController;
-/**
- * 进入页面 viewId 内部管理
- * @param viewName        页面名称
- * @param loadDuration    页面的加载时长
- */
--(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
+
 - (void)resetInstance;
 @end
 

@@ -8,9 +8,11 @@
 
 #import "ManualRumAndTraceDataAdd.h"
 #import "TableViewCellItem.h"
-#import <FTExternalDataManager.h>
+#import <FTGlobalRumManager.h>
+#import <FTRUMManager.h>
 #import <FTResourceMetricsModel.h>
 #import <FTResourceContentModel.h>
+#import "FTTraceHandlerManager.h"
 
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -43,20 +45,20 @@
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
         // duration 以纳秒为单位 示例中为 1s
-        [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC"  loadDuration:@1000000000];
+        [[FTGlobalRumManager sharedInstance].rumManger startViewWithName:@"TestVC"  loadDuration:@1000000000];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
     
-        [[FTExternalDataManager sharedManager] stopView];
+        [[FTGlobalRumManager sharedInstance].rumManger stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
-        [[FTExternalDataManager sharedManager] addActionWithName:@"UITableViewCell click" actionType:@"click"];
+        [[FTGlobalRumManager sharedInstance].rumManger  addClickActionWithName:@"UITableViewCell click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" situation:AppStateRun message:@"crash_message" stack:@"crash_stack"];
+        [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:@"ios_crash" message:@"crash_message" stack:@"crash_stack"];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
-        [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"long task" duration:@1000000000];
+        [[FTGlobalRumManager sharedInstance].rumManger addLongTaskWithStack:@"long task" duration:@1000000000];
     }];
     TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource" handler:^{
         [weakSelf manualRumResource];
@@ -73,7 +75,7 @@
 - (void)manualTrace{
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTTraceHandlerManager sharedManager] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
@@ -93,7 +95,7 @@
         content.error = error;
         //其他平台
         content.errorMessage = @"对应errorMessage string";
-        [[FTExternalDataManager sharedManager] traceWithKey:key content:content];
+        [[FTTraceHandlerManager sharedManager] traceWithKey:key content:content];
     }];
     
     [task resume];
@@ -105,7 +107,7 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
     NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-    [[FTExternalDataManager sharedManager] startResourceWithKey:self.rumKey];
+    [[FTGlobalRumManager sharedInstance].rumManger startResource:self.rumKey];
     NSURLSessionTask *task = [session dataTaskWithRequest:request];
     
     [task resume];
@@ -125,7 +127,7 @@
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)task.response;
     NSString * responseBody  =[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
 
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:self.rumKey];
+    [[FTGlobalRumManager sharedInstance].rumManger stopResource:self.rumKey];
     
     FTResourceMetricsModel *metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
 
@@ -138,7 +140,7 @@
     content.responseBody = responseBody;
     //ios native
     content.error = error;
-    [[FTExternalDataManager sharedManager] addResourceWithKey:self.rumKey metrics:metricsModel content:content];
+    [[FTGlobalRumManager sharedInstance].rumManger addResource:self.rumKey metrics:metricsModel content:content];
 }
 #pragma mark ========== UITableViewDataSource ==========
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{

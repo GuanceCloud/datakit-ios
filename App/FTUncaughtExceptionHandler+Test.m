@@ -22,7 +22,7 @@
     //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
   
 
-    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] situation:[FTGlobalRumManager sharedInstance].appState message:[exception reason] stack:info];
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info];
     
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

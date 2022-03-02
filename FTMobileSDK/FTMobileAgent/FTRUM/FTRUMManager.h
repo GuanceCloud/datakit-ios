@@ -13,6 +13,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManager : FTRUMHandler
+@property (nonatomic, assign) AppState appState;
+@property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
 -(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
@@ -25,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * add resource metrics content
  */
+- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
+
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
 /**
  * resource Stop
@@ -38,17 +42,15 @@ NS_ASSUME_NONNULL_BEGIN
  * 进入页面
  * @param viewId          页面id
  * @param viewName        页面名称
- * @param viewReferrer    页面父视图
  * @param loadDuration    页面的加载时长
  */
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
 /**
  * 进入页面 viewId 内部管理
  * @param viewName        页面名称
- * @param viewReferrer    页面父视图
  * @param loadDuration    页面的加载时长
  */
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration;
+-(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
 /**
  * 离开页面
  * @param viewId         页面id
@@ -81,11 +83,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 崩溃
  * @param type       错误类型:java_crash/native_crash/abort/ios_crash
- * @param situation  启动时/启动后
  * @param message    错误信息
  * @param stack      错误堆栈
  */
-- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack;
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
 /**
  * 卡顿
  * @param stack      卡顿堆栈

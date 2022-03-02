@@ -1,27 +1,23 @@
 //
-//  FTExternalResourceManager.m
+//  FTTraceHandlerManager.m
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
-//  Copyright © 2021 DataFlux-cn. All rights reserved.
+//  Created by hulilei on 2022/3/2.
+//  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import "FTExternalDataManager.h"
+#import "FTTraceHandlerManager.h"
 #import "FTTraceHandler.h"
-#import "FTGlobalRumManager.h"
-#import "FTRUMManager.h"
-#import "FTNetworkTraceManager.h"
-#import "FTResourceContentModel.h"
-@interface FTExternalDataManager()
+@interface FTTraceHandlerManager ()
 @property (nonatomic, strong) NSMutableDictionary<NSString *,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @end
-@implementation FTExternalDataManager
+@implementation FTTraceHandlerManager
 + (instancetype)sharedManager{
     static dispatch_once_t onceToken;
-    static FTExternalDataManager *sharedManager = nil;
+    static FTTraceHandlerManager *sharedManager = nil;
     dispatch_once(&onceToken, ^{
-        sharedManager = [[FTExternalDataManager alloc]init];
+        sharedManager = [[FTTraceHandlerManager alloc]init];
     });
     return sharedManager;
 }
@@ -33,8 +29,6 @@
     }
     return self;
 }
-#pragma mark - Tracing -
-
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     FTTraceHandler *handler = [self getTraceHandler:key];
     if (!handler) {
@@ -68,36 +62,5 @@
         [handler tracingWithModel:content];
         [self removeTraceHandlerWithKey:key];
     }
-}
-
-#pragma mark - Rum -
-
--(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration{
-    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName loadDuration:loadDuration];
-}
--(void)stopView{
-    [FTGlobalRumManager.sharedInstance.rumManger stopView];
-
-}
-- (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
-    if ([actionType isEqualToString:@"click"]) {
-        [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
-    }
-}
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type  message:message stack:stack];
-}
--(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [FTGlobalRumManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
-}
-- (void)startResourceWithKey:(NSString *)key{
-    [FTGlobalRumManager.sharedInstance.rumManger startResource:key];
-}
-- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    
-    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content];
-}
-- (void)stopResourceWithKey:(nonnull NSString *)key {
-    [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
 }
 @end
