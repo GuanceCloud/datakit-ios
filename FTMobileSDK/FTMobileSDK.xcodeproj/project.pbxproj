@@ -829,6 +829,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */,
 				7CF4E11F26B145C90076D238 /* NSObject+FTAutoTrack.m in Sources */,
 				7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */,
 				7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */,
@@ -839,7 +840,6 @@
 				4A299F922521F7F800400931 /* FTANRDetector.m in Sources */,
 				7C28B91926611B3800CECBA6 /* FTRUMDataModel.m in Sources */,
 				7C81952B26C4B90F00D0D8C4 /* FTDateUtil.m in Sources */,
-				170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */,
 				4A7135B42579E82A00444C3D /* FTLogHook.m in Sources */,
 				4A4D925F2511B8B1004B9FA0 /* FTWKWebViewHandler.m in Sources */,
 				4A7135A72574FE1F00444C3D /* UIView+FTAutoTrack.m in Sources */,
