@@ -157,12 +157,13 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count == oldArray.count);
+    //app_cold_start 应用生命周期不受影响
+    XCTAssertTrue(newArray.count == oldArray.count+1);
     [[FTMobileAgent sharedInstance] resetInstance];
     
 }
