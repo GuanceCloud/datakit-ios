@@ -81,7 +81,7 @@
     self = [super init];
     if (self) {
         _samplerate= 100;
-        _networkTraceType = FTNetworkTraceTypeZipkin;
+        _networkTraceType = FTNetworkTraceTypeZipkinMulti;
         _service = FT_DEFAULT_SERVICE_NAME;
     }
     return self;

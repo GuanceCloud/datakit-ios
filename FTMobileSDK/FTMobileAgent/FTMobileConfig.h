@@ -39,9 +39,13 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  *  FTNetworkTraceTypeDDtrace      - DDtrace 
  */
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
-    FTNetworkTraceTypeZipkin          = 0,
-    FTNetworkTraceTypeJaeger          = 1,
-    FTNetworkTraceTypeDDtrace         = 2,
+    FTNetworkTraceTypeZipkinSingle    = 0,
+    FTNetworkTraceTypeZipkinMulti,
+    FTNetworkTraceTypeJaeger,
+    FTNetworkTraceTypeDDtrace,
+    FTNetworkTraceTypeSkywalkingV3,
+    FTNetworkTraceTypeTraceparent,
+
 };
 /**
  * 环境字段。属性值：prod/gray/pre/common/local。其中

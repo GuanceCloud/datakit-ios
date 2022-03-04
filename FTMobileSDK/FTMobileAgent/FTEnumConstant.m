@@ -22,9 +22,12 @@ NSString * const FTStatusStringMap[] = {
     [FTStatusOk] = @"ok"
 };
 NSString * const FTNetworkTraceStringMap[] = {
-    [FTNetworkTraceTypeZipkin] = @"zipkin",
+    [FTNetworkTraceTypeZipkinMulti] = @"zipkin",
+    [FTNetworkTraceTypeZipkinSingle] = @"zipkin",
     [FTNetworkTraceTypeJaeger] = @"jaeger",
     [FTNetworkTraceTypeDDtrace] = @"ddtrace",
+    [FTNetworkTraceTypeSkywalkingV3] = @"skywalking",
+    [FTNetworkTraceTypeTraceparent] = @"traceparent",
 };
 NSString * const FTEnvStringMap[] = {
     [FTEnvProd] = @"prod",

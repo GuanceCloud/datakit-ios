@@ -134,6 +134,7 @@ NSString * const FT_KEY_OPERATION = @"operation";
 NSString * const FT_APPLICATION_UUID = @"application_UUID";
 NSString * const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString * const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
+NSString * const FT_NETWORK_ZIPKIN_PARENTSPANID = @"X-B3-ParentSpanId";
 NSString * const FT_NETWORK_ZIPKIN_SAMPLED =@"X-B3-Sampled";
 NSString * const FT_NETWORK_JAEGER_TRACEID = @"uber-trace-id";
 NSString * const FT_NETWORK_DDTRACE_TRACEID = @"x-datadog-trace-id";
@@ -142,6 +143,9 @@ NSString * const FT_NETWORK_DDTRACE_ORIGIN = @"x-datadog-origin";
 NSString * const FT_NETWORK_DDTRACE_SAMPLED = @"x-datadog-sampling-priority";
 NSString * const FT_NETWORK_SKYWALKING_V3 = @"sw8";
 NSString * const FT_NETWORK_SKYWALKING_V2 = @"sw6";
+NSString * const FT_NETWORK_TRACEPARENT_KEY = @"traceparent";
+NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
+
 NSString * const FT_NETWORK_HEADERS = @"headers";
 NSString * const FT_NETWORK_BODY = @"body";
 NSString * const FT_LOGGING_CLASS_TRACING = @"tracing";
