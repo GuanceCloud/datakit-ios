@@ -54,13 +54,12 @@
     self.enableLinkRumData = traceConfig.enableLinkRumData;
     self.networkTraceType = traceConfig.networkTraceType;
     self.enableAutoTrace = traceConfig.enableAutoTrace;
-
     self.service = traceConfig.service;
     if (traceConfig.enableAutoTrace) {
         [FTWKWebViewHandler sharedInstance].enableTrace = YES;
         [FTURLProtocol startMonitor];
     }
-
+    
 }
 - (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url{
     // 用来判断是否开启 trace
@@ -74,11 +73,14 @@
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
-            return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],@(sampled)]};
+            return [self getJaegerHeader:sampled];
+            break;
         case FTNetworkTraceTypeZipkinMulti:
             return [self getZipkinMultiHeader:sampled];
+            break;
         case FTNetworkTraceTypeDDtrace:
             return [self getDDTRACEHeader:sampled];
+            break;
         case FTNetworkTraceTypeZipkinSingle:
             return [self getZipkinSingleHeader:sampled];
             break;
@@ -91,52 +93,42 @@
     }
     return  nil;
 }
-// todo: 新添加类型的 header 解包
-- (void)getTraceingDatasWithRequestHeaderFields:(NSDictionary *)headerFields handler:(void (^)(NSString *traceId, NSString *spanID,BOOL sampled))handler{
-    NSDictionary *header = headerFields;
-    NSString *trace,*span,*sampling;
-    if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]) {
-        trace = header[FT_NETWORK_ZIPKIN_TRACEID];
-        if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]) {
-            span = header[FT_NETWORK_ZIPKIN_SPANID];
-        }
-        if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SAMPLED]) {
-            sampling = header[FT_NETWORK_ZIPKIN_SAMPLED] ;
-        }
-    }else if ([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
-        NSString *traceStr =header[FT_NETWORK_JAEGER_TRACEID];
+- (void)getTraceingDatasWithRequestHeaderFields:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if(!handler){
+        return;
+    }
+    switch (self.type) {
+        case FTNetworkTraceTypeJaeger:
+            [self getJaegerTraceingDatas:headerFields handler:handler];
+            break;
+        case FTNetworkTraceTypeZipkinMulti:
+            [self getZipkinMultiTraceingDatas:headerFields handler:handler];
+            break;
+        case FTNetworkTraceTypeDDtrace:
+            [self getDDTRACETraceingDatas:headerFields handler:handler];
+            break;
+        case FTNetworkTraceTypeZipkinSingle:
+            [self getZipkinSingleTraceingDatas:headerFields handler:handler];
+            break;
+        case FTNetworkTraceTypeSkywalkingV3:
+            [self getSkyWalking_V3TraceingDatas:headerFields handler:handler];
+            break;
+        case FTNetworkTraceTypeTraceparent:
+            [self getTraceparentTraceingDatas:headerFields handler:handler];
+            break;
+    }
+}
+#pragma mark --------- Jaeger ----------
+- (NSDictionary *)getJaegerHeader:(BOOL)sampled{
+    return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],@(sampled)]};
+}
+-(void)getJaegerTraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if([[headerFields allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
+        NSString *traceStr =headerFields[FT_NETWORK_JAEGER_TRACEID];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@":"];
         if (traceAry.count == 4) {
-            trace = [traceAry firstObject];
-            span =traceAry[1];
-            sampling = [traceAry lastObject];
+            handler([traceAry firstObject],traceAry[1],[[traceAry lastObject] boolValue]);
         }
-
-    }else if([[header allKeys] containsObject:FT_NETWORK_DDTRACE_TRACEID]){
-        sampling = [header valueForKey:FT_NETWORK_DDTRACE_SAMPLED];
-        trace = [header valueForKey:FT_NETWORK_DDTRACE_TRACEID];
-        span = [header valueForKey:FT_NETWORK_DDTRACE_SPANID];
-    }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V3]) {
-        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
-        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
-        if (traceAry.count == 8) {
-            sampling = [traceAry firstObject];
-            trace = [traceAry[1] ft_base64Decode];
-            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
-            span = [parentTraceID stringByAppendingString:@"0"];
-        }
-    }else if ([[header allKeys] containsObject:FT_NETWORK_SKYWALKING_V2]) {
-        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
-        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
-        if (traceAry.count == 9) {
-            sampling = [traceAry firstObject];
-            trace = [traceAry[1] ft_base64Decode];
-            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
-            span = [parentTraceID stringByAppendingString:@"0"];
-        }
-    }
-    if (handler) {
-        handler(trace,span,[sampling boolValue]);
     }
 }
 #pragma mark --------- Zipkin ----------
@@ -150,13 +142,41 @@
 - (NSDictionary *)getZipkinSingleHeader:(BOOL)sampled{
     return  @{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],[NSString stringWithFormat:@"%d",sampled],@"00"]};
 }
+-(void)getZipkinMultiTraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if ([[headerFields allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]&&[[headerFields allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]&&[[headerFields allKeys]containsObject:FT_NETWORK_ZIPKIN_SAMPLED]) {
+        NSString *trace = headerFields[FT_NETWORK_ZIPKIN_TRACEID];
+        NSString *span = headerFields[FT_NETWORK_ZIPKIN_SPANID];
+        NSString *sampling = headerFields[FT_NETWORK_ZIPKIN_SAMPLED];
+        handler(trace,span,[sampling boolValue]);
+    }
+}
+-(void)getZipkinSingleTraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if([headerFields.allKeys containsObject:FT_NETWORK_ZIPKIN_SINGLE_KEY]){
+        NSArray *traceAry = [headerFields[FT_NETWORK_ZIPKIN_SINGLE_KEY] componentsSeparatedByString:@"-"];
+        if(traceAry.count == 4){
+            NSString *trace = [traceAry firstObject];
+            NSString *span = traceAry[1];
+            NSString *sampling=traceAry[2];
+            handler(trace,span,[sampling boolValue]);
+        }
+    }
+}
 #pragma mark --------- DDTRACE ----------
 - (NSDictionary *)getDDTRACEHeader:(BOOL)sampled{
     return  @{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
-             FT_NETWORK_DDTRACE_SPANID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]],
-             FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
-             FT_NETWORK_DDTRACE_TRACEID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]]
+              FT_NETWORK_DDTRACE_SPANID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]],
+              FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
+              FT_NETWORK_DDTRACE_TRACEID:[NSString stringWithFormat:@"%lld",[self generateUniqueID]]
     };
+}
+-(void)getDDTRACETraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if ([headerFields.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED] && [headerFields.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID] &&
+        [headerFields.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]) {
+        NSString *sampling = [headerFields valueForKey:FT_NETWORK_DDTRACE_SAMPLED];
+        NSString *trace = [headerFields valueForKey:FT_NETWORK_DDTRACE_TRACEID];
+        NSString *span = [headerFields valueForKey:FT_NETWORK_DDTRACE_SPANID];
+        handler(trace,span,[sampling boolValue]);
+    }
 }
 - (int64_t)generateUniqueID{
     return arc4random() % (INT64_MAX >> 1);
@@ -187,7 +207,32 @@
     NSString *traceId =[[basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq+1] ft_base64Encode];
     return @{FT_NETWORK_SKYWALKING_V3:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,[FT_DEFAULT_SERVICE_NAME ft_base64Encode],parentServiceInstance,urlPath,urlStr]};
 }
-
+-(void)getSkyWalking_V2TraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if([headerFields.allKeys containsObject:FT_NETWORK_SKYWALKING_V2]){
+        NSString *traceStr =headerFields[FT_NETWORK_SKYWALKING_V2];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        if (traceAry.count == 9) {
+            NSString *sampling = [traceAry firstObject];
+            NSString *trace = [traceAry[1] ft_base64Decode];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            NSString *span = [parentTraceID stringByAppendingString:@"0"];
+            handler(trace,span,[sampling boolValue]);
+        }
+    }
+}
+-(void)getSkyWalking_V3TraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if([headerFields.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]){
+        NSString *traceStr =headerFields[FT_NETWORK_SKYWALKING_V3];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        if (traceAry.count == 8) {
+            NSString *sampling = [traceAry firstObject];
+            NSString *trace = [traceAry[1] ft_base64Decode];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            NSString *span = [parentTraceID stringByAppendingString:@"0"];
+            handler(trace,span,[sampling boolValue]);
+        }
+    }
+}
 -(NSUInteger)getSkywalkingSeq{
     [self.lock lock];
     NSUInteger seq =  _skywalkingSeq;
@@ -231,6 +276,19 @@
 - (NSDictionary *)getTraceparentHeader:(BOOL)sample{
     NSString *sampleDescion = sample? @"01":@"00";
     return @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],sampleDescion]};
+}
+-(void)getTraceparentTraceingDatas:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+    if([headerFields.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]){
+        NSString *traceStr =headerFields[FT_NETWORK_TRACEPARENT_KEY];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        if (traceAry.count == 4) {
+            NSString *trace = traceAry[1];
+            NSString *span=traceAry[2];
+            NSString *sampling = [traceAry lastObject];
+            BOOL sample = [sampling isEqualToString:@"00"]?NO:YES;
+            handler(trace,span,sample);
+        }
+    }
 }
 #pragma mark --------- traceid、spanid ----------
 
