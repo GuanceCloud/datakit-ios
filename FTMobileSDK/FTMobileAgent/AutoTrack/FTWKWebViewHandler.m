@@ -61,8 +61,6 @@ static dispatch_once_t onceToken;
                          withMethod:@selector(dataflux_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
         [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(dataflux_reload) error:&error];
-        [WKWebView ft_swizzleMethod:@selector(setNavigationDelegate:) withMethod:@selector(dataflux_setNavigationDelegate:) error:&error];
-        
         SEL deallocMethod =  NSSelectorFromString(@"dealloc");
         [WKWebView ft_swizzleMethod:deallocMethod
                          withMethod:@selector(dataflux_dealloc)
@@ -75,37 +73,6 @@ static dispatch_once_t onceToken;
     [self.mutableLoadStateByWebviewHash setValue:@NO forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
     [self.lock unlock];
 }
-- (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView{
-    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
-    request.ftRequestStartDate = [NSDate date];
-    ZYDebug(@"%@",request.ftRequestStartDate);
-    [self.lock lock];
-    if ([self.mutableLoadStateByWebviewHash.allKeys containsObject:key]) {
-        [self.mutableRequestKeyedByWebviewHash setValue:request forKey:key];
-    }
-    [self.lock unlock];
-}
-- (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView{
-    NSString *key = [[NSNumber numberWithInteger:webView.hash] stringValue];
-    NSDate *endDate = [NSDate date];
-    BOOL isTrace = NO;
-    [self.lock lock];
-    NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-    if (request) {
-        if([[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO] && [request.URL isEqual:response.URL]){
-            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:key];
-            isTrace = YES;
-        }
-    }
-    [self.lock unlock];
-    // 判断是否是SDK添加链路追踪信息的request
-    // wkwebview 使用loadRequest 与 reload 发起的请求
-    if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        [self ftWKWebViewTraceRequest:request response:response startDate:request.ftRequestStartDate taskDuration:duration error:nil];
-    }
-}
-
 - (void)removeWebView:(WKWebView *)webView{
     [self.lock lock];
     if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
@@ -129,39 +96,6 @@ static dispatch_once_t onceToken;
     }else{
         completionHandler? completionHandler(nil,NO):nil;
     }
-}
-- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webview{
-    NSString *key = [[NSNumber numberWithInteger:webview.hash] stringValue];
-    NSDate *endDate = [NSDate date];
-    BOOL isTrace = NO;
-    [self.lock lock];
-    NSURLRequest *request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
-    if (request) {
-        if([[self.mutableLoadStateByWebviewHash valueForKey:key] isEqual:@NO] && [request.URL isEqual:webview.URL]){
-            [self.mutableLoadStateByWebviewHash setValue:@YES forKey:key];
-            isTrace = YES;
-        }
-    }
-    [self.lock unlock];
-    if (isTrace) {
-        NSNumber  *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:request.ftRequestStartDate toDate:endDate];
-        [self ftWKWebViewTraceRequest:request response:nil startDate:request.ftRequestStartDate taskDuration:duration error:error];
-    }
-}
-#pragma mark -
-- (void)ftWKWebViewTraceRequest:(NSURLRequest *)request response:(NSURLResponse *)response startDate:(NSDate *)start taskDuration:(NSNumber *)duration error:(NSError *)error{
-    FTTraceHandler *trace = [[FTTraceHandler alloc]init];
-    trace.requestHeader = request.allHTTPHeaderFields;
-    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-    FTResourceContentModel *model = [[FTResourceContentModel alloc]init];
-    model.requestHeader = request.ft_getRequestHeaders;
-    model.httpMethod = request.HTTPMethod;
-    model.responseHeader = httpResponse.allHeaderFields;
-    model.httpStatusCode = httpResponse.statusCode;
-    model.error = error;
-    model.url = request.URL;
-    model.duration = duration;
-    [trace tracingWithModel:model];
 }
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
     if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {

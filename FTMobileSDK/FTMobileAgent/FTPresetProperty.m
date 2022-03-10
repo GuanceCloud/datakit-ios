@@ -166,7 +166,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 - (NSDictionary *)traceProperty{
     NSMutableDictionary *tag = [NSMutableDictionary new];
     [tag addEntriesFromDictionary:self.context];
-    [tag addEntriesFromDictionary:self.traceContext];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     return tag;

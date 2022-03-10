@@ -28,11 +28,9 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
 
 @property (nonatomic, assign) BOOL trackUrl;
-@property (nonatomic, strong) FTTraceHandler *traceHandler;
 @property (nonatomic, copy) NSString *identifier;
 @end
 @implementation FTURLProtocol
-//static id<FTHTTPProtocolDelegate> sDelegate;
 
 // 开始监听
 + (void)startMonitor {
@@ -51,20 +49,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         [sessionConfiguration unload];
     }
 }
-//+ (id<FTHTTPProtocolDelegate>)delegate
-//{
-//    id<FTHTTPProtocolDelegate> result;
-//    
-//    @synchronized (self) {
-//        result = sDelegate;
-//    }
-//    return result;
-//}
-//+ (void)setDelegate:(id)newValue{
-//    @synchronized (self) {
-//        sDelegate = newValue;
-//    }
-//}
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
     
     NSString * scheme = [[request.URL scheme] lowercaseString];
@@ -111,10 +95,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
         self.identifier = [NSUUID UUID].UUIDString;
-        if([FTNetworkTraceManager sharedInstance].enableAutoTrace){
-        self.traceHandler = [[FTTraceHandler alloc]initWithUrl:mutableReqeust.URL identifier:self.identifier];
-        self.traceHandler.requestHeader = mutableReqeust.allHTTPHeaderFields;
-        }
         if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
             [[FTGlobalRumManager sharedInstance].rumManger startResource:self.identifier];
         }
@@ -174,9 +154,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         }
         model.error = error;
         model.duration = duration;
-        if([FTNetworkTraceManager sharedInstance].enableAutoTrace){
-            [self.traceHandler tracingWithModel:model];
-        }
         if (![FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
             return;
         }
@@ -187,8 +164,10 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
             }
         }
         [[FTGlobalRumManager sharedInstance].rumManger stopResource:self.identifier];
-
-        [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:self.traceHandler.getSpanID traceID:self.traceHandler.getTraceID];
+        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:self.request.allHTTPHeaderFields handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+            [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:spanID traceID:traceId];
+        }];
+       
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){

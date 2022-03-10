@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void(^UnpackTraceHeaderHandler)(NSString *traceId, NSString *spanID,BOOL sampled);
 @interface FTNetworkTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
-@property (nonatomic, copy) NSString *service;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 @property (nonatomic, assign) BOOL enableAutoTrace;
 

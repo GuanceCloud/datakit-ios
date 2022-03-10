@@ -19,10 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (NSDictionary *)getTraceHeader;
 /**
- * 记录 trace 数据
- */
--(void)tracingWithModel:(FTResourceContentModel *)model;
-/**
  * 获取 span_id
  */
 -(NSString *)getSpanID;

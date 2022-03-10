@@ -34,18 +34,21 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  * 网络链路追踪使用类型
  *
  * @constant
- *  FTNetworkTrackTypeZipkin       - Zipkin
- *  FTNetworkTrackTypeJaeger       - Jaeger
- *  FTNetworkTraceTypeDDtrace      - DDtrace 
+ *  FTNetworkTraceTypeZipkinSingleHeader  - zipkin single header 
+ *  FTNetworkTraceTypeZipkinMultiHeader   - zipkin multi header
+ *  FTNetworkTraceTypeJaeger        - jaeger
+ *  FTNetworkTraceTypeDDtrace       - datadog trace
+ *  FTNetworkTraceTypeSkywalkingV3  - skywalking 8.0+
+ *  FTNetworkTraceTypeW3C           - w3c traceparent
  */
+
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
-    FTNetworkTraceTypeZipkinSingle    = 0,
-    FTNetworkTraceTypeZipkinMulti,
+    FTNetworkTraceTypeZipkinSingleHeader    = 0,
+    FTNetworkTraceTypeZipkinMultiHeader,
     FTNetworkTraceTypeJaeger,
     FTNetworkTraceTypeDDtrace,
-    FTNetworkTraceTypeSkywalkingV3,
+    FTNetworkTraceTypeSkywalking,
     FTNetworkTraceTypeTraceparent,
-
 };
 /**
  * 环境字段。属性值：prod/gray/pre/common/local。其中
@@ -176,10 +179,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) int samplerate;
 /**
- * 设置所属业务或服务的名称  默认：df_rum_ios
- */
-@property (nonatomic, copy) NSString *service;
-/**
  *  设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
 */
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
@@ -192,11 +191,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置是否开启自动 http trace
  */
 @property (nonatomic, assign) BOOL enableAutoTrace;
-/**
- * 设置 trace 全局 tag
- */
-@property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
-
 @end
 
 @interface FTMobileConfig : NSObject

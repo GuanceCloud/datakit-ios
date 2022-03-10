@@ -15,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(WKNavigation *)dataflux_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 -(WKNavigation *)dataflux_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL;
 -(WKNavigation *)dataflux_reload;
--(void)dataflux_setNavigationDelegate:(id<WKNavigationDelegate>)navigationDelegate;
 -(void)dataflux_dealloc;
 @end
 
