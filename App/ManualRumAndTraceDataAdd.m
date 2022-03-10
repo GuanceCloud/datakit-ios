@@ -83,17 +83,7 @@
     NSURLSession *session=[NSURLSession sharedSession];
     
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        FTResourceContentModel *content = [[FTResourceContentModel alloc]init];
-        content.httpMethod = request.HTTPMethod;
-        content.requestHeader = request.allHTTPHeaderFields;
-        content.responseHeader = httpResponse.allHeaderFields;
-        content.httpStatusCode = httpResponse.statusCode;
-        //ios native
-        content.error = error;
-        //其他平台
-        content.errorMessage = @"对应errorMessage string";
-        [[FTExternalDataManager sharedManager] traceWithKey:key content:content];
+
     }];
     
     [task resume];

@@ -49,7 +49,7 @@
         [[FTMobileAgent sharedInstance] logout];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_clienthttp" handler:^{
-        NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
+        NSString *urlStr = @"http://10.100.65.108:5002";
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
         
         [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
