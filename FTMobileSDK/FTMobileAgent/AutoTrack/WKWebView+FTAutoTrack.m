@@ -66,86 +66,86 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
         return [self dataflux_reload];
     }
 }
--(void)dataflux_setNavigationDelegate:(id<WKNavigationDelegate>)navigationDelegate{
-    if (navigationDelegate != nil) {
-       Class realClass = [FTSwizzler realDelegateClassFromSelector:@selector(webView:decidePolicyForNavigationAction:decisionHandler:) proxy:navigationDelegate];
-        SEL requestM = @selector(webView:decidePolicyForNavigationAction:decisionHandler:);
-        SEL responseM = @selector(webView:decidePolicyForNavigationResponse:decisionHandler:);
-        SEL loadErrorM = @selector(webView:didFailProvisionalNavigation:withError:);
-        
-        if(!realClass.dataFlux_className){
-            realClass.dataFlux_className = NSStringFromClass(realClass);
-            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:requestM]){
-                dataflux_addInstanceMethod(requestM,@selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:), WKWebView.class, realClass);
-            }
-            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:responseM]){
-                dataflux_addInstanceMethod(responseM,@selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:), WKWebView.class, realClass);
-            }
-            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:loadErrorM]){
-                dataflux_addInstanceMethod(loadErrorM,@selector(dataflux_none_webView:didFailProvisionalNavigation:withError:), WKWebView.class, realClass);
-            }
-
-            [FTSwizzler swizzleSelector:requestM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationAction *navigationAction,id decisionHandler) {
-                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-                    [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
-                }
-                
-            
-            } named:@"dataflux_wkwebview_request"];
-
-            [FTSwizzler swizzleSelector:responseM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationResponse *navigationResponse,id decisionHandler) {
-                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-                    [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
-                }
-            
-            } named:@"dataflux_wkwebview_response"];
-            [FTSwizzler swizzleSelector:loadErrorM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation,NSError *error) {
-                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-                    [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
-                }
-            
-            } named:@"dataflux_wkwebview_loadError"];
-        }
-       }
-    [self dataflux_setNavigationDelegate:navigationDelegate];
-}
+//-(void)dataflux_setNavigationDelegate:(id<WKNavigationDelegate>)navigationDelegate{
+//    if (navigationDelegate != nil) {
+//       Class realClass = [FTSwizzler realDelegateClassFromSelector:@selector(webView:decidePolicyForNavigationAction:decisionHandler:) proxy:navigationDelegate];
+//        SEL requestM = @selector(webView:decidePolicyForNavigationAction:decisionHandler:);
+//        SEL responseM = @selector(webView:decidePolicyForNavigationResponse:decisionHandler:);
+//        SEL loadErrorM = @selector(webView:didFailProvisionalNavigation:withError:);
+//
+//        if(!realClass.dataFlux_className){
+//            realClass.dataFlux_className = NSStringFromClass(realClass);
+//            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:requestM]){
+//                dataflux_addInstanceMethod(requestM,@selector(dataflux_none_webView:decidePolicyForNavigationAction:decisionHandler:), WKWebView.class, realClass);
+//            }
+//            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:responseM]){
+//                dataflux_addInstanceMethod(responseM,@selector(dataflux_none_webView:decidePolicyForNavigationResponse:decisionHandler:), WKWebView.class, realClass);
+//            }
+//            if(![FTSwizzler realDelegateClass:realClass respondsToSelector:loadErrorM]){
+//                dataflux_addInstanceMethod(loadErrorM,@selector(dataflux_none_webView:didFailProvisionalNavigation:withError:), WKWebView.class, realClass);
+//            }
+//
+//            [FTSwizzler swizzleSelector:requestM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationAction *navigationAction,id decisionHandler) {
+//                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//                    [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
+//                }
+//
+//
+//            } named:@"dataflux_wkwebview_request"];
+//
+//            [FTSwizzler swizzleSelector:responseM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigationResponse *navigationResponse,id decisionHandler) {
+//                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//                    [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
+//                }
+//
+//            } named:@"dataflux_wkwebview_response"];
+//            [FTSwizzler swizzleSelector:loadErrorM onClass:realClass withBlock:^(id instance, SEL method, WKWebView *webView, WKNavigation *navigation,NSError *error) {
+//                if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//                    [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
+//                }
+//
+//            } named:@"dataflux_wkwebview_loadError"];
+//        }
+//       }
+//    [self dataflux_setNavigationDelegate:navigationDelegate];
+//}
 -(void)dataflux_dealloc{
     [[FTWKWebViewHandler sharedInstance] removeWebView:self];
     [self dataflux_dealloc];
 }
 
+//// request
+//-(void)dataflux_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
+//    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//        [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
+//    }
+//    //允许跳转
+//    decisionHandler(WKNavigationActionPolicyAllow);
+//}
+////response
+//-(void)dataflux_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+//    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//        [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
+//    }
+//    decisionHandler(WKNavigationResponsePolicyAllow);
+//}
+////load error
+//-(void)dataflux_webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
+//    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+//        [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
+//    }
+//}
 // request
--(void)dataflux_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        [[FTWKWebViewHandler sharedInstance] addRequest:navigationAction.request webView:webView];
-    }
-    //允许跳转
-    decisionHandler(WKNavigationActionPolicyAllow);
-}
-//response
--(void)dataflux_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        [[FTWKWebViewHandler sharedInstance] addResponse:navigationResponse.response webView:webView];
-    }
-    decisionHandler(WKNavigationResponsePolicyAllow);
-}
-//load error
--(void)dataflux_webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
-    if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        [[FTWKWebViewHandler sharedInstance] didRequestFailWithError:error webView:webView];
-    }
-}
-// request
--(void)dataflux_none_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{                                                                                                                                          decisionHandler(WKNavigationActionPolicyAllow);
-}
-//response
--(void)dataflux_none_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-    
-    decisionHandler(WKNavigationResponsePolicyAllow);
-}
-//load error
--(void)dataflux_none_webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
-    
-}
+//-(void)dataflux_none_webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{                                                                                                                                          decisionHandler(WKNavigationActionPolicyAllow);
+//}
+////response
+//-(void)dataflux_none_webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+//
+//    decisionHandler(WKNavigationResponsePolicyAllow);
+//}
+////load error
+//-(void)dataflux_none_webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error{
+//
+//}
 @end
 

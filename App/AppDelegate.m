@@ -72,9 +72,8 @@
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
         traceConfig.enableLinkRumData = YES;
-        traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
+        traceConfig.networkTraceType = FTNetworkTraceTypeZipkinSingleHeader;
         traceConfig.enableAutoTrace = YES;
-        traceConfig.globalContext = @{@"trace_id":@"trace_id_1"};//eg.
         [FTMobileAgent startWithConfigOptions:config];
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];

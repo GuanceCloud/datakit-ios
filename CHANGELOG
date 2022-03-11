@@ -1,3 +1,8 @@
+# 1.3.3-alpha.1
+1.支持 Skywalking 、W3c TraceParent、
+2.Zipkin 添加 single header 支持
+___
+
 # 1.3.2-alpha.1
 1.添加设置全局 tag 方法。
 ___

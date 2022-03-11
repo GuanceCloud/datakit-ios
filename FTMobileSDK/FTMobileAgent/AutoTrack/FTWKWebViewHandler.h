@@ -23,9 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 - (void)addWebView:(WKWebView *)webView;
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
-- (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
-- (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
-- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webView;
+//- (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
+//- (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
+//- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webView;
 - (void)removeWebView:(WKWebView *)webView;
 
 

@@ -129,6 +129,7 @@ extern NSString * const FT_MONITOR_BT_OPEN;
 extern NSString * const FT_APPLICATION_UUID;
 extern NSString * const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString * const FT_NETWORK_ZIPKIN_SPANID;
+extern NSString * const FT_NETWORK_ZIPKIN_PARENTSPANID;
 extern NSString * const FT_NETWORK_ZIPKIN_SAMPLED;
 extern NSString * const FT_NETWORK_SKYWALKING_V3;
 extern NSString * const FT_NETWORK_SKYWALKING_V2;
@@ -139,6 +140,9 @@ extern NSString * const FT_NETWORK_DDTRACE_TRACEID;
 extern NSString * const FT_NETWORK_DDTRACE_SPANID;
 extern NSString * const FT_NETWORK_DDTRACE_ORIGIN;
 extern NSString * const FT_NETWORK_DDTRACE_SAMPLED;
+extern NSString * const FT_NETWORK_TRACEPARENT_KEY;
+extern NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY;
+
 extern NSString * const FT_NETWORK_HEADERS;
 extern NSString * const FT_NETWORK_BODY;
 extern NSString * const FT_LOGGING_CLASS_TRACING;

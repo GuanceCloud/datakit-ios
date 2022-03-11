@@ -14,14 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)startMonitor;
 
 + (void)stopMonitor;
-//+ (void)setDelegate:(id)newValue;
-
-//+ (id<FTHTTPProtocolDelegate>)delegate;
-
 @end
-//@protocol FTHTTPProtocolDelegate <NSObject>
-//@optional
-//- (void)ftTaskCreateWith:(FTTaskInterceptionModel *)taskModel;
-//- (void)ftTaskInterceptionCompleted:(FTTaskInterceptionModel *)taskModel;
-//@end
+
 NS_ASSUME_NONNULL_END
