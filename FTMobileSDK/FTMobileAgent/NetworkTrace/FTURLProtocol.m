@@ -12,8 +12,7 @@
 #import "FTSessionConfiguration.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTResourceContentModel.h"
-#import "FTTraceHandler.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"
@@ -81,7 +80,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    self.trackUrl = [[FTNetworkTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL];
+    self.trackUrl = [[FTTraceHeaderManager sharedInstance] isTraceUrl:mutableReqeust.URL];
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     
@@ -164,10 +163,14 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
             }
         }
         [[FTGlobalRumManager sharedInstance].rumManger stopResource:self.identifier];
-        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:self.request.allHTTPHeaderFields handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-            [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:spanID traceID:traceId];
-        }];
-       
+        __block NSString *spanIDStr,*traceIdStr;
+        if([FTTraceHeaderManager sharedInstance].enableLinkRumData){
+            [[FTTraceHeaderManager sharedInstance] getTraceingDatasWithRequestHeaderFields:self.request.allHTTPHeaderFields handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+                spanIDStr = spanID;
+                traceId = traceId;
+            }];
+        }
+        [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:spanIDStr traceID:traceIdStr];
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){

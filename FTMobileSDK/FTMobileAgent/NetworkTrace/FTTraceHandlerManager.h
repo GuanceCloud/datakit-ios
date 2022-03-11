@@ -20,12 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param key 请求标识
  */
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
-/**
- * trace 数据添加
- * @param key 请求标识
- * @param content 请求相关数据
- */
-- (void)traceWithKey:(NSString *)key content:(FTResourceContentModel *)content;
+
 @end
 
 NS_ASSUME_NONNULL_END

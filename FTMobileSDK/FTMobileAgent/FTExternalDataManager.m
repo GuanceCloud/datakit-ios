@@ -9,7 +9,7 @@
 #import "FTExternalDataManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 #import "FTResourceContentModel.h"
 @interface FTExternalDataManager()
 
@@ -25,7 +25,7 @@
 }
 #pragma mark - Tracing -
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    return  [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:url];
+    return  [[FTTraceHeaderManager sharedInstance] networkTrackHeaderWithUrl:url];
 }
 #pragma mark - Rum -
 
@@ -34,12 +34,9 @@
 }
 -(void)stopView{
     [FTGlobalRumManager.sharedInstance.rumManger stopView];
-
 }
-- (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
-    if ([actionType isEqualToString:@"click"]) {
+- (void)addClickActionWithName:(NSString *)actionName {
         [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
-    }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type  message:message stack:stack];
@@ -57,4 +54,5 @@
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
 }
+
 @end

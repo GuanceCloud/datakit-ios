@@ -16,7 +16,7 @@
 #import "FTResourceContentModel.h"
 #import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -127,8 +127,8 @@
 }
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     __block NSString *spanIDStr,*traceIdStr;
-    if([FTNetworkTraceManager sharedInstance].enableLinkRumData && [FTNetworkTraceManager sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
-        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
+    if([FTTraceHeaderManager sharedInstance].enableLinkRumData){
+        [[FTTraceHeaderManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
             spanIDStr = traceId;
             traceIdStr = spanID;
         }];
@@ -195,10 +195,8 @@
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
         //add trace info
-        if ([FTNetworkTraceManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
-        }
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
             resourceSuccess.metrics = metrics;

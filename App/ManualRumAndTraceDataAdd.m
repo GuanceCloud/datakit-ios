@@ -45,16 +45,20 @@
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
         // duration 以纳秒为单位 示例中为 1s
+        [[FTGlobalRumManager sharedInstance].rumManger startViewWithName:@"TestVC"  loadDuration:@1000000000];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
     
         [[FTGlobalRumManager sharedInstance].rumManger stopView];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
+        [[FTGlobalRumManager sharedInstance].rumManger  addClickActionWithName:@"UITableViewCell click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
+        [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:@"ios_crash" message:@"crash_message" stack:@"crash_stack"];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
+        [[FTGlobalRumManager sharedInstance].rumManger addLongTaskWithStack:@"long task" duration:@1000000000];
     }];
     TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource" handler:^{
         [weakSelf manualRumResource];

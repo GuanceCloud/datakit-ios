@@ -17,7 +17,6 @@
 #import "FTMobileAgent+Private.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
-#import "FTTraceHandler.h"
 #import "FTResourceContentModel.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;

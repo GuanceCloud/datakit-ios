@@ -26,7 +26,7 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -106,7 +106,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
-    [[FTNetworkTraceManager sharedInstance] setNetworkTrace:traceConfigOptions];
+    [[FTTraceHeaderManager sharedInstance] setNetworkTrace:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
