@@ -34,21 +34,21 @@ typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
  * 网络链路追踪使用类型
  *
  * @constant
- *  FTNetworkTraceTypeZipkinSingleHeader  - zipkin single header 
- *  FTNetworkTraceTypeZipkinMultiHeader   - zipkin multi header
- *  FTNetworkTraceTypeJaeger        - jaeger
  *  FTNetworkTraceTypeDDtrace       - datadog trace
- *  FTNetworkTraceTypeSkywalkingV3  - skywalking 8.0+
- *  FTNetworkTraceTypeW3C           - w3c traceparent
+ *  FTNetworkTraceTypeZipkinMultiHeader   - zipkin multi header
+ *  FTNetworkTraceTypeZipkinSingleHeader  - zipkin single header
+ *  FTNetworkTraceTypeTraceparent         - w3c traceparent
+ *  FTNetworkTraceTypeSkywalking    - skywalking 8.0+
+ *  FTNetworkTraceTypeJaeger        - jaeger
  */
 
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
-    FTNetworkTraceTypeZipkinSingleHeader    = 0,
-    FTNetworkTraceTypeZipkinMultiHeader,
-    FTNetworkTraceTypeJaeger,
     FTNetworkTraceTypeDDtrace,
-    FTNetworkTraceTypeSkywalking,
+    FTNetworkTraceTypeZipkinMultiHeader,
+    FTNetworkTraceTypeZipkinSingleHeader,
     FTNetworkTraceTypeTraceparent,
+    FTNetworkTraceTypeSkywalking,
+    FTNetworkTraceTypeJaeger,
 };
 /**
  * 环境字段。属性值：prod/gray/pre/common/local。其中
