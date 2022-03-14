@@ -13,9 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTExternalTracing <NSObject>
 /**
  * 获取 trace 请求头
- * @param key 请求标识
+ * @param url 请求标识
  */
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
+- (NSDictionary *)getTraceHeaderUrl:(NSURL *)url;
 @end
 @protocol FTExternalRum <NSObject>
 /**

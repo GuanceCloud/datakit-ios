@@ -24,7 +24,7 @@
     return sharedManager;
 }
 #pragma mark - Tracing -
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+- (NSDictionary *)getTraceHeaderUrl:(NSURL *)url{
     return  [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:url];
 }
 #pragma mark - Rum -
@@ -52,7 +52,7 @@
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     __block NSString *traceIdStr,*spanIDStr;
-    if([FTNetworkTraceManager sharedInstance].enableLinkRumData && [FTNetworkTraceManager sharedInstance].networkTraceType == FTNetworkTraceTypeDDtrace){
+    if([FTNetworkTraceManager sharedInstance].enableLinkRumData){
         [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
             traceIdStr = traceId;
             spanIDStr = spanID;
