@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
   s.description  = "观测云 DataFlux iOS 数据采集 SDK"
-  s.homepage     = "https://github.com/DataFlux-cn/datakit-ios.git"
+  s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
   s.license      = { type: 'Apache', :file => 'LICENSE'}
   s.authors             = { "hulilei" => "hulilei@jiagouyun.com","Brandon Zhang" => "zhangbo@jiagouyun.com" }
