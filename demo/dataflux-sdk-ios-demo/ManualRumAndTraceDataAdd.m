@@ -43,7 +43,7 @@
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
         // duration 以纳秒为单位 示例中为 1s
-        [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC" viewReferrer:@"TestParentVC" loadDuration:@1000000000];
+        [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC" viewReferrer:@"viewReferrer" loadDuration:@1000000000];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
     
@@ -53,10 +53,10 @@
         [[FTExternalDataManager sharedManager] addActionWithName:@"UITableViewCell click" actionType:@"click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"" situation:RUN message:@"" stack:@""];
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" situation:AppStateRun message:@"crash_message" stack:@"crash_stack"];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
-        [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"" duration:@1000000000];
+        [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"long task" duration:@1000000000];
     }];
     TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource" handler:^{
         [weakSelf manualRumResource];
@@ -71,9 +71,8 @@
     
 }
 - (void)manualTrace{
-    NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderUrl:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
@@ -83,17 +82,7 @@
     NSURLSession *session=[NSURLSession sharedSession];
     
     NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        FTResourceContentModel *content = [[FTResourceContentModel alloc]init];
-        content.httpMethod = request.HTTPMethod;
-        content.requestHeader = request.allHTTPHeaderFields;
-        content.responseHeader = httpResponse.allHeaderFields;
-        content.httpStatusCode = httpResponse.statusCode;
-        //ios native
-        content.error = error;
-        //其他平台
-        content.errorMessage = @"对应errorMessage string";
-        [[FTExternalDataManager sharedManager] traceWithKey:key content:content];
+
     }];
     
     [task resume];
