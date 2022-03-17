@@ -27,4 +27,7 @@
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = [rumConfig copy];
 }
+-(void)setTraceConfig:(FTTraceConfig *)traceConfig{
+    _traceConfig = [traceConfig copy];
+}
 @end

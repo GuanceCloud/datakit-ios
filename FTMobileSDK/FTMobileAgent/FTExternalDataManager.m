@@ -11,6 +11,8 @@
 #import "FTRUMManager.h"
 #import "FTNetworkTraceManager.h"
 #import "FTResourceContentModel.h"
+#import "FTTraceHandler.h"
+#import "FTTraceManager.h"
 @interface FTExternalDataManager()
 
 @end
@@ -22,10 +24,6 @@
         sharedManager = [[FTExternalDataManager alloc]init];
     });
     return sharedManager;
-}
-#pragma mark - Tracing -
-- (NSDictionary *)getTraceHeaderUrl:(NSURL *)url{
-    return  [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:url];
 }
 #pragma mark - Rum -
 
@@ -51,14 +49,9 @@
     [FTGlobalRumManager.sharedInstance.rumManger startResource:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    __block NSString *traceIdStr,*spanIDStr;
-    if([FTNetworkTraceManager sharedInstance].enableLinkRumData){
-        [[FTNetworkTraceManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-            traceIdStr = traceId;
-            spanIDStr = spanID;
-        }];
-    }
-    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
+    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
+   
+    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
 }
 
 - (void)stopResourceWithKey:(nonnull NSString *)key {

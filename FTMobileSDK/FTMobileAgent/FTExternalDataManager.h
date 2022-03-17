@@ -10,13 +10,6 @@
 #import "FTEnumConstant.h"
 @class FTResourceContentModel,FTResourceMetricsModel;
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTExternalTracing <NSObject>
-/**
- * 获取 trace 请求头
- * @param url 请求标识
- */
-- (NSDictionary *)getTraceHeaderUrl:(NSURL *)url;
-@end
 @protocol FTExternalRum <NSObject>
 /**
  * 进入页面 viewId 内部管理
@@ -67,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)stopResourceWithKey:(NSString *)key;
 @end
-@interface FTExternalDataManager : NSObject<FTExternalTracing,FTExternalRum>
+@interface FTExternalDataManager : NSObject<FTExternalRum>
 + (instancetype)sharedManager;
 
 @end

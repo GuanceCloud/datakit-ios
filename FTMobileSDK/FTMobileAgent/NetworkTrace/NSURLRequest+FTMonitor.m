@@ -43,7 +43,10 @@
 
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    NSDictionary *traceHeader = [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL];
+    __block NSDictionary *traceHeader;
+    [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL traceHeader:^(NSString * _Nullable traceId, NSString * _Nullable spanID, NSDictionary * _Nonnull header) {
+        traceHeader = header;
+    }];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
             [mutableReqeust setValue:value forHTTPHeaderField:field];
