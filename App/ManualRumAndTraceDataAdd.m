@@ -11,7 +11,7 @@
 #import <FTExternalDataManager.h>
 #import <FTResourceMetricsModel.h>
 #import <FTResourceContentModel.h>
-
+#import <FTTraceManager.h>
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -73,7 +73,7 @@
 - (void)manualTrace{
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderUrl:url];
+    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
