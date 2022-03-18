@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spanID,NSDictionary *header);
+typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spanID,NSDictionary *_Nullable header);
 @interface FTNetworkTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;

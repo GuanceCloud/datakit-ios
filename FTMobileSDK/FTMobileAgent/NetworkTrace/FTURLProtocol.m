@@ -84,18 +84,14 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
     self.trackUrl = [[FTTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL];
     if(self.trackUrl){
-        self.identifier = [NSUUID UUID].UUIDString;
-        NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:self.identifier url:mutableReqeust.URL];
-        if (traceHeader && traceHeader.allKeys.count>0) {
-            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-                [mutableReqeust setValue:value forHTTPHeaderField:field];
-            }];
+        self.identifier = [mutableReqeust.allHTTPHeaderFields valueForKey:@"ft_identifier"];
+        [mutableReqeust setValue:nil forHTTPHeaderField:@"ft_identifier"];
+        if(!self.identifier){
+            self.identifier = [[NSUUID UUID]UUIDString];
         }
     }
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
-    
-    
     //使用NSURLSession继续把request发送出去
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     self.sessionDelegateQueue                             = [[NSOperationQueue alloc] init];

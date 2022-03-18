@@ -21,7 +21,6 @@
 @property (nonatomic, copy) NSString *skyTraceId;
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) FTNetworkTraceType type;
-@property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, assign) int samplerate;
 @end
 @implementation FTNetworkTraceManager{
@@ -57,6 +56,10 @@
     
 }
 - (void)networkTrackHeaderWithUrl:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
+   //未设置 traceConfig 与 enableAutoTrace 未开启情况 返回 nil
+    if (!self.enableAutoTrace) {
+        traceHeader(nil,nil,nil);
+    }
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
@@ -92,22 +95,22 @@
     NSString *traceid = [FTNetworkTraceManager networkTraceID];
     NSString *spanid = [FTNetworkTraceManager networkSpanID];
     NSDictionary *header = @{FT_NETWORK_ZIPKIN_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
-                             FT_NETWORK_ZIPKIN_SPANID:[FTNetworkTraceManager networkSpanID],
-                             FT_NETWORK_ZIPKIN_TRACEID:[FTNetworkTraceManager networkTraceID],
+                             FT_NETWORK_ZIPKIN_SPANID:spanid,
+                             FT_NETWORK_ZIPKIN_TRACEID:traceid,
                     };
     traceHeader(traceid,spanid,header);
 }
 - (void)getZipkinSingleHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
     NSString *traceid = [FTNetworkTraceManager networkTraceID];
     NSString *spanid = [FTNetworkTraceManager networkSpanID];
-    NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],[NSString stringWithFormat:@"%d",sampled]]};
+    NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceid,spanid,[NSString stringWithFormat:@"%d",sampled]]};
     traceHeader(traceid,spanid,header);
 }
 #pragma mark --------- DDTRACE ----------
 - (void)getDDTRACEHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
     NSString *traceid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
     NSString *spanid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
-    NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],[NSString stringWithFormat:@"%d",sampled]]};
+    NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceid,spanid,[NSString stringWithFormat:@"%d",sampled]]};
     traceHeader(traceid,spanid,header);
 }
 - (int64_t)generateUniqueID{
@@ -189,7 +192,7 @@
     NSString *sampleDescion = sample? @"01":@"00";
     NSString *spanid = [FTNetworkTraceManager networkSpanID];
     NSString *traceID = [FTNetworkTraceManager networkTraceID];
-    NSDictionary *header = @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",[FTNetworkTraceManager networkTraceID],[FTNetworkTraceManager networkSpanID],sampleDescion]};
+    NSDictionary *header = @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",traceID,spanid,sampleDescion]};
     traceHeader(traceID,spanid,header);
 }
 #pragma mark --------- traceid、spanid ----------

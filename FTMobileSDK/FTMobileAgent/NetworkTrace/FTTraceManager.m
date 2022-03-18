@@ -9,10 +9,12 @@
 #import "FTTraceManager.h"
 #import "FTNetworkInfoManger.h"
 #import "FTTraceHandler.h"
+#import "FTConfigManager.h"
 @interface FTTraceManager ()
 @property (nonatomic,copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) NSMutableDictionary<NSString *,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
+@property (nonatomic, assign) BOOL enableLinkRumData;
 @end
 @implementation FTTraceManager
 + (instancetype)sharedInstance {
@@ -29,6 +31,7 @@
         self.sdkUrlStr = [FTNetworkInfoManger sharedInstance].metricsUrl;
         self.lock = dispatch_semaphore_create(1);
         self.traceHandlers = [NSMutableDictionary new];
+        self.enableLinkRumData = [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
     }
     return self;
 }
@@ -43,7 +46,9 @@
     FTTraceHandler *handler = [self getTraceHandler:key];
     if (!handler) {
         handler = [[FTTraceHandler alloc]initWithUrl:url identifier:key];
+        if(self.enableLinkRumData){
         [self setTraceHandler:handler forKey:key];
+        }
     }
     return handler.getTraceHeader;
 }
