@@ -110,8 +110,13 @@
 - (void)getDDTRACEHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
     NSString *traceid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
     NSString *spanid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
-    NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceid,spanid,[NSString stringWithFormat:@"%d",sampled]]};
+    NSDictionary *header =@{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
+                            FT_NETWORK_DDTRACE_SPANID:spanid,
+                            FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
+                            FT_NETWORK_DDTRACE_TRACEID:traceid
+                   };
     traceHeader(traceid,spanid,header);
+    
 }
 - (int64_t)generateUniqueID{
     return arc4random() % (INT64_MAX >> 1);
