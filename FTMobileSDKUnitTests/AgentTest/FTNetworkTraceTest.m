@@ -46,16 +46,15 @@
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;
-    traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
 }
 
-- (void)testFTNetworkTrackTypeZipkin{
+- (void)testFTNetworkTrackTypeZipkinMultiHeader{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
-    [self networkUpload:@"Zipkin" handler:^(NSDictionary *header) {
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkinMultiHeader];
+    [self networkUpload:@"ZipkinMultiHeader" handler:^(NSDictionary *header) {
         NSString *traceId = [header valueForKey:FT_NETWORK_ZIPKIN_TRACEID];
         NSString *spanID = [header valueForKey:FT_NETWORK_ZIPKIN_SPANID];
         NSString *sampled = [header valueForKey:FT_NETWORK_ZIPKIN_SAMPLED];
@@ -63,6 +62,26 @@
         XCTAssertEqualObjects(sampled, @"1");
         XCTAssertTrue(traceId.length == 32 && spanID.length == 16);
         XCTAssertTrue([traceId.lowercaseString isEqualToString:traceId] && [spanID.lowercaseString isEqualToString:spanID]);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)testFTNetworkTrackTypeZipkinSingleHeader{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkinSingleHeader];
+    [self networkUpload:@"ZipkinSingleHeader" handler:^(NSDictionary *header) {
+        NSString *key = [header valueForKey:FT_NETWORK_ZIPKIN_SINGLE_KEY];
+        NSArray *traceAry = [key componentsSeparatedByString:@"-"];
+        XCTAssertTrue(traceAry.count == 3);
+        NSString *trace = [traceAry firstObject];
+        NSString *span = traceAry[1];
+        NSString *sampling=traceAry[2];
+        XCTAssertEqualObjects(sampling, @"1");
+        XCTAssertTrue(trace.length == 32 && span.length == 16);
+        XCTAssertTrue([trace.lowercaseString isEqualToString:trace] && [span.lowercaseString isEqualToString:span]);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -92,7 +111,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
-    [self networkUpload:@"Jaeger" handler:^(NSDictionary *header) {
+    [self networkUpload:@"DDtrace" handler:^(NSDictionary *header) {
        
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
@@ -105,7 +124,47 @@
         XCTAssertNil(error);
     }];
 }
-
+- (void)testFTNetworkTrackTypeSkywalking_v3{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
+    [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
+        XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        XCTAssertTrue(traceAry.count == 8);
+        
+        NSString *sampling = [traceAry firstObject];
+        NSString *trace = [traceAry[1] ft_base64Decode];
+        NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+        NSString *span = [parentTraceID stringByAppendingString:@"0"];
+        XCTAssertTrue(trace && span && sampling);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)testFTNetworkTrackTypeTraceparent{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    [self setNetworkTraceType:FTNetworkTraceTypeTraceparent];
+    [self networkUpload:@"Traceparent" handler:^(NSDictionary *header) {
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]);
+        NSString *traceStr =header[FT_NETWORK_TRACEPARENT_KEY];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        XCTAssertTrue(traceAry.count == 4);
+        NSString *trace = traceAry[1];
+        NSString *span=traceAry[2];
+        NSString *sampling = [traceAry lastObject];
+        XCTAssertTrue(trace.length == 32 && span.length == 16);
+        XCTAssertTrue([sampling isEqualToString:@"01"]);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
 - (void)testSampleRate0{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
@@ -114,23 +173,18 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 0;
-    traceConfig.service = @"iOSTestService";
+    traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
 
-    [self networkUpload:@"" handler:^(NSDictionary *header) {
+    [self networkUpload:@"SampleRate0" handler:^(NSDictionary *header) {
+        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLED] isEqualToString:@"0"]);
         [expectation fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
-    XCTAssertTrue(newArray.count == oldArray.count);
-
 }
 - (void)testSampleRate100{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -142,22 +196,18 @@
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
     traceConfig.enableAutoTrace = YES;
-    traceConfig.service = @"iOSTestService";
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
 
-    [self networkUpload:@"" handler:^(NSDictionary *header) {
+    [self networkUpload:@"SampleRate100" handler:^(NSDictionary *header) {
+        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLED] isEqualToString:@"1"]);
+
         [expectation fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:4];
-    
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
-    XCTAssertTrue(newArray.count > oldArray.count);
 
 }
 - (void)testDisableAutoTrace{
@@ -167,23 +217,21 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.service = @"iOSTestService";
     traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
+    [self networkUpload:@"DisableAutoTrace" handler:^(NSDictionary *header) {
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
 
-    [self networkUpload:@"" handler:^(NSDictionary *header) {
         [expectation fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_TRACING];
-    XCTAssertTrue(newArray.count == oldArray.count);
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -208,72 +256,21 @@
         return [OHHTTPStubsResponse responseWithError:notConnectedError];
     }];
 }
-- (void)testTimeOut{
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
-    [self setBadNetOHHTTPStubs];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self networkUpload:@"SKYWALKING_V3" handler:^(NSDictionary *header) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *field = opdata[FT_FIELDS];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *status = tags[@"status"];
-    XCTAssertTrue([status isEqualToString:@"error"]);
-    NSDictionary *content = [FTJSONUtil dictionaryWithJsonString:field[@"message"]];
-    NSDictionary *responseContent = content[@"responseContent"];
-    NSDictionary *error = responseContent[@"error"];
-    NSNumber *errorCode = error[@"errorCode"];
-    XCTAssertTrue([errorCode isEqualToNumber:@-1001]);
-}
-- (void)testRightRequest{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
-    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
-    [self networkUpload:@"testRightRequest" handler:^(NSDictionary *header) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    BOOL isError = [tags[@"__isError"] boolValue];
-    XCTAssertTrue(isError == NO);
-//    [self uploadModel:model];
-}
 - (void)testNewThread{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
+    [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
+            XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
+            XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+            XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+            XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
             [expectation fulfill];
         }];
     });
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *status = tags[@"status"];
-    XCTAssertTrue([status isEqualToString:@"ok"]);
-
-//    [self uploadModel:model];
 }
 
 - (void)testBadResponse{
@@ -290,7 +287,13 @@
     request.HTTPMethod = @"POST";
 
     request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
-    NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
+
         [expectation fulfill];
     }];
 
@@ -298,78 +301,5 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [NSThread sleepForTimeInterval:2];
-
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *status = tags[@"status"];
-    XCTAssertTrue([status isEqualToString:@"error"]);
-//    [self uploadModel:model];
-}
-- (void)testNSURLConnection{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [self setNetworkTraceType:FTNetworkTraceTypeZipkin];
-    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-
-    NSArray *data = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [data lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *status = tags[@"status"];
-    XCTAssertTrue([status isEqualToString:@"ok"]);
-
-//    [self uploadModel:model];
-}
-- (void)uploadModel:(FTRecordModel *)model{
-    XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_TRACING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-       
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        [expectation2 fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-}
-- (void)testGlobalContext{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.enableAutoTrace = YES;
-    traceConfig.globalContext = @{@"trace_global_context":@"trace_global_context"};
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [self networkUpload:@"GlobalContext" handler:^(NSDictionary *header) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_TRACING];
-    FTRecordModel *model = [newDatas lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *tags = op[FT_TAGS];
-    XCTAssertTrue([tags[@"trace_global_context"] isEqualToString:@"trace_global_context"]);
 }
 @end
