@@ -27,6 +27,7 @@
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
 #import "FTNetworkTraceManager.h"
+#import "FTURLProtocol.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -107,6 +108,7 @@ static dispatch_once_t onceToken;
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [FTConfigManager sharedInstance].traceConfig = traceConfigOptions;
+    [[FTNetworkTraceManager sharedInstance] setNetworkTrace:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
 -(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
@@ -299,6 +301,7 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [FTURLProtocol stopMonitor];
     onceToken = 0;
     sharedInstance =nil;
 }

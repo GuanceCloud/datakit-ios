@@ -81,7 +81,7 @@
     self = [super init];
     if (self) {
         _samplerate= 100;
-        _networkTraceType = FTNetworkTraceTypeZipkinMultiHeader;
+        _networkTraceType = FTNetworkTraceTypeDDtrace;
     }
     return self;
 }

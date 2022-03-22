@@ -35,14 +35,6 @@
     });
     return sharedInstance;
 }
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        [self setNetworkTrace:FTConfigManager.sharedInstance.traceConfig];
-    }
-    return self;
-}
-
 -(void)setNetworkTrace:(FTTraceConfig *)traceConfig {
     self.type = traceConfig.networkTraceType;
     self.samplerate = traceConfig.samplerate;
@@ -119,7 +111,7 @@
     
 }
 - (int64_t)generateUniqueID{
-    return arc4random() % (INT64_MAX >> 1);
+    return arc4random() % UINT64_MAX;
 }
 #pragma mark --------- SkyWalking ----------
 - (void)getSkyWalking_V2Header:(BOOL)sampled url:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
