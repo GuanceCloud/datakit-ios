@@ -113,7 +113,7 @@
 - (uint64_t)generateUniqueID{
     uint64_t num;
     arc4random_buf(&num, sizeof(uint64_t));
-    return num % UINT64_MAX ;
+    return num;
 }
 #pragma mark --------- SkyWalking ----------
 - (void)getSkyWalking_V2Header:(BOOL)sampled url:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
