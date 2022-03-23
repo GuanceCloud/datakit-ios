@@ -31,9 +31,12 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
+        NSURLRequest *newrequest = [request ft_NetworkTrace];
         [[FTWKWebViewHandler sharedInstance] addWebView:self];
+        return  [self dataflux_loadRequest:newrequest];
+    }else{
+        return [self dataflux_loadRequest:request];
     }
-    return [self dataflux_loadRequest:request];
 }
 
 -(WKNavigation *)dataflux_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
