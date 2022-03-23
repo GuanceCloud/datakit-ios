@@ -19,7 +19,7 @@
     self.title = @"TestWKWebViewVC";
 }
 -(void)viewDidAppear:(BOOL)animated{
-    
+    [super viewDidAppear:animated];
     [self ft_load:@"https://auth.dataflux.cn/loginpsw"];
 }
 
