@@ -100,8 +100,8 @@
 }
 #pragma mark --------- DDTRACE ----------
 - (void)getDDTRACEHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
-    NSString *traceid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
-    NSString *spanid = [NSString stringWithFormat:@"%lld",[self generateUniqueID]];
+    NSString *traceid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
+    NSString *spanid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
     NSDictionary *header =@{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
                             FT_NETWORK_DDTRACE_SPANID:spanid,
                             FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
