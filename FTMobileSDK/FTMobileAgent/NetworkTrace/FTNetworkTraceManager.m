@@ -105,7 +105,8 @@
     NSDictionary *header =@{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
                             FT_NETWORK_DDTRACE_SPANID:spanid,
                             FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
-                            FT_NETWORK_DDTRACE_TRACEID:traceid
+                            FT_NETWORK_DDTRACE_TRACEID:traceid,
+                            FT_NETWORK_DDTRACE_SAMPLING_PRIORITY:@"1"
                    };
     traceHeader(traceid,spanid,header);
     

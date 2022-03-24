@@ -116,6 +116,7 @@
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+        XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"1"]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
 
         [expectation fulfill];
