@@ -11,6 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTTraceHandler;
 @interface FTTraceManager : NSObject
+@property (nonatomic, assign) BOOL enableAutoTrace;
+
 + (instancetype)sharedInstance;
 - (BOOL)isTraceUrl:(NSURL *)url;
 

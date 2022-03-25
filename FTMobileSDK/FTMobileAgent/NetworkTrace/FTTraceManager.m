@@ -32,6 +32,7 @@
         self.lock = dispatch_semaphore_create(1);
         self.traceHandlers = [NSMutableDictionary new];
         self.enableLinkRumData = [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
+        self.enableAutoTrace = [FTConfigManager sharedInstance].traceConfig.enableAutoTrace;
     }
     return self;
 }

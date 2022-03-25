@@ -45,12 +45,14 @@
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
     if([[FTTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL]){
         NSString *identifier =  [NSUUID UUID].UUIDString;
+        if([FTTraceManager sharedInstance].enableAutoTrace){
         NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:identifier url:mutableReqeust.URL];
         if (traceHeader && traceHeader.allKeys.count>0) {
             [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
                 [mutableReqeust setValue:value forHTTPHeaderField:field];
             }];
             [mutableReqeust setValue:identifier forHTTPHeaderField:@"ft_identifier"];
+        }
         }
     }
     return mutableReqeust;

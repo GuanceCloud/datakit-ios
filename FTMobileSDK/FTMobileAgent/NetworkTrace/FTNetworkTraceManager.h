@@ -13,7 +13,6 @@ typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spa
 @interface FTNetworkTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
-@property (nonatomic, assign) BOOL enableAutoTrace;
 
 
 + (instancetype)sharedInstance;

@@ -40,7 +40,6 @@
     self.samplerate = traceConfig.samplerate;
     self.enableLinkRumData = traceConfig.enableLinkRumData;
     self.networkTraceType = traceConfig.networkTraceType;
-    self.enableAutoTrace = traceConfig.enableAutoTrace;
     if (traceConfig.enableAutoTrace) {
         [FTWKWebViewHandler sharedInstance].enableTrace = YES;
         [FTURLProtocol startMonitor];
@@ -48,14 +47,11 @@
     
 }
 - (void)networkTrackHeaderWithUrl:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
-   //未设置 traceConfig 与 enableAutoTrace 未开启情况 返回 nil
-    if (!self.enableAutoTrace) {
-        traceHeader(nil,nil,nil);
-    }
+
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
-            [self getJaegerHeader:sampled traceHeader:traceHeader];
+            return [self getJaegerHeader:sampled traceHeader:traceHeader];
             break;
         case FTNetworkTraceTypeZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled traceHeader:traceHeader];
