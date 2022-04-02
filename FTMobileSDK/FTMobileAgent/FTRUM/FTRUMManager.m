@@ -17,6 +17,8 @@
 #import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
 #import "FTTraceHeaderManager.h"
+#import "FTTraceHandler.h"
+#import "FTTraceManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -126,15 +128,11 @@
     }
 }
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    __block NSString *spanIDStr,*traceIdStr;
-    if([FTTraceHeaderManager sharedInstance].enableLinkRumData){
-        [[FTTraceHeaderManager sharedInstance] getTraceingDatasWithRequestHeaderFields:content.requestHeader handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-            spanIDStr = traceId;
-            traceIdStr = spanID;
-        }];
-    }
-    [self addResource:identifier metrics:metrics content:content spanID:spanIDStr traceID:traceIdStr];
+    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:identifier];
+   
+    [FTGlobalRumManager.sharedInstance.rumManger addResource:identifier metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
 }
+
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
     if (!identifier) {
         return;
@@ -195,8 +193,10 @@
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
         //add trace info
+        if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
+        }
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
             resourceSuccess.metrics = metrics;

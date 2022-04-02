@@ -1,12 +1,12 @@
 //
-//  FTNetworkTraceManager.m
+//  FTTraceHeaderManager.m
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/3/17.
 //  Copyright © 2021 hll. All rights reserved.
 //
 
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 #import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTMonitorUtils.h"
@@ -16,19 +16,19 @@
 #import "FTURLProtocol.h"
 #import "FTNetworkInfoManger.h"
 #import "FTConfigManager.h"
-@interface FTNetworkTraceManager ()
+@interface FTTraceHeaderManager ()
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *skyTraceId;
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) FTNetworkTraceType type;
 @property (nonatomic, assign) int samplerate;
 @end
-@implementation FTNetworkTraceManager{
+@implementation FTTraceHeaderManager{
     NSUInteger _skywalkingSeq;
     NSUInteger _skywalkingv2;
 }
 + (instancetype)sharedInstance {
-    static FTNetworkTraceManager *sharedInstance = nil;
+    static FTTraceHeaderManager *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
@@ -73,15 +73,15 @@
 
 #pragma mark --------- Jaeger ----------
 - (void)getJaegerHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
-    NSString *traceid = [FTNetworkTraceManager networkTraceID];
-    NSString *spanid = [FTNetworkTraceManager networkSpanID];
+    NSString *traceid = [FTTraceHeaderManager networkTraceID];
+    NSString *spanid = [FTTraceHeaderManager networkSpanID];
     NSDictionary *header =@{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",traceid,spanid,@(sampled)]};
     traceHeader(traceid,spanid,header);
 }
 #pragma mark --------- Zipkin ----------
 - (void)getZipkinMultiHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
-    NSString *traceid = [FTNetworkTraceManager networkTraceID];
-    NSString *spanid = [FTNetworkTraceManager networkSpanID];
+    NSString *traceid = [FTTraceHeaderManager networkTraceID];
+    NSString *spanid = [FTTraceHeaderManager networkSpanID];
     NSDictionary *header = @{FT_NETWORK_ZIPKIN_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
                              FT_NETWORK_ZIPKIN_SPANID:spanid,
                              FT_NETWORK_ZIPKIN_TRACEID:traceid,
@@ -89,8 +89,8 @@
     traceHeader(traceid,spanid,header);
 }
 - (void)getZipkinSingleHeader:(BOOL)sampled traceHeader:(TraceHeader)traceHeader{
-    NSString *traceid = [FTNetworkTraceManager networkTraceID];
-    NSString *spanid = [FTNetworkTraceManager networkSpanID];
+    NSString *traceid = [FTTraceHeaderManager networkTraceID];
+    NSString *spanid = [FTTraceHeaderManager networkSpanID];
     NSDictionary *header =@{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceid,spanid,[NSString stringWithFormat:@"%d",sampled]]};
     traceHeader(traceid,spanid,header);
 }
@@ -172,13 +172,13 @@
 
 -(NSString *)skyTraceId{
     if (!_skyTraceId) {
-        _skyTraceId = [FTNetworkTraceManager networkTraceID];
+        _skyTraceId = [FTTraceHeaderManager networkTraceID];
     }
     return _skyTraceId;
 }
 -(NSString *)skyParentInstance{
     if (!_skyParentInstance) {
-        _skyParentInstance = [FTNetworkTraceManager networkTraceID];
+        _skyParentInstance = [FTTraceHeaderManager networkTraceID];
     }
     return _skyParentInstance;
 }
@@ -186,8 +186,8 @@
 
 - (void)getTraceparentHeader:(BOOL)sample traceHeader:(TraceHeader)traceHeader{
     NSString *sampleDescion = sample? @"01":@"00";
-    NSString *spanid = [FTNetworkTraceManager networkSpanID];
-    NSString *traceID = [FTNetworkTraceManager networkTraceID];
+    NSString *spanid = [FTTraceHeaderManager networkSpanID];
+    NSString *traceID = [FTTraceHeaderManager networkTraceID];
     NSDictionary *header = @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",traceID,spanid,sampleDescion]};
     traceHeader(traceID,spanid,header);
 }

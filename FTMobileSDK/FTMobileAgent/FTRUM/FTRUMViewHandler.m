@@ -74,6 +74,7 @@
             }else{
                 self.needUpdateView = YES;
                 self.isActiveView = NO;
+                self.isStopView = YES;
             }
             break;
         }

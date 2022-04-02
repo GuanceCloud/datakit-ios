@@ -11,7 +11,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
@@ -49,7 +49,7 @@
     }
     if (!_requestHeader) {
         __weak typeof(self) weakSelf = self;
-        [[FTNetworkTraceManager sharedInstance] networkTrackHeaderWithUrl:self.url traceHeader:^(NSString * _Nullable traceId, NSString * _Nullable spanID, NSDictionary * _Nonnull header) {
+        [[FTTraceHeaderManager sharedInstance] networkTrackHeaderWithUrl:self.url traceHeader:^(NSString * _Nullable traceId, NSString * _Nullable spanID, NSDictionary * _Nonnull header) {
             weakSelf.trace_id = traceId;
             weakSelf.span_id = spanID;
             weakSelf.requestHeader = header;
