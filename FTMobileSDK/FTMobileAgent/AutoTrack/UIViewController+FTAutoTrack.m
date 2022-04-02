@@ -75,9 +75,9 @@ static char *viewLoadDuration = "viewLoadDuration";
     }];
     return isContains;
 }
--(void)dataflux_viewWillAppear:(BOOL)animated{
+- (void)dataflux_viewDidLoad{
     self.ft_viewLoadStartTime =[NSDate date];
-    [self dataflux_viewWillAppear:animated];
+    [self dataflux_viewDidLoad];
 }
 -(void)dataflux_viewDidAppear:(BOOL)animated{
     [self dataflux_viewDidAppear:animated];
