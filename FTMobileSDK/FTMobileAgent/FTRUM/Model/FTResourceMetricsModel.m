@@ -7,7 +7,6 @@
 //
 
 #import "FTResourceMetricsModel.h"
-#import "FTConstants.h"
 #import "FTDateUtil.h"
 @implementation FTResourceMetricsModel
 

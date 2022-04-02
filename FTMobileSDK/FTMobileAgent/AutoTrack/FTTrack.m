@@ -11,7 +11,6 @@
 #import "FTLog.h"
 #import "FTSwizzle.h"
 #import "UIApplication+FTAutoTrack.h"
-#import "UIViewController+FTAutoTrack.h"
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "UIScrollView+FTAutoTrack.h"
 #import "FTConfigManager.h"

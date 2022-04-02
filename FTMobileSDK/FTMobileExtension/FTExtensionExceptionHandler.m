@@ -7,11 +7,10 @@
 //
 
 #import "FTExtensionExceptionHandler.h"
-#import "FTLog.h"
 #include <libkern/OSAtomic.h>
 #include <execinfo.h>
 #include <mach-o/dyld.h>
-#include <mach-o/nlist.h>
+
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数

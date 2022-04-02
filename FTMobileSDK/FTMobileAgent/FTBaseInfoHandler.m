@@ -15,7 +15,6 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#import "FTThreadDispatchManager.h"
 @implementation FTBaseInfoHandler : NSObject
 
 #pragma mark ========== 请求加密 ==========
@@ -178,33 +177,7 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
        
        return string;
 }
-+(NSString *)getIPWithHostName:(const NSString *)hostName{
-    if (!hostName) {
-        return nil;
-    }
-    const char *hostN= [hostName UTF8String];
-    char  **pptr;
-    struct hostent* phot;
-    char   str[32];
-    NSMutableArray * ips = [NSMutableArray array];
-    @try {
-        if(( phot = gethostbyname(hostN)) == NULL)
-        {
-            return nil;
-        }
-        for(pptr=phot->h_addr_list; *pptr!=NULL; pptr++) {
-            NSString * ipStr = [NSString stringWithCString:inet_ntop(phot->h_addrtype, *pptr, str, sizeof(str)) encoding:NSUTF8StringEncoding];
-            [ips addObject:ipStr?:@""];
-        }
-        if (ips.count>0) {
-            return [ips firstObject];
-        }
-    }
-    @catch (NSException *exception) {
-        return nil;
-    }
-    return nil;
-}
+
 + (NSString *)boolStr:(BOOL)isTrue{
     return isTrue?@"true":@"false";
 }

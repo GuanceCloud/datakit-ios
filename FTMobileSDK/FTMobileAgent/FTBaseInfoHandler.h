@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;
-+ (NSString *)getIPWithHostName:(const NSString *)hostName;
+
 + (NSString *)boolStr:(BOOL)isTrue;
 
 + (BOOL)randomSampling:(int)sampling;

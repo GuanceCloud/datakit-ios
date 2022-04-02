@@ -9,7 +9,6 @@
 #import "FTExternalDataManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
-#import "FTNetworkTraceManager.h"
 #import "FTResourceContentModel.h"
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"

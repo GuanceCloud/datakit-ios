@@ -13,7 +13,6 @@
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTGlobalRumManager.h"
-#import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
 #import "FTLog.h"
 #import "NSString+FTAdd.h"
@@ -25,7 +24,6 @@
 #import "FTTrackDataManger.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
-#import "FTJSONUtil.h"
 #import "FTNetworkTraceManager.h"
 #import "FTURLProtocol.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
@@ -248,27 +246,7 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
-        return;
-    }
-    @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
-        [self insertDBWithItemData:model type:FTAddDataNormal];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
+
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;

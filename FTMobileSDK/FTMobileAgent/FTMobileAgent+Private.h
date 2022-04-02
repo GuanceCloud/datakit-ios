@@ -24,11 +24,6 @@
 
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 
-/**
- * networkTrace 写入
- */
--(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm;
-
 
 -(void)resetInstance;
 
