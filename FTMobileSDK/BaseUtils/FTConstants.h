@@ -140,6 +140,7 @@ extern NSString * const FT_NETWORK_DDTRACE_TRACEID;
 extern NSString * const FT_NETWORK_DDTRACE_SPANID;
 extern NSString * const FT_NETWORK_DDTRACE_ORIGIN;
 extern NSString * const FT_NETWORK_DDTRACE_SAMPLED;
+extern NSString * const FT_NETWORK_DDTRACE_SAMPLING_PRIORITY;
 extern NSString * const FT_NETWORK_TRACEPARENT_KEY;
 extern NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY;
 

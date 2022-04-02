@@ -3,9 +3,9 @@ Pod::Spec.new do |s|
   s.name         = "FTMobileSDK"
 #   s.version      = "1.0.2-alpha.8"
   s.version      = "$JENKINS_DYNAMIC_VERSION"
-  s.summary      = "驻云 DataFlux iOS 数据采集 SDK"
-  s.description  = "驻云 DataFlux iOS 数据采集 SDK"
-  s.homepage     = "https://github.com/DataFlux-cn/datakit-ios.git"
+  s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
+  s.description  = "观测云 DataFlux iOS 数据采集 SDK"
+  s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
   s.license      = { type: 'Apache', :file => 'LICENSE'}
   s.authors             = { "hulilei" => "hulilei@jiagouyun.com","Brandon Zhang" => "zhangbo@jiagouyun.com" }
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   # s.tvos.deployment_target = "9.0"
 
 #   s.source       = { :http => "https://zhuyun-static-files-production.oss-cn-hangzhou.aliyuncs.com/ft-sdk-package/ios/FTAutoTrack/.zip" }
-   s.source       = { :git => "https://github.com/DataFlux-cn/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
+   s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
    
    s.subspec  'Core' do | c |
        c.ios.dependency 'FTMobileSDK/FTMobileAgent'

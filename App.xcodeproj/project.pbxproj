@@ -28,7 +28,6 @@
 		4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299BC32519937800400931 /* FTUncaughtExceptionHandler+Test.m */; };
 		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
-		4A49E9312536E541009C44AD /* FTWKWebViewTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
 		4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */; };
 		4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9CC2563C43E0021E0BC /* TodayViewController.m */; };
@@ -208,7 +207,6 @@
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
 		4A270EBC2506025E0079F455 /* FTSessionConfiguration+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTSessionConfiguration+Test.h"; sourceTree = "<group>"; };
 		4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTSessionConfiguration+Test.m"; sourceTree = "<group>"; };
-		4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewTraceTest.m; sourceTree = "<group>"; };
 		4A299B932514953300400931 /* FTPropertyTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPropertyTest.m; sourceTree = "<group>"; };
 		4A299BC32519937800400931 /* FTUncaughtExceptionHandler+Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FTUncaughtExceptionHandler+Test.m"; sourceTree = "<group>"; };
 		4A299BC62519937900400931 /* FTUncaughtExceptionHandler+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTUncaughtExceptionHandler+Test.h"; sourceTree = "<group>"; };
@@ -446,7 +444,6 @@
 				4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */,
 				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
 				4A299B932514953300400931 /* FTPropertyTest.m */,
-				4A299B91251464E000400931 /* FTWKWebViewTraceTest.m */,
 				4AB1FFA62546D74900CB36CF /* FTANRTest.m */,
 				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
 				7C3C289427683983009DB8E2 /* FT1RUMTest.h */,
@@ -871,7 +868,6 @@
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				4A037EFA24F791CB007B2104 /* FTNetworkTraceTest.m in Sources */,
-				4A49E9312536E541009C44AD /* FTWKWebViewTraceTest.m in Sources */,
 				7C3C289627683983009DB8E2 /* FT1RUMTest.m in Sources */,
 				4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,

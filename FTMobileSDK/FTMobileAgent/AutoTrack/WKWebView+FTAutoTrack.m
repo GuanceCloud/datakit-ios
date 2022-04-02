@@ -32,9 +32,6 @@ static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromCl
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
         NSURLRequest *newrequest = [request ft_NetworkTrace];
-        if (!self.navigationDelegate) {
-            self.navigationDelegate = [FTWKWebViewHandler sharedInstance];
-        }
         [[FTWKWebViewHandler sharedInstance] addWebView:self];
         return  [self dataflux_loadRequest:newrequest];
     }else{

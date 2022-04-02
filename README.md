@@ -13,7 +13,7 @@ DataFlux 应用监测能够通过收集各个iOS应用的指标数据，以可�
 
 ## 示例
 
- [Dataflux-SDK-iOS Demo](https://github.com/DataFlux-cn/datakit-ios/tree/develop/demo)   
+ [Dataflux-SDK-iOS Demo](https://github.com/GuanceCloud/datakit-ios/tree/develop/demo)   
 
 ## 使用文档
  [文档中心](https://www.yuque.com/dataflux/doc/gsto6k)   
@@ -23,7 +23,6 @@ DataFlux 应用监测能够通过收集各个iOS应用的指标数据，以可�
    
 
  
-
 
 
 

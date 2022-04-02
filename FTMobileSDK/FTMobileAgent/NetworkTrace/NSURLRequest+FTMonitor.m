@@ -12,7 +12,7 @@
 #import "FTConstants.h"
 #import "FTGlobalRumManager.h"
 #import <objc/runtime.h>
-#import "FTTraceHeaderManager.h"
+#import "FTTraceManager.h"
 @implementation NSURLRequest (FTMonitor)
 -(NSDate *)ftRequestStartDate{
     return objc_getAssociatedObject(self, @"ft_requestStartDate");
@@ -43,11 +43,17 @@
 
 - (NSURLRequest *)ft_NetworkTrace{
     NSMutableURLRequest *mutableReqeust = [self mutableCopy];
-    NSDictionary *traceHeader = [[FTTraceHeaderManager sharedInstance] networkTrackHeaderWithUrl:mutableReqeust.URL];
-    if (traceHeader && traceHeader.allKeys.count>0) {
-        [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-            [mutableReqeust setValue:value forHTTPHeaderField:field];
-        }];
+    if([[FTTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL]){
+        NSString *identifier =  [NSUUID UUID].UUIDString;
+        if([FTTraceManager sharedInstance].enableAutoTrace){
+        NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:identifier url:mutableReqeust.URL];
+        if (traceHeader && traceHeader.allKeys.count>0) {
+            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                [mutableReqeust setValue:value forHTTPHeaderField:field];
+            }];
+            [mutableReqeust setValue:identifier forHTTPHeaderField:@"ft_identifier"];
+        }
+        }
     }
     return mutableReqeust;
 }

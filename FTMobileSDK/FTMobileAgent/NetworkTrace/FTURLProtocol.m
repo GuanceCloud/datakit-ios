@@ -12,12 +12,14 @@
 #import "FTSessionConfiguration.h"
 #import "NSURLRequest+FTMonitor.h"
 #import "FTResourceContentModel.h"
-#import "FTTraceHeaderManager.h"
+#import "FTTraceHandler.h"
+#import "FTNetworkTraceManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"
 #import "FTResourceMetricsModel.h"
 #import "FTConfigManager.h"
+#import "FTTraceManager.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -80,11 +82,16 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    self.trackUrl = [[FTTraceHeaderManager sharedInstance] isTraceUrl:mutableReqeust.URL];
+    self.trackUrl = [[FTTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL];
+    if(self.trackUrl){
+        self.identifier = [mutableReqeust.allHTTPHeaderFields valueForKey:@"ft_identifier"];
+        [mutableReqeust setValue:nil forHTTPHeaderField:@"ft_identifier"];
+        if(!self.identifier){
+            self.identifier = [[NSUUID UUID]UUIDString];
+        }
+    }
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
-    
-    
     //使用NSURLSession继续把request发送出去
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     self.sessionDelegateQueue                             = [[NSOperationQueue alloc] init];
@@ -93,9 +100,10 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
-        self.identifier = [NSUUID UUID].UUIDString;
         if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
             [[FTGlobalRumManager sharedInstance].rumManger startResource:self.identifier];
+        }else{
+            [[FTTraceManager sharedInstance] removeTraceHandlerWithKey:self.identifier];
         }
     }
     [task resume];
@@ -163,14 +171,9 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
             }
         }
         [[FTGlobalRumManager sharedInstance].rumManger stopResource:self.identifier];
-        __block NSString *spanIDStr,*traceIdStr;
-        if([FTTraceHeaderManager sharedInstance].enableLinkRumData){
-            [[FTTraceHeaderManager sharedInstance] getTraceingDatasWithRequestHeaderFields:self.request.allHTTPHeaderFields handler:^(NSString * _Nonnull traceId, NSString * _Nonnull spanID, BOOL sampled) {
-                spanIDStr = spanID;
-                traceId = traceId;
-            }];
-        }
-        [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:spanIDStr traceID:traceIdStr];
+        FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:self.identifier];
+        [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:handler.span_id traceID:handler.trace_id];
+       
     }
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){

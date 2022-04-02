@@ -9,18 +9,15 @@
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^UnpackTraceHeaderHandler)(NSString *traceId, NSString *spanID,BOOL sampled);
-@interface FTTraceHeaderManager : NSObject
+typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spanID,NSDictionary *_Nullable header);
+@interface FTNetworkTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
-@property (nonatomic, assign) BOOL enableAutoTrace;
 
 
 + (instancetype)sharedInstance;
-- (BOOL)isTraceUrl:(NSURL *)url;
 - (void)setNetworkTrace:(FTTraceConfig *)traceConfig;
-- (NSDictionary *)networkTrackHeaderWithUrl:(NSURL *)url;
-- (void)getTraceingDatasWithRequestHeaderFields:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler;
+- (void)networkTrackHeaderWithUrl:(NSURL *)url traceHeader:(TraceHeader)traceHeader;
 @end
 
 NS_ASSUME_NONNULL_END

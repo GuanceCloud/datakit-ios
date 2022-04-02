@@ -11,6 +11,8 @@
 #import "FTRUMManager.h"
 #import "FTTraceHeaderManager.h"
 #import "FTResourceContentModel.h"
+#import "FTTraceHandler.h"
+#import "FTTraceManager.h"
 @interface FTExternalDataManager()
 
 @end
@@ -23,14 +25,10 @@
     });
     return sharedManager;
 }
-#pragma mark - Tracing -
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    return  [[FTTraceHeaderManager sharedInstance] networkTrackHeaderWithUrl:url];
-}
 #pragma mark - Rum -
 
--(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration{
-    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName loadDuration:loadDuration];
+-(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
 }
 -(void)stopView{
     [FTGlobalRumManager.sharedInstance.rumManger stopView];
@@ -48,8 +46,9 @@
     [FTGlobalRumManager.sharedInstance.rumManger startResource:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    
-    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content];
+    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
+   
+    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
