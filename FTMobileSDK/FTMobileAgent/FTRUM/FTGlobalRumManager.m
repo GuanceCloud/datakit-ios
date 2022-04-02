@@ -171,6 +171,7 @@ static dispatch_once_t onceToken;
     [self.rumManger addLaunch:YES duration:duration];
 }
 -(void)ftAppColdStart:(NSNumber *)duration{
+    self.rumManger.appState = AppStateRun;
     [self.rumManger addLaunch:NO duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
@@ -183,6 +184,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{
     @try {
+        self.rumManger.appState = AppStateStartUp;
         [self.rumManger stopView];
         [self.rumManger applicationWillTerminate];
     }@catch (NSException *exception) {

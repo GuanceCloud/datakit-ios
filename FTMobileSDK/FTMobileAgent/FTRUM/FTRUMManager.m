@@ -162,6 +162,7 @@
             [errorTags setValue:run forKey:FT_RUM_KEY_ERROR_TYPE];
             [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_SOURCE];
             [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_TYPE];
+            [errorTags setValue:AppStateStringMap[self.appState] forKey:FT_RUM_KEY_ERROR_SITUATION];
             [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
             if (content.responseBody.length>0) {
                 [errorField setValue:content.responseBody forKey:FT_RUM_KEY_ERROR_STACK];
@@ -242,7 +243,7 @@
         NSDictionary *tags = @{
             FT_RUM_KEY_ERROR_TYPE:type,
             FT_RUM_KEY_ERROR_SOURCE:@"logger",
-            FT_RUM_KEY_ERROR_TYPE:AppStateStringMap[self.appState]
+            FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[self.appState]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
