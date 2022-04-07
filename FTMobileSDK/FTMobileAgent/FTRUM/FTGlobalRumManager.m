@@ -175,10 +175,11 @@ static dispatch_once_t onceToken;
     [self.rumManger addLaunch:NO duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
-        NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@0;
+        NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@-1;
         NSString *viewReferrer =self.rumManger.viewReferrer;
         self.rumManger.viewReferrer = @"";
-        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer  loadDuration:loadDuration];
+        [self.rumManger onCreateView:viewReferrer loadTime:loadDuration];
+        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer];
     }
 }
 #pragma mark ========== AUTO TRACK ==========
@@ -194,7 +195,8 @@ static dispatch_once_t onceToken;
 - (void)trackViewDidAppear:(UIViewController *)viewController{
     NSString *viewID = viewController.ft_viewUUID;
     NSString *className = NSStringFromClass(viewController.class);
-    [self.rumManger startViewWithViewID:viewID viewName:className  loadDuration:viewController.ft_loadDuration];
+    [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
+    [self.rumManger startViewWithViewID:viewID viewName:className];
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){

@@ -39,18 +39,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 #pragma mark - view -
 /**
- * 进入页面
- * @param viewId          页面id
- * @param viewName        页面名称
- * @param loadDuration    页面的加载时长
+ * 创建页面
+ * @param viewName     页面名称
+ * @param loadTime     页面加载时间
  */
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
 /**
  * 进入页面 viewId 内部管理
  * @param viewName        页面名称
- * @param loadDuration    页面的加载时长
  */
--(void)startViewWithName:(NSString *)viewName  loadDuration:(NSNumber *)loadDuration;
+-(void)startViewWithName:(NSString *)viewName;
+/**
+ * 进入页面
+ * @param viewId          页面id
+ * @param viewName        页面名称
+ */
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName;
 /**
  * 离开页面
  * @param viewId         页面id

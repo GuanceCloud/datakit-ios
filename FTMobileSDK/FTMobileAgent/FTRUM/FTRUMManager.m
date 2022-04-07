@@ -22,6 +22,7 @@
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
+@property (nonatomic, strong) NSMutableDictionary *preViewDuration;
 
 @end
 @implementation FTRUMManager
@@ -32,6 +33,7 @@
         self.rumConfig = rumConfig;
         self.assistant = self;
         self.appState = AppStateStartUp;
+        self.preViewDuration = [NSMutableDictionary new];
     }
     return self;
 }
@@ -39,8 +41,20 @@
     _rumConfig = rumConfig;
 }
 #pragma mark - View -
--(void)startViewWithName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration{
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:loadDuration];
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [self.preViewDuration setValue:loadTime forKey:viewName];
+}
+-(void)startViewWithName:(NSString *)viewName {
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName];
+}
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName{
+    NSNumber *duration = @-1;
+    if ([self.preViewDuration.allKeys containsObject:viewName]) {
+        duration = self.preViewDuration[viewName];
+        [self.preViewDuration removeObjectForKey:viewName];
+    }
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:duration];
+
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration{
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {

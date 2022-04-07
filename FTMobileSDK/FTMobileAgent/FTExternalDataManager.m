@@ -26,9 +26,11 @@
     return sharedManager;
 }
 #pragma mark - Rum -
-
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName loadDuration:loadDuration];
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [FTGlobalRumManager.sharedInstance.rumManger onCreateView:viewName loadTime:loadTime];
+}
+-(void)startViewWithName:(NSString *)viewName {
+    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName];
 }
 -(void)stopView{
     [FTGlobalRumManager.sharedInstance.rumManger stopView];

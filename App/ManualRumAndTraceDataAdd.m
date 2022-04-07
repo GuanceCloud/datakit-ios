@@ -45,7 +45,7 @@
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
         // duration 以纳秒为单位 示例中为 1s
-        [[FTGlobalRumManager sharedInstance].rumManger startViewWithName:@"TestVC"  loadDuration:@1000000000];
+        [[FTGlobalRumManager sharedInstance].rumManger startViewWithName:@"TestVC"];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
     
