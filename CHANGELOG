@@ -1,3 +1,6 @@
+# 1.3.4-alpha.3
+1.添加onCreateView方法记录view加载时长
+___
 # 1.3.4-alpha.2
 1.启动事件计算规则修改
 2.RUM 页面 viewReferrer 记录规则修改
