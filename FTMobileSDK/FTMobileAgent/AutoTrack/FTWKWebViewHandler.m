@@ -9,9 +9,15 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTWKWebViewHandler.h"
+#import "NSURLRequest+FTMonitor.h"
+#import "FTLog.h"
+#import "FTDateUtil.h"
 #import "WKWebView+FTAutoTrack.h"
+#import "FTWKWebViewJavascriptBridge.h"
+#import "FTMobileAgent+Private.h"
+#import "FTSwizzler.h"
 #import "FTSwizzle.h"
-
+#import "FTResourceContentModel.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 //记录trace wkwebview的request url trace状态 为YES时，trace完成

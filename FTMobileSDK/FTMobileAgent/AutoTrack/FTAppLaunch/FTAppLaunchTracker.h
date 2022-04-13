@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTAppLaunchTracker : NSObject
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
+- (instancetype)initWithDelegate:(nullable id)delegate;
 @end
 
 NS_ASSUME_NONNULL_END

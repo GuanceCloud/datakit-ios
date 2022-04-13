@@ -1,5 +1,5 @@
 //
-//  FTNetworkTraceManager.h
+//  FTTraceHeaderManager.h
 //  FTMobileAgent
 //
 //  Created by 胡蕾蕾 on 2021/3/17.
@@ -10,7 +10,7 @@
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spanID,NSDictionary *_Nullable header);
-@interface FTNetworkTraceManager : NSObject
+@interface FTTraceHeaderManager : NSObject
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 

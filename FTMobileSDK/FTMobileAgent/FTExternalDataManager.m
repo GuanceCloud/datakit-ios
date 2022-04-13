@@ -9,6 +9,7 @@
 #import "FTExternalDataManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
+#import "FTTraceHeaderManager.h"
 #import "FTResourceContentModel.h"
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
@@ -25,21 +26,20 @@
     return sharedManager;
 }
 #pragma mark - Rum -
-
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [FTGlobalRumManager.sharedInstance.rumManger onCreateView:viewName loadTime:loadTime];
+}
+-(void)startViewWithName:(NSString *)viewName {
+    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName];
 }
 -(void)stopView{
     [FTGlobalRumManager.sharedInstance.rumManger stopView];
-
 }
-- (void)addActionWithName:(NSString *)actionName actionType:(NSString *)actionType{
-    if ([actionType isEqualToString:@"click"]) {
+- (void)addClickActionWithName:(NSString *)actionName {
         [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
-    }
 }
-- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack{
-    [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type situation:situation message:message stack:stack];
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
+    [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type  message:message stack:stack];
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
     [FTGlobalRumManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
@@ -52,8 +52,8 @@
    
     [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
 }
-
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
 }
+
 @end

@@ -74,7 +74,6 @@
       @"SFPasswordRemoteViewController",
       @"UIWebRotatingAlertController",
       @"UIEditUserWordController",
-      @"UISplitViewController",
       @"UISystemInputAssistantViewController",
       @"UISystemKeyboardDockController",
       @"UIPredictionViewController",

@@ -13,7 +13,7 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "FTResourceContentModel.h"
 #import "FTTraceHandler.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"

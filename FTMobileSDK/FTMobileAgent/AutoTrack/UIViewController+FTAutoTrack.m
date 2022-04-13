@@ -75,7 +75,6 @@ static char *viewLoadDuration = "viewLoadDuration";
     }];
     return isContains;
 }
-
 - (void)dataflux_viewDidLoad{
     self.ft_viewLoadStartTime =[NSDate date];
     [self dataflux_viewDidLoad];
@@ -85,6 +84,9 @@ static char *viewLoadDuration = "viewLoadDuration";
     if(![self isBlackListContainsViewController]){
         // 预防撤回侧滑
         if ([FTGlobalRumManager sharedInstance].currentController != self) {
+            if ([self dataflux_parentViewControllerIsContainer]) {
+                return;
+            }
             [FTGlobalRumManager sharedInstance].currentController = self;
             if(self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
@@ -97,7 +99,6 @@ static char *viewLoadDuration = "viewLoadDuration";
             self.ft_viewUUID = [NSUUID UUID].UUIDString;
             [[FTGlobalRumManager sharedInstance] trackViewDidAppear:self];
         }
-      
     }
 }
 -(void)dataflux_viewDidDisappear:(BOOL)animated{
@@ -108,5 +109,17 @@ static char *viewLoadDuration = "viewLoadDuration";
     if ([FTGlobalRumManager sharedInstance].currentController == self) {
         [[FTGlobalRumManager sharedInstance] trackViewDidDisappear:self];
     }
+}
+
+-(BOOL)dataflux_parentViewControllerIsContainer{
+    UIViewController *parent = self.parentViewController;
+    while (parent != nil) {
+        if ([parent isKindOfClass:UIPageViewController.class] || [parent isKindOfClass:UISplitViewController.class]) {
+            return YES;
+        }else{
+            parent = parent.parentViewController;
+        }
+    }
+    return NO;
 }
 @end

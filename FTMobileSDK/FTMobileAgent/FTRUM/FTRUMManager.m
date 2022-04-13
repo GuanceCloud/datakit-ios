@@ -16,10 +16,13 @@
 #import "FTResourceContentModel.h"
 #import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
-#import "FTNetworkTraceManager.h"
+#import "FTTraceHeaderManager.h"
+#import "FTTraceHandler.h"
+#import "FTTraceManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
+@property (nonatomic, strong) NSMutableDictionary *preViewDuration;
 
 @end
 @implementation FTRUMManager
@@ -29,6 +32,8 @@
     if (self) {
         self.rumConfig = rumConfig;
         self.assistant = self;
+        self.appState = AppStateStartUp;
+        self.preViewDuration = [NSMutableDictionary new];
     }
     return self;
 }
@@ -36,18 +41,31 @@
     _rumConfig = rumConfig;
 }
 #pragma mark - View -
--(void)startViewWithName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName viewReferrer:viewReferrer loadDuration:loadDuration];
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [self.preViewDuration setValue:loadTime forKey:viewName];
 }
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer loadDuration:(NSNumber *)loadDuration{
+-(void)startViewWithName:(NSString *)viewName {
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName];
+}
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName{
+    NSNumber *duration = @-1;
+    if ([self.preViewDuration.allKeys containsObject:viewName]) {
+        duration = self.preViewDuration[viewName];
+        [self.preViewDuration removeObjectForKey:viewName];
+    }
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:duration];
+
+}
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration{
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:viewReferrer];
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.loading_time = loadDuration?:@0;
             viewModel.type = FTRUMDataViewStart;
+            self.viewReferrer = viewName;
             [self process:viewModel];
         }];
     } @catch (NSException *exception) {
@@ -123,6 +141,12 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
+- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:identifier];
+   
+    [FTGlobalRumManager.sharedInstance.rumManger addResource:identifier metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
+}
+
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
     if (!identifier) {
         return;
@@ -145,13 +169,14 @@
         
         if (content.error || content.httpStatusCode>=400) {
             NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
-            NSString *run = AppStateStringMap[[FTGlobalRumManager sharedInstance].appState];
+            NSString *run = AppStateStringMap[self.appState];
             NSMutableDictionary *errorField = [NSMutableDictionary new];
             NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
             [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_RUM_KEY_ERROR_MESSAGE];
             [errorTags setValue:run forKey:FT_RUM_KEY_ERROR_TYPE];
             [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_SOURCE];
             [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_TYPE];
+            [errorTags setValue:AppStateStringMap[self.appState] forKey:FT_RUM_KEY_ERROR_SITUATION];
             [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
             if (content.responseBody.length>0) {
                 [errorField setValue:content.responseBody forKey:FT_RUM_KEY_ERROR_STACK];
@@ -183,7 +208,7 @@
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
         //add trace info
-        if ([FTNetworkTraceManager sharedInstance].enableLinkRumData) {
+        if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
         }
@@ -221,7 +246,7 @@
     }
 }
 #pragma mark - error 、 long_task -
-- (void)addErrorWithType:(NSString *)type situation:(AppState )situation message:(NSString *)message stack:(NSString *)stack{
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     if (!(type && message && stack)) {
         return;
     }
@@ -232,7 +257,7 @@
         NSDictionary *tags = @{
             FT_RUM_KEY_ERROR_TYPE:type,
             FT_RUM_KEY_ERROR_SOURCE:@"logger",
-            FT_RUM_KEY_ERROR_TYPE:AppStateStringMap[situation]
+            FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[self.appState]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
