@@ -11,7 +11,7 @@
 #import <FTExternalDataManager.h>
 #import <FTResourceMetricsModel.h>
 #import <FTResourceContentModel.h>
-
+#import <FTTraceManager.h>
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -41,27 +41,30 @@
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Trace" handler:^{
         [weakSelf manualTrace];
     }];
-    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
+    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"RUM createView" handler:^{
         // duration 以纳秒为单位 示例中为 1s
-        [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC" viewReferrer:@"viewReferrer" loadDuration:@1000000000];
+        [[FTExternalDataManager sharedManager] onCreateView:@"TestVC" loadTime:@1000000000];
     }];
-    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"RUM startView" handler:^{
+        [[FTExternalDataManager sharedManager] startViewWithName:@"TestVC"];
+    }];
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM stopView" handler:^{
     
         [[FTExternalDataManager sharedManager] stopView];
     }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
-        [[FTExternalDataManager sharedManager] addActionWithName:@"UITableViewCell click" actionType:@"click"];
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addAction" handler:^{
+        [[FTExternalDataManager sharedManager] addClickActionWithName:@"UITableViewCell click"];
     }];
-    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" situation:AppStateRun message:@"crash_message" stack:@"crash_stack"];
+    TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"crash_message" stack:@"crash_stack"];
     }];
-    TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
+    TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
         [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"long task" duration:@1000000000];
     }];
-    TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource" handler:^{
+    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"RUM Resource" handler:^{
         [weakSelf manualRumResource];
     }];
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
@@ -71,8 +74,10 @@
     
 }
 - (void)manualTrace{
+    NSString *key = [[NSUUID UUID]UUIDString];
+
     NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderUrl:url];
+    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
