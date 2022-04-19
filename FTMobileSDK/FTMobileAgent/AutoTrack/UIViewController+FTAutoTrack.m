@@ -41,16 +41,6 @@ static char *viewLoadDuration = "viewLoadDuration";
 -(void)setFt_viewUUID:(NSString *)ft_viewUUID{
     objc_setAssociatedObject(self, &viewControllerUUID, ft_viewUUID, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
--(NSString *)ft_parentVC{
-    UIViewController *viewController =[self parentViewController];
-    if (viewController == nil) {
-        viewController = self.presentingViewController;
-    }
-    if (viewController == nil) {
-        return FT_NULL_VALUE;
-    }
-    return NSStringFromClass(viewController.class);
-}
 - (BOOL)isBlackListContainsViewController{
     static NSSet * blacklistedClasses  = nil;
     static dispatch_once_t onceToken;

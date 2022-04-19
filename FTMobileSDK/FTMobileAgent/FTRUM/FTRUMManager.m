@@ -174,8 +174,8 @@
             NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
             [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_RUM_KEY_ERROR_MESSAGE];
             [errorTags setValue:run forKey:FT_RUM_KEY_ERROR_TYPE];
-            [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_SOURCE];
-            [errorTags setValue:@"network" forKey:FT_RUM_KEY_ERROR_TYPE];
+            [errorTags setValue:FT_RUM_KEY_NETWORK forKey:FT_RUM_KEY_ERROR_SOURCE];
+            [errorTags setValue:FT_RUM_KEY_NETWORK forKey:FT_RUM_KEY_ERROR_TYPE];
             [errorTags setValue:AppStateStringMap[self.appState] forKey:FT_RUM_KEY_ERROR_SITUATION];
             [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
             if (content.responseBody.length>0) {

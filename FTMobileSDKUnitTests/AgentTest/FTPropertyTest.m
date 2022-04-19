@@ -130,43 +130,6 @@
     XCTAssertTrue(newArray.count == oldArray.count);
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-/**
- * 设置允许追踪用户操作，目前支持应用启动和点击操作
- * 验证： Action 数据能正常写入
- */
-- (void)testEnableTraceUserAction{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.enableTraceUserAction = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [self addRumData];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count >= oldArray.count);
-    [[FTMobileAgent sharedInstance] resetInstance];
-    
-}
-/**
- * 设置不允许追踪用户操作
- * 验证： Action 数据不能正常写入
- */
-- (void)testDisableTraceUserAction{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [NSThread sleepForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    //app_cold_start 应用生命周期不受影响
-    XCTAssertTrue(newArray.count == oldArray.count+1);
-    [[FTMobileAgent sharedInstance] resetInstance];
-    
-}
 - (void)addRumData{
     NSDictionary *field = @{FT_RUM_KEY_ACTION_ERROR_COUNT:@0,
                             FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@0,

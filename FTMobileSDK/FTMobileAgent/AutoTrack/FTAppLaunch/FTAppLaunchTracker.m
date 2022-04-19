@@ -14,14 +14,13 @@
 
 
 static NSDate * FTLoadDate = nil;
-
+static BOOL AppRelaunched = NO;
 @interface FTAppLaunchTracker()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) NSDate *launchTime;
 @end
 
 
 @implementation FTAppLaunchTracker{
-    BOOL _appRelaunched;          // App 从后台恢复
     BOOL _applicationDidEnterBackground;
 }
 + (void)load{
@@ -42,15 +41,15 @@ static NSDate * FTLoadDate = nil;
 static dispatch_once_t onceToken;
 
 - (void)applicationWillEnterForeground{
-    if (_appRelaunched){
+    if (AppRelaunched){
         self.launchTime = [NSDate date];
     }
 }
 - (void)applicationDidBecomeActive{
     @try {
-        if(!_appRelaunched){
+        if(!AppRelaunched){
             NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:FTLoadDate toDate:[NSDate date]];
-            _appRelaunched = YES;
+            AppRelaunched = YES;
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:)]) {
                 [self.delegate ftAppColdStart:duration];
             }
@@ -67,8 +66,5 @@ static dispatch_once_t onceToken;
 }
 - (void)applicationDidEnterBackground{
     _applicationDidEnterBackground = YES;
-}
--(void)dealloc{
-    onceToken = 0;
 }
 @end

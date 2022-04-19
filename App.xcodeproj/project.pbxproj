@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		172C3571280E7D5F002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzlerTest.m */; };
 		17C0479627F6FFFC00CAEB83 /* AppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479527F6FFFC00CAEB83 /* AppTests.m */; };
 		17C0479F27F700A400CAEB83 /* RumDataBuilderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
@@ -188,6 +189,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		172C3570280E7D5F002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
+		172C357C280E97CC002D139E /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17C0479327F6FFFC00CAEB83 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17C0479527F6FFFC00CAEB83 /* AppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppTests.m; sourceTree = "<group>"; };
 		17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumDataBuilderTest.m; sourceTree = "<group>"; };
@@ -298,6 +301,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		172C3579280E97CC002D139E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		17C0479027F6FFFC00CAEB83 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -355,6 +365,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		172C356D280D8885002D139E /* UtilsTest */ = {
+			isa = PBXGroup;
+			children = (
+				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
+				172C3570280E7D5F002D139E /* FTSwizzlerTest.m */,
+			);
+			path = UtilsTest;
+			sourceTree = "<group>";
+		};
 		17C0479427F6FFFC00CAEB83 /* AppTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -392,6 +411,7 @@
 				4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */,
 				7CCD69D22711988100E57A6F /* AppPreMade.app */,
 				17C0479327F6FFFC00CAEB83 /* AppTests.xctest */,
+				172C357C280E97CC002D139E /* SwiftApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -480,7 +500,6 @@
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
 				4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */,
 				4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */,
-				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
 				4A299B932514953300400931 /* FTPropertyTest.m */,
 				4AB1FFA62546D74900CB36CF /* FTANRTest.m */,
 				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
@@ -521,6 +540,7 @@
 			isa = PBXGroup;
 			children = (
 				7C3C290D2768A714009DB8E2 /* Helper */,
+				172C356D280D8885002D139E /* UtilsTest */,
 				4A2C826224EFD13D006D4FC6 /* AgentTest */,
 				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
 				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
@@ -576,6 +596,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		172C357B280E97CC002D139E /* SwiftApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 172C358D280E97CE002D139E /* Build configuration list for PBXNativeTarget "SwiftApp" */;
+			buildPhases = (
+				172C3578280E97CC002D139E /* Sources */,
+				172C3579280E97CC002D139E /* Frameworks */,
+				172C357A280E97CC002D139E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftApp;
+			productName = SwiftApp;
+			productReference = 172C357C280E97CC002D139E /* SwiftApp.app */;
+			productType = "com.apple.product-type.application";
+		};
 		17C0479227F6FFFC00CAEB83 /* AppTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 17C0479D27F6FFFD00CAEB83 /* Build configuration list for PBXNativeTarget "AppTests" */;
@@ -698,9 +735,13 @@
 		4A11694E239113B600C0BC4E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1110;
 				ORGANIZATIONNAME = "DataFlux-cn";
 				TargetAttributes = {
+					172C357B280E97CC002D139E = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
 					17C0479227F6FFFC00CAEB83 = {
 						CreatedOnToolsVersion = 13.2.1;
 						TestTargetID = 4A116955239113B600C0BC4E;
@@ -748,6 +789,7 @@
 				4A78B9C62563C43E0021E0BC /* TodayExtensionTest */,
 				7CCD69A82711988100E57A6F /* AppPreMade */,
 				17C0479227F6FFFC00CAEB83 /* AppTests */,
+				172C357B280E97CC002D139E /* SwiftApp */,
 			);
 		};
 /* End PBXProject section */
@@ -770,6 +812,13 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		172C357A280E97CC002D139E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		17C0479127F6FFFC00CAEB83 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -933,6 +982,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		172C3578280E97CC002D139E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		17C0478F27F6FFFC00CAEB83 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -999,6 +1055,7 @@
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
+				172C3571280E7D5F002D139E /* FTSwizzlerTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 				4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */,
 			);
@@ -1087,6 +1144,76 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		172C358E280E97CE002D139E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BW62V33GLH;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwiftApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = hll.SwiftApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		172C358F280E97CE002D139E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BW62V33GLH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwiftApp/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = hll.SwiftApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		17C0479927F6FFFC00CAEB83 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DE80FEE5FFFB90C211D460D8 /* Pods-AppTests.debug.xcconfig */;
@@ -1608,6 +1735,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		172C358D280E97CE002D139E /* Build configuration list for PBXNativeTarget "SwiftApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				172C358E280E97CE002D139E /* Debug */,
+				172C358F280E97CE002D139E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		17C0479D27F6FFFD00CAEB83 /* Build configuration list for PBXNativeTarget "AppTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

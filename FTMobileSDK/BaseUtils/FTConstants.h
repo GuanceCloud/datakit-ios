@@ -72,6 +72,7 @@ extern NSString * const FT_RUM_KEY_ERROR_STACK;
 extern NSString * const FT_RUM_KEY_ERROR_SOURCE;
 extern NSString * const FT_RUM_KEY_ERROR_TYPE;
 extern NSString * const FT_RUM_KEY_ERROR_SITUATION;
+extern NSString * const FT_RUM_KEY_NETWORK;
 
 extern NSString * const FT_RUM_KEY_LONG_TASK_STACK;
 

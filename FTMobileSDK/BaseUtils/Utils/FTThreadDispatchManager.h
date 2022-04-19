@@ -11,7 +11,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTThreadDispatchManager : NSObject
+/**
+ * RUM 线程异步执行
+ */
 + (void)dispatchInRUMThread:(void (^_Nullable)(void))block;
+/**
+ * RUM 线程同步执行
+ */
 + (void)dispatchSyncInRUMThread:(void (^_Nullable)(void))block;
 /**
  * 主线程同步执行

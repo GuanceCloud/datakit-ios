@@ -32,11 +32,12 @@
         self.lock = dispatch_semaphore_create(1);
         self.traceHandlers = [NSMutableDictionary new];
         self.enableLinkRumData = [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
-        self.enableAutoTrace = [FTConfigManager sharedInstance].traceConfig.enableAutoTrace;
     }
     return self;
 }
-
+-(BOOL)enableAutoTrace{
+    return [FTConfigManager sharedInstance].traceConfig.enableAutoTrace;
+}
 - (BOOL)isTraceUrl:(NSURL *)url{
     if (self.sdkUrlStr) {
         return !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);

@@ -31,17 +31,7 @@
     });
     return sharedInstance;
 }
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    return [self sharedInstance];
-}
 
-- (id)copyWithZone:(NSZone *)zone {
-    return self;
-}
-
-- (id)mutableCopyWithZone:(NSZone *)zone {
-    return self;
-}
 - (void)addAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate {
     [self.delegateLock lock];
     if (![self.appLifecycleDelegates.allObjects containsObject:delegate]) {

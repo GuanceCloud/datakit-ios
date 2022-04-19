@@ -193,7 +193,7 @@ static dispatch_once_t onceToken;
 }
 - (void)trackViewDidAppear:(UIViewController *)viewController{
     NSString *viewID = viewController.ft_viewUUID;
-    NSString *className = NSStringFromClass(viewController.class);
+    NSString *className = viewController.ft_viewControllerName;
     [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
     [self.rumManger startViewWithViewID:viewID viewName:className];
 }
