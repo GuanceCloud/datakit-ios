@@ -376,16 +376,16 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     return self;
 }
 
-- (NSString *)description
-{
-    NSString *descriptors = @"";
-    NSString *key;
-    NSEnumerator *keys = [self.blocks keyEnumerator];
-    while ((key = [keys nextObject])) {
-        descriptors = [descriptors stringByAppendingFormat:@"\t%@ : %@\n", key, [self.blocks objectForKey:key]];
-    }
-    return [NSString stringWithFormat:@"Swizzle on %@::%@ [\n%@]", NSStringFromClass(self.class), NSStringFromSelector(self.selector), descriptors];
-}
+//- (NSString *)description
+//{
+//    NSString *descriptors = @"";
+//    NSString *key;
+//    NSEnumerator *keys = [self.blocks keyEnumerator];
+//    while ((key = [keys nextObject])) {
+//        descriptors = [descriptors stringByAppendingFormat:@"\t%@ : %@\n", key, [self.blocks objectForKey:key]];
+//    }
+//    return [NSString stringWithFormat:@"Swizzle on %@::%@ [\n%@]", NSStringFromClass(self.class), NSStringFromSelector(self.selector), descriptors];
+//}
 
 
 @end

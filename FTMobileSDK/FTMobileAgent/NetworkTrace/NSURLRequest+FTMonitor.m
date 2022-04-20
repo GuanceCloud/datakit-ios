@@ -14,12 +14,6 @@
 #import <objc/runtime.h>
 #import "FTTraceManager.h"
 @implementation NSURLRequest (FTMonitor)
--(NSDate *)ftRequestStartDate{
-    return objc_getAssociatedObject(self, @"ft_requestStartDate");
-}
--(void)setFtRequestStartDate:(NSDate*)startDate{
-    objc_setAssociatedObject(self, @"ft_requestStartDate", startDate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
 - (NSDictionary *)ft_getRequestHeaders{
     NSDictionary<NSString *, NSString *> *headerFields = self.allHTTPHeaderFields;
     NSDictionary<NSString *, NSString *> *cookiesHeader = [self dgm_getCookies];

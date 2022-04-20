@@ -168,10 +168,6 @@ static dispatch_once_t onceToken;
 -(void)ftAppHotStart:(NSNumber *)duration{
     self.rumManger.appState = AppStateRun;
     [self.rumManger addLaunch:YES duration:duration];
-}
--(void)ftAppColdStart:(NSNumber *)duration{
-    self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:NO duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
         NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@-1;
@@ -180,6 +176,10 @@ static dispatch_once_t onceToken;
         [self.rumManger onCreateView:viewReferrer loadTime:loadDuration];
         [self.rumManger startViewWithViewID:viewid viewName:viewReferrer];
     }
+}
+-(void)ftAppColdStart:(NSNumber *)duration{
+    self.rumManger.appState = AppStateRun;
+    [self.rumManger addLaunch:NO duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{

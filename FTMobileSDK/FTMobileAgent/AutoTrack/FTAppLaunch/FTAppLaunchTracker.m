@@ -7,7 +7,6 @@
 //
 #import <UIKit/UIKit.h>
 #import "FTAppLaunchTracker.h"
-#import "FTSwizzler.h"
 #import "FTAppLifeCycle.h"
 #import "FTLog.h"
 #import "FTDateUtil.h"
@@ -38,7 +37,6 @@ static BOOL AppRelaunched = NO;
     }
     return self;
 }
-static dispatch_once_t onceToken;
 
 - (void)applicationWillEnterForeground{
     if (AppRelaunched){

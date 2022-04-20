@@ -22,6 +22,7 @@ typedef void (^datafluxSwizzleBlock)();
 @interface FTSwizzler : NSObject
 
 + (void)swizzleSelector:(SEL)aSelector onClass:(Class)aClass withBlock:(datafluxSwizzleBlock)block named:(NSString *)aName;
++ (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass;
 + (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass named:(NSString *)aName;
 + (void)printSwizzles;
 + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel;

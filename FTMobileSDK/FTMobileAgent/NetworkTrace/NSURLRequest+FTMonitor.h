@@ -11,7 +11,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLRequest (FTMonitor)
-@property (nonatomic, strong) NSDate *ftRequestStartDate;
 - (NSURLRequest *)ft_NetworkTrace;
 - (NSDictionary *)ft_getRequestHeaders;
 @end

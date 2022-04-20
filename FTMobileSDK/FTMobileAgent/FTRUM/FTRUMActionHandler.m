@@ -40,10 +40,6 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.action_name = model.action_name;
         self.action_type = model.action_type;
         self.type = model.type;
-        if ([model isKindOfClass:FTRUMLaunchDataModel.class]) {
-            FTRUMLaunchDataModel *launchModel = (FTRUMLaunchDataModel*)model;
-            self.duration =launchModel.duration;
-        }
         self.context = [context copy];
         self.context.action_id = self.action_id;
     }

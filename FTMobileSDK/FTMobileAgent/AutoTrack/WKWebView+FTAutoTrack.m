@@ -11,21 +11,20 @@
 #import "NSURLRequest+FTMonitor.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
-#import "NSObject+FTAutoTrack.h"
-static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromClass, Class toClass) {
-    NSCParameterAssert(fromClass);
-    NSCParameterAssert(toClass);
-    Method originalMethod = class_getInstanceMethod(toClass, selector);
-    if(!originalMethod){
-    Method method = class_getInstanceMethod(fromClass, addSelector);
-    // 返回该方法的实现
-    IMP methodIMP = method_getImplementation(method);
-    // 获取该方法的返回类型
-    const char *types = method_getTypeEncoding(method);
-    // 在 toClass 中，添加方法
-        class_addMethod(toClass, selector, methodIMP, types);
-    }
-}
+//static void dataflux_addInstanceMethod(SEL selector,SEL addSelector,Class fromClass, Class toClass) {
+//    NSCParameterAssert(fromClass);
+//    NSCParameterAssert(toClass);
+//    Method originalMethod = class_getInstanceMethod(toClass, selector);
+//    if(!originalMethod){
+//    Method method = class_getInstanceMethod(fromClass, addSelector);
+//    // 返回该方法的实现
+//    IMP methodIMP = method_getImplementation(method);
+//    // 获取该方法的返回类型
+//    const char *types = method_getTypeEncoding(method);
+//    // 在 toClass 中，添加方法
+//        class_addMethod(toClass, selector, methodIMP, types);
+//    }
+//}
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{

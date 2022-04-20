@@ -86,6 +86,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
     return timedOut || expired;
 }
+/**
+ * launch action
+ * 实际意义上 与 click action 不同，action附加resource、error、long task不进行统计
+ */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];

@@ -147,8 +147,7 @@
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.enableConsoleLog = YES;
-    loggerConfig.prefix = @"debug";
+    [loggerConfig enableConsoleLog:YES prefix:@"debug"];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSLog(@"debug testDisableTraceConsoleLog");
     for (int i = 0; i<20; i++) {

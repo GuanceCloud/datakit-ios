@@ -34,6 +34,7 @@
 }
 -(void)tearDown{
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillTerminateNotification object:nil];
     [tester waitForTimeInterval:2];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
@@ -354,24 +355,34 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [tester tapViewWithAccessibilityLabel:@"FirstButton"];
-    [tester waitForTimeInterval:2];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    __block BOOL isLaunchCold = NO;
-    
-    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
-            NSDictionary *tags = opdata[FT_TAGS];
-            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"launch_cold"]){
-                isLaunchCold = YES;
+    NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
+    id __block token = [center
+                        addObserverForName:UIApplicationDidBecomeActiveNotification
+                        object:nil
+                        queue:NSOperationQueue.mainQueue
+                        usingBlock:^(NSNotification *_){
+        [tester waitForTimeInterval:2];
+
+        NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+        __block BOOL isLaunchCold = NO;
+        
+        [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+            NSString *op = dict[@"op"];
+            XCTAssertTrue([op isEqualToString:@"RUM"]);
+            NSDictionary *opdata = dict[@"opdata"];
+            NSString *measurement = opdata[@"source"];
+            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+                NSDictionary *tags = opdata[FT_TAGS];
+                if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"launch_cold"]){
+                    isLaunchCold = YES;
+                }
             }
-        }
+        }];
+        XCTAssertTrue(isLaunchCold);
+        token = nil;
     }];
-    XCTAssertTrue(isLaunchCold);
+    
 }
 /**
  * 验证： action: launch_hot
@@ -497,11 +508,12 @@
         }
         [expectation fulfill];
     }];
-    [tester waitForTimeInterval:2];
-    [self addLongTaskData];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [tester waitForTimeInterval:2];
+    [self addLongTaskData];
+    
     [self addErrorData];
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];

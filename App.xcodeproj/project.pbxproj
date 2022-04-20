@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		172C3571280E7D5F002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzlerTest.m */; };
+		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
+		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
 		17C0479627F6FFFC00CAEB83 /* AppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479527F6FFFC00CAEB83 /* AppTests.m */; };
 		17C0479F27F700A400CAEB83 /* RumDataBuilderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
@@ -189,8 +190,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		172C3570280E7D5F002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
+		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C357C280E97CC002D139E /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
 		17C0479327F6FFFC00CAEB83 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17C0479527F6FFFC00CAEB83 /* AppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppTests.m; sourceTree = "<group>"; };
 		17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumDataBuilderTest.m; sourceTree = "<group>"; };
@@ -369,7 +371,8 @@
 			isa = PBXGroup;
 			children = (
 				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
-				172C3570280E7D5F002D139E /* FTSwizzlerTest.m */,
+				172C3570280E7D5F002D139E /* FTSwizzleTest.m */,
+				172C3594280FAC16002D139E /* FTSwizzlerTest.m */,
 			);
 			path = UtilsTest;
 			sourceTree = "<group>";
@@ -1049,13 +1052,14 @@
 				4A037EFA24F791CB007B2104 /* FTNetworkTraceTest.m in Sources */,
 				7C3C289627683983009DB8E2 /* FT1RUMTest.m in Sources */,
 				4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */,
+				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
-				172C3571280E7D5F002D139E /* FTSwizzlerTest.m in Sources */,
+				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 				4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */,
 			);

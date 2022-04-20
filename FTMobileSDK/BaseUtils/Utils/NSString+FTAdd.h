@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSString (FTAdd)
 -(NSString *)ft_md5HashToLower16Bit;
--(NSString *)ft_md5HashToUpper32Bit;
 -(NSUInteger)ft_characterNumber;
 -(NSString *)ft_base64Encode;
 -(NSString *)ft_base64Decode;

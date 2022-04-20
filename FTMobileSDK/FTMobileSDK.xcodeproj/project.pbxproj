@@ -149,8 +149,6 @@
 		7CF4E10726B121610076D238 /* FTSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E10526B121610076D238 /* FTSwizzle.m */; };
 		7CF4E11126B1265E0076D238 /* WKWebView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */; };
 		7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */; };
-		7CF4E11E26B145C90076D238 /* NSObject+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */; };
-		7CF4E11F26B145C90076D238 /* NSObject+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */; };
 		7CF4E12426B15B800076D238 /* UIScrollView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */; };
 		7CF4E12526B15B800076D238 /* UIScrollView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */; };
 		7CF5875025E3B5B200EE372E /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */; };
@@ -306,8 +304,6 @@
 		7CF4E10526B121610076D238 /* FTSwizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzle.m; sourceTree = "<group>"; };
 		7CF4E10F26B1265E0076D238 /* WKWebView+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTAutoTrack.h"; sourceTree = "<group>"; };
 		7CF4E11026B1265E0076D238 /* WKWebView+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "WKWebView+FTAutoTrack.m"; sourceTree = "<group>"; };
-		7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+FTAutoTrack.h"; sourceTree = "<group>"; };
-		7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+FTAutoTrack.m"; sourceTree = "<group>"; };
 		7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+FTAutoTrack.h"; sourceTree = "<group>"; };
 		7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUncaughtExceptionHandler.m; sourceTree = "<group>"; };
@@ -548,8 +544,6 @@
 				7CF4E08126A7EB080076D238 /* UIApplication+FTAutoTrack.m */,
 				7CF4E09226A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h */,
 				7CF4E09326A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m */,
-				7CF4E11C26B145C90076D238 /* NSObject+FTAutoTrack.h */,
-				7CF4E11D26B145C90076D238 /* NSObject+FTAutoTrack.m */,
 				7CF4E12226B15B800076D238 /* UIScrollView+FTAutoTrack.h */,
 				7CF4E12326B15B800076D238 /* UIScrollView+FTAutoTrack.m */,
 			);
@@ -661,7 +655,6 @@
 				7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */,
 				7C28B92126611B3800CECBA6 /* FTRUMDataModel.h in Headers */,
 				7C69CFBF27281D820065638F /* FTThreadDispatchManager.h in Headers */,
-				7CF4E11E26B145C90076D238 /* NSObject+FTAutoTrack.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
 				4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */,
@@ -836,7 +829,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7CF4E11F26B145C90076D238 /* NSObject+FTAutoTrack.m in Sources */,
 				7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */,
 				7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */,
 				7C28B91D26611B3800CECBA6 /* FTRUMHandler.m in Sources */,
