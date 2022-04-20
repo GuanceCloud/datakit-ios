@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
 		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
+		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17C0479627F6FFFC00CAEB83 /* AppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479527F6FFFC00CAEB83 /* AppTests.m */; };
 		17C0479F27F700A400CAEB83 /* RumDataBuilderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
@@ -193,6 +194,7 @@
 		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C357C280E97CC002D139E /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
+		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17C0479327F6FFFC00CAEB83 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17C0479527F6FFFC00CAEB83 /* AppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppTests.m; sourceTree = "<group>"; };
 		17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumDataBuilderTest.m; sourceTree = "<group>"; };
@@ -373,6 +375,7 @@
 				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
 				172C3570280E7D5F002D139E /* FTSwizzleTest.m */,
 				172C3594280FAC16002D139E /* FTSwizzlerTest.m */,
+				17B17150281042B7004002C9 /* FTThreadDispatchTest.m */,
 			);
 			path = UtilsTest;
 			sourceTree = "<group>";
@@ -1050,6 +1053,7 @@
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
 				4A037EFA24F791CB007B2104 /* FTNetworkTraceTest.m in Sources */,
+				17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */,
 				7C3C289627683983009DB8E2 /* FT1RUMTest.m in Sources */,
 				4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */,
 				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
