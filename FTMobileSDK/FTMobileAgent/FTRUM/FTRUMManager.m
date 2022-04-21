@@ -247,7 +247,7 @@
 }
 #pragma mark - error 、 long_task -
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    if (!(type && message && stack)) {
+    if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
     @try {
@@ -276,7 +276,7 @@
     }
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    if (!stack || !duration) {
+    if (!stack || stack.length == 0 || !duration) {
         return;
     }
     @try {

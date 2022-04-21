@@ -31,12 +31,14 @@
         self.sdkUrlStr = [FTNetworkInfoManger sharedInstance].metricsUrl;
         self.lock = dispatch_semaphore_create(1);
         self.traceHandlers = [NSMutableDictionary new];
-        self.enableLinkRumData = [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
     }
     return self;
 }
 -(BOOL)enableAutoTrace{
     return [FTConfigManager sharedInstance].traceConfig.enableAutoTrace;
+}
+-(BOOL)enableLinkRumData{
+    return  [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
     if (self.sdkUrlStr) {

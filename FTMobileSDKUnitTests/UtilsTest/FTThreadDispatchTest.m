@@ -99,17 +99,19 @@
         XCTAssertFalse([NSThread currentThread].isMainThread);
         [FTThreadDispatchManager performBlockDispatchMainAsync:^{
             XCTAssertTrue([NSThread currentThread].isMainThread);
-                [NSThread sleepForTimeInterval:1];
+            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+                XCTAssertTrue([NSThread currentThread].isMainThread);
                 string = [string stringByAppendingString:@"2"];
+                XCTAssertFalse([string isEqualToString:@"132"]);
+            }];
+            string = [string stringByAppendingString:@"3"];
         }];
         [FTThreadDispatchManager performBlockDispatchMainAsync:^{
             XCTAssertTrue([NSThread currentThread].isMainThread);
-            string = [string stringByAppendingString:@"3"];
-            [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-                XCTAssertTrue([NSThread currentThread].isMainThread);
+                [NSThread sleepForTimeInterval:1];
                 string = [string stringByAppendingString:@"4"];
-            }];
         }];
+       
         XCTAssertFalse([string isEqualToString:@"1234"]);
 
     });
