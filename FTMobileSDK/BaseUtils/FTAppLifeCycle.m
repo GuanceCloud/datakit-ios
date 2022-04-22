@@ -41,14 +41,12 @@
 }
 - (void)removeAppLifecycleDelegate:(id<FTAppLifeCycleDelegate>)delegate{
     [self.delegateLock lock];
-    [self.appLifecycleDelegates.allObjects
-            enumerateObjectsWithOptions:NSEnumerationReverse
-                             usingBlock:^(NSObject *obj, NSUInteger idx, BOOL *_Nonnull stop) {
-                                 if (delegate == obj) {
-                                     [self.appLifecycleDelegates removePointerAtIndex:idx];
-                                     *stop = YES;
-                                 }
-                             }];
+    for (NSUInteger i=0; i<self.appLifecycleDelegates.count; i++) {
+        if ([self.appLifecycleDelegates pointerAtIndex:i] == (__bridge void *)delegate) {
+            [self.appLifecycleDelegates removePointerAtIndex:i];
+            break;
+        }
+    }
     [self.delegateLock unlock];
 }
 - (void)setupAppStateNotification{
