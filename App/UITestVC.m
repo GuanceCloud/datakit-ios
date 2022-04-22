@@ -83,6 +83,8 @@
     _label.backgroundColor = [UIColor orangeColor];
     _label.text = @"lable";
     _label.userInteractionEnabled = YES;
+    _label.accessibilityLabel = @"LABLE_CLICK";
+    _label.isAccessibilityElement = YES;
     [_scrollView addSubview:_label];
     
     y = CGRectGetMaxY(_label.frame) + 10;
@@ -91,6 +93,8 @@
     _imageView.frame = CGRectMake(x, y, width, 50);
     _imageView.backgroundColor = [UIColor lightGrayColor];
     _imageView.image = [UIImage imageNamed:@"order_status_top"];
+    _imageView.userInteractionEnabled = YES;
+    _imageView.accessibilityLabel = @"IMAGE_CLICK";
     [_scrollView addSubview:_imageView];
     
     _scrollView.contentSize = CGSizeMake(0, CGRectGetMaxY(_imageView.frame) + 16);
@@ -160,7 +164,11 @@
 }
 
 - (void)tap2Action:(UIGestureRecognizer *)sender {
-    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Long Press" message:@"press!" preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"ok" style:UIAlertActionStyleCancel handler:nil];
+    cancel.accessibilityLabel = @"alert cancel";
+    [alert addAction:cancel];
+    [self presentViewController:alert animated:YES completion:nil];
     NSLog(@"UIImageView被点击了");
 }
 #pragma mark -

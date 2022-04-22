@@ -385,6 +385,8 @@
     [tester waitForTimeInterval:1];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [NSThread sleepForTimeInterval:1];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [NSThread sleepForTimeInterval:0.5];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [tester tapViewWithAccessibilityLabel:@"FirstButton"];
     [tester waitForTimeInterval:2];

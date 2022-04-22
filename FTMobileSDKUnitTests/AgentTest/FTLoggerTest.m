@@ -236,7 +236,7 @@
     rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[viewTester usingLabel:@"EventFlowLog"] tap];
+    [[viewTester usingLabel:@"UITEST"] tap];
 
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
 
