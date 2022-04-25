@@ -23,4 +23,32 @@
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:[FTDateUtil currentTimeNanosecond]];
     return model;
 }
++ (FTRecordModel *)createTraceModel{
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FTNetworkTraceStringMap[FTNetworkTraceTypeDDtrace] op:FT_DATA_TYPE_TRACING tags:@{@"name":@"createTraceModel"} field:@{FT_KEY_MESSAGE:@"testTraceModel"} tm:[FTDateUtil currentTimeNanosecond]];
+    return model;
+}
++ (FTRecordModel *)createRumModel{
+    NSDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:@"rum model create",
+                             FT_RUM_KEY_ERROR_STACK:@"rum model create",
+    };
+    NSDictionary *tags = @{
+        FT_RUM_KEY_ERROR_TYPE:@"ios_crash",
+        FT_RUM_KEY_ERROR_SOURCE:@"logger",
+        FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
+        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:field tm:[FTDateUtil currentTimeNanosecond]];
+    return model;
+}
++ (FTRecordModel *)createObjectModel{
+    NSString *deviceUUID = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *identifier = [infoDictionary objectForKey:@"CFBundleIdentifier"];
+    NSString *name = [NSString stringWithFormat:@"%@_%@",deviceUUID,identifier];
+  
+
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:name op:FT_DATA_TYPE_OBJECT tags:@{@"class":@"class1"} field:@{} tm:[FTDateUtil currentTimeNanosecond]];
+    return model;
+}
 @end

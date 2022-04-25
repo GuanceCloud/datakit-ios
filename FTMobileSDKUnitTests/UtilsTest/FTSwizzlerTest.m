@@ -8,7 +8,12 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSwizzler.h"
-@interface BaseSwizzlerClass : NSObject
+#import "FTWeakProxy.h"
+
+@protocol FTBaseDelegate <NSObject>
+- (NSString *)baseSring:(NSString *)str;
+@end
+@interface BaseSwizzlerClass : NSObject<FTBaseDelegate>
 - (void)noArgument;
 - (void)oneArgument:(NSString *)first;
 - (void)twoArgument:(NSString *)first second:(NSString *)second;
@@ -36,6 +41,9 @@
 - (void)exceedArgument:(NSString *)first second:(NSString *)second third:(NSString *)third fourth:(NSString *)fourth{
     
 }
+-(NSString *)baseSring:(NSString *)str{
+    return [NSString stringWithFormat:@"aa%@",str];
+}
 @end
 @interface SubSwizzlerClass : BaseSwizzlerClass
 
@@ -46,6 +54,9 @@
 }
 @end
 @interface FTSwizzlerTest : XCTestCase
+@property (nonatomic, weak) id <FTBaseDelegate> delegate;
+@property (nonatomic, strong) SubSwizzlerClass *sub;
+@property (nonatomic, strong) SubSwizzlerClass *nullSub;
 
 @end
 
@@ -186,5 +197,38 @@
     SEL exceedArgumentSelector = @selector(exceedArgument:second:third:fourth:);
     XCTAssertThrows([FTSwizzler swizzleSelector:exceedArgumentSelector onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
     } named:@"testSwizzleExceedArgSelector"]);
+}
+- (void)testSwizzleDelegate{
+    self.sub = [SubSwizzlerClass new];
+    SEL selector = @selector(baseSring:);
+    self.delegate = self.sub;
+    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
+    __block NSInteger times = 0;
+    if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
+        [FTSwizzler swizzleSelector:selector
+                            onClass:class
+                          withBlock:^{
+            times += 1;
+        }
+                              named:@"testSwizzleDelegate"];
+    }
+    [self.sub baseSring:@"first"];
+    XCTAssertTrue(times == 1);
+}
+- (void)testSwizzleNullDelegate{
+    SEL selector = @selector(baseSring:);
+    self.delegate = self.nullSub;
+    Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
+    __block NSInteger times = 0;
+    if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
+        [FTSwizzler swizzleSelector:selector
+                            onClass:class
+                          withBlock:^{
+            times += 1;
+        }
+                              named:@"testSwizzleNullDelegate"];
+    }
+    [self.sub baseSring:@"first"];
+    XCTAssertTrue(times == 0);
 }
 @end

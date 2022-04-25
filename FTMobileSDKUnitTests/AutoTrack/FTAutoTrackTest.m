@@ -95,7 +95,9 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
+    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointMake(10, 10) duration:2];

@@ -17,6 +17,7 @@
 #import "FTConfigManager.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
+#import "FTModelHelper.h"
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -135,18 +136,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [NSThread sleepForTimeInterval:2];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
@@ -167,18 +157,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestBad];
     
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testBadNetwork"];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
@@ -201,18 +181,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 -(void)testNoJsonResponseNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testNoJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
@@ -233,18 +202,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)testWrongJsonResponseNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testWrongJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
@@ -264,18 +222,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)testEmptyResponseDataNetWork{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestEmptyResponseData];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testEmptyResponseDataNetWork"];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(data.bytes == 0);
@@ -292,18 +240,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)testErrorResponse{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setRightConfigWithTestType:FTNetworkTestErrorResponse];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorResponse"];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
@@ -320,18 +258,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 -(void)testBadMetricsUrl{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
      [self setBadMetricsUrl];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testBadMetricsUrl"];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
@@ -348,18 +276,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)testErrorNet{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setRightConfigWithTestType:FTNetworkTestErrorNet];
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"FTNetworkTests"},
-        FT_TAGS:@{@"name":@"FTNetworkTests"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_LOGGING,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_LOGGING;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorNet"];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;

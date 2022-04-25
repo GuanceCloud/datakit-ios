@@ -19,7 +19,7 @@
 #import <FTNetworkManager.h>
 #import "FTNetworkInfoManager.h"
 #import "FTEnumConstant.h"
-
+#import "FTModelHelper.h"
 @interface FTRequestTest : XCTestCase
 
 @end
@@ -44,7 +44,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
    
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:@{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]} field:@{FT_KEY_MESSAGE:@"testLogRequest"} tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [FTModelHelper createLogModel:@"testLogRequest"];
     
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
@@ -60,7 +60,7 @@
 - (void)testTraceRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FTNetworkTraceStringMap[FTNetworkTraceTypeDDtrace] op:FT_DATA_TYPE_TRACING tags:@{@"name":@"testLogRequest"} field:@{@"event":@"testLogRequest"} tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [FTModelHelper createTraceModel];
     
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_TRACING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
@@ -76,18 +76,8 @@
 - (void)testRumRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"testRumRequest"},
-        FT_TAGS:@{@"name":@"testRumRequest"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_RUM,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_RUM;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createRumModel];
+
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
@@ -101,19 +91,8 @@
 }
 - (void)testObjectRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"testObjectRequest"},
-        FT_TAGS:@{@"name":@"testObjectRequest"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_OBJECT,
-                          FT_AGENT_OPDATA:dict,
-    };
-    
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_OBJECT;
-    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRecordModel *model = [FTModelHelper createObjectModel];
+   
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_OBJECT];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
