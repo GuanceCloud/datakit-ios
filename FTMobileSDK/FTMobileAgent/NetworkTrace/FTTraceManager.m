@@ -7,7 +7,7 @@
 //
 
 #import "FTTraceManager.h"
-#import "FTNetworkInfoManger.h"
+#import "FTNetworkInfoManager.h"
 #import "FTTraceHandler.h"
 #import "FTConfigManager.h"
 @interface FTTraceManager ()
@@ -28,7 +28,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.sdkUrlStr = [FTNetworkInfoManger sharedInstance].metricsUrl;
+        self.sdkUrlStr = [FTNetworkInfoManager sharedInstance].metricsUrl;
         self.lock = dispatch_semaphore_create(1);
         self.traceHandlers = [NSMutableDictionary new];
     }

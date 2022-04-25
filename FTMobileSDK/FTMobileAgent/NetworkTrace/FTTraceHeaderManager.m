@@ -14,7 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTWKWebViewHandler.h"
 #import "FTURLProtocol.h"
-#import "FTNetworkInfoManger.h"
+#import "FTNetworkInfoManager.h"
 #import "FTConfigManager.h"
 @interface FTTraceHeaderManager ()
 @property (nonatomic, strong) NSLock *lock;

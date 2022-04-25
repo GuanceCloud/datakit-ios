@@ -12,6 +12,7 @@
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B171572811798C004002C9 /* FTRumApiTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B171562811798C004002C9 /* FTRumApiTest.m */; };
+		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
 		17C0479627F6FFFC00CAEB83 /* AppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479527F6FFFC00CAEB83 /* AppTests.m */; };
 		17C0479F27F700A400CAEB83 /* RumDataBuilderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
@@ -199,6 +200,7 @@
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B171562811798C004002C9 /* FTRumApiTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRumApiTest.m; sourceTree = "<group>"; };
+		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
 		17C0479327F6FFFC00CAEB83 /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17C0479527F6FFFC00CAEB83 /* AppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppTests.m; sourceTree = "<group>"; };
 		17C0479E27F700A400CAEB83 /* RumDataBuilderTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RumDataBuilderTest.m; sourceTree = "<group>"; };
@@ -385,6 +387,16 @@
 			path = UtilsTest;
 			sourceTree = "<group>";
 		};
+		17B1715828153F9D004002C9 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */,
+				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
+				17B1715928154A6E004002C9 /* FTRequestTest.m */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
 		17C0479427F6FFFC00CAEB83 /* AppTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -510,7 +522,6 @@
 			children = (
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
 				4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */,
-				4A037EF924F791CB007B2104 /* FTNetworkTraceTest.m */,
 				4A299B932514953300400931 /* FTPropertyTest.m */,
 				4AB1FFA62546D74900CB36CF /* FTANRTest.m */,
 				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
@@ -551,11 +562,11 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				17B1715828153F9D004002C9 /* Network */,
 				7C3C290D2768A714009DB8E2 /* Helper */,
 				172C356D280D8885002D139E /* UtilsTest */,
 				4A2C826224EFD13D006D4FC6 /* AgentTest */,
 				4A2C825F24EFC9AB006D4FC6 /* AutoTrack */,
-				4A85318B23B23A4000B40B5D /* FTNetworkTests.m */,
 				4A85313A23AB85FC00B40B5D /* Info.plist */,
 			);
 			path = FTMobileSDKUnitTests;
@@ -1069,6 +1080,7 @@
 				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
+				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,
 				4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */,
 				17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */,
 				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,

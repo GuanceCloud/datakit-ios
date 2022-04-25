@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLRequest (FTMonitor)
 - (NSURLRequest *)ft_NetworkTrace;
-- (NSDictionary *)ft_getRequestHeaders;
+//- (NSDictionary *)ft_getRequestHeaders;
 @end
 
 NS_ASSUME_NONNULL_END

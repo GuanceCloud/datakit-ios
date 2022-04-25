@@ -137,8 +137,8 @@
 		7CA1808326CFAE430035DDF0 /* FTTrackDataManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1808126CFAE430035DDF0 /* FTTrackDataManger.m */; };
 		7CB26D4626FD6A45005C9028 /* FTAppLifeCycle.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CB26D4426FD6A44005C9028 /* FTAppLifeCycle.h */; };
 		7CB26D4726FD6A45005C9028 /* FTAppLifeCycle.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CB26D4526FD6A44005C9028 /* FTAppLifeCycle.m */; };
-		7CBE740426DCB09100BBC0CC /* FTNetworkInfoManger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CBE740226DCB09000BBC0CC /* FTNetworkInfoManger.m */; };
-		7CBE740526DCB09100BBC0CC /* FTNetworkInfoManger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBE740326DCB09000BBC0CC /* FTNetworkInfoManger.h */; };
+		7CBE740426DCB09100BBC0CC /* FTNetworkInfoManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CBE740226DCB09000BBC0CC /* FTNetworkInfoManager.m */; };
+		7CBE740526DCB09100BBC0CC /* FTNetworkInfoManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBE740326DCB09000BBC0CC /* FTNetworkInfoManager.h */; };
 		7CEE842C268F1E57003AD0A0 /* FTSwizzler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */; };
 		7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */; };
 		7CF4E08226A7EB080076D238 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */; };
@@ -292,8 +292,8 @@
 		7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMobileAgentVersion.h; sourceTree = "<group>"; };
 		7CB26D4426FD6A44005C9028 /* FTAppLifeCycle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTAppLifeCycle.h; sourceTree = "<group>"; };
 		7CB26D4526FD6A44005C9028 /* FTAppLifeCycle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycle.m; sourceTree = "<group>"; };
-		7CBE740226DCB09000BBC0CC /* FTNetworkInfoManger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfoManger.m; sourceTree = "<group>"; };
-		7CBE740326DCB09000BBC0CC /* FTNetworkInfoManger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfoManger.h; sourceTree = "<group>"; };
+		7CBE740226DCB09000BBC0CC /* FTNetworkInfoManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTNetworkInfoManager.m; sourceTree = "<group>"; };
+		7CBE740326DCB09000BBC0CC /* FTNetworkInfoManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkInfoManager.h; sourceTree = "<group>"; };
 		7CEE842A268F1E57003AD0A0 /* FTSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSwizzler.h; sourceTree = "<group>"; };
 		7CEE842B268F1E57003AD0A0 /* FTSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzler.m; sourceTree = "<group>"; };
 		7CF4E08026A7EB080076D238 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -609,8 +609,8 @@
 		7CA1806426CFA7830035DDF0 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				7CBE740326DCB09000BBC0CC /* FTNetworkInfoManger.h */,
-				7CBE740226DCB09000BBC0CC /* FTNetworkInfoManger.m */,
+				7CBE740326DCB09000BBC0CC /* FTNetworkInfoManager.h */,
+				7CBE740226DCB09000BBC0CC /* FTNetworkInfoManager.m */,
 				7CA1806526CFA7830035DDF0 /* FTNetworkManager.h */,
 				7CA1806B26CFA7830035DDF0 /* FTNetworkManager.m */,
 				7CA1806A26CFA7830035DDF0 /* FTReachability.h */,
@@ -670,7 +670,7 @@
 				7CA1807226CFA7830035DDF0 /* FTReachability.h in Headers */,
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
 				4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */,
-				7CBE740526DCB09100BBC0CC /* FTNetworkInfoManger.h in Headers */,
+				7CBE740526DCB09100BBC0CC /* FTNetworkInfoManager.h in Headers */,
 				7CF4E08226A7EB080076D238 /* UIApplication+FTAutoTrack.h in Headers */,
 				4A4D925E2511B8B1004B9FA0 /* FTWKWebViewHandler.h in Headers */,
 				7C28B8592660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h in Headers */,
@@ -868,7 +868,7 @@
 				4A884291239E5768001B44C3 /* FTBaseInfoHandler.m in Sources */,
 				7CA1807326CFA7830035DDF0 /* FTNetworkManager.m in Sources */,
 				4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */,
-				7CBE740426DCB09100BBC0CC /* FTNetworkInfoManger.m in Sources */,
+				7CBE740426DCB09100BBC0CC /* FTNetworkInfoManager.m in Sources */,
 				4A7135B32579E82A00444C3D /* FTfishhook.c in Sources */,
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				7CA1807426CFA7830035DDF0 /* FTRequestBody.m in Sources */,

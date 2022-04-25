@@ -8,7 +8,7 @@
 
 #import "FTRequest.h"
 #import "FTDateUtil.h"
-#import "FTNetworkInfoManger.h"
+#import "FTNetworkInfoManager.h"
 #import "FTRecordModel.h"
 #import "FTConstants.h"
 @interface FTRequest()
@@ -36,10 +36,10 @@
     return self;
 }
 -(NSURL *)absoluteURL{
-    if (!FTNetworkInfoManger.sharedInstance.metricsUrl) {
+    if (!FTNetworkInfoManager.sharedInstance.metricsUrl) {
         return nil;
     }
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManger.sharedInstance.metricsUrl,self.path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.metricsUrl,self.path]];
     return url;
 }
 -(NSString *)contentType{
@@ -60,9 +60,9 @@
      [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
      [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
      //设置请求参数
-     [mutableRequest setValue:FTNetworkInfoManger.sharedInstance.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
+     [mutableRequest setValue:FTNetworkInfoManager.sharedInstance.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
-     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManger sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
+     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      
     if (self.requestBody&&self.events) {

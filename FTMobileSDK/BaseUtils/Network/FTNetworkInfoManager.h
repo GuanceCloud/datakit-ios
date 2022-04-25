@@ -1,5 +1,5 @@
 //
-//  FTNetworkInfoManger.h
+//  FTNetworkInfoManager.h
 //  FTMacOSSDK
 //
 //  Created by 胡蕾蕾 on 2021/8/30.
@@ -9,15 +9,15 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTNetworkInfoManger : NSObject
+@interface FTNetworkInfoManager : NSObject
 @property (nonatomic,copy,readonly) NSString *metricsUrl;
 @property (nonatomic,copy,readonly) NSString *XDataKitUUID;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
 
 + (instancetype)sharedInstance;
-- (FTNetworkInfoManger *(^)(NSString *value))setMetricsUrl;
-- (FTNetworkInfoManger *(^)(NSString *value))setXDataKitUUID;
-- (FTNetworkInfoManger *(^)(NSString *value))setSdkVersion;
+- (FTNetworkInfoManager *(^)(NSString *value))setMetricsUrl;
+- (FTNetworkInfoManager *(^)(NSString *value))setXDataKitUUID;
+- (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 
 @end
 
