@@ -27,13 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *duration;
 -(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 
--(void)setDnsStart:(long)start end:(long)end;
--(void)setTcpStart:(long)start end:(long)end;
--(void)setSslStart:(long)start end:(long)end;
--(void)setTtfbStart:(long)start end:(long)end;
--(void)setTransStart:(long)start end:(long)end;
--(void)setFirstByteStart:(long)start end:(long)end;
--(void)setDurationStart:(long)start end:(long)end;
+//-(void)setDnsStart:(long)start end:(long)end;
+//-(void)setTcpStart:(long)start end:(long)end;
+//-(void)setSslStart:(long)start end:(long)end;
+//-(void)setTtfbStart:(long)start end:(long)end;
+//-(void)setTransStart:(long)start end:(long)end;
+//-(void)setFirstByteStart:(long)start end:(long)end;
+//-(void)setDurationStart:(long)start end:(long)end;
 
 @end
 

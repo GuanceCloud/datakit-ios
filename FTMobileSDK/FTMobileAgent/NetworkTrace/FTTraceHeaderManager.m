@@ -52,22 +52,16 @@
     switch (self.type) {
         case FTNetworkTraceTypeJaeger:
             return [self getJaegerHeader:sampled traceHeader:traceHeader];
-            break;
         case FTNetworkTraceTypeZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled traceHeader:traceHeader];
-            break;
         case FTNetworkTraceTypeDDtrace:
             return [self getDDTRACEHeader:sampled traceHeader:traceHeader];
-            break;
         case FTNetworkTraceTypeZipkinSingleHeader:
             return [self getZipkinSingleHeader:sampled traceHeader:traceHeader];
-            break;
         case FTNetworkTraceTypeSkywalking:
             return [self getSkyWalking_V3Header:sampled url:url traceHeader:traceHeader];
-            break;
         case FTNetworkTraceTypeTraceparent:
             return [self getTraceparentHeader:sampled traceHeader:traceHeader];
-            break;
     }
 }
 
@@ -113,22 +107,22 @@
     return num;
 }
 #pragma mark --------- SkyWalking ----------
-- (void)getSkyWalking_V2Header:(BOOL)sampled url:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
-    [self.lock lock];
-    NSInteger v2 =  _skywalkingv2 ++;
-    [self.lock unlock];
-    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
-    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
-    urlStr = [urlStr ft_base64Encode];
-    NSUInteger seq = [self getSkywalkingSeq];
-    NSString *span = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq];
-    NSString *parentTraceId =[span ft_base64Encode];
-    NSString *trace = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long) seq+1];
-    NSString *traceId =[trace ft_base64Encode];
-    NSString *endPoint = [@"-1" ft_base64Encode];
-    NSDictionary *header = @{FT_NETWORK_SKYWALKING_V2:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,@(v2),@(v2),urlStr,endPoint,endPoint]};
-    traceHeader(trace,span,header);
-}
+//- (void)getSkyWalking_V2Header:(BOOL)sampled url:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
+//    [self.lock lock];
+//    NSInteger v2 =  _skywalkingv2 ++;
+//    [self.lock unlock];
+//    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
+//    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
+//    urlStr = [urlStr ft_base64Encode];
+//    NSUInteger seq = [self getSkywalkingSeq];
+//    NSString *span = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq];
+//    NSString *parentTraceId =[span ft_base64Encode];
+//    NSString *trace = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long) seq+1];
+//    NSString *traceId =[trace ft_base64Encode];
+//    NSString *endPoint = [@"-1" ft_base64Encode];
+//    NSDictionary *header = @{FT_NETWORK_SKYWALKING_V2:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,@(v2),@(v2),urlStr,endPoint,endPoint]};
+//    traceHeader(trace,span,header);
+//}
 - (void)getSkyWalking_V3Header:(BOOL)sampled url:(NSURL *)url traceHeader:(TraceHeader)traceHeader{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceId,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
     NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.skyParentInstance,[FTMonitorUtils cellularIPAddress:YES]] ft_base64Encode];

@@ -26,39 +26,39 @@
     return self;
 }
 
--(void)setDnsStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_dns = @(end-start);
-    }
-}
--(void)setTcpStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_tcp = @(end-start);
-    }
-}
--(void)setSslStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_ssl = @(end-start);
-    }
-}
--(void)setTtfbStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_ttfb = @(end-start);
-    }
-}
--(void)setTransStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_trans = @(end-start);
-    }
-}
--(void)setFirstByteStart:(long)start end:(long)end{
-    if (end > start) {
-        self.resource_first_byte = @(end-start);
-    }
-}
--(void)setDurationStart:(long)start end:(long)end{
-    if (end > start) {
-        self.duration = @(end-start);
-    }
-}
+//-(void)setDnsStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_dns = @(end-start);
+//    }
+//}
+//-(void)setTcpStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_tcp = @(end-start);
+//    }
+//}
+//-(void)setSslStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_ssl = @(end-start);
+//    }
+//}
+//-(void)setTtfbStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_ttfb = @(end-start);
+//    }
+//}
+//-(void)setTransStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_trans = @(end-start);
+//    }
+//}
+//-(void)setFirstByteStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.resource_first_byte = @(end-start);
+//    }
+//}
+//-(void)setDurationStart:(long)start end:(long)end{
+//    if (end > start) {
+//        self.duration = @(end-start);
+//    }
+//}
 @end

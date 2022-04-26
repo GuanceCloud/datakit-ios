@@ -8,7 +8,6 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSwizzler.h"
-#import "FTWeakProxy.h"
 
 @protocol FTBaseDelegate <NSObject>
 - (NSString *)baseSring:(NSString *)str;

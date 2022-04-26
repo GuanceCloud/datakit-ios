@@ -24,6 +24,8 @@
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
+#import "FTTraceHeaderManager.h"
+#import <objc/runtime.h>
 @interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -145,6 +147,33 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+}
+- (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [[FTTraceHeaderManager sharedInstance] setValue:@9998 forKey:@"_skywalkingSeq"];
+    [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
+    [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
+        [self networkUpload:@"Skywalking_v3_2" handler:^(NSDictionary *header) {
+            XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
+            NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
+            NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+            XCTAssertTrue(traceAry.count == 8);
+            
+            NSString *sampling = [traceAry firstObject];
+            NSString *trace = [traceAry[1] ft_base64Decode];
+            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+            NSString *span = [parentTraceID stringByAppendingString:@"0"];
+            NSRange range = NSMakeRange(span.length-5, 5);
+            XCTAssertTrue([[span substringWithRange:range] isEqualToString:@"00000"]);
+            XCTAssertTrue(trace && span && sampling);
+            [expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+        
+
 }
 - (void)testFTNetworkTrackTypeTraceparent{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
