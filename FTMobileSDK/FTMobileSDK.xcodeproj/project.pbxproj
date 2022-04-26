@@ -55,8 +55,6 @@
 		4A78B9BB25625B160021E0BC /* FTExtensionExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */; };
 		4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7C739525C0318D003936A0 /* FTPingThread.h */; };
 		4A7C739825C0318D003936A0 /* FTPingThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7C739625C0318D003936A0 /* FTPingThread.m */; };
-		4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */; };
-		4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */; };
 		4A884288239E5768001B44C3 /* FTBaseInfoHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884266239E5768001B44C3 /* FTBaseInfoHandler.h */; };
 		4A88428C239E5768001B44C3 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A88426B239E5768001B44C3 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -204,8 +202,6 @@
 		4A78B9B925625B160021E0BC /* FTExtensionExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionExceptionHandler.m; sourceTree = "<group>"; };
 		4A7C739525C0318D003936A0 /* FTPingThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTPingThread.h; sourceTree = "<group>"; };
 		4A7C739625C0318D003936A0 /* FTPingThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPingThread.m; sourceTree = "<group>"; };
-		4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTWeakProxy.h; sourceTree = "<group>"; };
-		4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTWeakProxy.m; sourceTree = "<group>"; };
 		4A852FD423A240B300B40B5D /* UIView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		4A852FD523A240B300B40B5D /* UIViewController+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FTAutoTrack.m"; sourceTree = "<group>"; };
 		4A852FD623A240B300B40B5D /* UIView+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -565,8 +561,6 @@
 				4A4B0C20253EAED900D903AB /* FTJSONUtil.m */,
 				4A2EFD8A253ECDC100F93B1E /* FTJsonWriter.h */,
 				4A2EFD8B253ECDC100F93B1E /* FTJsonWriter.m */,
-				4A7DCA5F25B9245C000B3DDE /* FTWeakProxy.h */,
-				4A7DCA6025B9245C000B3DDE /* FTWeakProxy.m */,
 				7CA1802F26CF4E610035DDF0 /* FTThread.h */,
 				7CA1802E26CF4E600035DDF0 /* FTThread.m */,
 				7C69CFBD27281D810065638F /* FTThreadDispatchManager.h */,
@@ -657,7 +651,6 @@
 				7C69CFBF27281D820065638F /* FTThreadDispatchManager.h in Headers */,
 				4A88428D239E5768001B44C3 /* FTMobileConfig.h in Headers */,
 				4A8842A0239E5768001B44C3 /* ZY_FMDatabasePool.h in Headers */,
-				4A7DCA6125B9245C000B3DDE /* FTWeakProxy.h in Headers */,
 				4A2D57EF2458141300478547 /* FTMonitorUtils.h in Headers */,
 				4A88428F239E5768001B44C3 /* FTRecordModel.h in Headers */,
 				7CF4E10626B121610076D238 /* FTSwizzle.h in Headers */,
@@ -853,7 +846,6 @@
 				7C69CFBE27281D820065638F /* FTThreadDispatchManager.m in Sources */,
 				4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */,
 				4A37A94C2486006100E0381B /* NSURLRequest+FTMonitor.m in Sources */,
-				4A7DCA6225B9245C000B3DDE /* FTWeakProxy.m in Sources */,
 				177BDF582799773800DA4EA7 /* FTEnumConstant.m in Sources */,
 				7CB26D4726FD6A45005C9028 /* FTAppLifeCycle.m in Sources */,
 				4A7135A62570DA2300444C3D /* BlacklistedVCClassNames.m in Sources */,
