@@ -36,22 +36,29 @@
 @implementation FTAutoTrackTest
 
 - (void)setUp {
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     // Put setup code here. This method is called before the invocation of each
    
 }
 - (void)tearDown {
 //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
   测试当前控制器获取是否正确
 */
 - (void)testControllerOfTheView{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    [FTMobileAgent startWithConfigOptions:config];
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     
@@ -82,34 +89,112 @@
     }];
     XCTAssertEqualObjects(self.testVC, currentVC);
 }
-- (void)testGes{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
-    rumConfig.enableTraceUserAction = YES;
-    rumConfig.enableTraceUserView = YES;
-    [FTMobileAgent startWithConfigOptions:config];
+- (void)testTapGes{
+   
     
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
 
     [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [tester waitForTimeInterval:0.5];
+
+    [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
+    [tester waitForTimeInterval:2];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
+            XCTAssertTrue([tags[FT_RUM_KEY_ACTION_NAME] isEqualToString:@"[UILabel]"]);
+            *stop = YES;
+        }
+    }];
+    
+    XCTAssertTrue(newArray.count>0);
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
+}
+- (void)testLongPressGes{
+    
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
+    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
+    [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointMake(10, 10) duration:2];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
 
     [tester waitForTimeInterval:2];
-    
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    XCTAssertTrue(newArray.count>0);
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
+            NSString *actionName = tags[FT_RUM_KEY_ACTION_NAME];
+            XCTAssertTrue([actionName isEqualToString:@"[UIImageView]"]);
+            *stop = YES;
+        }
+    }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    
+}
+- (void)testButtonClick{
+    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
 
+    [tester waitForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
+            XCTAssertTrue([tags[FT_RUM_KEY_ACTION_NAME] isEqualToString:@"[UIButton][SecondButton]"]);
+            *stop = YES;
+        }
+    }];
 }
 
+- (void)testTableViewCellClick{
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
+    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
+    [tester waitForTimeInterval:1];
+
+    [[tester waitForViewWithAccessibilityLabel:@"Row: 0"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"Row: 1"] tap];
+    
+    [tester waitForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
+            NSString *actionName = tags[FT_RUM_KEY_ACTION_NAME];
+            XCTAssertTrue([actionName isEqualToString:@"[UITableViewCell]"]);
+            *stop = YES;
+        }
+    }];
+    
+}
 @end

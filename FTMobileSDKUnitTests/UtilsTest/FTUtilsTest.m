@@ -93,15 +93,17 @@
     NSNumber *number = [dict valueForKey:@"key5"];
     XCTAssertTrue(strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0);
 }
-
+// message 实际为 "\"
 - (void)testFieldValueHasTransliteration1{
-    [self transliteration:@"\\"];
+    [self transliteration:@"\\" expect:@"\\\\"];
 }
+// message 实际为 "\\"
 - (void)testFieldValueHasTransliteration2{
-    [self transliteration:@"\\\\"];
+    [self transliteration:@"\\\\" expect:@"\\\\\\\\"];
 }
+// message 实际为 "\\\"
 - (void)testFieldValueHasTransliteration3{
-    [self transliteration:@"\\\\\\"];
+    [self transliteration:@"\\\\\\" expect:@"\\\\\\\\\\\\"];
 }
 - (void)testFieldValueJsonStr{
     NSDictionary *json = @{@"json":@"1",
@@ -111,14 +113,13 @@
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:json options:NSJSONWritingPrettyPrinted error:&error];
     if (!error) {
         NSString *str  = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [self transliteration:str];
+        [self transliteration:str expect:@""];
     }
     
 }
-- (void)transliteration:(NSString *)str{
+- (void)transliteration:(NSString *)str expect:(NSString *)expect{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-//    NSString *appid = [processInfo environment][@"APP_ID"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -128,16 +129,24 @@
 
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     FTRecordModel *model = [FTModelHelper createLogModel:str];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@" "];
+    if(array.count == 3){
+        NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];
+        XCTAssertTrue([array[1] isEqualToString:message]);
+    }
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+        if(!error){
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(success);
+        }
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
+    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
     }];
 }
 - (void)testReplaceUrlGroupNumberChar{

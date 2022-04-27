@@ -48,13 +48,14 @@
     
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
+        if (!error) {
+            NSInteger statusCode = httpResponse.statusCode;
+            BOOL success = (statusCode >=200 && statusCode < 500);
+            XCTAssertTrue(success);
+        }
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
 - (void)testTraceRequest{
@@ -64,13 +65,14 @@
     
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_TRACING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+        if (!error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(success);
+        }
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
 - (void)testRumRequest{
@@ -80,13 +82,14 @@
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+        if (!error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(success);
+        }
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
 - (void)testObjectRequest{
@@ -95,13 +98,14 @@
    
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_OBJECT];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+        if (!error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(success);
+        }
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
 @end

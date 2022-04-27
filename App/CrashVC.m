@@ -72,6 +72,8 @@
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell" forIndexPath:indexPath];
     cell.textLabel.text = self.dataSource[indexPath.row].title;
+    cell.accessibilityLabel = self.dataSource[indexPath.row].title;
+    cell.textLabel.text = self.dataSource[indexPath.row].title;
     return cell;
 }
 

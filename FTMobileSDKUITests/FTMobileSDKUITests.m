@@ -41,6 +41,7 @@
     XCUIElementQuery *tablesQuery = app.tables;
     XCUIElement *networktraceClienthttpStaticText = tablesQuery.staticTexts[@"NetworkTrace_clienthttp"];
     [networktraceClienthttpStaticText tap];
+
     [tablesQuery.staticTexts[@"EventFlowLog"] tap];
     
     XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
@@ -49,16 +50,16 @@
     [segmentedControlsQuery.buttons[@"third"] tap];
     
     [app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.buttons[@"Increment"] tap];
-    [app/*@START_MENU_TOKEN@*/.buttons[@"lable"]/*[[".scrollViews.buttons[@\"lable\"]",".buttons[@\"lable\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    
     
     XCUIElementQuery *tablesQuery2 = app.tables;
     [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [[[XCUIApplication alloc] init]/*@START_MENU_TOKEN@*/.buttons[@"result"]/*[[".scrollViews.buttons[@\"result\"]",".buttons[@\"result\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.staticTexts[@"result"] tap];
+    [[[XCUIApplication alloc] init].buttons[@"result"].staticTexts[@"result"] tap];
         
    
     
-    [window pressForDuration:10];
+    [window pressForDuration:1];
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
     //判断采集结果与预期是否一致
     XCTAssertTrue(success.exists);

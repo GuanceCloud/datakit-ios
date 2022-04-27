@@ -18,6 +18,9 @@
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
 #import "FTModelHelper.h"
+#import "FTTrackDataManger+Test.h"
+#import "FTModelHelper.h"
+
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -62,11 +65,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             urlStr = [urlStr stringByAppendingString:@"TestErrorNet"];
             break;
     }
-    NSString *newUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
-    
+    NSString *logUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
+    NSString *rumUrl = [urlStr stringByAppendingString:@"/v1/write/rum"];
+    NSString *traceUrl = [urlStr stringByAppendingString:@"/v1/write/tracing"];
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         NSString *str =  request.URL.absoluteString;
-        return [str isEqualToString:newUrl];
+        return [str isEqualToString:logUrl] || [str isEqualToString:rumUrl] || [str isEqualToString:traceUrl];
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         switch (type) {
             case FTNetworkTest:{
@@ -284,6 +288,33 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
     }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)testUploadAll{
+    [self setRightConfigWithTestType:FTNetworkTest];
+    for (int i = 0 ; i<10; i++) {
+       FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
+        FTRecordModel *traceModel = [FTModelHelper createTraceModel];
+        FTRecordModel *rumModel = [FTModelHelper createRumModel];
+
+        [[FTTrackDataManger sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+        [[FTTrackDataManger sharedInstance] addTrackData:traceModel type:FTAddDataNormal];
+        [[FTTrackDataManger sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+    }
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(count == 30);
+
+    [[FTTrackDataManger sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManger sharedInstance].ftThread withObject:nil waitUntilDone:NO];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [NSThread sleepForTimeInterval:10];
+        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+        XCTAssertTrue(newCount == 0);
+        [expectation fulfill];
+    });
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
