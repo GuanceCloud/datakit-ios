@@ -28,6 +28,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [self mockHttp];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
@@ -39,6 +40,15 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+- (void)mockHttp{
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
+    }];
 }
 - (void)testLogRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

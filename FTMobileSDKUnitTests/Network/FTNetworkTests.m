@@ -309,7 +309,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTTrackDataManger sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManger sharedInstance].ftThread withObject:nil waitUntilDone:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [NSThread sleepForTimeInterval:10];
+        [NSThread sleepForTimeInterval:3];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
         XCTAssertTrue(newCount == 0);
         [expectation fulfill];

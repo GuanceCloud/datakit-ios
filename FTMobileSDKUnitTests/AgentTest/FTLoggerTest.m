@@ -61,16 +61,20 @@
 }
 - (void)testEnableTraceConsoleLog{
     [self setRightSDKConfig];
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    for (int i = 0; i<21; i++) {
+    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+    for (int i = 0; i<19; i++) {
         NSLog(@"testEnableTraceConsoleLog");
     }
+
     [NSThread sleepForTimeInterval:3];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == count+20);
+    NSArray *newCount =  [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newCount.count == count+20);
 }
 - (void)testDisableTraceConsoleLog{
     [self setRightSDKConfig];
