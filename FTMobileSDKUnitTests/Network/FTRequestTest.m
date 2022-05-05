@@ -68,45 +68,12 @@
     [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
-- (void)testTraceRequest{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    FTRecordModel *model = [FTModelHelper createTraceModel];
-    
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_TRACING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        if (!error) {
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
-    }];
-}
 - (void)testRumRequest{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
     FTRecordModel *model = [FTModelHelper createRumModel];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        if (!error) {
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
-    }];
-}
-- (void)testObjectRequest{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTRecordModel *model = [FTModelHelper createObjectModel];
-   
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_OBJECT];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         if (!error) {
         NSInteger statusCode = httpResponse.statusCode;

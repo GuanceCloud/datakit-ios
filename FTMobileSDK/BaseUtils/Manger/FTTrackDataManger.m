@@ -125,7 +125,6 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     @try {
         [self flushWithType:FT_DATA_TYPE_RUM];
         [self flushWithType:FT_DATA_TYPE_LOGGING];
-        [self flushWithType:FT_DATA_TYPE_TRACING];
         self.isUploading = NO;
     } @catch (NSException *exception) {
         ZYErrorLog(@"执行上传操作失败 %@",exception);

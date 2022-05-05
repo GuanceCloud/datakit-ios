@@ -296,15 +296,13 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self setRightConfigWithTestType:FTNetworkTest];
     for (int i = 0 ; i<10; i++) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
-        FTRecordModel *traceModel = [FTModelHelper createTraceModel];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
         [[FTTrackDataManger sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManger sharedInstance] addTrackData:traceModel type:FTAddDataNormal];
         [[FTTrackDataManger sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(count == 30);
+    XCTAssertTrue(count == 20);
 
     [[FTTrackDataManger sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManger sharedInstance].ftThread withObject:nil waitUntilDone:NO];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

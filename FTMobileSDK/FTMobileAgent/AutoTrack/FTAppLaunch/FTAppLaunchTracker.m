@@ -46,8 +46,8 @@ static BOOL AppRelaunched = NO;
 - (void)applicationDidBecomeActive{
     @try {
         if(!AppRelaunched){
-            NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:FTLoadDate toDate:[NSDate date]];
             AppRelaunched = YES;
+            NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:FTLoadDate toDate:[NSDate date]];
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:)]) {
                 [self.delegate ftAppColdStart:duration];
             }

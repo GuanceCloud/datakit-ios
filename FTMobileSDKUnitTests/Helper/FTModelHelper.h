@@ -14,9 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTModelHelper : NSObject
 + (FTRecordModel *)createLogModel;
 + (FTRecordModel *)createLogModel:(NSString *)message;
-+ (FTRecordModel *)createTraceModel;
 + (FTRecordModel *)createRumModel;
-+ (FTRecordModel *)createObjectModel;
 @end
 
 NS_ASSUME_NONNULL_END

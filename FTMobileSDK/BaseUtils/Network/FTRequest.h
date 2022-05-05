@@ -36,10 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRumRequest : FTRequest
 
 @end
-@interface FTObjectRequest : FTRequest
-
-@end
-@interface FTTracingRequest : FTRequest
-
-@end
+//@interface FTObjectRequest : FTRequest
+//
+//@end
+//@interface FTTracingRequest : FTRequest
+//
+//@end
 NS_ASSUME_NONNULL_END

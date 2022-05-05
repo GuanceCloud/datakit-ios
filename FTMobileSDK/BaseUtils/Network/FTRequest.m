@@ -21,10 +21,6 @@
         return [[FTRumRequest alloc]initWithEvents:events];
     }else if ([type isEqualToString:FT_DATA_TYPE_LOGGING]){
         return [[FTLoggingRequest alloc]initWithEvents:events];
-    }else if([type isEqualToString:FT_DATA_TYPE_TRACING]){
-        return [[FTTracingRequest alloc]initWithEvents:events];
-    }else if([type isEqualToString:FT_DATA_TYPE_OBJECT]){
-        return [[FTObjectRequest alloc]initWithEvents:events];
     }
     return nil;
 }
@@ -106,43 +102,6 @@
 }
 -(NSString *)contentType{
     return @"text/plain";
-}
-
-@end
-@implementation FTTracingRequest
--(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-    self = [super init];
-    if(self){
-        self.events = events;
-    }
-    return self;
-}
--(id<FTRequestBodyProtocol>)requestBody{
-    return [[FTRequestLineBody alloc]init];
-}
--(NSString *)path{
-    return @"/v1/write/tracing";
-}
--(NSString *)contentType{
-    return @"text/plain";
-}
-@end
-@implementation FTObjectRequest
--(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-    self = [super init];
-    if(self){
-        self.events = events;
-    }
-    return self;
-}
--(id<FTRequestBodyProtocol>)requestBody{
-    return [[FTRequestObjectBody alloc]init];
-}
--(NSString *)path{
-    return @"/v1/write/object";
-}
--(NSString *)contentType{
-    return @"application/json";
 }
 
 @end
