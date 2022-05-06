@@ -30,9 +30,7 @@
 
 @end
 @implementation FTTraceHandler
--(instancetype)initWithUrl:(NSURL *)url{
-    return [self initWithUrl:url identifier:[NSUUID UUID].UUIDString];
-}
+
 -(instancetype)initWithUrl:(NSURL *)url identifier:(NSString *)identifier{
     self = [super init];
     if (self) {

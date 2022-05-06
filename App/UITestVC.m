@@ -44,8 +44,8 @@
     [result setTitle:@"result" forState:UIControlStateNormal];
     [result setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [result addTarget:self action:@selector(resultAction:) forControlEvents:UIControlEventTouchUpInside];
-    result.accessibilityLabel = @"NEXT_CLICK";
-    result.isAccessibilityElement = YES;
+//    result.accessibilityLabel = @"NEXT_CLICK";
+//    result.isAccessibilityElement = YES;
     [self.scrollView addSubview:result];
     
     y = CGRectGetMaxY(_firstButton.frame) + 16;

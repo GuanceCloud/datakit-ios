@@ -126,27 +126,6 @@
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
     XCTAssertTrue(newCount == 5000);
 }
-- (void)testCache{
-    [self setRightSDKConfig];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.discardType = FTDiscardOldest;
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    for (int i = 0; i<101; i++) {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        FTRecordModel *model = [FTRecordModel new];
-        model.op = FT_DATA_TYPE_LOGGING;
-        model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackDataManger sharedInstance] addTrackData:model type:FTAddDataLogging];
-    });
-    }
-    [NSThread sleepForTimeInterval:4];
-    //如果不调用 -insertCacheToDB 方法 则数据库应该为100条数据
-    NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(oldCount == 100);
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == 101);
-}
 - (void)testPrefix{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];

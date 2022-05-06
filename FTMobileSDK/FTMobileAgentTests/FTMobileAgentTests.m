@@ -1,18 +1,18 @@
 //
-//  AppTests.m
-//  AppTests
+//  FTMobileAgentTests.m
+//  FTMobileAgentTests
 //
-//  Created by hulilei on 2022/4/1.
+//  Created by hulilei on 2022/5/6.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
 #import <XCTest/XCTest.h>
 
-@interface AppTests : XCTestCase
+@interface FTMobileAgentTests : XCTestCase
 
 @end
 
-@implementation AppTests
+@implementation FTMobileAgentTests
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.

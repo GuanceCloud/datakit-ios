@@ -26,10 +26,10 @@
 #import <FTNetworkManager.h>
 #import "FTTraceHeaderManager.h"
 #import <objc/runtime.h>
-@interface FTNetworkTraceTest : XCTestCase<NSURLSessionDelegate>
+@interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
-@implementation FTNetworkTraceTest
+@implementation FTTraceTest
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.

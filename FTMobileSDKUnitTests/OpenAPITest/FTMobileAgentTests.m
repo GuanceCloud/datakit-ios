@@ -86,6 +86,7 @@
  * 验证：登出后 userid 改变 is_signin 为 F
  */
 -(void)testUserlogout{
+    [[NSUserDefaults standardUserDefaults] setValue:nil forKey:@"ft_sessionid"];
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
     

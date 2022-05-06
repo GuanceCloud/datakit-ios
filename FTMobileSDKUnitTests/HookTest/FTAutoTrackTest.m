@@ -43,6 +43,8 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTrackAppCrash = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
@@ -196,5 +198,47 @@
         }
     }];
     
+}
+- (void)testAutoTrackResource{
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
+    [tester waitForTimeInterval:1];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+ 
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasRes = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasRes);
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
+}
+- (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    NSString *urlStr = @"https://www.baidu.com/more/";
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
+
+    __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        completionHandler?completionHandler(response,error):nil;
+    }];
+
+    [task resume];
 }
 @end

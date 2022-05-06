@@ -58,8 +58,8 @@
     [[[XCUIApplication alloc] init].buttons[@"result"].staticTexts[@"result"] tap];
         
    
-    
-    [window pressForDuration:1];
+    [window pressForDuration:6];
+
     XCUIElement *success = app.staticTexts[@"SUCCESS"];
     //判断采集结果与预期是否一致
     XCTAssertTrue(success.exists);
