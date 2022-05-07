@@ -990,6 +990,7 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"trace_id"] isEqualToString:@"trace_id_1"]);
+    XCTAssertTrue([tags[@"custom_keys"] isEqualToString:@"[\"trace_id\"]"]);
 }
 
 @end

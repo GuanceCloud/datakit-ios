@@ -31,41 +31,38 @@
  * 测试action、view数据采集
  * enableTraceUserAction = YES;
  */
-- (void)testTraceUserActionUIExample {
-    // UI tests must launch the application that they test.
-    XCUIApplication *app = [[XCUIApplication alloc] init];
-    XCUIElement *window = [app.windows elementBoundByIndex:0];
-    ////将test 运行使用环境赋值给 application
-    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
-    [app launch];//
-    XCUIElementQuery *tablesQuery = app.tables;
-    XCUIElement *networktraceClienthttpStaticText = tablesQuery.staticTexts[@"NetworkTrace_clienthttp"];
-    [networktraceClienthttpStaticText tap];
-
-    [tablesQuery.staticTexts[@"EventFlowLog"] tap];
-    
-    XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
-    [segmentedControlsQuery.buttons[@"first"] tap];
-    [segmentedControlsQuery.buttons[@"second"] tap];
-    [segmentedControlsQuery.buttons[@"third"] tap];
-    
-    [app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.buttons[@"Increment"] tap];
-    
-    
-    XCUIElementQuery *tablesQuery2 = app.tables;
-    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [[[XCUIApplication alloc] init].buttons[@"result"].staticTexts[@"result"] tap];
-        
-   
-    [window pressForDuration:6];
-
-    XCUIElement *success = app.staticTexts[@"SUCCESS"];
-    //判断采集结果与预期是否一致
-    XCTAssertTrue(success.exists);
-    // Use recording to get started writing UI tests.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
-}
+//- (void)testTraceUserActionUIExample {
+//    // UI tests must launch the application that they test.
+//    XCUIApplication *app = [[XCUIApplication alloc] init];
+//    XCUIElement *window = [app.windows elementBoundByIndex:0];
+//    ////将test 运行使用环境赋值给 application
+//    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
+//    [app launch];//
+//    XCUIElementQuery *tablesQuery = app.tables;
+//    XCUIElement *networktraceClienthttpStaticText = tablesQuery.staticTexts[@"NetworkTrace_clienthttp"];
+//    [networktraceClienthttpStaticText tap];
+//
+//    [tablesQuery.staticTexts[@"EventFlowLog"] tap];
+//    
+//    XCUIElementQuery *segmentedControlsQuery = app/*@START_MENU_TOKEN@*/.segmentedControls/*[[".scrollViews.segmentedControls",".segmentedControls"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/;
+//    [segmentedControlsQuery.buttons[@"first"] tap];
+//    [segmentedControlsQuery.buttons[@"second"] tap];
+//    [segmentedControlsQuery.buttons[@"third"] tap];
+//    
+//    [app/*@START_MENU_TOKEN@*/.steppers/*[[".scrollViews.steppers",".steppers"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.buttons[@"Increment"] tap];
+//    
+//    
+//    XCUIElementQuery *tablesQuery2 = app.tables;
+//    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells.staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+//    [tablesQuery2/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 1"]/*[[".cells.staticTexts[@\"Section: 0, Row: 1\"]",".staticTexts[@\"Section: 0, Row: 1\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+//    [[[XCUIApplication alloc] init].buttons[@"result"].staticTexts[@"result"] tap];
+//        
+//   
+//    [window pressForDuration:6];
+//
+//    // Use recording to get started writing UI tests.
+//    // Use XCTAssert and related functions to verify your tests produce the correct results.
+//}
 - (void)testCrash{
     XCUIApplication *app = [[XCUIApplication alloc] init];
     ////将test 运行使用环境赋值给 application

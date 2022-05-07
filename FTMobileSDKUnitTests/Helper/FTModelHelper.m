@@ -24,8 +24,8 @@
     return model;
 }
 + (FTRecordModel *)createRumModel{
-    NSDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:@"rum model create",
-                             FT_RUM_KEY_ERROR_STACK:@"rum model create",
+    NSDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:@"rum_model_create",
+                             FT_RUM_KEY_ERROR_STACK:@"rum_model_create",
     };
     NSDictionary *tags = @{
         FT_RUM_KEY_ERROR_TYPE:@"ios_crash",

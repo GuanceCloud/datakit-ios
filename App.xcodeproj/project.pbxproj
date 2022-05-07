@@ -12,6 +12,7 @@
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
+		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
@@ -95,13 +96,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		17C763142824FBC6009582B6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 17C763022824BEEA009582B6;
-			remoteInfo = FTMobileAgentTests;
-		};
 		4A22527123B5AC7600B0ED41 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
@@ -195,6 +189,7 @@
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
+		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
 		17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModelHelper.h; sourceTree = "<group>"; };
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -373,6 +368,14 @@
 			path = Network;
 			sourceTree = "<group>";
 		};
+		17C7631B28266631009582B6 /* LineProtocol */ = {
+			isa = PBXGroup;
+			children = (
+				17C7631E28267154009582B6 /* FTLineProtocol.m */,
+			);
+			path = LineProtocol;
+			sourceTree = "<group>";
+		};
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
@@ -469,7 +472,6 @@
 			children = (
 				4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */,
 				4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */,
-				17C763152824FBC6009582B6 /* FTMobileAgentTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -524,6 +526,7 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				17C7631B28266631009582B6 /* LineProtocol */,
 				4A2C826224EFD13D006D4FC6 /* OpenAPITest */,
 				17B1715828153F9D004002C9 /* Network */,
 				7C3C290D2768A714009DB8E2 /* Helper */,
@@ -734,13 +737,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		17C763152824FBC6009582B6 /* FTMobileAgentTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = FTMobileAgentTests.xctest;
-			remoteRef = 17C763142824FBC6009582B6 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -930,6 +926,7 @@
 				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
+				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
 				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,

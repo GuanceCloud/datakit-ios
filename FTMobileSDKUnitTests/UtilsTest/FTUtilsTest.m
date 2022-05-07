@@ -46,30 +46,6 @@
     
     XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
 }
-- (void)testLineProtocol{
-    NSDictionary *dict = @{
-        FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"testLineProtocol"},
-        FT_TAGS:@{@"name":@"testLineProtocol"},
-    };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_RUM,
-                          FT_AGENT_OPDATA:dict,
-    };
-
-    FTRecordModel *model = [FTRecordModel new];
-    model.op =FT_DATA_TYPE_RUM;
-    model.data =[FTJSONUtil convertToJsonData:data];
-    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
-    
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
-    NSArray *array = [lineStr componentsSeparatedByString:@" "];
-    XCTAssertTrue(array.count == 3);
-
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
-    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
-    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
-    XCTAssertEqualObjects([array lastObject],tm);
-}
 - (void)testJSONSerializeDictObject{
     NSDictionary *dict =@{@"key1":@"value1",
                           @"key2":@{@"key11":@1,
@@ -93,61 +69,18 @@
     NSNumber *number = [dict valueForKey:@"key5"];
     XCTAssertTrue(strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0);
 }
-// message 实际为 "\"
-- (void)testFieldValueHasTransliteration1{
-    [self transliteration:@"\\" expect:@"\\\\"];
+- (void)testAnalyticJsonString{
+    XCTAssertNotNil([FTJSONUtil dictionaryWithJsonString:@"{\"a\":\"b\"}"]);
 }
-// message 实际为 "\\"
-- (void)testFieldValueHasTransliteration2{
-    [self transliteration:@"\\\\" expect:@"\\\\\\\\"];
+- (void)testAnalyticWrongJsonString{
+    XCTAssertNil([FTJSONUtil dictionaryWithJsonString:@"a:b"]);
 }
-// message 实际为 "\\\"
-- (void)testFieldValueHasTransliteration3{
-    [self transliteration:@"\\\\\\" expect:@"\\\\\\\\\\\\"];
+- (void)testConvertToJsonDataWithArray{
+    NSString *str = [FTJSONUtil convertToJsonDataWithArray:@[@"A",@"B",@"C"]];
+    XCTAssertTrue([str isEqualToString:@"[\"A\",\"B\",\"C\"]"]);
 }
-- (void)testFieldValueJsonStr{
-    NSDictionary *json = @{@"json":@"1",
-                           @"json2":@"2"
-    };
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:json options:NSJSONWritingPrettyPrinted error:&error];
-    if (!error) {
-        NSString *str  = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        [self transliteration:str expect:@""];
-    }
-    
-}
-- (void)transliteration:(NSString *)str expect:(NSString *)expect{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.enableCustomLog = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    FTRecordModel *model = [FTModelHelper createLogModel:str];
-    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
-    
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
-    NSArray *array = [lineStr componentsSeparatedByString:@" "];
-    if(array.count == 3){
-        NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];
-        XCTAssertTrue([array[1] isEqualToString:message]);
-    }
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        if(!error){
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
-    }];
+- (void)testConvertToJsonDataWithNilArray{
+    XCTAssertNil([FTJSONUtil convertToJsonDataWithArray:nil]);
 }
 - (void)testReplaceUrlGroupNumberChar{
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";

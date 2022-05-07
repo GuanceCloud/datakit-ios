@@ -207,6 +207,7 @@ static dispatch_once_t onceToken;
     _rumManger = nil;
     onceToken = 0;
     sharedInstance =nil;
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [[FTANRDetector sharedInstance] stopDetecting];
     [self stopMonitor];

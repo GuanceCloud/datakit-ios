@@ -65,4 +65,7 @@ static BOOL AppRelaunched = NO;
 - (void)applicationDidEnterBackground{
     _applicationDidEnterBackground = YES;
 }
+-(void)dealloc{
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+}
 @end
