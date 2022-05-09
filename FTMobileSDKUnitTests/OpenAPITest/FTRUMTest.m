@@ -28,6 +28,7 @@
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, copy) NSString *track_id;
 @end
 @implementation FTRUMTest
 
@@ -35,6 +36,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
+    self.track_id = [processInfo environment][@"TRACK_ID"];
 }
 -(void)tearDown{
     [NSThread sleepForTimeInterval:2];
@@ -696,175 +698,6 @@
     XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
-//- (void)test1AbleTraceUserView{
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = YES;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//
-//    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-//    [tester waitForTimeInterval:1];
-//    [self addErrorData];
-//    [tester waitForTimeInterval:2];
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    __block BOOL isHasView = NO;
-//    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-//        NSString *op = dict[@"op"];
-//        XCTAssertTrue([op isEqualToString:@"RUM"]);
-//        NSDictionary *opdata = dict[@"opdata"];
-//        NSString *measurement = opdata[@"source"];
-//        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-//            isHasView = YES;
-//            *stop = YES;
-//        }
-//    }];
-//    XCTAssertTrue(isHasView == YES);
-//}
-//- (void)test0DisableTraceUserView{
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = NO;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-//    [tester waitForTimeInterval:1];
-//    [self addErrorData];
-//    [tester waitForTimeInterval:2];
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//
-//    __block BOOL isHasView = NO;
-//    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-//        NSString *op = dict[@"op"];
-//        XCTAssertTrue([op isEqualToString:@"RUM"]);
-//        NSDictionary *opdata = dict[@"opdata"];
-//        NSString *measurement = opdata[@"source"];
-//        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-//            isHasView = YES;
-//            *stop = YES;
-//        }
-//    }];
-//    XCTAssertTrue(isHasView == NO);
-//
-//}
-//- (void)test3AbleTraceUserAction{
-//
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = YES;
-//    rumConfig.enableTraceUserAction = YES;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-//
-//    [tester waitForTimeInterval:1];
-//    [tester tapViewWithAccessibilityLabel:@"FirstButton"];
-//    [tester tapViewWithAccessibilityLabel:@"SecondButton"];
-//
-//    [tester waitForTimeInterval:2];
-//
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    XCTAssertTrue(newArray.count > oldArray.count);
-//}
-//- (void)test2DisableTraceUserAction{
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = YES;
-//    rumConfig.enableTraceUserAction = NO;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//
-//    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-//
-//    [tester waitForTimeInterval:1];
-//    [tester tapViewWithAccessibilityLabel:@"Row: 1"];
-//    [tester tapViewWithAccessibilityLabel:@"Row: 2"];
-//
-//    [tester waitForTimeInterval:2];
-//
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    __block BOOL isHasAction = NO;
-//    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-//        NSString *op = dict[@"op"];
-//        XCTAssertTrue([op isEqualToString:@"RUM"]);
-//        NSDictionary *opdata = dict[@"opdata"];
-//        NSString *measurement = opdata[@"source"];
-//        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
-//            isHasAction = YES;
-//            *stop = YES;
-//        }
-//    }];
-//    XCTAssertTrue(isHasAction == NO);
-//}
-//- (void)testAbleTraceUserResource{
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = YES;
-//    rumConfig.enableTraceUserResource = YES;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    [self startView];
-//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-//    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-//        [expectation fulfill];
-//    }];
-//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
-//    [NSThread sleepForTimeInterval:2];
-//
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    XCTAssertTrue(newArray.count > oldArray.count);
-//    [self stopView];
-//}
-//- (void)testDisableTraceUserResource{
-//    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-//    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-//    rumConfig.enableTraceUserView = YES;
-//    rumConfig.enableTraceUserResource = NO;
-//    [FTMobileAgent startWithConfigOptions:config];
-//    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-//    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-//
-//    [self startView];
-//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-//    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-//        [expectation fulfill];
-//    }];
-//    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
-//    [NSThread sleepForTimeInterval:2];
-//
-//    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-//    __block BOOL isHasResource = NO;
-//    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-//        NSString *op = dict[@"op"];
-//        XCTAssertTrue([op isEqualToString:@"RUM"]);
-//        NSDictionary *opdata = dict[@"opdata"];
-//        NSString *measurement = opdata[@"source"];
-//        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
-//            isHasResource = YES;
-//            *stop = YES;
-//        }
-//    }];
-//    XCTAssertTrue(isHasResource == NO);
-//    [self stopView];
-//}
 - (void)addErrorData{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
     NSString *error_stack = @"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15";
@@ -974,7 +807,8 @@
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    rumConfig.globalContext = @{@"trace_id":@"trace_id_1"};
+    NSString *trackId = self.track_id?:@"unitTests";
+    rumConfig.globalContext = @{@"track_id":trackId};
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
@@ -989,8 +823,8 @@
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
-    XCTAssertTrue([tags[@"trace_id"] isEqualToString:@"trace_id_1"]);
-    XCTAssertTrue([tags[@"custom_keys"] isEqualToString:@"[\"trace_id\"]"]);
+    XCTAssertTrue([tags[@"track_id"] isEqualToString:trackId]);
+    XCTAssertTrue([tags[@"custom_keys"] isEqualToString:@"[\"track_id\"]"]);
 }
 
 @end
