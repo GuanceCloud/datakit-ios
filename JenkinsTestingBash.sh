@@ -3,13 +3,8 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case ${key} in
-  -id)
-    ACCESS_KEY_ID="$2"
-    shift # past argumentandroid
-    shift # past value
-    ;;
-  -sk)
-    ACCESS_KEY_SECRET="$2"
+  -rumid)
+    APP_ID="$2"
     shift # past argumentandroid
     shift # past value
     ;;
@@ -18,8 +13,13 @@ while [[ $# -gt 0 ]]; do
     shift # past argument
     shift # past value
     ;;
-  -tkn)
-    ACCESS_DATAWAY_TOKEN="$2"
+  -trackid)
+    TRACK_ID="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  -devicedestination)
+    DEVICE_DESTINATION="$2"
     shift # past argument
     shift # past value
     ;;
@@ -35,16 +35,18 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}" # restore positional parametersCERT_FILE
 
-cd "SampleApp.xcodeproj/xcshareddata/xcschemes/"
+cd "App.xcodeproj/xcshareddata/xcschemes/"
 
-sed -i '' 's/$ACCESS_KEY_ID/'"$ACCESS_KEY_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
-sed -i '' 's/$ACCESS_KEY_SECRET/'"$ACCESS_KEY_SECRET"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's/$APP_ID/'"$APP_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
-sed -i '' 's/$ACCESS_DATAWAY_TOKEN/'"$ACCESS_DATAWAY_TOKEN"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
+sed -i '' 's/$TRACK_ID/'"$TRACK_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 
 cd ../../..
 pod install
-xcodebuild test -workspace SampleApp.xcworkspace \
+
+xcodebuild test -workspace App.xcworkspace \
   -scheme FTMobileSDKUnitTestsForCmd \
-  -destination "platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.7" \
-  -only-testing FTMobileSDKUnitTests
+  -only-testing FTMobileSDKUnitTests \
+  -destination "$DEVICE_DESTINATION"
+
+killall Simulator 

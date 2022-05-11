@@ -41,23 +41,18 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "ACCESS_KEY_ID"
-            value = "$ACCESS_KEY_ID"
+            key = "APP_ID"
+            value = "$APP_ID"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "ACCESS_KEY_SECRET"
-            value = "$ACCESS_KEY_SECRET"
+            key = "TRACK_ID"
+            value = "$TRACK_ID"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "ACCESS_SERVER_URL"
             value = "$ACCESS_SERVER_URL"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ACCESS_DATAWAY_TOKEN"
-            value = "$ACCESS_DATAWAY_TOKEN"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
