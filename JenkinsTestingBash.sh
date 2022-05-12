@@ -48,5 +48,3 @@ xcodebuild test -workspace App.xcworkspace \
   -scheme FTMobileSDKUnitTestsForCmd \
   -only-testing FTMobileSDKUnitTests \
   -destination "$DEVICE_DESTINATION"
-
-killall Simulator 
