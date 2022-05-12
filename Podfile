@@ -16,11 +16,3 @@ target 'FTMobileSDKUnitTests' do
   # Pods for SampleApp
 
 end
-
-target 'AppTests' do
-  # Comment the next line if you don't want to use dynamic frameworks
-  use_frameworks!
-   pod 'KIF'
-  # Pods for SampleApp
-
-end
