@@ -22,7 +22,7 @@ if [[ $? -eq 0 ]];then
 
   VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*\///g' | sed -e 's/~.*//g' )
 
-  replaceVersion "FTAutoTrack"
+#  replaceVersion "FTAutoTrack"
   replaceVersion "FTMobileAgent"
 
   sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
