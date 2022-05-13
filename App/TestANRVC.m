@@ -20,10 +20,13 @@
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
+}
+-(void)viewDidAppear:(BOOL)animated{
     [self.view addSubview:self.myTableView];
 #if FTSDKUNITTEST
     [self testAnrBlock];
 #endif
+
 }
 - (void)testAnrBlock{
     //单元测试时 使用GCD唤醒runloop
@@ -60,7 +63,7 @@
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identify];
     }
     if (indexPath.row % 10 == 0) {
-        usleep(5 * 1000 * 1000); // 1秒
+        usleep(1 * 1000 * 1000); // 1秒
         cell.textLabel.text = @"卡咯";
     }else{
         cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
