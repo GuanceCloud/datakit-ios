@@ -264,9 +264,9 @@
     }];
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
+    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
-    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
