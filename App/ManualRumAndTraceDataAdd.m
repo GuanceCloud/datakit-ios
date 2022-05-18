@@ -74,7 +74,9 @@
 }
 - (void)manualTrace{
     NSString *key = [[NSUUID UUID]UUIDString];
-    NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
@@ -93,7 +95,9 @@
 }
 - (void)manualRumResource{
     self.rumKey = [[NSUUID UUID]UUIDString];
-    NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+
+    NSURL *url = [NSURL URLWithString:urlStr];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     
     NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];

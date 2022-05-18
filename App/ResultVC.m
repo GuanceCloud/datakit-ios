@@ -9,6 +9,8 @@
 #import "ResultVC.h"
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTMobileAgent.h>
+#import <FTTrackDataManger.h>
+#import <FTThread.h>
 #import <FTTrackerEventDBTool.h>
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
@@ -26,7 +28,15 @@
     [super viewDidLoad];
     self.title = @"Result";
     self.view.backgroundColor = [UIColor whiteColor];
-    [self checkResult];
+    if([[[NSProcessInfo processInfo] environment][@"isUITests"] boolValue]){
+        [self upload];
+    }
+}
+//强制上传
+-(void)upload{
+    [[FTTrackDataManger sharedInstance] setValue:@NO forKey:@"isUploading"];
+    FTThread *thread = [[FTTrackDataManger sharedInstance] valueForKey:@"ftThread"];
+    [[FTTrackDataManger sharedInstance] performSelector:@selector(privateUpload) onThread:thread withObject:nil waitUntilDone:NO];
 }
 -(void)checkResult{
     //数据库写入操作是异步的 等待数据写入

@@ -28,7 +28,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 /**
- * 模拟 APP 操作 产生相关数据
+ * 模拟 APP 操作 产生相关数据，-testCrash 先执行
  */
 - (void)testTraceUserActionUIExample {
     // UI tests must launch the application that they test.
@@ -37,9 +37,15 @@
     app.launchEnvironment =[[NSProcessInfo processInfo] environment];
     [app launch];//
     XCUIElementQuery *tablesQuery = app.tables;
+    
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"NetworkTrace_clienthttp"]/*[[".cells[@\"NetworkTrace_clienthttp\"].staticTexts[@\"NetworkTrace_clienthttp\"]",".staticTexts[@\"NetworkTrace_clienthttp\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
-    [NSThread sleepForTimeInterval:2];
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"TraceConsoleLog"]/*[[".cells[@\"TraceConsoleLog\"].staticTexts[@\"TraceConsoleLog\"]",".staticTexts[@\"TraceConsoleLog\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [NSThread sleepForTimeInterval:3];//等待网络请求回来
+    [app.tables/*@START_MENU_TOKEN@*/.staticTexts[@"TrackAppFreezeAndANR"]/*[[".cells[@\"TrackAppFreezeAndANR\"].staticTexts[@\"TrackAppFreezeAndANR\"]",".staticTexts[@\"TrackAppFreezeAndANR\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [NSThread sleepForTimeInterval:10];
+
+    [app.navigationBars[@"home"].buttons[@"home"] tap];
+
+    [tablesQuery.staticTexts[@"TraceConsoleLog"] tap];
 
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"BindUser"]/*[[".cells[@\"BindUser\"].staticTexts[@\"BindUser\"]",".staticTexts[@\"BindUser\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
 
@@ -59,26 +65,27 @@
     [imageClickImage tap];
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"Section: 0, Row: 0"]/*[[".cells[@\"Row: 0\"].staticTexts[@\"Section: 0, Row: 0\"]",".staticTexts[@\"Section: 0, Row: 0\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [tablesQuery.staticTexts[@"Section: 0, Row: 1"] tap];
-    [NSThread sleepForTimeInterval:9];
 
     [lableClickButton tap];
     [imageClickImage tap];
     
-    
-    XCUIElement *homeButton = app.navigationBars[@"home"].buttons[@"home"];
-    [homeButton tap];
-    
-
-    
-    [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"UserLogout"]/*[[".cells[@\"UserLogout\"].staticTexts[@\"UserLogout\"]",".staticTexts[@\"UserLogout\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [app/*@START_MENU_TOKEN@*/.buttons[@"result"]/*[[".scrollViews.buttons[@\"result\"]",".buttons[@\"result\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.staticTexts[@"result"] tap];
+    //等待 10s 进行上传
+    [NSThread sleepForTimeInterval:10];
             
     // Use recording to get started writing UI tests.
     // Use XCTAssert and related functions to verify your tests produce the correct results.
+/**
+  error 数据会在 - testTraceUserActionUIExample 方法中进行上传
+ */
 }
 - (void)testCrash{
     XCUIApplication *app = [[XCUIApplication alloc] init];
     ////将test 运行使用环境赋值给 application
-    app.launchEnvironment =[[NSProcessInfo processInfo] environment];
+    NSMutableDictionary *environment = [[NSProcessInfo processInfo] environment].mutableCopy;
+    [environment setValue:@YES forKey:@"CLEAN_DATAS"];//清除旧数据
+    app.launchEnvironment = environment;
+    
     [app launch];
     
     [app.tables.staticTexts[@"TrackAppCrash"] tap];

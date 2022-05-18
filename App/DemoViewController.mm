@@ -49,7 +49,7 @@
         [[FTMobileAgent sharedInstance] logout];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_clienthttp" handler:^{
-        NSString *urlStr = @"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions";
+        NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
         
         [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
