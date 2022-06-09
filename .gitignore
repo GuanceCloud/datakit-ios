@@ -10,3 +10,4 @@ Pod_Products/
 !Podfile
 !Podfile.lock
 ft-sdk-iosTest/testAccount.json
+Carthage
