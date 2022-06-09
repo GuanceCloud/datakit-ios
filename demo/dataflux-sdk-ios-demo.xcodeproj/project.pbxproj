@@ -3,11 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2282DE0A7602553A5B67E8B4 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */; };
+		17D4AACE2852018F0045EFF2 /* FTMobileAgent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */; };
 		7C02F4EE2689ACE700A0FE90 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */; };
 		7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
 		7C02F4F42689ACE700A0FE90 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
@@ -45,11 +45,10 @@
 		7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4FA2689ACEA00A0FE90 /* LaunchScreen.storyboard */; };
 		7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F82689ACEA00A0FE90 /* Assets.xcassets */; };
 		7CCD699C2711964600E57A6F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F52689ACE700A0FE90 /* Main.storyboard */; };
-		95EE8C1D824E751FD763FAB0 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.release.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.release.xcconfig"; sourceTree = "<group>"; };
+		17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FTMobileAgent.xcframework; path = Carthage/Build/FTMobileAgent.xcframework; sourceTree = "<group>"; };
 		7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C02F4EC2689ACE700A0FE90 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -87,8 +86,6 @@
 		7C6400B7275DF57200B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
 		7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
 		7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demoPreMade.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dataflux-sdk-ios-demo.debug.xcconfig"; path = "Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo.debug.xcconfig"; sourceTree = "<group>"; };
-		F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dataflux_sdk_ios_demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,8 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2282DE0A7602553A5B67E8B4 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
-				95EE8C1D824E751FD763FAB0 /* Pods_dataflux_sdk_ios_demo.framework in Frameworks */,
+				17D4AACE2852018F0045EFF2 /* FTMobileAgent.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,7 +110,6 @@
 		37FEFF8AF1D28719DD32BF07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F58FEEF0AD5DFA1018C414A3 /* Pods_dataflux_sdk_ios_demo.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -122,9 +117,9 @@
 		7C02F4E02689ACE700A0FE90 = {
 			isa = PBXGroup;
 			children = (
+				17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */,
 				7C02F4EB2689ACE700A0FE90 /* dataflux-sdk-ios-demo */,
 				7C02F4EA2689ACE700A0FE90 /* Products */,
-				82DA04D9B2E47C5ED045EB68 /* Pods */,
 				37FEFF8AF1D28719DD32BF07 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -180,15 +175,6 @@
 			path = "dataflux-sdk-ios-demo";
 			sourceTree = "<group>";
 		};
-		82DA04D9B2E47C5ED045EB68 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */,
-				33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -196,11 +182,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7C02F5022689ACEA00A0FE90 /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demo" */;
 			buildPhases = (
-				43A45C9BE40E4B09B3255AC5 /* [CP] Check Pods Manifest.lock */,
 				7C02F4E52689ACE700A0FE90 /* Sources */,
 				7C02F4E62689ACE700A0FE90 /* Frameworks */,
 				7C02F4E72689ACE700A0FE90 /* Resources */,
-				968F6FAA1B5AD4798F529085 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -215,6 +199,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */;
 			buildPhases = (
+				9E7816F3E770A5933A900BC7 /* [CP] Check Pods Manifest.lock */,
 				7CCD69872711964600E57A6F /* Sources */,
 				7CCD69972711964600E57A6F /* Frameworks */,
 				7CCD69992711964600E57A6F /* Resources */,
@@ -285,7 +270,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		43A45C9BE40E4B09B3255AC5 /* [CP] Check Pods Manifest.lock */ = {
+		9E7816F3E770A5933A900BC7 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -300,28 +285,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-dataflux-sdk-ios-demo-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-dataflux-sdk-ios-demoPreMade-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		968F6FAA1B5AD4798F529085 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dataflux-sdk-ios-demo/Pods-dataflux-sdk-ios-demo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -508,17 +476,18 @@
 		};
 		7C02F5032689ACEA00A0FE90 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B07442B74F7A1B1944F4977E /* Pods-dataflux-sdk-ios-demo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BW62V33GLH;
 				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
@@ -530,17 +499,18 @@
 		};
 		7C02F5042689ACEA00A0FE90 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 33C36F87360733D67C40A97A /* Pods-dataflux-sdk-ios-demo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BW62V33GLH;
 				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";

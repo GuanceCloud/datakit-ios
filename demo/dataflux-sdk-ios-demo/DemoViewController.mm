@@ -8,7 +8,7 @@
 
 #import "DemoViewController.h"
 #import "UITestVC.h"
-#import <FTMobileAgent.h>
+#import <FTMobileAgent/FTMobileAgent.h>
 #import <dataflux_sdk_ios_demo-Swift.h>
 //测试崩溃采集
 #import "TestANRVC.h"

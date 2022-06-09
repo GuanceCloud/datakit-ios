@@ -6,8 +6,7 @@
 //
 
 #import "AppDelegate.h"
-#import <FTMobileAgent.h>
-#import <FTMobileConfig.h>
+#import <FTMobileAgent/FTMobileAgent.h>
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define Track_id       @"0000000001"
