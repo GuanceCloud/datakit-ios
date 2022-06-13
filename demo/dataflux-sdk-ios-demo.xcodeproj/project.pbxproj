@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		17D4AACE2852018F0045EFF2 /* FTMobileAgent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */; };
+		17BFA6AE285720EA00B31E9A /* FTMobileAgent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */; };
 		7C02F4EE2689ACE700A0FE90 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */; };
 		7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
 		7C02F4F42689ACE700A0FE90 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
@@ -48,7 +48,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FTMobileAgent.xcframework; path = Carthage/Build/FTMobileAgent.xcframework; sourceTree = "<group>"; };
+		17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FTMobileAgent.xcframework; path = Carthage/Build/FTMobileAgent.xcframework; sourceTree = "<group>"; };
 		7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C02F4EC2689ACE700A0FE90 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -93,7 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17D4AACE2852018F0045EFF2 /* FTMobileAgent.xcframework in Frameworks */,
+				17BFA6AE285720EA00B31E9A /* FTMobileAgent.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +117,7 @@
 		7C02F4E02689ACE700A0FE90 = {
 			isa = PBXGroup;
 			children = (
-				17D4AACD2852018F0045EFF2 /* FTMobileAgent.xcframework */,
+				17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */,
 				7C02F4EB2689ACE700A0FE90 /* dataflux-sdk-ios-demo */,
 				7C02F4EA2689ACE700A0FE90 /* Products */,
 				37FEFF8AF1D28719DD32BF07 /* Frameworks */,
