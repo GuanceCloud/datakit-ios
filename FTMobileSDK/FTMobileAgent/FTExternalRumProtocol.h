@@ -1,16 +1,16 @@
 //
-//  FTExternalDataManager.h
+//  FTExternalRumProtocol.h
 //  FTMobileAgent
 //
-//  Created by 胡蕾蕾 on 2021/11/22.
-//  Copyright © 2021 DataFlux-cn. All rights reserved.
+//  Created by hulilei on 2022/6/13.
+//  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "FTExternalRumProtocol.h"
+#ifndef FTExternalRumProtocol_h
+#define FTExternalRumProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-@interface FTExternalDataManager : NSObject<FTExternalRum>
-+ (instancetype)sharedManager;
+@class FTResourceMetricsModel,FTResourceContentModel;
+@protocol FTExternalRum <NSObject>
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
 /**
  * 进入页面 viewId 内部管理
@@ -57,5 +57,5 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)stopResourceWithKey:(NSString *)key;
 @end
-
 NS_ASSUME_NONNULL_END
+#endif /* FTExternalRumProtocol_h */

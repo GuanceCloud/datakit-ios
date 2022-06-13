@@ -15,7 +15,6 @@
 #import "FTTraceHandler.h"
 #import "FTTraceHeaderManager.h"
 #import "FTGlobalRumManager.h"
-#import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"
 #import "FTResourceMetricsModel.h"
 #import "FTConfigManager.h"
@@ -101,7 +100,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
         if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
-            [[FTGlobalRumManager sharedInstance].rumManger startResource:self.identifier];
+            [[FTGlobalRumManager sharedInstance] startResourceWithKey:self.identifier];
         }else{
             [[FTTraceManager sharedInstance] removeTraceHandlerWithKey:self.identifier];
         }
@@ -170,9 +169,8 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
                 metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
             }
         }
-        [[FTGlobalRumManager sharedInstance].rumManger stopResource:self.identifier];
-        FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:self.identifier];
-        [[FTGlobalRumManager sharedInstance].rumManger addResource:self.identifier metrics:metricsModel content:model spanID:handler.span_id traceID:handler.trace_id];
+        [[FTGlobalRumManager sharedInstance] stopResourceWithKey:self.identifier];
+        [[FTGlobalRumManager sharedInstance] addResourceWithKey:self.identifier metrics:metricsModel content:model];
        
     }
 }

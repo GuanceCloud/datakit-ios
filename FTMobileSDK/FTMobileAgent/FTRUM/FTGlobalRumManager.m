@@ -23,6 +23,9 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
+#import "FTTraceHeaderManager.h"
+#import "FTTraceHandler.h"
+#import "FTTraceManager.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -201,6 +204,40 @@ static dispatch_once_t onceToken;
     if(self.currentController == viewController){
         [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
     }
+}
+#pragma mark --------- FTExternalRum ----------
+-(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
+    [self.rumManger onCreateView:viewName loadTime:loadTime];
+}
+-(void)startViewWithName:(NSString *)viewName{
+    [self.rumManger startViewWithName:viewName];
+}
+-(void)stopView{
+    [self.rumManger stopView];
+}
+- (void)addClickActionWithName:(NSString *)actionName{
+    [self.rumManger addClickActionWithName:actionName];
+}
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
+    [self.rumManger addErrorWithType:type message:message stack:stack];
+}
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
+    [self.rumManger addLongTaskWithStack:stack duration:duration];
+}
+- (void)startResourceWithKey:(NSString *)key{
+    [self.rumManger startResource:key];
+}
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
+        FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
+        [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
+    }else{
+        [self.rumManger addResource:key metrics:metrics content:content];
+    }
+}
+
+- (void)stopResourceWithKey:(NSString *)key{
+    [self.rumManger startResource:key];
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{

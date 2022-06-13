@@ -9,10 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTEnumConstant.h"
+#import "FTExternalRumProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @class  FTRUMManager,FTRumConfig;
 // 用于 开启各项数据的采集 
-@interface FTGlobalRumManager : NSObject
+@interface FTGlobalRumManager : NSObject<FTExternalRum>
 @property (nonatomic, strong) FTRUMManager *rumManger;
 // 仅在主线程使用 所以无多线程调用问题
 @property (nonatomic, weak) UIViewController *currentController;

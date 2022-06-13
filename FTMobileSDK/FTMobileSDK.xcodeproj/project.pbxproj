@@ -15,6 +15,7 @@
 		177CFECE27E32850007D8C2F /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 177CFECC27E32850007D8C2F /* FTTraceManager.m */; };
 		17C047C827F8107500CAEB83 /* FTTraceHeaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */; };
 		17C047C927F8107500CAEB83 /* FTTraceHeaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */; };
+		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */; };
 		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
@@ -161,6 +162,7 @@
 		177CFECC27E32850007D8C2F /* FTTraceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
 		17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTraceHeaderManager.h; sourceTree = "<group>"; };
 		17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTraceHeaderManager.m; sourceTree = "<group>"; };
+		17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExternalRumProtocol.h; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
 		4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 				7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */,
 				7CA1805C26CF99A30035DDF0 /* FTConfigManager.h */,
 				7CA1805B26CF99A20035DDF0 /* FTConfigManager.m */,
+				17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */,
 				7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */,
 				7C0FBD3B274B89BA007CD0D3 /* FTExternalDataManager.m */,
 				177BDF592799775F00DA4EA7 /* FTEnumConstant.h */,
@@ -694,6 +697,7 @@
 				7CB26D4626FD6A45005C9028 /* FTAppLifeCycle.h in Headers */,
 				7C28B91326611B3800CECBA6 /* FTRUMActionHandler.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
+				17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */,
 				4A7135A3257096FF00444C3D /* FTTrack.h in Headers */,
 				7C81952A26C4B90F00D0D8C4 /* FTDateUtil.h in Headers */,
 				7C28B91426611B3800CECBA6 /* FTRUMHandler.h in Headers */,
@@ -972,6 +976,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1033,6 +1038,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

@@ -27,33 +27,31 @@
 }
 #pragma mark - Rum -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    [FTGlobalRumManager.sharedInstance.rumManger onCreateView:viewName loadTime:loadTime];
+    [FTGlobalRumManager.sharedInstance onCreateView:viewName loadTime:loadTime];
 }
 -(void)startViewWithName:(NSString *)viewName {
-    [FTGlobalRumManager.sharedInstance.rumManger startViewWithName:viewName];
+    [FTGlobalRumManager.sharedInstance startViewWithName:viewName];
 }
 -(void)stopView{
-    [FTGlobalRumManager.sharedInstance.rumManger stopView];
+    [FTGlobalRumManager.sharedInstance stopView];
 }
 - (void)addClickActionWithName:(NSString *)actionName {
-        [FTGlobalRumManager.sharedInstance.rumManger addClickActionWithName:actionName];
+        [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [FTGlobalRumManager.sharedInstance.rumManger addErrorWithType:type  message:message stack:stack];
+    [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack];
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [FTGlobalRumManager.sharedInstance.rumManger addLongTaskWithStack:stack duration:duration];
+    [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration];
 }
 - (void)startResourceWithKey:(NSString *)key{
-    [FTGlobalRumManager.sharedInstance.rumManger startResource:key];
+    [FTGlobalRumManager.sharedInstance startResourceWithKey:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
-   
-    [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
+    [FTGlobalRumManager.sharedInstance addResourceWithKey:key metrics:metrics content:content];
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key {
-    [FTGlobalRumManager.sharedInstance.rumManger stopResource:key];
+    [FTGlobalRumManager.sharedInstance stopResourceWithKey:key];
 }
 
 @end

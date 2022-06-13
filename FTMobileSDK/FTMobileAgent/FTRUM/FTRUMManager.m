@@ -8,7 +8,6 @@
 #import "FTRUMManager.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
-#import "UIViewController+FTAutoTrack.h"
 #import "FTMonitorUtils.h"
 #import "FTPresetProperty.h"
 #import "FTThreadDispatchManager.h"
@@ -16,9 +15,6 @@
 #import "FTResourceContentModel.h"
 #import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
-#import "FTTraceHeaderManager.h"
-#import "FTTraceHandler.h"
-#import "FTTraceManager.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
@@ -142,9 +138,8 @@
     }
 }
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:identifier];
    
-    [FTGlobalRumManager.sharedInstance.rumManger addResource:identifier metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
+    [self addResource:identifier metrics:metrics content:content spanID:nil traceID:nil];
 }
 
 - (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
@@ -207,10 +202,9 @@
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
         //add trace info
-        if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
-        }
+    
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
             resourceSuccess.metrics = metrics;
