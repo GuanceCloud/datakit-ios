@@ -21,11 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableTrace;
 @property (nonatomic, weak) id<FTWKWebViewRumDelegate> traceDelegate;
 + (instancetype)sharedInstance;
-- (void)addWebView:(WKWebView *)webView;
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
-//- (void)addRequest:(NSURLRequest *)request webView:(WKWebView *)webView;
-//- (void)addResponse:(NSURLResponse *)response webView:(WKWebView *)webView;
-//- (void)didRequestFailWithError:(NSError *)error webView:(WKWebView *)webView;
+- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;
+
 - (void)removeWebView:(WKWebView *)webView;
 
 

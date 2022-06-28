@@ -53,8 +53,8 @@ static NSMapTable *datafluxSwizzles;
 static NSMutableSet<NSString *> *selectorCallingSet;
 static FTSDKSwizzlingOnClass *ft_findSwizzle(id self, SEL _cmd)
 {
-    Method aMethod = class_getInstanceMethod([self class], _cmd);
-    Class this_class = [self class];
+    Method aMethod = class_getInstanceMethod(object_getClass(self), _cmd);
+    Class this_class = object_getClass(self);
     FTSwizzleEntity *swizzle = nil;
     
     if (![FTSwizzler object:self ofClass:this_class isCallingSelector:_cmd]) {

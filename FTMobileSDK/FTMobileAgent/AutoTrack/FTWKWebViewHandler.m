@@ -20,8 +20,6 @@
 #import "FTResourceContentModel.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
-//记录trace wkwebview的request url trace状态 为YES时，trace完成
-@property (nonatomic, strong) NSMutableDictionary *mutableLoadStateByWebviewHash;
 
 @property (nonatomic, strong) NSLock *lock;
 @end
@@ -39,7 +37,6 @@ static dispatch_once_t onceToken;
     if (self) {
         [self setWKWebViewTrace];
         self.mutableRequestKeyedByWebviewHash = [NSMutableDictionary new];
-        self.mutableLoadStateByWebviewHash = [NSMutableDictionary new];
         self.lock = [NSLock new];
         self.enableTrace = NO;
     }
@@ -67,17 +64,17 @@ static dispatch_once_t onceToken;
     });
 }
 #pragma mark request
-- (void)addWebView:(WKWebView *)webView{
+- (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request{
     [self.lock lock];
-    [self.mutableLoadStateByWebviewHash setValue:@NO forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+    if (![self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
+        [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+    }
     [self.lock unlock];
 }
 - (void)removeWebView:(WKWebView *)webView{
     [self.lock lock];
     if ([self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
         [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-        [self.mutableLoadStateByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
-        
     }
     [self.lock unlock];
 }
@@ -89,8 +86,7 @@ static dispatch_once_t onceToken;
         request = [self.mutableRequestKeyedByWebviewHash objectForKey:key];
     }
     [self.lock unlock];
-    if ([request.URL isEqual:webView.URL]) {
-        [self addWebView:webView];
+    if (request && [request.URL isEqual:webView.URL]) {
         completionHandler? completionHandler(request,YES):nil;
     }else{
         completionHandler? completionHandler(nil,NO):nil;
