@@ -11,6 +11,11 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface FTExternalDataManager : NSObject<FTExternalRum>
 + (instancetype)sharedManager;
+/**
+ * 创建页面
+ * @param viewName     页面名称
+ * @param loadTime     页面加载时间
+ */
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
 /**
  * 进入页面 viewId 内部管理

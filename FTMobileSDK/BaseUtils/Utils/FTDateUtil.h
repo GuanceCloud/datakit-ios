@@ -18,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return 时间戳
 */
 + (long long)currentTimeMillisecond;
+/**
+ *  @abstract
+ *  获取给定时间的时间戳 纳秒级
+ *
+ *  @return 时间戳
+*/
 + (long long)dateTimeNanosecond:(NSDate *)date;
 /**
  *  @abstract
