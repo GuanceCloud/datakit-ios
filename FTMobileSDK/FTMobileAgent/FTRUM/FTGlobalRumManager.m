@@ -230,14 +230,14 @@ static dispatch_once_t onceToken;
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
         FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
-        [FTGlobalRumManager.sharedInstance.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
+        [self.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
     }else{
         [self.rumManger addResource:key metrics:metrics content:content];
     }
 }
 
 - (void)stopResourceWithKey:(NSString *)key{
-    [self.rumManger startResource:key];
+    [self.rumManger stopResource:key];
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
