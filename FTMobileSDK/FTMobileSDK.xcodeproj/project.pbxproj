@@ -16,6 +16,8 @@
 		17C047C827F8107500CAEB83 /* FTTraceHeaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */; };
 		17C047C927F8107500CAEB83 /* FTTraceHeaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */; };
 		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; };
+		17E3552F286D8C130043BF0A /* FTDisplayRate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E3552D286D8C130043BF0A /* FTDisplayRate.h */; };
+		17E35530286D8C130043BF0A /* FTDisplayRate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E3552E286D8C130043BF0A /* FTDisplayRate.m */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */; };
 		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
@@ -163,6 +165,8 @@
 		17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTraceHeaderManager.h; sourceTree = "<group>"; };
 		17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTraceHeaderManager.m; sourceTree = "<group>"; };
 		17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExternalRumProtocol.h; sourceTree = "<group>"; };
+		17E3552D286D8C130043BF0A /* FTDisplayRate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDisplayRate.h; sourceTree = "<group>"; };
+		17E3552E286D8C130043BF0A /* FTDisplayRate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDisplayRate.m; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
 		4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
@@ -335,6 +339,15 @@
 			path = FTAppLaunch;
 			sourceTree = "<group>";
 		};
+		17E35529286D52D00043BF0A /* Monitor */ = {
+			isa = PBXGroup;
+			children = (
+				17E3552D286D8C130043BF0A /* FTDisplayRate.h */,
+				17E3552E286D8C130043BF0A /* FTDisplayRate.m */,
+			);
+			path = Monitor;
+			sourceTree = "<group>";
+		};
 		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -382,6 +395,7 @@
 		4A88425C239E5754001B44C3 /* FTMobileAgent */ = {
 			isa = PBXGroup;
 			children = (
+				17E35529286D52D00043BF0A /* Monitor */,
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
 				4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */,
@@ -706,6 +720,7 @@
 				4A299F912521F7F800400931 /* FTANRDetector.h in Headers */,
 				7CA1808226CFAE430035DDF0 /* FTTrackDataManger.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
+				17E3552F286D8C130043BF0A /* FTDisplayRate.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				7C96F1FC27546AE30079031F /* FTRumThread.h in Headers */,
 				7C28B91526611B3800CECBA6 /* FTRUMSessionHandler.h in Headers */,
@@ -842,6 +857,7 @@
 				4A8842A4239E5768001B44C3 /* ZY_FMDatabasePool.m in Sources */,
 				7CF4E09526A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.m in Sources */,
 				7C28B85C2660980000CECBA6 /* FTWebViewJavascriptBridgeBase.m in Sources */,
+				17E35530286D8C130043BF0A /* FTDisplayRate.m in Sources */,
 				17C047C927F8107500CAEB83 /* FTTraceHeaderManager.m in Sources */,
 				7C28B85B2660980000CECBA6 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				7C28B91A26611B3800CECBA6 /* FTRUMManager.m in Sources */,
