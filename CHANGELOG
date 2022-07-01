@@ -1,3 +1,7 @@
+# 1.3.5-alpha.3
+1. 过滤格式错误的数据。
+2. SDK 内部日志使用 os_log 替换 NSLog。
+---
 # 1.3.5-alpha.2
 1. SDK 内部 NSLog 删除。
 ___
