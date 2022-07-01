@@ -6,13 +6,13 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 #import <UIKit/UIKit.h>
-#import "FTDisplayRate.h"
+#import "FTDisplayRateMonitor.h"
 #import "FTAppLifeCycle.h"
-@interface FTDisplayRate()<FTAppLifeCycleDelegate>
+@interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
 @end
-@implementation FTDisplayRate
+@implementation FTDisplayRateMonitor
 -(instancetype)init{
     self = [super init];
     if (self) {

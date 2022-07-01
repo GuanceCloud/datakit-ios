@@ -1,8 +1,8 @@
 //
-//  FTDisplayRate.h
+//  FTMemoryMonitor.h
 //  FTMobileAgent
 //
-//  Created by hulilei on 2022/6/30.
+//  Created by hulilei on 2022/7/1.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTDisplayRate : NSObject
+@interface FTMemoryMonitor : NSObject
 
 @end
 
