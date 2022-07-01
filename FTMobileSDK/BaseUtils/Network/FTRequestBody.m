@@ -125,7 +125,6 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *field = @"";
         NSDictionary *opdata =item[@"opdata"];
         
         NSString *source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"source"]];
@@ -133,16 +132,18 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
             source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
         }
         NSDictionary *tagDict = opdata[FT_TAGS];
-        if ([[opdata allKeys] containsObject:FT_FIELDS]) {
-            field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
-        }
         NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypeTag):nil;
-      
-        NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagsStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
-        if (idx==0) {
-            [requestDatas appendString:requestStr];
+        if ([[opdata allKeys] containsObject:FT_FIELDS]) {
+            NSString *field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
+            
+            NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagsStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
+            if (idx==0) {
+                [requestDatas appendString:requestStr];
+            }else{
+                [requestDatas appendFormat:@"\n%@",requestStr];
+            }
         }else{
-            [requestDatas appendFormat:@"\n%@",requestStr];
+            ZYErrorLog(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];

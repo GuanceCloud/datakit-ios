@@ -203,9 +203,9 @@
             [tags setValue:content.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
             [tags setValue:content.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
             [tags setValue:content.responseHeader[@"Content-Type"] forKey:FT_RUM_KEY_RESOURCE_TYPE];
-            [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:@"request_header"];
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
+        [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:@"request_header"];
         //add trace info
         if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
             [tags setValue:spanID forKey:FT_KEY_SPANID];
