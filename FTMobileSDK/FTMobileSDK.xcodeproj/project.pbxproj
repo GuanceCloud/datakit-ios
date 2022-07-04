@@ -357,7 +357,8 @@
 				17E35536286E9D030043BF0A /* FTMemoryMonitor.h */,
 				17E35537286E9D030043BF0A /* FTMemoryMonitor.m */,
 			);
-			path = Monitor;
+			name = Monitor;
+			path = ../Monitor;
 			sourceTree = "<group>";
 		};
 		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
@@ -407,7 +408,6 @@
 		4A88425C239E5754001B44C3 /* FTMobileAgent */ = {
 			isa = PBXGroup;
 			children = (
-				17E35529286D52D00043BF0A /* Monitor */,
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
 				4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */,
@@ -529,6 +529,7 @@
 		7C28B90326611B3700CECBA6 /* FTRUM */ = {
 			isa = PBXGroup;
 			children = (
+				17E35529286D52D00043BF0A /* Monitor */,
 				7C0FBD3127475432007CD0D3 /* Model */,
 				4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */,
 				4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */,
