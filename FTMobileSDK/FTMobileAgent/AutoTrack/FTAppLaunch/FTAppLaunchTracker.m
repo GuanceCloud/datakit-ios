@@ -11,8 +11,9 @@
 #import "FTLog.h"
 #import "FTDateUtil.h"
 
+static NSTimeInterval FTLoadDate = 0.0;
+static NSTimeInterval ApplicationRespondedTime = 0.0;
 
-static NSDate * FTLoadDate = nil;
 static BOOL AppRelaunched = NO;
 @interface FTAppLaunchTracker()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) NSDate *launchTime;
@@ -23,7 +24,17 @@ static BOOL AppRelaunched = NO;
     BOOL _applicationDidEnterBackground;
 }
 + (void)load{
-    FTLoadDate = [NSDate date];
+    FTLoadDate = CFAbsoluteTimeGetCurrent();
+    NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
+    id __block token = [center
+                        addObserverForName:UIApplicationDidBecomeActiveNotification
+                        object:nil
+                        queue:NSOperationQueue.mainQueue
+                        usingBlock:^(NSNotification *_){
+        ApplicationRespondedTime = CFAbsoluteTimeGetCurrent();
+        [center removeObserver:token];
+        token = nil;
+    }];
 }
 - (instancetype)init{
     return [self initWithDelegate:nil];
@@ -33,11 +44,24 @@ static BOOL AppRelaunched = NO;
     if (self) {
         self.delegate = delegate;
         _launchTime = [NSDate date];
+        if (ApplicationRespondedTime>0) {
+            [self appColdStartEvent];
+        }
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;
 }
-
+- (void)appColdStartEvent{
+    AppRelaunched = YES;
+    NSTimeInterval launchEnd = ApplicationRespondedTime;
+    if (launchEnd == 0.0) {
+        launchEnd = CFAbsoluteTimeGetCurrent();
+    }
+    NSNumber *duration = [NSNumber numberWithLong:(launchEnd-FTLoadDate)*1000000000];
+    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:)]) {
+        [self.delegate ftAppColdStart:duration];
+    }
+}
 - (void)applicationWillEnterForeground{
     if (AppRelaunched){
         self.launchTime = [NSDate date];
@@ -46,11 +70,7 @@ static BOOL AppRelaunched = NO;
 - (void)applicationDidBecomeActive{
     @try {
         if(!AppRelaunched){
-            AppRelaunched = YES;
-            NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:FTLoadDate toDate:[NSDate date]];
-            if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:)]) {
-                [self.delegate ftAppColdStart:duration];
-            }
+            [self appColdStartEvent];
         }else if (_applicationDidEnterBackground) {
             NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]];
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:)]) {
