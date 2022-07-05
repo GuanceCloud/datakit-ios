@@ -11,12 +11,15 @@
 @interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
+@property(strong, nonatomic, readonly) NSPointerArray *dataPublisher;
+
 @end
 @implementation FTDisplayRateMonitor
 -(instancetype)init{
     self = [super init];
     if (self) {
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+        [self start];
     }
     return self;
 }

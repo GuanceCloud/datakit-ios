@@ -13,6 +13,8 @@
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
 		177CFECD27E32850007D8C2F /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 177CFECB27E32850007D8C2F /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177CFECE27E32850007D8C2F /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 177CFECC27E32850007D8C2F /* FTTraceManager.m */; };
+		17A5033028742E24004C65BF /* FTMonitorValueProcessing.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A5032E28742E24004C65BF /* FTMonitorValueProcessing.h */; };
+		17A5033128742E24004C65BF /* FTMonitorValueProcessing.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A5032F28742E24004C65BF /* FTMonitorValueProcessing.m */; };
 		17C047C827F8107500CAEB83 /* FTTraceHeaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */; };
 		17C047C927F8107500CAEB83 /* FTTraceHeaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */; };
 		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; };
@@ -166,6 +168,8 @@
 		177BDF592799775F00DA4EA7 /* FTEnumConstant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		177CFECB27E32850007D8C2F /* FTTraceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
 		177CFECC27E32850007D8C2F /* FTTraceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
+		17A5032E28742E24004C65BF /* FTMonitorValueProcessing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorValueProcessing.h; sourceTree = "<group>"; };
+		17A5032F28742E24004C65BF /* FTMonitorValueProcessing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorValueProcessing.m; sourceTree = "<group>"; };
 		17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTraceHeaderManager.h; sourceTree = "<group>"; };
 		17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTraceHeaderManager.m; sourceTree = "<group>"; };
 		17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExternalRumProtocol.h; sourceTree = "<group>"; };
@@ -356,6 +360,8 @@
 				17E35533286E9CE40043BF0A /* FTCPUMonitor.m */,
 				17E35536286E9D030043BF0A /* FTMemoryMonitor.h */,
 				17E35537286E9D030043BF0A /* FTMemoryMonitor.m */,
+				17A5032E28742E24004C65BF /* FTMonitorValueProcessing.h */,
+				17A5032F28742E24004C65BF /* FTMonitorValueProcessing.m */,
 			);
 			name = Monitor;
 			path = ../Monitor;
@@ -731,6 +737,7 @@
 				7C81952A26C4B90F00D0D8C4 /* FTDateUtil.h in Headers */,
 				7C28B91426611B3800CECBA6 /* FTRUMHandler.h in Headers */,
 				7C2DD69825F9C2F300BFF757 /* FTAutoTrackProperty.h in Headers */,
+				17A5033028742E24004C65BF /* FTMonitorValueProcessing.h in Headers */,
 				7CA1806D26CFA7830035DDF0 /* FTNetworkManager.h in Headers */,
 				4A299F912521F7F800400931 /* FTANRDetector.h in Headers */,
 				7CA1808226CFAE430035DDF0 /* FTTrackDataManger.h in Headers */,
@@ -898,6 +905,7 @@
 				4A884298239E5768001B44C3 /* FTMobileConfig.m in Sources */,
 				7CBE740426DCB09100BBC0CC /* FTNetworkInfoManager.m in Sources */,
 				4A7135B32579E82A00444C3D /* FTfishhook.c in Sources */,
+				17A5033128742E24004C65BF /* FTMonitorValueProcessing.m in Sources */,
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
 				7CA1807426CFA7830035DDF0 /* FTRequestBody.m in Sources */,
 				4A2EFD8D253ECDC100F93B1E /* FTJsonWriter.m in Sources */,
