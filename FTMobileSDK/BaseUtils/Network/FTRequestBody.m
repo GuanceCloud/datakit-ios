@@ -34,14 +34,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     return self;
 }
 - (NSString *)URLEncodedTagsStringValue{
-    if (!self.value || [self.value isEqual:[NSNull null]]) {
+    if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
         return [NSString stringWithFormat:@"%@=NULL", [self replacingSpecialCharacters:self.field]];
     }else{
         return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
-    if (!self.value || [self.value isEqual:[NSNull null]]) {
+    if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
         return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],@"NULL"];
     }else{
         if([self.value isKindOfClass:NSString.class]){
