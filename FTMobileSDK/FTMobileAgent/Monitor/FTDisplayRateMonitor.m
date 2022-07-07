@@ -8,16 +8,22 @@
 #import <UIKit/UIKit.h>
 #import "FTDisplayRateMonitor.h"
 #import "FTAppLifeCycle.h"
+#import "FTMonitorItem.h"
+#import "FTMonitorValue.h"
 @interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
-@property(strong, nonatomic, readonly) NSPointerArray *dataPublisher;
+@property (nonatomic, strong) NSPointerArray *dataPublisher;
+@property (nonatomic, strong) NSLock *dataLock;
 
 @end
 @implementation FTDisplayRateMonitor
 -(instancetype)init{
     self = [super init];
     if (self) {
+        _dataPublisher = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
+        _dataLock = [[NSLock alloc] init];
+
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
         [self start];
     }
@@ -34,10 +40,32 @@
     if (self.lastFrameTimestamp > 0) {
         double frameDuration = link.timestamp - self.lastFrameTimestamp;
         double currentFPS = 1.0 / frameDuration;
-        
+        // todo: 线程处理
+        [self.dataLock lock];
+        for (id publisher in self.dataPublisher) {
+          
+        }
+        [self.dataLock unlock];
     }
     
     self.lastFrameTimestamp = link.timestamp;
+}
+- (void)addMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
+    [self.dataLock lock];
+    if (![self.dataPublisher.allObjects containsObject:item]) {
+        [self.dataPublisher addPointer:(__bridge void *)item];
+    }
+    [self.dataLock unlock];
+}
+- (void)removeMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
+    [self.dataLock lock];
+    for (NSUInteger i=0; i<self.dataPublisher.count; i++) {
+        if ([self.dataPublisher pointerAtIndex:i] == (__bridge void *)item) {
+            [self.dataPublisher removePointerAtIndex:i];
+            break;
+        }
+    }
+    [self.dataLock unlock];
 }
 - (void)stop{
     [self.displayLink invalidate];

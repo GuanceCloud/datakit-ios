@@ -1,5 +1,5 @@
 //
-//  FTMonitorValueProcessing.h
+//  FTMonitorValue.h
 //  FTMobileAgent
 //
 //  Created by hulilei on 2022/7/5.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTMonitorValueProcessing : NSObject
+@interface FTMonitorValue : NSObject
 /* 样本值 */
 @property (nonatomic, assign) double sampleValue;
 /* 样本数量 */

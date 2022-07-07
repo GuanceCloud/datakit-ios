@@ -36,7 +36,7 @@ static NSUInteger const kMaxPercent = 100;
     return (user + nice + system) * 100.0 / total;
 }
 // app cpu 使用率
-+ (double)appCpuUsage {
+- (double)appCpuUsage {
     kern_return_t kr;
     task_info_data_t tinfo;
     mach_msg_type_number_t task_info_count;

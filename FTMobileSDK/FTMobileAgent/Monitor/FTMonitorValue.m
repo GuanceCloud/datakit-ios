@@ -1,14 +1,14 @@
 //
-//  FTMonitorValueProcessing.m
+//  FTMonitorValue.m
 //  FTMobileAgent
 //
 //  Created by hulilei on 2022/7/5.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import "FTMonitorValueProcessing.h"
+#import "FTMonitorValue.h"
 
-@implementation FTMonitorValueProcessing
+@implementation FTMonitorValue
 
 - (void)addSample:(double)sample{
     self.meanValue = (sample + self.meanValue*self.sampleValue) / (self.sampleValueCount+1.0);

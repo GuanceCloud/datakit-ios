@@ -7,11 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class FTReadWriteHelper,FTMonitorValue;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTDisplayRateMonitor : NSObject
-
+- (void)addMonitorItem:(FTReadWriteHelper *)item;
+- (void)removeMonitorItem:(FTReadWriteHelper *)item;
 @end
 
 NS_ASSUME_NONNULL_END

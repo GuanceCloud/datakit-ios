@@ -1,8 +1,8 @@
 //
-//  FTMemoryMonitor.h
+//  FTReadWriteHelper.h
 //  FTMobileAgent
 //
-//  Created by hulilei on 2022/7/1.
+//  Created by hulilei on 2022/7/7.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTMemoryMonitor : NSObject
-- (double)memoryUsage;
+@interface FTReadWriteHelper<ValueType> : NSObject
+-(instancetype)initWithValue:(ValueType)value;
 @end
 
 NS_ASSUME_NONNULL_END
