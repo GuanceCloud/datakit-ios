@@ -20,5 +20,15 @@
     }
     return self;
 }
+- (void)concurrentRead:(void (^)(id value))block{
+    dispatch_async(self.concurrentQueue, ^{
+        block(self.value);
+    });
+}
+- (void)concurrentWrite:(void (^)(id value))block{
+    dispatch_barrier_async(self.concurrentQueue, ^{
+        block(self.value);
+    });
+}
 
 @end

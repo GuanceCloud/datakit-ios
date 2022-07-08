@@ -36,8 +36,12 @@
 }
 
 - (void)takeMonitorValue{
-//        [self.cpu.value addSample:[self.cpuMonitor appCpuUsage]];
-//        [self.memory.value addSample:[self.memoryMonitor memoryUsage]];
+    [self.cpu concurrentWrite:^(FTMonitorValue * _Nonnull value) {
+        [value addSample:[self.cpuMonitor appCpuUsage]];
+    }];
+    [self.memory concurrentWrite:^(FTMonitorValue * _Nonnull value) {
+        [value addSample:[self.memoryMonitor memoryUsage]];
+    }];
 }
 
 -(void)dealloc{

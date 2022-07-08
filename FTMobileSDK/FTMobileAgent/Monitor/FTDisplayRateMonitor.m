@@ -40,10 +40,14 @@
     if (self.lastFrameTimestamp > 0) {
         double frameDuration = link.timestamp - self.lastFrameTimestamp;
         double currentFPS = 1.0 / frameDuration;
-        // todo: 线程处理
         [self.dataLock lock];
         for (id publisher in self.dataPublisher) {
-          
+            [publisher concurrentWrite:^(id  _Nonnull value) {
+                if([value isKindOfClass: FTMonitorValue.class]){
+                    FTMonitorValue *newValue = value;
+                    [newValue addSample:currentFPS];
+                }
+            }];
         }
         [self.dataLock unlock];
     }

@@ -12,6 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTReadWriteHelper<ValueType> : NSObject
 -(instancetype)initWithValue:(ValueType)value;
+- (void)concurrentRead:(void (^)(ValueType value))block;
+- (void)concurrentWrite:(void (^)(ValueType value))block;
+
 @end
 
 NS_ASSUME_NONNULL_END
