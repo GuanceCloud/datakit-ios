@@ -14,13 +14,12 @@
 #import <FTConstants.h>
 #import <FTMobileAgent/FTBaseInfoHandler.h>
 #import <FTRUMManager.h>
+#import <os/log.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
-    NSString *info = @"";
-    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-    info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[@"UncaughtExceptionHandlerAddressesKey"]];
-    //            NSNumber *crashDate =@([[NSDate date] ft_dateTimestamp]);
-  
+    NSString *info = [self handleExceptionInfo:exception];
+   
+    os_log(OS_LOG_DEFAULT, "[FTLog]%{public}@", info);
 
     [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info];
     
@@ -38,7 +37,7 @@
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Crash" message:info preferredStyle:UIAlertControllerStyleAlert];
-    
+
     UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         testSuccess = YES;
     }];

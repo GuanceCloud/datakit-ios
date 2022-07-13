@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUncaughtExceptionHandler (Test)
 @property (nonatomic, strong) NSHashTable *ftSDKInstances;
 + (NSArray *)backtrace;
-+ (long)ft_calculateImageSlide;
+- (NSString *)handleExceptionInfo:(NSException *)exception;
 @end
 
 NS_ASSUME_NONNULL_END

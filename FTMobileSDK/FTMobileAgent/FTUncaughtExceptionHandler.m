@@ -13,7 +13,11 @@
 #import "FTGlobalRumManager.h"
 #import <mach-o/ldsyms.h>
 #include <mach-o/dyld.h>
+#import <mach-o/loader.h>
+#import <mach-o/arch.h>
 #import "FTRUMManager.h"
+#import "FTPresetProperty.h"
+#import <sys/utsname.h>
 
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
@@ -21,7 +25,8 @@ NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExcepti
 NSString * const UncaughtExceptionHandlerSignalKey = @"UncaughtExceptionHandlerSignalKey";
 //错误堆栈信息
 NSString * const UncaughtExceptionHandlerAddressesKey = @"UncaughtExceptionHandlerAddressesKey";
-
+//错误堆栈库名
+NSString * const UncaughtExceptionHandlerNameSet = @"UncaughtExceptionHandlerNameSet";
 void HandleException(NSException *exception);
 
 typedef void(*SignalHandler)(int signal, siginfo_t *info, void *context);
@@ -42,19 +47,21 @@ static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 @implementation FTUncaughtExceptionHandler
 
 void HandleException(NSException *exception) {
- 
+    
     //获取调用堆栈
-    NSString *exceptionStack = [[exception callStackSymbols] componentsJoinedByString:@"\n"];
+    NSArray *symbols = [exception callStackSymbols];
+    NSString *exceptionStack = [symbols componentsJoinedByString:@"\n"];
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
     [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
-    
+    NSSet *set = [FTUncaughtExceptionHandler dealCallStack:symbols];
+    [userInfo setObject:set forKey:UncaughtExceptionHandlerNameSet];
     //在主线程中，执行制定的方法, withObject是执行方法传入的参数
     [[FTUncaughtExceptionHandler sharedHandler]
      performSelectorOnMainThread:@selector(handleException:)
      withObject:
-     [NSException exceptionWithName:@"ios_crash"
-                             reason:[exception reason]
-                           userInfo:userInfo]
+         [NSException exceptionWithName:@"ios_crash"
+                                 reason:[exception reason]
+                               userInfo:userInfo]
      waitUntilDone:YES];
     
     if (previousUncaughtExceptionHandler) {
@@ -92,13 +99,15 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     // 保存崩溃日志
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     NSArray *callStack = [NSThread callStackSymbols];
+    NSSet *set = [FTUncaughtExceptionHandler dealCallStack:callStack];
+    [userInfo setObject:set forKey:UncaughtExceptionHandlerNameSet];
     NSString *exceptionStack = [callStack componentsJoinedByString:@"\n"];
     [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
     [userInfo setObject:[NSNumber numberWithInt:signal] forKey:UncaughtExceptionHandlerSignalKey];
     @try {
         [[FTUncaughtExceptionHandler sharedHandler]
          performSelectorOnMainThread:@selector(handleException:) withObject:
-         [NSException exceptionWithName:name reason:description userInfo:userInfo]
+             [NSException exceptionWithName:name reason:description userInfo:userInfo]
          waitUntilDone:YES];
     } @catch (NSException *exception) {
     }
@@ -109,6 +118,15 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     previousSignalHandler(signal, info, context);
     
     kill(getpid(), SIGKILL);
+}
++ (NSSet *)dealCallStack:(NSArray *)stack{
+    NSMutableSet *set = [NSMutableSet new];
+    for (NSString *str in stack) {
+        NSMutableArray *arr = [str componentsSeparatedByString:@" "].mutableCopy;
+        [arr removeObject:@""];
+        [set addObject:arr[1]];
+    }
+    return set;
 }
 + (instancetype)sharedHandler {
     static FTUncaughtExceptionHandler *sharedHandler = nil;
@@ -234,23 +252,89 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
-    long slide_address = [FTUncaughtExceptionHandler ft_calculateImageSlide];
-    NSString *info =[NSString stringWithFormat:@"Slide_Address:%ld\nException Stack:\n%@", slide_address,exception.userInfo[UncaughtExceptionHandlerAddressesKey]];
- 
-  
-    [[FTGlobalRumManager sharedInstance] addErrorWithType:[exception name] message:[exception reason] stack:info];
+    NSString *info = [self handleExceptionInfo:exception];
+    
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] message:[exception reason] stack:info];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
-    
 }
-+ (long)ft_calculateImageSlide{
-    long slide = -1;
+-(NSString *)getMachine:(cpu_type_t)cputype
+{
+    switch (cputype)
+    {
+        default:                  return @"???";
+        case CPU_TYPE_I386:       return @"X86";
+        case CPU_TYPE_POWERPC:    return @"PPC";
+        case CPU_TYPE_X86_64:     return @"X86_64";
+        case CPU_TYPE_POWERPC64:  return @"PPC64";
+        case CPU_TYPE_ARM:        return @"ARM";
+        case CPU_TYPE_ARM64:      return @"ARM64";
+    }
+}
+- (NSString *)handleExceptionInfo:(NSException *)exception{
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+    NSString *model = [NSString stringWithFormat:@"Hardware Model:  %@",deviceString];
+    NSString *osVersion = [NSString stringWithFormat:@"OS Version:   iPhone OS %@",[UIDevice currentDevice].systemVersion];
+    NSString *codeType = @"";
+    NSString *reportVersion = @"Report Version:  104";
+    NSSet *nameSet = exception.userInfo[UncaughtExceptionHandlerNameSet];
+    NSString *address = exception.userInfo[UncaughtExceptionHandlerAddressesKey];
+    NSMutableArray *images = [NSMutableArray new];
+    [images addObject:@"Binary Images:"];
     for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-        if (_dyld_get_image_header(i)->filetype == MH_EXECUTE) {
-            slide = _dyld_get_image_vmaddr_slide(i);
-            break;
+        uint64_t vmbase = 0;
+        uint64_t vmslide = 0;
+        uint64_t vmsize = 0;
+        
+        uint64_t loadAddress = 0;
+        uint64_t loadEndAddress = 0;
+        NSString *imageName = @"";
+        NSString *imagePath = @"";
+        NSString *uuid;
+        
+        const struct mach_header *header = _dyld_get_image_header(i);
+        const char *name = _dyld_get_image_name(i);
+        vmslide = _dyld_get_image_vmaddr_slide(i);
+        imagePath = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
+        imageName = [[imagePath componentsSeparatedByString:@"/"] lastObject];
+        if ([nameSet containsObject:imageName]){
+            BOOL is64bit = header->magic == MH_MAGIC_64 || header->magic == MH_CIGAM_64;
+            uintptr_t cursor = (uintptr_t)header + (is64bit ? sizeof(struct mach_header_64) : sizeof(struct mach_header));
+            struct load_command *loadCommand = NULL;
+            for (uint32_t i = 0; i < header->ncmds; i++, cursor += loadCommand->cmdsize) {
+                loadCommand = (struct load_command *)cursor;
+                if(loadCommand->cmd == LC_SEGMENT) {
+                    const struct segment_command* segmentCommand = (struct segment_command*)loadCommand;
+                    if (strcmp(segmentCommand->segname, SEG_TEXT) == 0) {
+                        vmsize = segmentCommand->vmsize;
+                        vmbase = segmentCommand->vmaddr;
+                    }
+                } else if(loadCommand->cmd == LC_SEGMENT_64) {
+                    const struct segment_command_64* segmentCommand = (struct segment_command_64*)loadCommand;
+                    if (strcmp(segmentCommand->segname, SEG_TEXT) == 0) {
+                        vmsize = segmentCommand->vmsize;
+                        vmbase = (uintptr_t)(segmentCommand->vmaddr);
+                    }
+                }
+                else if (loadCommand->cmd == LC_UUID) {
+                    const struct uuid_command *uuidCommand = (const struct uuid_command *)loadCommand;
+                    uuid = [[[NSUUID alloc] initWithUUIDBytes:uuidCommand->uuid] UUIDString];
+                }
+            }
+            loadAddress = vmbase + vmslide;
+            loadEndAddress = loadAddress + vmsize - 1;
+            address = [address stringByReplacingOccurrencesOfString:uuid withString:[NSString stringWithFormat:@"0x%llx",loadAddress]];
+            uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
+            NSString *cpuType = [self getMachine:header->cputype];
+            NSString *image = [NSString stringWithFormat:@"       0x%llx -        0x%llx %@ %@ <%@> %@",loadAddress,loadEndAddress,imageName,[cpuType lowercaseString],uuid,imagePath];
+            [images addObject:image];
+            if (header->filetype == MH_EXECUTE) {
+                codeType =[NSString stringWithFormat:@"Code Type:   %@",cpuType];
+            }
         }
     }
-    return slide;
+    return [NSString stringWithFormat:@"%@Last Exception Backtrace:\n%@\n\n%@", [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n\n",model,osVersion,codeType,reportVersion],address,[images componentsJoinedByString:@"\n"]];
 }
 @end
