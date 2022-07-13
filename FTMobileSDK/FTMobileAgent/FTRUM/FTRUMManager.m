@@ -181,7 +181,7 @@
                 [errorField setValue:content.responseBody forKey:FT_RUM_KEY_ERROR_STACK];
             }
             [FTThreadDispatchManager dispatchInRUMThread:^{
-                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:time];
+                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:time];
                 resourceError.time = time;
                 resourceError.tags = errorTags;
                 resourceError.fields = errorField;
