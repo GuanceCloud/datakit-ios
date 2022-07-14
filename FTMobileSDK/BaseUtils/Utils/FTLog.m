@@ -11,9 +11,13 @@
 #if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
 #endif
+
+#define FTLogger(...) NSLog(__VA_ARGS__)
+
 #import "FTLog.h"
+#import <os/log.h>
+
 static BOOL _enableLog;
-static BOOL _enableDescLog;
 
 static dispatch_queue_t _loggingQueue;
 @implementation FTLog
@@ -75,7 +79,7 @@ static dispatch_queue_t _loggingQueue;
     @try {
         dispatch_async(_loggingQueue , ^{
             NSString *logMessage = [[NSString alloc] initWithFormat:@"[FTLog][%@]  %s [line %lu]  %@", [self descriptionForLevel:level], function, (unsigned long)line, message];
-            FTLogger(@"%@", logMessage);
+            os_log_info(OS_LOG_DEFAULT, "%@",logMessage);
         });
         //file
     } @catch(NSException *e) {

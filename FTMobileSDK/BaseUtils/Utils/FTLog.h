@@ -23,12 +23,6 @@ FTLOG_MACRO(FTLogLevelInfo,(frmt), ## __VA_ARGS__)
 #define ZYErrorLog(frmt,...)\
 FTLOG_MACRO(FTLogLevelError,(frmt), ## __VA_ARGS__)
 
-#ifndef __OPTIMIZE__
-#define FTLogger(...) NSLog(__VA_ARGS__)
-#else
-#define FTLogger(...) {}
-
-#endif
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, FTLogLevel){
     FTLogLevelInfo     = 1,

@@ -176,7 +176,7 @@
                 [errorField setValue:content.responseBody forKey:FT_RUM_KEY_ERROR_STACK];
             }
             [FTThreadDispatchManager dispatchInRUMThread:^{
-                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:time];
+                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:time];
                 resourceError.time = time;
                 resourceError.tags = errorTags;
                 resourceError.fields = errorField;
@@ -198,9 +198,9 @@
             [tags setValue:content.responseHeader[@"Content-Type"] forKey:@"response_content_type"];
             [tags setValue:content.responseHeader[@"Content-Encoding"] forKey:@"response_content_encoding"];
             [tags setValue:content.responseHeader[@"Content-Type"] forKey:FT_RUM_KEY_RESOURCE_TYPE];
-            [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:@"request_header"];
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:@"response_header"];
         }
+        [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:@"request_header"];
         //add trace info
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];

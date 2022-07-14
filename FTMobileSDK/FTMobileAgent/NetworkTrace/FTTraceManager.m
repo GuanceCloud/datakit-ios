@@ -42,7 +42,11 @@
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
     if (self.sdkUrlStr) {
-        return !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
+        if (url.port) {
+            return !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
+        }else{
+            return ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+        }
     }
     return NO;
 }

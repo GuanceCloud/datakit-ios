@@ -101,6 +101,13 @@
             }
             break;
         }
+        case FTRUMDataResourceError:{
+            if (self.isActiveView) {
+                self.viewErrorCount++;
+                self.needUpdateView = YES;
+            }
+            break;
+        }
         case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceDataModel *)model];
