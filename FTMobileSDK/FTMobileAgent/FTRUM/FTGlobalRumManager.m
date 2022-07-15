@@ -26,6 +26,20 @@
 #import "FTTraceHeaderManager.h"
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
+#import "FTDisplayRateMonitor.h"
+#import "FTMemoryMonitor.h"
+#import "FTCPUMonitor.h"
+@implementation FTRUMMonitor
+-(instancetype)init{
+    self = [super init];
+    if (self) {
+        self.displayMonitor = [[FTDisplayRateMonitor alloc]init];
+        self.memoryMonitor = [[FTMemoryMonitor alloc] init];
+        self.cpuMonitor = [[FTCPUMonitor alloc]init];
+    }
+    return self;
+}
+@end
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -35,6 +49,7 @@
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
+@property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
 
 @implementation FTGlobalRumManager
@@ -71,7 +86,6 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
         return;
     }
-    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig];
     self.track = [[FTTrack alloc]init];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
@@ -95,6 +109,8 @@ static dispatch_once_t onceToken;
         [FTURLProtocol startMonitor];
     }
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    self.monitor = [[FTRUMMonitor alloc]init];
+    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {

@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTCPUMonitor : NSObject
-- (double)appCpuUsage;
+- (double)readCpuUsage;
 @end
 
 NS_ASSUME_NONNULL_END

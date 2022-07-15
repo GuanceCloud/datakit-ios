@@ -19,7 +19,7 @@
 - (void)handleException:(NSException *)exception {
     NSString *info = [self handleExceptionInfo:exception];
    
-    os_log(OS_LOG_DEFAULT, "[FTLog]%{public}@", info);
+    os_log(OS_LOG_DEFAULT, "[FTLog][Crash]%{public}@", info);
 
     [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info];
     

@@ -10,11 +10,12 @@
 #import "FTAppLifeCycle.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
+#import "FTLog.h"
+#import "FTThreadDispatchManager.h"
 @interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) CADisplayLink *displayLink;
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
 @property (nonatomic, strong) NSPointerArray *dataPublisher;
-@property (nonatomic, strong) NSLock *dataLock;
 
 @end
 @implementation FTDisplayRateMonitor
@@ -22,7 +23,6 @@
     self = [super init];
     if (self) {
         _dataPublisher = [NSPointerArray pointerArrayWithOptions:NSPointerFunctionsWeakMemory];
-        _dataLock = [[NSLock alloc] init];
 
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
         [self start];
@@ -39,8 +39,10 @@
 - (void)displayLink:(CADisplayLink *)link{
     if (self.lastFrameTimestamp > 0) {
         double frameDuration = link.timestamp - self.lastFrameTimestamp;
+        if (frameDuration<0.016666) {
+            ZYLog(@"frameDuration:%f",frameDuration);
+        }
         double currentFPS = 1.0 / frameDuration;
-        [self.dataLock lock];
         for (id publisher in self.dataPublisher) {
             [publisher concurrentWrite:^(id  _Nonnull value) {
                 if([value isKindOfClass: FTMonitorValue.class]){
@@ -49,27 +51,25 @@
                 }
             }];
         }
-        [self.dataLock unlock];
     }
-    
     self.lastFrameTimestamp = link.timestamp;
 }
 - (void)addMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
-    [self.dataLock lock];
-    if (![self.dataPublisher.allObjects containsObject:item]) {
-        [self.dataPublisher addPointer:(__bridge void *)item];
-    }
-    [self.dataLock unlock];
+    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+        if (![self.dataPublisher.allObjects containsObject:item]) {
+            [self.dataPublisher addPointer:(__bridge void *)item];
+        }
+    }];
 }
 - (void)removeMonitorItem:(FTReadWriteHelper<FTMonitorValue *> *)item{
-    [self.dataLock lock];
-    for (NSUInteger i=0; i<self.dataPublisher.count; i++) {
-        if ([self.dataPublisher pointerAtIndex:i] == (__bridge void *)item) {
-            [self.dataPublisher removePointerAtIndex:i];
-            break;
+    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
+        for (NSUInteger i=0; i<self.dataPublisher.count; i++) {
+            if ([self.dataPublisher pointerAtIndex:i] == (__bridge void *)item) {
+                [self.dataPublisher removePointerAtIndex:i];
+                break;
+            }
         }
-    }
-    [self.dataLock unlock];
+    }];
 }
 - (void)stop{
     [self.displayLink invalidate];

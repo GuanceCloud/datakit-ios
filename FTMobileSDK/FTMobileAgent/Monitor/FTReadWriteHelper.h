@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithValue:(ValueType)value;
 - (void)concurrentRead:(void (^)(ValueType value))block;
 - (void)concurrentWrite:(void (^)(ValueType value))block;
-
+- (ValueType)currentValue;
 @end
 
 NS_ASSUME_NONNULL_END

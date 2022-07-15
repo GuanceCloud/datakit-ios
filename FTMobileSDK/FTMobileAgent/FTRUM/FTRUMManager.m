@@ -19,17 +19,18 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) NSMutableDictionary *preViewDuration;
-
+@property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
 @implementation FTRUMManager
 
--(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig{
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor{
     self = [super init];
     if (self) {
-        self.rumConfig = rumConfig;
+        _rumConfig = rumConfig;
+        _appState = AppStateStartUp;
+        _preViewDuration = [NSMutableDictionary new];
+        _monitor = monitor;
         self.assistant = self;
-        self.appState = AppStateStartUp;
-        self.preViewDuration = [NSMutableDictionary new];
     }
     return self;
 }
@@ -334,7 +335,7 @@
         }
     }else{
         //初始化
-        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model rumConfig:self.rumConfig];
+        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model rumConfig:self.rumConfig monitor:self.monitor];
         [self.sessionHandler.assistant process:model];
     }
     

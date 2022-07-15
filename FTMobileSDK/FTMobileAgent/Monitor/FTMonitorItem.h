@@ -15,11 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTCPUMonitor *cpuMonitor;
 @property (nonatomic, strong) FTMemoryMonitor *memoryMonitor;
 
-@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *cpu;
-@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *memory;
-@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *display;
-
 - (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor;
+- (FTMonitorValue *)refreshDisplay;
+- (FTMonitorValue *)cpu;
+- (FTMonitorValue *)memory;
+
 @end
 
 NS_ASSUME_NONNULL_END

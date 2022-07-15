@@ -9,7 +9,9 @@
 #import "FTRUMHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTEnumConstant.h"
-@class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel;
+
+@class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTRUMManager : FTRUMHandler
@@ -17,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
--(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig;
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor;
 
 #pragma mark - resource -
 /**

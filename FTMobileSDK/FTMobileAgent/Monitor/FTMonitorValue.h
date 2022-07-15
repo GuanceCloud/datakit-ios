@@ -11,19 +11,20 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMonitorValue : NSObject
-/* 样本值 */
-@property (nonatomic, assign) double sampleValue;
 /* 样本数量 */
 @property (nonatomic, assign) int sampleValueCount;
 /* 样本最小值 */
-@property (nonatomic, assign) double minValue;
+@property (nonatomic, assign ,readonly) double minValue;
 /* 样本最大值 */
-@property (nonatomic, assign) double maxValue;
+@property (nonatomic, assign ,readonly) double maxValue;
 /* 样本平均值 */
-@property (nonatomic, assign) double meanValue;
+@property (nonatomic, assign ,readonly) double meanValue;
 
 /* 添加样本值*/
 - (void)addSample:(double)sample;
+/* 样本最大最小差值*/
+- (double)greatestDiff;
+- (FTMonitorValue *)scaledDown:(double)scale;
 @end
 
 NS_ASSUME_NONNULL_END

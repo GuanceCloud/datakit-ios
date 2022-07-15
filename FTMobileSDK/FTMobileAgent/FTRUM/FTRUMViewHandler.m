@@ -13,6 +13,11 @@
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import "FTBaseInfoHandler.h"
+#import "FTMonitorItem.h"
+#import "FTMonitorValue.h"
+#import "FTGlobalRumManager.h"
+#import "FTLog.h"
+
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMContext *sessionContext;
@@ -32,9 +37,11 @@
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
 @property (nonatomic, assign) BOOL needUpdateView;
+@property (nonatomic, strong) FTRUMMonitor *monitor;
+@property (nonatomic, strong) FTMonitorItem *monitorItem;
 @end
 @implementation FTRUMViewHandler
--(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context{
+-(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context monitor:(FTRUMMonitor *)monitor{
     self = [super init];
     if (self) {
         self.assistant = self;
@@ -47,7 +54,8 @@
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
         self.sessionContext = context;
-        
+        self.monitor = monitor;
+        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor];
     }
     return self;
 }
@@ -178,6 +186,10 @@
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
     [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:FT_KEY_IS_ACTIVE];
+    FTMonitorValue *cpu = self.monitorItem.cpu;
+    FTMonitorValue *memory = self.monitorItem.memory;
+    FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
+
     NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
                                    FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
                                    FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),

@@ -112,7 +112,7 @@ static mach_port_t main_thread_id;
 NSString *_ft_backtraceOfThread(thread_t thread) {
     uintptr_t backtraceBuffer[50];
     int i = 0;
-    NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Backtrace of Thread %u:\n", thread];
+    NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Last Exception Backtrace %u:\n", thread];
     //线程上下文信息
     _STRUCT_MCONTEXT machineContext;
     if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
@@ -152,7 +152,9 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
     int backtraceLength = i;
     Dl_info symbolicated[backtraceLength];
     ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0);
+    NSMutableSet *imageSet = [NSMutableSet new];
     for (int i = 0; i < backtraceLength; ++i) {
+//        [imageSet addObject:symbolicated[i]->]
         [resultString appendFormat:@"%d %@",i, ft_logBacktraceEntry(i, backtraceBuffer[i], &symbolicated[i])];
     }
     [resultString appendFormat:@"\n"];
@@ -210,7 +212,8 @@ NSString* ft_logBacktraceEntry(const int entryNum,
     
     uintptr_t offset = address - (uintptr_t)dlInfo->dli_saddr;
     const char* sname = dlInfo->dli_sname;
-    if(sname == NULL) {
+    //_mh_execute_header未成功进行符号化，替换为 load address
+    if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0) {
         sprintf(saddrBuff, POINTER_SHORT_FMT, (uintptr_t)dlInfo->dli_fbase);
         sname = saddrBuff;
         offset = address - (uintptr_t)dlInfo->dli_fbase;

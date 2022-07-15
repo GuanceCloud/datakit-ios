@@ -8,11 +8,11 @@
 
 #import "FTRUMHandler.h"
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTRUMMonitor;
 @interface FTRUMViewHandler : FTRUMHandler
 @property (nonatomic, strong,readonly) FTRUMContext *context;
 
--(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context;
+-(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context monitor:(FTRUMMonitor *)monitor;
 @end
 
 NS_ASSUME_NONNULL_END

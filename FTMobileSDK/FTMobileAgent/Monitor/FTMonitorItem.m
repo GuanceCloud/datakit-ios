@@ -5,17 +5,20 @@
 //  Created by hulilei on 2022/7/6.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
-
+#import <UIKit/UIKit.h>
 #import "FTMonitorItem.h"
 #import "FTCPUMonitor.h"
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTMonitorValue.h"
 #import "FTThreadDispatchManager.h"
+static double NormalizedRefreshRate = 60.0;
 @interface FTMonitorItem()
 @property (nonatomic, strong) NSTimer *timer;
-
-
+@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *displayHelper;
+@property (nonatomic, assign) NSInteger maximumRefreshRate;
+@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *cpuHelper;
+@property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *memoryHelper;
 @end
 @implementation FTMonitorItem
 - (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor{
@@ -24,28 +27,45 @@
         _cpuMonitor = cpuMonitor;
         _displayRateMonitor = displayRateMonitor;
         _memoryMonitor = memoryMonitor;
-        NSTimer *timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(takeMonitorValue) userInfo:nil repeats:YES];
+        __weak typeof(self) weakSelf = self;
+        [self takeMonitorValue];
+        NSTimer *timer = [NSTimer timerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+            [weakSelf takeMonitorValue];
+        }];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
         _timer = timer;
-        _cpu = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
-        _memory = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
-        _display = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
-        [_displayRateMonitor addMonitorItem:_display];
+        _cpuHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
+        _memoryHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
+        _displayHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
+        [_displayRateMonitor addMonitorItem:_displayHelper];
+        if (@available(iOS 10.3, *)) {
+            _maximumRefreshRate = [UIScreen mainScreen].maximumFramesPerSecond;
+        } else {
+            _maximumRefreshRate = 60;
+        }
     }
     return self;
 }
-
+- (FTMonitorValue *)refreshDisplay{
+    FTMonitorValue *value = self.displayHelper.currentValue;
+    return [value scaledDown:_maximumRefreshRate/NormalizedRefreshRate];
+}
 - (void)takeMonitorValue{
-    [self.cpu concurrentWrite:^(FTMonitorValue * _Nonnull value) {
-        [value addSample:[self.cpuMonitor appCpuUsage]];
+    [self.cpuHelper concurrentWrite:^(FTMonitorValue * _Nonnull value) {
+        [value addSample:[self.cpuMonitor readCpuUsage]];
     }];
-    [self.memory concurrentWrite:^(FTMonitorValue * _Nonnull value) {
+    [self.memoryHelper concurrentWrite:^(FTMonitorValue * _Nonnull value) {
         [value addSample:[self.memoryMonitor memoryUsage]];
     }];
 }
-
+-(FTMonitorValue *)cpu{
+    return self.cpuHelper.currentValue;
+}
+-(FTMonitorValue *)memory{
+    return self.memoryHelper.currentValue;
+}
 -(void)dealloc{
-    [self.displayRateMonitor removeMonitorItem:self.display];
+    [self.displayRateMonitor removeMonitorItem:self.displayHelper];
     if (self.timer) {
         [self.timer invalidate];
     }

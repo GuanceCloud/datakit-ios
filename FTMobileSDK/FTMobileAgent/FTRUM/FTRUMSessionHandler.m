@@ -11,6 +11,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
+#import "FTGlobalRumManager.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -18,12 +19,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSDate *sessionStartTime;
 @property (nonatomic, strong) NSDate *lastInteractionTime;
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
-
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, assign) BOOL sampling;
+@property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
 @implementation FTRUMSessionHandler
--(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig{
+-(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor{
     self = [super init];
     if (self) {
         self.assistant = self;
@@ -32,6 +33,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.context = [FTRUMContext new];
+        self.monitor = monitor;
     }
     return  self;
 }
@@ -77,7 +79,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 }
 -(void)startView:(FTRUMDataModel *)model{
     
-    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context];
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context monitor:self.monitor];
     [self.viewHandlers addObject:viewHandler];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{

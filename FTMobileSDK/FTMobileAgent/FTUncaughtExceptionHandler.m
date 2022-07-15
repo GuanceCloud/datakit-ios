@@ -18,7 +18,8 @@
 #import "FTRUMManager.h"
 #import "FTPresetProperty.h"
 #import <sys/utsname.h>
-
+#import "FTCallStack.h"
+#import <os/log.h>
 //NSException错误名称
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 //signal错误堆栈的条数
@@ -51,6 +52,10 @@ void HandleException(NSException *exception) {
     //获取调用堆栈
     NSArray *symbols = [exception callStackSymbols];
     NSString *exceptionStack = [symbols componentsJoinedByString:@"\n"];
+    NSThread *thread = [NSThread currentThread];
+    os_log(OS_LOG_DEFAULT, "[FTLog][Crash]%{public}@", [FTCallStack ft_backtraceOfNSThread:thread]);
+    os_log(OS_LOG_DEFAULT, "[FTLog][Crash]%{public}@", [NSThread callStackSymbols]);
+
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
     [userInfo setObject:exceptionStack forKey:UncaughtExceptionHandlerAddressesKey];
     NSSet *set = [FTUncaughtExceptionHandler dealCallStack:symbols];
@@ -298,7 +303,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         const char *name = _dyld_get_image_name(i);
         vmslide = _dyld_get_image_vmaddr_slide(i);
         imagePath = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-        imageName = [[imagePath componentsSeparatedByString:@"/"] lastObject];
+        char* lastFile = strrchr(name, '/') + 1;
+        imageName = [NSString stringWithCString:lastFile encoding:NSUTF8StringEncoding];
         if ([nameSet containsObject:imageName]){
             BOOL is64bit = header->magic == MH_MAGIC_64 || header->magic == MH_CIGAM_64;
             uintptr_t cursor = (uintptr_t)header + (is64bit ? sizeof(struct mach_header_64) : sizeof(struct mach_header));

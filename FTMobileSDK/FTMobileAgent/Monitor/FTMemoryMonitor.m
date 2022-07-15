@@ -18,7 +18,6 @@
     kern_return_t kernelReturn = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &vmInfo, &count);
     if(kernelReturn == KERN_SUCCESS) {
         memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
-        ZYLog(@"Memory in use (in bytes): %lld", memoryUsageInByte);
     } else {
         ZYLog(@"Error with task_info(): %s", mach_error_string(kernelReturn));
     }
