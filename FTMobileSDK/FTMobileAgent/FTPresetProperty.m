@@ -341,7 +341,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     //------------------------------Samulitor-------------------------------------
     if ([platform isEqualToString:@"i386"] ||
-        [platform isEqualToString:@"x86_64"]){
+        [platform isEqualToString:@"x86_64"] || [platform isEqualToString:@"arm64"]){
         return  @"iPhone Simulator";
     }
     return platform;
