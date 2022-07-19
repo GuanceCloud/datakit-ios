@@ -796,7 +796,7 @@
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
-    rumConfig.monitorInfoType = FTMonitorInfoTypeAll;
+    rumConfig.errorMonitorType = FTMonitorInfoTypeAll;
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];

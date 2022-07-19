@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_backtraceOfCurrentThread;
 + (NSString *)ft_backtraceOfMainThread;
 + (NSString *)ft_backtraceOfNSThread:(NSThread *)thread;
-
++ (NSString *)ft_crashReportHeader;
 @end
 
 NS_ASSUME_NONNULL_END

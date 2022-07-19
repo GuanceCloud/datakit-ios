@@ -39,12 +39,19 @@ NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";
 NSString * const FT_RUM_KEY_SESSION_TYPE = @"session_type";
 
 //view field
-NSString * const FT_RUM_KEY_Loading_time = @"loading_time";
+NSString * const FT_RUM_KEY_LOADING_TIME = @"loading_time";
 NSString * const FT_KEY_TIME_SPEND = @"time_spent";
 NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";
 NSString * const FT_KEY_VIEW_RESOURCE_COUNT = @"view_resource_count";
 NSString * const FT_KEY_VIEW_LONG_TASK_COUNT = @"view_long_task_count";
 NSString * const FT_KEY_VIEW_ACTION_COUNT = @"view_action_count";
+//Monitor
+NSString * const FT_CPU_TICK_COUNT_AVG = @"cpu_tick_count_avg";
+NSString * const FT_CPU_TICK_COUNT_MAX = @"cpu_tick_count_max";
+NSString * const FT_MEMORY_AVG = @"memory_avg";
+NSString * const FT_MEMORY_MAX = @"memory_max";
+NSString * const FT_FPS_MINI = @"fps_mini";
+NSString * const FT_FPS_AVG = @"fps_avg";
 //view tag
 NSString * const FT_KEY_VIEW_ID = @"view_id";
 NSString * const FT_KEY_IS_ACTIVE = @"is_active";

@@ -26,20 +26,7 @@
 #import "FTTraceHeaderManager.h"
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
-#import "FTDisplayRateMonitor.h"
-#import "FTMemoryMonitor.h"
-#import "FTCPUMonitor.h"
-@implementation FTRUMMonitor
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        self.displayMonitor = [[FTDisplayRateMonitor alloc]init];
-        self.memoryMonitor = [[FTMemoryMonitor alloc] init];
-        self.cpuMonitor = [[FTCPUMonitor alloc]init];
-    }
-    return self;
-}
-@end
+#import "FTRUMMonitor.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -109,7 +96,7 @@ static dispatch_once_t onceToken;
         [FTURLProtocol startMonitor];
     }
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
-    self.monitor = [[FTRUMMonitor alloc]init];
+    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.frequency];
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
 }
 -(FTPingThread *)pingThread{

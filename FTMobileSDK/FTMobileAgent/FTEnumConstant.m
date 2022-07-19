@@ -36,3 +36,9 @@ NSString * const FTEnvStringMap[] = {
     [FTEnvCommon] = @"common",
     [FTEnvLocal] = @"local",
 };
+
+NSTimeInterval const MonitorFrequencyMap[] = {
+    [FTMonitorFrequencyDefault] = 0.5,
+    [FTMonitorFrequencyRare] = 1.0,
+    [FTMonitorFrequencyFrequent] = 0.1
+};

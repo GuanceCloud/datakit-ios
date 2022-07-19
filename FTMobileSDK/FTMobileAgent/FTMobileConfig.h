@@ -19,15 +19,40 @@ typedef NS_ENUM(NSInteger, FTLogStatus) {
 /**
  *
  * @constant
- *  FTMonitorInfoTypeBattery  - 电池电量
- *  FTMonitorInfoTypeMemory   - 内存总量、内存使用率
- *  FTMonitorInfoTypeCpu      - CPU使用率
+ *  FTErrorMonitorBattery  - 电池电量
+ *  FTErrorMonitorMemory   - 内存总量、内存使用率
+ *  FTErrorMonitorCpu      - CPU使用率
  */
-typedef NS_OPTIONS(NSUInteger, FTMonitorInfoType) {
-    FTMonitorInfoTypeAll          = 0xFFFFFFFF,
-    FTMonitorInfoTypeBattery      = 1 << 1,
-    FTMonitorInfoTypeMemory       = 1 << 2,
-    FTMonitorInfoTypeCpu          = 1 << 3,
+typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
+    FTErrorMonitorAll          = 0xFFFFFFFF,
+    FTErrorMonitorBattery      = 1 << 1,
+    FTErrorMonitorMemory       = 1 << 2,
+    FTErrorMonitorCpu          = 1 << 3,
+};
+/**
+ * 监控项
+ * @constant
+ *  FTDeviceMetricsMonitorMemory   - 平均内存、最高内存
+ *  FTDeviceMetricsMonitorCpu      - CPU跳动最大、平均数
+ *  FTDeviceMetricsMonitorFps      - fps 最低帧率、平均帧率
+ */
+typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
+    FTDeviceMetricsMonitorAll      = 0xFFFFFFFF,
+    FTDeviceMetricsMonitorCpu      = 1 << 1,
+    FTDeviceMetricsMonitorMemory   = 1 << 2,
+    FTDeviceMetricsMonitorFps      = 1 << 3,
+};
+/**
+ * 监控项采样周期
+ * @constant
+ *  FTMonitorFrequencyDefault   - 500ms (默认)
+ *  FTMonitorFrequencyFrequent  - 100ms
+ *  FTMonitorFrequencyRare      - 1000ms
+ */
+typedef NS_OPTIONS(NSUInteger, FTMonitorFrequency) {
+    FTMonitorFrequencyDefault,
+    FTMonitorFrequencyFrequent,
+    FTMonitorFrequencyRare,
 };
 /**
  * @enum
@@ -162,9 +187,17 @@ NS_ASSUME_NONNULL_BEGIN
 */
 @property (nonatomic, assign) BOOL enableTrackAppANR;
 /**
- * TAG 中的设备信息
+ * ERROR 中的设备信息
  */
-@property (nonatomic) FTMonitorInfoType monitorInfoType;
+@property (nonatomic, assign) FTErrorMonitorType errorMonitorType;
+/**
+ * 设置监控类型 不设置则不开启监控
+ */
+@property (nonatomic, assign) FTDeviceMetricsMonitorType deviceMetricsMonitorType;
+/**
+ * 设置监控采样周期
+ */
+@property (nonatomic, assign) FTMonitorFrequency frequency;
 /**
  * 设置 rum 全局 tag
  * 特殊 key : track_id (用于追踪功能)

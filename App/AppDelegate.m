@@ -64,6 +64,7 @@
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
         rumConfig.enableTraceUserResource = YES;
+        rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
                                     @"dynamic_tag":dynamicTag};//eg.

@@ -11,12 +11,8 @@
 #import "FTEnumConstant.h"
 #import "FTExternalRumProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@class  FTRUMManager,FTRumConfig,FTCPUMonitor,FTMemoryMonitor,FTDisplayRateMonitor;
-@interface FTRUMMonitor : NSObject
-@property (nonatomic, strong) FTDisplayRateMonitor * _Nullable displayMonitor;
-@property (nonatomic, strong) FTMemoryMonitor *_Nullable memoryMonitor;
-@property (nonatomic, strong) FTCPUMonitor *_Nullable cpuMonitor;
-@end
+@class  FTRUMManager,FTRumConfig;
+
 // 用于 开启各项数据的采集 
 @interface FTGlobalRumManager : NSObject<FTExternalRum>
 @property (nonatomic, strong) FTRUMManager *rumManger;

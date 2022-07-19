@@ -19,21 +19,25 @@ static double NormalizedRefreshRate = 60.0;
 @property (nonatomic, assign) NSInteger maximumRefreshRate;
 @property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *cpuHelper;
 @property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *memoryHelper;
+@property (nonatomic, assign) NSTimeInterval frequency;
 @end
 @implementation FTMonitorItem
-- (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor{
+- (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor frequency:(NSTimeInterval)frequency{
     self = [super init];
     if (self) {
         _cpuMonitor = cpuMonitor;
         _displayRateMonitor = displayRateMonitor;
         _memoryMonitor = memoryMonitor;
+        _frequency = frequency;
         __weak typeof(self) weakSelf = self;
         [self takeMonitorValue];
-        NSTimer *timer = [NSTimer timerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-            [weakSelf takeMonitorValue];
-        }];
-        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
-        _timer = timer;
+        if (cpuMonitor || memoryMonitor) {
+            NSTimer *timer = [NSTimer timerWithTimeInterval:frequency repeats:YES block:^(NSTimer * _Nonnull timer) {
+                [weakSelf takeMonitorValue];
+            }];
+            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+            _timer = timer;
+        }
         _cpuHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         _memoryHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         _displayHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];

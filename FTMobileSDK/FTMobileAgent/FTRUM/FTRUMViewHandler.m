@@ -17,7 +17,7 @@
 #import "FTMonitorValue.h"
 #import "FTGlobalRumManager.h"
 #import "FTLog.h"
-
+#import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMContext *sessionContext;
@@ -55,7 +55,7 @@
         self.resourceHandlers = [NSMutableDictionary new];
         self.sessionContext = context;
         self.monitor = monitor;
-        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor];
+        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor frequency:monitor.frequency];
     }
     return self;
 }
@@ -189,7 +189,6 @@
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
-
     NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
                                    FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
                                    FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
@@ -197,8 +196,20 @@
                                    FT_KEY_TIME_SPEND:timeSpend,
                                    
     }.mutableCopy;
+    if (cpu && cpu.maxValue>0) {
+        [field setValue:@(cpu.maxValue) forKey:FT_CPU_TICK_COUNT_MAX];
+        [field setValue:@(cpu.meanValue) forKey:FT_CPU_TICK_COUNT_AVG];
+    }
+    if (memory && memory.maxValue>0) {
+        [field setValue:@(memory.meanValue) forKey:FT_MEMORY_AVG];
+        [field setValue:@(memory.maxValue) forKey:FT_MEMORY_MAX];
+    }
+    if (refreshRateInfo && refreshRateInfo.minValue>0) {
+        [field setValue:@(refreshRateInfo.minValue) forKey:FT_FPS_MINI];
+        [field setValue:@(refreshRateInfo.meanValue) forKey:FT_FPS_AVG];
+    }
     if (![self.loading_time isEqual:@0]) {
-        [field setValue:self.loading_time forKey:FT_RUM_KEY_Loading_time];
+        [field setValue:self.loading_time forKey:FT_RUM_KEY_LOADING_TIME];
     }
     [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
 }

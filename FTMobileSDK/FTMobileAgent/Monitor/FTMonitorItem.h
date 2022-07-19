@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTCPUMonitor *cpuMonitor;
 @property (nonatomic, strong) FTMemoryMonitor *memoryMonitor;
 
-- (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor;
+- (instancetype)initWithCpuMonitor:(FTCPUMonitor *)cpuMonitor memoryMonitor:(FTMemoryMonitor *)memoryMonitor displayRateMonitor:(FTDisplayRateMonitor *)displayRateMonitor frequency:(NSTimeInterval)frequency;
 - (FTMonitorValue *)refreshDisplay;
 - (FTMonitorValue *)cpu;
 - (FTMonitorValue *)memory;

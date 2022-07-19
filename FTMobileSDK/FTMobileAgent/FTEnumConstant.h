@@ -24,3 +24,4 @@ extern NSString * const AppStateStringMap[];
 extern NSString * const FTStatusStringMap[];
 extern NSString * const FTNetworkTraceStringMap[];
 extern NSString * const FTEnvStringMap[];
+extern NSTimeInterval const MonitorFrequencyMap[];

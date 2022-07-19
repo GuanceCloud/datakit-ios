@@ -15,6 +15,8 @@
 #include <string.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
+#import <sys/utsname.h>
+#import <UIKit/UIKit.h>
 
 #pragma -mark DEFINE MACRO FOR DIFFERENT CPU ARCHITECTURE
 #if defined(__arm64__)
@@ -69,7 +71,13 @@ typedef struct FTStackFrameEntry{
     const struct FTStackFrameEntry *const previous;///前一个栈帧地址
     const uintptr_t return_address;///栈帧的函数返回地址
 } FTStackFrameEntry;
-
+typedef struct FTMachoImage {
+        const char *name;  /** The binary image's name/path. */
+        uint64_t loadAddress;
+        uint64_t loadEndAddress;
+        uint8_t    uuid[16];
+        uint32_t   filetype;    /* type of file */
+} FTMachoImage;
 static mach_port_t main_thread_id;
 
 @implementation FTCallStack
@@ -112,6 +120,7 @@ static mach_port_t main_thread_id;
 NSString *_ft_backtraceOfThread(thread_t thread) {
     uintptr_t backtraceBuffer[50];
     int i = 0;
+    NSMutableString *header = [[NSMutableString alloc]initWithString:[FTCallStack ft_crashReportHeader]];
     NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Last Exception Backtrace %u:\n", thread];
     //线程上下文信息
     _STRUCT_MCONTEXT machineContext;
@@ -151,7 +160,8 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
     //获得函数的实现地址，由于函数地址无法进行阅读，需要通过符号表（nlist）来解析为函数名，从而进行程序定位。
     int backtraceLength = i;
     Dl_info symbolicated[backtraceLength];
-    ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0);
+    FTMachoImage binaryImages[backtraceLength];
+    ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0,binaryImages);
     NSMutableSet *imageSet = [NSMutableSet new];
     for (int i = 0; i < backtraceLength; ++i) {
 //        [imageSet addObject:symbolicated[i]->]
@@ -212,7 +222,7 @@ NSString* ft_logBacktraceEntry(const int entryNum,
     
     uintptr_t offset = address - (uintptr_t)dlInfo->dli_saddr;
     const char* sname = dlInfo->dli_sname;
-    //_mh_execute_header未成功进行符号化，替换为 load address
+    //_mh_execute_header 未成功进行符号化，替换为 load address
     if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0) {
         sprintf(saddrBuff, POINTER_SHORT_FMT, (uintptr_t)dlInfo->dli_fbase);
         sname = saddrBuff;
@@ -271,26 +281,27 @@ kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size
 void ft_symbolicate(const uintptr_t* const backtraceBuffer,
                     Dl_info* const symbolsBuffer,
                     const int numEntries,
-                    const int skippedEntries){
+                    const int skippedEntries,
+                    FTMachoImage* const binaryImages){
     int i = 0;
     
     if(!skippedEntries && i < numEntries) {
-        ft_dladdr(backtraceBuffer[i], &symbolsBuffer[i]);
+        ft_dladdr(backtraceBuffer[i], &symbolsBuffer[i],&binaryImages[i]);
         i++;
     }
     
     for(; i < numEntries; i++) {
-        ft_dladdr(CALL_INSTRUCTION_FROM_RETURN_ADDRESS(backtraceBuffer[i]), &symbolsBuffer[i]);
+        ft_dladdr(CALL_INSTRUCTION_FROM_RETURN_ADDRESS(backtraceBuffer[i]), &symbolsBuffer[i],&binaryImages[i]);
     }
 }
 
-bool ft_dladdr(const uintptr_t address, Dl_info* const info) {
+bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const binaryImages) {
     info->dli_fname = NULL;
     info->dli_fbase = NULL;
     info->dli_sname = NULL;
     info->dli_saddr = NULL;
     
-    const uint32_t idx = ft_imageIndexContainingAddress(address);
+    const uint32_t idx = ft_imageIndexContainingAddress(address,binaryImages);
     if(idx == UINT_MAX) {
         return false;
     }
@@ -304,7 +315,6 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info) {
     
     info->dli_fname = _dyld_get_image_name(idx);
     info->dli_fbase = (void*)header;
-    
     // Find symbol tables and get whichever symbol is closest to the address.
     const FT_NLIST* bestMatch = NULL;
     uintptr_t bestDistance = ULONG_MAX;
@@ -362,11 +372,11 @@ uintptr_t ft_firstCmdAfterHeader(const struct mach_header* const header) {
     }
 }
 
-uint32_t ft_imageIndexContainingAddress(const uintptr_t address) {
+uint32_t ft_imageIndexContainingAddress(const uintptr_t address,FTMachoImage* const binaryImages) {
+    binaryImages->name = NULL;
     // 调用API函数_dyld_image_count(void) ，获取images文件总数，即mach-o文件总数
     const uint32_t imageCount = _dyld_image_count();
     const struct mach_header* header = 0;
-    
     for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
         header = _dyld_get_image_header(iImg);
         if(header != NULL) {
@@ -391,6 +401,9 @@ uint32_t ft_imageIndexContainingAddress(const uintptr_t address) {
                        addressWSlide < segCmd->vmaddr + segCmd->vmsize) {
                         return iImg;
                     }
+                }
+                else if (loadCmd->cmd == LC_UUID) {
+                    const struct uuid_command *uuidCommand = (const struct uuid_command *)loadCmd;
                 }
                 cmdPtr += loadCmd->cmdsize;
             }
@@ -425,5 +438,14 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx) {
     }
     return 0;
 }
-
++ (NSString *)ft_crashReportHeader{
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    NSMutableString *header = [NSMutableString new];
+    NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+    [header appendFormat:@"Hardware Model:  %@\n",deviceString];
+    [header appendFormat:@"OS Version:   iPhone OS %@",[UIDevice currentDevice].systemVersion];
+    [header appendString:@"Report Version:  104"];
+    return header;
+}
 @end

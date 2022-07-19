@@ -290,15 +290,15 @@
 }
 - (NSDictionary *)errorMonitorInfo{
     NSMutableDictionary *errorTag = [NSMutableDictionary new];
-    FTMonitorInfoType monitorType = self.rumConfig.monitorInfoType;
-    if (monitorType & FTMonitorInfoTypeMemory) {
+    FTErrorMonitorType monitorType = self.rumConfig.errorMonitorType;
+    if (monitorType & FTErrorMonitorMemory) {
         errorTag[FT_MONITOR_MEMORY_TOTAL] = [FTMonitorUtils totalMemorySize];
         errorTag[FT_MONITOR_MEM_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils usedMemory]];
     }
-    if (monitorType & FTMonitorInfoTypeCpu) {
+    if (monitorType & FTErrorMonitorCpu) {
         errorTag[FT_MONITOR_CPU_USAGE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
     }
-    if (monitorType & FTMonitorInfoTypeBattery) {
+    if (monitorType & FTErrorMonitorBattery) {
         errorTag[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
     errorTag[@"carrier"] = [FTPresetProperty telephonyInfo];

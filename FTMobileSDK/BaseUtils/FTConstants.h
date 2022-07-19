@@ -38,12 +38,20 @@ extern NSString * const FT_MEASUREMENT_RUM_VIEW;
 extern NSString * const FT_RUM_KEY_SESSION_ID;
 extern NSString * const FT_RUM_KEY_SESSION_TYPE;
 
-extern NSString * const FT_RUM_KEY_Loading_time;
+extern NSString * const FT_RUM_KEY_LOADING_TIME;
 extern NSString * const FT_KEY_TIME_SPEND;
 extern NSString * const FT_KEY_VIEW_ERROR_COUNT;
 extern NSString * const FT_KEY_VIEW_RESOURCE_COUNT;
 extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
+
+//Monitor
+extern NSString * const FT_CPU_TICK_COUNT_AVG;
+extern NSString * const FT_CPU_TICK_COUNT_MAX;
+extern NSString * const FT_MEMORY_AVG;
+extern NSString * const FT_MEMORY_MAX;
+extern NSString * const FT_FPS_MINI;
+extern NSString * const FT_FPS_AVG;
 
 extern NSString * const FT_KEY_VIEW_ID;
 extern NSString * const FT_KEY_IS_ACTIVE;
