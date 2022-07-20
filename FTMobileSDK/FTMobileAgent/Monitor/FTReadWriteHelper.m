@@ -24,7 +24,7 @@
     return self;
 }
 - (void)concurrentRead:(void (^)(id value))block{
-    dispatch_async(self.concurrentQueue, ^{
+    dispatch_sync(self.concurrentQueue, ^{
         block(self.value);
     });
 }
