@@ -242,19 +242,6 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
 }
--(NSString *)getMachine:(cpu_type_t)cputype
-{
-    switch (cputype)
-    {
-        default:                  return @"???";
-        case CPU_TYPE_I386:       return @"X86";
-        case CPU_TYPE_POWERPC:    return @"PPC";
-        case CPU_TYPE_X86_64:     return @"X86_64";
-        case CPU_TYPE_POWERPC64:  return @"PPC64";
-        case CPU_TYPE_ARM:        return @"ARM";
-        case CPU_TYPE_ARM64:      return @"ARM64";
-    }
-}
 /**
  * 替换无符号
  *
@@ -330,7 +317,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
             address = [address stringByReplacingOccurrencesOfString:uuid withString:loadAddressStr];
             address = [address stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"%@_",imageName] withString:loadAddressStr];
             uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
-            NSString *cpuType = [self getMachine:header->cputype];
+            NSString *cpuType = [FTCallStack getMachine:header->cputype];
             NSString *image = [NSString stringWithFormat:@"       %@ -        0x%llx %@ %@ <%@> %@",loadAddressStr,loadEndAddress,imageName,[cpuType lowercaseString],uuid,imagePath];
             [images addObject:image];
             if (header->filetype == MH_EXECUTE) {

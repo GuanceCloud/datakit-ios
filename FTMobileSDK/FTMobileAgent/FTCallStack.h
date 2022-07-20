@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)ft_backtraceOfMainThread;
 + (NSString *)ft_backtraceOfNSThread:(NSThread *)thread;
 + (NSString *)ft_crashReportHeader;
++ (NSString *)getMachine:(cpu_type_t)cputype;
 @end
 
 NS_ASSUME_NONNULL_END

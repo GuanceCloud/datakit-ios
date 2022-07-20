@@ -76,7 +76,7 @@ typedef struct FTMachoImage {
         uint64_t loadAddress;
         uint64_t loadEndAddress;
         uint8_t    uuid[16];
-        uint32_t   filetype;    /* type of file */
+        uint32_t   cpuType;
 } FTMachoImage;
 static mach_port_t main_thread_id;
 
@@ -122,6 +122,7 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
     int i = 0;
     NSMutableString *header = [[NSMutableString alloc]initWithString:[FTCallStack ft_crashReportHeader]];
     NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Last Exception Backtrace %u:\n", thread];
+    NSMutableString *binaryImagesString = [[NSMutableString alloc] initWithString:@"Binary Images:\n"];
     //线程上下文信息
     _STRUCT_MCONTEXT machineContext;
     if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
@@ -163,11 +164,19 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
     FTMachoImage binaryImages[backtraceLength];
     ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0,binaryImages);
     NSMutableSet *imageSet = [NSMutableSet new];
+    FTMachoImage *image = &binaryImages[0];
+    [header appendFormat:@"Code Type:   %@\n",[FTCallStack getMachine:image->cpuType]];
     for (int i = 0; i < backtraceLength; ++i) {
-//        [imageSet addObject:symbolicated[i]->]
         [resultString appendFormat:@"%d %@",i, ft_logBacktraceEntry(i, backtraceBuffer[i], &symbolicated[i])];
+        [imageSet addObject:ft_logBinaryImage(&binaryImages[i])];
     }
+    [imageSet removeObject:@""];
+    for(NSString *image in imageSet){
+        [binaryImagesString appendString:image];
+    }
+    [resultString insertString:header atIndex:0];
     [resultString appendFormat:@"\n"];
+    [resultString appendString:binaryImagesString];
     return [resultString copy];
 }
 
@@ -223,14 +232,26 @@ NSString* ft_logBacktraceEntry(const int entryNum,
     uintptr_t offset = address - (uintptr_t)dlInfo->dli_saddr;
     const char* sname = dlInfo->dli_sname;
     //_mh_execute_header 未成功进行符号化，替换为 load address
-    if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0) {
+    if(sname == NULL || strcmp( sname, "_mh_execute_header") == 0 || strcmp(sname, "<redacted>") == 0) {
         sprintf(saddrBuff, POINTER_SHORT_FMT, (uintptr_t)dlInfo->dli_fbase);
         sname = saddrBuff;
         offset = address - (uintptr_t)dlInfo->dli_fbase;
     }
     return [NSString stringWithFormat:@"%-30s  0x%08" PRIxPTR " %s + %lu\n" ,fname, (uintptr_t)address, sname, offset];
 }
+NSString* ft_logBinaryImage(const FTMachoImage* const image) {
+    if(image->name == NULL || strcmp(image->name,"") == 0) {
+        return @"";
+    }
+    const char* fname = ft_lastPathEntry(image->name);
 
+    NSString *uuid = [[[NSUUID alloc] initWithUUIDBytes:image->uuid] UUIDString];
+    uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
+    NSString *cpuType = [FTCallStack getMachine:image->cpuType];
+    NSString *imagestr = [NSString stringWithFormat:@"       0x%llx -        0x%llx %@ %@ <%@> %@\n",image->loadAddress,image->loadEndAddress,[NSString stringWithCString:fname encoding:NSUTF8StringEncoding],[cpuType lowercaseString],uuid,[NSString stringWithCString:image-> name encoding:NSUTF8StringEncoding]];
+    return imagestr;
+
+}
 const char* ft_lastPathEntry(const char* const path) {
     if(path == NULL) {
         return NULL;
@@ -300,20 +321,23 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const 
     info->dli_fbase = NULL;
     info->dli_sname = NULL;
     info->dli_saddr = NULL;
-    
-    const uint32_t idx = ft_imageIndexContainingAddress(address,binaryImages);
+    binaryImages->name = NULL;
+    const uint32_t idx = ft_imageIndexContainingAddress(address);
     if(idx == UINT_MAX) {
         return false;
     }
     const struct mach_header* header = _dyld_get_image_header(idx);
     const uintptr_t imageVMAddrSlide = (uintptr_t)_dyld_get_image_vmaddr_slide(idx);
     const uintptr_t addressWithSlide = address - imageVMAddrSlide;
-    const uintptr_t segmentBase = ft_segmentBaseOfImageIndex(idx) + imageVMAddrSlide;
+    const uintptr_t segmentBase = ft_segmentBaseOfImageIndex(idx,binaryImages) + imageVMAddrSlide;
     if(segmentBase == 0) {
         return false;
     }
-    
+    binaryImages->loadAddress = (uintptr_t)(void*)header;
     info->dli_fname = _dyld_get_image_name(idx);
+    binaryImages->name = info->dli_fname;
+    binaryImages->cpuType = header->cputype;
+    binaryImages->loadEndAddress = binaryImages->loadEndAddress+binaryImages->loadAddress-1;
     info->dli_fbase = (void*)header;
     // Find symbol tables and get whichever symbol is closest to the address.
     const FT_NLIST* bestMatch = NULL;
@@ -372,8 +396,7 @@ uintptr_t ft_firstCmdAfterHeader(const struct mach_header* const header) {
     }
 }
 
-uint32_t ft_imageIndexContainingAddress(const uintptr_t address,FTMachoImage* const binaryImages) {
-    binaryImages->name = NULL;
+uint32_t ft_imageIndexContainingAddress(const uintptr_t address) {
     // 调用API函数_dyld_image_count(void) ，获取images文件总数，即mach-o文件总数
     const uint32_t imageCount = _dyld_image_count();
     const struct mach_header* header = 0;
@@ -402,9 +425,6 @@ uint32_t ft_imageIndexContainingAddress(const uintptr_t address,FTMachoImage* co
                         return iImg;
                     }
                 }
-                else if (loadCmd->cmd == LC_UUID) {
-                    const struct uuid_command *uuidCommand = (const struct uuid_command *)loadCmd;
-                }
                 cmdPtr += loadCmd->cmdsize;
             }
         }
@@ -412,7 +432,7 @@ uint32_t ft_imageIndexContainingAddress(const uintptr_t address,FTMachoImage* co
     return UINT_MAX;
 }
 
-uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx) {
+uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx,FTMachoImage* const binaryImages) {
     const struct mach_header* header = _dyld_get_image_header(idx);
     
     // Look for a segment command and return the file image address.
@@ -420,23 +440,32 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx) {
     if(cmdPtr == 0) {
         return 0;
     }
+    uintptr_t imageIndex = 0;
     for(uint32_t i = 0;i < header->ncmds; i++) {
         const struct load_command* loadCmd = (struct load_command*)cmdPtr;
         if(loadCmd->cmd == LC_SEGMENT) {
             const struct segment_command* segmentCmd = (struct segment_command*)cmdPtr;
             if(strcmp(segmentCmd->segname, SEG_LINKEDIT) == 0) {
-                return segmentCmd->vmaddr - segmentCmd->fileoff;
+                imageIndex = segmentCmd->vmaddr - segmentCmd->fileoff;
+            }else if(strcmp(segmentCmd->segname, SEG_TEXT) == 0) {
+                binaryImages->loadEndAddress = segmentCmd->vmsize;
             }
         }
         else if(loadCmd->cmd == LC_SEGMENT_64) {
             const struct segment_command_64* segmentCmd = (struct segment_command_64*)cmdPtr;
             if(strcmp(segmentCmd->segname, SEG_LINKEDIT) == 0) {
-                return (uintptr_t)(segmentCmd->vmaddr - segmentCmd->fileoff);
+                imageIndex = (uintptr_t)(segmentCmd->vmaddr - segmentCmd->fileoff);
+            }else if(strcmp(segmentCmd->segname, SEG_TEXT) == 0) {
+                binaryImages->loadEndAddress = segmentCmd->vmsize;
             }
+        }
+        else if (loadCmd->cmd == LC_UUID) {
+            const struct uuid_command *uuidCommand = (const struct uuid_command *)loadCmd;
+            memcpy(binaryImages->uuid,uuidCommand->uuid,sizeof(uuidCommand->uuid));
         }
         cmdPtr += loadCmd->cmdsize;
     }
-    return 0;
+    return imageIndex;
 }
 + (NSString *)ft_crashReportHeader{
     struct utsname systemInfo;
@@ -444,8 +473,21 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx) {
     NSMutableString *header = [NSMutableString new];
     NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     [header appendFormat:@"Hardware Model:  %@\n",deviceString];
-    [header appendFormat:@"OS Version:   iPhone OS %@",[UIDevice currentDevice].systemVersion];
-    [header appendString:@"Report Version:  104"];
+    [header appendFormat:@"OS Version:   iPhone OS %@\n",[UIDevice currentDevice].systemVersion];
+    [header appendString:@"Report Version:  104\n"];
     return header;
+}
++(NSString *)getMachine:(cpu_type_t)cputype
+{
+    switch (cputype)
+    {
+        default:                  return @"???";
+        case CPU_TYPE_I386:       return @"X86";
+        case CPU_TYPE_POWERPC:    return @"PPC";
+        case CPU_TYPE_X86_64:     return @"X86_64";
+        case CPU_TYPE_POWERPC64:  return @"PPC64";
+        case CPU_TYPE_ARM:        return @"ARM";
+        case CPU_TYPE_ARM64:      return @"ARM64";
+    }
 }
 @end
