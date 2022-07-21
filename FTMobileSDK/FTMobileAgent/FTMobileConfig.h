@@ -197,7 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 设置监控采样周期
  */
-@property (nonatomic, assign) FTMonitorFrequency frequency;
+@property (nonatomic, assign) FTMonitorFrequency monitorFrequency;
 /**
  * 设置 rum 全局 tag
  * 特殊 key : track_id (用于追踪功能)

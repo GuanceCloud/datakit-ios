@@ -25,7 +25,7 @@
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
         _enableTraceUserResource = NO;
-        _frequency = FTMonitorFrequencyDefault;
+        _monitorFrequency = FTMonitorFrequencyDefault;
     }
     return self;
 }
@@ -42,7 +42,7 @@
     options.errorMonitorType = self.errorMonitorType;
     options.globalContext = self.globalContext;
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
-    options.frequency = self.frequency;
+    options.monitorFrequency = self.monitorFrequency;
     return options;
 }
 @end

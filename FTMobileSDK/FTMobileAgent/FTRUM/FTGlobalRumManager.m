@@ -96,7 +96,7 @@ static dispatch_once_t onceToken;
         [FTURLProtocol startMonitor];
     }
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
-    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.frequency];
+    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
 }
 -(FTPingThread *)pingThread{

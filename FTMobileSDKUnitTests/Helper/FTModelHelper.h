@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (FTRecordModel *)createLogModel;
 + (FTRecordModel *)createLogModel:(NSString *)message;
 + (FTRecordModel *)createRumModel;
++ (void)startView;
++ (void)stopView;
++ (void)addAction;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -14,6 +14,7 @@
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
 		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
+		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
 		4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11695A239113B600C0BC4E /* AppDelegate.m */; };
@@ -192,6 +193,7 @@
 		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
 		17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModelHelper.h; sourceTree = "<group>"; };
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
+		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -492,6 +494,7 @@
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
 				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
 				7C3C289527683983009DB8E2 /* FTRUMTest.m */,
+				17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */,
 			);
 			path = OpenAPITest;
 			sourceTree = "<group>";
@@ -924,6 +927,7 @@
 				7C3C289627683983009DB8E2 /* FTRUMTest.m in Sources */,
 				4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */,
 				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
+				17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,

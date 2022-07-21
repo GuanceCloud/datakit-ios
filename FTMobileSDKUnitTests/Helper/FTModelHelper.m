@@ -11,6 +11,8 @@
 #import <FTDateUtil.h>
 #import <FTEnumConstant.h>
 #import <FTMobileConfig.h>
+#import "FTExternalDataManager.h"
+
 @implementation FTModelHelper
 + (FTRecordModel *)createLogModel{
     return  [FTModelHelper createLogModel:[FTDateUtil currentTimeGMT]];
@@ -36,5 +38,16 @@
     };
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:field tm:[FTDateUtil currentTimeNanosecond]];
     return model;
+}
++ (void)startView{
+    NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
+    [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
+    [[FTExternalDataManager sharedManager] startViewWithName:viewName];
+}
++ (void)stopView{
+    [[FTExternalDataManager sharedManager] stopView];
+}
++ (void)addAction{
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick"];
 }
 @end

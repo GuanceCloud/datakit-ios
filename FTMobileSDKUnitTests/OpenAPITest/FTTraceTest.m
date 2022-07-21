@@ -14,7 +14,7 @@
 #import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
 #import <NSURLRequest+FTMonitor.h>
-#import <FTMobileAgent/FTMonitorUtils.h>
+#import <FTMonitorUtils.h>
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTRecordModel.h>
 #import <FTBaseInfoHandler.h>

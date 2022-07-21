@@ -25,6 +25,8 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTTraceManager.h"
+#import "FTModelHelper.h"
+
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -125,7 +127,7 @@
  */
 - (void)testAddViewDataAndFormatChecks{
     [self setRumConfig];
-    [self startView];
+    [FTModelHelper startView];
     [self addLongTaskData];
     [NSThread sleepForTimeInterval:2];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -154,7 +156,7 @@
     [[FTExternalDataManager sharedManager] startViewWithName:@""];
     
     [NSThread sleepForTimeInterval:0.5];
-    [self stopView];
+    [FTModelHelper stopView];
     [NSThread sleepForTimeInterval:2];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     
@@ -165,8 +167,8 @@
  */
 - (void)testViewUpdate{
     [self setRumConfig];
-    [self startView];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper startView];
     [self addLongTaskData];
     [self addResource];
     [self addErrorData];
@@ -197,7 +199,7 @@
     }];
     XCTAssertTrue(hasViewData);
     XCTAssertTrue(actionCount == trueActionCount);
-    [self stopView];
+    [FTModelHelper stopView];
 }
 /**
  * 验证 source：resource 的数据格式
@@ -223,7 +225,7 @@
                                FT_RUM_KEY_RESOURCE_FIRST_BYTE,
     ];
     [self setRumConfig];
-    [self startView];
+    [FTModelHelper startView];
     
     [self addResource];
     
@@ -251,11 +253,11 @@
         }
     }];
     XCTAssertTrue(hasView);
-    [self stopView];
+    [FTModelHelper stopView];
 }
 - (void)testAddErrorResource{
     [self setRumConfig];
-    [self startView];
+    [FTModelHelper startView];
     
     [self addErrorResource];
     [NSThread sleepForTimeInterval:2];
@@ -285,9 +287,9 @@
     [self setRumConfig];
     
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [self startView];
-    [self addAction];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    [FTModelHelper startView];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -343,8 +345,8 @@
  */
 - (void)testActionTimedOut{
     [self setRumConfig];
-    [self startView];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     
     [NSThread sleepForTimeInterval:10];
     [self addLongTaskData];
@@ -372,7 +374,7 @@
     }];
     XCTAssertTrue(hasClickAction);
     XCTAssertTrue(hasLongTask);
-    [self stopView];
+    [FTModelHelper stopView];
 }
 /**
  * 验证： action: launch_cold
@@ -446,8 +448,8 @@
  */
 - (void)testActionUpdate{
     [self setRumConfig];
-    [self startView];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [self addResource];
     [NSThread sleepForTimeInterval:2];
     [self addLongTaskData];
@@ -475,7 +477,7 @@
         }
     }];
     XCTAssertTrue(hasActionData);
-    [self stopView];
+    [FTModelHelper stopView];
 }
 - (void)testAddErrorData{
     [self setRumConfig];
@@ -573,22 +575,22 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    [self startView];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [self addErrorData];
     
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count == oldArray.count);
-    [self stopView];
+    [FTModelHelper stopView];
 }
 - (void)testSampleRate100{
     [self setRumConfig];
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     
-    [self startView];
-    [self addAction];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [self addErrorData];
     
     [NSThread sleepForTimeInterval:2];
@@ -615,7 +617,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    [self startView];
+    [FTModelHelper startView];
     [self addErrorData];
     [self addResource];
     [NSThread sleepForTimeInterval:2];
@@ -652,7 +654,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    [self startView];
+    [FTModelHelper startView];
     [self addErrorData];
     [self addResource];
     [NSThread sleepForTimeInterval:2];
@@ -684,7 +686,7 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
-    [self addAction];
+    [FTModelHelper startView];
     [self addErrorData];
     
     [NSThread sleepForTimeInterval:2];
@@ -711,17 +713,6 @@
     
     
     [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation];
-}
-- (void)startView{
-    NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
-    [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
-    [[FTExternalDataManager sharedManager] startViewWithName:viewName];
-}
-- (void)stopView{
-    [[FTExternalDataManager sharedManager] stopView];
-}
-- (void)addAction{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick"];
 }
 - (void)addResource{
     NSString *key = [[NSUUID UUID]UUIDString];
@@ -796,7 +787,7 @@
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
-    rumConfig.errorMonitorType = FTMonitorInfoTypeAll;
+    rumConfig.errorMonitorType = FTErrorMonitorAll;
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
