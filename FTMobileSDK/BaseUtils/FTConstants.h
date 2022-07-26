@@ -46,8 +46,8 @@ extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
 
 //Monitor
-extern NSString * const FT_CPU_TICK_COUNT_AVG;
-extern NSString * const FT_CPU_TICK_COUNT_MAX;
+extern NSString * const FT_CPU_TICK_PER_SECOND;
+extern NSString * const FT_CPU_TICK_COUNT;
 extern NSString * const FT_MEMORY_AVG;
 extern NSString * const FT_MEMORY_MAX;
 extern NSString * const FT_FPS_MINI;

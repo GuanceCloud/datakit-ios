@@ -141,7 +141,7 @@ static dispatch_once_t onceToken;
                             NSString *crash_stack = field[@"crash_stack"];
                             if (crash_stack && crash_message) {
                                 NSString *info = [NSString stringWithFormat:@"Exception Reason:%@\n%@",crash_message,crash_stack];
-                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:@{FT_APPLICATION_UUID:[FTBaseInfoHandler applicationUUID]} field:field tm:tm.longLongValue];
+                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:nil field:field tm:tm.longLongValue];
                             }
                         }
                     }else{

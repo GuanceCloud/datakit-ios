@@ -46,8 +46,8 @@ NSString * const FT_KEY_VIEW_RESOURCE_COUNT = @"view_resource_count";
 NSString * const FT_KEY_VIEW_LONG_TASK_COUNT = @"view_long_task_count";
 NSString * const FT_KEY_VIEW_ACTION_COUNT = @"view_action_count";
 //Monitor
-NSString * const FT_CPU_TICK_COUNT_AVG = @"cpu_tick_count_avg";
-NSString * const FT_CPU_TICK_COUNT_MAX = @"cpu_tick_count_max";
+NSString * const FT_CPU_TICK_PER_SECOND = @"cpu_tick_per_second";
+NSString * const FT_CPU_TICK_COUNT = @"cpu_tick_count";
 NSString * const FT_MEMORY_AVG = @"memory_avg";
 NSString * const FT_MEMORY_MAX = @"memory_max";
 NSString * const FT_FPS_MINI = @"fps_mini";

@@ -21,12 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 +(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
 
-+ (NSString *)applicationUUID;
-+ (UIWindow *)keyWindow;
 + (NSString *)XDataKitUUID;
+
 + (NSString *)sessionId;
+
 + (NSString *)userId;
+
 + (void)setUserId:(nullable NSString *)userid;
+
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;

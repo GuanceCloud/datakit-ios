@@ -38,9 +38,7 @@
 - (natural_t)readUtilizedTicks {
     kern_return_t kr;
     mach_msg_type_number_t count;
-    static host_cpu_load_info_data_t previous_info = {0, 0, 0, 0};
     host_cpu_load_info_data_t info;
-    
     count = HOST_CPU_LOAD_INFO_COUNT;
     
     kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&info, &count);
@@ -49,8 +47,6 @@
     }
     
     natural_t user   = info.cpu_ticks[CPU_STATE_USER];
-
-    previous_info    = info;
 
     return user;
 }

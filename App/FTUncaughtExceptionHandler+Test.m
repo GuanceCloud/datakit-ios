@@ -33,7 +33,7 @@
     signal(SIGPIPE,SIG_DFL);
     signal(SIGSYS,SIG_DFL);
     __block BOOL testSuccess = NO;
-    UIWindow *window = [FTBaseInfoHandler keyWindow];
+    UIWindow *window = [FTUncaughtExceptionHandler keyWindow];
     UIViewController  *tabSelectVC = ((UITabBarController*)window.rootViewController).selectedViewController;
     UIViewController *vc =      ((UINavigationController*)tabSelectVC).viewControllers.lastObject;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Crash" message:info preferredStyle:UIAlertControllerStyleAlert];
@@ -54,7 +54,17 @@
     //释放对象
     CFRelease(allModes);
 }
-
++ (UIWindow *)keyWindow{
+    UIWindow  *foundWindow = nil;
+    NSArray   *windows = [[UIApplication sharedApplication]windows];
+    for (UIWindow *window in windows) {
+        if (window.isKeyWindow) {
+            foundWindow = window;
+            break;
+        }
+    }
+    return foundWindow;
+}
 @end
 
 

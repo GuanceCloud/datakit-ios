@@ -39,9 +39,6 @@
 - (void)displayLink:(CADisplayLink *)link{
     if (self.lastFrameTimestamp > 0) {
         double frameDuration = link.timestamp - self.lastFrameTimestamp;
-        if (frameDuration<0.016666) {
-            ZYLog(@"frameDuration:%f",frameDuration);
-        }
         double currentFPS = 1.0 / frameDuration;
         for (id publisher in self.dataPublisher) {
             [publisher concurrentWrite:^(id  _Nonnull value) {

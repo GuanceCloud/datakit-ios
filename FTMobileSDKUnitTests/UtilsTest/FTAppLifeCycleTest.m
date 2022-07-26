@@ -68,7 +68,6 @@
     XCTAssertTrue(self.applicationDidEnterBackgroundCount-count == 1);
 }
 #endif
-//todo:
 - (void)testRemoveAppLifecycleDelegate{
     NSInteger count = self.applicationWillTerminateCount;
     [[NSNotificationCenter defaultCenter]

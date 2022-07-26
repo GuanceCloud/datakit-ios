@@ -148,7 +148,7 @@
         [self.actionHandler writeActionData:[NSDate date]];
     }
     if (self.needUpdateView) {
-        [self writeViewData];
+        [self writeViewData:model];
     }
     return !shouldComplete;
 }
@@ -182,13 +182,15 @@
     [tags addEntriesFromDictionary:sessionTag];
     [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
-- (void)writeViewData{
+- (void)writeViewData:(FTRUMDataModel *)model{
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
     [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:FT_KEY_IS_ACTIVE];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
+    NSTimeInterval timeSpent = [model.time timeIntervalSinceDate:self.viewStartTime];
+
     NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
                                    FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
                                    FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
@@ -196,9 +198,9 @@
                                    FT_KEY_TIME_SPEND:timeSpend,
                                    
     }.mutableCopy;
-    if (cpu && cpu.maxValue>0) {
-        [field setValue:@(cpu.maxValue) forKey:FT_CPU_TICK_COUNT_MAX];
-        [field setValue:@(cpu.meanValue) forKey:FT_CPU_TICK_COUNT_AVG];
+    if (cpu && cpu.greatestDiff>0) {
+        [field setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
+        [field setValue:@(cpu.greatestDiff/timeSpent) forKey:FT_CPU_TICK_PER_SECOND];
     }
     if (memory && memory.maxValue>0) {
         [field setValue:@(memory.meanValue) forKey:FT_MEMORY_AVG];
