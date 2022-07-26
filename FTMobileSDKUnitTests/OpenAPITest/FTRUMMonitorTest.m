@@ -56,7 +56,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_PER_SECOND]);
+            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -64,6 +64,11 @@
 - (void)testMonitorCpu{
     [self setRumMonitorType:FTDeviceMetricsMonitorCpu];
     [FTModelHelper startView];
+    [tester waitForTimeInterval:1];
+    [FTModelHelper addAction];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+    [tester waitForTimeInterval:1];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
@@ -77,7 +82,11 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field.allKeys containsObject:FT_CPU_TICK_PER_SECOND]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            XCTAssertTrue([field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            NSNumber *tickCount = field[FT_CPU_TICK_COUNT];
+            NSNumber *tickCountPerSecond = field[FT_CPU_TICK_COUNT_PER_SECOND];
+            XCTAssertTrue(tickCount.doubleValue < 10000);
+            XCTAssertTrue(tickCountPerSecond.doubleValue < 1000);
             XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]);
             *stop = YES;
         }
@@ -100,7 +109,7 @@
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
             XCTAssertTrue([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]);
-            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_PER_SECOND]);
+            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -122,7 +131,7 @@
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
             XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]);
-            XCTAssertFalse([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_PER_SECOND]);
+            XCTAssertFalse([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -143,7 +152,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_PER_SECOND]);
+            XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];

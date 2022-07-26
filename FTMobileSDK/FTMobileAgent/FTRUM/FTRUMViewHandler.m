@@ -200,7 +200,7 @@
     }.mutableCopy;
     if (cpu && cpu.greatestDiff>0) {
         [field setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
-        [field setValue:@(cpu.greatestDiff/timeSpent) forKey:FT_CPU_TICK_PER_SECOND];
+        [field setValue:@(cpu.greatestDiff/timeSpent) forKey:FT_CPU_TICK_COUNT_PER_SECOND];
     }
     if (memory && memory.maxValue>0) {
         [field setValue:@(memory.meanValue) forKey:FT_MEMORY_AVG];

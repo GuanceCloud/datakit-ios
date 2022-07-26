@@ -28,7 +28,7 @@
 - (double)readCpuUsage{
     natural_t ticks = [self readUtilizedTicks];
     if (ticks>0) {
-        natural_t ongoingInactiveTicks = ticks - (self.utilizedTicksWhenResigningActive>0 ?: ticks);
+        natural_t ongoingInactiveTicks = ticks - (self.utilizedTicksWhenResigningActive>0 ?self.utilizedTicksWhenResigningActive: ticks);
         natural_t inactiveTicks = self.totalInactiveTicks + ongoingInactiveTicks;
         return ticks - inactiveTicks;
     }
