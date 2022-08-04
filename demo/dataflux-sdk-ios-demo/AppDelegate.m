@@ -43,6 +43,7 @@
     rumConfig.enableTrackAppFreeze = YES;
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
+    rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
     rumConfig.globalContext = @{@"track_id":Track_id,
                                 @"static_tag":STATIC_TAG,
                                 @"dynamic_tag":dynamicTag};

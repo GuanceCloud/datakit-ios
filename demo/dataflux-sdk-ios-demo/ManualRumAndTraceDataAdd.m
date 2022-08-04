@@ -8,7 +8,7 @@
 
 #import "ManualRumAndTraceDataAdd.h"
 #import "TableViewCellItem.h"
-#import <FTMobileAgent/FTExternalDataManager.h>
+#import <FTMobileAgent/FTMobileAgent.h>
 #import <FTMobileAgent/FTResourceMetricsModel.h>
 #import <FTMobileAgent/FTResourceContentModel.h>
 #import <FTMobileAgent/FTTraceManager.h>
