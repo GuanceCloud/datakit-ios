@@ -21,7 +21,7 @@
 		17A503402876DFE2004C65BF /* FTReadWriteHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A5033E2876DFE2004C65BF /* FTReadWriteHelper.m */; };
 		17C047C827F8107500CAEB83 /* FTTraceHeaderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C047C627F8107400CAEB83 /* FTTraceHeaderManager.h */; };
 		17C047C927F8107500CAEB83 /* FTTraceHeaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C047C727F8107400CAEB83 /* FTTraceHeaderManager.m */; };
-		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; };
+		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17DA844328868072001A0B30 /* FTRUMMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DA844128868072001A0B30 /* FTRUMMonitor.h */; };
 		17DA844428868072001A0B30 /* FTRUMMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844228868072001A0B30 /* FTRUMMonitor.m */; };
 		17E3552F286D8C130043BF0A /* FTDisplayRateMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E3552D286D8C130043BF0A /* FTDisplayRateMonitor.h */; };
@@ -702,6 +702,7 @@
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */,
 				7C0FBD2D274753EB007CD0D3 /* FTResourceMetricsModel.h in Headers */,
+				17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */,
 				7C69CFE727294FEF0065638F /* FTResourceContentModel.h in Headers */,
 				7C295C712716D8BF004B6653 /* FTTraceHandler.h in Headers */,
 				177CFECD27E32850007D8C2F /* FTTraceManager.h in Headers */,
@@ -751,7 +752,6 @@
 				17E35538286E9D030043BF0A /* FTMemoryMonitor.h in Headers */,
 				17A50339287581BD004C65BF /* FTMonitorItem.h in Headers */,
 				4A8842A2239E5768001B44C3 /* ZY_FMDatabaseQueue.h in Headers */,
-				17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */,
 				4A7135A3257096FF00444C3D /* FTTrack.h in Headers */,
 				7C81952A26C4B90F00D0D8C4 /* FTDateUtil.h in Headers */,
 				7C28B91426611B3800CECBA6 /* FTRUMHandler.h in Headers */,
