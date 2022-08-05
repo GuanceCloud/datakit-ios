@@ -509,8 +509,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					DEVELOP,
-					"DEBUG=1",
+					"DEVELOP=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";

@@ -8,12 +8,15 @@
 #import "AppDelegate.h"
 #import <FTMobileAgent/FTMobileAgent.h>
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
-#if PREPROD
+#if PRE
 #define Track_id       @"0000000001"
 #define STATIC_TAG     @"preprod"
-#else
+#elif  DEVELOP
 #define Track_id       @"0000000002"
-#define STATIC_TAG     @"formal"
+#define STATIC_TAG     @"common"
+#else
+#define Track_id       @"0000000003"
+#define STATIC_TAG     @"prod"
 #endif
 @interface AppDelegate ()
 
