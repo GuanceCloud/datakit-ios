@@ -25,10 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)sessionId;
 
-+ (NSString *)userId;
-
-+ (void)setUserId:(nullable NSString *)userid;
-
 + (NSString *)convertToStringData:(NSDictionary *)dict;
 
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;

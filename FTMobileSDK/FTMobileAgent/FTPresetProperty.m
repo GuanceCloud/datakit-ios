@@ -14,6 +14,7 @@
 #import <CoreTelephony/CTCarrier.h>
 #import "FTEnumConstant.h"
 #import "FTJSONUtil.h"
+#import "FTUserInfo.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
@@ -98,9 +99,9 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     if (self){
         _version = config.version;
         _env = FTEnvStringMap[config.env];
-        _isSignin = [FTBaseInfoHandler userId]?YES:NO;
         _mobileDevice = [[MobileDevice alloc]init];
         _context = [config.globalContext copy];
+        _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
     }
     return self;
 }
@@ -173,7 +174,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{
     self.version = config.version;
     self.env = FTEnvStringMap[config.env];
-    _isSignin = [FTBaseInfoHandler userId]?YES:NO;
 }
 - (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -181,18 +181,15 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [dict addEntriesFromDictionary:self.rumContext];
     [dict addEntriesFromDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
-    dict[@"userid"] = [FTPresetProperty userid];
+    dict[@"userid"] = self.userHelper.currentValue.userId;
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
     [dict setValue:self.appid forKey:FT_APP_ID];
     [dict setValue:[self isSigninStr] forKey:FT_IS_SIGNIN];
     return dict;
 }
--(void)setIsSignin:(BOOL)isSignin{
-    _isSignin = isSignin;
-}
 - (NSString *)isSigninStr{
-    return _isSignin?@"T":@"F";
+    return self.userHelper.currentValue.isSignin?@"T":@"F";
 }
 + (NSString *)deviceInfo{
     struct utsname systemInfo;
@@ -375,13 +372,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 + (NSString *)appIdentifier{
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     return [infoDictionary objectForKey:@"CFBundleIdentifier"];
-}
-+ (NSString *)userid{
-    NSString *useridStr = [FTBaseInfoHandler userId];
-    if (!useridStr) {
-        useridStr = [FTBaseInfoHandler sessionId];
-    }
-    return  useridStr;
 }
 @end
 

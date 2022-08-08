@@ -174,3 +174,6 @@ NSUInteger const MXRMonitorRunloopStandstillCount = 5;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 
 
+NSString * const FT_USER_ID = @"user_id";
+NSString * const FT_USER_NAME = @"user_name";
+NSString * const FT_USER_EXTRA = @"user_extra";

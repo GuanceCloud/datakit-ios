@@ -28,6 +28,7 @@
 #import "FTJSONUtil.h"
 #import "FTTraceHeaderManager.h"
 #import "FTURLProtocol.h"
+#import "FTUserInfo.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -173,15 +174,29 @@ static dispatch_once_t onceToken;
 }
 //用户绑定
 - (void)bindUserWithUserID:(NSString *)Id{
+    [self bindUserWithUserID:Id userName:nil extra:nil];
+}
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)name{
+    [self bindUserWithUserID:Id userName:name extra:nil];
+}
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)name extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
-    self.presetProperty.isSignin = YES;
-    [FTBaseInfoHandler setUserId:Id];
+    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+        [value updateUser:Id name:name extra:extra];
+    }];
     ZYDebug(@"Bind User ID : %@",Id);
+    if(name){
+        ZYDebug(@"Bind User Name : %@",name);
+    }
+    if (extra) {
+        ZYDebug(@"Bind User Extra : %@",extra);
+    }
 }
 //用户注销
 - (void)logout{
-    self.presetProperty.isSignin = NO;
-    [FTBaseInfoHandler setUserId:nil];
+    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+        [value clearUser];
+    }];
     ZYDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
