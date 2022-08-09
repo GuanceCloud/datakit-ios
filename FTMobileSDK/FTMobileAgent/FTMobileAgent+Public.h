@@ -6,8 +6,6 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#import <FTMobileAgent/FTMobileAgent.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMobileAgent : NSObject
