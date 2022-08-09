@@ -19,7 +19,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"FT_USER_INFO"];
+        NSDictionary *dict = [[NSUserDefaults standardUserDefaults] dictionaryForKey:FT_USER_INFO];
         if (dict) {
             self.userId = [dict valueForKey:FT_USER_ID];
             self.name = [dict valueForKey:FT_USER_NAME];
@@ -42,7 +42,7 @@
     [dict setValue:Id forKey:FT_USER_ID];
     [dict setValue:name forKey:FT_USER_NAME];
     [dict setValue:extra forKey:FT_USER_EXTRA];
-    [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"FT_USER_INFO"];
+    [[NSUserDefaults standardUserDefaults] setObject:dict forKey:FT_USER_INFO];
     [[NSUserDefaults standardUserDefaults] synchronize];
     self.userId = Id;
     self.name = name;
@@ -50,7 +50,7 @@
     self.isSignin = YES;
 }
 -(void)clearUser{
-    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"FT_USER_INFO"];
+    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:FT_USER_INFO];
     [[NSUserDefaults standardUserDefaults] synchronize];
     self.userId = [FTBaseInfoHandler sessionId];
     self.name = nil;

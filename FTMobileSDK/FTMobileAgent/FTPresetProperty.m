@@ -24,7 +24,6 @@ static NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR = @"os_version_major
 
 //是否是注册用户，属性值：True / False
 static NSString * const FT_IS_SIGNIN = @"is_signin";
-static NSString * const FT_USERID = @"userid";
 static NSString * const FT_ORIGIN_ID = @"origin_id";
 //操作系统
 static NSString * const FT_COMMON_PROPERTY_OS = @"os";
@@ -181,7 +180,11 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [dict addEntriesFromDictionary:self.rumContext];
     [dict addEntriesFromDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
-    dict[@"userid"] = self.userHelper.currentValue.userId;
+    dict[FT_USER_ID] = self.userHelper.currentValue.userId;
+    dict[FT_USER_NAME] = self.userHelper.currentValue.name;
+    if (self.userHelper.currentValue.extra) {
+        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
+    }
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
     [dict setValue:self.appid forKey:FT_APP_ID];

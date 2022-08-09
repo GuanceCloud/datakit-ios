@@ -135,7 +135,7 @@ static dispatch_once_t onceToken;
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (field && field.allKeys.count>0 && tm) {
                         if ([self judgeRUMTraceOpen]) {
-                          
+                            
                             [self rumWrite:FT_MEASUREMENT_RUM_ERROR terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                         }else{
                             NSString *crash_message = field[@"crash_message"];
@@ -176,17 +176,17 @@ static dispatch_once_t onceToken;
 - (void)bindUserWithUserID:(NSString *)Id{
     [self bindUserWithUserID:Id userName:nil extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)name{
-    [self bindUserWithUserID:Id userName:name extra:nil];
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName{
+    [self bindUserWithUserID:Id userName:userName extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)name extra:(NSDictionary *)extra{
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:name extra:extra];
+        [value updateUser:Id name:userName extra:extra];
     }];
     ZYDebug(@"Bind User ID : %@",Id);
-    if(name){
-        ZYDebug(@"Bind User Name : %@",name);
+    if (userName) {
+        ZYDebug(@"Bind User Name : %@",userName);
     }
     if (extra) {
         ZYDebug(@"Bind User Extra : %@",extra);

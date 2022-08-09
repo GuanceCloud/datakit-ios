@@ -43,7 +43,7 @@
         [weakSelf.navigationController pushViewController:[UITestVC new] animated:YES];
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"BindUser" handler:^{
-        [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1"];
+        [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1" userName:@"用户1" extra:@{@"user_email":@"1@qq.com"}];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
         [[FTMobileAgent sharedInstance] logout];

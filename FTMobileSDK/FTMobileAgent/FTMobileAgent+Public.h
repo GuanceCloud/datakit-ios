@@ -75,15 +75,19 @@ NS_ASSUME_NONNULL_BEGIN
  * 绑定用户信息
  *
  * @param Id        用户Id
+ * @param userName  用户名称
 */
-- (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)name;
+- (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName;
 /**
  * @abstract
  * 绑定用户信息
  *
  * @param Id        用户Id
+ * @param userName  用户名称
+ * @param extra     用户的额外信息
+
 */
-- (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)name extra:(nullable NSDictionary *)extra;
+- (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName extra:(nullable NSDictionary *)extra;
 /**
  * @abstract
  * 注销当前用户

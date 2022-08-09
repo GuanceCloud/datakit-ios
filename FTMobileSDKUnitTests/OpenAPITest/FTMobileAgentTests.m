@@ -63,6 +63,26 @@
     NSString *userid = dict[@"userid"];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
+- (void)testBindUserWithName{
+    [self setRightSDKConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+    NSString *userid = dict[@"userid"];
+    NSString *username = dict[@"user_name"];
+    XCTAssertTrue([userid isEqualToString:@"testBindUser2"]);
+    XCTAssertTrue([username isEqualToString:@"name1"]);
+}
+- (void)testBindUserWithNameAndExtra{
+    [self setRightSDKConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" extra:@{@"user_email":@"111@qq.com"}];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+    NSString *userid = dict[@"userid"];
+    NSString *username = dict[@"user_name"];
+    NSString *useremail = dict[@"user_email"];
+    XCTAssertTrue([userid isEqualToString:@"testBindUser3"]);
+    XCTAssertTrue([username isEqualToString:@"name2"]);
+    XCTAssertTrue([useremail isEqualToString:@"111@qq.com"]);
+}
 /**
  * 测试 切换用户
  * 验证： 判断切换用户前后 获取上传信息里用户信息是否正确
