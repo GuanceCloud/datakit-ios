@@ -13,9 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUserInfo : NSObject
 @property (nonatomic, copy, readonly) NSString *userId;
 @property (nonatomic, copy, readonly) NSString *name;
+@property (nonatomic, copy, readonly) NSString *email;
 @property (nonatomic, strong, readonly) NSDictionary *extra;
 @property (nonatomic, assign, readonly) BOOL isSignin;
--(void)updateUser:(NSString *)Id name:(nullable NSString *)name extra:(nullable NSDictionary *)extra;
+-(void)updateUser:(NSString *)Id name:(nullable NSString *)name email:(nullable NSString *)email extra:(nullable NSDictionary *)extra;
 -(void)clearUser;
 @end
 

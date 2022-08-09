@@ -174,15 +174,15 @@ static dispatch_once_t onceToken;
 }
 //用户绑定
 - (void)bindUserWithUserID:(NSString *)Id{
-    [self bindUserWithUserID:Id userName:nil extra:nil];
+    [self bindUserWithUserID:Id userName:nil userEmail:nil extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName{
-    [self bindUserWithUserID:Id userName:userName extra:nil];
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
+    [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName extra:(NSDictionary *)extra{
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:userName extra:extra];
+        [value updateUser:Id name:userName email:userEmail extra:extra];
     }];
     ZYDebug(@"Bind User ID : %@",Id);
     if (userName) {
@@ -263,27 +263,27 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
-        return;
-    }
-    @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
-        [self insertDBWithItemData:model type:FTAddDataNormal];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
+//-(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+//    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
+//        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
+//        return;
+//    }
+//    @try {
+//        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
+//        if (tags) {
+//            [tagDict addEntriesFromDictionary:tags];
+//        }
+//        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
+//        }.mutableCopy;
+//        if (field) {
+//            [filedDict addEntriesFromDictionary:field];
+//        }
+//        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
+//        [self insertDBWithItemData:model type:FTAddDataNormal];
+//    } @catch (NSException *exception) {
+//        ZYErrorLog(@"exception %@",exception);
+//    }
+//}
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;

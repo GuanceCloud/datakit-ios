@@ -163,13 +163,13 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
-- (NSDictionary *)traceProperty{
-    NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag addEntriesFromDictionary:self.context];
-    [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
-    [tag setValue:self.version forKey:@"version"];
-    return tag;
-}
+//- (NSDictionary *)traceProperty{
+//    NSMutableDictionary *tag = [NSMutableDictionary new];
+//    [tag addEntriesFromDictionary:self.context];
+//    [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
+//    [tag setValue:self.version forKey:@"version"];
+//    return tag;
+//}
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{
     self.version = config.version;
     self.env = FTEnvStringMap[config.env];
@@ -178,13 +178,14 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict addEntriesFromDictionary:self.context];
     [dict addEntriesFromDictionary:self.rumContext];
+    if (self.userHelper.currentValue.extra) {
+        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
+    }
     [dict addEntriesFromDictionary:self.rumCommonPropertyTags];
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;
-    if (self.userHelper.currentValue.extra) {
-        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
-    }
+    dict[FT_USER_EMAIL] = self.userHelper.currentValue.email;
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
     [dict setValue:self.appid forKey:FT_APP_ID];

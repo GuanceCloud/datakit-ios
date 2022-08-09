@@ -167,6 +167,7 @@ extern NSUInteger const FT_DB_CONTENT_MAX_COUNT;
 #pragma mark ========== user info key ==========
 extern NSString * const FT_USER_INFO;
 extern NSString * const FT_USER_ID;
+extern NSString * const FT_USER_EMAIL;
 extern NSString * const FT_USER_NAME;
 extern NSString * const FT_USER_EXTRA;
 

@@ -60,28 +60,33 @@
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
+    NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
 }
-- (void)testBindUserWithName{
+- (void)testBindUserWithNameEmail{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1"];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
-    NSString *username = dict[@"user_name"];
+    NSString *userid = dict[FT_USER_ID];
+    NSString *username = dict[FT_USER_NAME];
+    NSString *useremail = dict[FT_USER_EMAIL];
     XCTAssertTrue([userid isEqualToString:@"testBindUser2"]);
     XCTAssertTrue([username isEqualToString:@"name1"]);
+    XCTAssertTrue([useremail isEqualToString:@"111@qq.com"]);
 }
-- (void)testBindUserWithNameAndExtra{
+- (void)testBindUserWithNameEmailAndExtra{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" extra:@{@"user_email":@"111@qq.com"}];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" userEmail:@"222@qq.com" extra:@{@"user_age":@1}];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
-    NSString *username = dict[@"user_name"];
-    NSString *useremail = dict[@"user_email"];
+    NSString *userid = dict[FT_USER_ID];
+    NSString *username = dict[FT_USER_NAME];
+    NSString *useremail = dict[FT_USER_EMAIL];
+    NSNumber *userage = dict[@"user_age"];
     XCTAssertTrue([userid isEqualToString:@"testBindUser3"]);
     XCTAssertTrue([username isEqualToString:@"name2"]);
-    XCTAssertTrue([useremail isEqualToString:@"111@qq.com"]);
+    XCTAssertTrue([useremail isEqualToString:@"222@qq.com"]);
+    XCTAssertTrue([userage isEqual:@1]);
+
 }
 /**
  * 测试 切换用户
