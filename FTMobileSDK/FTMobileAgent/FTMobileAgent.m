@@ -188,6 +188,9 @@ static dispatch_once_t onceToken;
     if (userName) {
         ZYDebug(@"Bind User Name : %@",userName);
     }
+    if (userEmail) {
+        ZYDebug(@"Bind User Email : %@",userEmail);
+    }
     if (extra) {
         ZYDebug(@"Bind User Extra : %@",extra);
     }
