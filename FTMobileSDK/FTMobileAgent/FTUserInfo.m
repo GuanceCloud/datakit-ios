@@ -59,6 +59,7 @@
     self.userId = [FTBaseInfoHandler sessionId];
     self.name = nil;
     self.extra = nil;
+    self.email = nil;
     self.isSignin = NO;
 }
 //适配 1.3.6 及以下版本

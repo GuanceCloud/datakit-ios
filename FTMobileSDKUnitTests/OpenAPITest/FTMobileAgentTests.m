@@ -113,12 +113,19 @@
 -(void)testUserlogout{
     [[NSUserDefaults standardUserDefaults] setValue:nil forKey:@"ft_sessionid"];
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
     [[FTMobileAgent sharedInstance] logout];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
-   XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
+    NSString *userid = dict[FT_USER_ID];
+    NSString *userName = dict[FT_USER_NAME];
+    NSString *userEmail = dict[FT_USER_EMAIL];
+    NSString *ft_key = dict[@"ft_key"];
+    XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
+    XCTAssertFalse([userName isEqualToString:@"name"]);
+    XCTAssertFalse([userEmail isEqualToString:@"email"]);
+    XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
+    
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
