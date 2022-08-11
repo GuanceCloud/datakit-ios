@@ -73,6 +73,8 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
         return;
     }
+    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
+    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
     self.track = [[FTTrack alloc]init];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
@@ -96,8 +98,6 @@ static dispatch_once_t onceToken;
         [FTURLProtocol startMonitor];
     }
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
-    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
-    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
