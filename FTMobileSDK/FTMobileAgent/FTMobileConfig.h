@@ -38,9 +38,9 @@ typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
  */
 typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
     FTDeviceMetricsMonitorAll      = 0xFFFFFFFF,
-    FTDeviceMetricsMonitorCpu      = 1 << 1,
     FTDeviceMetricsMonitorMemory   = 1 << 2,
-    FTDeviceMetricsMonitorFps      = 1 << 3,
+    FTDeviceMetricsMonitorCpu      = 1 << 3,
+    FTDeviceMetricsMonitorFps      = 1 << 4,
 };
 /**
  * 监控项采样周期
