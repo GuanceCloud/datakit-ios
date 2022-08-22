@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17A4A554289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 17A4A553289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig */; };
+		17A4A557289CC24700CE40E5 /* Config-Demo.pre.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 17A4A551289CBDD200CE40E5 /* Config-Demo.pre.xcconfig */; };
+		17A4A558289CC24A00CE40E5 /* Config-Demo.develop.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 17A4A531289CBCC100CE40E5 /* Config-Demo.develop.xcconfig */; };
 		17BFA6AE285720EA00B31E9A /* FTMobileAgent.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */; };
 		7C02F4EE2689ACE700A0FE90 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */; };
 		7C02F4F12689ACE700A0FE90 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
@@ -27,27 +30,12 @@
 		7C02F52B2689AE3000A0FE90 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
 		7C02F52C2689AE3000A0FE90 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
 		7C6400B9275DF57200B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */; };
-		7CCD69882711964600E57A6F /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5262689AE3000A0FE90 /* SecondViewController.m */; };
-		7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51F2689AE2F00A0FE90 /* TestWKWebViewVC.m */; };
-		7CCD698A2711964600E57A6F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F32689ACE700A0FE90 /* ViewController.m */; };
-		7CCD698B2711964600E57A6F /* DemoViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5142689AE1200A0FE90 /* DemoViewController.mm */; };
-		7CCD698C2711964600E57A6F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4ED2689ACE700A0FE90 /* AppDelegate.m */; };
-		7CCD698D2711964600E57A6F /* Crasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F50C2689ADFE00A0FE90 /* Crasher.mm */; };
-		7CCD698E2711964600E57A6F /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51E2689AE2F00A0FE90 /* UITestVC.m */; };
-		7CCD698F2711964600E57A6F /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5222689AE2F00A0FE90 /* TableViewCellItem.m */; };
-		7CCD69902711964600E57A6F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4FE2689ACEA00A0FE90 /* main.m */; };
-		7CCD69912711964600E57A6F /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51C2689AE2F00A0FE90 /* TestJsbridgeData.m */; };
-		7CCD69922711964600E57A6F /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F50D2689ADFE00A0FE90 /* CrashVC.m */; };
-		7CCD69932711964600E57A6F /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F51D2689AE2F00A0FE90 /* TestANRVC.m */; };
-		7CCD69942711964600E57A6F /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5172689AE2000A0FE90 /* RootTabbarVC.m */; };
-		7CCD69952711964600E57A6F /* PrintHookTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F5092689AD5000A0FE90 /* PrintHookTest.swift */; };
-		7CCD69962711964600E57A6F /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C02F4F02689ACE700A0FE90 /* SceneDelegate.m */; };
-		7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4FA2689ACEA00A0FE90 /* LaunchScreen.storyboard */; };
-		7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F82689ACEA00A0FE90 /* Assets.xcassets */; };
-		7CCD699C2711964600E57A6F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C02F4F52689ACE700A0FE90 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17A4A531289CBCC100CE40E5 /* Config-Demo.develop.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Demo.develop.xcconfig"; sourceTree = "<group>"; };
+		17A4A551289CBDD200CE40E5 /* Config-Demo.pre.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Demo.pre.xcconfig"; sourceTree = "<group>"; };
+		17A4A553289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Demo.publish.xcconfig"; sourceTree = "<group>"; };
 		17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = FTMobileAgent.xcframework; path = Carthage/Build/FTMobileAgent.xcframework; sourceTree = "<group>"; };
 		7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C02F4EC2689ACE700A0FE90 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -85,7 +73,6 @@
 		7C02F5262689AE3000A0FE90 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		7C6400B7275DF57200B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
 		7C6400B8275DF57200B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
-		7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dataflux-sdk-ios-demoPreMade.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,16 +84,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7CCD69972711964600E57A6F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		17A4A522289CBA2200CE40E5 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				17A4A553289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig */,
+				17A4A531289CBCC100CE40E5 /* Config-Demo.develop.xcconfig */,
+				17A4A551289CBDD200CE40E5 /* Config-Demo.pre.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		37FEFF8AF1D28719DD32BF07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -117,6 +107,7 @@
 		7C02F4E02689ACE700A0FE90 = {
 			isa = PBXGroup;
 			children = (
+				17A4A522289CBA2200CE40E5 /* Config */,
 				17BFA6AD285720EA00B31E9A /* FTMobileAgent.xcframework */,
 				7C02F4EB2689ACE700A0FE90 /* dataflux-sdk-ios-demo */,
 				7C02F4EA2689ACE700A0FE90 /* Products */,
@@ -128,7 +119,6 @@
 			isa = PBXGroup;
 			children = (
 				7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */,
-				7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,6 +175,7 @@
 				7C02F4E52689ACE700A0FE90 /* Sources */,
 				7C02F4E62689ACE700A0FE90 /* Frameworks */,
 				7C02F4E72689ACE700A0FE90 /* Resources */,
+				17A4A4F7289BF0DD00CE40E5 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -193,24 +184,6 @@
 			name = "dataflux-sdk-ios-demo";
 			productName = "dataflux-sdk-ios-demo";
 			productReference = 7C02F4E92689ACE700A0FE90 /* dataflux-sdk-ios-demo.app */;
-			productType = "com.apple.product-type.application";
-		};
-		7CCD69852711964600E57A6F /* dataflux-sdk-ios-demoPreMade */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */;
-			buildPhases = (
-				9E7816F3E770A5933A900BC7 /* [CP] Check Pods Manifest.lock */,
-				7CCD69872711964600E57A6F /* Sources */,
-				7CCD69972711964600E57A6F /* Frameworks */,
-				7CCD69992711964600E57A6F /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "dataflux-sdk-ios-demoPreMade";
-			productName = "dataflux-sdk-ios-demo";
-			productReference = 7CCD69A12711964600E57A6F /* dataflux-sdk-ios-demoPreMade.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -241,7 +214,6 @@
 			projectRoot = "";
 			targets = (
 				7C02F4E82689ACE700A0FE90 /* dataflux-sdk-ios-demo */,
-				7CCD69852711964600E57A6F /* dataflux-sdk-ios-demoPreMade */,
 			);
 		};
 /* End PBXProject section */
@@ -251,26 +223,19 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17A4A554289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig in Resources */,
+				17A4A557289CC24700CE40E5 /* Config-Demo.pre.xcconfig in Resources */,
+				17A4A558289CC24A00CE40E5 /* Config-Demo.develop.xcconfig in Resources */,
 				7C02F4FC2689ACEA00A0FE90 /* LaunchScreen.storyboard in Resources */,
 				7C02F4F92689ACEA00A0FE90 /* Assets.xcassets in Resources */,
 				7C02F4F72689ACE700A0FE90 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7CCD69992711964600E57A6F /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7CCD699A2711964600E57A6F /* LaunchScreen.storyboard in Resources */,
-				7CCD699B2711964600E57A6F /* Assets.xcassets in Resources */,
-				7CCD699C2711964600E57A6F /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		9E7816F3E770A5933A900BC7 /* [CP] Check Pods Manifest.lock */ = {
+		17A4A4F7289BF0DD00CE40E5 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -278,19 +243,14 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-dataflux-sdk-ios-demoPreMade-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "#!/bin/bash\n#\n# This is the upload dSYM script\n#\n######################################################\n# 1. 脚本集成到 Xcode工 程的 Target\n######################################################\n#\n# --- Copy the SCRIPT to the Run Script of Build Phases in the Xcode project ---\n#\n# #\nFT_APP_ID=SDK_APP_ID\n#dea_address\nFT_DEA_ADDRESS=SDK_DEA_ADDRESS\n# 环境字段。属性值：prod/gray/pre/common/local。需要与 SDK 设置一致\nFT_ENV=SDK_ENV\n#\n# 脚本默认配置的版本格式为CFBundleShortVersionString,如果你修改默认的版本格式, 请设置此变量。注意：需要确保在此填写的与SDK设置的一致。\n# FT_VERSION=\"\"\n#\n# Debug模式编译是否上传，1＝上传 0＝不上传，默认不上传\n# UPLOAD_DEBUG_SYMBOLS=0\n#\n# # 模拟器编译是否上传，1=上传 0=不上传，默认不上传\n# UPLOAD_SIMULATOR_SYMBOLS=0\n#\n# #只有Archive操作时上传, 1=支持Archive上传 0=所有Release模式编译都上传\nUPLOAD_ARCHIVE_ONLY=1\n# #\n# source FTdSYMUpload.sh\n#\n# --- END OF SCRIPT ---\n#\n#\n#######################################################\n# 2. 脚本根据输入参数处理\n#######################################################\n#\n# #命令行下输入应用基本信息, .dSYM文件的父目录路径, 输出文件目录即可\n#\n# sh dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <bSYMBOL_src_dir> <bSYMBOL_dest_dir>\n#\n#\n\n#\n# --- CONTENT OF SCRIPT ---\n#\n\n# 打印错误信息\nfunction exitWithMessage(){\n    echo \"--------------------------------\"\n    echo \"${1}\"\n    echo \"--------------------------------\"\n    exit ${2}\n}\n\n# 上传bSYMBOL文件\nfunction dSYMUpload(){\n    P_SDK_URL=\"$1\"\n    P_RUM_APP_ID=\"$2\"\n    P_APP_VERSION=\"$3\"\n    P_APP_ENV=\"$4\"\n    P_BSYMBOL_ZIP_FILE=\"$5\"\n    \n    #\n    P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE##*/}\n    P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE_NAME//&/_}\n    P_BSYMBOL_ZIP_FILE_NAME=\"${P_BSYMBOL_ZIP_FILE_NAME// /_}\"\n    echo \"P_BSYMBOL_ZIP_FILE_NAME: ${P_BSYMBOL_ZIP_FILE_NAME}\"\n    DSYM_UPLOAD_URL=\"${FT_DEA_ADDRESS}/v1/rum/sourcemap?app_id=${P_RUM_APP_ID}&env=${P_APP_ENV}&version=${P_APP_VERSION}&platform=ios\"\n    echo \"dSYM upload url: ${DSYM_UPLOAD_URL}\"\n    \n    echo \"-----------------------------\"\n    STATUS=$(curl -X POST \"${DSYM_UPLOAD_URL}\"  -F \"file=@${P_BSYMBOL_ZIP_FILE}\" -H \"Content-Type: multipart/form-data\")\n    echo \"-----------------------------\"\n    \n    UPLOAD_RESULT=\"FAILTURE\"\n    echo \"Upload server response: ${STATUS}\"\n    \n    if [ ! \"${STATUS}\" ]; then\n    echo \"Error: Failed to upload the zip archive file.\"\n    elif [[ \"${STATUS}\" == *\"{\\\"code\\\":200\"* ]]; then\n    echo \"Success to upload the dSYM for the app [${P_APP_ENV} ${P_APP_VERSION}]\"\n    UPLOAD_RESULT=\"SUCCESS\"\n    else\n    echo \"Error: Failed to upload the zip archive file to DataKit.\"\n    fi\n    #Remove temp dSYM archive\n    echo \"Remove temporary zip archive: ${DSYM_ZIP_FPATH}\"\n    #    rm -f \"${P_BSYMBOL_ZIP_FILE}\"\n    \n    if [ \"$?\" -ne 0 ]; then\n    exitWithMessage \"Error: Failed to remove temporary zip archive.\" 0\n    fi\n    \n    echo \"--------------------------------\"\n    echo \"${UPLOAD_RESULT} - dSYM upload complete.\"\n    \n    if [[ \"${UPLOAD_RESULT}\" == \"FAILTURE\" ]]; then\n    echo \"--------------------------------\"\n    echo \"Failed to upload the dSYM\"\n    echo \"Please check the script and try it again.\"\n    fi\n}\n\n#执行\nfunction run() {\n    CONFIG_SDK_URL=\"$1\"\n    CONFIG_APP_ID=\"$2\"\n    \n    CONFIG_APP_VERSION=\"$3\"\n    CONFIG_APP_ENV=\"$4\"\n    CONFIG_DSYM_SOURCE_DIR=\"$5\"\n    CONFIG_DSYM_DEST_DIR=\"$6\"\n\n    # 检查必须参数是否设置\n    if [ ! \"${CONFIG_APP_ID}\" ]; then\n    exitWithMessage \"Error: RUM App ID not defined. Please set 'FT_RUM_APP_ID' \" 0\n    fi\n    \n    if [[ \"${CONFIG_APP_ID}\" == *\"App ID\"* ]]; then\n    exitWithMessage \"Error: RUM App ID not defined.\" 0\n    fi\n    \n    if [ ! \"${CONFIG_APP_VERSION}\" ]; then\n    exitWithMessage \"Error: App Version not defined.\" 0\n    fi\n    \n    if [ ! \"${CONFIG_APP_ENV}\" ]; then\n    exitWithMessage \"Error: SDK Env not defined.\" 0\n    fi\n    \n    if [ ! -e \"${CONFIG_DSYM_SOURCE_DIR}\" ]; then\n    exitWithMessage \"Error: Invalid Source dir ${CONFIG_DSYM_SOURCE_DIR}\" 0\n    fi\n    \n    if [ ! \"${CONFIG_DSYM_DEST_DIR}\" ]; then\n    exitWithMessage \"Error: Invalid Dest dir ${CONFIG_DSYM_DEST_DIR}\" 0\n    fi\n    \n    if [ ! -e \"${CONFIG_DSYM_DEST_DIR}\" ]; then\n    mkdir ${CONFIG_DSYM_DEST_DIR}\n    fi\n    \n    DSYM_FOLDER=\"${CONFIG_DSYM_SOURCE_DIR}\"\n    IFS=$'\\n'\n    \n    echo \"Scaning dSYM FOLDER: ${DSYM_FOLDER} ...\"\n    RET=\"F\"\n    \n    #\n    for dsymFile in $(find \"$DSYM_FOLDER\" -name '*.dSYM'); do\n    RET=\"T\"\n    echo \"Found dSYM file: $dsymFile\"\n    cp -rf $dsymFile $CONFIG_DSYM_DEST_DIR\n    done\n    if [ $RET = \"T\" ]; then\n    DSYM_SYMBOL_ZIP_FILE_NAME=\"DSYM_SYMBOL.zip\"\n    DSYM_SYMBOL_ZIP_FILE_NAME=\"${DSYM_SYMBOL_ZIP_FILE_NAME// /_}\"\n    DSYM_SYMBOL_ZIP_FILE=${CONFIG_DSYM_DEST_DIR}/${DSYM_SYMBOL_ZIP_FILE_NAME}\n    \n    if [ -e $DSYM_SYMBOL_ZIP_FILE ]; then\n    rm -f $DSYM_SYMBOL_ZIP_FILE\n    fi\n    # 压缩dSYM目录\n    pushd $CONFIG_DSYM_DEST_DIR\n    zip -r -q $DSYM_SYMBOL_ZIP_FILE *\n    popd\n    # 上传\n    dSYMUpload $CONFIG_SDK_URL $CONFIG_APP_ID $CONFIG_APP_VERSION $CONFIG_APP_ENV $DSYM_SYMBOL_ZIP_FILE\n    fi\n    \n    if [ $RET = \"F\" ]; then\n    exitWithMessage \"No .dSYM found in ${DSYM_FOLDER}\" 0\n    fi\n}\n# 检查App的dSYM文件是否为空，若为空，循环等待10s后还为空则退出\nfunction checkAppSourceFile(){\n    dsymFile=\"$1\"\n    DSYM_APP_FILE_IS_EXIST=1\n    for i in {1..10}; do\n    sleep 1\n    for dsymSingleFile in $(find \"${dsymFile}\" -name ${PRODUCT_NAME}); do\n    if [ -s \"${dsymSingleFile}\" ]; then\n    DSYM_APP_FILE_IS_EXIST=0\n    return $DSYM_APP_FILE_IS_EXIST\n    fi\n    done\n    done\n    return $DSYM_APP_FILE_IS_EXIST\n}\n\n# 在Xcode工程中执行\nfunction runInXcode(){\n    echo \"Uploading dSYM in Xcode ...\"\n    \n    echo \"Info.Plist : ${INFOPLIST_FILE}\"\n    \n    BUNDLE_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' \"${INFOPLIST_FILE}\")\n#    BUNDLE_SHORT_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' \"${INFOPLIST_FILE}\")\n    echo \"BUNDLE_VERSION: ${BUNDLE_VERSION}\"\n    echo \"BUNDLE_SHORT_VERSION: ${BUNDLE_SHORT_VERSION}\"\n    \n    # 组装默认识别的版本信息(格式为CFBundleShortVersionString(CFBundleVersion), 例如: 1.0(1))\n    if [ ! \"${FT_VERSION}\" ]; then\n    FT_APP_VERSION=\"${BUNDLE_SHORT_VERSION}(${BUNDLE_VERSION})\"\n    else\n    FT_APP_VERSION=\"${FT_VERSION}\"\n    fi\n    \n    echo \"--------------------------------\"\n    echo \"Prepare application information.\"\n    echo \"--------------------------------\"\n    \n    echo \"Product Name: ${PRODUCT_NAME}\"\n    echo \"Bundle Identifier: ${BUNDLE_IDENTIFIER}\"\n    echo \"Version: ${BUNDLE_SHORT_VERSION}\"\n    echo \"Build: ${BUNDLE_VERSION}\"\n    \n    echo \"RUM App ID: ${FT_APP_ID}\"\n    \n    echo \"--------------------------------\"\n    echo \"Check the arguments ...\"\n    \n    ##检查模拟器编译是否允许上传符号\n    if [ \"$EFFECTIVE_PLATFORM_NAME\" == \"-iphonesimulator\" ]; then\n    if [ $UPLOAD_SIMULATOR_SYMBOLS -eq 0 ]; then\n    exitWithMessage \"Warning: Build for simulator and skipping to upload. \\nYou can modify 'UPLOAD_SIMULATOR_SYMBOLS' to 1 in the script.\" 0\n    fi\n    fi\n    \n    ##检查是否是Release模式编译\n    if [ \"${CONFIGURATION=}\" == \"Debug\" ]; then\n    if [ $UPLOAD_DEBUG_SYMBOLS -eq 0 ]; then\n    exitWithMessage \"Warning: Build for debug mode and skipping to upload. \\nYou can modify 'UPLOAD_DEBUG_SYMBOLS' to 1 in the script.\" 0\n    fi\n    fi\n    \n    ##检查是否Archive操作\n    if [ $UPLOAD_ARCHIVE_ONLY -eq 1 ]; then\n    if [[ \"$TARGET_BUILD_DIR\" == *\"/Archive\"* ]]; then\n    echo \"Archive the package\"\n    else\n    exitWithMessage \"Warning: Build for NOT Archive mode and skipping to upload. \\nYou can modify 'UPLOAD_ARCHIVE_ONLY' to 0 in the script.\" 0\n    fi\n    fi\n    \n    ##检查dSYM文件是否完整\n    for dsymFile in $(find \"$DWARF_DSYM_FOLDER_PATH\" -name '*.dSYM'); do\n    FILE_NAME=${dsymFile##*/}\n    FILE_NAME=${FILE_NAME//&/_}\n    FILE_NAME=\"${FILE_NAME// /_}\"\n    if [[ \"${FILE_NAME}\" == \"${PRODUCT_NAME}\"* ]]; then\n    SDYM_SINGLE_FILE_NAME=\"${dsymFile}/Contents/Resources/DWARF/${PRODUCT_NAME}\"\n    checkAppSourceFile $SDYM_SINGLE_FILE_NAME\n    echo \"checkAppSourceFile: $?\"\n    if [ $? == 1 ]; then\n      exitWithMessage \"Not Found File In ${SDYM_SINGLE_FILE_NAME}\" 0\n    fi\n    fi\n    done\n    #\n    run ${FT_SDK_URL} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${DWARF_DSYM_FOLDER_PATH} ${BUILD_DIR}/SymbolTemp\n}\n# 根据Xcode的环境变量判断是否处于Xcode环境\nINFO_PLIST_FILE=\"${INFOPLIST_FILE}\"\n\nBuildInXcode=\"F\"\nif [ -f \"${INFO_PLIST_FILE}\" ]; then\nBuildInXcode=\"T\"\nfi\n\nif [ $BuildInXcode = \"T\" ]; then\nrunInXcode\nelse\necho \"\\nUsage: dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>\\n\"\n\n# 你可以在此处直接设置 URL、APP_ID 和 APP_ENV排除不常变参数的输入\nFT_SDK_URL=\"$1\"\nFT_RUM_APP_ID=\"$2\"\nFT_APP_VERSION=\"$3\"\nFT_APP_ENV=\"$4\"\nDWARF_DSYM_FOLDER_PATH=\"$5\"\nSYMBOL_OUTPUT_PATH=\"$6\"\n\nrun ${FT_SDK_URL} ${FT_RUM_APP_ID} ${FT_APP_VERSION} ${FT_APP_ENV} ${DWARF_DSYM_FOLDER_PATH} ${SYMBOL_OUTPUT_PATH}\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -318,28 +278,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7CCD69872711964600E57A6F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7CCD69882711964600E57A6F /* SecondViewController.m in Sources */,
-				7CCD69892711964600E57A6F /* TestWKWebViewVC.m in Sources */,
-				7CCD698A2711964600E57A6F /* ViewController.m in Sources */,
-				7CCD698B2711964600E57A6F /* DemoViewController.mm in Sources */,
-				7CCD698C2711964600E57A6F /* AppDelegate.m in Sources */,
-				7CCD698D2711964600E57A6F /* Crasher.mm in Sources */,
-				7CCD698E2711964600E57A6F /* UITestVC.m in Sources */,
-				7CCD698F2711964600E57A6F /* TableViewCellItem.m in Sources */,
-				7CCD69902711964600E57A6F /* main.m in Sources */,
-				7CCD69912711964600E57A6F /* TestJsbridgeData.m in Sources */,
-				7CCD69922711964600E57A6F /* CrashVC.m in Sources */,
-				7CCD69932711964600E57A6F /* TestANRVC.m in Sources */,
-				7CCD69942711964600E57A6F /* RootTabbarVC.m in Sources */,
-				7CCD69952711964600E57A6F /* PrintHookTest.swift in Sources */,
-				7CCD69962711964600E57A6F /* SceneDelegate.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
@@ -362,6 +300,93 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		17A4A555289CC00F00CE40E5 /* Pre */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Pre;
+		};
+		17A4A556289CC00F00CE40E5 /* Pre */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 17A4A551289CBDD200CE40E5 /* Config-Demo.pre.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BW62V33GLH;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PRE=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Pre;
+		};
 		7C02F5002689ACEA00A0FE90 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -476,12 +501,17 @@
 		};
 		7C02F5032689ACEA00A0FE90 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 17A4A531289CBCC100CE40E5 /* Config-Demo.develop.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEVELOP=1",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -499,6 +529,7 @@
 		};
 		7C02F5042689ACEA00A0FE90 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 17A4A553289CBDEB00CE40E5 /* Config-Demo.publish.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -519,54 +550,6 @@
 			};
 			name = Release;
 		};
-		7CCD699F2711964600E57A6F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"COCOAPODS=1",
-					"PREPROD=1",
-				);
-				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "dataflux_sdk_ios_demo-Swift.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		7CCD69A02711964600E57A6F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = "dataflux-sdk-ios-demo/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "hll.dataflux-sdk-ios-demo";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "dataflux-sdk-ios-demo/dataflux-sdk-ios-demo-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "dataflux_sdk_ios_demo-Swift.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -574,6 +557,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7C02F5002689ACEA00A0FE90 /* Debug */,
+				17A4A555289CC00F00CE40E5 /* Pre */,
 				7C02F5012689ACEA00A0FE90 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -583,16 +567,8 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7C02F5032689ACEA00A0FE90 /* Debug */,
+				17A4A556289CC00F00CE40E5 /* Pre */,
 				7C02F5042689ACEA00A0FE90 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7CCD699E2711964600E57A6F /* Build configuration list for PBXNativeTarget "dataflux-sdk-ios-demoPreMade" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7CCD699F2711964600E57A6F /* Debug */,
-				7CCD69A02711964600E57A6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

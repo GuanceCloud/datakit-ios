@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>SDK_DEA_ADDRESS</key>
+	<string>${SDK_DEA_ADDRESS}</string>
+	<key>SDK_ENV</key>
+	<string>${SDK_ENV}</string>
+	<key>SDK_APP_ID</key>
+	<string>${SDK_APP_ID}</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
