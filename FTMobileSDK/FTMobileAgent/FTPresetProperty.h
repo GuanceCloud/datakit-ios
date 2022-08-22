@@ -8,16 +8,17 @@
 
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
-NS_ASSUME_NONNULL_BEGIN
+#import "FTReadWriteHelper.h"
 
+NS_ASSUME_NONNULL_BEGIN
+@class FTUserInfo;
 @interface FTPresetProperty : NSObject
-@property (nonatomic, assign) BOOL isSignin;
 @property (nonatomic, copy) NSString *appid;
 @property (nonatomic, strong) NSDictionary *logContext;
 @property (nonatomic, strong) NSDictionary *rumContext;
+@property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 + (NSString *)deviceInfo;
 + (NSString *)appIdentifier;
-+ (NSString *)userid;
 + (NSString *)telephonyInfo;
 
 /**
@@ -39,10 +40,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取 logger base Tag
  */
 - (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName;
-/**
- * 获取 trace base Tag
- */
-- (NSDictionary *)traceProperty;
+///**
+// * 获取 trace base Tag
+// */
+//- (NSDictionary *)traceProperty;
 /**
  *  重新设置
  */

@@ -13,6 +13,9 @@
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
 		177CFECD27E32850007D8C2F /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 177CFECB27E32850007D8C2F /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177CFECE27E32850007D8C2F /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 177CFECC27E32850007D8C2F /* FTTraceManager.m */; };
+		17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56A28A1094200CE40E5 /* FTUserInfo.h */; };
+		17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4A56B28A1094200CE40E5 /* FTUserInfo.m */; };
 		17A5033028742E24004C65BF /* FTMonitorValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A5032E28742E24004C65BF /* FTMonitorValue.h */; };
 		17A5033128742E24004C65BF /* FTMonitorValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A5032F28742E24004C65BF /* FTMonitorValue.m */; };
 		17A50339287581BD004C65BF /* FTMonitorItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A50337287581BD004C65BF /* FTMonitorItem.h */; };
@@ -174,6 +177,9 @@
 		177BDF592799775F00DA4EA7 /* FTEnumConstant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		177CFECB27E32850007D8C2F /* FTTraceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
 		177CFECC27E32850007D8C2F /* FTTraceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
+		17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Public.h"; sourceTree = "<group>"; };
+		17A4A56A28A1094200CE40E5 /* FTUserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUserInfo.h; sourceTree = "<group>"; };
+		17A4A56B28A1094200CE40E5 /* FTUserInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUserInfo.m; sourceTree = "<group>"; };
 		17A5032E28742E24004C65BF /* FTMonitorValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorValue.h; sourceTree = "<group>"; };
 		17A5032F28742E24004C65BF /* FTMonitorValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMonitorValue.m; sourceTree = "<group>"; };
 		17A50337287581BD004C65BF /* FTMonitorItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTMonitorItem.h; sourceTree = "<group>"; };
@@ -435,6 +441,7 @@
 			isa = PBXGroup;
 			children = (
 				4A884272239E5768001B44C3 /* FTMobileAgent.h */,
+				17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */,
 				4A88426A239E5768001B44C3 /* FTMobileAgent.m */,
 				4A297BE8246CE0FB0028645B /* FTMobileAgent+Private.h */,
 				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
@@ -461,6 +468,8 @@
 				7C0FBD3B274B89BA007CD0D3 /* FTExternalDataManager.m */,
 				177BDF592799775F00DA4EA7 /* FTEnumConstant.h */,
 				177BDF572799773800DA4EA7 /* FTEnumConstant.m */,
+				17A4A56A28A1094200CE40E5 /* FTUserInfo.h */,
+				17A4A56B28A1094200CE40E5 /* FTUserInfo.m */,
 				7C28B90326611B3700CECBA6 /* FTRUM */,
 				7C28B8522660980000CECBA6 /* JSBridge */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
@@ -705,6 +714,7 @@
 				17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */,
 				7C69CFE727294FEF0065638F /* FTResourceContentModel.h in Headers */,
 				7C295C712716D8BF004B6653 /* FTTraceHandler.h in Headers */,
+				17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */,
 				177CFECD27E32850007D8C2F /* FTTraceManager.h in Headers */,
 				7C28B92126611B3800CECBA6 /* FTRUMDataModel.h in Headers */,
 				7C69CFBF27281D820065638F /* FTThreadDispatchManager.h in Headers */,
@@ -718,6 +728,7 @@
 				7C28B91F26611B3800CECBA6 /* FTRUMViewHandler.h in Headers */,
 				4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */,
 				4A297BDA246BBF340028645B /* FTConstants.h in Headers */,
+				17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */,
 				4A7135B22579E82A00444C3D /* FTfishhook.h in Headers */,
 				7CA1807226CFA7830035DDF0 /* FTReachability.h in Headers */,
 				4A39314E25300D2100BC2134 /* FTCallStack.h in Headers */,
@@ -886,6 +897,7 @@
 			files = (
 				7CEE842D268F1E57003AD0A0 /* FTSwizzler.m in Sources */,
 				7CF4E11226B1265E0076D238 /* WKWebView+FTAutoTrack.m in Sources */,
+				17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */,
 				7C28B91D26611B3800CECBA6 /* FTRUMHandler.m in Sources */,
 				7C0FBD3D274B89BA007CD0D3 /* FTExternalDataManager.m in Sources */,
 				4A884297239E5768001B44C3 /* FTRecordModel.m in Sources */,
@@ -1136,6 +1148,7 @@
 		4A884263239E5754001B44C3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1169,6 +1182,7 @@
 		4A884264239E5754001B44C3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;

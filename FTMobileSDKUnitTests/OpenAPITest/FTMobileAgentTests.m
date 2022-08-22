@@ -60,8 +60,33 @@
    
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser"];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
+    NSString *userid = dict[FT_USER_ID];
     XCTAssertTrue([userid isEqualToString:@"testBindUser"]);
+}
+- (void)testBindUserWithNameEmail{
+    [self setRightSDKConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+    NSString *userid = dict[FT_USER_ID];
+    NSString *username = dict[FT_USER_NAME];
+    NSString *useremail = dict[FT_USER_EMAIL];
+    XCTAssertTrue([userid isEqualToString:@"testBindUser2"]);
+    XCTAssertTrue([username isEqualToString:@"name1"]);
+    XCTAssertTrue([useremail isEqualToString:@"111@qq.com"]);
+}
+- (void)testBindUserWithNameEmailAndExtra{
+    [self setRightSDKConfig];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser3" userName:@"name2" userEmail:@"222@qq.com" extra:@{@"user_age":@1}];
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+    NSString *userid = dict[FT_USER_ID];
+    NSString *username = dict[FT_USER_NAME];
+    NSString *useremail = dict[FT_USER_EMAIL];
+    NSNumber *userage = dict[@"user_age"];
+    XCTAssertTrue([userid isEqualToString:@"testBindUser3"]);
+    XCTAssertTrue([username isEqualToString:@"name2"]);
+    XCTAssertTrue([useremail isEqualToString:@"222@qq.com"]);
+    XCTAssertTrue([userage isEqual:@1]);
+
 }
 /**
  * 测试 切换用户
@@ -88,12 +113,19 @@
 -(void)testUserlogout{
     [[NSUserDefaults standardUserDefaults] setValue:nil forKey:@"ft_sessionid"];
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout"];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
     [[FTMobileAgent sharedInstance] logout];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
-    NSString *userid = dict[@"userid"];
-   XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
+    NSString *userid = dict[FT_USER_ID];
+    NSString *userName = dict[FT_USER_NAME];
+    NSString *userEmail = dict[FT_USER_EMAIL];
+    NSString *ft_key = dict[@"ft_key"];
+    XCTAssertFalse([userid isEqualToString:@"testUserlogout"]);
+    XCTAssertFalse([userName isEqualToString:@"name"]);
+    XCTAssertFalse([userEmail isEqualToString:@"email"]);
+    XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
+    
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];

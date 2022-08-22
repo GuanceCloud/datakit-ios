@@ -28,6 +28,7 @@
 #import "FTJSONUtil.h"
 #import "FTTraceHeaderManager.h"
 #import "FTURLProtocol.h"
+#import "FTUserInfo.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -134,7 +135,7 @@ static dispatch_once_t onceToken;
                     NSNumber *tm = [obj valueForKey:@"tm"];
                     if (field && field.allKeys.count>0 && tm) {
                         if ([self judgeRUMTraceOpen]) {
-                          
+                            
                             [self rumWrite:FT_MEASUREMENT_RUM_ERROR terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
                         }else{
                             NSString *crash_message = field[@"crash_message"];
@@ -173,15 +174,32 @@ static dispatch_once_t onceToken;
 }
 //用户绑定
 - (void)bindUserWithUserID:(NSString *)Id{
+    [self bindUserWithUserID:Id userName:nil userEmail:nil extra:nil];
+}
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
+    [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
+}
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
-    self.presetProperty.isSignin = YES;
-    [FTBaseInfoHandler setUserId:Id];
+    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+        [value updateUser:Id name:userName email:userEmail extra:extra];
+    }];
     ZYDebug(@"Bind User ID : %@",Id);
+    if (userName) {
+        ZYDebug(@"Bind User Name : %@",userName);
+    }
+    if (userEmail) {
+        ZYDebug(@"Bind User Email : %@",userEmail);
+    }
+    if (extra) {
+        ZYDebug(@"Bind User Extra : %@",extra);
+    }
 }
 //用户注销
 - (void)logout{
-    self.presetProperty.isSignin = NO;
-    [FTBaseInfoHandler setUserId:nil];
+    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+        [value clearUser];
+    }];
     ZYDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
@@ -248,27 +266,27 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
--(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
-        return;
-    }
-    @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
-        [self insertDBWithItemData:model type:FTAddDataNormal];
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
+//-(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+//    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
+//        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
+//        return;
+//    }
+//    @try {
+//        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
+//        if (tags) {
+//            [tagDict addEntriesFromDictionary:tags];
+//        }
+//        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
+//        }.mutableCopy;
+//        if (field) {
+//            [filedDict addEntriesFromDictionary:field];
+//        }
+//        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
+//        [self insertDBWithItemData:model type:FTAddDataNormal];
+//    } @catch (NSException *exception) {
+//        ZYErrorLog(@"exception %@",exception);
+//    }
+//}
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;

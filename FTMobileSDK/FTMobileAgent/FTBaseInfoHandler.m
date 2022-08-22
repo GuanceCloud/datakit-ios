@@ -29,7 +29,7 @@
     [signString appendString:@"\n"];
     [signString appendString:dateStr];
     const char *secretStr = [akSecret UTF8String];
-    const char * signStr = [signString UTF8String];
+    const char *signStr = [signString UTF8String];
     
     unsigned char cHMAC[CC_SHA1_DIGEST_LENGTH];
     CCHmac(kCCHmacAlgSHA1, secretStr, strlen(secretStr), signStr, strlen(signStr), cHMAC);
@@ -53,10 +53,6 @@
         [[NSUserDefaults standardUserDefaults] setValue:sessionid forKey:@"ft_sessionid"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
-    return sessionid;
-}
-+ (NSString *)userId{
-    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
     return sessionid;
 }
 + (void)setUserId:(NSString *)userid{
