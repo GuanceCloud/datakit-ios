@@ -195,15 +195,16 @@ function runInXcode(){
     echo "Uploading dSYM in Xcode ..."
     
     echo "Info.Plist : ${INFOPLIST_FILE}"
-    
-    BUNDLE_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "${INFOPLIST_FILE}")
-#    BUNDLE_SHORT_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "${INFOPLIST_FILE}")
-    echo "BUNDLE_VERSION: ${BUNDLE_VERSION}"
-    echo "BUNDLE_SHORT_VERSION: ${BUNDLE_SHORT_VERSION}"
+
+    BUNDLE_SHORT_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "${INFOPLIST_FILE}")
+    if [[ "${BUNDLE_SHORT_VERSION}" == *"MARKETING_VERSION"* ]]; then
+    BUNDLE_SHORT_VERSION=${MARKETING_VERSION}
+    fi
+    echo "BUNDLE_SHORT_VERSION: $BUNDLE_SHORT_VERSION"
     
     # 组装默认识别的版本信息(格式为CFBundleShortVersionString, 例如: 1.0)
     if [ ! "${FT_VERSION}" ]; then
-    FT_APP_VERSION="${BUNDLE_SHORT_VERSION}(${BUNDLE_VERSION})"
+    FT_APP_VERSION="${BUNDLE_SHORT_VERSION}"
     else
     FT_APP_VERSION="${FT_VERSION}"
     fi
@@ -213,9 +214,7 @@ function runInXcode(){
     echo "--------------------------------"
     
     echo "Product Name: ${PRODUCT_NAME}"
-    echo "Bundle Identifier: ${BUNDLE_IDENTIFIER}"
-    echo "Version: ${BUNDLE_SHORT_VERSION}"
-    echo "Build: ${BUNDLE_VERSION}"
+    echo "Version: ${FT_APP_VERSION}"
     
     echo "RUM App ID: ${FT_APP_ID}"
     
@@ -260,7 +259,7 @@ function runInXcode(){
     fi
     done
     #
-    run ${FT_SDK_URL} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${DWARF_DSYM_FOLDER_PATH} ${BUILD_DIR}/SymbolTemp
+    run ${FT_DEA_ADDRESS} ${FT_APP_ID} ${FT_APP_VERSION} ${FT_ENV} ${DWARF_DSYM_FOLDER_PATH} ${BUILD_DIR}/SymbolTemp
 }
 # 根据Xcode的环境变量判断是否处于Xcode环境
 INFO_PLIST_FILE="${INFOPLIST_FILE}"
