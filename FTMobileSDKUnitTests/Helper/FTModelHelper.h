@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)startView;
 + (void)stopView;
 + (void)addAction;
++ (void)addActionWithType:(NSString *)type;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -50,4 +50,7 @@
 + (void)addAction{
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick"];
 }
++ (void)addActionWithType:(NSString *)type{
+    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type];
+}
 @end

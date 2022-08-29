@@ -89,12 +89,15 @@
 }
 #pragma mark - Action -
 - (void)addClickActionWithName:(NSString *)actionName{
-    if (!actionName || actionName.length == 0) {
+    [self addActionName:actionName actionType:FT_RUM_KEY_ACTION_TYPE_CLICK];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
+    if (!actionName || actionName.length == 0 || !actionType || actionType.length == 0) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:@"click"];
+            FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.type = FTRUMDataClick;
             [self process:actionModel];
         }];
@@ -102,6 +105,7 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
+
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{

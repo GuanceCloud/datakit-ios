@@ -36,7 +36,10 @@
     [FTGlobalRumManager.sharedInstance stopView];
 }
 - (void)addClickActionWithName:(NSString *)actionName {
-        [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName];
+    [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
+    [FTGlobalRumManager.sharedInstance addActionName:actionName actionType:actionType];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack];

@@ -97,6 +97,7 @@ NSString * const FT_RUM_KEY_ACTION_ERROR_COUNT = @"action_error_count";
 NSString * const FT_RUM_KEY_ACTION_ID = @"action_id";
 NSString * const FT_RUM_KEY_ACTION_NAME = @"action_name";
 NSString * const FT_RUM_KEY_ACTION_TYPE = @"action_type";
+NSString * const FT_RUM_KEY_ACTION_TYPE_CLICK = @"click";
 
 #pragma mark ========== AUTOTRACK  ==========
 NSString * const FT_AUTOTRACK_MEASUREMENT  = @"mobile_tracker";

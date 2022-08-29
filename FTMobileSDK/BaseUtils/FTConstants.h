@@ -90,6 +90,7 @@ extern NSString * const FT_RUM_KEY_ACTION_ERROR_COUNT;
 extern NSString * const FT_RUM_KEY_ACTION_ID;
 extern NSString * const FT_RUM_KEY_ACTION_NAME;
 extern NSString * const FT_RUM_KEY_ACTION_TYPE;
+extern NSString * const FT_RUM_KEY_ACTION_TYPE_CLICK;
 
 extern NSString * const FT_TERMINAL_APP;
 extern NSString * const FT_TERMINAL_MINIPROGRA;

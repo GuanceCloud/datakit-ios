@@ -32,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)addClickActionWithName:(NSString *)actionName;
 /**
+ * 添加  Action 事件
+ * @param actionName 事件名称
+ * @param actionType 事件类型
+ */
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
+/**
  * 添加 Error 事件
  * @param type       error 类型
  * @param message    错误信息

@@ -76,6 +76,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)addClickActionWithName:(NSString *)actionName;
 /**
+ * action 事件
+ * @param actionName 事件名称
+ * @param actionType 事件类型
+ */
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
+/**
  * 应用启动
  * @param isHot     是否是热启动
  * @param duration  启动时长

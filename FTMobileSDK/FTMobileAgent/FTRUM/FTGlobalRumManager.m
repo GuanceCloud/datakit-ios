@@ -221,6 +221,9 @@ static dispatch_once_t onceToken;
 - (void)addClickActionWithName:(NSString *)actionName{
     [self.rumManger addClickActionWithName:actionName];
 }
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
+    [self.rumManger addActionName:actionName actionType:actionType];
+}
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     [self.rumManger addErrorWithType:type message:message stack:stack];
 }

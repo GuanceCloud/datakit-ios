@@ -289,6 +289,7 @@
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
     [FTModelHelper addAction];
+    [FTModelHelper addActionWithType:@"longtap"];
     [FTModelHelper startView];
     [NSThread sleepForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -301,7 +302,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
             NSDictionary *tags = opdata[FT_TAGS];
-            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]){
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"longtap"]){
                 NSDictionary *field = opdata[FT_FIELDS];
                 [self rumTags:tags];
                 XCTAssertTrue([field.allKeys containsObject:FT_RUM_KEY_ACTION_LONG_TASK_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_RESOURCE_COUNT]&&[field.allKeys containsObject:FT_RUM_KEY_ACTION_ERROR_COUNT]);
@@ -362,7 +363,7 @@
         NSDictionary *tags = opdata[FT_TAGS];
         NSDictionary *field = opdata[FT_FIELDS];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
-            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]){
+            if([tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:FT_RUM_KEY_ACTION_TYPE_CLICK]){
                 XCTAssertTrue([field[FT_RUM_KEY_ACTION_LONG_TASK_COUNT] isEqual:@0]);
                 XCTAssertTrue([field[FT_DURATION] isEqual:@10000000000]);
                 hasClickAction = YES;
@@ -499,6 +500,30 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
+- (void)testActionWorngFormat{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper addActionWithType:@""];
+    
+    [NSThread sleepForTimeInterval:10];
+    [self addErrorData];
+    [NSThread sleepForTimeInterval:2];
+    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasClickAction = NO;
+    
+    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            hasClickAction = YES;
+        }
+    }];
+    XCTAssertFalse(hasClickAction);
+    [FTModelHelper stopView];
+}
+
 - (void)testWorngFormatErrorData{
     [self setRumConfig];
     [[FTExternalDataManager sharedManager] addErrorWithType:@"" message:@"testWorngError" stack:@"error testWorngError"];
