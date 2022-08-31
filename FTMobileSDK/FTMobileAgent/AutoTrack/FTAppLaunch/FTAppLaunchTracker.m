@@ -6,15 +6,38 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 #import <UIKit/UIKit.h>
+#import <sys/sysctl.h>
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
 #import "FTLog.h"
 #import "FTDateUtil.h"
 
-static NSTimeInterval FTLoadDate = 0.0;
-static NSTimeInterval ApplicationRespondedTime = 0.0;
 
+static CFTimeInterval FTLoadDate = 0.0;
+static CFTimeInterval ApplicationRespondedTime = 0.0;
+static BOOL isActivePrewarm = NO;
 static BOOL AppRelaunched = NO;
+
+static CFTimeInterval processStartTime(NSTimeInterval now) {
+    size_t len = 4;
+    int mib[len];
+    struct kinfo_proc kp;
+    NSTimeInterval startTime;
+    sysctlnametomib("kern.proc.pid", mib, &len);
+    mib[3] = getpid();
+    len = sizeof(kp);
+    int res = sysctl(mib, 4, &kp, &len, NULL, 0);
+    if (res == 0) {
+        struct timeval startTimeval = kp.kp_proc.p_un.__p_starttime;
+        startTime = startTimeval.tv_sec + startTimeval.tv_usec / 1e6;
+        startTime -= kCFAbsoluteTimeIntervalSince1970;
+
+    }else {
+        startTime = now;
+    }
+    return startTime;
+}
+
 @interface FTAppLaunchTracker()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) NSDate *launchTime;
 @end
@@ -24,7 +47,9 @@ static BOOL AppRelaunched = NO;
     BOOL _applicationDidEnterBackground;
 }
 + (void)load{
-    FTLoadDate = CFAbsoluteTimeGetCurrent();
+    CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+    FTLoadDate = processStartTime(now);
+    isActivePrewarm = [[NSProcessInfo processInfo].environment[@"ActivePrewarm"] isEqual:@"1"];
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
     id __block token = [center
                         addObserverForName:UIApplicationDidBecomeActiveNotification
@@ -53,7 +78,7 @@ static BOOL AppRelaunched = NO;
 }
 - (void)appColdStartEvent{
     AppRelaunched = YES;
-    NSTimeInterval launchEnd = ApplicationRespondedTime;
+    CFTimeInterval launchEnd = ApplicationRespondedTime;
     if (launchEnd == 0.0) {
         launchEnd = CFAbsoluteTimeGetCurrent();
     }
@@ -84,6 +109,18 @@ static BOOL AppRelaunched = NO;
 }
 - (void)applicationDidEnterBackground{
     _applicationDidEnterBackground = YES;
+}
+- (BOOL)isActivePrewarmAvailable{
+#    if TARGET_OS_IOS
+    // 用户数据显示，iOS 14的应用程序启动也进行了预热，与苹果文档中在iOS 15及之后支持矛盾。
+    if (@available(iOS 14, *)) {
+        return YES;
+    } else {
+        return NO;
+    }
+#    else
+    return NO;
+#    endif
 }
 -(void)dealloc{
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
