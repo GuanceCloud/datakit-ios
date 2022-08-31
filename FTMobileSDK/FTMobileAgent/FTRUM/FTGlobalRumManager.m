@@ -183,9 +183,9 @@ static dispatch_once_t onceToken;
         [self.rumManger startViewWithViewID:viewid viewName:viewReferrer];
     }
 }
--(void)ftAppColdStart:(NSNumber *)duration{
+-(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:NO duration:duration];
+    [self.rumManger addLaunch:NO duration:duration isPreWarming:isPreWarming];
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{
