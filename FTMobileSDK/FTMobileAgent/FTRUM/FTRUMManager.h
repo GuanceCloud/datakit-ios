@@ -88,6 +88,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration;
 /**
+ * 应用启动
+ * @param isHot     是否是热启动
+ * @param duration  启动时长
+ * @param isPreWarming 是否进行了预热
+ */
+- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
+/**
  * 应用终止使用
  */
 - (void)applicationWillTerminate;

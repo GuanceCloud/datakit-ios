@@ -105,8 +105,10 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-
 - (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
+    [self addLaunch:isHot duration:duration isPreWarming:NO];
+}
+- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
             NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
@@ -115,6 +117,8 @@
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
             launchModel.action_name = actionName;
             launchModel.action_type = actionType;
+            //启动时是否进行了预热
+            launchModel.tags = @{@"active_pre_warm":@(isPreWarming)};
             [self process:launchModel];
         }];
     } @catch (NSException *exception) {

@@ -83,8 +83,9 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         launchEnd = CFAbsoluteTimeGetCurrent();
     }
     NSNumber *duration = [NSNumber numberWithLong:(launchEnd-FTLoadDate)*1000000000];
-    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:)]) {
-        [self.delegate ftAppColdStart:duration];
+    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:isPreWarming:)]) {
+        BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
+        [self.delegate ftAppColdStart:duration isPreWarming:isPreWarming];
     }
 }
 - (void)applicationWillEnterForeground{

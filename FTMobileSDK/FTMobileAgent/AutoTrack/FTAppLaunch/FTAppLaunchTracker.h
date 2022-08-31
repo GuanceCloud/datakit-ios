@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)ftAppHotStart:(NSNumber *)duration;
 
--(void)ftAppColdStart:(NSNumber *)duration;
+-(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
 @end
 @interface FTAppLaunchTracker : NSObject
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;
