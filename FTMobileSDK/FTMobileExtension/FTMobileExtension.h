@@ -17,3 +17,5 @@ FOUNDATION_EXPORT const unsigned char FTMobileExtensionVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <FTMobileExtension/PublicHeader.h>
 
 
+#import "FTExtensionManager.h"
+#import "FTExtensionDataManager.h"

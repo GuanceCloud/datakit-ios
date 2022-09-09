@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1716A4B528C9A94500FA3D1C /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A4B428C9A94500FA3D1C /* FTAppLaunchDurationTest.m */; };
+		1716A4B928C9BC8E00FA3D1C /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 1716A4B828C9BC8E00FA3D1C /* sample.html */; };
 		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
 		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
@@ -45,12 +47,11 @@
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
-		4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB1FFA62546D74900CB36CF /* FTANRTest.m */; };
+		4AB1FFA72546D74900CB36CF /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AB1FFA62546D74900CB36CF /* FTLongTaskTest.m */; };
 		4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */; };
 		4E953B54CC64EBC979926072 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */; };
 		6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 6B6E2163E1D9572FA4052E13 /* CHANGELOG */; };
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
-		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
 		7C28B8B62660B29500CECBA6 /* sample1.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B8B52660B29400CECBA6 /* sample1.html */; };
 		7C3C289627683983009DB8E2 /* FTRUMTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C3C289527683983009DB8E2 /* FTRUMTest.m */; };
 		7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */; };
@@ -129,6 +130,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1716A4B428C9A94500FA3D1C /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FTAppLaunchDurationTest.m; path = FTMobileSDKUnitTests/UtilsTest/FTAppLaunchDurationTest.m; sourceTree = SOURCE_ROOT; };
+		1716A4B828C9BC8E00FA3D1C /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
@@ -192,7 +195,7 @@
 		4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackTest.m; sourceTree = "<group>"; };
 		4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FTMobileSDK.xcodeproj; path = FTMobileSDK/FTMobileSDK.xcodeproj; sourceTree = "<group>"; };
 		4A89DD1B23D70C07006EB6BB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
-		4AB1FFA62546D74900CB36CF /* FTANRTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTANRTest.m; sourceTree = "<group>"; };
+		4AB1FFA62546D74900CB36CF /* FTLongTaskTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
@@ -205,7 +208,6 @@
 		7C02F60C268C498200A0FE90 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		7C28B870266098B800CECBA6 /* TestJsbridgeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestJsbridgeData.h; sourceTree = "<group>"; };
 		7C28B871266098B800CECBA6 /* TestJsbridgeData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestJsbridgeData.m; sourceTree = "<group>"; };
-		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		7C28B8B52660B29400CECBA6 /* sample1.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample1.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		7C3C289527683983009DB8E2 /* FTRUMTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTest.m; sourceTree = "<group>"; };
@@ -283,6 +285,7 @@
 		172C356D280D8885002D139E /* UtilsTest */ = {
 			isa = PBXGroup;
 			children = (
+				1716A4B428C9A94500FA3D1C /* FTAppLaunchDurationTest.m */,
 				4A299B932514953300400931 /* FTPropertyTest.m */,
 				4A270E9424FF97FE0079F455 /* FTUtilsTest.m */,
 				172C3570280E7D5F002D139E /* FTSwizzleTest.m */,
@@ -382,7 +385,7 @@
 				7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */,
 				7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */,
 				7C28B8B52660B29400CECBA6 /* sample1.html */,
-				7C28B877266098E700CECBA6 /* sample.html */,
+				1716A4B828C9BC8E00FA3D1C /* sample.html */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
@@ -413,7 +416,8 @@
 		4A2C825F24EFC9AB006D4FC6 /* HookTest */ = {
 			isa = PBXGroup;
 			children = (
-				4AB1FFA62546D74900CB36CF /* FTANRTest.m */,
+				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
+				4AB1FFA62546D74900CB36CF /* FTLongTaskTest.m */,
 				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
 			);
 			path = HookTest;
@@ -424,7 +428,6 @@
 			children = (
 				4A037EF924F791CB007B2104 /* FTTraceTest.m */,
 				4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */,
-				7C7DE44426808C5E00B9C10C /* FTLoggerTest.m */,
 				7C3C289527683983009DB8E2 /* FTRUMTest.m */,
 				17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */,
 			);
@@ -673,9 +676,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C28B8B62660B29500CECBA6 /* sample1.html in Resources */,
+				1716A4B928C9BC8E00FA3D1C /* sample.html in Resources */,
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
-				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
 				4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */,
 				6B6E2D367B46269F18FC78BE /* CHANGELOG in Resources */,
@@ -822,13 +825,14 @@
 				4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */,
 				17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */,
 				7C3C289627683983009DB8E2 /* FTRUMTest.m in Sources */,
-				4AB1FFA72546D74900CB36CF /* FTANRTest.m in Sources */,
+				4AB1FFA72546D74900CB36CF /* FTLongTaskTest.m in Sources */,
 				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
 				17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
 				7C7DE44526808C5E00B9C10C /* FTLoggerTest.m in Sources */,
+				1716A4B528C9A94500FA3D1C /* FTAppLaunchDurationTest.m in Sources */,
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,

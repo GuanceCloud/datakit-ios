@@ -10,7 +10,6 @@
 #endif
 #import "FTUncaughtExceptionHandler.h"
 #include <execinfo.h>
-#import "FTGlobalRumManager.h"
 #import <mach-o/ldsyms.h>
 #include <mach-o/dyld.h>
 #import <mach-o/loader.h>
@@ -43,6 +42,7 @@ static SignalHandler previousTRAPSignalHandler = NULL;
 static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 @interface FTUncaughtExceptionHandler()
+@property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
 @implementation FTUncaughtExceptionHandler
 
@@ -123,11 +123,24 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
         [self installUncaughtExceptionHandler];
         [self installSignalHandler];
     }
     return self;
+}
+- (void)addftSDKInstance:(id <FTErrorDataDelegate>)instance{
+    NSParameterAssert(instance != nil);
+    if (![self.ftSDKInstances containsObject:instance]) {
+        [self.ftSDKInstances addObject:instance];
+    }
+}
+- (void)removeftSDKInstance:(id <FTErrorDataDelegate>)instance{
+    NSParameterAssert(instance != nil);
+    if ([self.ftSDKInstances containsObject:instance]) {
+        [self.ftSDKInstances removeObject:instance];
+    }
 }
 - (void)installUncaughtExceptionHandler{
     previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
@@ -237,8 +250,11 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 //med 2、所有错误异常处理
 - (void)handleException:(NSException *)exception {
     NSString *info = [self handleExceptionInfo:exception];
-    
-    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] message:[exception reason] stack:info];
+    for (id instance in self.ftSDKInstances) {
+        if ([instance respondsToSelector:@selector(addErrorWithType:message:stack:)]) {
+            [instance addErrorWithType:[exception name] message:[exception reason] stack:info];
+        }
+    }
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
 }
