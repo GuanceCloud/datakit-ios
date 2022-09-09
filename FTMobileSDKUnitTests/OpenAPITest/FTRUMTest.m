@@ -258,7 +258,7 @@
 - (void)testAddErrorResource{
     [self setRumConfig];
     [FTModelHelper startView];
-    
+    [FTModelHelper addAction];
     [self addErrorResource];
     [NSThread sleepForTimeInterval:2];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];

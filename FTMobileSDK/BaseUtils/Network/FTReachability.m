@@ -140,7 +140,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         // We need to create a serial queue.
         // We allocate this once for the lifetime of the notifier.
 
-        self.reachabilitySerialQueue = dispatch_queue_create("com.tonymillion.reachability", NULL);
+        self.reachabilitySerialQueue = dispatch_queue_create("com.ft.reachability", NULL);
         self.net = [self networkType];
     }
     

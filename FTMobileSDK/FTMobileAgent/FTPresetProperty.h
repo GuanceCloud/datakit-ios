@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSDictionary *rumContext;
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 + (NSString *)deviceInfo;
-+ (NSString *)appIdentifier;
 + (NSString *)telephonyInfo;
 
 /**

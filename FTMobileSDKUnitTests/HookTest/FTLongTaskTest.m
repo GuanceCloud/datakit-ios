@@ -1,5 +1,5 @@
 //
-//  FTANRTest.m
+//  FTLongTaskTest.m
 //  FTMobileSDKUnitTests
 //
 //  Created by 胡蕾蕾 on 2020/10/26.
@@ -18,10 +18,10 @@
 #import "FTTrackDataManger+Test.h"
 #import <KIF/KIF.h>
 
-@interface FTANRTest : KIFTestCase
+@interface FTLongTaskTest : KIFTestCase
 
 @end
-@implementation FTANRTest
+@implementation FTLongTaskTest
 -(void)tearDown{
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:2];

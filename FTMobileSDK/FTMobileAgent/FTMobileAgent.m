@@ -29,6 +29,7 @@
 #import "FTTraceHeaderManager.h"
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
+#import "FTExtensionDataManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -112,50 +113,6 @@ static dispatch_once_t onceToken;
     [[FTTraceHeaderManager sharedInstance] setNetworkTrace:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
--(void)startTrackExtensionCrashWithApplicationGroupIdentifier:(NSString *)groupIdentifier{
-    @try {
-        if (![groupIdentifier isKindOfClass:NSString.class] || (groupIdentifier.length == 0)) {
-            ZYLog(@"Group Identifier 数据格式有误");
-            return;
-        }
-        dispatch_block_t block = ^{
-            NSString *pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
-            NSArray *array = [[NSArray alloc] initWithContentsOfFile:pathStr];
-            if (array.count>0) {
-                NSData *data= [NSPropertyListSerialization dataWithPropertyList:@[]
-                                                                         format:NSPropertyListBinaryFormat_v1_0
-                                                                        options:0
-                                                                          error:nil];
-                if (data.length) {
-                    BOOL result = [data  writeToFile:pathStr options:NSDataWritingAtomic error:nil];
-                    ZYLog(@"Group file delete success %@",result);
-                }
-                [array enumerateObjectsUsingBlock:^(NSDictionary  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    NSDictionary *field = [obj valueForKey:FT_FIELDS];
-                    NSNumber *tm = [obj valueForKey:@"tm"];
-                    if (field && field.allKeys.count>0 && tm) {
-                        if ([self judgeRUMTraceOpen]) {
-                            
-                            [self rumWrite:FT_MEASUREMENT_RUM_ERROR terminal:FT_TERMINAL_MINIPROGRA tags:@{@"crash_type":@"ios_crash"} fields:field tm:tm.longLongValue];
-                        }else{
-                            NSString *crash_message = field[@"crash_message"];
-                            NSString *crash_stack = field[@"crash_stack"];
-                            if (crash_stack && crash_message) {
-                                NSString *info = [NSString stringWithFormat:@"Exception Reason:%@\n%@",crash_message,crash_stack];
-                                [self loggingWithType:FTAddDataNormal status:FTStatusCritical content:info tags:nil field:field tm:tm.longLongValue];
-                            }
-                        }
-                    }else{
-                        ZYLog(@"extension 采集数据格式有误。");
-                    }
-                }];
-            }
-        };
-        dispatch_async(self.concurrentLabel, block);
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
-    }
-}
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;
@@ -266,27 +223,28 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
-//-(void)tracing:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-//    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-//        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
-//        return;
-//    }
-//    @try {
-//        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty traceProperty]];
-//        if (tags) {
-//            [tagDict addEntriesFromDictionary:tags];
-//        }
-//        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-//        }.mutableCopy;
-//        if (field) {
-//            [filedDict addEntriesFromDictionary:field];
-//        }
-//        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:self.netTraceStr op:FT_DATA_TYPE_TRACING tags:tagDict field:filedDict tm:tm];
-//        [self insertDBWithItemData:model type:FTAddDataNormal];
-//    } @catch (NSException *exception) {
-//        ZYErrorLog(@"exception %@",exception);
-//    }
-//}
+- (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
+    @try {
+        if (groupIdentifier == nil || [groupIdentifier isEqualToString:@""]) {
+            return;
+        }
+        NSArray *eventArray = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:groupIdentifier];
+        if (eventArray) {
+            for (NSDictionary *dict in eventArray) {
+                NSString *eventType = dict[@"eventType"];
+                // todo: session 信息是否需要 terminal
+                [self rumWrite:eventType terminal:@"app_extension" tags:dict[@"tags"] fields:dict[@"fields"]];
+            }
+            [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
+            if (completion) {
+                completion(groupIdentifier, eventArray);
+            }
+        }
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"%@ error: %@", self, exception);
+    }
+}
+
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;

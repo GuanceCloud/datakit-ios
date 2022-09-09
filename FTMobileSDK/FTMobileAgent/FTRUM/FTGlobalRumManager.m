@@ -27,7 +27,7 @@
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
 #import "FTRUMMonitor.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTErrorDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -56,17 +56,6 @@ static dispatch_once_t onceToken;
     });
     return sharedInstance;
 }
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    return [self sharedInstance];
-}
-
-- (id)copyWithZone:(NSZone *)zone {
-    return self;
-}
-
-- (id)mutableCopyWithZone:(NSZone *)zone {
-    return self;
-}
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
     if (self.rumConfig.appid.length<=0) {
@@ -78,7 +67,7 @@ static dispatch_once_t onceToken;
     self.track = [[FTTrack alloc]init];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [FTUncaughtExceptionHandler sharedHandler];
+        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
     }
     //采集view、resource、jsBridge
     dispatch_async(dispatch_get_main_queue(), ^{

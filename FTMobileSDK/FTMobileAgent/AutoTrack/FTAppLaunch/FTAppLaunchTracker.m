@@ -22,7 +22,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     size_t len = 4;
     int mib[len];
     struct kinfo_proc kp;
-    NSTimeInterval startTime;
+    NSTimeInterval startTime = now;
     sysctlnametomib("kern.proc.pid", mib, &len);
     mib[3] = getpid();
     len = sizeof(kp);
@@ -31,9 +31,6 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         struct timeval startTimeval = kp.kp_proc.p_un.__p_starttime;
         startTime = startTimeval.tv_sec + startTimeval.tv_usec / 1e6;
         startTime -= kCFAbsoluteTimeIntervalSince1970;
-
-    }else {
-        startTime = now;
     }
     return startTime;
 }
@@ -60,9 +57,6 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         [center removeObserver:token];
         token = nil;
     }];
-}
-- (instancetype)init{
-    return [self initWithDelegate:nil];
 }
 - (instancetype)initWithDelegate:(nullable id)delegate{
     self = [super init];

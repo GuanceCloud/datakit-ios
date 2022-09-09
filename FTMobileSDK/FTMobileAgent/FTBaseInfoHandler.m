@@ -55,15 +55,11 @@
     }
     return sessionid;
 }
-+ (void)setUserId:(NSString *)userid{
-        [[NSUserDefaults standardUserDefaults] setValue:userid forKey:@"ft_userid"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-}
 + (NSString *)convertToStringData:(NSDictionary *)dict{
     __block NSString *str = @"";
     if (dict) {
         [dict.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if (idx == dict.allKeys.count) {
+            if (idx == dict.allKeys.count-1) {
                 str = [str stringByAppendingFormat:@"%@:%@",obj,dict[obj]];
             }else{
                 str = [str stringByAppendingFormat:@"%@:%@\n",obj,dict[obj]];
