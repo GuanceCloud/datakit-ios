@@ -163,13 +163,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
-//- (NSDictionary *)traceProperty{
-//    NSMutableDictionary *tag = [NSMutableDictionary new];
-//    [tag addEntriesFromDictionary:self.context];
-//    [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
-//    [tag setValue:self.version forKey:@"version"];
-//    return tag;
-//}
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{
     self.version = config.version;
     self.env = FTEnvStringMap[config.env];
@@ -372,10 +365,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
         return mCarrier;
     }
-}
-+ (NSString *)appIdentifier{
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return [infoDictionary objectForKey:@"CFBundleIdentifier"];
 }
 @end
 

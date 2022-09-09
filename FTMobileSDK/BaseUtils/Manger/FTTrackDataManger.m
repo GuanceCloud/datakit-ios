@@ -33,10 +33,6 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     });
     return sharedInstance;
 }
-
-+(instancetype)allocWithZone:(struct _NSZone *)zone{
-    return [FTTrackDataManger sharedInstance];
-}
 -(instancetype)init{
     self = [super init];
     if (self) {

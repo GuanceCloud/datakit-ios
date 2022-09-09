@@ -27,27 +27,26 @@
 }
 - (double)readCpuUsage{
     natural_t ticks = [self readUtilizedTicks];
+    natural_t usage = -1;
     if (ticks>0) {
         natural_t ongoingInactiveTicks = ticks - (self.utilizedTicksWhenResigningActive>0 ?self.utilizedTicksWhenResigningActive: ticks);
         natural_t inactiveTicks = self.totalInactiveTicks + ongoingInactiveTicks;
-        return ticks - inactiveTicks;
+        usage = ticks - inactiveTicks;
     }
-    return -1;
+    return usage;
 }
 //总的 cpu 占用率
 - (natural_t)readUtilizedTicks {
     kern_return_t kr;
+    natural_t user = -1;
     mach_msg_type_number_t count;
     host_cpu_load_info_data_t info;
     count = HOST_CPU_LOAD_INFO_COUNT;
     
     kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&info, &count);
-    if (kr != KERN_SUCCESS) {
-        return -1;
+    if (kr == KERN_SUCCESS) {
+        user   = info.cpu_ticks[CPU_STATE_USER];
     }
-    
-    natural_t user   = info.cpu_ticks[CPU_STATE_USER];
-
     return user;
 }
 

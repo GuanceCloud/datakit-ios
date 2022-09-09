@@ -42,10 +42,9 @@ static double NormalizedRefreshRate = 60.0;
         _memoryHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         _displayHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         [_displayRateMonitor addMonitorItem:_displayHelper];
+        _maximumRefreshRate = 60;
         if (@available(iOS 10.3, *)) {
             _maximumRefreshRate = [UIScreen mainScreen].maximumFramesPerSecond;
-        } else {
-            _maximumRefreshRate = 60;
         }
     }
     return self;
