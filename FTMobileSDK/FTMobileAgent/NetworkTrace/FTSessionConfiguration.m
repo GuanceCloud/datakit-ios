@@ -49,7 +49,8 @@
 }
 
 - (NSArray *)protocolClasses {
-    // 如果还有其他的监控protocol，也可以在这里加进去
+    // 如果还有其他的监控 protocol
+    // 可以继承 FTSessionConfiguration 重写 - protocolClasses 方法 返回值中 添加其他的监控 protocol
     return @[[FTURLProtocol class]];
 }
 @end

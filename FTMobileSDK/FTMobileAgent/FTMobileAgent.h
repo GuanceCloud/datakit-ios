@@ -14,3 +14,4 @@
 #import "FTTraceManager.h"
 #import "FTExternalRumProtocol.h"
 #import "FTMobileAgent+Public.h"
+#import "FTRumResourceProtocol.h"

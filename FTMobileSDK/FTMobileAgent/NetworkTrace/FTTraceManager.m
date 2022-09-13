@@ -10,6 +10,11 @@
 #import "FTNetworkInfoManager.h"
 #import "FTTraceHandler.h"
 #import "FTConfigManager.h"
+#import "FTResourceContentModel.h"
+#import "FTResourceMetricsModel.h"
+#import "FTDateUtil.h"
+NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
+
 @interface FTTraceManager ()
 @property (nonatomic,copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) NSMutableDictionary<NSString *,FTTraceHandler *> *traceHandlers;
@@ -40,12 +45,12 @@
 -(BOOL)enableLinkRumData{
     return  [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
 }
-- (BOOL)isTraceUrl:(NSURL *)url{
+- (BOOL)isInternalURL:(NSURL *)url{
     if (self.sdkUrlStr) {
         if (url.port) {
-            return !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
+            return ([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
-            return ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+            return [url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
         }
     }
     return NO;
@@ -55,7 +60,7 @@
     if (!handler) {
         handler = [[FTTraceHandler alloc]initWithUrl:url identifier:key];
         if(self.enableLinkRumData){
-        [self setTraceHandler:handler forKey:key];
+            [self setTraceHandler:handler forKey:key];
         }
     }
     return handler.getTraceHeader;
@@ -76,9 +81,85 @@
     dispatch_semaphore_signal(self.lock);
     return handler;
 }
--(void)removeTraceHandlerWithKey:(NSString *)key{
-    dispatch_semaphore_wait(self.lock, DISPATCH_TIME_FOREVER);
-    [self.traceHandlers removeObjectForKey:key];
-    dispatch_semaphore_signal(self.lock);
+#pragma mark --------- URLSessionInterceptorType ----------
+- (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
+    //判断是否开启 trace ，是否是内部 url
+    if (![self enableAutoTrace] || [self isInternalURL:request.URL]) {
+        return request;
+    }
+    if ([request.allHTTPHeaderFields.allKeys containsObject:FT_TRACR_IDENTIFIER]) {
+        return request;
+    }
+    NSString *identifier =  [NSUUID UUID].UUIDString;
+    NSDictionary *traceHeader = [self getTraceHeaderWithKey:identifier url:request.URL];
+    NSMutableURLRequest *mutableReqeust = [request mutableCopy];
+    if (traceHeader && traceHeader.allKeys.count>0) {
+        [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+            [mutableReqeust setValue:value forHTTPHeaderField:field];
+        }];
+        [mutableReqeust setValue:identifier forHTTPHeaderField:FT_TRACR_IDENTIFIER];
+    }
+    return mutableReqeust;
+}
+- (void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
+    if ([self isInternalURL:task.originalRequest.URL]) {
+        return;
+    }
+    NSString *identifier = task.originalRequest.allHTTPHeaderFields[FT_TRACR_IDENTIFIER];
+    if (self.rumDelegate && [self.rumDelegate respondsToSelector:@selector(startResourceWithKey:)]) {
+        [self.rumDelegate startResourceWithKey:identifier];
+    }
+}
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
+    if ([self isInternalURL:task.originalRequest.URL]) {
+        return;
+    }
+    NSString *identifier = task.originalRequest.allHTTPHeaderFields[FT_TRACR_IDENTIFIER];
+    FTTraceHandler *handler = [self getTraceHandler:identifier];
+    handler.metrics = metrics;
+}
+- (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
+    if ([self isInternalURL:task.originalRequest.URL]) {
+        return;
+    }
+    NSString *identifier = task.originalRequest.allHTTPHeaderFields[FT_TRACR_IDENTIFIER];
+    FTTraceHandler *handler = [self getTraceHandler:identifier];
+    handler.data = data;
+}
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+    if ([self isInternalURL:task.originalRequest.URL]) {
+        return;
+    }
+    NSString *identifier = task.originalRequest.allHTTPHeaderFields[FT_TRACR_IDENTIFIER];
+    FTTraceHandler *handler = [self getTraceHandler:identifier];
+    
+    NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:handler.startTime toDate:[NSDate date]];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = task.originalRequest.URL;
+    model.requestHeader = task.originalRequest.allHTTPHeaderFields;
+    model.httpMethod = task.originalRequest.HTTPMethod;
+    NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
+    if (response) {
+        NSDictionary *responseHeader = response.allHeaderFields;
+        model.responseHeader = responseHeader;
+        model.httpStatusCode = response.statusCode;
+        if (handler.data) {
+            model.responseBody = [[NSString alloc] initWithData:handler.data encoding:NSUTF8StringEncoding];
+        }
+    }
+    model.error = error;
+    model.duration = duration;
+    FTResourceMetricsModel *metricsModel = nil;
+    if (@available(iOS 10.0, *)) {
+        if (handler.metrics) {
+            metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:handler.metrics];
+        }
+    }
+    if (self.rumDelegate && [self.rumDelegate respondsToSelector:@selector(stopResourceWithKey:)]) {
+        [self.rumDelegate stopResourceWithKey:identifier];
+    }
+    if (self.rumDelegate && [self.rumDelegate respondsToSelector:@selector(addResourceWithKey:metrics:content:)]) {
+        [self.rumDelegate addResourceWithKey:identifier metrics:metricsModel content:model];
+    }
 }
 @end

@@ -8,9 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import <FTExternalRumProtocol.h>
+#import "FTRumResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@interface FTExternalDataManager : NSObject<FTExternalRum>
+@interface FTExternalDataManager : NSObject<FTExternalRum,FTRumResourceProtocol>
 + (instancetype)sharedManager;
+#pragma mark --------- Rum ----------
 /**
  * 创建页面
  * @param viewName     页面名称
@@ -67,6 +69,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param key       请求标识
  */
 - (void)stopResourceWithKey:(NSString *)key;
+#pragma mark --------- Trace ----------
+/**
+ * 获取 trace 需要添加的请求头
+ * @param key   请求标识
+ * @param url   请求 URL
+ */
+- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
 @end
 
 NS_ASSUME_NONNULL_END

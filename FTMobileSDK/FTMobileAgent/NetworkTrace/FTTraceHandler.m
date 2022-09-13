@@ -12,7 +12,6 @@
 #import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
 #import "FTTraceHeaderManager.h"
-#import "NSURLRequest+FTMonitor.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
 #import "FTResourceContentModel.h"
@@ -21,13 +20,8 @@
 @interface FTTraceHandler ()
 @property (nonatomic, strong) NSDictionary *requestHeader;
 @property (nonatomic, strong,nullable) NSError *error;
-@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics;
 @property (nonatomic, strong) NSURLSessionTask *task;
-@property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong, readwrite) NSURL *url;
-@property (nonatomic, strong) NSDate *startTime;
-@property (nonatomic, strong) NSNumber *duration;
-
 @end
 @implementation FTTraceHandler
 

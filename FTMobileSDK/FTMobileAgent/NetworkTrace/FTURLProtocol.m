@@ -10,7 +10,6 @@
 #endif
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-#import "NSURLRequest+FTMonitor.h"
 #import "FTResourceContentModel.h"
 #import "FTTraceHandler.h"
 #import "FTTraceHeaderManager.h"
@@ -66,7 +65,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    return [request ft_NetworkTrace];
+    return [[FTTraceManager sharedInstance] injectTraceHeader:request];
 }
 
 + (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b {
@@ -81,14 +80,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 - (void)startLoading
 {
     NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    self.trackUrl = [[FTTraceManager sharedInstance] isTraceUrl:mutableReqeust.URL];
-    if(self.trackUrl){
-        self.identifier = [mutableReqeust.allHTTPHeaderFields valueForKey:@"ft_identifier"];
-        [mutableReqeust setValue:nil forHTTPHeaderField:@"ft_identifier"];
-        if(!self.identifier){
-            self.identifier = [[NSUUID UUID]UUIDString];
-        }
-    }
     //标示该request已经处理过了，防止无限循环
     [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     //使用NSURLSession继续把request发送出去
@@ -98,13 +89,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
-    if (self.trackUrl) {
-        if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
-            [[FTGlobalRumManager sharedInstance] startResourceWithKey:self.identifier];
-        }else{
-            [[FTTraceManager sharedInstance] removeTraceHandlerWithKey:self.identifier];
-        }
-    }
+    [[FTTraceManager sharedInstance] taskCreated:task session:self.session];
     [task resume];
 }
 
@@ -122,9 +107,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    if (self.trackUrl) {
-        self.data = data;
-    }
+    [[FTTraceManager sharedInstance] taskReceivedData:dataTask data:data];
     [self.client URLProtocol:self didLoadData:data];
 }
 
@@ -135,51 +118,10 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    if (self.trackUrl) {
-        NSDate *start = nil;
-        NSNumber *duration = @(-1);
-        if (@available(iOS 11.0, *)) {
-            if (self.metrics) {
-                NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
-                start = taskMes.requestStartDate;
-                duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000];
-            }
-        }
-        FTResourceContentModel *model = [FTResourceContentModel new];
-        model.url = self.request.URL;
-        model.requestHeader = self.request.allHTTPHeaderFields;
-        model.httpMethod = self.request.HTTPMethod;
-        NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
-        if (response) {
-            NSDictionary *responseHeader = response.allHeaderFields;
-            model.responseHeader = responseHeader;
-            model.httpStatusCode = response.statusCode;
-            if (self.data) {
-                model.responseBody = [[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
-            }
-        }
-        model.error = error;
-        model.duration = duration;
-        if (![FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
-            return;
-        }
-        FTResourceMetricsModel *metricsModel = nil;
-        if (@available(iOS 10.0, *)) {
-            if (self.metrics) {
-                metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
-            }
-        }
-        [[FTGlobalRumManager sharedInstance] stopResourceWithKey:self.identifier];
-        [[FTGlobalRumManager sharedInstance] addResourceWithKey:self.identifier metrics:metricsModel content:model];
-       
-    }
+    [[FTTraceManager sharedInstance] taskCompleted:task error:error];
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-    
-    if (self.trackUrl ) {
-        self.metrics = metrics;
-    }
-    
+    [[FTTraceManager sharedInstance] taskMetricsCollected:task metrics:metrics];
 }
 
 @end

@@ -85,6 +85,7 @@ static dispatch_once_t onceToken;
     });
     if(rumConfig.enableTraceUserResource){
         [FTURLProtocol startMonitor];
+        [FTTraceManager sharedInstance].rumDelegate = self;
     }
     [FTWKWebViewHandler sharedInstance].traceDelegate = self;
 }

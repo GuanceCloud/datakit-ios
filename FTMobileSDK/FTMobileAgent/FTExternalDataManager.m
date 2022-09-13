@@ -56,5 +56,7 @@
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     [FTGlobalRumManager.sharedInstance stopResourceWithKey:key];
 }
-
+- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+    return [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+}
 @end

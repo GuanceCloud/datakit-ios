@@ -9,7 +9,6 @@
 #ifndef FTExternalRumProtocol_h
 #define FTExternalRumProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-@class FTResourceMetricsModel,FTResourceContentModel;
 @protocol FTExternalRum <NSObject>
 /**
  * 创建页面
@@ -50,23 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param duration   卡顿时长
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
-/**
- * 请求开始
- * @param key       请求标识
- */
-- (void)startResourceWithKey:(NSString *)key;
-/**
- * 请求数据
- * @param key       请求标识
- * @param metrics   请求相关性能属性
- * @param content   请求相关数据
- */
-- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-/**
- * 请求结束
- * @param key       请求标识
- */
-- (void)stopResourceWithKey:(NSString *)key;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTExternalRumProtocol_h */
