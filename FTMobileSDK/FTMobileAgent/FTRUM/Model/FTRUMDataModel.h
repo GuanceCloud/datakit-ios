@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMDataWriteProtocol.h"
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
     FTRUMDataLaunchHot,
     FTRUMDataLaunchCold,
@@ -72,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, copy, nullable) NSString *action_id;
-
+@property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 -(NSDictionary *)getGlobalSessionViewTags;
 -(NSDictionary *)getGlobalSessionViewActionTags;
 @end

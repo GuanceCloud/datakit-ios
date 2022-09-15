@@ -8,7 +8,6 @@
 
 #import "FTRUMActionHandler.h"
 #import "FTDateUtil.h"
-#import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
@@ -40,7 +39,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.action_name = model.action_name;
         self.action_type = model.action_type;
         self.type = model.type;
-        self.context = [context copy];
+        self.context = context;
         self.context.action_id = self.action_id;
     }
     return  self;
@@ -107,7 +106,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     };
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }

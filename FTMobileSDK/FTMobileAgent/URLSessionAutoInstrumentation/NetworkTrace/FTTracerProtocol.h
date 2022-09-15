@@ -1,8 +1,8 @@
 //
-//  FTURLSessionDelegate.h
-//  FTMobileAgent
+//  FTTracerProtocol.h
+//  FTMobileSDK
 //
-//  Created by hulilei on 2022/9/13.
+//  Created by hulilei on 2022/9/15.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,16 @@
 //  limitations under the License.
 
 
-#import <Foundation/Foundation.h>
-
+#ifndef FTTracerProtocol_h
+#define FTTracerProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-@class FTURLSessionDelegate,URLSessionAutoInstrumentation;
-@protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 
-- (FTURLSessionDelegate *)ftURLSessionDelegate;
+typedef void(^UnpackTraceHeaderHandler)(NSString * _Nullable traceId, NSString *_Nullable spanID);
+
+@protocol FTTracerProtocol<NSObject>
+- (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url;
+
+- (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler;
 @end
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) URLSessionAutoInstrumentation *instrumentation;
-
-- (FTURLSessionDelegate *)ftURLSessionDelegate;
-@end
-
-
 NS_ASSUME_NONNULL_END
+#endif /* FTTracerProtocol_h */

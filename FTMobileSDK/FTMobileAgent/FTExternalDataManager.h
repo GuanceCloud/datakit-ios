@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <FTExternalRumProtocol.h>
+#import "FTExternalRumProtocol.h"
 #import "FTRumResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTExternalDataManager : NSObject<FTExternalRum,FTRumResourceProtocol>

@@ -1,8 +1,8 @@
 //
-//  FTURLSessionDelegate.h
-//  FTMobileAgent
+//  FTRUMDataWriteProtocol.h
+//  FTMobileSDK
 //
-//  Created by hulilei on 2022/9/13.
+//  Created by hulilei on 2022/9/14.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,19 +18,13 @@
 //  limitations under the License.
 
 
-#import <Foundation/Foundation.h>
-
+#ifndef FTRUMDataWriteProtocol_h
+#define FTRUMDataWriteProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-@class FTURLSessionDelegate,URLSessionAutoInstrumentation;
-@protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
+@protocol FTRUMDataWriteProtocol <NSObject>
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
-- (FTURLSessionDelegate *)ftURLSessionDelegate;
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 @end
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) URLSessionAutoInstrumentation *instrumentation;
-
-- (FTURLSessionDelegate *)ftURLSessionDelegate;
-@end
-
-
 NS_ASSUME_NONNULL_END
+#endif /* FTRUMDataWriteProtocol_h */

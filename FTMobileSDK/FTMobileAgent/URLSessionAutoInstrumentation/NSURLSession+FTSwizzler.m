@@ -33,9 +33,10 @@
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(void (^)(NSData * _Nullable, NSURLResponse * _Nullable, NSError * _Nullable))completionHandler{
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        id <FTURLSessionDelegateProviding> delegate =(id <FTURLSessionDelegateProviding>)self.delegate;
-        if (completionHandler != nil) {
-            }
+        
+        NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url completionHandler:completionHandler];
+        
+
         return nil;
     }else{
         return [self ft_dataTaskWithURL:url completionHandler:completionHandler];

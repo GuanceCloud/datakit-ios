@@ -19,21 +19,26 @@
 
 
 #import "FTURLSessionDelegate.h"
-#import "FTRumResourceProtocol.h"
-#import "FTTraceManager.h"
+#import "URLSessionAutoInstrumentation.h"
+#import "FTURLSessionInterceptorProtocol.h"
+@interface FTURLSessionDelegate()
+@end
 @implementation FTURLSessionDelegate
 
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
+- (URLSessionAutoInstrumentation *)instrumentation{
+    return [URLSessionAutoInstrumentation new];
+}
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
-    [[FTTraceManager sharedInstance] taskReceivedData:dataTask data:data];
+    [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    [[FTTraceManager sharedInstance] taskMetricsCollected:task metrics:metrics];
+    [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [[FTTraceManager sharedInstance] taskCompleted:task error:error];
+    [self.instrumentation.interceptor taskCompleted:task error:error];
 }
 
 @end

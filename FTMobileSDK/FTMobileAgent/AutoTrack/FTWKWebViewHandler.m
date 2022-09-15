@@ -92,8 +92,8 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)addScriptMessageHandlerWithWebView:(WKWebView *)webView{
-    if (self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
-        [self.traceDelegate ftAddScriptMessageHandlerWithWebView:webView];
+    if (self.rumTrackDelegate && [self.rumTrackDelegate respondsToSelector:@selector(ftAddScriptMessageHandlerWithWebView:)]) {
+        [self.rumTrackDelegate ftAddScriptMessageHandlerWithWebView:webView];
     }
 }
 @end

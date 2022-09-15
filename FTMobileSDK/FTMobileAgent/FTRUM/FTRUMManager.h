@@ -9,33 +9,36 @@
 #import "FTRUMHandler.h"
 #import <UIKit/UIKit.h>
 #import "FTEnumConstant.h"
-
+#import "FTURLSessionInterceptor.h"
+#import "FTUncaughtExceptionHandler.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler
+@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate>
 @property (nonatomic, assign) AppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
--(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor;
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer;
 
 #pragma mark - resource -
 /**
  * resource Start
  */
-- (void)startResource:(NSString *)identifier;
+- (void)startResourceWithKey:(NSString *)key;
 /**
  * add resource metrics content
  */
-- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-
-- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
+/**
+ * add resource metrics content traceContent
+ */
+- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;
 /**
  * resource Stop
  */
-- (void)stopResource:(NSString *)identifier;
+- (void)stopResourceWithKey:(NSString *)key;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;

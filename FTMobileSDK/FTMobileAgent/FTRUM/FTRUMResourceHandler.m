@@ -7,7 +7,6 @@
 //
 
 #import "FTRUMResourceHandler.h"
-#import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import "FTResourceContentModel.h"
@@ -23,7 +22,7 @@
         self.identifier = model.identifier;
         self.assistant = self;
         self.time = model.time;
-        self.context = [context copy];
+        self.context = context;
     }
     return self;
 }
@@ -69,6 +68,6 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
+    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
 }
 @end

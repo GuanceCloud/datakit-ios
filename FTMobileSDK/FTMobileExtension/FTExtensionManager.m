@@ -10,8 +10,13 @@
 #import "FTExtensionDataManager.h"
 #import "FTUncaughtExceptionHandler.h"
 #import "FTLog.h"
+static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
+static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTExtensionManager ()<FTErrorDataDelegate>
 @property (nonatomic, copy) NSString *groupIdentifer;
+@property (nonatomic, strong) NSDate *lastInteractionTime;
+@property (nonatomic, strong) NSDate *sessionStartTime;
+@property (nonatomic, copy) NSString *sessionId;
 @end
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
@@ -31,10 +36,16 @@ static FTExtensionManager *sharedInstance = nil;
     self = [super init];
     if (self) {
         [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
+        _sessionStartTime = [NSDate date];
+        _sessionId = [[NSUUID UUID] UUIDString];
     }
     return self;
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
+    NSDate *currentDate = [NSDate date];
+    if([self timedOutOrExpired:currentDate]){
+        [self refreshWithDate:currentDate];
+    }
     NSDictionary *field = @{ @"error_message":message,
                              @"error_stack":stack,
     };
@@ -43,6 +54,18 @@ static FTExtensionManager *sharedInstance = nil;
         @"error_source":@"logger",
     };
     [[FTExtensionDataManager sharedInstance] writeEventType:@"error" tags:tags fields:field groupIdentifier:self.groupIdentifer];
+}
+-(void)refreshWithDate:(NSDate *)date{
+    self.sessionId = [NSUUID UUID].UUIDString;
+    self.sessionStartTime = date;
+    self.lastInteractionTime = date;
+}
+-(BOOL)timedOutOrExpired:(NSDate*)currentTime{
+    NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
+    BOOL timedOut = timeElapsedSinceLastInteraction >= sessionTimeoutDuration;
+    NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_sessionStartTime];
+    BOOL expired = sessionDuration >= sessionMaxDuration;
+    return timedOut || expired;
 }
 + (void)enableLog:(BOOL)enable{
     [FTLog enableLog:enable];

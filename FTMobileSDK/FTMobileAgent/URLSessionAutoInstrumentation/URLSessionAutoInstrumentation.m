@@ -21,10 +21,42 @@
 #import "URLSessionAutoInstrumentation.h"
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
-
+#import "FTURLSessionInterceptor.h"
+#include "FTURLProtocol.h"
+#import "FTWKWebViewHandler.h"
+@interface URLSessionAutoInstrumentation()
+@property (nonatomic, assign) BOOL swizzle;
+@end
 @implementation URLSessionAutoInstrumentation
-
+- (instancetype)init{
+    return [self initWithInterceptor:[FTURLSessionInterceptor sharedInstance]];
+}
+- (instancetype)initWithInterceptor:(id <URLSessionInterceptorType>)interceptor{
+    self = [super init];
+    if (self) {
+        _interceptor = interceptor;
+    }
+    return self;
+}
+-(id<FTRumResourceProtocol>)rumResourceHandler{
+    return [FTURLSessionInterceptor sharedInstance];
+}
+- (void)setRUMConfig:(FTRumConfig *)config{
+    [[FTURLSessionInterceptor sharedInstance] enableRumTrack:config.enableTraceUserResource];
+    [self startMonitor];
+}
+- (void)setTraceConfig:(FTTraceConfig *)config tracer:(nonnull id<FTTracerProtocol>)tracer{
+    [[FTURLSessionInterceptor sharedInstance] enableAutoTrace:config.enableAutoTrace];
+    [[FTURLSessionInterceptor sharedInstance] enableLinkRumData:config.enableLinkRumData];
+    [FTURLProtocol setDelegate:[FTURLSessionInterceptor sharedInstance]];
+    [[FTURLSessionInterceptor sharedInstance] setTracer:tracer];
+    [self startMonitor];
+}
 - (void)startMonitor{
+    if (self.swizzle) {
+        return;
+    }
+    self.swizzle = YES;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSError *error = NULL;
@@ -35,5 +67,7 @@
         [NSURLSession ft_swizzleMethod:@selector(dataTaskWithURL:completionHandler:) withMethod:@selector(ft_dataTaskWithURL:completionHandler:) error:&error];
         [NSURLSession ft_swizzleMethod:@selector(dataTaskWithRequest:completionHandler:) withMethod:@selector(ft_dataTaskWithRequest:completionHandler:) error:&error];
     });
+    [FTURLProtocol startMonitor];
+    [FTURLProtocol setDelegate:self.interceptor];
 }
 @end

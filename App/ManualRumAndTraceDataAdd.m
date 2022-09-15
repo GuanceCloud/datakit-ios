@@ -12,7 +12,7 @@
 #import <FTRUMManager.h>
 #import <FTResourceMetricsModel.h>
 #import <FTResourceContentModel.h>
-#import "FTTraceManager.h"
+#import "FTURLSessionInterceptor.h"
 
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -77,7 +77,7 @@
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
-    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {

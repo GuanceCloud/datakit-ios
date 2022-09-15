@@ -24,7 +24,7 @@
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
-#import "FTTraceHeaderManager.h"
+#import "FTTracer.h"
 #import <objc/runtime.h>
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
@@ -150,7 +150,7 @@
 }
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [[FTTraceHeaderManager sharedInstance] setValue:@9998 forKey:@"_skywalkingSeq"];
+    [[FTTracer sharedInstance] setValue:@9998 forKey:@"_skywalkingSeq"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
         [self networkUpload:@"Skywalking_v3_2" handler:^(NSDictionary *header) {

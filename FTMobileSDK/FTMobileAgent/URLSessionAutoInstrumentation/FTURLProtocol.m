@@ -11,13 +11,7 @@
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
 #import "FTResourceContentModel.h"
-#import "FTTraceHandler.h"
-#import "FTTraceHeaderManager.h"
-#import "FTGlobalRumManager.h"
-#import "FTBaseInfoHandler.h"
 #import "FTResourceMetricsModel.h"
-#import "FTConfigManager.h"
-#import "FTTraceManager.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
@@ -30,6 +24,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, copy) NSString *identifier;
 @end
 @implementation FTURLProtocol
+static id<URLSessionInterceptorType> sDelegate;
 
 // 开始监听
 + (void)startMonitor {
@@ -46,6 +41,18 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     [NSURLProtocol unregisterClass:[FTURLProtocol class]];
     if ([sessionConfiguration isExchanged]) {
         [sessionConfiguration unload];
+    }
+}
++ (id<URLSessionInterceptorType>)delegate{
+    id<URLSessionInterceptorType> result;
+    @synchronized (self) {
+        result = sDelegate;
+    }
+    return result;
+}
++ (void)setDelegate:(id<URLSessionInterceptorType>)newValue{
+    @synchronized (self) {
+        sDelegate = newValue;
     }
 }
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
@@ -65,7 +72,12 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    return [[FTTraceManager sharedInstance] injectTraceHeader:request];
+    id<URLSessionInterceptorType> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(injectTraceHeader:)]) {
+        return [strongeDelegate injectTraceHeader:request];
+    }
+    return request;
 }
 
 + (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b {
@@ -89,7 +101,11 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
-    [[FTTraceManager sharedInstance] taskCreated:task session:self.session];
+    id<URLSessionInterceptorType> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(taskCreated:session:)]) {
+        [strongeDelegate taskCreated:task session:self.session];
+    }
     [task resume];
 }
 
@@ -105,9 +121,12 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     completionHandler(NSURLSessionResponseAllow);
 }
 
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
-{
-    [[FTTraceManager sharedInstance] taskReceivedData:dataTask data:data];
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    id<URLSessionInterceptorType> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(taskReceivedData:data:)]) {
+        [strongeDelegate taskReceivedData:dataTask data:data];
+    }
     [self.client URLProtocol:self didLoadData:data];
 }
 
@@ -118,10 +137,19 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    [[FTTraceManager sharedInstance] taskCompleted:task error:error];
+    id<URLSessionInterceptorType> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(taskCompleted:error:)]) {
+        [strongeDelegate taskCompleted:task error:error];
+    }
+    
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-    [[FTTraceManager sharedInstance] taskMetricsCollected:task metrics:metrics];
+    id<URLSessionInterceptorType> strongeDelegate;
+    strongeDelegate = [[self class] delegate];
+    if ([strongeDelegate respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
+        [strongeDelegate taskMetricsCollected:task metrics:metrics];
+    };
 }
 
 @end

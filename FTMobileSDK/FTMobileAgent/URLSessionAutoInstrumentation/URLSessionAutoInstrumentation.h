@@ -19,11 +19,18 @@
 
 
 #import <Foundation/Foundation.h>
+#import "FTURLSessionInterceptorProtocol.h"
+#import "FTTracerProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
+@class FTRumConfig,FTTraceConfig;
 @interface URLSessionAutoInstrumentation : NSObject
-- (void)startMonitor;
+@property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
+@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
+
+- (void)setRUMConfig:(FTRumConfig *)config;
+- (void)setTraceConfig:(FTTraceConfig *)config tracer:(id<FTTracerProtocol>)tracer;
+
 @end
 
 NS_ASSUME_NONNULL_END

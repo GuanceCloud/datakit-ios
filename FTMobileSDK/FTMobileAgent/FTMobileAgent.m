@@ -26,10 +26,11 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
-#import "FTTraceHeaderManager.h"
+#import "FTTracer.h"
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
 #import "FTExtensionDataManager.h"
+#import "FTWKWebViewHandler.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -37,6 +38,8 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
+@property (nonatomic, strong, readwrite) URLSessionAutoInstrumentation *sessionInstrumentation;
+@property (nonatomic, strong, readwrite) FTTracer *tracer;
 @end
 @implementation FTMobileAgent
 
@@ -87,13 +90,12 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    if (!_rumConfig) {
-        _rumConfig = [rumConfigOptions copy];
-        [FTConfigManager sharedInstance].rumConfig = _rumConfig;
-        [self.presetProperty setAppid:_rumConfig.appid];
-        self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
-        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
-    }
+    [FTConfigManager sharedInstance].rumConfig = rumConfigOptions;
+    [self.presetProperty setAppid:rumConfigOptions.appid];
+    self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
+    [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
+    [self.sessionInstrumentation setRUMConfig:rumConfigOptions];
+    self.sessionInstrumentation.interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
@@ -110,7 +112,15 @@ static dispatch_once_t onceToken;
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [FTConfigManager sharedInstance].traceConfig = traceConfigOptions;
-    [[FTTraceHeaderManager sharedInstance] setNetworkTrace:traceConfigOptions];
+    self.tracer = [[FTTracer alloc]initWithConfig:traceConfigOptions];
+    [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
+    [self.sessionInstrumentation setTraceConfig:traceConfigOptions tracer:self.tracer];
+}
+- (URLSessionAutoInstrumentation *)sessionInstrumentation{
+    if (!_sessionInstrumentation) {
+        _sessionInstrumentation = [[URLSessionAutoInstrumentation alloc]init];
+    }
+    return _sessionInstrumentation;
 }
 #pragma mark ========== publick method ==========
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -165,9 +175,6 @@ static dispatch_once_t onceToken;
     [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
-    if (![self judgeRUMTraceOpen]) {
-        return;
-    }
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
         return;
     }
@@ -266,7 +273,7 @@ static dispatch_once_t onceToken;
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     [[FTTrackDataManger sharedInstance] addTrackData:model type:type];
 }
-- (BOOL)judgeRUMTraceOpen{
+- (BOOL)judgeRUMTrackOpen{
     if (self.rumConfig.appid.length>0) {
         return YES;
     }

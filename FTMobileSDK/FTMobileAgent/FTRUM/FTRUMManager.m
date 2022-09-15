@@ -20,16 +20,18 @@
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
 @property (nonatomic, strong) NSMutableDictionary *preViewDuration;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
+@property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 @end
 @implementation FTRUMManager
 
--(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor{
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer{
     self = [super init];
     if (self) {
         _rumConfig = rumConfig;
         _appState = AppStateStartUp;
         _preViewDuration = [NSMutableDictionary new];
         _monitor = monitor;
+        _writer = writer;
         self.assistant = self;
     }
     return self;
@@ -132,27 +134,25 @@
 }
 
 #pragma mark - Resource -
-- (void)startResource:(NSString *)identifier{
-    if (!identifier) {
+- (void)startResourceWithKey:(NSString *)key{
+    if (!key) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
-            
+            FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             [self process:resourceStart];
         }];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-   
-    [self addResource:identifier metrics:metrics content:content spanID:nil traceID:nil];
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    [self addResourceWithKey:key metrics:metrics content:content spanID:nil traceID:nil];
 }
 
-- (void)addResource:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID{
-    if (!identifier) {
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
+    if (!key) {
         return;
     }
     @try {
@@ -215,7 +215,7 @@
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
     
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:identifier];
+            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
             resourceSuccess.metrics = metrics;
             resourceSuccess.time = time;
             resourceSuccess.tags = tags;
@@ -234,13 +234,13 @@
     }
     return nil;
 }
-- (void)stopResource:(NSString *)identifier{
-    if (!identifier) {
+- (void)stopResourceWithKey:(NSString *)key{
+    if (!key) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:identifier];
+            FTRUMResourceDataModel *resourceError = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:key];
             [self process:resourceError];
         }];
     } @catch (NSException *exception) {
@@ -343,7 +343,7 @@
         }
     }else{
         //初始化
-        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model rumConfig:self.rumConfig monitor:self.monitor];
+        self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model rumConfig:self.rumConfig monitor:self.monitor writer:self.writer];
         [self.sessionHandler.assistant process:model];
     }
     

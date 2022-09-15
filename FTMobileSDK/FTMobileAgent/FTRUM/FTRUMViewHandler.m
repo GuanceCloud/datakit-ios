@@ -9,13 +9,11 @@
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
 #import "FTRUMResourceHandler.h"
-#import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTGlobalRumManager.h"
 #import "FTLog.h"
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
@@ -64,6 +62,7 @@
     context.view_name = self.view_name;
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
+    context.writer = self.sessionContext.writer;
     context.action_id = self.actionHandler?self.actionHandler.action_id:nil;
     return context;
 }
@@ -180,7 +179,7 @@
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
-    [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
+    [self.context.writer rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 - (void)writeViewData:(FTRUMDataModel *)model{
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
@@ -213,7 +212,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_RUM_KEY_LOADING_TIME];
     }
-    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
+    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
 }
 
 @end

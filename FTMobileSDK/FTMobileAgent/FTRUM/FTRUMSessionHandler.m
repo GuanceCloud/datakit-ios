@@ -9,9 +9,7 @@
 #import "FTRUMSessionHandler.h"
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
-#import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
-#import "FTGlobalRumManager.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -24,7 +22,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
 @implementation FTRUMSessionHandler
--(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor{
+-(instancetype)initWithModel:(FTRUMDataModel *)model rumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor writer:(id<FTRUMDataWriteProtocol>)writer{
     self = [super init];
     if (self) {
         self.assistant = self;
@@ -33,6 +31,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
         self.context = [FTRUMContext new];
+        self.context.writer = writer;
         self.monitor = monitor;
     }
     return  self;
@@ -109,7 +108,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     };
     [tags addEntriesFromDictionary:actiontags];
     
-    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
+    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
@@ -118,7 +117,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_MEASUREMENT_RUM_LONG_TASK :FT_MEASUREMENT_RUM_ERROR;
     
-    [[FTMobileAgent sharedInstance] rumWrite:error terminal:FT_TERMINAL_APP tags:tags fields:model.fields];
+    [self.context.writer rumWrite:error terminal:FT_TERMINAL_APP tags:tags fields:model.fields];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

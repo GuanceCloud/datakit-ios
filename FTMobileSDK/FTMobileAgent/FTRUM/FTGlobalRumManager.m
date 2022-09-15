@@ -23,11 +23,12 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
-#import "FTTraceHeaderManager.h"
+#import "FTTracer.h"
 #import "FTTraceHandler.h"
-#import "FTTraceManager.h"
+#import "FTURLSessionInterceptor.h"
+#import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTErrorDataDelegate>
+@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -63,11 +64,11 @@ static dispatch_once_t onceToken;
         return;
     }
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
-    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor];
+    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
     self.track = [[FTTrack alloc]init];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
+        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManger];
     }
     //采集view、resource、jsBridge
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -83,11 +84,7 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
-    if(rumConfig.enableTraceUserResource){
-        [FTURLProtocol startMonitor];
-        [FTTraceManager sharedInstance].rumDelegate = self;
-    }
-    [FTWKWebViewHandler sharedInstance].traceDelegate = self;
+    [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -219,21 +216,6 @@ static dispatch_once_t onceToken;
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
     [self.rumManger addLongTaskWithStack:stack duration:duration];
-}
-- (void)startResourceWithKey:(NSString *)key{
-    [self.rumManger startResource:key];
-}
-- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
-        FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
-        [self.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
-    }else{
-        [self.rumManger addResource:key metrics:metrics content:content];
-    }
-}
-
-- (void)stopResourceWithKey:(NSString *)key{
-    [self.rumManger stopResource:key];
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
