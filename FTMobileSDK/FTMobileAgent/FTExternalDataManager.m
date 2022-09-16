@@ -13,6 +13,7 @@
 #import "FTTraceHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
+#import "FTGlobalManager.h"
 @interface FTExternalDataManager()
 
 @end
@@ -48,15 +49,15 @@
     [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration];
 }
 - (void)startResourceWithKey:(NSString *)key{
-    [[FTMobileAgent sharedInstance].sessionInstrumentation.rumResourceHandler startResourceWithKey:key];
+    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler startResourceWithKey:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    [[FTMobileAgent sharedInstance].sessionInstrumentation.rumResourceHandler addResourceWithKey:key metrics:metrics content:content];
+    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler addResourceWithKey:key metrics:metrics content:content];
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key {
-    [[FTMobileAgent sharedInstance].sessionInstrumentation.rumResourceHandler stopResourceWithKey:key];
+    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler stopResourceWithKey:key];
 }
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    return [[FTMobileAgent sharedInstance].tracer networkTraceHeaderWithUrl:url];
+    return [[FTGlobalManager sharedInstance].tracer networkTraceHeaderWithUrl:url];
 }
 @end

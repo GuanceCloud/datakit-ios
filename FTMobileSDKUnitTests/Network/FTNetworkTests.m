@@ -14,13 +14,12 @@
 #import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <FTJSONUtil.h>
-#import "FTConfigManager.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
 #import "FTModelHelper.h"
 #import "FTTrackDataManger+Test.h"
 #import "FTModelHelper.h"
-
+#import "FTMobileAgent+Private.h"
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -39,6 +38,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     long  tm =[FTDateUtil currentTimeNanosecond];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
+}
+- (void)tearDown{
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -122,14 +124,13 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
         config.enableSDKDebugLog = YES;
-        [[FTConfigManager sharedInstance] setTrackConfig:config];
+        [FTMobileAgent startWithConfigOptions:config];
     }
 }
 -(void)setBadMetricsUrl{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://baidu.com"];
     config.enableSDKDebugLog = YES;
-    [[FTConfigManager sharedInstance] setTrackConfig:config];
-
+    [FTMobileAgent startWithConfigOptions:config];
 }
 /**
  测试上传过程是否正确
@@ -188,7 +189,6 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testNoJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
         NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         XCTAssertTrue(error != nil && [result isEqualToString:@"Hello World!"]);

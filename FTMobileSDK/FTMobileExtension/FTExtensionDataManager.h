@@ -48,9 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
  * @param eventType 事件类型
  * @param tags      事件属性
  * @param groupIdentifier AppGroups Identifier
+ * 
  * @return 是否写入成功
  */
-- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields groupIdentifier:(NSString *)groupIdentifier;
+- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 /**
  * @abstract
  * 读取 groupIdentifier 对应的所有缓存事件

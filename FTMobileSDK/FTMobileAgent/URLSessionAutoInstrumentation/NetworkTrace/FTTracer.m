@@ -15,9 +15,8 @@
 #import "FTWKWebViewHandler.h"
 #import "FTURLProtocol.h"
 #import "FTNetworkInfoManager.h"
-#import "FTConfigManager.h"
 #import "FTURLSessionInterceptor.h"
-static NSUInteger _skywalkingSeq = 0.0;
+static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()
 @property (nonatomic, strong) NSLock *lock;
@@ -194,10 +193,10 @@ static NSUInteger _skywalkingSeq = 0.0;
 }
 -(NSUInteger)getSkywalkingSeq{
     [self.lock lock];
-    NSUInteger seq =  _skywalkingSeq;
-    _skywalkingSeq += 2 ;
-    if (_skywalkingSeq > 9999) {
-        _skywalkingSeq = 0;
+    NSUInteger seq =  SkywalkingSeq;
+    SkywalkingSeq += 2 ;
+    if (SkywalkingSeq > 9999) {
+        SkywalkingSeq = 0;
     }
     [self.lock unlock];
     return seq;

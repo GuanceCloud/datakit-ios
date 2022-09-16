@@ -112,7 +112,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         return nil;
     }
 }
-- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields groupIdentifier:(NSString *)groupIdentifier {
+- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier {
     @try {
         if (![eventType isKindOfClass:NSString.class] || !eventType.length) {
             return NO;
@@ -129,7 +129,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         
         __block BOOL result = NO;
         dispatch_block_t block = ^{
-            NSDictionary *event = @{@"eventType": eventType, @"fields": fields?fields:@{}, @"tags": tags?tags:@{}};
+            NSDictionary *event = @{@"eventType": eventType, @"fields": fields?fields:@{}, @"tags": tags?tags:@{},@"tm":[NSNumber numberWithLongLong:tm]};
             NSString *path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
             if(![[NSFileManager defaultManager] fileExistsAtPath:path]) {
                 [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];

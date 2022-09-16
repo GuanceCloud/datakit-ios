@@ -11,10 +11,6 @@
 		170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */; };
 		1716A4C028CB0E4E00FA3D1C /* FTExtensionDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A4BE28CB0E4E00FA3D1C /* FTExtensionDataManager.h */; };
 		1716A4C128CB0E4E00FA3D1C /* FTExtensionDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A4BF28CB0E4E00FA3D1C /* FTExtensionDataManager.m */; };
-		1716A4C428CB2EC000FA3D1C /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A4C228CB2EC000FA3D1C /* FTUncaughtExceptionHandler.h */; };
-		1716A4C528CB2EC000FA3D1C /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A4C328CB2EC000FA3D1C /* FTUncaughtExceptionHandler.m */; };
-		1716A4C828CB3A8000FA3D1C /* FTCallStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A4C628CB3A8000FA3D1C /* FTCallStack.m */; };
-		1716A4C928CB3A8000FA3D1C /* FTCallStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A4C728CB3A8000FA3D1C /* FTCallStack.h */; };
 		1716A4CC28CB415500FA3D1C /* FTExtensionDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A4CA28CB415500FA3D1C /* FTExtensionDataManager.h */; };
 		1716A4CD28CB415500FA3D1C /* FTExtensionDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A4CB28CB415500FA3D1C /* FTExtensionDataManager.m */; };
 		1716A4F928D027E700FA3D1C /* URLSessionAutoInstrumentation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A4F728D027E700FA3D1C /* URLSessionAutoInstrumentation.h */; };
@@ -39,30 +35,44 @@
 		1716A52828D0324500FA3D1C /* FTReadWriteHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A51828D0324200FA3D1C /* FTReadWriteHelper.h */; };
 		1716A52928D0324500FA3D1C /* FTDisplayRateMonitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1716A51928D0324200FA3D1C /* FTDisplayRateMonitor.m */; };
 		1716A52A28D0324500FA3D1C /* FTMonitorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A51A28D0324200FA3D1C /* FTMonitorUtils.h */; };
+		1736698D28D479770022C965 /* FTUncaughtExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1736698B28D479770022C965 /* FTUncaughtExceptionHandler.m */; };
+		1736698E28D479770022C965 /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1736698C28D479770022C965 /* FTUncaughtExceptionHandler.h */; };
+		1736699128D479820022C965 /* FTCallStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1736698F28D479820022C965 /* FTCallStack.h */; };
+		1736699228D479820022C965 /* FTCallStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 1736699028D479820022C965 /* FTCallStack.m */; };
 		177BDF582799773800DA4EA7 /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 177BDF572799773800DA4EA7 /* FTEnumConstant.m */; };
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
 		177CFECD27E32850007D8C2F /* FTURLSessionInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 177CFECB27E32850007D8C2F /* FTURLSessionInterceptor.h */; };
 		177CFECE27E32850007D8C2F /* FTURLSessionInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 177CFECC27E32850007D8C2F /* FTURLSessionInterceptor.m */; };
+		1780089128D4211700E12B6E /* FTRUMActionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780087D28D4211700E12B6E /* FTRUMActionHandler.h */; };
+		1780089228D4211700E12B6E /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780087E28D4211700E12B6E /* FTRUMHandler.h */; };
+		1780089328D4211700E12B6E /* FTRUMManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780087F28D4211700E12B6E /* FTRUMManager.m */; };
+		1780089428D4211700E12B6E /* FTRUMSessionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088028D4211700E12B6E /* FTRUMSessionHandler.h */; };
+		1780089528D4211700E12B6E /* FTRUMViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088128D4211700E12B6E /* FTRUMViewHandler.m */; };
+		1780089628D4211700E12B6E /* FTRUMResourceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088228D4211700E12B6E /* FTRUMResourceHandler.m */; };
+		1780089728D4211700E12B6E /* FTRUMDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088328D4211700E12B6E /* FTRUMDataWriteProtocol.h */; };
+		1780089828D4211700E12B6E /* FTRUMActionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088428D4211700E12B6E /* FTRUMActionHandler.m */; };
+		1780089928D4211700E12B6E /* FTRUMSessionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088528D4211700E12B6E /* FTRUMSessionHandler.m */; };
+		1780089A28D4211700E12B6E /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088728D4211700E12B6E /* FTRUMDataModel.m */; };
+		1780089B28D4211700E12B6E /* FTResourceContentModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088828D4211700E12B6E /* FTResourceContentModel.h */; };
+		1780089C28D4211700E12B6E /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088928D4211700E12B6E /* FTResourceMetricsModel.h */; };
+		1780089D28D4211700E12B6E /* FTResourceMetricsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088A28D4211700E12B6E /* FTResourceMetricsModel.m */; };
+		1780089E28D4211700E12B6E /* FTResourceContentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088B28D4211700E12B6E /* FTResourceContentModel.m */; };
+		1780089F28D4211700E12B6E /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088C28D4211700E12B6E /* FTRUMDataModel.h */; };
+		178008A028D4211700E12B6E /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088D28D4211700E12B6E /* FTRUMManager.h */; };
+		178008A128D4211700E12B6E /* FTRUMHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1780088E28D4211700E12B6E /* FTRUMHandler.m */; };
+		178008A228D4211700E12B6E /* FTRUMResourceHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780088F28D4211700E12B6E /* FTRUMResourceHandler.h */; };
+		178008A328D4211700E12B6E /* FTRUMViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1780089028D4211700E12B6E /* FTRUMViewHandler.h */; };
+		178008A928D4224E00E12B6E /* FTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 178008A528D4224E00E12B6E /* FTConstants.h */; };
+		178008AB28D4224E00E12B6E /* FTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 178008A728D4224E00E12B6E /* FTConstants.m */; };
+		178008B628D4231B00E12B6E /* FTThreadDispatchManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 178008AC28D4231A00E12B6E /* FTThreadDispatchManager.h */; };
+		178008B728D4231B00E12B6E /* FTRumThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 178008AD28D4231A00E12B6E /* FTRumThread.h */; };
+		178008BB28D4231B00E12B6E /* FTDateUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 178008B128D4231B00E12B6E /* FTDateUtil.h */; };
+		178008BC28D4231B00E12B6E /* FTRumThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 178008B228D4231B00E12B6E /* FTRumThread.m */; };
+		178008BD28D4231B00E12B6E /* FTThreadDispatchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 178008B328D4231B00E12B6E /* FTThreadDispatchManager.m */; };
+		178008BE28D4231B00E12B6E /* FTDateUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 178008B428D4231B00E12B6E /* FTDateUtil.m */; };
+		178008C228D4282700E12B6E /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 178008C028D4282700E12B6E /* FTMobileConfig.m */; };
+		178008C328D4282700E12B6E /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 178008C128D4282700E12B6E /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A3F46C28D1D406007761AF /* FTRumResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1716A50828D030ED00FA3D1C /* FTRumResourceProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17A3F48328D307C5007761AF /* FTRUMSessionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F46F28D307C5007761AF /* FTRUMSessionHandler.h */; };
-		17A3F48428D307C5007761AF /* FTRUMViewHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47028D307C5007761AF /* FTRUMViewHandler.h */; };
-		17A3F48528D307C5007761AF /* FTRUMDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47228D307C5007761AF /* FTRUMDataModel.m */; };
-		17A3F48628D307C5007761AF /* FTResourceContentModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47328D307C5007761AF /* FTResourceContentModel.h */; };
-		17A3F48728D307C5007761AF /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47428D307C5007761AF /* FTResourceMetricsModel.h */; };
-		17A3F48828D307C5007761AF /* FTResourceMetricsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47528D307C5007761AF /* FTResourceMetricsModel.m */; };
-		17A3F48928D307C5007761AF /* FTResourceContentModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47628D307C5007761AF /* FTResourceContentModel.m */; };
-		17A3F48A28D307C5007761AF /* FTRUMDataModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47728D307C5007761AF /* FTRUMDataModel.h */; };
-		17A3F48B28D307C5007761AF /* FTRUMResourceHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47828D307C5007761AF /* FTRUMResourceHandler.h */; };
-		17A3F48C28D307C5007761AF /* FTRUMManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47928D307C5007761AF /* FTRUMManager.m */; };
-		17A3F48D28D307C5007761AF /* FTRUMHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47A28D307C5007761AF /* FTRUMHandler.m */; };
-		17A3F48E28D307C5007761AF /* FTRUMResourceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47B28D307C5007761AF /* FTRUMResourceHandler.m */; };
-		17A3F48F28D307C5007761AF /* FTRUMHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47C28D307C5007761AF /* FTRUMHandler.h */; };
-		17A3F49028D307C5007761AF /* FTRUMActionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47D28D307C5007761AF /* FTRUMActionHandler.h */; };
-		17A3F49128D307C5007761AF /* FTRUMSessionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F47E28D307C5007761AF /* FTRUMSessionHandler.m */; };
-		17A3F49228D307C5007761AF /* FTRUMManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F47F28D307C5007761AF /* FTRUMManager.h */; };
-		17A3F49328D307C5007761AF /* FTRUMDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A3F48028D307C5007761AF /* FTRUMDataWriteProtocol.h */; };
-		17A3F49428D307C5007761AF /* FTRUMViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F48128D307C5007761AF /* FTRUMViewHandler.m */; };
-		17A3F49528D307C5007761AF /* FTRUMActionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A3F48228D307C5007761AF /* FTRUMActionHandler.m */; };
 		17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56A28A1094200CE40E5 /* FTUserInfo.h */; };
 		17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4A56B28A1094200CE40E5 /* FTUserInfo.m */; };
@@ -170,8 +180,8 @@
 		7CA1803126CF4E610035DDF0 /* FTThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA1802F26CF4E610035DDF0 /* FTThread.h */; };
 		7CA1803F26CF5C020035DDF0 /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1803D26CF5C010035DDF0 /* FTLog.m */; };
 		7CA1804026CF5C020035DDF0 /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA1803E26CF5C020035DDF0 /* FTLog.h */; };
-		7CA1805D26CF99A30035DDF0 /* FTConfigManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1805B26CF99A20035DDF0 /* FTConfigManager.m */; };
-		7CA1805E26CF99A30035DDF0 /* FTConfigManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA1805C26CF99A30035DDF0 /* FTConfigManager.h */; };
+		7CA1805D26CF99A30035DDF0 /* FTGlobalManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1805B26CF99A20035DDF0 /* FTGlobalManager.m */; };
+		7CA1805E26CF99A30035DDF0 /* FTGlobalManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA1805C26CF99A30035DDF0 /* FTGlobalManager.h */; };
 		7CA1806D26CFA7830035DDF0 /* FTNetworkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA1806526CFA7830035DDF0 /* FTNetworkManager.h */; };
 		7CA1806E26CFA7830035DDF0 /* FTReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1806626CFA7830035DDF0 /* FTReachability.m */; };
 		7CA1806F26CFA7830035DDF0 /* FTRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA1806726CFA7830035DDF0 /* FTRequest.m */; };
@@ -206,10 +216,6 @@
 		170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchTracker.m; sourceTree = "<group>"; };
 		1716A4BE28CB0E4E00FA3D1C /* FTExtensionDataManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionDataManager.h; sourceTree = "<group>"; };
 		1716A4BF28CB0E4E00FA3D1C /* FTExtensionDataManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionDataManager.m; sourceTree = "<group>"; };
-		1716A4C228CB2EC000FA3D1C /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTUncaughtExceptionHandler.h; path = FTMobileAgent/FTUncaughtExceptionHandler.h; sourceTree = SOURCE_ROOT; };
-		1716A4C328CB2EC000FA3D1C /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTUncaughtExceptionHandler.m; path = FTMobileAgent/FTUncaughtExceptionHandler.m; sourceTree = SOURCE_ROOT; };
-		1716A4C628CB3A8000FA3D1C /* FTCallStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTCallStack.m; path = FTMobileAgent/FTCallStack.m; sourceTree = SOURCE_ROOT; };
-		1716A4C728CB3A8000FA3D1C /* FTCallStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTCallStack.h; path = FTMobileAgent/FTCallStack.h; sourceTree = SOURCE_ROOT; };
 		1716A4CA28CB415500FA3D1C /* FTExtensionDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTExtensionDataManager.h; path = FTMobileExtension/FTExtensionDataManager.h; sourceTree = SOURCE_ROOT; };
 		1716A4CB28CB415500FA3D1C /* FTExtensionDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTExtensionDataManager.m; path = FTMobileExtension/FTExtensionDataManager.m; sourceTree = SOURCE_ROOT; };
 		1716A4F728D027E700FA3D1C /* URLSessionAutoInstrumentation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = URLSessionAutoInstrumentation.h; sourceTree = "<group>"; };
@@ -235,31 +241,45 @@
 		1716A51828D0324200FA3D1C /* FTReadWriteHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTReadWriteHelper.h; sourceTree = "<group>"; };
 		1716A51928D0324200FA3D1C /* FTDisplayRateMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDisplayRateMonitor.m; sourceTree = "<group>"; };
 		1716A51A28D0324200FA3D1C /* FTMonitorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMonitorUtils.h; sourceTree = "<group>"; };
+		1736698B28D479770022C965 /* FTUncaughtExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTUncaughtExceptionHandler.m; path = FTMobileAgent/FTCrashReporting/FTUncaughtExceptionHandler.m; sourceTree = SOURCE_ROOT; };
+		1736698C28D479770022C965 /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTUncaughtExceptionHandler.h; path = FTMobileAgent/FTCrashReporting/FTUncaughtExceptionHandler.h; sourceTree = SOURCE_ROOT; };
+		1736698F28D479820022C965 /* FTCallStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTCallStack.h; path = FTMobileAgent/FTCrashReporting/FTCallStack.h; sourceTree = SOURCE_ROOT; };
+		1736699028D479820022C965 /* FTCallStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTCallStack.m; path = FTMobileAgent/FTCrashReporting/FTCallStack.m; sourceTree = SOURCE_ROOT; };
 		177BDF572799773800DA4EA7 /* FTEnumConstant.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTEnumConstant.m; sourceTree = "<group>"; };
 		177BDF592799775F00DA4EA7 /* FTEnumConstant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		177CFECB27E32850007D8C2F /* FTURLSessionInterceptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTURLSessionInterceptor.h; sourceTree = "<group>"; };
 		177CFECC27E32850007D8C2F /* FTURLSessionInterceptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTURLSessionInterceptor.m; sourceTree = "<group>"; };
+		1780087D28D4211700E12B6E /* FTRUMActionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMActionHandler.h; sourceTree = "<group>"; };
+		1780087E28D4211700E12B6E /* FTRUMHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMHandler.h; sourceTree = "<group>"; };
+		1780087F28D4211700E12B6E /* FTRUMManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMManager.m; sourceTree = "<group>"; };
+		1780088028D4211700E12B6E /* FTRUMSessionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMSessionHandler.h; sourceTree = "<group>"; };
+		1780088128D4211700E12B6E /* FTRUMViewHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMViewHandler.m; sourceTree = "<group>"; };
+		1780088228D4211700E12B6E /* FTRUMResourceHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMResourceHandler.m; sourceTree = "<group>"; };
+		1780088328D4211700E12B6E /* FTRUMDataWriteProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMDataWriteProtocol.h; sourceTree = "<group>"; };
+		1780088428D4211700E12B6E /* FTRUMActionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMActionHandler.m; sourceTree = "<group>"; };
+		1780088528D4211700E12B6E /* FTRUMSessionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMSessionHandler.m; sourceTree = "<group>"; };
+		1780088728D4211700E12B6E /* FTRUMDataModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMDataModel.m; sourceTree = "<group>"; };
+		1780088828D4211700E12B6E /* FTResourceContentModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTResourceContentModel.h; sourceTree = "<group>"; };
+		1780088928D4211700E12B6E /* FTResourceMetricsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTResourceMetricsModel.h; sourceTree = "<group>"; };
+		1780088A28D4211700E12B6E /* FTResourceMetricsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceMetricsModel.m; sourceTree = "<group>"; };
+		1780088B28D4211700E12B6E /* FTResourceContentModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceContentModel.m; sourceTree = "<group>"; };
+		1780088C28D4211700E12B6E /* FTRUMDataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMDataModel.h; sourceTree = "<group>"; };
+		1780088D28D4211700E12B6E /* FTRUMManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMManager.h; sourceTree = "<group>"; };
+		1780088E28D4211700E12B6E /* FTRUMHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMHandler.m; sourceTree = "<group>"; };
+		1780088F28D4211700E12B6E /* FTRUMResourceHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMResourceHandler.h; sourceTree = "<group>"; };
+		1780089028D4211700E12B6E /* FTRUMViewHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMViewHandler.h; sourceTree = "<group>"; };
+		178008A528D4224E00E12B6E /* FTConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTConstants.h; path = BaseUtils/FTConstants.h; sourceTree = SOURCE_ROOT; };
+		178008A728D4224E00E12B6E /* FTConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTConstants.m; path = BaseUtils/FTConstants.m; sourceTree = SOURCE_ROOT; };
+		178008AC28D4231A00E12B6E /* FTThreadDispatchManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTThreadDispatchManager.h; path = BaseUtils/Utils/FTThreadDispatchManager.h; sourceTree = SOURCE_ROOT; };
+		178008AD28D4231A00E12B6E /* FTRumThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRumThread.h; path = BaseUtils/Utils/FTRumThread.h; sourceTree = SOURCE_ROOT; };
+		178008B128D4231B00E12B6E /* FTDateUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTDateUtil.h; path = BaseUtils/Utils/FTDateUtil.h; sourceTree = SOURCE_ROOT; };
+		178008B228D4231B00E12B6E /* FTRumThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRumThread.m; path = BaseUtils/Utils/FTRumThread.m; sourceTree = SOURCE_ROOT; };
+		178008B328D4231B00E12B6E /* FTThreadDispatchManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTThreadDispatchManager.m; path = BaseUtils/Utils/FTThreadDispatchManager.m; sourceTree = SOURCE_ROOT; };
+		178008B428D4231B00E12B6E /* FTDateUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTDateUtil.m; path = BaseUtils/Utils/FTDateUtil.m; sourceTree = SOURCE_ROOT; };
+		178008C028D4282700E12B6E /* FTMobileConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTMobileConfig.m; path = FTMobileAgent/FTMobileConfig.m; sourceTree = SOURCE_ROOT; };
+		178008C128D4282700E12B6E /* FTMobileConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTMobileConfig.h; path = FTMobileAgent/FTMobileConfig.h; sourceTree = SOURCE_ROOT; };
 		17A3F46A28D1CC37007761AF /* FTURLSessionInterceptorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTURLSessionInterceptorProtocol.h; sourceTree = "<group>"; };
 		17A3F46B28D1D0D2007761AF /* FTRUMDataWriteProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTRUMDataWriteProtocol.h; sourceTree = "<group>"; };
-		17A3F46F28D307C5007761AF /* FTRUMSessionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMSessionHandler.h; path = FTMobileAgent/FTRUM/FTRUMSessionHandler.h; sourceTree = SOURCE_ROOT; };
-		17A3F47028D307C5007761AF /* FTRUMViewHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMViewHandler.h; path = FTMobileAgent/FTRUM/FTRUMViewHandler.h; sourceTree = SOURCE_ROOT; };
-		17A3F47228D307C5007761AF /* FTRUMDataModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRUMDataModel.m; sourceTree = "<group>"; };
-		17A3F47328D307C5007761AF /* FTResourceContentModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTResourceContentModel.h; sourceTree = "<group>"; };
-		17A3F47428D307C5007761AF /* FTResourceMetricsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTResourceMetricsModel.h; sourceTree = "<group>"; };
-		17A3F47528D307C5007761AF /* FTResourceMetricsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceMetricsModel.m; sourceTree = "<group>"; };
-		17A3F47628D307C5007761AF /* FTResourceContentModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTResourceContentModel.m; sourceTree = "<group>"; };
-		17A3F47728D307C5007761AF /* FTRUMDataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMDataModel.h; sourceTree = "<group>"; };
-		17A3F47828D307C5007761AF /* FTRUMResourceHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMResourceHandler.h; path = FTMobileAgent/FTRUM/FTRUMResourceHandler.h; sourceTree = SOURCE_ROOT; };
-		17A3F47928D307C5007761AF /* FTRUMManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMManager.m; path = FTMobileAgent/FTRUM/FTRUMManager.m; sourceTree = SOURCE_ROOT; };
-		17A3F47A28D307C5007761AF /* FTRUMHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMHandler.m; path = FTMobileAgent/FTRUM/FTRUMHandler.m; sourceTree = SOURCE_ROOT; };
-		17A3F47B28D307C5007761AF /* FTRUMResourceHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMResourceHandler.m; path = FTMobileAgent/FTRUM/FTRUMResourceHandler.m; sourceTree = SOURCE_ROOT; };
-		17A3F47C28D307C5007761AF /* FTRUMHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMHandler.h; path = FTMobileAgent/FTRUM/FTRUMHandler.h; sourceTree = SOURCE_ROOT; };
-		17A3F47D28D307C5007761AF /* FTRUMActionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMActionHandler.h; path = FTMobileAgent/FTRUM/FTRUMActionHandler.h; sourceTree = SOURCE_ROOT; };
-		17A3F47E28D307C5007761AF /* FTRUMSessionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMSessionHandler.m; path = FTMobileAgent/FTRUM/FTRUMSessionHandler.m; sourceTree = SOURCE_ROOT; };
-		17A3F47F28D307C5007761AF /* FTRUMManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMManager.h; path = FTMobileAgent/FTRUM/FTRUMManager.h; sourceTree = SOURCE_ROOT; };
-		17A3F48028D307C5007761AF /* FTRUMDataWriteProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTRUMDataWriteProtocol.h; path = FTMobileAgent/FTRUM/FTRUMDataWriteProtocol.h; sourceTree = SOURCE_ROOT; };
-		17A3F48128D307C5007761AF /* FTRUMViewHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMViewHandler.m; path = FTMobileAgent/FTRUM/FTRUMViewHandler.m; sourceTree = SOURCE_ROOT; };
-		17A3F48228D307C5007761AF /* FTRUMActionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTRUMActionHandler.m; path = FTMobileAgent/FTRUM/FTRUMActionHandler.m; sourceTree = SOURCE_ROOT; };
 		17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Public.h"; sourceTree = "<group>"; };
 		17A4A56A28A1094200CE40E5 /* FTUserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUserInfo.h; sourceTree = "<group>"; };
 		17A4A56B28A1094200CE40E5 /* FTUserInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUserInfo.m; sourceTree = "<group>"; };
@@ -373,8 +393,8 @@
 		7CA1802F26CF4E610035DDF0 /* FTThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTThread.h; sourceTree = "<group>"; };
 		7CA1803D26CF5C010035DDF0 /* FTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTLog.m; path = ../BaseUtils/Utils/FTLog.m; sourceTree = "<group>"; };
 		7CA1803E26CF5C020035DDF0 /* FTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTLog.h; path = ../BaseUtils/Utils/FTLog.h; sourceTree = "<group>"; };
-		7CA1805B26CF99A20035DDF0 /* FTConfigManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTConfigManager.m; sourceTree = "<group>"; };
-		7CA1805C26CF99A30035DDF0 /* FTConfigManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTConfigManager.h; sourceTree = "<group>"; };
+		7CA1805B26CF99A20035DDF0 /* FTGlobalManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGlobalManager.m; sourceTree = "<group>"; };
+		7CA1805C26CF99A30035DDF0 /* FTGlobalManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGlobalManager.h; sourceTree = "<group>"; };
 		7CA1806526CFA7830035DDF0 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
 		7CA1806626CFA7830035DDF0 /* FTReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReachability.m; sourceTree = "<group>"; };
 		7CA1806726CFA7830035DDF0 /* FTRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRequest.m; sourceTree = "<group>"; };
@@ -479,19 +499,72 @@
 			path = Monitor;
 			sourceTree = "<group>";
 		};
-		17A3F47128D307C5007761AF /* Model */ = {
+		1780087A28D41F7700E12B6E /* RUMCore */ = {
 			isa = PBXGroup;
 			children = (
-				17A3F47228D307C5007761AF /* FTRUMDataModel.m */,
-				17A3F47328D307C5007761AF /* FTResourceContentModel.h */,
-				17A3F47428D307C5007761AF /* FTResourceMetricsModel.h */,
-				17A3F47528D307C5007761AF /* FTResourceMetricsModel.m */,
-				17A3F47628D307C5007761AF /* FTResourceContentModel.m */,
-				17A3F47728D307C5007761AF /* FTRUMDataModel.h */,
+				17A3F46B28D1D0D2007761AF /* FTRUMDataWriteProtocol.h */,
+				7C28B91126611B3700CECBA6 /* FTRUMManager.h */,
+				7C28B90B26611B3700CECBA6 /* FTRUMManager.m */,
+				7C28B90626611B3700CECBA6 /* FTRUMSessionHandler.h */,
+				7C28B90D26611B3700CECBA6 /* FTRUMSessionHandler.m */,
+				7C28B91026611B3700CECBA6 /* FTRUMViewHandler.h */,
+				7C28B90726611B3700CECBA6 /* FTRUMViewHandler.m */,
+				7C28B90F26611B3700CECBA6 /* FTRUMResourceHandler.h */,
+				7C28B90826611B3700CECBA6 /* FTRUMResourceHandler.m */,
+				7C28B90426611B3700CECBA6 /* FTRUMActionHandler.h */,
+				7C28B90C26611B3700CECBA6 /* FTRUMActionHandler.m */,
+				7C28B90526611B3700CECBA6 /* FTRUMHandler.h */,
+				7C28B90E26611B3700CECBA6 /* FTRUMHandler.m */,
+				7C0FBD3127475432007CD0D3 /* Model */,
 			);
-			name = Model;
-			path = FTMobileAgent/FTRUM/Model;
+			path = RUMCore;
+			sourceTree = "<group>";
+		};
+		1780087B28D41FB400E12B6E /* FTCrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
+				7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */,
+				4A39314C25300D2100BC2134 /* FTCallStack.h */,
+				4A39314B25300D2100BC2134 /* FTCallStack.m */,
+			);
+			path = FTCrashReporting;
+			sourceTree = "<group>";
+		};
+		1780087C28D4211700E12B6E /* RUMCore */ = {
+			isa = PBXGroup;
+			children = (
+				1780088628D4211700E12B6E /* Model */,
+				1780088328D4211700E12B6E /* FTRUMDataWriteProtocol.h */,
+				1780087E28D4211700E12B6E /* FTRUMHandler.h */,
+				1780087F28D4211700E12B6E /* FTRUMManager.m */,
+				1780088028D4211700E12B6E /* FTRUMSessionHandler.h */,
+				1780088528D4211700E12B6E /* FTRUMSessionHandler.m */,
+				1780089028D4211700E12B6E /* FTRUMViewHandler.h */,
+				1780088128D4211700E12B6E /* FTRUMViewHandler.m */,
+				1780088F28D4211700E12B6E /* FTRUMResourceHandler.h */,
+				1780088228D4211700E12B6E /* FTRUMResourceHandler.m */,
+				1780087D28D4211700E12B6E /* FTRUMActionHandler.h */,
+				1780088428D4211700E12B6E /* FTRUMActionHandler.m */,
+				1780088D28D4211700E12B6E /* FTRUMManager.h */,
+				1780088E28D4211700E12B6E /* FTRUMHandler.m */,
+			);
+			name = RUMCore;
+			path = FTMobileAgent/FTRUM/RUMCore;
 			sourceTree = SOURCE_ROOT;
+		};
+		1780088628D4211700E12B6E /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1780088728D4211700E12B6E /* FTRUMDataModel.m */,
+				1780088828D4211700E12B6E /* FTResourceContentModel.h */,
+				1780088928D4211700E12B6E /* FTResourceMetricsModel.h */,
+				1780088A28D4211700E12B6E /* FTResourceMetricsModel.m */,
+				1780088B28D4211700E12B6E /* FTResourceContentModel.m */,
+				1780088C28D4211700E12B6E /* FTRUMDataModel.h */,
+			);
+			path = Model;
+			sourceTree = "<group>";
 		};
 		4A6C541F255E6464009771B8 /* FTMobileExtension */ = {
 			isa = PBXGroup;
@@ -502,24 +575,21 @@
 				4A6C5436255E68B7009771B8 /* FTExtensionManager.m */,
 				1716A4BE28CB0E4E00FA3D1C /* FTExtensionDataManager.h */,
 				1716A4BF28CB0E4E00FA3D1C /* FTExtensionDataManager.m */,
-				17A3F47F28D307C5007761AF /* FTRUMManager.h */,
-				17A3F47928D307C5007761AF /* FTRUMManager.m */,
-				17A3F47D28D307C5007761AF /* FTRUMActionHandler.h */,
-				17A3F48228D307C5007761AF /* FTRUMActionHandler.m */,
-				17A3F48028D307C5007761AF /* FTRUMDataWriteProtocol.h */,
-				17A3F47C28D307C5007761AF /* FTRUMHandler.h */,
-				17A3F47A28D307C5007761AF /* FTRUMHandler.m */,
-				17A3F47828D307C5007761AF /* FTRUMResourceHandler.h */,
-				17A3F47B28D307C5007761AF /* FTRUMResourceHandler.m */,
-				17A3F46F28D307C5007761AF /* FTRUMSessionHandler.h */,
-				17A3F47E28D307C5007761AF /* FTRUMSessionHandler.m */,
-				17A3F47028D307C5007761AF /* FTRUMViewHandler.h */,
-				17A3F48128D307C5007761AF /* FTRUMViewHandler.m */,
-				17A3F47128D307C5007761AF /* Model */,
-				1716A4C228CB2EC000FA3D1C /* FTUncaughtExceptionHandler.h */,
-				1716A4C328CB2EC000FA3D1C /* FTUncaughtExceptionHandler.m */,
-				1716A4C728CB3A8000FA3D1C /* FTCallStack.h */,
-				1716A4C628CB3A8000FA3D1C /* FTCallStack.m */,
+				1736698C28D479770022C965 /* FTUncaughtExceptionHandler.h */,
+				1736698B28D479770022C965 /* FTUncaughtExceptionHandler.m */,
+				1736698F28D479820022C965 /* FTCallStack.h */,
+				1736699028D479820022C965 /* FTCallStack.m */,
+				178008C128D4282700E12B6E /* FTMobileConfig.h */,
+				178008C028D4282700E12B6E /* FTMobileConfig.m */,
+				178008A528D4224E00E12B6E /* FTConstants.h */,
+				178008A728D4224E00E12B6E /* FTConstants.m */,
+				178008B128D4231B00E12B6E /* FTDateUtil.h */,
+				178008B428D4231B00E12B6E /* FTDateUtil.m */,
+				178008AD28D4231A00E12B6E /* FTRumThread.h */,
+				178008B228D4231B00E12B6E /* FTRumThread.m */,
+				178008AC28D4231A00E12B6E /* FTThreadDispatchManager.h */,
+				178008B328D4231B00E12B6E /* FTThreadDispatchManager.m */,
+				1780087C28D4211700E12B6E /* RUMCore */,
 				7CA1803E26CF5C020035DDF0 /* FTLog.h */,
 				7CA1803D26CF5C010035DDF0 /* FTLog.m */,
 			);
@@ -558,6 +628,7 @@
 		4A88425C239E5754001B44C3 /* FTMobileAgent */ = {
 			isa = PBXGroup;
 			children = (
+				1780087B28D41FB400E12B6E /* FTCrashReporting */,
 				7C28B90326611B3700CECBA6 /* FTRUM */,
 				7C28B8522660980000CECBA6 /* JSBridge */,
 				7C2DD69625F9C2BA00BFF757 /* AutoTrack */,
@@ -574,17 +645,13 @@
 				4A2EFD9B254278DE00F93B1E /* FTPresetProperty.m */,
 				4A884266239E5768001B44C3 /* FTBaseInfoHandler.h */,
 				4A88426F239E5768001B44C3 /* FTBaseInfoHandler.m */,
-				4A37A93F2484CAE900E0381B /* FTUncaughtExceptionHandler.h */,
-				7CF5874F25E3B5B200EE372E /* FTUncaughtExceptionHandler.m */,
 				4A299F8F2521F7F800400931 /* FTANRDetector.h */,
 				4A299F902521F7F800400931 /* FTANRDetector.m */,
-				4A39314C25300D2100BC2134 /* FTCallStack.h */,
-				4A39314B25300D2100BC2134 /* FTCallStack.m */,
 				4A7C739525C0318D003936A0 /* FTPingThread.h */,
 				4A7C739625C0318D003936A0 /* FTPingThread.m */,
 				7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */,
-				7CA1805C26CF99A30035DDF0 /* FTConfigManager.h */,
-				7CA1805B26CF99A20035DDF0 /* FTConfigManager.m */,
+				7CA1805C26CF99A30035DDF0 /* FTGlobalManager.h */,
+				7CA1805B26CF99A20035DDF0 /* FTGlobalManager.m */,
 				17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */,
 				1716A50828D030ED00FA3D1C /* FTRumResourceProtocol.h */,
 				7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */,
@@ -674,23 +741,10 @@
 		7C28B90326611B3700CECBA6 /* FTRUM */ = {
 			isa = PBXGroup;
 			children = (
+				1780087A28D41F7700E12B6E /* RUMCore */,
 				4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */,
 				4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */,
 				1716A50A28D0324200FA3D1C /* Monitor */,
-				7C0FBD3127475432007CD0D3 /* Model */,
-				17A3F46B28D1D0D2007761AF /* FTRUMDataWriteProtocol.h */,
-				7C28B91126611B3700CECBA6 /* FTRUMManager.h */,
-				7C28B90B26611B3700CECBA6 /* FTRUMManager.m */,
-				7C28B90626611B3700CECBA6 /* FTRUMSessionHandler.h */,
-				7C28B90D26611B3700CECBA6 /* FTRUMSessionHandler.m */,
-				7C28B91026611B3700CECBA6 /* FTRUMViewHandler.h */,
-				7C28B90726611B3700CECBA6 /* FTRUMViewHandler.m */,
-				7C28B90F26611B3700CECBA6 /* FTRUMResourceHandler.h */,
-				7C28B90826611B3700CECBA6 /* FTRUMResourceHandler.m */,
-				7C28B90426611B3700CECBA6 /* FTRUMActionHandler.h */,
-				7C28B90C26611B3700CECBA6 /* FTRUMActionHandler.m */,
-				7C28B90526611B3700CECBA6 /* FTRUMHandler.h */,
-				7C28B90E26611B3700CECBA6 /* FTRUMHandler.m */,
 			);
 			path = FTRUM;
 			sourceTree = "<group>";
@@ -809,22 +863,27 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1780089228D4211700E12B6E /* FTRUMHandler.h in Headers */,
+				1780089B28D4211700E12B6E /* FTResourceContentModel.h in Headers */,
 				7CA1804026CF5C020035DDF0 /* FTLog.h in Headers */,
-				17A3F48628D307C5007761AF /* FTResourceContentModel.h in Headers */,
-				17A3F48F28D307C5007761AF /* FTRUMHandler.h in Headers */,
-				17A3F49328D307C5007761AF /* FTRUMDataWriteProtocol.h in Headers */,
+				178008B628D4231B00E12B6E /* FTThreadDispatchManager.h in Headers */,
+				1736698E28D479770022C965 /* FTUncaughtExceptionHandler.h in Headers */,
+				178008BB28D4231B00E12B6E /* FTDateUtil.h in Headers */,
+				178008C328D4282700E12B6E /* FTMobileConfig.h in Headers */,
+				1780089428D4211700E12B6E /* FTRUMSessionHandler.h in Headers */,
+				1780089728D4211700E12B6E /* FTRUMDataWriteProtocol.h in Headers */,
+				178008A328D4211700E12B6E /* FTRUMViewHandler.h in Headers */,
+				178008B728D4231B00E12B6E /* FTRumThread.h in Headers */,
+				178008A028D4211700E12B6E /* FTRUMManager.h in Headers */,
+				178008A928D4224E00E12B6E /* FTConstants.h in Headers */,
 				1716A4C028CB0E4E00FA3D1C /* FTExtensionDataManager.h in Headers */,
-				17A3F48328D307C5007761AF /* FTRUMSessionHandler.h in Headers */,
-				17A3F48B28D307C5007761AF /* FTRUMResourceHandler.h in Headers */,
+				178008A228D4211700E12B6E /* FTRUMResourceHandler.h in Headers */,
+				1780089C28D4211700E12B6E /* FTResourceMetricsModel.h in Headers */,
 				4A6C5437255E68B7009771B8 /* FTExtensionManager.h in Headers */,
-				1716A4C928CB3A8000FA3D1C /* FTCallStack.h in Headers */,
-				17A3F49028D307C5007761AF /* FTRUMActionHandler.h in Headers */,
-				17A3F48728D307C5007761AF /* FTResourceMetricsModel.h in Headers */,
+				1780089F28D4211700E12B6E /* FTRUMDataModel.h in Headers */,
+				1736699128D479820022C965 /* FTCallStack.h in Headers */,
+				1780089128D4211700E12B6E /* FTRUMActionHandler.h in Headers */,
 				4A6C542E255E6464009771B8 /* FTMobileExtension.h in Headers */,
-				17A3F49228D307C5007761AF /* FTRUMManager.h in Headers */,
-				17A3F48A28D307C5007761AF /* FTRUMDataModel.h in Headers */,
-				1716A4C428CB2EC000FA3D1C /* FTUncaughtExceptionHandler.h in Headers */,
-				17A3F48428D307C5007761AF /* FTRUMViewHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -872,7 +931,7 @@
 				7CA1807126CFA7830035DDF0 /* FTRequest.h in Headers */,
 				4A37A9412484CAEA00E0381B /* FTUncaughtExceptionHandler.h in Headers */,
 				4A2EFD9C254278DE00F93B1E /* FTPresetProperty.h in Headers */,
-				7CA1805E26CF99A30035DDF0 /* FTConfigManager.h in Headers */,
+				7CA1805E26CF99A30035DDF0 /* FTGlobalManager.h in Headers */,
 				7CA1803126CF4E610035DDF0 /* FTThread.h in Headers */,
 				170CC2E027BA6BA700C9EE34 /* FTAppLaunchTracker.h in Headers */,
 				177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */,
@@ -1015,20 +1074,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1780089928D4211700E12B6E /* FTRUMSessionHandler.m in Sources */,
+				178008BD28D4231B00E12B6E /* FTThreadDispatchManager.m in Sources */,
+				178008A128D4211700E12B6E /* FTRUMHandler.m in Sources */,
+				1780089D28D4211700E12B6E /* FTResourceMetricsModel.m in Sources */,
 				4A6C5438255E68B7009771B8 /* FTExtensionManager.m in Sources */,
-				17A3F48928D307C5007761AF /* FTResourceContentModel.m in Sources */,
-				1716A4C828CB3A8000FA3D1C /* FTCallStack.m in Sources */,
-				17A3F48E28D307C5007761AF /* FTRUMResourceHandler.m in Sources */,
-				17A3F49128D307C5007761AF /* FTRUMSessionHandler.m in Sources */,
-				17A3F49528D307C5007761AF /* FTRUMActionHandler.m in Sources */,
-				1716A4C528CB2EC000FA3D1C /* FTUncaughtExceptionHandler.m in Sources */,
 				7CA1803F26CF5C020035DDF0 /* FTLog.m in Sources */,
-				17A3F48528D307C5007761AF /* FTRUMDataModel.m in Sources */,
-				17A3F48C28D307C5007761AF /* FTRUMManager.m in Sources */,
-				17A3F48828D307C5007761AF /* FTResourceMetricsModel.m in Sources */,
+				1780089E28D4211700E12B6E /* FTResourceContentModel.m in Sources */,
+				1780089328D4211700E12B6E /* FTRUMManager.m in Sources */,
+				178008C228D4282700E12B6E /* FTMobileConfig.m in Sources */,
+				1780089A28D4211700E12B6E /* FTRUMDataModel.m in Sources */,
+				178008BE28D4231B00E12B6E /* FTDateUtil.m in Sources */,
+				1780089528D4211700E12B6E /* FTRUMViewHandler.m in Sources */,
 				1716A4C128CB0E4E00FA3D1C /* FTExtensionDataManager.m in Sources */,
-				17A3F48D28D307C5007761AF /* FTRUMHandler.m in Sources */,
-				17A3F49428D307C5007761AF /* FTRUMViewHandler.m in Sources */,
+				1780089828D4211700E12B6E /* FTRUMActionHandler.m in Sources */,
+				1736699228D479820022C965 /* FTCallStack.m in Sources */,
+				178008BC28D4231B00E12B6E /* FTRumThread.m in Sources */,
+				1780089628D4211700E12B6E /* FTRUMResourceHandler.m in Sources */,
+				178008AB28D4224E00E12B6E /* FTConstants.m in Sources */,
+				1736698D28D479770022C965 /* FTUncaughtExceptionHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1071,7 +1135,7 @@
 				7CA1806F26CFA7830035DDF0 /* FTRequest.m in Sources */,
 				4A7135A4257096FF00444C3D /* FTTrack.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */,
-				7CA1805D26CF99A30035DDF0 /* FTConfigManager.m in Sources */,
+				7CA1805D26CF99A30035DDF0 /* FTGlobalManager.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
 				7C28B85A2660980000CECBA6 /* FTWKWebViewJavascriptBridge.m in Sources */,
 				4A88429E239E5768001B44C3 /* ZY_FMDatabaseQueue.m in Sources */,

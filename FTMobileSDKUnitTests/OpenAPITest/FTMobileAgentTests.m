@@ -14,7 +14,6 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTConstants.h>
 #import <FTDateUtil.h>
-#import <NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import "NSString+FTAdd.h"
 #import <FTJSONUtil.h>

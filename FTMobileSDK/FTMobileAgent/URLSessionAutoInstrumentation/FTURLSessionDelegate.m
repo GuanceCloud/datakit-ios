@@ -21,6 +21,8 @@
 #import "FTURLSessionDelegate.h"
 #import "URLSessionAutoInstrumentation.h"
 #import "FTURLSessionInterceptorProtocol.h"
+#import "FTGlobalManager.h"
+
 @interface FTURLSessionDelegate()
 @end
 @implementation FTURLSessionDelegate
@@ -29,7 +31,7 @@
     return self;
 }
 - (URLSessionAutoInstrumentation *)instrumentation{
-    return [URLSessionAutoInstrumentation new];
+    return [FTGlobalManager sharedInstance].sessionInstrumentation;
 }
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];

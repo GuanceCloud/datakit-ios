@@ -13,7 +13,7 @@
 #import "UIApplication+FTAutoTrack.h"
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "UIScrollView+FTAutoTrack.h"
-#import "FTConfigManager.h"
+#import "FTGlobalManager.h"
 @interface FTTrack()
 
 @end
@@ -26,10 +26,10 @@
     return  self;
 }
 - (void)startHook{
-    if (FTConfigManager.sharedInstance.rumConfig.enableTraceUserView) {
+    if (FTGlobalManager.sharedInstance.rumConfig.enableTraceUserView) {
         [self logViewControllerLifeCycle];
     }
-    if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserAction) {
+    if ([FTGlobalManager sharedInstance].rumConfig.enableTraceUserAction) {
         [self logTargetAction];
     }
   

@@ -9,7 +9,6 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTNetworkInfoManager.h"
 #import "FTTraceHandler.h"
-#import "FTConfigManager.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTDateUtil.h"

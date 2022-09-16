@@ -11,13 +11,13 @@
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
 #import "FTURLSessionInterceptorProtocol.h"
-#import "FTMobileAgent+Private.h"
+#import "FTGlobalManager.h"
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        NSURLRequest *newrequest = [[FTMobileAgent sharedInstance].sessionInstrumentation.interceptor injectTraceHeader:request];
+        NSURLRequest *newrequest = [[FTGlobalManager sharedInstance].sessionInstrumentation.interceptor injectTraceHeader:request];
         [[FTWKWebViewHandler sharedInstance] addWebView:self request:request];
         return  [self dataflux_loadRequest:newrequest];
     }else{

@@ -38,6 +38,9 @@
     }
     return self;
 }
+-(id<URLSessionInterceptorType>)interceptor{
+    return _interceptor;
+}
 -(id<FTRumResourceProtocol>)rumResourceHandler{
     return [FTURLSessionInterceptor sharedInstance];
 }
@@ -48,8 +51,8 @@
 - (void)setTraceConfig:(FTTraceConfig *)config tracer:(nonnull id<FTTracerProtocol>)tracer{
     [[FTURLSessionInterceptor sharedInstance] enableAutoTrace:config.enableAutoTrace];
     [[FTURLSessionInterceptor sharedInstance] enableLinkRumData:config.enableLinkRumData];
-    [FTURLProtocol setDelegate:[FTURLSessionInterceptor sharedInstance]];
     [[FTURLSessionInterceptor sharedInstance] setTracer:tracer];
+    [FTURLProtocol setDelegate:_interceptor];
     [self startMonitor];
 }
 - (void)startMonitor{

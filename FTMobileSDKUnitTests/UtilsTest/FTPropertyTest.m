@@ -14,7 +14,6 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTConstants.h>
 #import <FTDateUtil.h>
-#import <NSURLRequest+FTMonitor.h>
 #import <objc/runtime.h>
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
@@ -22,6 +21,7 @@
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
+#import "FTModelHelper.h"
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -131,17 +131,8 @@
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)addRumData{
-    NSDictionary *field = @{FT_RUM_KEY_ACTION_ERROR_COUNT:@0,
-                            FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@0,
-                            FT_RUM_KEY_ACTION_RESOURCE_COUNT:@0,
-                            FT_DURATION:@103492975,
-    };
-    NSDictionary *tags = @{FT_RUM_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
-                           FT_RUM_KEY_ACTION_NAME:@"app_cold_start",
-                           FT_RUM_KEY_ACTION_TYPE:@"launch_cold",
-                           FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
-                           FT_RUM_KEY_SESSION_TYPE:@"user",
-    };
-    [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:field];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    [FTModelHelper addAction];
 }
 @end

@@ -134,6 +134,8 @@
 		1716A4B828C9BC8E00FA3D1C /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
+		178008C928D4446600E12B6E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		178008CB28D4446600E12B6E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
@@ -445,6 +447,8 @@
 				4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */,
 				EA27A847C08A0CBC01BFB58B /* Pods_App.framework */,
 				F4789F6DC168FB54BF86F009 /* Pods_AppTests.framework */,
+				178008C928D4446600E12B6E /* WidgetKit.framework */,
+				178008CB28D4446600E12B6E /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -952,6 +956,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6CF344C34916E4FAE256EEDA /* Pods-App.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
@@ -1191,6 +1196,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6CF344C34916E4FAE256EEDA /* Pods-App.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
@@ -1231,6 +1237,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C7BE81B84F1354BD6164DD8C /* Pods-App.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;

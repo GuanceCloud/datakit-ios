@@ -9,14 +9,13 @@
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
 #import "FTUncaughtExceptionHandler.h"
+#import "FTDateUtil.h"
 #import "FTLog.h"
-static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
-static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
-@interface FTExtensionManager ()<FTErrorDataDelegate>
+#import "FTRUMManager.h"
+#import "FTRUMDataWriteProtocol.h"
+@interface FTExtensionManager ()<FTRUMDataWriteProtocol>
 @property (nonatomic, copy) NSString *groupIdentifer;
-@property (nonatomic, strong) NSDate *lastInteractionTime;
-@property (nonatomic, strong) NSDate *sessionStartTime;
-@property (nonatomic, copy) NSString *sessionId;
+@property (nonatomic, strong) FTRUMManager *rumManager;
 @end
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
@@ -35,38 +34,23 @@ static FTExtensionManager *sharedInstance = nil;
 -(instancetype)initWithGroupIdentifier:(NSString *)identifier{
     self = [super init];
     if (self) {
-        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
-        _sessionStartTime = [NSDate date];
-        _sessionId = [[NSUUID UUID] UUIDString];
+        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
     }
     return self;
 }
--(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    NSDate *currentDate = [NSDate date];
-    if([self timedOutOrExpired:currentDate]){
-        [self refreshWithDate:currentDate];
-    }
-    NSDictionary *field = @{ @"error_message":message,
-                             @"error_stack":stack,
-    };
-    NSDictionary *tags = @{
-        @"error_type":type,
-        @"error_source":@"logger",
-    };
-    [[FTExtensionDataManager sharedInstance] writeEventType:@"error" tags:tags fields:field groupIdentifier:self.groupIdentifer];
+- (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
+    
 }
--(void)refreshWithDate:(NSDate *)date{
-    self.sessionId = [NSUUID UUID].UUIDString;
-    self.sessionStartTime = date;
-    self.lastInteractionTime = date;
+- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
+    
 }
--(BOOL)timedOutOrExpired:(NSDate*)currentTime{
-    NSTimeInterval timeElapsedSinceLastInteraction = [currentTime timeIntervalSinceDate:_lastInteractionTime];
-    BOOL timedOut = timeElapsedSinceLastInteraction >= sessionTimeoutDuration;
-    NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_sessionStartTime];
-    BOOL expired = sessionDuration >= sessionMaxDuration;
-    return timedOut || expired;
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    [[FTExtensionDataManager sharedInstance] writeEventType:type tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.groupIdentifer];
 }
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    [[FTExtensionDataManager sharedInstance] writeEventType:type tags:tags fields:fields tm:tm groupIdentifier:self.groupIdentifer];
+}
+
 + (void)enableLog:(BOOL)enable{
     [FTLog enableLog:enable];
 }

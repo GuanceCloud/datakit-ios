@@ -16,7 +16,6 @@
 #import "FTRUMManager.h"
 #import "FTResourceContentModel.h"
 #import "NSString+FTAdd.h"
-#import "FTConfigManager.h"
 @interface FTTraceHandler ()
 @property (nonatomic, strong) NSDictionary *traceHeader;
 @property (nonatomic, strong,nullable) NSError *error;

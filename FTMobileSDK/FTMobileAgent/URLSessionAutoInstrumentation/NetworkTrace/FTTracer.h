@@ -13,7 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTracer : NSObject<FTTracerProtocol>
 
 -(instancetype)initWithConfig:(FTTraceConfig *)config;
-
+#if FTSDKUNITTEST
+-(NSUInteger)getSkywalkingSeq;
+#endif
 
 @end
 

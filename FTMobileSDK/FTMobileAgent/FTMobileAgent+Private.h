@@ -20,8 +20,6 @@
 
 @interface FTMobileAgent (Private)<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
-@property (nonatomic, strong, readonly) FTTracer *tracer;
-@property (nonatomic, strong, readonly) URLSessionAutoInstrumentation *sessionInstrumentation;
 
 -(void)resetInstance;
 
