@@ -960,6 +960,7 @@
 					"$(inherited)",
 					"PREPROD=1",
 				);
+				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
@@ -1199,6 +1200,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
@@ -1236,6 +1238,7 @@
 				DEVELOPMENT_TEAM = RRLM22BB37;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
