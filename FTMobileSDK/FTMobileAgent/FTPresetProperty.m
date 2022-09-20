@@ -85,7 +85,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @end
 @interface FTPresetProperty ()
 @property (nonatomic, strong) MobileDevice *mobileDevice;
-@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
+//@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *context;
@@ -104,17 +104,17 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return self;
 }
--(NSMutableDictionary *)webCommonPropertyTags{
-    @synchronized (self) {
-        if (!_webCommonPropertyTags) {
-            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-        }
-    }
-    return _webCommonPropertyTags;
-}
+//-(NSMutableDictionary *)webCommonPropertyTags{
+//    @synchronized (self) {
+//        if (!_webCommonPropertyTags) {
+//            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
+//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+//            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+//        }
+//    }
+//    return _webCommonPropertyTags;
+//}
 -(NSMutableDictionary *)rumCommonPropertyTags{
     @synchronized (self) {
         if (!_rumCommonPropertyTags) {

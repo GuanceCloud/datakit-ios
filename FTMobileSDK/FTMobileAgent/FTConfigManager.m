@@ -10,9 +10,10 @@
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
 @implementation FTConfigManager
+static dispatch_once_t onceToken;
+static FTConfigManager *sharedInstance = nil;
+
 + (instancetype)sharedInstance{
-    static FTConfigManager *sharedInstance = nil;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
     });
@@ -29,5 +30,9 @@
 }
 -(void)setTraceConfig:(FTTraceConfig *)traceConfig{
     _traceConfig = [traceConfig copy];
+}
+- (void)resetInstance{
+    onceToken = 0;
+    sharedInstance =nil;
 }
 @end

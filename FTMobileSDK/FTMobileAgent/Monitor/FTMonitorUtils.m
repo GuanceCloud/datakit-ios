@@ -23,51 +23,32 @@
 @implementation FTMonitorUtils
 
 #pragma mark ========== WIFI的SSID 与 IP ==========
-
-// 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
-+ (NSString *)currentWifiSSID{
-    NSString * wifiName = FT_NULL_VALUE;
-    CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
-    if (!wifiInterfaces) {
-        wifiName = FT_NULL_VALUE;
-    }
-    NSArray *interfaces = (__bridge NSArray *)wifiInterfaces;
-    for (NSString *interfaceName in interfaces) {
-        CFDictionaryRef dictRef = CNCopyCurrentNetworkInfo((__bridge CFStringRef)(interfaceName));
-        if (dictRef) {
-            NSDictionary *networkInfo = (__bridge NSDictionary *)dictRef;
-            wifiName = [networkInfo objectForKey:(__bridge NSString *)kCNNetworkInfoKeySSID];
-            CFRelease(dictRef);
-        }
-    }
-    return wifiName;
-}
 // - 获取当前Wi-Fi的IP
-+ (NSString *)ipAddress{
-    NSString *address = FT_NULL_VALUE;
-    struct ifaddrs *interfaces = NULL;
-    struct ifaddrs *temp_addr = NULL;
-    int success = 0;
-    // retrieve the current interfaces - returns 0 on success
-    success = getifaddrs(&interfaces);
-    if (success == 0) {
-        // Loop through linked list of interfaces
-        temp_addr = interfaces;
-        while(temp_addr != NULL) {
-            if(temp_addr->ifa_addr->sa_family == AF_INET) {
-                // Check if interface is en0 which is the wifi connection on the iPhone
-                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
-                    // Get NSString from C String
-                    address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
-                }
-            }
-            temp_addr = temp_addr->ifa_next;
-        }
-    }
-    // Free memory
-    freeifaddrs(interfaces);
-    return address;
-}
+//+ (NSString *)ipAddress{
+//    NSString *address = FT_NULL_VALUE;
+//    struct ifaddrs *interfaces = NULL;
+//    struct ifaddrs *temp_addr = NULL;
+//    int success = 0;
+//    // retrieve the current interfaces - returns 0 on success
+//    success = getifaddrs(&interfaces);
+//    if (success == 0) {
+//        // Loop through linked list of interfaces
+//        temp_addr = interfaces;
+//        while(temp_addr != NULL) {
+//            if(temp_addr->ifa_addr->sa_family == AF_INET) {
+//                // Check if interface is en0 which is the wifi connection on the iPhone
+//                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
+//                    // Get NSString from C String
+//                    address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
+//                }
+//            }
+//            temp_addr = temp_addr->ifa_next;
+//        }
+//    }
+//    // Free memory
+//    freeifaddrs(interfaces);
+//    return address;
+//}
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4
 {
     NSArray *searchArray = preferIPv4 ?

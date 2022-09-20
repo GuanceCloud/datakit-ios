@@ -21,7 +21,7 @@
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import "FTDateUtil.h"
 #import "FTTrackDataManger+Test.h"
-
+#import "DemoViewController.h"
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -91,6 +91,47 @@
     }];
     XCTAssertEqualObjects(self.testVC, currentVC);
 }
+- (void)testAutoTableViewClick{
+    
+    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    DemoViewController *demovc = [[DemoViewController alloc] init];
+    
+    self.tabBarController = [[UITabBarController alloc] init];
+    
+    self.navigationController = [[UINavigationController alloc] initWithRootViewController:demovc];
+    self.navigationController.tabBarItem.title = @"UITestVC";
+    
+    UITableViewController *firstViewController = [[UITableViewController alloc] init];
+    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
+    
+    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
+    self.window.rootViewController = self.tabBarController;
+    
+    [demovc view];
+    [demovc viewWillAppear:NO];
+    [demovc viewDidAppear:NO];
+    [[tester waitForViewWithAccessibilityLabel:@"BindUser"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"UserLogout"] tap];
+    [tester waitForTimeInterval:2];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
+            NSString *actionName = tags[FT_RUM_KEY_ACTION_NAME];
+            XCTAssertTrue([actionName isEqualToString:@"[UITableViewCell]"]);
+            *stop = YES;
+        }
+    }];
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    
+}
 - (void)testTapGes{
    
     
@@ -148,7 +189,6 @@
             *stop = YES;
         }
     }];
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     
 }
 - (void)testButtonClick{
@@ -171,16 +211,17 @@
             *stop = YES;
         }
     }];
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
 }
 
-- (void)testTableViewCellClick{
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+- (void)testCollectionViewCellClick{
 
     [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
 
-    [[tester waitForViewWithAccessibilityLabel:@"Row: 0"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"Row: 1"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
     [tester waitForTimeInterval:2];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -193,11 +234,12 @@
         NSDictionary *tags = opdata[FT_TAGS];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]&&[tags[FT_RUM_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
             NSString *actionName = tags[FT_RUM_KEY_ACTION_NAME];
-            XCTAssertTrue([actionName isEqualToString:@"[UITableViewCell]"]);
+            XCTAssertTrue([actionName isEqualToString:@"[UICollectionViewCell]"]);
             *stop = YES;
         }
     }];
-    
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+
 }
 - (void)testAutoTrackResource{
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];

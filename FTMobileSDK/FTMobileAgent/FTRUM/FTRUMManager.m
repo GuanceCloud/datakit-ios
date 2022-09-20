@@ -34,9 +34,6 @@
     }
     return self;
 }
--(void)setRumConfig:(FTRumConfig *)rumConfig{
-    _rumConfig = rumConfig;
-}
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.preViewDuration setValue:loadTime forKey:viewName];

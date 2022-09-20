@@ -46,7 +46,7 @@
 }
 - (void)testLaunchCold{
     [self setSDK];
-    [NSThread sleepForTimeInterval:2];
+    [tester waitForTimeInterval:5];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSString *op = dict[@"op"];

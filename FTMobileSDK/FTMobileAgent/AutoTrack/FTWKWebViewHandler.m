@@ -67,7 +67,7 @@ static dispatch_once_t onceToken;
 - (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request{
     [self.lock lock];
     if (![self.mutableRequestKeyedByWebviewHash.allKeys containsObject:[[NSNumber numberWithInteger:webView.hash] stringValue]]) {
-        [self.mutableRequestKeyedByWebviewHash removeObjectForKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
+        [self.mutableRequestKeyedByWebviewHash setValue:request forKey:[[NSNumber numberWithInteger:webView.hash] stringValue]];
     }
     [self.lock unlock];
 }

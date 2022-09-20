@@ -17,7 +17,7 @@
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
         NSURLRequest *newrequest = [request ft_NetworkTrace];
-        [[FTWKWebViewHandler sharedInstance] addWebView:self request:request];
+        [[FTWKWebViewHandler sharedInstance] addWebView:self request:newrequest];
         return  [self dataflux_loadRequest:newrequest];
     }else{
         return [self dataflux_loadRequest:request];

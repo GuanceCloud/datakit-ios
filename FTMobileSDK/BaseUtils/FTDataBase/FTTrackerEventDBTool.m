@@ -253,14 +253,14 @@ static dispatch_once_t onceToken;
     }];
     return is;
 }
--(BOOL)deleteItemWithId:(long )Id
-{   __block BOOL is;
-    [self zy_inDatabase:^{
-     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,Id];
-        is = [self.db executeUpdate:sqlStr];
-    }];
-    return is;
-}
+//-(BOOL)deleteItemWithId:(long )Id
+//{   __block BOOL is;
+//    [self zy_inDatabase:^{
+//     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,Id];
+//        is = [self.db executeUpdate:sqlStr];
+//    }];
+//    return is;
+//}
 - (void)close
 {
     [_db close];

@@ -39,6 +39,17 @@
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:field tm:[FTDateUtil currentTimeNanosecond]];
     return model;
 }
++ (FTRecordModel *)createWrongFormatRumModel{
+    NSDictionary *tags = @{
+        FT_RUM_KEY_ERROR_TYPE:@"ios_crash",
+        FT_RUM_KEY_ERROR_SOURCE:@"logger",
+        FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
+        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_TYPE:@"user",
+    };
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:nil tm:[FTDateUtil currentTimeNanosecond]];
+    return model;
+}
 + (void)startView{
     NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
     [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];

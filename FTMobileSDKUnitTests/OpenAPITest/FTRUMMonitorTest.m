@@ -37,6 +37,9 @@
 }
 
 - (void)tearDown {
+
+}
+- (void)shutDownSDK{
     [NSThread sleepForTimeInterval:2];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
@@ -60,6 +63,7 @@
             *stop = YES;
         }
     }];
+    [self shutDownSDK];
 }
 - (void)testMonitorCpu{
     [self setRumMonitorType:FTDeviceMetricsMonitorCpu];
@@ -91,6 +95,7 @@
             *stop = YES;
         }
     }];
+    [self shutDownSDK];
 }
 - (void)testMonitorMemory{
     [self setRumMonitorType:FTDeviceMetricsMonitorMemory];
@@ -113,6 +118,7 @@
             *stop = YES;
         }
     }];
+    [self shutDownSDK];
 }
 - (void)testMonitorFPS{
     [self setRumMonitorType:FTDeviceMetricsMonitorFps];
@@ -135,6 +141,7 @@
             *stop = YES;
         }
     }];
+    [self shutDownSDK];
 }
 - (void)testMonitorAll{
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
@@ -156,6 +163,7 @@
             *stop = YES;
         }
     }];
+    [self shutDownSDK];
 }
 - (void)testMonitorFrequencyDefault{
     [self setMonitorFrequency:FTMonitorFrequencyDefault];
@@ -169,6 +177,7 @@
     [tester waitForTimeInterval:1];
     int newCount = [item cpu].sampleValueCount;
     XCTAssertTrue(newCount-count >= 2 && (newCount-count)<4);
+    [self shutDownSDK];
 }
 - (void)testMonitorFrequencyRare{
     [self setMonitorFrequency:FTMonitorFrequencyRare];
@@ -182,6 +191,7 @@
     [tester waitForTimeInterval:1];
     int newCount = [item cpu].sampleValueCount;
     XCTAssertTrue(newCount-count >= 1 && newCount-count<3);
+    [self shutDownSDK];
 }
 - (void)testMonitorFrequencyFrequent{
     [self setMonitorFrequency:FTMonitorFrequencyFrequent];
@@ -195,6 +205,20 @@
     [tester waitForTimeInterval:1];
     int newCount = [item cpu].sampleValueCount;
     XCTAssertTrue(newCount-count >= 10 && newCount-count<12);
+    [self shutDownSDK];
+}
+- (void)testMonitorValueScale{
+    FTMonitorValue *value = [[FTMonitorValue alloc]init];
+    for (int i = 1; i<=10; i++) {
+        [value addSample:i];
+    }
+    XCTAssertTrue(value.maxValue == 10);
+    XCTAssertTrue(value.minValue == 1);
+    XCTAssertTrue(value.meanValue == 5.5);
+    XCTAssertTrue(value.sampleValueCount == 10);
+    XCTAssertTrue(value.greatestDiff == 9);
+    FTMonitorValue *newValue = [value scaledDown:2];
+    XCTAssertTrue(newValue.maxValue == 5);
 }
 - (void)setRumMonitorNone{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];

@@ -29,7 +29,6 @@
 #import "FTTraceHeaderManager.h"
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
-#import "FTExtensionDataManager.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -223,28 +222,6 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
-    @try {
-        if (groupIdentifier == nil || [groupIdentifier isEqualToString:@""]) {
-            return;
-        }
-        NSArray *eventArray = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:groupIdentifier];
-        if (eventArray) {
-            for (NSDictionary *dict in eventArray) {
-                NSString *eventType = dict[@"eventType"];
-                // todo: session 信息是否需要 terminal
-                [self rumWrite:eventType terminal:@"app_extension" tags:dict[@"tags"] fields:dict[@"fields"]];
-            }
-            [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
-            if (completion) {
-                completion(groupIdentifier, eventArray);
-            }
-        }
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
-    }
-}
-
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
@@ -278,6 +255,7 @@ static dispatch_once_t onceToken;
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];
+    [[FTConfigManager sharedInstance] resetInstance];
     onceToken = 0;
     sharedInstance =nil;
 }

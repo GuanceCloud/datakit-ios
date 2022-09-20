@@ -91,30 +91,30 @@ static mach_port_t main_thread_id;
     return _ft_backtraceOfThread(ft_machThreadFromNSThread(thread));
 }
 
-+ (NSString *)ft_backtraceOfCurrentThread {
-    return [self ft_backtraceOfNSThread:[NSThread currentThread]];
-}
+//+ (NSString *)ft_backtraceOfCurrentThread {
+//    return [self ft_backtraceOfNSThread:[NSThread currentThread]];
+//}
 
 + (NSString *)ft_backtraceOfMainThread {
     return [self ft_backtraceOfNSThread:[NSThread mainThread]];
 }
 
-+ (NSString *)ft_backtraceOfAllThread {
-    thread_act_array_t threads;
-    mach_msg_type_number_t thread_count = 0;
-    const task_t this_task = mach_task_self();//获得任务的端口，带有发送权限的名称
-    
-    kern_return_t kr = task_threads(this_task, &threads, &thread_count);//将target_task 任务中的所有线程枚举保存在act_list 中
-    if(kr != KERN_SUCCESS) {
-        return @"Fail to get information of all threads";
-    }
-    
-    NSMutableString *resultString = [NSMutableString stringWithFormat:@"Call Backtrace of %u threads:\n", thread_count];
-    for(int i = 0; i < thread_count; i++) {
-        [resultString appendString:_ft_backtraceOfThread(threads[i])];
-    }
-    return [resultString copy];
-}
+//+ (NSString *)ft_backtraceOfAllThread {
+//    thread_act_array_t threads;
+//    mach_msg_type_number_t thread_count = 0;
+//    const task_t this_task = mach_task_self();//获得任务的端口，带有发送权限的名称
+//
+//    kern_return_t kr = task_threads(this_task, &threads, &thread_count);//将target_task 任务中的所有线程枚举保存在act_list 中
+//    if(kr != KERN_SUCCESS) {
+//        return @"Fail to get information of all threads";
+//    }
+//
+//    NSMutableString *resultString = [NSMutableString stringWithFormat:@"Call Backtrace of %u threads:\n", thread_count];
+//    for(int i = 0; i < thread_count; i++) {
+//        [resultString appendString:_ft_backtraceOfThread(threads[i])];
+//    }
+//    return [resultString copy];
+//}
 
 #pragma -mark Get call backtrace of a mach_thread
 NSString *_ft_backtraceOfThread(thread_t thread) {

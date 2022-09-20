@@ -9,7 +9,7 @@
 #import "UITestVC.h"
 #import "AppDelegate.h"
 #import "ResultVC.h"
-@interface UITestVC ()<UITableViewDelegate,UITableViewDataSource>
+@interface UITestVC ()<UICollectionViewDelegate,UICollectionViewDataSource>
 
 @end
 
@@ -106,18 +106,19 @@
     UILongPressGestureRecognizer *tap2 = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(tap2Action:)];
     
     [_imageView addGestureRecognizer:tap2];
-    
-    [self setupTableView];
-    
-    
+    [self setupCollectionView];
 }
-- (void)setupTableView {
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_scrollView.frame), CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame)/2)];
-    _tableView.dataSource = self;
-    _tableView.delegate = self;
-    [self.view addSubview:_tableView];
+- (void)setupCollectionView{
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc]init];
+    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    layout.itemSize = CGSizeMake(100, 40);
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_scrollView.frame), CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame)/2) collectionViewLayout:layout];
+    _collectionView.dataSource = self;
+    _collectionView.delegate = self;
+
+    [_collectionView registerClass:UICollectionViewCell.class forCellWithReuseIdentifier:@"UICollectionViewCell"];
+    [self.view addSubview:_collectionView];
     
-    [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
 }
 
 - (void)firstAction:(UIButton *)sender {
@@ -172,21 +173,30 @@
     NSLog(@"UIImageView被点击了");
 }
 #pragma mark -
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+    return 2;
+}
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
     return 20;
 }
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell" forIndexPath:indexPath];
-    cell.textLabel.text = [NSString stringWithFormat:@"Section: %ld, Row: %ld", indexPath.section, indexPath.row];
-    cell.accessibilityLabel =[NSString stringWithFormat:@"Row: %ld", indexPath.row];
-    cell.isAccessibilityElement = YES;
+-(__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"UICollectionViewCell" forIndexPath:indexPath];
+    UILabel *lable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 100, 40)];
+    lable.text = [NSString stringWithFormat:@"cell: %ld", indexPath.row];
+    [cell.contentView addSubview:lable];
+    lable.backgroundColor = [self randomColor];
+    lable.accessibilityLabel =[NSString stringWithFormat:@"cell: %ld", indexPath.row];
+    lable.isAccessibilityElement = YES;
     return cell;
 }
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"%@", indexPath);
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     
+}
+- (UIColor *)randomColor {
+    int R = (arc4random() % 256) ;
+    int G = (arc4random() % 256) ;
+    int B = (arc4random() % 256) ;
+    return [UIColor colorWithRed:R/255.0 green:G/255.0 blue:B/255.0 alpha:1];
 }
 
 /*

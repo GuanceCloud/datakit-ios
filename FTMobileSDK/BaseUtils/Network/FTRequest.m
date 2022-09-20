@@ -69,39 +69,35 @@
 }
 @end
 @implementation FTLoggingRequest
--(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-    self = [super init];
-    if(self){
-        self.events = events;
-    }
-    return self;
-}
+//-(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
+//    self = [super init];
+//    if(self){
+//        self.events = events;
+//    }
+//    return self;
+//}
 -(id<FTRequestBodyProtocol>)requestBody{
     return [[FTRequestLineBody alloc]init];
 }
 -(NSString *)path{
     return @"/v1/write/logging";
 }
--(NSString *)contentType{
-    return @"text/plain";
-}
+
 @end
 @implementation FTRumRequest
--(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-    self = [super init];
-    if(self){
-        self.events = events;
-    }
-    return self;
-}
+//-(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
+//    self = [super init];
+//    if(self){
+//        self.events = events;
+//    }
+//    return self;
+//}
 -(id<FTRequestBodyProtocol>)requestBody{
     return [[FTRequestLineBody alloc]init];
 }
 -(NSString *)path{
     return @"/v1/write/rum";
 }
--(NSString *)contentType{
-    return @"text/plain";
-}
+
 
 @end

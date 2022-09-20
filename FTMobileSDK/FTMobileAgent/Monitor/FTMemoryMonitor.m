@@ -21,7 +21,6 @@
     } else {
         ZYLog(@"Error with task_info(): %s", mach_error_string(kernelReturn));
     }
-
     return memoryUsageInByte;
 }
 @end

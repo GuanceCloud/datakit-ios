@@ -20,7 +20,8 @@
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    [self ft_load:@"https://auth.dataflux.cn/loginpsw"];
+    NSURL *url =  [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [self ft_load:url.absoluteString];
 }
 
 - (void)ft_loadOther:(NSString *)urlStr{
@@ -43,14 +44,18 @@
 -(void)ft_stopLoading{
     [self.webView stopLoading];
 }
-//- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
-//
-//    decisionHandler(WKNavigationActionPolicyAllow);
-//}
-//- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
-//
-//    decisionHandler(WKNavigationResponsePolicyAllow);
-//}
+- (void)test_addWebViewRumView{
+    [self.webView evaluateJavaScript:@"testRumView()" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
+        //js函数调用return,这里才会有东西,否则无任何信息。
+        NSLog(@"response: %@ error: %@", response, error);
+    }];
+
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+
+    decisionHandler(WKNavigationResponsePolicyAllow);
+}
 //- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error{
 //
 //}

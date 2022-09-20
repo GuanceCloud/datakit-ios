@@ -27,7 +27,7 @@
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
 #import "FTRUMMonitor.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTErrorDataDelegate>
+@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -67,7 +67,7 @@ static dispatch_once_t onceToken;
     self.track = [[FTTrack alloc]init];
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self];
+        [FTUncaughtExceptionHandler sharedHandler];
     }
     //采集view、resource、jsBridge
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -142,11 +142,6 @@ static dispatch_once_t onceToken;
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManger addWebviewData:measurement tags:tags fields:fields tm:time];
-                }else if([name isEqualToString:@"track"]){
-                }else if([name isEqualToString:@"log"]){
-                    //数据格式需要调整
-                }else if([name isEqualToString:@"trace"]){
-                    
                 }
             }
         }

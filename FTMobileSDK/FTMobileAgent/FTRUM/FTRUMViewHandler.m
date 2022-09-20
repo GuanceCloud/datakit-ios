@@ -93,29 +93,27 @@
                 self.isActiveView = NO;
                 self.isStopView = YES;
             }
-            break;
         }
+            break;
         case FTRUMDataClick:{
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
             }
         }
             break;
-        case FTRUMDataError:{
+        case FTRUMDataError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
                 [self.actionHandler writeActionData:[NSDate date]];
                 self.needUpdateView = YES;
-            }
             break;
         }
-        case FTRUMDataResourceError:{
+        case FTRUMDataResourceError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
             }
             break;
-        }
         case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceDataModel *)model];
@@ -128,11 +126,6 @@
             }
         }
             break;
-        case FTRUMDataWebViewJSBData:{
-            if (self.isActiveView) {
-                [self writeWebViewJSBData:(FTRUMWebViewData *)model];
-            }
-        }
         default:
             break;
     }
@@ -173,14 +166,6 @@
         weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
-}
-- (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
-    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
-                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
-    NSMutableDictionary *tags = [NSMutableDictionary new];
-    [tags addEntriesFromDictionary:data.tags];
-    [tags addEntriesFromDictionary:sessionTag];
-    [[FTMobileAgent sharedInstance] rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 - (void)writeViewData:(FTRUMDataModel *)model{
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
