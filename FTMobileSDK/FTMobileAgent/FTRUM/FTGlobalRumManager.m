@@ -28,6 +28,7 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
+#import "FTExternalDataManager+Private.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -85,6 +86,7 @@ static dispatch_once_t onceToken;
         }
     });
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
+    [FTExternalDataManager sharedManager].delegate = self.rumConfig;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -194,28 +196,6 @@ static dispatch_once_t onceToken;
     if(self.currentController == viewController){
         [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
     }
-}
-#pragma mark --------- FTExternalRum ----------
--(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    [self.rumManger onCreateView:viewName loadTime:loadTime];
-}
--(void)startViewWithName:(NSString *)viewName{
-    [self.rumManger startViewWithName:viewName];
-}
--(void)stopView{
-    [self.rumManger stopView];
-}
-- (void)addClickActionWithName:(NSString *)actionName{
-    [self.rumManger addClickActionWithName:actionName];
-}
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    [self.rumManger addActionName:actionName actionType:actionType];
-}
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self.rumManger addErrorWithType:type message:message stack:stack];
-}
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManger addLongTaskWithStack:stack duration:duration];
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{

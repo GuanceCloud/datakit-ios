@@ -25,6 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTRumConfig,FTTraceConfig;
 @interface URLSessionAutoInstrumentation : NSObject
+@property (nonatomic,copy) NSString *sdkUrlStr;
 //session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
 @property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
 //外部传入 rum resource 数据处理对象

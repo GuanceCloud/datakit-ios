@@ -10,8 +10,6 @@
 #import "FTBaseInfoHandler.h"
 #import "FTMobileAgentVersion.h"
 #import <sys/utsname.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
 #import "FTEnumConstant.h"
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
@@ -339,32 +337,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         return  @"iPhone Simulator";
     }
     return platform;
-}
-+(NSString *)telephonyInfo
-{
-    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier;
-    if (@available(iOS 12.0, *)) {
-        if (info && [info respondsToSelector:@selector(serviceSubscriberCellularProviders)]) {
-            NSDictionary *dic = [info serviceSubscriberCellularProviders];
-            if (dic.allKeys.count) {
-                carrier = [dic objectForKey:dic.allKeys[0]];
-            }
-        }
-    }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // 这部分使用到的过期api
-        carrier= [info subscriberCellularProvider];
-#pragma clang diagnostic pop
-        
-    }
-    if(carrier ==nil){
-        return FT_NULL_VALUE;
-    }else{
-        NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
-        return mCarrier;
-    }
 }
 @end
 

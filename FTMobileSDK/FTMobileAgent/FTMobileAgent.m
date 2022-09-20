@@ -30,6 +30,7 @@
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
 #import "FTExtensionDataManager.h"
+#import "FTExternalDataManager+Private.h"
 #import "FTWKWebViewHandler.h"
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
@@ -78,6 +79,8 @@ static dispatch_once_t onceToken;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
             .setSdkVersion(SDK_VERSION)
             .setXDataKitUUID(config.XDataKitUUID);
+            _sessionInstrumentation = [[URLSessionAutoInstrumentation alloc]init];
+            _sessionInstrumentation.sdkUrlStr = config.metricsUrl;
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -104,6 +107,8 @@ static dispatch_once_t onceToken;
     [self.sessionInstrumentation setRUMConfig:rumConfigOptions];
     [FTGlobalManager sharedInstance].sessionInstrumentation = self.sessionInstrumentation;
     self.sessionInstrumentation.interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
+    [FTExternalDataManager sharedManager].resourceDelegate = self.sessionInstrumentation.rumResourceHandler;
+
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
@@ -125,12 +130,7 @@ static dispatch_once_t onceToken;
     [FTGlobalManager sharedInstance].tracer = self.tracer;
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
     [self.sessionInstrumentation setTraceConfig:traceConfigOptions tracer:self.tracer];
-}
-- (URLSessionAutoInstrumentation *)sessionInstrumentation{
-    if (!_sessionInstrumentation) {
-        _sessionInstrumentation = [[URLSessionAutoInstrumentation alloc]init];
-    }
-    return _sessionInstrumentation;
+    [FTExternalDataManager sharedManager].traceDelegate = self.tracer;
 }
 #pragma mark ========== publick method ==========
 -(void)logging:(NSString *)content status:(FTLogStatus)status{

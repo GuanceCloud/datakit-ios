@@ -7,6 +7,7 @@
 //
 
 #import "FTExternalDataManager.h"
+#import "FTExternalDataManager+Private.h"
 #import "FTGlobalRumManager.h"
 #import "FTTracer.h"
 #import "FTResourceContentModel.h"
@@ -15,7 +16,9 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTGlobalManager.h"
 @interface FTExternalDataManager()
-
+@property (nonatomic, weak) id <FTExternalRum> delegate;
+@property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
+@property (nonatomic, weak) id <FTTracerProtocol> traceDelegate;
 @end
 @implementation FTExternalDataManager
 + (instancetype)sharedManager{
@@ -28,36 +31,59 @@
 }
 #pragma mark - Rum -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    [FTGlobalRumManager.sharedInstance onCreateView:viewName loadTime:loadTime];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(onCreateView:loadTime:)]){
+        [self.delegate onCreateView:viewName loadTime:loadTime];
+    }
 }
 -(void)startViewWithName:(NSString *)viewName {
-    [FTGlobalRumManager.sharedInstance startViewWithName:viewName];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:)]){
+        [self.delegate startViewWithName:viewName];
+    }
 }
 -(void)stopView{
-    [FTGlobalRumManager.sharedInstance stopView];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(stopView)]){
+        [self.delegate stopView];
+    }
 }
 - (void)addClickActionWithName:(NSString *)actionName {
-    [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:)]){
+        [self.delegate addClickActionWithName:actionName];
+    }
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    [FTGlobalRumManager.sharedInstance addActionName:actionName actionType:actionType];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:)]){
+        [self.delegate addActionName:actionName actionType:actionType];
+    }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:message:stack:)]){
+        [self.delegate addErrorWithType:type message:message stack:stack];
+    }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:)]){
+        [self.delegate addLongTaskWithStack:stack duration:duration];
+    }
 }
 - (void)startResourceWithKey:(NSString *)key{
-    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler startResourceWithKey:key];
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(startResourceWithKey:)]){
+        [self.resourceDelegate startResourceWithKey:key];
+    }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler addResourceWithKey:key metrics:metrics content:content];
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(addResourceWithKey:metrics:content:)]){
+        [self.resourceDelegate addResourceWithKey:key metrics:metrics content:content];
+    }
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key {
-    [[FTGlobalManager sharedInstance].sessionInstrumentation.rumResourceHandler stopResourceWithKey:key];
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(stopResourceWithKey:)]){
+        [self.resourceDelegate stopResourceWithKey:key];
+    }
 }
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    return [[FTGlobalManager sharedInstance].tracer networkTraceHeaderWithUrl:url];
+    if(self.traceDelegate && [self.traceDelegate respondsToSelector:@selector(networkTraceHeaderWithUrl:)]){
+        return [self.traceDelegate networkTraceHeaderWithUrl:url];
+    }
+    return nil;
 }
 @end

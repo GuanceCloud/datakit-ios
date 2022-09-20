@@ -41,6 +41,10 @@
 -(id<URLSessionInterceptorType>)interceptor{
     return _interceptor;
 }
+-(void)setSdkUrlStr:(NSString *)sdkUrlStr{
+    _sdkUrlStr = sdkUrlStr;
+    _interceptor.innerUrl = sdkUrlStr;
+}
 -(id<FTRumResourceProtocol>)rumResourceHandler{
     return [FTURLSessionInterceptor sharedInstance];
 }

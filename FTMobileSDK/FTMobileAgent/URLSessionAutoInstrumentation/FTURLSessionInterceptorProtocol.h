@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol URLSessionInterceptorType<NSObject>
 @property (nonatomic, weak) id<FTRumInnerResourceProtocol> innerResourceHandeler;
+@property (nonatomic, copy) NSString *innerUrl;
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;
 - (void)taskCreated:(NSURLSessionTask *)task  session:(NSURLSession *)session;
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;

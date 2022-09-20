@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTMobileConfig.h"
 #import "FTTracerProtocol.h"
+@class FTTraceConfig;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTracer : NSObject<FTTracerProtocol>
 

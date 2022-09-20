@@ -11,16 +11,17 @@
 #import "FTEnumConstant.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTUncaughtExceptionHandler.h"
+#import "FTExternalRumProtocol.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate>
+@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate,FTExternalRum>
 @property (nonatomic, assign) AppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
--(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer;
+-(instancetype)initWithRumConfig:(FTRumConfig *)rumConfig monitor:(nullable FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer;
 
 #pragma mark - resource -
 /**

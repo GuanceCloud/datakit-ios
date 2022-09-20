@@ -15,6 +15,8 @@
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
 @implementation FTBaseInfoHandler : NSObject
 
 #pragma mark ========== 请求加密 ==========
@@ -94,5 +96,31 @@
         return x <= sampling ? YES:NO;
     }
     return YES;
+}
++(NSString *)telephonyInfo
+{
+    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
+    CTCarrier *carrier;
+    if (@available(iOS 12.0, *)) {
+        if (info && [info respondsToSelector:@selector(serviceSubscriberCellularProviders)]) {
+            NSDictionary *dic = [info serviceSubscriberCellularProviders];
+            if (dic.allKeys.count) {
+                carrier = [dic objectForKey:dic.allKeys[0]];
+            }
+        }
+    }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // 这部分使用到的过期api
+        carrier= [info subscriberCellularProvider];
+#pragma clang diagnostic pop
+        
+    }
+    if(carrier ==nil){
+        return FT_NULL_VALUE;
+    }else{
+        NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
+        return mCarrier;
+    }
 }
 @end

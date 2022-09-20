@@ -14,8 +14,8 @@
 #import "FTBaseInfoHandler.h"
 #import "FTWKWebViewHandler.h"
 #import "FTURLProtocol.h"
-#import "FTNetworkInfoManager.h"
 #import "FTURLSessionInterceptor.h"
+#import "FTMobileConfig.h"
 static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()

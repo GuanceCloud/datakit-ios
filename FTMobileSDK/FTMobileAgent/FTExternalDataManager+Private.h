@@ -1,8 +1,8 @@
 //
-//  URLSessionDataTask+FTSwizzler.h
+//  FTExternalDataManager+Private.h
 //  FTMobileAgent
 //
-//  Created by hulilei on 2022/9/13.
+//  Created by hulilei on 2022/9/20.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +18,16 @@
 //  limitations under the License.
 
 
-
-
+#import <FTMobileAgent/FTMobileAgent.h>
+#import "FTExternalRumProtocol.h"
+#import "FTRumResourceProtocol.h"
+#import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface URLSessionDataTask (FTSwizzler)
+@interface FTExternalDataManager (Private)<FTExternalRum,FTRumResourceProtocol>
+@property (nonatomic, weak) id <FTExternalRum> delegate;
+@property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
+@property (nonatomic, weak) id <FTTracerProtocol> traceDelegate;
 
 @end
 

@@ -7,16 +7,13 @@
 //
 
 #import "FTURLSessionInterceptor.h"
-#import "FTNetworkInfoManager.h"
 #import "FTTraceHandler.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTDateUtil.h"
 #import <objc/runtime.h>
-NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
 
 @interface FTURLSessionInterceptor ()
-@property (nonatomic,copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) NSMutableDictionary<id,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, assign) BOOL enableLinkRumData;
@@ -26,6 +23,8 @@ NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
 @end
 @implementation FTURLSessionInterceptor
 @synthesize innerResourceHandeler = _innerResourceHandeler;
+@synthesize innerUrl = _innerUrl;
+
 + (instancetype)sharedInstance {
     static FTURLSessionInterceptor *sharedInstance = nil;
     static dispatch_once_t onceToken;
@@ -37,7 +36,6 @@ NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _sdkUrlStr = [FTNetworkInfoManager sharedInstance].metricsUrl;
         _lock = dispatch_semaphore_create(1);
         _traceHandlers = [NSMutableDictionary new];
         _enableTrace = NO;
@@ -59,14 +57,14 @@ NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
     self.enableRumTrack = enable;
 }
 - (BOOL)isInternalURL:(NSURL *)url{
-    if (self.sdkUrlStr) {
+    if (self.innerUrl) {
         if (url.port) {
-            return ([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
+            return ([url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host]&&[url.port isEqual:[NSURL URLWithString:self.innerUrl].port]);
         }else{
-            return [url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+            return [url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host];
         }
     }
-    return YES;
+    return NO;
 }
 // traceHandler 处理
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
@@ -106,6 +104,12 @@ NSString * const FT_TRACR_IDENTIFIER = @"ft_identifier";
     dispatch_semaphore_signal(self.lock);
 }
 #pragma mark --------- URLSessionInterceptorType ----------
+-(void)setInnerUrl:(NSString *)innerUrl{
+    _innerUrl = innerUrl;
+}
+-(NSString *)innerUrl{
+    return _innerUrl;
+}
 -(void)setInnerResourceHandeler:(id<FTRumInnerResourceProtocol>)innerResourceHandeler{
     _innerResourceHandeler = innerResourceHandeler;
 }

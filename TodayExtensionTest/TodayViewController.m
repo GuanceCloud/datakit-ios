@@ -8,7 +8,9 @@
 
 #import "TodayViewController.h"
 #import <NotificationCenter/NotificationCenter.h>
-#import <FTExtensionManager.h>
+#import "FTMobileExtension.h"
+#import <FTMobileExtension/FTMobileConfig.h>
+#import <FTMobileExtension/FTExternalDataManager.h>
 @interface TodayViewController () <NCWidgetProviding>
 
 @end
@@ -18,12 +20,37 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *appid = [processInfo environment][@"APP_ID"];
     [FTExtensionManager enableLog:YES];
     [FTExtensionManager startWithApplicationGroupIdentifier:@"group.hlltest.widget"];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+    rumConfig.appid = appid;
+    rumConfig.enableTrackAppCrash = YES;
+    rumConfig.enableTraceUserResource = YES;
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableLinkRumData = YES;
+    traceConfig.enableAutoTrace = YES;
+    [[FTExtensionManager sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTExtensionManager sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"TodayViewController"];
 }
 - (IBAction)crashClick:(id)sender {
-     NSString *value = nil;
-     NSDictionary *dict = @{@"11":value};
+//     NSString *value = nil;
+//     NSDictionary *dict = @{@"11":value};
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions"]];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        
+    }];
+    NSURL *url = [NSURL URLWithString:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions"];
+    NSMutableURLRequest *request2 = [NSMutableURLRequest requestWithURL:url];
+    
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        
+    }];
+    
+    [task resume];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:(void (^)(NCUpdateResult))completionHandler {
