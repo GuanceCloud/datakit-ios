@@ -82,6 +82,7 @@
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
         
+        [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.extension.demo" completion:nil];
     }
     // UI 测试
     if(isUITests){

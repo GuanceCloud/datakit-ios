@@ -23,7 +23,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *appid = [processInfo environment][@"APP_ID"];
     [FTExtensionManager enableLog:YES];
-    [FTExtensionManager startWithApplicationGroupIdentifier:@"group.hlltest.widget"];
+    [FTExtensionManager startWithApplicationGroupIdentifier:@"group.com.ft.extension.demo"];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
     rumConfig.appid = appid;
     rumConfig.enableTrackAppCrash = YES;
@@ -36,10 +36,11 @@
     [[FTExternalDataManager sharedManager] startViewWithName:@"TodayViewController"];
 }
 - (IBAction)crashClick:(id)sender {
-//     NSString *value = nil;
-//     NSDictionary *dict = @{@"11":value};
+     NSString *value = nil;
+     NSDictionary *dict = @{@"11":value};
+}
+- (IBAction)networkClick:(id)sender {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions"]];
-    
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
         
     }];
