@@ -249,8 +249,8 @@ static dispatch_once_t onceToken;
         if (eventArray) {
             for (NSDictionary *dict in eventArray) {
                 NSString *eventType = dict[@"eventType"];
-                // todo: session 信息是否需要 terminal
-                [self rumWrite:eventType terminal:@"app_extension" tags:dict[@"tags"] fields:dict[@"fields"]];
+                NSNumber *tm = dict[@"tm"];
+                [self rumWrite:eventType terminal:FT_TERMINAL_APP tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {

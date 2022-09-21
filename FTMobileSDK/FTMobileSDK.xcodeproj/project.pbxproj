@@ -317,6 +317,7 @@
 		174058AE28D807FB0092E096 /* FTExtensionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExtensionManager.h; sourceTree = "<group>"; };
 		174058B128D8081B0092E096 /* FTExtensionDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExtensionDataManager.h; sourceTree = "<group>"; };
 		174058B228D8081B0092E096 /* FTExtensionDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionDataManager.m; sourceTree = "<group>"; };
+		174C501828DAE88600FBE425 /* FTExtensionSDKVersion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionSDKVersion.h; sourceTree = "<group>"; };
 		1775A78C28D9A5D000D70779 /* FTCallStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTCallStack.h; sourceTree = "<group>"; };
 		1775A78D28D9A5D000D70779 /* FTUncaughtExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTUncaughtExceptionHandler.h; sourceTree = "<group>"; };
 		1775A78E28D9A5D000D70779 /* FTCallStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTCallStack.m; sourceTree = "<group>"; };
@@ -756,6 +757,7 @@
 				1775A78B28D9A5D000D70779 /* FTCrashReporting */,
 				174058AE28D807FB0092E096 /* FTExtensionManager.h */,
 				1775A7BC28D9A60000D70779 /* FTExtensionManager.m */,
+				174C501828DAE88600FBE425 /* FTExtensionSDKVersion.h */,
 				174058B128D8081B0092E096 /* FTExtensionDataManager.h */,
 				174058B228D8081B0092E096 /* FTExtensionDataManager.m */,
 				7CA1803D26CF5C010035DDF0 /* FTLog.m */,

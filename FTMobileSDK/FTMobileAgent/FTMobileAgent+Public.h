@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param groupIdentifier groupIdentifier
  * @param completion  完成 track 后的 callback
  */
-- (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion;
+- (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(nullable void (^)(NSString *groupIdentifier, NSArray *events)) completion;
 
 
 @end

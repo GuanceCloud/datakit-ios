@@ -17,6 +17,7 @@
 #import "URLSessionAutoInstrumentation.h"
 #import "FTTracer.h"
 #import "FTExternalDataManager+Private.h"
+#import "FTExtensionSDKVersion.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol>
 @property (nonatomic, copy) NSString *groupIdentifer;
 @property (nonatomic, strong) FTRUMManager *rumManager;
@@ -68,11 +69,20 @@ static FTExtensionManager *sharedInstance = nil;
 
 }
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [[FTExtensionDataManager sharedInstance] writeEventType:type tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.groupIdentifer];
-
+    [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
-    [[FTExtensionDataManager sharedInstance] writeEventType:type tags:tags fields:fields tm:tm groupIdentifier:self.groupIdentifer];
+    NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+    NSMutableDictionary *newTags = @{@"sdk_extension_version":EXTENSION_SDK_VERSION,
+          @"extension_identifier":bundleIdentifier,
+    }.mutableCopy;
+    if(tags){
+        [newTags addEntriesFromDictionary:tags];
+    }
+    ZYDebug(@"%@\n",@{@"type":type,
+                    @"tags":newTags,
+                    @"fields":fields});
+    [[FTExtensionDataManager sharedInstance] writeEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.groupIdentifer];
 }
 + (void)enableLog:(BOOL)enable{
     [FTLog enableLog:enable];
