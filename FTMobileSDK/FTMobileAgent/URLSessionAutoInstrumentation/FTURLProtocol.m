@@ -10,8 +10,6 @@
 #endif
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-#import "FTResourceContentModel.h"
-#import "FTResourceMetricsModel.h"
 static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
 
 @interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>

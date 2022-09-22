@@ -5,7 +5,7 @@
 //  Created by 胡蕾蕾 on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
+#import <UIKit/UIKit.h>
 #import "FTPresetProperty.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMobileAgentVersion.h"
@@ -13,6 +13,7 @@
 #import "FTEnumConstant.h"
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
+#import "FTConstants.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本

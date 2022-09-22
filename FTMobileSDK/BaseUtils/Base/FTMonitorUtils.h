@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTMonitorUtils : NSObject
@@ -16,12 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取当前设备CPU使用率
  */
 + (long )cpuUsage;
+#if TARGET_OS_IOS
 /**
  *  @abstract
  *  获取当前电池电量使用率
  */
 + (double)batteryUse;
-
+#endif
 /**
  *  @abstract
  *  获取设备总内存

@@ -6,7 +6,6 @@
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import "FTConstants.h"
 
 typedef NS_ENUM(NSUInteger, AppState) {
     AppStateUnknown,

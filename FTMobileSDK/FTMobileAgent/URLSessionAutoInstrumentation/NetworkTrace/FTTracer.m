@@ -12,7 +12,6 @@
 #import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTWKWebViewHandler.h"
 #import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTMobileConfig.h"

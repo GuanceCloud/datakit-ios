@@ -14,9 +14,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTRUMDataWriteProtocol.h"
-#import "URLSessionAutoInstrumentation.h"
 
-@class FTRecordModel,FTPresetProperty,FTRUMManager,FTTracer;
+@class FTPresetProperty;
 
 @interface FTMobileAgent (Private)<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;

@@ -9,7 +9,7 @@
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
+#import <FTBaseInfoHandler.h>
 //测试崩溃采集
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"

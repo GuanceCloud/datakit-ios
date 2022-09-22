@@ -29,6 +29,8 @@
 #import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
 #import "FTExternalDataManager+Private.h"
+#import "FTEnumConstant.h"
+#import "FTConstants.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -86,7 +88,7 @@ static dispatch_once_t onceToken;
         }
     });
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
-    [FTExternalDataManager sharedManager].delegate = self.rumConfig;
+    [FTExternalDataManager sharedManager].delegate = self.rumManger;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {

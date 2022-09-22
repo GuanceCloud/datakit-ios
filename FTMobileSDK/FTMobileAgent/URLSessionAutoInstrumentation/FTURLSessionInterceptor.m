@@ -10,7 +10,6 @@
 #import "FTTraceHandler.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
-#import "FTDateUtil.h"
 #import <objc/runtime.h>
 
 @interface FTURLSessionInterceptor ()

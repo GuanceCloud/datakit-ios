@@ -1,8 +1,8 @@
 //
-//  FTExternalDataManager+Private.h
-//  FTMobileAgent
+//  FTGlobal.h
+//  FTMobileExtension
 //
-//  Created by hulilei on 2022/9/20.
+//  Created by hulilei on 2022/9/22.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,17 +18,18 @@
 //  limitations under the License.
 
 
-#import <FTMobileAgent/FTMobileAgent.h>
-#import "FTExternalRumProtocol.h"
-#import "FTRumResourceProtocol.h"
+#import <Foundation/Foundation.h>
+#import "URLSessionAutoInstrumentation.h"
+#import "FTMobileConfig.h"
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTExternalDataManager (Private)<FTExternalRum,FTRumResourceProtocol>
-@property (nonatomic, weak) id <FTExternalRum> delegate;
-@property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
-@property (nonatomic, weak) id <FTTracerProtocol> traceDelegate;
+@interface FTGlobalManager : NSObject
+@property (nonatomic, strong) FTRumConfig *rumConfig;
+@property (nonatomic, strong) FTTraceConfig *traceConfig;
+@property (nonatomic, weak) URLSessionAutoInstrumentation *sessionInstrumentation;
+@property (nonatomic, weak) id<FTTracerProtocol> tracer;
++ (instancetype)sharedInstance;
 
 @end
-
 NS_ASSUME_NONNULL_END

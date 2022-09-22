@@ -12,6 +12,7 @@
 #import <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 #import "NSString+FTAdd.h"
+#import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <netdb.h>
 #include <arpa/inet.h>

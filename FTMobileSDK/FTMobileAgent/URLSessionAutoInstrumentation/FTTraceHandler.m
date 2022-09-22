@@ -7,15 +7,10 @@
 //
 
 #import "FTTraceHandler.h"
-#import "FTBaseInfoHandler.h"
-#import "FTGlobalRumManager.h"
-#import "FTMobileAgent+Private.h"
 #import "FTDateUtil.h"
 #import "FTTracerProtocol.h"
-#import "FTJSONUtil.h"
-#import "FTRUMManager.h"
 #import "FTResourceContentModel.h"
-#import "NSString+FTAdd.h"
+#import "FTResourceMetricsModel.h"
 @interface FTTraceHandler ()
 @property (nonatomic, strong) NSDictionary *traceHeader;
 @property (nonatomic, strong,nullable) NSError *error;

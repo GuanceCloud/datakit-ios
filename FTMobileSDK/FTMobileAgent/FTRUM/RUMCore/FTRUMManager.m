@@ -9,12 +9,12 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "FTMonitorUtils.h"
-#import "FTPresetProperty.h"
 #import "FTThreadDispatchManager.h"
 #import "FTLog.h"
 #import "FTResourceContentModel.h"
-#import "FTGlobalRumManager.h"
 #import "FTResourceMetricsModel.h"
+#import "FTConstants.h"
+#import "FTMobileConfig.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;

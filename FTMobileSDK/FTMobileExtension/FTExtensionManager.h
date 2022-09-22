@@ -33,9 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param traceConfigOptions   trace配置参数
  */
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
-
-
-- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 /**
  *    @brief  设置是否开启打印 sdk 的 log 信息，默认关闭。在初始化方法之前调用
  *

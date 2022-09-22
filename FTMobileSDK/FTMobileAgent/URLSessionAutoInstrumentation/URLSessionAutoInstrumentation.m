@@ -23,7 +23,7 @@
 #import "FTSwizzle.h"
 #import "FTURLSessionInterceptor.h"
 #include "FTURLProtocol.h"
-#import "FTWKWebViewHandler.h"
+#import "FTMobileConfig.h"
 @interface URLSessionAutoInstrumentation()
 @property (nonatomic, assign) BOOL swizzle;
 @end

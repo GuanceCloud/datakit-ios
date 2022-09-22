@@ -15,6 +15,9 @@
 #include <net/if.h>
 #import <mach/mach.h>
 #import "FTConstants.h"
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
 #define IOS_CELLULAR    @"pdp_ip0"
 #define IOS_WIFI        @"en0"
 #define IOS_VPN         @"utun0"
@@ -146,6 +149,7 @@
 }
 
 #pragma mark ========== 电池 ==========
+#if TARGET_OS_IOS
 //电池电量
 +(double)batteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
@@ -156,7 +160,7 @@
     return deviceLevel*100;
     }
 }
-
+#endif
 #pragma mark ========== 内存 ==========
 //当前任务所占用的内存
 + (double)usedMemory

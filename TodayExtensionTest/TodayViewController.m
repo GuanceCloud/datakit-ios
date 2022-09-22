@@ -47,7 +47,7 @@
     NSURL *url = [NSURL URLWithString:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions"];
     NSMutableURLRequest *request2 = [NSMutableURLRequest requestWithURL:url];
     
-    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request2 completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         
     }];
     

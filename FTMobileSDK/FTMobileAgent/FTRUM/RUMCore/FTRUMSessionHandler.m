@@ -10,6 +10,8 @@
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
 #import "FTDateUtil.h"
+#import "FTMobileConfig.h"
+#import "FTConstants.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>

@@ -8,13 +8,7 @@
 
 #import "FTExternalDataManager.h"
 #import "FTExternalDataManager+Private.h"
-#import "FTGlobalRumManager.h"
-#import "FTTracer.h"
-#import "FTResourceContentModel.h"
-#import "FTTraceHandler.h"
-#import "FTMobileAgent+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-#import "FTGlobalManager.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTExternalRum> delegate;
 @property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
