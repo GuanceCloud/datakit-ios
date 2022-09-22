@@ -179,7 +179,7 @@
 		17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56A28A1094200CE40E5 /* FTUserInfo.h */; };
 		17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4A56B28A1094200CE40E5 /* FTUserInfo.m */; };
-		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17D4AAE22856E6EC0045EFF2 /* FTExternalRumProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTExternalRumProtocol.h */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */; };
 		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
@@ -232,7 +232,7 @@
 		4A8842A7239E5768001B44C3 /* ZY_FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A884287239E5768001B44C3 /* ZY_FMDatabaseAdditions.m */; };
 		4AED6B262473AFEC00E04AE2 /* FTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AED6B242473AFEC00E04AE2 /* FTLog.h */; };
 		4AED6B272473AFEC00E04AE2 /* FTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AED6B252473AFEC00E04AE2 /* FTLog.m */; };
-		7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C0FBD3A274B89BA007CD0D3 /* FTExternalDataManager.h */; };
 		7C0FBD3D274B89BA007CD0D3 /* FTExternalDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C0FBD3B274B89BA007CD0D3 /* FTExternalDataManager.m */; };
 		7C28B8592660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C28B8532660980000CECBA6 /* FTWebViewJavascriptBridgeBase.h */; };
 		7C28B85A2660980000CECBA6 /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B8542660980000CECBA6 /* FTWKWebViewJavascriptBridge.m */; };
@@ -339,7 +339,6 @@
 		1740589828D807CF0092E096 /* FTRUMResourceHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMResourceHandler.h; sourceTree = "<group>"; };
 		1740589928D807CF0092E096 /* FTRUMViewHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRUMViewHandler.h; sourceTree = "<group>"; };
 		174058AE28D807FB0092E096 /* FTExtensionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExtensionManager.h; sourceTree = "<group>"; };
-		174C501828DAE88600FBE425 /* FTExtensionSDKVersion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionSDKVersion.h; sourceTree = "<group>"; };
 		174C50F728DC454800FBE425 /* FTExternalDataManager+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTExternalDataManager+Private.h"; sourceTree = "<group>"; };
 		174C50F828DC454800FBE425 /* FTExternalDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExternalDataManager.m; sourceTree = "<group>"; };
 		174C50F928DC454800FBE425 /* FTExternalDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTExternalDataManager.h; sourceTree = "<group>"; };
@@ -984,7 +983,6 @@
 				174C51E628DC6F3800FBE425 /* FTExtensionDataManager.m */,
 				174C513928DC678E00FBE425 /* FTGlobalManager.h */,
 				174C513A28DC678E00FBE425 /* FTGlobalManager.m */,
-				174C501828DAE88600FBE425 /* FTExtensionSDKVersion.h */,
 				174C519628DC6EE000FBE425 /* Exception */,
 				174C518F28DC6EC400FBE425 /* Protocol */,
 				174C514D28DC6EA300FBE425 /* FTRUM */,

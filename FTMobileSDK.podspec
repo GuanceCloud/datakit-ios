@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
 
   s.name         = "FTMobileSDK"
-  s.version      = "1.3.8-alpha.2"
-  # s.version      = "$JENKINS_DYNAMIC_VERSION"
+  #s.version      = "1.3.8-alpha.2"
+  s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
   s.description  = "观测云 DataFlux iOS 数据采集 SDK"
   s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -29,15 +29,17 @@ Pod::Spec.new do |s|
        core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '9.0'
        agent.source_files = core_dir + 'FTMobileAgent.{h,m}',core_dir + 'FTMobileAgent+Public.h',core_dir + 'FTMobileAgent+Private.h',core_dir + 'FTMobileAgentVersion.h',core_dir + 'FTPresetProperty.{h,m}',core_dir + 'FTUserInfo.{h,m}',core_dir + 'FTGlobalManager.{h,m}',core_dir + 'FTGlobalRumManager.{h,m}'
-       
+       agent.public_header_files = core_dir + 'FTMobileAgent.h',core_dir + 'FTMobileAgent+Public.h'
        agent.subspec 'FTRUM' do |r|
        r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
        r.dependency 'FTMobileSDK/Common/Base'
        r.dependency 'FTMobileSDK/Common/Thread'
+       r.public_header_files = 'FTMobileSDK/FTMobileAgent/FTRUM/RUMCore/Model/FTResourceContentModel.h','FTMobileSDK/FTMobileAgent/FTRUM/RUMCore/Model/FTResourceMetricsModel.h'
        end
 
        agent.subspec 'Protocol' do |r|
        r.source_files = 'FTMobileSDK/FTMobileAgent/Protocol/**/*{.h,.m}'
+       r.public_header_files = ''
        end
 
        agent.subspec 'JSBridge' do |j|
@@ -55,7 +57,8 @@ Pod::Spec.new do |s|
        end
 
        agent.subspec 'ExternalData' do |a|
-       a.source_files = 'FTMobileSDK/FTMobileAgent/ExternalData/**/*{.h,.m}'
+       a.source_files = 'FTMobileSDK/FTMobileAgent/ExternalData/*{.h,.m}'
+       a.public_header_files = 'FTMobileSDK/FTMobileAgent/ExternalData/FTExternalDataManager.h'
        a.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
        end
 
@@ -111,6 +114,7 @@ Pod::Spec.new do |s|
 
     s.subspec 'Extension' do |e|
        e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}'
+       e.public_header_files = 'FTMobileSDK/FTMobileExtension/FTMobileExtension.h','FTMobileSDK/FTMobileExtension/FTExtensionManager.h'
        e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
        e.dependency 'FTMobileSDK/Common/JSONUtils'
        e.dependency 'FTMobileSDK/FTMobileAgent/FTRUM'
