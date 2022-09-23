@@ -18,3 +18,5 @@ FOUNDATION_EXPORT const unsigned char FTMobileExtensionVersionString[];
 
 
 #import "FTExtensionManager.h"
+#import <FTMobileExtension/FTMobileConfig.h>
+#import <FTMobileExtension/FTExternalDataManager.h>

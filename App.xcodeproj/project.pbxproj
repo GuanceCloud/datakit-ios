@@ -16,6 +16,13 @@
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
 		17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C7631E28267154009582B6 /* FTLineProtocol.m */; };
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
+		17D5CD4C28DD71E600E27858 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178008C928D4446600E12B6E /* WidgetKit.framework */; };
+		17D5CD4D28DD71E600E27858 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178008CB28D4446600E12B6E /* SwiftUI.framework */; };
+		17D5CD5028DD71E600E27858 /* WidgetDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD4F28DD71E600E27858 /* WidgetDemo.swift */; };
+		17D5CD5228DD71E700E27858 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17D5CD5128DD71E700E27858 /* Assets.xcassets */; };
+		17D5CD5628DD71E700E27858 /* WidgetDemoExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		17D5CD6328DD7E0C00E27858 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */; };
+		17D5CD6428DD840200E27858 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
@@ -69,6 +76,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		17D5CD5428DD71E700E27858 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17D5CD4A28DD71E600E27858;
+			remoteInfo = WidgetDemoExtension;
+		};
 		4A22527123B5AC7600B0ED41 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
@@ -114,6 +128,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				4A78B9D42563C43E0021E0BC /* TodayExtensionTest.appex in Embed App Extensions */,
+				17D5CD5628DD71E700E27858 /* WidgetDemoExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -142,6 +157,12 @@
 		17C7631E28267154009582B6 /* FTLineProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLineProtocol.m; sourceTree = "<group>"; };
 		17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTModelHelper.h; sourceTree = "<group>"; };
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
+		17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetDemoExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		17D5CD4F28DD71E600E27858 /* WidgetDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDemo.swift; sourceTree = "<group>"; };
+		17D5CD5128DD71E700E27858 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		17D5CD5328DD71E700E27858 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		17D5CD5E28DD776B00E27858 /* WidgetDemoExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetDemoExtension.entitlements; sourceTree = "<group>"; };
+		17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNetwork.swift; sourceTree = "<group>"; };
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -245,6 +266,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		17D5CD4828DD71E600E27858 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17D5CD6428DD840200E27858 /* FTMobileExtension.framework in Frameworks */,
+				17D5CD4D28DD71E600E27858 /* SwiftUI.framework in Frameworks */,
+				17D5CD4C28DD71E600E27858 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A116953239113B600C0BC4E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -316,14 +347,27 @@
 			path = LineProtocol;
 			sourceTree = "<group>";
 		};
+		17D5CD4E28DD71E600E27858 /* WidgetDemo */ = {
+			isa = PBXGroup;
+			children = (
+				17D5CD4F28DD71E600E27858 /* WidgetDemo.swift */,
+				17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */,
+				17D5CD5128DD71E700E27858 /* Assets.xcassets */,
+				17D5CD5328DD71E700E27858 /* Info.plist */,
+			);
+			path = WidgetDemo;
+			sourceTree = "<group>";
+		};
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
+				17D5CD5E28DD776B00E27858 /* WidgetDemoExtension.entitlements */,
 				4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */,
 				4A116958239113B600C0BC4E /* App */,
 				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				4A78B9CA2563C43E0021E0BC /* TodayExtensionTest */,
+				17D5CD4E28DD71E600E27858 /* WidgetDemo */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
@@ -341,6 +385,7 @@
 				4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */,
 				4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */,
 				4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */,
+				17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -526,6 +571,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		17D5CD4A28DD71E600E27858 /* WidgetDemoExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 17D5CD5C28DD71E700E27858 /* Build configuration list for PBXNativeTarget "WidgetDemoExtension" */;
+			buildPhases = (
+				17D5CD4728DD71E600E27858 /* Sources */,
+				17D5CD4828DD71E600E27858 /* Frameworks */,
+				17D5CD4928DD71E600E27858 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WidgetDemoExtension;
+			productName = WidgetDemoExtension;
+			productReference = 17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		4A116955239113B600C0BC4E /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "App" */;
@@ -541,6 +603,7 @@
 			);
 			dependencies = (
 				4A78B9D32563C43E0021E0BC /* PBXTargetDependency */,
+				17D5CD5528DD71E700E27858 /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = "ft-sdk-ios";
@@ -608,10 +671,13 @@
 		4A11694E239113B600C0BC4E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1320;
+				LastSwiftUpdateCheck = 1400;
 				LastUpgradeCheck = 1110;
 				ORGANIZATIONNAME = "DataFlux-cn";
 				TargetAttributes = {
+					17D5CD4A28DD71E600E27858 = {
+						CreatedOnToolsVersion = 14.0;
+					};
 					4A116955239113B600C0BC4E = {
 						CreatedOnToolsVersion = 11.1;
 						LastSwiftMigration = 1140;
@@ -653,6 +719,7 @@
 				4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				4A78B9C62563C43E0021E0BC /* TodayExtensionTest */,
+				17D5CD4A28DD71E600E27858 /* WidgetDemoExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -675,6 +742,14 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		17D5CD4928DD71E600E27858 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17D5CD5228DD71E700E27858 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A116954239113B600C0BC4E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -778,6 +853,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		17D5CD4728DD71E600E27858 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17D5CD6328DD7E0C00E27858 /* WidgetNetwork.swift in Sources */,
+				17D5CD5028DD71E600E27858 /* WidgetDemo.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A116952239113B600C0BC4E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -851,6 +935,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		17D5CD5528DD71E700E27858 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17D5CD4A28DD71E600E27858 /* WidgetDemoExtension */;
+			targetProxy = 17D5CD5428DD71E700E27858 /* PBXContainerItemProxy */;
+		};
 		4A22527223B5AC7600B0ED41 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4A116955239113B600C0BC4E /* App */;
@@ -1087,6 +1176,115 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Pre;
+		};
+		17D5CD5728DD71E700E27858 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRLM22BB37;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WidgetDemo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WidgetDemo;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 DataFlux-cn. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.WidgetDemo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		17D5CD5828DD71E700E27858 /* Pre */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRLM22BB37;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WidgetDemo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WidgetDemo;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 DataFlux-cn. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.WidgetDemo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Pre;
+		};
+		17D5CD5928DD71E700E27858 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRLM22BB37;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WidgetDemo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WidgetDemo;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 DataFlux-cn. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.WidgetDemo";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
 		4A11696D239113B900C0BC4E /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1459,6 +1657,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		17D5CD5C28DD71E700E27858 /* Build configuration list for PBXNativeTarget "WidgetDemoExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				17D5CD5728DD71E700E27858 /* Debug */,
+				17D5CD5828DD71E700E27858 /* Pre */,
+				17D5CD5928DD71E700E27858 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4A116951239113B600C0BC4E /* Build configuration list for PBXProject "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
