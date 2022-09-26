@@ -26,11 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 -(void)enableLinkRumData:(BOOL)enable;
 /**
-  授权是否开启 rum resource 采集
- @param enable   授权许可
- */
--(void)enableRumTrack:(BOOL)enable;
-/**
  * 判断是否是 SDK 内部 url
  * 内部 url 不进行采集
  * @param url   请求 URL

@@ -16,7 +16,6 @@
 @property (nonatomic, strong) NSMutableDictionary<id,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, assign) BOOL enableLinkRumData;
-@property (nonatomic, assign) BOOL enableRumTrack;
 @property (nonatomic, assign) BOOL enableTrace;
 @property (nonatomic, weak) id<FTTracerProtocol> tracer;
 @end
@@ -39,7 +38,6 @@
         _traceHandlers = [NSMutableDictionary new];
         _enableTrace = NO;
         _enableLinkRumData = NO;
-        _enableRumTrack = NO;
     }
     return self;
 }
@@ -51,9 +49,6 @@
 }
 -(void)enableLinkRumData:(BOOL)enable{
     self.enableLinkRumData = enable;
-}
--(void)enableRumTrack:(BOOL)enable{
-    self.enableRumTrack = enable;
 }
 - (BOOL)isInternalURL:(NSURL *)url{
     if (self.innerUrl) {
@@ -114,7 +109,6 @@
 }
 -(id<FTRumInnerResourceProtocol>)innerResourceHandeler{
     return _innerResourceHandeler;
-
 }
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
     //判断是否开启 trace ，是否是内部 url
@@ -131,7 +125,7 @@
     return mutableReqeust;
 }
 - (void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
-    if (!self.enableRumTrack || [self isInternalURL:task.originalRequest.URL] ) {
+    if ([self isInternalURL:task.originalRequest.URL] ) {
         return;
     }
     FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:task.currentRequest.URL identifier:[NSUUID UUID].UUIDString];
@@ -142,21 +136,21 @@
     }
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
-    if (!self.enableRumTrack || [self isInternalURL:task.originalRequest.URL]) {
+    if ([self isInternalURL:task.originalRequest.URL]) {
         return;
     }
     FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskReceivedMetrics:metrics];
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
-    if (!self.enableRumTrack || [self isInternalURL:task.originalRequest.URL]) {
+    if ([self isInternalURL:task.originalRequest.URL]) {
         return;
     }
     FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskReceivedData:data];
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    if (!self.enableRumTrack || [self isInternalURL:task.originalRequest.URL]) {
+    if ([self isInternalURL:task.originalRequest.URL]) {
         return;
     }
     FTTraceHandler *handler = [self getTraceHandler:task];

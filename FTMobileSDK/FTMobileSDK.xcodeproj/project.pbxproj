@@ -24,7 +24,7 @@
 		1740585128D807390092E096 /* FTURLProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740583E28D807390092E096 /* FTURLProtocol.h */; };
 		1740585228D807390092E096 /* FTURLSessionInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740583F28D807390092E096 /* FTURLSessionInterceptor.h */; };
 		1740585428D807390092E096 /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740584128D807390092E096 /* FTSessionConfiguration.m */; };
-		1740585528D807390092E096 /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740584228D807390092E096 /* FTURLSessionDelegate.h */; };
+		1740585528D807390092E096 /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740584228D807390092E096 /* FTURLSessionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1740585628D807390092E096 /* NSURLSession+FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740584328D807390092E096 /* NSURLSession+FTSwizzler.m */; };
 		1740585C28D8074E0092E096 /* FTCallStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740585828D8074E0092E096 /* FTCallStack.h */; };
 		1740585D28D8074E0092E096 /* FTUncaughtExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1740585928D8074E0092E096 /* FTUncaughtExceptionHandler.h */; };
@@ -170,7 +170,7 @@
 		1775A7E528D9A7A500D70779 /* FTURLSessionInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A7D228D9A7A400D70779 /* FTURLSessionInterceptor.h */; };
 		1775A7E628D9A7A500D70779 /* FTTraceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7D328D9A7A400D70779 /* FTTraceHandler.m */; };
 		1775A7E728D9A7A500D70779 /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7D428D9A7A400D70779 /* FTSessionConfiguration.m */; };
-		1775A7E828D9A7A500D70779 /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A7D528D9A7A400D70779 /* FTURLSessionDelegate.h */; };
+		1775A7E828D9A7A500D70779 /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A7D528D9A7A400D70779 /* FTURLSessionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1775A7E928D9A7A500D70779 /* NSURLSession+FTSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7D628D9A7A400D70779 /* NSURLSession+FTSwizzler.m */; };
 		1775A7F528D9B52100D70779 /* FTRumResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A7F428D9B52100D70779 /* FTRumResourceProtocol.h */; };
 		1775A82528D9CE9D00D70779 /* FTExternalDataManager+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A82328D9CE9D00D70779 /* FTExternalDataManager+Private.h */; };

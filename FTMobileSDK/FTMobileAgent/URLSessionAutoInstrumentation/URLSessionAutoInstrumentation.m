@@ -24,8 +24,9 @@
 #import "FTURLSessionInterceptor.h"
 #include "FTURLProtocol.h"
 #import "FTMobileConfig.h"
-@interface URLSessionAutoInstrumentation()
+@interface URLSessionAutoInstrumentation()<URLSessionInterceptorType>
 @property (nonatomic, assign) BOOL swizzle;
+@property (nonatomic, assign) BOOL enableRumTrack;
 @end
 @implementation URLSessionAutoInstrumentation
 - (instancetype)init{
@@ -49,14 +50,14 @@
     return [FTURLSessionInterceptor sharedInstance];
 }
 - (void)setRUMConfig:(FTRumConfig *)config{
-    [[FTURLSessionInterceptor sharedInstance] enableRumTrack:config.enableTraceUserResource];
+    self.enableRumTrack = config.enableTraceUserResource;
     [self startMonitor];
 }
 - (void)setTraceConfig:(FTTraceConfig *)config tracer:(nonnull id<FTTracerProtocol>)tracer{
     [[FTURLSessionInterceptor sharedInstance] enableAutoTrace:config.enableAutoTrace];
     [[FTURLSessionInterceptor sharedInstance] enableLinkRumData:config.enableLinkRumData];
     [[FTURLSessionInterceptor sharedInstance] setTracer:tracer];
-    [FTURLProtocol setDelegate:_interceptor];
+    [FTURLProtocol setDelegate:self];
     [self startMonitor];
 }
 - (void)startMonitor{
@@ -75,6 +76,31 @@
         [NSURLSession ft_swizzleMethod:@selector(dataTaskWithRequest:completionHandler:) withMethod:@selector(ft_dataTaskWithRequest:completionHandler:) error:&error];
     });
     [FTURLProtocol startMonitor];
-    [FTURLProtocol setDelegate:self.interceptor];
+    [FTURLProtocol setDelegate:self];
+}
+#pragma mark --------- URLSessionInterceptorType ----------
+// 处理 URLProtocol 获取的 resource 数据
+-(NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
+    return [[FTURLSessionInterceptor sharedInstance] injectTraceHeader:request];
+}
+-(void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
+    if(self.enableRumTrack){
+        [[FTURLSessionInterceptor sharedInstance] taskCreated:task session:session];
+    }
+}
+-(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
+    if(self.enableRumTrack){
+        [[FTURLSessionInterceptor sharedInstance] taskReceivedData:task data:data];
+    }
+}
+-(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+    if(self.enableRumTrack){
+        [[FTURLSessionInterceptor sharedInstance] taskCompleted:task error:error];
+    }
+}
+-(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
+    if(self.enableRumTrack){
+        [[FTURLSessionInterceptor sharedInstance] taskMetricsCollected:task metrics:metrics];
+    }
 }
 @end
