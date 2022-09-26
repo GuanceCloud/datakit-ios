@@ -23,6 +23,8 @@
 		17D5CD5628DD71E700E27858 /* WidgetDemoExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		17D5CD6328DD7E0C00E27858 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */; };
 		17D5CD6428DD840200E27858 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
+		17D5CD6A28E189D600E27858 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6928E189D500E27858 /* HttpEngine.m */; };
+		17D5CD6F28E1A3D700E27858 /* NetworkTraceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6E28E1A3D700E27858 /* NetworkTraceVC.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		4A0115FD24C6C3FB00AECC1C /* ft_page_vtp_desc.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4A0115FA24C6C3FA00AECC1C /* ft_page_vtp_desc.xml */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
@@ -163,6 +165,10 @@
 		17D5CD5328DD71E700E27858 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		17D5CD5E28DD776B00E27858 /* WidgetDemoExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetDemoExtension.entitlements; sourceTree = "<group>"; };
 		17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNetwork.swift; sourceTree = "<group>"; };
+		17D5CD6828E189D500E27858 /* HttpEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HttpEngine.h; sourceTree = "<group>"; };
+		17D5CD6928E189D500E27858 /* HttpEngine.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
+		17D5CD6D28E1A3D700E27858 /* NetworkTraceVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NetworkTraceVC.h; sourceTree = "<group>"; };
+		17D5CD6E28E1A3D700E27858 /* NetworkTraceVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NetworkTraceVC.m; sourceTree = "<group>"; };
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -412,6 +418,8 @@
 				4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */,
 				4A85314423AC6B2700B40B5D /* UITestVC.h */,
 				4A85314523AC6B2700B40B5D /* UITestVC.m */,
+				17D5CD6D28E1A3D700E27858 /* NetworkTraceVC.h */,
+				17D5CD6E28E1A3D700E27858 /* NetworkTraceVC.m */,
 				4A1169852391146600C0BC4E /* ResultVC.h */,
 				4A1169872391146600C0BC4E /* ResultVC.m */,
 				7C28B870266098B800CECBA6 /* TestJsbridgeData.h */,
@@ -438,6 +446,8 @@
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
+				17D5CD6828E189D500E27858 /* HttpEngine.h */,
+				17D5CD6928E189D500E27858 /* HttpEngine.m */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -867,6 +877,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */,
+				17D5CD6A28E189D600E27858 /* HttpEngine.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */,
 				4A3931552531C26300BC2134 /* TestANRVC.m in Sources */,
@@ -881,6 +892,7 @@
 				7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */,
 				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
 				7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */,
+				17D5CD6F28E1A3D700E27858 /* NetworkTraceVC.m in Sources */,
 				7CA16CD426B8ECD10079840D /* TestWkWebViewHandler.m in Sources */,
 				4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */,
 				7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */,

@@ -63,7 +63,7 @@
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
-        rumConfig.enableTraceUserResource = YES;
+        rumConfig.enableTraceUserResource = NO;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
@@ -81,8 +81,6 @@
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-        
-        [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.extension.demo" completion:nil];
     }
     // UI 测试
     if(isUITests){
@@ -127,7 +125,9 @@
 
 #pragma mark - UISceneSession lifecycle
 
-
+-(void)applicationDidBecomeActive:(UIApplication *)application{
+    [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.extension.demo" completion:nil];
+}
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options  API_AVAILABLE(ios(13.0)){
     // Called when a new scene session is being created.
     // Use this method to select a configuration to create the new scene with.

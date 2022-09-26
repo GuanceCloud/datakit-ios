@@ -121,7 +121,7 @@
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)task.response;
     NSString * responseBody  =[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
 
-    [[FTExternalDataManager sharedManager] startResourceWithKey:self.rumKey];
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:self.rumKey];
     
     FTResourceMetricsModel *metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
 

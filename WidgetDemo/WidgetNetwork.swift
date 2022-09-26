@@ -7,21 +7,56 @@
 //
 
 import Foundation
+import FTMobileExtension
+class InheritHttpEngine:FTURLSessionDelegate {
 
-struct HttpEngine {
-
-    let session:URLSession
+    var session:URLSession?
     /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
-    init(){
+    override init(){
+        session = nil
+        super.init()
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
-        self.session = URLSession.init(configuration: configuration)
+        session = URLSession.init(configuration: configuration, delegate:self, delegateQueue: nil)
     }
+ 
+    func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
+        let url:URL = URL.init(string: "http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions")!
+        var request = URLRequest.init(url: url)
+        let task = self.session!.dataTask(with: request, completionHandler: completionHandler)
+        task.resume()
+    }
+}
+
+class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
     
+    let sessionDelegate = FTURLSessionDelegate()
+    var session:URLSession
+    /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
+    override init(){
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 30
+        session = URLSession.init(configuration: configuration)
+        super.init()
+    }
+    func ftURLSessionDelegate() -> FTURLSessionDelegate {
+        return sessionDelegate
+    }
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
         let url:URL = URL.init(string: "http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions")!
         var request = URLRequest.init(url: url)
         let task = self.session.dataTask(with: request, completionHandler: completionHandler)
         task.resume()
+    }
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        sessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        sessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        sessionDelegate.urlSession(session, task: task, didCompleteWithError: error)
     }
 }

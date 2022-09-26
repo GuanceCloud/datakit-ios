@@ -63,7 +63,6 @@ struct WidgetDemo: Widget {
         FTExtensionManager.enableLog(true)
         let rumConfig = FTRumConfig.init(appid: appid)
         rumConfig.enableTrackAppCrash = true
-        rumConfig.enableTraceUserResource = true
         let traceConfig = FTTraceConfig.init()
         traceConfig.enableAutoTrace = true
         FTExtensionManager.sharedInstance().startTrace(withConfigOptions: traceConfig)
