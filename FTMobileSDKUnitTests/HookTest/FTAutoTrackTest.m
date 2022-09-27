@@ -140,8 +140,6 @@
     [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
-    [tester waitForTimeInterval:0.5];
-
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [tester waitForTimeInterval:2];
 
