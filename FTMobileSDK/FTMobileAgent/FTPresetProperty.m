@@ -193,6 +193,10 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     uname(&systemInfo);
     NSString *platform = [NSString stringWithCString:systemInfo.machine encoding:NSASCIIStringEncoding];
     //------------------------------iPhone---------------------------
+    if ([platform isEqualToString:@"iPhone15,3"]) return @"iPhone 14 Pro Max";
+    if ([platform isEqualToString:@"iPhone15,2"]) return @"iPhone 14 Pro";
+    if ([platform isEqualToString:@"iPhone14,8"]) return @"iPhone 14 Plus";
+    if ([platform isEqualToString:@"iPhone14,7"]) return @"iPhone 14";
     if ([platform isEqualToString:@"iPhone14,3"]) return @"iPhone 13 Pro Max";
     if ([platform isEqualToString:@"iPhone14,2"]) return @"iPhone 13 Pro";
     if ([platform isEqualToString:@"iPhone14,5"]) return @"iPhone 13";
