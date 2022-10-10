@@ -5,13 +5,15 @@
 //  Created by hulilei on 2022/7/6.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
-#import <UIKit/UIKit.h>
 #import "FTMonitorItem.h"
 #import "FTCPUMonitor.h"
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTMonitorValue.h"
 #import "FTThreadDispatchManager.h"
+#if !TARGET_OS_OSX
+#import <UIKit/UIKit.h>
+#endif
 static double NormalizedRefreshRate = 60.0;
 @interface FTMonitorItem()
 @property (nonatomic, strong) NSTimer *timer;
@@ -44,7 +46,9 @@ static double NormalizedRefreshRate = 60.0;
         [_displayRateMonitor addMonitorItem:_displayHelper];
         _maximumRefreshRate = 60;
         if (@available(iOS 10.3, *)) {
+#if TARGET_OS_IOS
             _maximumRefreshRate = [UIScreen mainScreen].maximumFramesPerSecond;
+#endif
         }
     }
     return self;

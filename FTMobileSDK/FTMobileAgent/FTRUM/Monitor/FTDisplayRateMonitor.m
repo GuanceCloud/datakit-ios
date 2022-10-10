@@ -5,7 +5,9 @@
 //  Created by hulilei on 2022/6/30.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
+#endif
 #import "FTDisplayRateMonitor.h"
 #import "FTAppLifeCycle.h"
 #import "FTMonitorItem.h"
@@ -13,12 +15,15 @@
 #import "FTLog.h"
 #import "FTThreadDispatchManager.h"
 @interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
+#if !TARGET_OS_OSX
 @property (nonatomic, strong) CADisplayLink *displayLink;
+#endif
 @property (nonatomic, assign) CFTimeInterval lastFrameTimestamp;
 @property (nonatomic, strong) NSPointerArray *dataPublisher;
 
 @end
 @implementation FTDisplayRateMonitor
+#if !TARGET_OS_OSX
 -(instancetype)init{
     self = [super init];
     if (self) {
@@ -80,4 +85,5 @@
 - (void)applicationWillResignActive{
     [self stop];
 }
+#endif
 @end

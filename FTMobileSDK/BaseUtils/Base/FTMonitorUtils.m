@@ -15,7 +15,7 @@
 #include <net/if.h>
 #import <mach/mach.h>
 #import "FTConstants.h"
-#if TARGET_OS_IOS
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
 #endif
 #define IOS_CELLULAR    @"pdp_ip0"
@@ -149,7 +149,7 @@
 }
 
 #pragma mark ========== 电池 ==========
-#if TARGET_OS_IOS
+#if !TARGET_OS_OSX
 //电池电量
 +(double)batteryUse{
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;

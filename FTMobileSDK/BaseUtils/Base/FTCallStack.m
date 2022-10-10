@@ -16,7 +16,9 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import <sys/utsname.h>
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
+#endif
 
 #pragma -mark DEFINE MACRO FOR DIFFERENT CPU ARCHITECTURE
 #if defined(__arm64__)
@@ -473,7 +475,9 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx,FTMachoImage* const bina
     NSMutableString *header = [NSMutableString new];
     NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     [header appendFormat:@"Hardware Model:  %@\n",deviceString];
+#if TARGET_OS_IOS
     [header appendFormat:@"OS Version:   iPhone OS %@\n",[UIDevice currentDevice].systemVersion];
+#endif
     [header appendString:@"Report Version:  104\n"];
     return header;
 }

@@ -6,7 +6,7 @@
 //
 
 #import "FTAppLifeCycle.h"
-#if TARGET_OS_IOS
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
 #endif
 @interface FTAppLifeCycle()

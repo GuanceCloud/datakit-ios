@@ -7,7 +7,6 @@
 //
 
 #import "FTRUMHandler.h"
-#import <UIKit/UIKit.h>
 #import "FTEnumConstant.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTUncaughtExceptionHandler.h"
