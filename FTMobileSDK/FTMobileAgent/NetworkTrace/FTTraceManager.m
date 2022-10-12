@@ -41,14 +41,18 @@
     return  [FTConfigManager sharedInstance].traceConfig.enableLinkRumData;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
+    BOOL trace = NO;
     if (self.sdkUrlStr) {
         if (url.port) {
-            return !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
+            trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
-            return ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+            trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
+        }
+        if(trace && self.intakeUrl){
+            return self.intakeUrl(url);
         }
     }
-    return NO;
+    return trace;
 }
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     FTTraceHandler *handler = [self getTraceHandler:key];

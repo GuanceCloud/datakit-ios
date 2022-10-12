@@ -9,9 +9,12 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+typedef BOOL(^FTIntakeUrl)(NSURL *url);
+
 @class FTTraceHandler;
 @interface FTTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableAutoTrace;
+@property (nonatomic, copy) FTIntakeUrl intakeUrl;
 
 + (instancetype)sharedInstance;
 - (BOOL)isTraceUrl:(NSURL *)url;

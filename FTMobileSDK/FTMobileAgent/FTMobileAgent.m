@@ -112,6 +112,11 @@ static dispatch_once_t onceToken;
     [[FTTraceHeaderManager sharedInstance] setNetworkTrace:traceConfigOptions];
 }
 #pragma mark ========== publick method ==========
+- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
+    if(handler){
+        [FTTraceManager sharedInstance].intakeUrl = handler;
+    }
+}
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;

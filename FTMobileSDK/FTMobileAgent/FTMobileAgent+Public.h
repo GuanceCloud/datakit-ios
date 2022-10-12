@@ -50,7 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
  * @param traceConfigOptions   trace配置参数
  */
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
-
+/**
+ * @abstract
+ * 设置过滤 Trace Resource 域名
+ */
+- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler;
 /**
  * @abstract
  * 日志上报
