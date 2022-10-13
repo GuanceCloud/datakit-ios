@@ -17,7 +17,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 
 @interface FTAppLaunchDurationTest : KIFTestCase
-
+@property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 
 @implementation FTAppLaunchDurationTest
@@ -46,7 +46,18 @@
 }
 - (void)testLaunchCold{
     [self setSDK];
-    [NSThread sleepForTimeInterval:2];
+    self.expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+selector:@selector(applicationDidBecomeActive:)
+    name:UIApplicationDidBecomeActiveNotification
+object:nil];
+    [self waitForExpectationsWithTimeout:10 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+- (void)applicationDidBecomeActive:(NSNotification *)noti{
+    [tester waitForTimeInterval:2];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSString *op = dict[@"op"];
@@ -61,6 +72,7 @@
                        isEqualToString:@"launch_cold"]);
     }
     XCTAssertTrue(haslaunch);
+    [self.expectation fulfill];
 }
 - (void)testSetSdkAfterLaunch{
     [tester waitForTimeInterval:5];

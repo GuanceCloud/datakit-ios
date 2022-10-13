@@ -25,15 +25,11 @@
 -(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     self = [super init];
     if (self) {
-        NSMutableDictionary *fieldDict = [NSMutableDictionary new];
-        NSMutableDictionary *tagsDict = [NSMutableDictionary new];
-        [fieldDict addEntriesFromDictionary:field];
-        [tagsDict addEntriesFromDictionary:tags];
         NSMutableDictionary *opdata = @{
             @"source":source,
-            FT_FIELDS:fieldDict,
         }.mutableCopy;
-        [opdata setValue:tagsDict forKey:FT_TAGS];
+        [opdata setValue:field forKey:FT_FIELDS];
+        [opdata setValue:tags forKey:FT_TAGS];
         NSDictionary *data =@{@"op":op,
                               @"opdata":opdata,
         };

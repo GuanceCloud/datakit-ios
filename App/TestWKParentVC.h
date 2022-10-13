@@ -14,6 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TestWKParentVC : UIViewController
 @property (nonatomic, strong) WKWebView *webView;
 - (void)ft_load:(NSString *)urlStr;
+- (void)test_loadRequestWithURL:(NSURL *)url;
+- (void)test_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
+- (void)test_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL;
 - (void)setDelegateSelf;
 - (void)setDelegateProxy;
 

@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-<input type="button" value="test" onclick="test()">
+<input type="button" value="testView" onclick="testRumView()">
 <script type="text/javascript">
 
     /**
@@ -130,17 +130,51 @@
         FT_JS_Bridge.sendEvent(obj);
     });
 
-    function test() {
+    function testRumView() {
 
         FT_JS_Bridge.sendEvent({})
 
-        FT_JS_Bridge.sendEvent({"name":"rum"}, function (ret, err) {
+        FT_JS_Bridge.sendEvent({"name":"rum","data":{
+            "measurement":"view",
+            "tags":{"view_id":"497E6544-0AD3-4A73-90AA-CB56F2CE5261",
+                "view_name":"testJSBridge",
+            },"fields":{
+                "loading_time":"2017636060",
+                "time_spent":"1110076",
+                "view_action_count":"0",
+                "view_error_count":"0",
+                "view_long_task_count":"0",
+                "view_resource_count":"0",
+            }}}, function (ret, err) {
            console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
+        return "success"
+    }
+    
+    function testWrongRumData() {
 
+        FT_JS_Bridge.sendEvent("aaaaaaaaa", function (ret, err) {
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+        })
+        return "fail"
+    }
+    
+    function test(){
+        FT_JS_Bridge.sendEvent({})
         FT_JS_Bridge.addEventListener({}, function (ret, err) {
            console.log("addEventListener call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
+    }
+    function testC(value) {
+
+        //返回值可以是很多类型。
+
+        //反馈字符串
+        return value + "value";
+
+        //返回对象,如果需要传递给oc的东西有很多,就可以构造一个这样的对象用来传输。
+        // var finalObj = {"name":"chaman","age":"18","sex":"male"};
+        // return finalObj;
     }
 
 

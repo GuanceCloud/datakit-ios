@@ -12,3 +12,4 @@
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
 #import "FTMobileAgent+Public.h"
+#import "FTURLSessionDelegate.h"

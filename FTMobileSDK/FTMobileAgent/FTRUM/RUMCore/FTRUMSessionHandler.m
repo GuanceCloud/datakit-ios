@@ -72,6 +72,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataLaunchCold:
             [self writeLaunchData:(FTRUMLaunchDataModel*)model];
             break;
+        case FTRUMDataWebViewJSBData:
+            [self writeWebViewJSBData:(FTRUMWebViewData *)model];
+            break;
         default:
             break;
     }
@@ -120,6 +123,14 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSString *error = model.type == FTRUMDataLongTask?FT_MEASUREMENT_RUM_LONG_TASK :FT_MEASUREMENT_RUM_ERROR;
     
     [self.context.writer rumWrite:error terminal:FT_TERMINAL_APP tags:tags fields:model.fields];
+}
+- (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
+    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
+                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSMutableDictionary *tags = [NSMutableDictionary new];
+    [tags addEntriesFromDictionary:data.tags];
+    [tags addEntriesFromDictionary:sessionTag];
+    [self.context.writer rumWrite:data.measurement terminal:@"web" tags:tags fields:data.fields tm:data.tm];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

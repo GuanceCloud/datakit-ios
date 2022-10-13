@@ -257,24 +257,6 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
 }
 /**
- 测试无效地址
- */
--(void)testBadMetricsUrl{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-     [self setBadMetricsUrl];
-    FTRecordModel *model = [FTModelHelper createLogModel:@"testBadMetricsUrl"];
-
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        NSInteger statusCode = httpResponse.statusCode;
-        XCTAssertFalse(statusCode == 200);
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-}
-/**
  测试网络错误
  */
 - (void)testErrorNet{

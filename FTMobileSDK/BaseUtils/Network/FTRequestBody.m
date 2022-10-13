@@ -26,11 +26,10 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 @implementation FTQueryStringPair
 - (instancetype)initWithField:(id)field value:(id)value {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _field = field;
+        _value = value;
     }
-    _field = field;
-    _value = value;
     return self;
 }
 - (NSString *)URLEncodedTagsStringValue{
@@ -151,18 +150,18 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
     return requestDatas;
 }
 @end
-@implementation FTRequestObjectBody
-- (NSString *)getRequestBodyWithEventArray:(NSArray *)events{
-    NSMutableArray *list = [NSMutableArray new];
-    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data].mutableCopy;
-        [list addObject:item];
-    }];
-    // 待处理 object 类型
-    NSError *error = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:list options:NSJSONWritingPrettyPrinted error:&error];
-    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    ZYLog(@"requestData = %@",requestData);
-    return  requestData;
-}
-@end
+//@implementation FTRequestObjectBody
+//- (NSString *)getRequestBodyWithEventArray:(NSArray *)events{
+//    NSMutableArray *list = [NSMutableArray new];
+//    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data].mutableCopy;
+//        [list addObject:item];
+//    }];
+//    // 待处理 object 类型
+//    NSError *error = nil;
+//    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:list options:NSJSONWritingPrettyPrinted error:&error];
+//    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+//    ZYLog(@"requestData = %@",requestData);
+//    return  requestData;
+//}
+//@end

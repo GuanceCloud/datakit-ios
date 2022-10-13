@@ -46,6 +46,16 @@
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
     [self.webView loadRequest:request];
 }
+- (void)test_loadRequestWithURL:(NSURL *)url{
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+    [self.webView loadRequest:request];
+}
+- (void)test_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
+    [self.webView loadHTMLString:string baseURL:baseURL];
+}
+- (void)test_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
+    [self.webView loadFileURL:URL allowingReadAccessToURL:readAccessURL];
+}
 //- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
 //    
 //    decisionHandler(WKNavigationActionPolicyAllow);

@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setRUMConfig:(FTRumConfig *)config;
 
 - (void)setTraceConfig:(FTTraceConfig *)config tracer:(id<FTTracerProtocol>)tracer;
-
+- (void)resetInstance;
 @end
 
 NS_ASSUME_NONNULL_END

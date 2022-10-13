@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
 
   s.name         = "FTMobileSDK"
-  s.version      = "1.3.9-alpha.1"
-  #s.version      = "$JENKINS_DYNAMIC_VERSION"
+  #s.version      = "1.3.9-alpha.1"
+  s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
   s.description  = "观测云 DataFlux iOS 数据采集 SDK"
   s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -74,6 +74,7 @@ Pod::Spec.new do |s|
 
        agent.subspec 'ExtensionDataManager' do |e|
        e.source_files = 'FTMobileSDK/FTMobileAgent/Extension/*{.h,.m}'
+       e.dependency 'FTMobileSDK/Common/Base'
        end
 
        agent.subspec 'Exception' do |e|

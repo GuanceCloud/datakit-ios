@@ -30,10 +30,9 @@
 @property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
 @end
 @implementation URLSessionAutoInstrumentation
-
+static URLSessionAutoInstrumentation *sharedInstance = nil;
+static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
-    static URLSessionAutoInstrumentation *sharedInstance = nil;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
     });
@@ -109,5 +108,9 @@
     if(self.enableRumTrack){
         [_sessionInterceptor taskMetricsCollected:task metrics:metrics];
     }
+}
+- (void)resetInstance{
+    onceToken = 0;
+    sharedInstance =nil;
 }
 @end

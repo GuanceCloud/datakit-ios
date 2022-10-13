@@ -151,11 +151,11 @@
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [FTGlobalManager sharedInstance].tracer;
+    id<FTTracerProtocol> tracer = [FTMobileAgent sharedInstance].tracer;
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
-            if( [tracerInstence getSkywalkingSeq] == 9998){
+            if( [tracerInstence getSkywalkingSeq] == 9996){
                 break;;
             }
         }

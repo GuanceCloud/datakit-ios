@@ -24,7 +24,7 @@ class InheritHttpEngine:FTURLSessionDelegate {
         let processInfo = ProcessInfo.processInfo
         let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
         let url:URL = URL.init(string: urlStr)!
-        var request = URLRequest.init(url: url)
+        let request = URLRequest.init(url: url)
         let task = self.session!.dataTask(with: request, completionHandler: completionHandler)
         task.resume()
     }
@@ -48,7 +48,7 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
         let processInfo = ProcessInfo.processInfo
         let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
         let url:URL = URL.init(string: urlStr)!
-        var request = URLRequest.init(url: url)
+        let request = URLRequest.init(url: url)
         let task = self.session.dataTask(with: request, completionHandler: completionHandler)
         task.resume()
     }

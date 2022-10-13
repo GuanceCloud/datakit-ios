@@ -144,11 +144,6 @@ static dispatch_once_t onceToken;
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManger addWebviewData:measurement tags:tags fields:fields tm:time];
-                }else if([name isEqualToString:@"track"]){
-                }else if([name isEqualToString:@"log"]){
-                    //数据格式需要调整
-                }else if([name isEqualToString:@"trace"]){
-                    
                 }
             }
         }
