@@ -23,14 +23,7 @@
 @synthesize innerResourceHandeler = _innerResourceHandeler;
 @synthesize innerUrl = _innerUrl;
 
-+ (instancetype)sharedInstance {
-    static FTURLSessionInterceptor *sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-    });
-    return sharedInstance;
-}
+
 -(instancetype)init{
     self = [super init];
     if (self) {

@@ -10,7 +10,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
 @interface FTExternalDataManager()
-@property (nonatomic, weak) id <FTExternalRum> delegate;
+@property (nonatomic, weak) id <FTAddRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
 @property (nonatomic, weak) id <FTTracerProtocol> traceDelegate;
 @end

@@ -26,7 +26,7 @@
 @implementation FTMonitorUtils
 
 #pragma mark ========== WIFI的SSID 与 IP ==========
-
+#if !TARGET_OS_OSX
 // 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
 + (NSString *)currentWifiSSID{
     NSString * wifiName = FT_NULL_VALUE;
@@ -45,6 +45,7 @@
     }
     return wifiName;
 }
+#endif
 // - 获取当前Wi-Fi的IP
 + (NSString *)ipAddress{
     NSString *address = FT_NULL_VALUE;

@@ -25,7 +25,6 @@
 #import <FTNetworkManager.h>
 #import "FTTracer.h"
 #import <objc/runtime.h>
-#import "FTGlobalManager.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end

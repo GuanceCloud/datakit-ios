@@ -21,7 +21,9 @@ class InheritHttpEngine:FTURLSessionDelegate {
     }
  
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
-        let url:URL = URL.init(string: "http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions")!
+        let processInfo = ProcessInfo.processInfo
+        let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
+        let url:URL = URL.init(string: urlStr)!
         var request = URLRequest.init(url: url)
         let task = self.session!.dataTask(with: request, completionHandler: completionHandler)
         task.resume()
@@ -43,7 +45,9 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
         return sessionDelegate
     }
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
-        let url:URL = URL.init(string: "http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions")!
+        let processInfo = ProcessInfo.processInfo
+        let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
+        let url:URL = URL.init(string: urlStr)!
         var request = URLRequest.init(url: url)
         let task = self.session.dataTask(with: request, completionHandler: completionHandler)
         task.resume()

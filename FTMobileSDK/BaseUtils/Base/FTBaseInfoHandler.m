@@ -98,6 +98,7 @@
     }
     return YES;
 }
+#if !TARGET_OS_OSX
 +(NSString *)telephonyInfo
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
@@ -124,4 +125,5 @@
         return mCarrier;
     }
 }
+#endif
 @end

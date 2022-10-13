@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 //外部传入 rum resource 数据处理对象
 @property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
 
++ (instancetype)sharedInstance;
+
 - (void)setRUMConfig:(FTRumConfig *)config;
 
 - (void)setTraceConfig:(FTTraceConfig *)config tracer:(id<FTTracerProtocol>)tracer;

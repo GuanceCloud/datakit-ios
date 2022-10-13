@@ -8,14 +8,14 @@
 
 #import "FTRUMHandler.h"
 #import "FTEnumConstant.h"
-#import "FTURLSessionInterceptor.h"
-#import "FTUncaughtExceptionHandler.h"
-#import "FTExternalRumProtocol.h"
+#import "FTErrorDataProtocol.h"
+#import "FTAddRumDatasProtocol.h"
+#import "FTURLSessionInterceptorProtocol.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate,FTExternalRum>
+@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate,FTAddRumDatasProtocol>
 @property (nonatomic, assign) AppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
@@ -67,7 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)stopViewWithViewID:(NSString *)viewId;
 /**
  * 离开页面
- * viewId 内部管理
  */
 -(void)stopView;
 

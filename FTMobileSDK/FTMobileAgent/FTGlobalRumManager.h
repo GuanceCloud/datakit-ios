@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 // 用于 开启各项数据的采集 
 @interface FTGlobalRumManager : NSObject
 @property (nonatomic, strong) FTRUMManager *rumManger;
-// 仅在主线程使用 所以无多线程调用问题
-@property (nonatomic, weak) UIViewController *currentController;
 /**
  * 获取 FTMonitorManager 单例
  * @return 返回的单例
@@ -24,9 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 -(void)setRumConfig:(FTRumConfig *)rumConfig;
-
-- (void)trackViewDidDisappear:(UIViewController *)viewController;
-- (void)trackViewDidAppear:(UIViewController *)viewController;
 
 - (void)resetInstance;
 @end

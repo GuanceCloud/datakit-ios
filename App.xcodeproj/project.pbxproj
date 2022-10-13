@@ -11,6 +11,10 @@
 		1716A4B928C9BC8E00FA3D1C /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 1716A4B828C9BC8E00FA3D1C /* sample.html */; };
 		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
 		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
+		172DD32328F7EAE5007AE5E9 /* BuildFramwork.sh in Resources */ = {isa = PBXBuildFile; fileRef = 172DD32028F7EAE5007AE5E9 /* BuildFramwork.sh */; };
+		172DD32528F7EF39007AE5E9 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
+		172DD32628F7EF4B007AE5E9 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
+		1757AF7C28F7DC53008AB196 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
@@ -22,7 +26,6 @@
 		17D5CD5228DD71E700E27858 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17D5CD5128DD71E700E27858 /* Assets.xcassets */; };
 		17D5CD5628DD71E700E27858 /* WidgetDemoExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		17D5CD6328DD7E0C00E27858 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6128DD7BB100E27858 /* WidgetNetwork.swift */; };
-		17D5CD6428DD840200E27858 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		17D5CD6A28E189D600E27858 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6928E189D500E27858 /* HttpEngine.m */; };
 		17D5CD6F28E1A3D700E27858 /* NetworkTraceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5CD6E28E1A3D700E27858 /* NetworkTraceVC.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
@@ -40,7 +43,6 @@
 		4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */; };
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
-		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A270EBE2506025E0079F455 /* FTSessionConfiguration+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270EBD2506025E0079F455 /* FTSessionConfiguration+Test.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
@@ -48,11 +50,6 @@
 		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
-		4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */; };
-		4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A78B9CC2563C43E0021E0BC /* TodayViewController.m */; };
-		4A78B9D02563C43E0021E0BC /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */; };
-		4A78B9D42563C43E0021E0BC /* TodayExtensionTest.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		4A78B9DA2563CB200021E0BC /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
 		4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85318B23B23A4000B40B5D /* FTNetworkTests.m */; };
 		4A8531A323B3322500B40B5D /* FTAutoTrackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */; };
@@ -106,13 +103,6 @@
 			remoteGlobalIDString = 4A6C541E255E6464009771B8;
 			remoteInfo = FTMobileExtension;
 		};
-		4A78B9D22563C43E0021E0BC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4A78B9C62563C43E0021E0BC;
-			remoteInfo = TodayExtensionTest;
-		};
 		4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
@@ -129,7 +119,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				4A78B9D42563C43E0021E0BC /* TodayExtensionTest.appex in Embed App Extensions */,
 				17D5CD5628DD71E700E27858 /* WidgetDemoExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
@@ -151,6 +140,7 @@
 		1716A4B828C9BC8E00FA3D1C /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
+		172DD32028F7EAE5007AE5E9 /* BuildFramwork.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = BuildFramwork.sh; path = FTMobileSDK/BuildFramwork.sh; sourceTree = "<group>"; };
 		178008C928D4446600E12B6E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		178008CB28D4446600E12B6E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
@@ -208,13 +198,7 @@
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWKWebViewVC.h; sourceTree = "<group>"; };
 		4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
-		4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtensionTest.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
-		4A78B9CB2563C43E0021E0BC /* TodayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TodayViewController.h; sourceTree = "<group>"; };
-		4A78B9CC2563C43E0021E0BC /* TodayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TodayViewController.m; sourceTree = "<group>"; };
-		4A78B9CF2563C43E0021E0BC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
-		4A78B9D12563C43E0021E0BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4A78B9D92563C44A0021E0BC /* TodayExtensionTest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TodayExtensionTest.entitlements; sourceTree = "<group>"; };
 		4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FTMobileSDKUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgentTests.m; sourceTree = "<group>"; };
 		4A85313A23AB85FC00B40B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -276,7 +260,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17D5CD6428DD840200E27858 /* FTMobileExtension.framework in Frameworks */,
+				1757AF7C28F7DC53008AB196 /* FTMobileExtension.framework in Frameworks */,
 				17D5CD4D28DD71E600E27858 /* SwiftUI.framework in Frameworks */,
 				17D5CD4C28DD71E600E27858 /* WidgetKit.framework in Frameworks */,
 			);
@@ -286,7 +270,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
+				172DD32528F7EF39007AE5E9 /* FTMobileAgent.framework in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
 				B766CD87A66C0D52A14880AC /* Pods_App.framework in Frameworks */,
@@ -301,19 +285,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4A78B9C42563C43E0021E0BC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4A78B9DA2563CB200021E0BC /* FTMobileExtension.framework in Frameworks */,
-				4A78B9C92563C43E0021E0BC /* NotificationCenter.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4A85313323AB85FC00B40B5D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				172DD32628F7EF4B007AE5E9 /* FTMobileAgent.framework in Frameworks */,
 				4E953B54CC64EBC979926072 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -368,11 +344,11 @@
 			isa = PBXGroup;
 			children = (
 				17D5CD5E28DD776B00E27858 /* WidgetDemoExtension.entitlements */,
+				172DD32028F7EAE5007AE5E9 /* BuildFramwork.sh */,
 				4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */,
 				4A116958239113B600C0BC4E /* App */,
 				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
-				4A78B9CA2563C43E0021E0BC /* TodayExtensionTest */,
 				17D5CD4E28DD71E600E27858 /* WidgetDemo */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
@@ -390,7 +366,6 @@
 				4A116956239113B600C0BC4E /* App.app */,
 				4A85313623AB85FC00B40B5D /* FTMobileSDKUnitTests.xctest */,
 				4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */,
-				4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */,
 				17D5CD4B28DD71E600E27858 /* WidgetDemoExtension.appex */,
 			);
 			name = Products;
@@ -508,18 +483,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4A78B9CA2563C43E0021E0BC /* TodayExtensionTest */ = {
-			isa = PBXGroup;
-			children = (
-				4A78B9D92563C44A0021E0BC /* TodayExtensionTest.entitlements */,
-				4A78B9CB2563C43E0021E0BC /* TodayViewController.h */,
-				4A78B9CC2563C43E0021E0BC /* TodayViewController.m */,
-				4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */,
-				4A78B9D12563C43E0021E0BC /* Info.plist */,
-			);
-			path = TodayExtensionTest;
-			sourceTree = "<group>";
-		};
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -612,7 +575,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				4A78B9D32563C43E0021E0BC /* PBXTargetDependency */,
 				17D5CD5528DD71E700E27858 /* PBXTargetDependency */,
 			);
 			name = App;
@@ -637,23 +599,6 @@
 			productName = "ft-sdk-iosTestUITests";
 			productReference = 4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
-		};
-		4A78B9C62563C43E0021E0BC /* TodayExtensionTest */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4A78B9D52563C43E0021E0BC /* Build configuration list for PBXNativeTarget "TodayExtensionTest" */;
-			buildPhases = (
-				4A78B9C32563C43E0021E0BC /* Sources */,
-				4A78B9C42563C43E0021E0BC /* Frameworks */,
-				4A78B9C52563C43E0021E0BC /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = TodayExtensionTest;
-			productName = TodayExtensionTest;
-			productReference = 4A78B9C72563C43E0021E0BC /* TodayExtensionTest.appex */;
-			productType = "com.apple.product-type.app-extension";
 		};
 		4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXNativeTarget;
@@ -696,9 +641,6 @@
 						CreatedOnToolsVersion = 11.1;
 						TestTargetID = 4A116955239113B600C0BC4E;
 					};
-					4A78B9C62563C43E0021E0BC = {
-						CreatedOnToolsVersion = 11.4;
-					};
 					4A85313523AB85FC00B40B5D = {
 						CreatedOnToolsVersion = 11.1;
 						LastSwiftMigration = 1230;
@@ -728,7 +670,6 @@
 				4A116955239113B600C0BC4E /* App */,
 				4A85313523AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */,
-				4A78B9C62563C43E0021E0BC /* TodayExtensionTest */,
 				17D5CD4A28DD71E600E27858 /* WidgetDemoExtension */,
 			);
 		};
@@ -766,6 +707,7 @@
 			files = (
 				7C28B8B62660B29500CECBA6 /* sample1.html in Resources */,
 				1716A4B928C9BC8E00FA3D1C /* sample.html in Resources */,
+				172DD32328F7EAE5007AE5E9 /* BuildFramwork.sh in Resources */,
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
@@ -778,14 +720,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4A78B9C52563C43E0021E0BC /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4A78B9D02563C43E0021E0BC /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -908,14 +842,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4A78B9C32563C43E0021E0BC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4A78B9CD2563C43E0021E0BC /* TodayViewController.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4A85313223AB85FC00B40B5D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -957,11 +883,6 @@
 			target = 4A116955239113B600C0BC4E /* App */;
 			targetProxy = 4A22527123B5AC7600B0ED41 /* PBXContainerItemProxy */;
 		};
-		4A78B9D32563C43E0021E0BC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4A78B9C62563C43E0021E0BC /* TodayExtensionTest */;
-			targetProxy = 4A78B9D22563C43E0021E0BC /* PBXContainerItemProxy */;
-		};
 		4A85313C23AB85FC00B40B5D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4A116955239113B600C0BC4E /* App */;
@@ -984,14 +905,6 @@
 				4A116968239113B900C0BC4E /* Base */,
 			);
 			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		4A78B9CE2563C43E0021E0BC /* MainInterface.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4A78B9CF2563C43E0021E0BC /* Base */,
-			);
-			name = MainInterface.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -1066,16 +979,20 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = RRLM22BB37;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"<Multiple",
+					"values>",
+					"\"$(SRCROOT)/FTMobileSDK\"",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"PREPROD=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
 					"$(inherited)",
+					"$(SRCROOT)/FTMobileSDK/**",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
@@ -1107,10 +1024,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"",
+					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(inherited)",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"/**",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1158,34 +1076,6 @@
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = App;
-			};
-			name = Pre;
-		};
-		17A4A55E289D15D000CE40E5 /* Pre */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = TodayExtensionTest/TodayExtensionTest.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = RRLM22BB37;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"";
-				INFOPLIST_FILE = TodayExtensionTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.TodayExtensionTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Pre;
 		};
@@ -1421,16 +1311,20 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = RRLM22BB37;
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"<Multiple",
+					"values>",
+					"\"$(SRCROOT)/FTMobileSDK\"",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
 					"$(inherited)",
+					"$(SRCROOT)/FTMobileSDK/**",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
@@ -1465,13 +1359,17 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = RRLM22BB37;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"<Multiple",
+					"values>",
+					"\"$(SRCROOT)/FTMobileSDK\"",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(PODS_ROOT)/**",
 					"$(inherited)",
+					"$(SRCROOT)/FTMobileSDK/**",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
@@ -1536,58 +1434,6 @@
 			};
 			name = Release;
 		};
-		4A78B9D62563C43E0021E0BC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = TodayExtensionTest/TodayExtensionTest.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = RRLM22BB37;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"";
-				INFOPLIST_FILE = TodayExtensionTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.TodayExtensionTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		4A78B9D72563C43E0021E0BC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = TodayExtensionTest/TodayExtensionTest.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = RRLM22BB37;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"";
-				INFOPLIST_FILE = TodayExtensionTest/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_BUNDLE_IDENTIFIER = "HLL.demo.ft-sdk-iosTest.TodayExtensionTest";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		4A85313D23AB85FC00B40B5D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */;
@@ -1598,10 +1444,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"",
+					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(inherited)",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"/**",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1640,10 +1487,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = BW62V33GLH;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"",
+					"\"$(SRCROOT)/FTMobileSDK\"/**",
 					"$(inherited)",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent\"",
 					"\"$(SRCROOT)/FTMobileSDK/FTMobileAgent/ZYDataBase\"",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"/**",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/FTMobileSDK\"/**",
@@ -1705,16 +1553,6 @@
 				4A22527423B5AC7600B0ED41 /* Debug */,
 				17A4A55D289D15D000CE40E5 /* Pre */,
 				4A22527523B5AC7600B0ED41 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		4A78B9D52563C43E0021E0BC /* Build configuration list for PBXNativeTarget "TodayExtensionTest" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4A78B9D62563C43E0021E0BC /* Debug */,
-				17A4A55E289D15D000CE40E5 /* Pre */,
-				4A78B9D72563C43E0021E0BC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

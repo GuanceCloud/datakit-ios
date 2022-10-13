@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTErrorDataProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTErrorDataDelegate <NSObject>
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
-@end
+
 @interface FTUncaughtExceptionHandler : NSObject
 
 + (instancetype)sharedHandler;

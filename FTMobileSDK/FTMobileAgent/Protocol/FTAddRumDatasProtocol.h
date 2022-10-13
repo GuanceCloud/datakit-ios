@@ -1,15 +1,15 @@
 //
-//  FTExternalRumProtocol.h
+//  FTAddRumDatasProtocol.h
 //  FTMobileAgent
 //
 //  Created by hulilei on 2022/6/13.
 //  Copyright © 2022 DataFlux-cn. All rights reserved.
 //
 
-#ifndef FTExternalRumProtocol_h
-#define FTExternalRumProtocol_h
+#ifndef FTAddRumDatasProtocol_h
+#define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTExternalRum <NSObject>
+@protocol FTAddRumDatasProtocol <NSObject>
 /**
  * 创建页面
  * @param viewName     页面名称
@@ -49,6 +49,18 @@ NS_ASSUME_NONNULL_BEGIN
  * @param duration   卡顿时长
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
+/**
+ * 进入页面
+ * @param viewId          页面id
+ * @param viewName        页面名称
+ */
+@optional
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName;
+/**
+ * 离开页面
+ * @param viewId         页面id
+ */
+-(void)stopViewWithViewID:(NSString *)viewId;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTExternalRumProtocol_h */

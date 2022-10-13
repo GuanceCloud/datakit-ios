@@ -27,36 +27,43 @@
 @interface URLSessionAutoInstrumentation()<URLSessionInterceptorType>
 @property (nonatomic, assign) BOOL swizzle;
 @property (nonatomic, assign) BOOL enableRumTrack;
+@property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
 @end
 @implementation URLSessionAutoInstrumentation
-- (instancetype)init{
-    return [self initWithInterceptor:[FTURLSessionInterceptor sharedInstance]];
+
++ (instancetype)sharedInstance {
+    static URLSessionAutoInstrumentation *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+    });
+    return sharedInstance;
 }
-- (instancetype)initWithInterceptor:(id <URLSessionInterceptorType>)interceptor{
+- (instancetype)init{
     self = [super init];
     if (self) {
-        _interceptor = interceptor;
+        _sessionInterceptor = [FTURLSessionInterceptor new];
     }
     return self;
 }
 -(id<URLSessionInterceptorType>)interceptor{
-    return _interceptor;
+    return _sessionInterceptor;
 }
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr{
     _sdkUrlStr = sdkUrlStr;
     _interceptor.innerUrl = sdkUrlStr;
 }
 -(id<FTRumResourceProtocol>)rumResourceHandler{
-    return [FTURLSessionInterceptor sharedInstance];
+    return _sessionInterceptor;
 }
 - (void)setRUMConfig:(FTRumConfig *)config{
     self.enableRumTrack = config.enableTraceUserResource;
     [self startMonitor];
 }
 - (void)setTraceConfig:(FTTraceConfig *)config tracer:(nonnull id<FTTracerProtocol>)tracer{
-    [[FTURLSessionInterceptor sharedInstance] enableAutoTrace:config.enableAutoTrace];
-    [[FTURLSessionInterceptor sharedInstance] enableLinkRumData:config.enableLinkRumData];
-    [[FTURLSessionInterceptor sharedInstance] setTracer:tracer];
+    [_sessionInterceptor enableAutoTrace:config.enableAutoTrace];
+    [_sessionInterceptor enableLinkRumData:config.enableLinkRumData];
+    [_sessionInterceptor setTracer:tracer];
     [FTURLProtocol setDelegate:self];
     [self startMonitor];
 }
@@ -81,26 +88,26 @@
 #pragma mark --------- URLSessionInterceptorType ----------
 // 处理 URLProtocol 获取的 resource 数据
 -(NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
-    return [[FTURLSessionInterceptor sharedInstance] injectTraceHeader:request];
+    return [_sessionInterceptor injectTraceHeader:request];
 }
 -(void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
     if(self.enableRumTrack){
-        [[FTURLSessionInterceptor sharedInstance] taskCreated:task session:session];
+        [_sessionInterceptor taskCreated:task session:session];
     }
 }
 -(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     if(self.enableRumTrack){
-        [[FTURLSessionInterceptor sharedInstance] taskReceivedData:task data:data];
+        [_sessionInterceptor taskReceivedData:task data:data];
     }
 }
 -(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     if(self.enableRumTrack){
-        [[FTURLSessionInterceptor sharedInstance] taskCompleted:task error:error];
+        [_sessionInterceptor taskCompleted:task error:error];
     }
 }
 -(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
     if(self.enableRumTrack){
-        [[FTURLSessionInterceptor sharedInstance] taskMetricsCollected:task metrics:metrics];
+        [_sessionInterceptor taskMetricsCollected:task metrics:metrics];
     }
 }
 @end

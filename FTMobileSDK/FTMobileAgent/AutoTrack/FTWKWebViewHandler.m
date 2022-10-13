@@ -13,10 +13,8 @@
 #import "FTDateUtil.h"
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"
-#import "FTMobileAgent+Private.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
-#import "FTResourceContentModel.h"
 @interface FTWKWebViewHandler ()
 @property (nonatomic, strong) NSMutableDictionary *mutableRequestKeyedByWebviewHash;
 

@@ -30,7 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)randomSampling:(int)sampling;
 
+#if !TARGET_OS_OSX
 +(NSString *)telephonyInfo;
+#endif
 @end
 
 NS_ASSUME_NONNULL_END

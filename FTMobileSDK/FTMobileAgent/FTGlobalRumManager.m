@@ -36,7 +36,6 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
-@property (nonatomic, strong) FTTrack *track;
 @property (nonatomic, assign) CFTimeInterval launch;
 @property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
@@ -68,7 +67,8 @@ static dispatch_once_t onceToken;
     }
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
     self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
-    self.track = [[FTTrack alloc]init];
+    [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
+    [FTTrack sharedInstance].addRumDatasDelegate = self.rumManger;
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManger];
@@ -167,7 +167,7 @@ static dispatch_once_t onceToken;
     [self.rumManger addLaunch:YES duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
-        NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@-1;
+        NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
         NSString *viewReferrer =self.rumManger.viewReferrer;
         self.rumManger.viewReferrer = @"";
         [self.rumManger onCreateView:viewReferrer loadTime:loadDuration];
@@ -188,17 +188,17 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
-- (void)trackViewDidAppear:(UIViewController *)viewController{
-    NSString *viewID = viewController.ft_viewUUID;
-    NSString *className = viewController.ft_viewControllerName;
-    [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
-    [self.rumManger startViewWithViewID:viewID viewName:className];
-}
-- (void)trackViewDidDisappear:(UIViewController *)viewController{
-    if(self.currentController == viewController){
-        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
-    }
-}
+//- (void)trackViewDidAppear:(UIViewController *)viewController{
+//    NSString *viewID = viewController.ft_viewUUID;
+//    NSString *className = viewController.ft_viewControllerName;
+//    [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
+//    [self.rumManger startViewWithViewID:viewID viewName:className];
+//}
+//- (void)trackViewDidDisappear:(UIViewController *)viewController{
+//    if(self.currentController == viewController){
+//        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
+//    }
+//}
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _rumManger = nil;

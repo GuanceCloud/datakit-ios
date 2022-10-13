@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTTraceHandler;
 @interface FTURLSessionInterceptor : NSObject<URLSessionInterceptorType,FTRumResourceProtocol>
 
-+ (instancetype)sharedInstance;
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /**
   授权是否开启 Trace

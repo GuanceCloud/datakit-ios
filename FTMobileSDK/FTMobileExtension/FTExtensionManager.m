@@ -46,7 +46,7 @@ static FTExtensionManager *sharedInstance = nil;
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [self.sessionInstrumentation setRUMConfig:rumConfigOptions];
     self.rumManager = [[FTRUMManager alloc] initWithRumConfig:rumConfigOptions monitor:nil wirter:self];
-    id <FTExternalRum> rum = self.rumManager;
+    id <FTAddRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     
     if (rumConfigOptions.enableTrackAppCrash){
