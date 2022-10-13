@@ -242,9 +242,16 @@ static dispatch_once_t onceToken;
         NSArray *eventArray = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:groupIdentifier];
         if (eventArray) {
             for (NSDictionary *dict in eventArray) {
-                NSString *eventType = dict[@"eventType"];
+                NSString *dataType = dict[@"dataType"];
                 NSNumber *tm = dict[@"tm"];
-                [self rumWrite:eventType terminal:FT_TERMINAL_APP tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
+                if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
+                    FTLogStatus status = [dict[@"status"] intValue];
+                    [self loggingWithType:FTAddDataLogging status:status content:dict[@"content"] tags:dict[@"tags"] field:dict[@"fields"] tm:tm.longLongValue];
+                }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
+                    NSString *eventType = dict[@"eventType"];
+                    [self rumWrite:eventType terminal:FT_TERMINAL_APP tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
+                }
+               
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {
@@ -286,6 +293,7 @@ static dispatch_once_t onceToken;
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTGlobalRumManager sharedInstance] resetInstance];
+    [[URLSessionAutoInstrumentation sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];

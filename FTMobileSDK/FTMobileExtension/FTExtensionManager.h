@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-@class FTRumConfig,FTTraceConfig;
+#import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-
 @interface FTExtensionManager : NSObject
 /**
  *    @brief  设置开启采集 Crash。在初始化方法
@@ -39,7 +38,21 @@ NS_ASSUME_NONNULL_BEGIN
  *    @param enable 设置为YES，则打印sdk的log信息。
 */
 + (void)enableLog:(BOOL)enable;
-
+/**
+ * @abstract
+ * 配置 Logger Config 开启 Logger 功能
+ *
+ * @param loggerConfigOptions   logger配置参数
+ */
+- (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions ;
+/**
+ * @abstract
+ * 日志上报
+ *
+ * @param content  日志内容，可为json字符串
+ * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+ */
+-(void)logging:(NSString *)content status:(FTLogStatus)status;
 @end
 
 NS_ASSUME_NONNULL_END

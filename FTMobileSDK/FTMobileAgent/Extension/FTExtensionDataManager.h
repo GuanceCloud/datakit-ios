@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
 /**
  * @abstract
- * 给对应 groupIdentifier 添加事件
+ * 给对应 groupIdentifier 添加 RUM 事件
  *
  * @param eventType 事件类型
  * @param tags      事件属性
@@ -51,7 +51,19 @@ NS_ASSUME_NONNULL_BEGIN
  * 
  * @return 是否写入成功
  */
-- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
+- (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
+/**
+ * @abstract
+ * 给对应 groupIdentifier 添加 LOGGER 事件
+ *
+ * @param status 事件类型
+ * @Param content logger 内容
+ * @param tags      事件属性
+ * @param groupIdentifier AppGroups Identifier
+ *
+ * @return 是否写入成功
+ */
+- (BOOL)writeLoggerEvent:(int)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 /**
  * @abstract
  * 读取 groupIdentifier 对应的所有缓存事件

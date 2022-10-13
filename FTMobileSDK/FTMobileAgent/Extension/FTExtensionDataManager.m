@@ -19,6 +19,7 @@
 
 
 #import "FTExtensionDataManager.h"
+#import "FTConstants.h"
 void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 
 @interface FTExtensionDataManager()
@@ -112,7 +113,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         return nil;
     }
 }
-- (BOOL)writeEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier {
+- (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier {
     @try {
         if (![eventType isKindOfClass:NSString.class] || !eventType.length) {
             return NO;
@@ -126,39 +127,71 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         if (tags && ![tags isKindOfClass:NSDictionary.class]) {
             return NO;
         }
-        
-        __block BOOL result = NO;
-        dispatch_block_t block = ^{
-            NSDictionary *event = @{@"eventType": eventType, @"fields": fields?fields:@{}, @"tags": tags?tags:@{},@"tm":[NSNumber numberWithLongLong:tm]};
-            NSString *path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
-            if(![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
-            }
-            NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:path];
-            if (array.count) {
-                [array addObject:event];
-            } else {
-                array = [NSMutableArray arrayWithObject:event];
-            }
-            NSError *err = NULL;
-            NSData *data= [NSPropertyListSerialization dataWithPropertyList:array
-                                                                     format:NSPropertyListBinaryFormat_v1_0
-                                                                    options:0
-                                                                      error:&err];
-            if (path.length && data.length) {
-                result = [data  writeToFile:path options:NSDataWritingAtomic error:nil];
-            }
-        };
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
-        return result;
+        NSDictionary *event = @{@"dataType":FT_DATA_TYPE_RUM,
+                                @"eventType": eventType,
+                                @"fields": fields?fields:@{},
+                                @"tags": tags?tags:@{},
+                                @"tm":[NSNumber numberWithLongLong:tm]};
+        [self writeEvent:event groupIdentifier:groupIdentifier];
     } @catch (NSException *exception) {
         return NO;
     }
 }
+- (BOOL)writeLoggerEvent:(int)status content:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
+    @try {
+        if (![content isKindOfClass:NSString.class] || !content.length) {
+            return NO;
+        }
+        if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
+            return NO;
+        }
+        if (fields && ![fields isKindOfClass:NSDictionary.class]) {
+            return NO;
+        }
+        if (tags && ![tags isKindOfClass:NSDictionary.class]) {
+            return NO;
+        }
+        NSDictionary *event = @{@"dataType":FT_DATA_TYPE_LOGGING,
+                                @"status":@(status),
+                                @"content":content,
+                                @"fields": fields?fields:@{},
+                                @"tags": tags?tags:@{},
+                                @"tm":[NSNumber numberWithLongLong:tm]};
+        [self writeEvent:event groupIdentifier:groupIdentifier];
+    } @catch (NSException *exception) {
+        return NO;
+    }
+}
+- (BOOL)writeEvent:(NSDictionary *)event groupIdentifier:(NSString *)groupIdentifier {
+    __block BOOL result = NO;
+    dispatch_block_t block = ^{
+        NSString *path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
+        if(![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+        }
+        NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:path];
+        if (array.count) {
+            [array addObject:event];
+        } else {
+            array = [NSMutableArray arrayWithObject:event];
+        }
+        NSError *err = NULL;
+        NSData *data= [NSPropertyListSerialization dataWithPropertyList:array
+                                                                 format:NSPropertyListBinaryFormat_v1_0
+                                                                options:0
+                                                                  error:&err];
+        if (path.length && data.length) {
+            result = [data  writeToFile:path options:NSDataWritingAtomic error:nil];
+        }
+    };
+    if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+        block();
+    } else {
+        dispatch_sync(self.appExtensionQueue, block);
+    }
+    return result;
+}
+
 - (NSArray *)readAllEventsWithGroupIdentifier:(NSString *)groupIdentifier {
     @try {
         if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
