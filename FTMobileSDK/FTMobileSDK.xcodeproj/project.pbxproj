@@ -151,8 +151,6 @@
 		1757AF7428F7B983008AB196 /* FTJSONUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757AF7028F7B983008AB196 /* FTJSONUtil.m */; };
 		1757AF7528F7B983008AB196 /* FTJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757AF7128F7B983008AB196 /* FTJsonWriter.m */; };
 		1757AF7628F7B983008AB196 /* FTJSONUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 1757AF7228F7B983008AB196 /* FTJSONUtil.h */; };
-		1771A9B828F8211D00F2B158 /* FTMobileAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A884272239E5768001B44C3 /* FTMobileAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1771A9B928F8212200F2B158 /* FTMobileAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A88426A239E5768001B44C3 /* FTMobileAgent.m */; };
 		1775A7BD28D9A60000D70779 /* FTExtensionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7BC28D9A60000D70779 /* FTExtensionManager.m */; };
 		1775A7D728D9A7A400D70779 /* URLSessionAutoInstrumentation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7C328D9A7A400D70779 /* URLSessionAutoInstrumentation.m */; };
 		1775A7DA28D9A7A400D70779 /* FTURLSessionInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7C628D9A7A400D70779 /* FTURLSessionInterceptor.m */; };
@@ -1192,7 +1190,6 @@
 				1757AF6B28F7B93B008AB196 /* FTResourceContentModel.h in Headers */,
 				1775A7E328D9A7A500D70779 /* URLSessionAutoInstrumentation.h in Headers */,
 				174C517728DC6EA300FBE425 /* FTCPUMonitor.h in Headers */,
-				1771A9B828F8211D00F2B158 /* FTMobileAgent.h in Headers */,
 				1757AF7628F7B983008AB196 /* FTJSONUtil.h in Headers */,
 				174C50FA28DC454800FBE425 /* FTExternalDataManager+Private.h in Headers */,
 				1775A7E228D9A7A500D70779 /* FTTraceHandler.h in Headers */,
@@ -1451,7 +1448,6 @@
 				174C519A28DC6EE000FBE425 /* FTUncaughtExceptionHandler.m in Sources */,
 				1775A7DB28D9A7A400D70779 /* FTURLProtocol.m in Sources */,
 				174C517E28DC6EA300FBE425 /* FTRUMManager.m in Sources */,
-				1771A9B928F8212200F2B158 /* FTMobileAgent.m in Sources */,
 				1757AF7528F7B983008AB196 /* FTJsonWriter.m in Sources */,
 				174C51DE28DC6F1700FBE425 /* FTSwizzler.m in Sources */,
 				174C51E428DC6F1700FBE425 /* FTThreadDispatchManager.m in Sources */,
