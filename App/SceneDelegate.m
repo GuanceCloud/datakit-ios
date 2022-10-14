@@ -1,6 +1,7 @@
 #import "SceneDelegate.h"
 #import "DemoViewController.h"
 #import "UITestVC.h"
+#import <FTMobileAgent/FTMobileAgent.h>
 @interface SceneDelegate ()
 
 @end
@@ -42,6 +43,7 @@
 - (void)sceneDidBecomeActive:(UIScene *)scene  API_AVAILABLE(ios(13.0)){
     // Called when the scene has moved from an inactive state to an active state.
     // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+    [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.extension.demo" completion:nil];
 }
 
 

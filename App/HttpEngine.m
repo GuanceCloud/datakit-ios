@@ -31,7 +31,7 @@
  * 内部，调用 FTURLSessionDelegate 的对应方法，以便于 SDK 进行数据采集。
  *
  */
-@interface InstrumentationPropertyClass:NSObject<NSURLSessionDataDelegate>
+@interface InstrumentationPropertyClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
 @property (nonatomic, strong) FTURLSessionDelegate *sessionDelegate;
 @end
 @implementation InstrumentationPropertyClass

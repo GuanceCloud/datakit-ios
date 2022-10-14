@@ -25,7 +25,9 @@ class InheritHttpEngine:FTURLSessionDelegate {
         let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
         let url:URL = URL.init(string: urlStr)!
         let request = URLRequest.init(url: url)
-        let task = self.session!.dataTask(with: request, completionHandler: completionHandler)
+        let task = self.session!.dataTask(with: request) { data,  res,  error in
+            completionHandler(data,res,error);
+        }
         task.resume()
     }
 }
@@ -33,13 +35,14 @@ class InheritHttpEngine:FTURLSessionDelegate {
 class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
     
     let sessionDelegate = FTURLSessionDelegate()
-    var session:URLSession
+    var session:URLSession?
     /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
     override init(){
+        session = nil
+        super.init()
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
-        session = URLSession.init(configuration: configuration)
-        super.init()
+        session = URLSession.init(configuration: configuration, delegate:self, delegateQueue: nil)
     }
     func ftURLSessionDelegate() -> FTURLSessionDelegate {
         return sessionDelegate
@@ -49,7 +52,7 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
         let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
         let url:URL = URL.init(string: urlStr)!
         let request = URLRequest.init(url: url)
-        let task = self.session.dataTask(with: request, completionHandler: completionHandler)
+        let task = self.session!.dataTask(with: request, completionHandler: completionHandler)
         task.resume()
     }
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {

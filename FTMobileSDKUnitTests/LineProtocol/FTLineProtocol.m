@@ -138,7 +138,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
 
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     FTRecordModel *model = [FTModelHelper createLogModel:str];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
@@ -148,17 +148,17 @@
         NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];
         XCTAssertTrue([array[1] isEqualToString:message]);
     }
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        if(!error){
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
-    }];
+//    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
+//    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+//        if(!error){
+//        NSInteger statusCode = httpResponse.statusCode;
+//        BOOL success = (statusCode >=200 && statusCode < 500);
+//        XCTAssertTrue(success);
+//        }
+//        [expectation fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
+//    }];
 }
 
 - (BOOL)isNum:(NSString *)checkedNumString {

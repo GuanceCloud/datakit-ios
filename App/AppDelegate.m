@@ -125,9 +125,6 @@
 
 #pragma mark - UISceneSession lifecycle
 
--(void)applicationDidBecomeActive:(UIApplication *)application{
-    [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.extension.demo" completion:nil];
-}
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options  API_AVAILABLE(ios(13.0)){
     // Called when a new scene session is being created.
     // Use this method to select a configuration to create the new scene with.

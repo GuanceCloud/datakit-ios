@@ -46,7 +46,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
         
         NSURLSessionDataTask *task;
         if (completionHandler) {
-            NSURLSessionDataTask *taskReference;
+            __block NSURLSessionDataTask *taskReference;
             CompletionHandler newCompletionHandler = ^(NSData * data, NSURLResponse * response, NSError * error){
                 completionHandler(data,response,error);
                 if (taskReference){
@@ -87,7 +87,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
         id<URLSessionInterceptorType> interceptor = sessionDelegate.instrumentation.interceptor;
         NSURLSessionDataTask *task;
         if (completionHandler) {
-            NSURLSessionDataTask *taskReference;
+            __block NSURLSessionDataTask *taskReference;
             CompletionHandler newCompletionHandler = ^(NSData * data, NSURLResponse * response, NSError * error){
                 completionHandler(data,response,error);
                 if (taskReference){

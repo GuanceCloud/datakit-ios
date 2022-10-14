@@ -58,7 +58,7 @@ static FTExtensionManager *sharedInstance = nil;
     if (rumConfigOptions.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
     }
-    self.sessionInstrumentation.interceptor.innerResourceHandeler = self.rumManager;
+    [URLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
 }
 - (URLSessionAutoInstrumentation *)sessionInstrumentation{
     if(!_sessionInstrumentation){
