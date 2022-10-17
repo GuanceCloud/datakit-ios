@@ -22,7 +22,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTExtensionDataManager : NSObject
+@interface FTExtensionDataManager : NSObject{
+    NSArray * _groupIdentifierArray;
+}
 
 /**
  * @property
@@ -41,6 +43,51 @@ NS_ASSUME_NONNULL_BEGIN
  * @return 在 group 中的数据缓存路径
  */
 - (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
+/**
+ * @abstract
+ * 设置 rumConfig
+ *
+ * @param rumConfig rum 配置项
+ */
+- (void)writeRumConfig:(NSDictionary *)rumConfig;
+/**
+ * @abstract
+ * 设置 traceConfig
+ *
+ * @param traceConfig trace 配置项
+ */
+- (void)writeTraceConfig:(NSDictionary *)traceConfig;
+/**
+ * @abstract
+ * 设置 loggerConfig
+ *
+ * @param loggerConfig  logger 配置项
+ */
+- (void)writeLoggerConfig:(NSDictionary *)loggerConfig;
+/**
+ * @abstract
+ * 获取 rumConfig
+ *
+ * @param groupIdentifier AppGroups Identifier
+ * @return   rum 配置项
+ */
+- (NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier;
+/**
+ * @abstract
+ * 获取 traceConfig
+ *
+ * @param groupIdentifier AppGroups Identifier
+ * @return   trace 配置项
+ */
+- (NSDictionary *)getTraceConfigWithGroupIdentifier:(NSString *)groupIdentifier;
+/**
+ * @abstract
+ * 获取 loggerConfig
+ *
+ * @param groupIdentifier AppGroups Identifier
+ * @return  logger 配置项
+ */
+- (NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier;
 /**
  * @abstract
  * 给对应 groupIdentifier 添加 RUM 事件

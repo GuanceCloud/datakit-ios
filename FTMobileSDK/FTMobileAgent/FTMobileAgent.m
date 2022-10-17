@@ -34,6 +34,7 @@
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "URLSessionAutoInstrumentation.h"
+#import "FTMobileConfig+Private.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -72,6 +73,7 @@ static dispatch_once_t onceToken;
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
             _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
+            [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
@@ -104,7 +106,7 @@ static dispatch_once_t onceToken;
     [[URLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
     [URLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
     [FTExternalDataManager sharedManager].resourceDelegate = [URLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
-
+    [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
@@ -116,6 +118,7 @@ static dispatch_once_t onceToken;
         if(self.loggerConfig.enableConsoleLog){
             [self _traceConsoleLog];
         }
+        [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -125,6 +128,8 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].interceptor = [URLSessionAutoInstrumentation sharedInstance].interceptor;
     [[URLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions tracer:self.tracer];
     [FTExternalDataManager sharedManager].traceDelegate = self.tracer;
+    [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
+
 }
 #pragma mark ========== publick method ==========
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -220,8 +225,10 @@ static dispatch_once_t onceToken;
         }
         if (self.loggerConfig.enableLinkRumData) {
             [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
-            NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
-            [tagDict addEntriesFromDictionary:rumTag];
+            if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
+                NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
+                [tagDict addEntriesFromDictionary:rumTag];
+            }
         }
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;

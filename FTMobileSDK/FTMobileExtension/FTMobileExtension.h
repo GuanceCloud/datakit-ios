@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "FTMobileConfig.h"
+#import "FTExtensionConfig.h"
 #import "FTExtensionManager.h"
 #import "FTExternalDataManager.h"
 #import "FTURLSessionDelegate.h"

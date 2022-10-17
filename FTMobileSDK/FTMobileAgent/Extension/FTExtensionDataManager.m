@@ -44,9 +44,8 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 }
 
 - (void)setGroupIdentifierArray:(NSArray *)groupIdentifierArray {
-    __weak typeof(self) weakSelf = self;
     dispatch_block_t block = ^() {
-        weakSelf.groupIdentifierArray = groupIdentifierArray;
+        self->_groupIdentifierArray = groupIdentifierArray;
     };
     if (dispatch_get_specific(FTAppExtensionQueueTag)) {
         block();
@@ -56,10 +55,9 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 }
 - (NSArray *)groupIdentifierArray {
     @try {
-        __weak typeof(self) weakSelf = self;
         __block NSArray *groupArray = nil;
         dispatch_block_t block = ^() {
-            groupArray = weakSelf.groupIdentifierArray;
+            groupArray = self->_groupIdentifierArray;
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();
@@ -67,6 +65,116 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
             dispatch_sync(self.appExtensionQueue, block);
         }
         return groupArray;
+    } @catch (NSException *exception) {
+        return nil;
+    }
+}
+-(void)writeRumConfig:(NSDictionary *)rumConfig{
+    @try {
+        dispatch_block_t block = ^() {
+            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
+                [userDefaults setObject:rumConfig forKey:@"RUM_CONFIG"];
+                [userDefaults synchronize];
+            }];
+        };
+        
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+    } @catch (NSException *exception) {
+        
+    }
+}
+-(void)writeTraceConfig:(NSDictionary *)traceConfig{
+    @try {
+        dispatch_block_t block = ^() {
+            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
+                [userDefaults setObject:traceConfig forKey:@"TRACE_CONFIG"];
+                [userDefaults synchronize];
+            }];
+        };
+        
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+    } @catch (NSException *exception) {
+        
+    }
+}
+-(void)writeLoggerConfig:(NSDictionary *)loggerConfig{
+    @try {
+        dispatch_block_t block = ^() {
+            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
+                [userDefaults setObject:loggerConfig forKey:@"LOGGER_CONFIG"];
+                [userDefaults synchronize];
+            }];
+        };
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+    } @catch (NSException *exception) {
+        
+    }
+}
+-(NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    @try {
+        __block NSDictionary *config = nil;
+
+        dispatch_block_t block = ^() {
+            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
+            config = [userDefaults valueForKey:@"RUM_CONFIG"];
+        };
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+        return config;
+    } @catch (NSException *exception) {
+        return nil;
+    }
+}
+-(NSDictionary *)getTraceConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    @try {
+        __block NSDictionary *config = nil;
+
+        dispatch_block_t block = ^() {
+            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
+            config = [userDefaults valueForKey:@"TRACE_CONFIG"];
+        };
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+        return config;
+    } @catch (NSException *exception) {
+        return nil;
+    }
+}
+-(NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier{
+    @try {
+        __block NSDictionary *config = nil;
+
+        dispatch_block_t block = ^() {
+            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
+            config = [userDefaults valueForKey:@"LOGGER_CONFIG"];
+        };
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+        return config;
     } @catch (NSException *exception) {
         return nil;
     }

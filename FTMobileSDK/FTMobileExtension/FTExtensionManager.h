@@ -8,43 +8,18 @@
 
 #import <Foundation/Foundation.h>
 #import "FTMobileConfig.h"
+#import "FTExtensionConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTExtensionManager : NSObject
 /**
- *    @brief  设置开启采集 Crash。在初始化方法
+ * @abstract
+ * Extension 初始化方法
  *
- *    @param groupIdentifier 设置文件共享 Group Identifier。
+ * @param extensionConfig extension 配置项
 */
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
++ (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig;
 
 + (instancetype)sharedInstance;
-/**
- * @abstract
- * 配置 RUM Config 开启 RUM 功能
- *
- * @param rumConfigOptions   rum配置参数
- */
-- (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions;
-/**
- * @abstract
- * 配置 Trace Config 开启 Trace 功能
- *
- * @param traceConfigOptions   trace配置参数
- */
-- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
-/**
- *    @brief  设置是否开启打印 sdk 的 log 信息，默认关闭。在初始化方法之前调用
- *
- *    @param enable 设置为YES，则打印sdk的log信息。
-*/
-+ (void)enableLog:(BOOL)enable;
-/**
- * @abstract
- * 配置 Logger Config 开启 Logger 功能
- *
- * @param loggerConfigOptions   logger配置参数
- */
-- (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions ;
 /**
  * @abstract
  * 日志上报

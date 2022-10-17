@@ -265,7 +265,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 保留标签： sdk_package_flutter、sdk_package_react_native
  */
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
-
+/**
+ * 需要采集的 Extensions 对应的 AppGroups Identifier 数组
+ */
+@property (nonatomic, strong) NSArray *groupIdentifiers;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -54,6 +54,7 @@
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
+        config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];

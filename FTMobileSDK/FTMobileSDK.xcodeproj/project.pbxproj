@@ -167,6 +167,10 @@
 		174C513228DC4C8B00FBE425 /* FTExtensionDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 174C513028DC4C8B00FBE425 /* FTExtensionDataManager.h */; };
 		174C520F28DC7A0700FBE425 /* FTTraceHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 174C520E28DC7A0700FBE425 /* FTTraceHandler.m */; };
 		1757AF6528F6CF14008AB196 /* FTErrorDataProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1757AF6428F6CF14008AB196 /* FTErrorDataProtocol.h */; };
+		17605EE828FCFFA500822B88 /* FTExtensionConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17605EE628FCFFA500822B88 /* FTExtensionConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17605EE928FCFFA500822B88 /* FTExtensionConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17605EE728FCFFA500822B88 /* FTExtensionConfig.m */; };
+		17605EEB28FD355D00822B88 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */; };
+		17605EEC28FD355D00822B88 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */; };
 		1775A7BD28D9A60000D70779 /* FTExtensionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1775A7BC28D9A60000D70779 /* FTExtensionManager.m */; };
 		1775A7F528D9B52100D70779 /* FTRumResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A7F428D9B52100D70779 /* FTRumResourceProtocol.h */; };
 		1775A82528D9CE9D00D70779 /* FTExternalDataManager+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A82328D9CE9D00D70779 /* FTExternalDataManager+Private.h */; };
@@ -337,6 +341,9 @@
 		174C513028DC4C8B00FBE425 /* FTExtensionDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTExtensionDataManager.h; path = FTMobileAgent/Extension/FTExtensionDataManager.h; sourceTree = SOURCE_ROOT; };
 		174C520E28DC7A0700FBE425 /* FTTraceHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTraceHandler.m; sourceTree = "<group>"; };
 		1757AF6428F6CF14008AB196 /* FTErrorDataProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTErrorDataProtocol.h; sourceTree = "<group>"; };
+		17605EE628FCFFA500822B88 /* FTExtensionConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExtensionConfig.h; sourceTree = "<group>"; };
+		17605EE728FCFFA500822B88 /* FTExtensionConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTExtensionConfig.m; sourceTree = "<group>"; };
+		17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileConfig+Private.h"; sourceTree = "<group>"; };
 		1775A7BC28D9A60000D70779 /* FTExtensionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionManager.m; sourceTree = "<group>"; };
 		1775A7F428D9B52100D70779 /* FTRumResourceProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRumResourceProtocol.h; sourceTree = "<group>"; };
 		1775A82328D9CE9D00D70779 /* FTExternalDataManager+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTExternalDataManager+Private.h"; sourceTree = "<group>"; };
@@ -583,6 +590,7 @@
 			children = (
 				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
 				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
+				17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */,
 				1740589128D807CF0092E096 /* FTResourceContentModel.h */,
 				1740589228D807CF0092E096 /* FTResourceMetricsModel.h */,
 				1740589328D807CF0092E096 /* FTResourceMetricsModel.m */,
@@ -667,6 +675,8 @@
 				4A6C5421255E6464009771B8 /* Info.plist */,
 				174058AE28D807FB0092E096 /* FTExtensionManager.h */,
 				1775A7BC28D9A60000D70779 /* FTExtensionManager.m */,
+				17605EE628FCFFA500822B88 /* FTExtensionConfig.h */,
+				17605EE728FCFFA500822B88 /* FTExtensionConfig.m */,
 			);
 			path = FTMobileExtension;
 			sourceTree = "<group>";
@@ -884,6 +894,7 @@
 				4A6C542E255E6464009771B8 /* FTMobileExtension.h in Headers */,
 				172DA11928F94A0C00733AD0 /* FTUncaughtExceptionHandler.h in Headers */,
 				172DA14428F94B4800733AD0 /* FTTracer.h in Headers */,
+				17605EEC28FD355D00822B88 /* FTMobileConfig+Private.h in Headers */,
 				172DA10428F949BE00733AD0 /* FTCallStack.h in Headers */,
 				172DA12A28F94AE200733AD0 /* FTMemoryMonitor.h in Headers */,
 				172DA13F28F94B3A00733AD0 /* FTURLProtocol.h in Headers */,
@@ -911,6 +922,7 @@
 				174058B028D807FB0092E096 /* FTExtensionManager.h in Headers */,
 				172DA11328F949EE00733AD0 /* FTRecordModel.h in Headers */,
 				172DA0E828F9491C00733AD0 /* FTExtensionDataManager.h in Headers */,
+				17605EE828FCFFA500822B88 /* FTExtensionConfig.h in Headers */,
 				172DA13728F94B2700733AD0 /* URLSessionAutoInstrumentation.h in Headers */,
 				172DA0E728F948E300733AD0 /* FTExternalDataManager.h in Headers */,
 				172DA12C28F94AE700733AD0 /* FTCPUMonitor.h in Headers */,
@@ -997,6 +1009,7 @@
 				7CA1808226CFAE430035DDF0 /* FTTrackDataManger.h in Headers */,
 				4A8842A1239E5768001B44C3 /* ZY_FMDatabaseAdditions.h in Headers */,
 				1740584A28D807390092E096 /* FTTracerProtocol.h in Headers */,
+				17605EEB28FD355D00822B88 /* FTMobileConfig+Private.h in Headers */,
 				4A8842A6239E5768001B44C3 /* ZY_FMDB.h in Headers */,
 				1740587C28D807C90092E096 /* FTRUMMonitor.h in Headers */,
 				1740587D28D807C90092E096 /* FTMonitorValue.h in Headers */,
@@ -1153,6 +1166,7 @@
 				172DA0E928F9491E00733AD0 /* FTExtensionDataManager.m in Sources */,
 				1775A7BD28D9A60000D70779 /* FTExtensionManager.m in Sources */,
 				172DA12228F94AA900733AD0 /* FTRUMResourceHandler.m in Sources */,
+				17605EE928FCFFA500822B88 /* FTExtensionConfig.m in Sources */,
 				172DA13528F94B0000733AD0 /* FTMonitorItem.m in Sources */,
 				172DA0FC28F9499A00733AD0 /* FTResourceMetricsModel.m in Sources */,
 				172DA12528F94AB300733AD0 /* FTRUMDataModel.m in Sources */,

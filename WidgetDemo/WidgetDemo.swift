@@ -25,6 +25,7 @@ struct Provider: TimelineProvider {
         httpEngine.network { data, response, error in
             
         };
+        FTExtensionManager.sharedInstance().logging("getTimeline", status: .statusInfo)
         // Generate a timeline consisting of five entries an hour apart, starting from the current date.
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
@@ -57,16 +58,12 @@ struct WidgetDemoEntryView : View {
 struct WidgetDemo: Widget {
     let kind: String = "WidgetDemo"
     init() {
-        let processInfo = ProcessInfo.processInfo
-        let appid = processInfo.environment["APP_ID"] ?? ""
-        FTExtensionManager.start(withApplicationGroupIdentifier: "group.com.ft.widget.demo")
-        FTExtensionManager.enableLog(true)
-        let rumConfig = FTRumConfig.init(appid: appid)
-        rumConfig.enableTrackAppCrash = true
-        let traceConfig = FTTraceConfig.init()
-        traceConfig.enableAutoTrace = true
-        FTExtensionManager.sharedInstance().startTrace(withConfigOptions: traceConfig)
-        FTExtensionManager.sharedInstance().startRum(withConfigOptions: rumConfig)
+        let extensionConfig = FTExtensionConfig.init()
+        extensionConfig.groupIdentifier = "group.com.ft.widget.demo"
+        extensionConfig.enableTrackAppCrash = true
+        extensionConfig.enableAutoTraceResource = true
+        extensionConfig.enableSDKDebugLog = true
+        FTExtensionManager.start(with: extensionConfig)
     }
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in

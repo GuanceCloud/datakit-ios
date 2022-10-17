@@ -20,13 +20,13 @@
 #import "FTBaseInfoHandler.h"
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
-#import "FTMobileConfig.h"
+#import "FTMobileConfig+Private.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol>
-@property (nonatomic, copy) NSString *groupIdentifer;
 @property (nonatomic, strong) FTRUMManager *rumManager;
 @property (nonatomic, strong) URLSessionAutoInstrumentation *sessionInstrumentation;
 @property (nonatomic, strong) FTTracer *tracer;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
+@property (nonatomic, strong) FTExtensionConfig *extensionConfig;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTExtensionManager
@@ -35,23 +35,44 @@ static FTExtensionManager *sharedInstance = nil;
     NSAssert(sharedInstance, @"请先使用 startWithApplicationGroupIdentifier: 初始化");
     return sharedInstance;
 }
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifer{
-    NSAssert((groupIdentifer.length!=0 ), @"请填写Group Identifier");
++ (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
+    NSAssert((extensionConfig.groupIdentifier.length!=0 ), @"请填写Group Identifier");
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTExtensionManager alloc]initWithGroupIdentifier:groupIdentifer];
+        sharedInstance = [[FTExtensionManager alloc]initWithExtensionConfig:extensionConfig];
     });
 }
--(instancetype)initWithGroupIdentifier:(NSString *)identifier{
+-(instancetype)initWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
     self = [super init];
     if (self) {
-        _groupIdentifer = identifier;
+        _extensionConfig = extensionConfig;
+        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
+        [self processingConfigItems];
     }
     return self;
+}
+- (void)processingConfigItems{
+    NSDictionary *rumDict = [[FTExtensionDataManager sharedInstance] getRumConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *traceDict = [[FTExtensionDataManager sharedInstance] getTraceConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *loggerDict = [[FTExtensionDataManager sharedInstance] getLoggerConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+   
+    FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
+    FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
+    if(rumConfig){
+        rumConfig.enableTraceUserResource = self.extensionConfig.enableAutoTraceResource;
+        rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
+        [self startRumWithConfigOptions:rumConfig];
+    }
+    if(traceConfig){
+        [self startTraceWithConfigOptions:traceConfig];
+    }
+    self.loggerConfig = loggerConfig;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [self.sessionInstrumentation setRUMConfig:rumConfigOptions];
     self.rumManager = [[FTRUMManager alloc] initWithRumConfig:rumConfigOptions monitor:nil wirter:self];
+    self.rumManager.appState = AppStateUnknown;
     id <FTAddRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     
@@ -73,28 +94,8 @@ static FTExtensionManager *sharedInstance = nil;
     [FTExternalDataManager sharedManager].resourceDelegate = self.sessionInstrumentation.rumResourceHandler;
 
 }
-- (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
-    self.loggerConfig = [loggerConfigOptions copy];
-    self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
-}
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
-        return;
-    }
-    if (!self.loggerConfig) {
-        ZYErrorLog(@"请先设置 FTLoggerConfig");
-        return;
-    }
-    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
-        return;
-    }
-    if (![self.logLevelFilterSet containsObject:@(status)]) {
-        ZYDebug(@"经过过滤算法判断-此条日志不采集");
-        return;
-    }
-    if (![FTBaseInfoHandler randomSampling:self.loggerConfig.samplerate]){
-        ZYDebug(@"经过采集算法判断-此条日志不采集");
         return;
     }
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
@@ -108,8 +109,10 @@ static FTExtensionManager *sharedInstance = nil;
     }
 
     ZYDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
-                    @"tags":tagDict});
-    [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:content tags:tagDict fields:nil tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.groupIdentifer];
+                      @"tags":tagDict,
+                      @"content":content
+                    });
+    [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:content tags:tagDict fields:nil tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -126,9 +129,6 @@ static FTExtensionManager *sharedInstance = nil;
     ZYDebug(@"%@\n",@{@"type":type,
                     @"tags":newTags,
                     @"fields":fields});
-    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.groupIdentifer];
-}
-+ (void)enableLog:(BOOL)enable{
-    [FTLog enableLog:enable];
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 @end
