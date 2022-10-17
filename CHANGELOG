@@ -1,4 +1,4 @@
-1.3.9-alpha.1
+1.3.9-alpha.2
 1. 新增 resource 数据采集方式，支持定向采集指定 URLSession 的数据
 2. 新增采集 extension、extension widget 数据功能
 ---
