@@ -1,3 +1,8 @@
+1.3.8-beta.1
+1. 外部接入 RUM 补充自定义 actionType 方法
+2. 添加 iPhone14 设备信息适配
+--- 
+
 1.3.8-alpha.2
 1. 添加 iPhone14 设备信息适配
 ---
