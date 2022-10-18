@@ -72,7 +72,9 @@ object:nil];
                        isEqualToString:@"launch_cold"]);
     }
     XCTAssertTrue(haslaunch);
-    [self.expectation fulfill];
+    if(self.expectation){
+        [self.expectation fulfill];
+    }
 }
 - (void)testSetSdkAfterLaunch{
     [tester waitForTimeInterval:5];

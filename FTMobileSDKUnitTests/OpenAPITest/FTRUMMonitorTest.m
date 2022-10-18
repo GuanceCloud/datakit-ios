@@ -21,6 +21,7 @@
 #import "FTRUMViewHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
+#import "FTLog.h"
 @interface FTRUMMonitorTest : KIFTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -81,7 +82,8 @@
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        ZYDebug(@"op：%@\ndict:%@",op,dict);
+        XCTAssertTrue([op isEqualToString:FT_DATA_TYPE_RUM]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
@@ -122,6 +124,8 @@
 }
 - (void)testMonitorFPS{
     [self setRumMonitorType:FTDeviceMetricsMonitorFps];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
@@ -136,6 +140,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
+            ZYDebug(@"field:%@\n",field);
             XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]);
             XCTAssertFalse([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
