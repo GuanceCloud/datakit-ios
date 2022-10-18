@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 #import "FTMobileConfig.h"
-
+#import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTWKWebViewRumDelegate <NSObject>
 @optional
@@ -19,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTWKWebViewHandler : NSObject<WKNavigationDelegate>
 @property (nonatomic, assign) BOOL enableTrace;
-@property (nonatomic, weak) id<FTWKWebViewRumDelegate> traceDelegate;
+@property (nonatomic, weak) id<FTWKWebViewRumDelegate> rumTrackDelegate;
+@property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
 + (instancetype)sharedInstance;
 - (void)reloadWebView:(WKWebView *)webView completionHandler:(void (^)(NSURLRequest *request,BOOL needTrace))completionHandler;
 - (void)addWebView:(WKWebView *)webView request:(NSURLRequest *)request;

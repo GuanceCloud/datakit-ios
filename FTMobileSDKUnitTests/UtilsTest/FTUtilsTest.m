@@ -11,7 +11,7 @@
 #import <FTMobileAgent/FTMobileAgent+Private.h>
 #import <FTDataBase/FTTrackerEventDBTool.h>
 #import <FTRecordModel.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
+#import <FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
 #import <FTConstants.h>
 #import <FTJSONUtil.h>

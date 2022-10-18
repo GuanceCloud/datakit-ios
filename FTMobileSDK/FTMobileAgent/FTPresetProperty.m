@@ -5,16 +5,15 @@
 //  Created by 胡蕾蕾 on 2020/10/23.
 //  Copyright © 2020 hll. All rights reserved.
 //
-
+#import <UIKit/UIKit.h>
 #import "FTPresetProperty.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMobileAgentVersion.h"
 #import <sys/utsname.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
 #import "FTEnumConstant.h"
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
+#import "FTConstants.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
@@ -85,7 +84,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @end
 @interface FTPresetProperty ()
 @property (nonatomic, strong) MobileDevice *mobileDevice;
-//@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
+@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *context;
@@ -104,17 +103,17 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return self;
 }
-//-(NSMutableDictionary *)webCommonPropertyTags{
-//    @synchronized (self) {
-//        if (!_webCommonPropertyTags) {
-//            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-//            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-//        }
-//    }
-//    return _webCommonPropertyTags;
-//}
+-(NSMutableDictionary *)webCommonPropertyTags{
+    @synchronized (self) {
+        if (!_webCommonPropertyTags) {
+            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
+            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+        }
+    }
+    return _webCommonPropertyTags;
+}
 -(NSMutableDictionary *)rumCommonPropertyTags{
     @synchronized (self) {
         if (!_rumCommonPropertyTags) {
@@ -343,32 +342,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         return  @"iPhone Simulator";
     }
     return platform;
-}
-+(NSString *)telephonyInfo
-{
-    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier;
-    if (@available(iOS 12.0, *)) {
-        if (info && [info respondsToSelector:@selector(serviceSubscriberCellularProviders)]) {
-            NSDictionary *dic = [info serviceSubscriberCellularProviders];
-            if (dic.allKeys.count) {
-                carrier = [dic objectForKey:dic.allKeys[0]];
-            }
-        }
-    }else{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // 这部分使用到的过期api
-        carrier= [info subscriberCellularProvider];
-#pragma clang diagnostic pop
-        
-    }
-    if(carrier ==nil){
-        return FT_NULL_VALUE;
-    }else{
-        NSString *mCarrier = [NSString stringWithFormat:@"%@",[carrier carrierName]];
-        return mCarrier;
-    }
 }
 @end
 

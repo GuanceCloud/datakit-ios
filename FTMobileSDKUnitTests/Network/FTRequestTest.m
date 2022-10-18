@@ -14,7 +14,6 @@
 #import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <FTJSONUtil.h>
-#import "FTConfigManager.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
 #import "FTNetworkInfoManager.h"

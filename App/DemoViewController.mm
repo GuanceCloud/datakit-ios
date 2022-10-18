@@ -9,7 +9,7 @@
 #import "DemoViewController.h"
 #import "UITestVC.h"
 #import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
+#import <FTBaseInfoHandler.h>
 //测试崩溃采集
 #import "TestANRVC.h"
 #import "TestWKWebViewVC.h"
@@ -18,6 +18,7 @@
 #import "App-Swift.h"
 #import "TestJsbridgeData.h"
 #import "ManualRumAndTraceDataAdd.h"
+#import "NetworkTraceVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -48,13 +49,8 @@
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
         [[FTMobileAgent sharedInstance] logout];
     }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_clienthttp" handler:^{
-        NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-        
-        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-            
-        }];
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace" handler:^{
+        [weakSelf.navigationController pushViewController:[NetworkTraceVC new] animated:YES];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_webview" handler:^{
         [weakSelf.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];

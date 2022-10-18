@@ -7,9 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import "FTAddRumDatasProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTTrack : NSObject
+@property (nonatomic,weak) id<FTAddRumDatasProtocol> addRumDatasDelegate;
+// 仅在主线程使用 所以无多线程调用问题
+@property (nonatomic, weak) UIViewController *currentController;
++ (instancetype)sharedInstance;
 
+-(void)startWithTrackView:(BOOL)enable action:(BOOL)enable;
 @end
 
 NS_ASSUME_NONNULL_END

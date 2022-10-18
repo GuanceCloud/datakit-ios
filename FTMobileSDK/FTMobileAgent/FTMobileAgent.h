@@ -11,6 +11,5 @@
 #import "FTExternalDataManager.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
-#import "FTTraceManager.h"
-#import "FTExternalRumProtocol.h"
 #import "FTMobileAgent+Public.h"
+#import "FTURLSessionDelegate.h"

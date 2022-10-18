@@ -22,6 +22,8 @@
 #import "FTDateUtil.h"
 #import "FTTrackDataManger+Test.h"
 #import "DemoViewController.h"
+#import "FTConstants.h"
+#import "FTModelHelper.h"
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -240,8 +242,8 @@
 
 }
 - (void)testAutoTrackResource{
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [tester waitForTimeInterval:1];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
  

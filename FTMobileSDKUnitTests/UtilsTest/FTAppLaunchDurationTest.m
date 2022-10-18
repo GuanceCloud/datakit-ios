@@ -58,19 +58,23 @@ object:nil];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)noti{
     [tester waitForTimeInterval:2];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSString *op = dict[@"op"];
-    XCTAssertTrue([op isEqualToString:@"RUM"]);
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *measurement = opdata[@"source"];
-    BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
-        haslaunch = YES;
-        XCTAssertTrue([tags[FT_RUM_KEY_ACTION_TYPE]
-                       isEqualToString:@"launch_cold"]);
-    }
+    NSArray *models = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL haslaunch = NO;
+    [models enumerateObjectsUsingBlock:^(FTRecordModel  *model, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            haslaunch = YES;
+            XCTAssertTrue([tags[FT_RUM_KEY_ACTION_TYPE]
+                           isEqualToString:@"launch_cold"]);
+            *stop = YES;
+        }
+    }];
+    
     XCTAssertTrue(haslaunch);
     if(self.expectation){
         [self.expectation fulfill];

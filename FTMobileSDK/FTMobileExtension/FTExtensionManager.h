@@ -7,23 +7,27 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "FTMobileConfig.h"
+#import "FTExtensionConfig.h"
 NS_ASSUME_NONNULL_BEGIN
-
 @interface FTExtensionManager : NSObject
 /**
- *    @brief  设置开启采集 Crash。在初始化方法
+ * @abstract
+ * Extension 初始化方法
  *
- *    @param groupIdentifier 设置文件共享 Group Identifier。
+ * @param extensionConfig extension 配置项
 */
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifier;
-/**
- *    @brief  设置是否开启打印 sdk 的 log 信息，默认关闭。在初始化方法之前调用
- *
- *    @param enable 设置为YES，则打印sdk的log信息。
-*/
-+ (void)enableLog:(BOOL)enable;
++ (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig;
 
++ (instancetype)sharedInstance;
+/**
+ * @abstract
+ * 日志上报
+ *
+ * @param content  日志内容，可为json字符串
+ * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
+ */
+-(void)logging:(NSString *)content status:(FTLogStatus)status;
 @end
 
 NS_ASSUME_NONNULL_END

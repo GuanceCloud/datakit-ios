@@ -13,20 +13,15 @@
 #import "FTMobileAgent.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@class FTRecordModel,FTPresetProperty,FTRUMManager;
+#import "FTRUMDataWriteProtocol.h"
 
+@class FTPresetProperty,FTTracer;
 
-@interface FTMobileAgent (Private)
+@interface FTMobileAgent (Private)<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
-
-
-- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
-
-- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
-
+@property (nonatomic, strong , readonly) FTTracer *tracer;
 
 -(void)resetInstance;
-
 
 @end
 #endif /* FTMobileAgent_Private_h */

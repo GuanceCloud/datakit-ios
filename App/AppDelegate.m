@@ -8,7 +8,7 @@
 
 #import "AppDelegate.h"
 #import <FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
+#import <FTBaseInfoHandler.h>
 #import <FTDateUtil.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
@@ -54,6 +54,7 @@
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
+        config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -63,7 +64,7 @@
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
-        rumConfig.enableTraceUserResource = YES;
+        rumConfig.enableTraceUserResource = NO;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
@@ -81,7 +82,6 @@
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-        
     }
     // UI 测试
     if(isUITests){
@@ -125,7 +125,6 @@
 
 
 #pragma mark - UISceneSession lifecycle
-
 
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options  API_AVAILABLE(ios(13.0)){
     // Called when a new scene session is being created.

@@ -13,7 +13,6 @@
 #import <FTConstants.h>
 #import <NSString+FTAdd.h>
 #import "OHHTTPStubs.h"
-#import <NSURLRequest+FTMonitor.h>
 #import <FTMonitorUtils.h>
 #import "FTTrackerEventDBTool+Test.h"
 #import <FTRecordModel.h>
@@ -24,8 +23,9 @@
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
-#import "FTTraceHeaderManager.h"
+#import "FTTracer.h"
 #import <objc/runtime.h>
+#define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
 
@@ -150,8 +150,16 @@
 }
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [[FTTraceHeaderManager sharedInstance] setValue:@9998 forKey:@"_skywalkingSeq"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
+    id<FTTracerProtocol> tracer = [FTMobileAgent sharedInstance].tracer;
+    if ([tracer isKindOfClass:FTTracer.class]) {
+        FTTracer *tracerInstence = (FTTracer *)tracer;
+        for (int i = 0; i<5000; i++) {
+            if( [tracerInstence getSkywalkingSeq] == 9996){
+                break;;
+            }
+        }
+    }
     [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
         [self networkUpload:@"Skywalking_v3_2" handler:^(NSDictionary *header) {
             XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
