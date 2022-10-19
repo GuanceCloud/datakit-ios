@@ -22,6 +22,9 @@
 #import "FTDateUtil.h"
 #import "FTTrackDataManger+Test.h"
 #import "DemoViewController.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
+#import "FTModelHelper.h"
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -54,7 +57,7 @@
 - (void)tearDown {
 //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
@@ -114,7 +117,7 @@
     [demovc viewDidAppear:NO];
     [[tester waitForViewWithAccessibilityLabel:@"BindUser"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"UserLogout"] tap];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -135,13 +138,10 @@
 - (void)testTapGes{
    
     
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [tester waitForTimeInterval:0.5];
-    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
-    [tester waitForTimeInterval:0.5];
+    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
 
@@ -164,15 +164,13 @@
 }
 - (void)testLongPressGes{
     
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-
-    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [tester waitForTimeInterval:1];
-    [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointMake(10, 10) duration:2];
+    [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointZero duration:1];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
 
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -187,7 +185,7 @@
             *stop = YES;
         }
     }];
-    
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
 }
 - (void)testButtonClick{
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
@@ -195,7 +193,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
 
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -221,7 +219,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -240,9 +238,7 @@
 
 }
 - (void)testAutoTrackResource{
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
-    [tester waitForTimeInterval:1];
+    [FTModelHelper startView];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
  
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
@@ -251,7 +247,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasRes = NO;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -266,8 +262,6 @@
         }
     }];
     XCTAssertTrue(hasRes);
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];

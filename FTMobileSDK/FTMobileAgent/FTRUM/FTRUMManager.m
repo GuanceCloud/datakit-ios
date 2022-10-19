@@ -350,5 +350,10 @@
 -(NSDictionary *)getCurrentSessionInfo{
     return [self.sessionHandler getCurrentSessionInfo];
 }
+- (void)syncProcess{
+    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
+        
+    }];
+}
 @end
 

@@ -15,7 +15,8 @@
 #import <FTJSONUtil.h>
 #import <FTConstants.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
-
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
 @interface FTAppLaunchDurationTest : KIFTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
 @end
@@ -41,7 +42,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testLaunchCold{
@@ -51,13 +52,15 @@
 selector:@selector(applicationDidBecomeActive:)
     name:UIApplicationDidBecomeActiveNotification
 object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self waitForExpectationsWithTimeout:10 handler:^(NSError *error) {
         XCTAssertNil(error);
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
     }];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)noti{
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSString *op = dict[@"op"];
@@ -77,9 +80,9 @@ object:nil];
     }
 }
 - (void)testSetSdkAfterLaunch{
-    [tester waitForTimeInterval:5];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self setSDK];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
     NSString *op = dict[@"op"];
@@ -97,16 +100,14 @@ object:nil];
 }
 - (void)testLaunchHot{
     [self setSDK];
-    [NSThread sleepForTimeInterval:2];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
-    [NSThread sleepForTimeInterval:1];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
-    [NSThread sleepForTimeInterval:1];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [NSThread sleepForTimeInterval:1];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
 
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
