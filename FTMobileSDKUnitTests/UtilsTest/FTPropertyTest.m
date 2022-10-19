@@ -22,6 +22,8 @@
 #import "FTTrackDataManger+Test.h"
 #import <FTRequest.h>
 #import <FTNetworkManager.h>
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
 @interface FTPropertyTest : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -79,7 +81,7 @@
     logger.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
     [[FTMobileAgent sharedInstance] logging:@"testIllegalUrl" status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:3];
+    [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
@@ -107,7 +109,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
     [[FTMobileAgent sharedInstance] resetInstance];
@@ -125,7 +127,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count == oldArray.count);
     [[FTMobileAgent sharedInstance] resetInstance];

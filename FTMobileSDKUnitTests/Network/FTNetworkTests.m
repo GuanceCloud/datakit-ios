@@ -137,7 +137,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 -(void)testNetwork{
     
     [self setRightConfigWithTestType:FTNetworkTest];
-    [NSThread sleepForTimeInterval:2];
+
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
