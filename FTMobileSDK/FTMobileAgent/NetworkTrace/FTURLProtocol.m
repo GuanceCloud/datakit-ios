@@ -159,7 +159,6 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
             }
         }
         model.error = error;
-        model.duration = duration;
         if (![FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
             return;
         }

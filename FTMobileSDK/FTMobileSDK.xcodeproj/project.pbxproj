@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		170CC2E027BA6BA700C9EE34 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 170CC2DE27BA6BA700C9EE34 /* FTAppLaunchTracker.h */; };
 		170CC2E127BA6BA700C9EE34 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */; };
+		17593AB029023D0D00A15CD9 /* FTMobileSDKDocs.docc in Sources */ = {isa = PBXBuildFile; fileRef = 17593AAF29023D0D00A15CD9 /* FTMobileSDKDocs.docc */; };
 		177BDF582799773800DA4EA7 /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 177BDF572799773800DA4EA7 /* FTEnumConstant.m */; };
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
 		177CFECD27E32850007D8C2F /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 177CFECB27E32850007D8C2F /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -173,6 +174,7 @@
 /* Begin PBXFileReference section */
 		170CC2DE27BA6BA700C9EE34 /* FTAppLaunchTracker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAppLaunchTracker.h; sourceTree = "<group>"; };
 		170CC2DF27BA6BA700C9EE34 /* FTAppLaunchTracker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchTracker.m; sourceTree = "<group>"; };
+		17593AAF29023D0D00A15CD9 /* FTMobileSDKDocs.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = FTMobileSDKDocs.docc; sourceTree = "<group>"; };
 		177BDF572799773800DA4EA7 /* FTEnumConstant.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTEnumConstant.m; sourceTree = "<group>"; };
 		177BDF592799775F00DA4EA7 /* FTEnumConstant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTEnumConstant.h; sourceTree = "<group>"; };
 		177CFECB27E32850007D8C2F /* FTTraceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
@@ -418,6 +420,7 @@
 		4A884250239E5754001B44C3 = {
 			isa = PBXGroup;
 			children = (
+				17593AAF29023D0D00A15CD9 /* FTMobileSDKDocs.docc */,
 				CACC4E2623A72A67006BA378 /* BuildFramwork.sh */,
 				4A88425C239E5754001B44C3 /* FTMobileAgent */,
 				7CA1802526CF49190035DDF0 /* BaseUtils */,
@@ -930,6 +933,7 @@
 				7CA1806F26CFA7830035DDF0 /* FTRequest.m in Sources */,
 				4A7135A4257096FF00444C3D /* FTTrack.m in Sources */,
 				4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */,
+				17593AB029023D0D00A15CD9 /* FTMobileSDKDocs.docc in Sources */,
 				7CA1805D26CF99A30035DDF0 /* FTConfigManager.m in Sources */,
 				4AECBCEE244EE8450023DEF7 /* FTURLProtocol.m in Sources */,
 				7C28B85A2660980000CECBA6 /* FTWKWebViewJavascriptBridge.m in Sources */,
@@ -1157,6 +1161,7 @@
 				DEFINES_MODULE = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = RRLM22BB37;
+				DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS = YES;
 				DYLIB_COMPATIBILITY_VERSION = 8.0;
 				DYLIB_CURRENT_VERSION = 1.0.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1176,6 +1181,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				RUN_DOCUMENTATION_COMPILER = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1192,6 +1198,7 @@
 				DEFINES_MODULE = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				DEVELOPMENT_TEAM = RRLM22BB37;
+				DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS = YES;
 				DYLIB_COMPATIBILITY_VERSION = 8.0;
 				DYLIB_CURRENT_VERSION = 1.0.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1211,6 +1218,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudcare.ft.mobile.sdk.FTMobileAgent;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				RUN_DOCUMENTATION_COMPILER = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";

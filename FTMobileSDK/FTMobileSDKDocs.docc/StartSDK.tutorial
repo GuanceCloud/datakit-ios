@@ -1,0 +1,29 @@
+@Tutorial(time: 10) {
+    @Intro(title: "SDK 配置") {
+        sdsdf
+        
+        @Image(source: rum_access, alt: "SSS")
+    }
+    
+    @Section(title: "A") {
+        @ContentAndMedia {
+            
+            
+<!--            @Image(source: <#file#>, alt: "<#accessible description#>")-->
+        }
+        
+        @Steps {
+            @Step {
+                1
+                
+<!--                @Image(source: file, alt: "<#accessible description#>")-->
+            }
+            
+            @Step {
+                2
+                
+<!--                @Code(name: "<#display name#>", file: <#filename.swift#>)-->
+            }
+        }
+    }
+}

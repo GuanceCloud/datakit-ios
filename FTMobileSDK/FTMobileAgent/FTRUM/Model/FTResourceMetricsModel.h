@@ -11,20 +11,25 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTResourceMetricsModel : NSObject
-//资源加载DNS解析时间 domainLookupEnd - domainLookupStart
+///资源加载DNS解析时间 domainLookupEnd - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_dns;
-//资源加载TCP连接时间 connectEnd - connectStart
+///资源加载TCP连接时间 connectEnd - connectStart
 @property (nonatomic, strong) NSNumber *resource_tcp;
-//资源加载SSL连接时间 connectEnd - secureConnectStart
+///资源加载SSL连接时间 connectEnd - secureConnectStart
 @property (nonatomic, strong) NSNumber *resource_ssl;
-//资源加载请求响应时间 responseStart - requestStart
+///资源加载请求响应时间 responseStart - requestStart
 @property (nonatomic, strong) NSNumber *resource_ttfb;
-//资源加载内容传输时间 responseEnd - responseStart
+///资源加载内容传输时间 responseEnd - responseStart
 @property (nonatomic, strong) NSNumber *resource_trans;
-//资源加载首包时间 responseStart - domainLookupStart
+///资源加载首包时间 responseStart - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_first_byte;
-//资源加载时间 duration(responseEnd-fetchStartDate)
+///资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
+/// 初始化方法
+///
+/// - Parameters:
+///   - metrics: SessionTaskMetric
+/// - Returns: metrics 实例.
 -(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 
 @end

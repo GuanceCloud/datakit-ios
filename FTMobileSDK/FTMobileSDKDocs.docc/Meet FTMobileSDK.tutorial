@@ -1,0 +1,14 @@
+@Tutorials(name: "FTMobileAgent") {
+    @Intro(title: "应用监测 配置教程") {
+             
+    @Image(source: rum_access, alt: "用户访问监测-新建应用")
+    }
+    
+    @Chapter(name: "应用接入") {
+       
+        
+        @Image(source: rum_access, alt: "用户访问监测-新建应用")
+        
+        @TutorialReference(tutorial: "doc:StartSDK")
+    }
+}
