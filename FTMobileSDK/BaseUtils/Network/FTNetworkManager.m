@@ -13,16 +13,23 @@
 @end
 @implementation FTNetworkManager
 + (instancetype)sharedInstance {
-    return [self shareManagerURLSession:[NSURLSession sharedSession]];
-}
-+ (instancetype)shareManagerURLSession:(NSURLSession *)session{
     static FTNetworkManager *manger;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         manger = [[FTNetworkManager alloc]init];
-        manger.session = session;
     });
     return manger;
+}
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        config.timeoutIntervalForRequest = 30.0;
+        config.HTTPShouldUsePipelining = NO;
+        _session = [NSURLSession sessionWithConfiguration:config];
+
+    }
+    return self;
 }
 - (NSURLSessionDataTask *)realSendRequest:(id<FTRequestProtocol>)request
                            completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,
