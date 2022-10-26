@@ -11,4 +11,8 @@
         
         @TutorialReference(tutorial: "doc:StartSDK")
     }
+    @Chapter(name: "自定义日志") {
+       
+        @TutorialReference(tutorial: "doc:customLog")
+    }
 }

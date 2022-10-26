@@ -125,11 +125,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface FTRumConfig : NSObject
-/**
- * @method 指定初始化方法，设置 appid
- * @param appid 应用唯一ID 设置后 rum 数据才能正常上报
- * @return 配置对象
- */
+/// 指定初始化方法，设置 appid
+///
+/// - Parameters:
+///   - appid: 应用唯一ID 设置后 rum 数据才能正常上报.
+/// - Returns: rum 配置项.
 - (instancetype)initWithAppid:(nonnull NSString *)appid;
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;

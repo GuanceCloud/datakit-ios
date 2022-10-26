@@ -1,29 +1,129 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 20) {
     @Intro(title: "SDK 配置") {
-        sdsdf
+        基础配置、Trace 配置、RUM 配置、Logger 配置
+        
         
         @Image(source: rum_access, alt: "SSS")
     }
     
-    @Section(title: "A") {
+    @Section(title: "基础配置") {
         @ContentAndMedia {
             
             
-<!--            @Image(source: <#file#>, alt: "<#accessible description#>")-->
+            @Image(source: rum_access, alt: "accessible description")
         }
         
         @Steps {
             @Step {
-                1
+                SDK FTMobileConfig 基础配置
                 
-<!--                @Image(source: file, alt: "<#accessible description#>")-->
+                在启动 SDK 的同时配置基础的配置项，必要的配置项有 FT-GateWay metrics 写入地址。SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。 
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step1.swift)
             }
             
             @Step {
-                2
+                配置是否允许 SDK 打印 Debug 日志 
                 
-<!--                @Code(name: "<#display name#>", file: <#filename.swift#>)-->
+                开启后控制台会输出 SDK 内部打印的日志信息。
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step2.swift,previousFile:startsdk_section1_step1.swift){
+                    @Image(source:enableSDKDebugLog, alt:"enableSDKDebugLog set to true")
+                }
+            }
+            @Step {
+                配置请求 HTTP 请求头 X-Datakit-UUID 数据采集端，如果用户不设置会自动配置
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step3.swift,previousFile:startsdk_section1_step2.swift)
+            }
+            @Step {
+                配置环境字段，默认值为 FTEnvProd
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
+            }
+            @Step {
+                设置 SDK 全局 tag
+               
+                保留标签： sdk_package_flutter、sdk_package_react_native
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step5.swift,previousFile:startsdk_section1_step4.swift)
+            }
+            @Step {
+                开启 SDK
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step6.swift,previousFile:startsdk_section1_step5.swift)
             }
         }
     }
+    
+    @Section(title: "RUM 功能配置") {
+        @ContentAndMedia {
+            应用的用户访问监测数据采集到的 “观测云” 后，可以通过 “观测云” 控制台进行自定义配置场景，对应用的用户访问情况数据进行可视化洞察与分析。
+
+            开启用户访问监测功能 [前置条件](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
+                
+            @Image(source: ios_overview, alt: "ios overview")
+        }
+        @Steps {
+            
+            @Step {
+                RUM 基础配置，设置 appid 应用唯一ID，设置后 rum 数据才能正常上报.
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step1.swift,previousFile:startsdk_section1_step6.swift)
+            }
+            
+            @Step {
+                采样配置
+                
+                可设置 0 至 100，100 表示百分百采集，不做数据样本压缩。
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step2.swift,previousFile:startsdk_section2_step1.swift)
+            }
+            @Step {
+                设置是否自动采集 View、Action、Resource 数据
+                
+                注意：Action、Resource 数据是与 View 进行绑定的，如果没有 View 自动采集或手动采集的 Action 与 Resource 数据无法正确写入。
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step3.swift,previousFile:startsdk_section2_step2.swift)
+            }
+            @Step {
+                设置是否需要采集崩溃日志，以及配置崩溃时监控的设备信息
+             
+                 监控项包括：电池电量，内存总量、内存使用率，CPU使用率   
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step4.swift,previousFile:startsdk_section2_step3.swift)
+            }
+            @Step {
+                设置是否需要采集 Long Task
+             
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step5.swift,previousFile:startsdk_section2_step4.swift)
+            }
+            @Step {
+                设置监控类型，与监控周期，不设置则不开启监控
+             
+                监控项:平均内存、最高内存，CPU 跳动最大、平均数，fps 最低帧率、平均帧率
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step5.swift,previousFile:startsdk_section2_step4.swift)
+            }
+            
+        }
+    }
+    @Assessments {
+           @MultipleChoice {
+               What element did you use to add space around and between your views?
+
+               @Choice(isCorrect: false) {
+                   A state variable.
+
+                   @Justification(reaction: "Try again!") {
+                       Remember, it's something you used to arrange views vertically.
+                   }
+               }
+
+               @Choice(isCorrect: true) {
+                   A `VStack` with trailing padding.
+
+                   @Justification(reaction: "That's right!") {
+                       A `VStack` arranges views in a vertical line.
+                   }
+               }
+
+              
+           }  
+       }
 }
