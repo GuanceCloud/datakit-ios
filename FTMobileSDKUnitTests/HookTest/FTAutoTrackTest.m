@@ -247,6 +247,7 @@
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
+    [NSThread sleepForTimeInterval:1];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
