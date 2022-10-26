@@ -137,7 +137,8 @@
 }
 - (void)testTapGes{
    
-    
+    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
@@ -160,6 +161,7 @@
     
     XCTAssertTrue(newArray.count>0);
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [tester waitForTimeInterval:1];
 
 }
 - (void)testLongPressGes{
@@ -186,6 +188,7 @@
         }
     }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [tester waitForTimeInterval:1];
 }
 - (void)testButtonClick{
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
@@ -235,7 +238,7 @@
         }
     }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-
+    [tester waitForTimeInterval:0.5];
 }
 - (void)testAutoTrackResource{
     [FTModelHelper startView];
