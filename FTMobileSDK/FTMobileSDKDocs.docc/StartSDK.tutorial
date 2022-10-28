@@ -9,6 +9,8 @@
     @Section(title: "基础配置") {
         @ContentAndMedia {
             
+            通过 ``FTMobileAgent/FTMobileConfig`` 进行配置。
+
             
             @Image(source: rum_access, alt: "accessible description")
         }
@@ -57,8 +59,11 @@
     @Section(title: "RUM 功能配置") {
         @ContentAndMedia {
             应用的用户访问监测数据采集到的 “观测云” 后，可以通过 “观测云” 控制台进行自定义配置场景，对应用的用户访问情况数据进行可视化洞察与分析。
+   
+            通过 ``FTMobileAgent/FTRumConfig`` 进行配置。
 
             开启用户访问监测功能 [前置条件](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
+            
                 
             @Image(source: ios_overview, alt: "ios overview")
         }
@@ -105,21 +110,21 @@
     }
     @Assessments {
            @MultipleChoice {
-               What element did you use to add space around and between your views?
+               RUM 可以配置自动采集的数据类型有哪些？
 
                @Choice(isCorrect: false) {
-                   A state variable.
+                   View、Action、Http Resource.
 
                    @Justification(reaction: "Try again!") {
-                       Remember, it's something you used to arrange views vertically.
+                       不仅仅是这些 ！
                    }
                }
 
                @Choice(isCorrect: true) {
-                   A `VStack` with trailing padding.
+                   View、Action、Http Resource、Error、Long Task.
 
                    @Justification(reaction: "That's right!") {
-                       A `VStack` arranges views in a vertical line.
+                       正确 .
                    }
                }
 
