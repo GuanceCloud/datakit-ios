@@ -344,7 +344,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return platform;
 }
-+(NSString *)telephonyInfo
++(NSString *)telephonyCarrier
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier;

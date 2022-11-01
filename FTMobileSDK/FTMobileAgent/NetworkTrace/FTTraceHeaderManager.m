@@ -22,6 +22,9 @@
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) FTNetworkTraceType type;
 @property (nonatomic, assign) int samplerate;
+@property (nonatomic, assign) FTNetworkTraceType networkTraceType;
+@property (nonatomic, assign) BOOL enableLinkRumData;
+
 @end
 @implementation FTTraceHeaderManager{
     NSUInteger _skywalkingSeq;

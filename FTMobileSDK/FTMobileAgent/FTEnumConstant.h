@@ -14,12 +14,12 @@ typedef NS_ENUM(NSUInteger, AppState) {
     AppStateRun,
 };
 
-typedef enum FTError : NSInteger {
+typedef NS_ENUM(NSUInteger, FTError) {
   NetWorkException = 101,        //网络问题
   InvalidParamsException = 102,  //参数问题
   FileIOException = 103,         //文件 IO 问题
   UnknownException = 104,        //未知问题
-} FTError;
+};
 extern NSString * const AppStateStringMap[];
 extern NSString * const FTStatusStringMap[];
 extern NSString * const FTNetworkTraceStringMap[];

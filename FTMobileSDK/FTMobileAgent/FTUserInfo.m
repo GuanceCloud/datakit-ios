@@ -32,7 +32,7 @@
             if (user) {
                 [self updateUser:user name:nil email:nil extra:nil];
             }else{
-                self.userId = [FTBaseInfoHandler sessionId];
+                self.userId = [FTBaseInfoHandler userSessionId];
                 self.isSignin = NO;
             }
         }
@@ -56,7 +56,7 @@
 -(void)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:FT_USER_INFO];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    self.userId = [FTBaseInfoHandler sessionId];
+    self.userId = [FTBaseInfoHandler userSessionId];
     self.name = nil;
     self.extra = nil;
     self.email = nil;

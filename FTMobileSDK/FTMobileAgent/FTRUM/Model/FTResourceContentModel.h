@@ -10,6 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Resource 数据内容
 @interface FTResourceContentModel : NSObject
 /// 请求 url 
 @property (nonatomic, strong) NSURL *url;

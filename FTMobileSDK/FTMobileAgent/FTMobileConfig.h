@@ -49,7 +49,7 @@ typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
 /// - term FTMonitorFrequencyDefault: 500ms (默认)
 /// - term FTMonitorFrequencyFrequent: 100ms
 /// - term FTMonitorFrequencyRare: 1000ms
-typedef NS_OPTIONS(NSUInteger, FTMonitorFrequency) {
+typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
     FTMonitorFrequencyDefault,
     FTMonitorFrequencyFrequent,
     FTMonitorFrequencyRare,
@@ -98,32 +98,33 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTLoggerConfig : NSObject
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-/// 设置日志所属业务或服务的名称 默认：df_rum_ios
+/// 日志所属业务或服务的名称 默认：df_rum_ios
 @property (nonatomic, copy) NSString *service;
-/// 设置日志废弃策略
+/// 日志废弃策略
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int samplerate;
-/// 设置是否需要采集控制台日志 默认为 NO
+/// 是否需要采集控制台日志 默认为 NO
 @property (nonatomic, assign) BOOL enableConsoleLog;
-/// 设置采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
+/// 采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
 @property (nonatomic, copy) NSString *prefix;
 /// 是否将 logger 数据与 rum 关联
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// 是否上传自定义 log
 @property (nonatomic, assign) BOOL enableCustomLog;
-/// 设置采集自定义日志的状态数组，默认为全采集
+/// 采集自定义日志的状态数组，默认为全采集
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
 /// 或 @[@0,@1]
 @property (nonatomic, strong) NSArray<NSNumber*> *logLevelFilter;
-/// 设置 logger 全局 tag
+/// logger 全局 tag
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
 - (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix;
 @end
 
 
+/// RUM 功能的配置项
 @interface FTRumConfig : NSObject
 /// 指定初始化方法，设置 appid
 ///
@@ -134,39 +135,29 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /// 应用唯一 ID，在 DataFlux 控制台上面创建监控时自动生成。
-///
 @property (nonatomic, copy) NSString *appid;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
-///
 @property (nonatomic, assign) int samplerate;
 /// 设置是否追踪用户操作，目前支持应用启动和点击操作，
 /// 在 enableTraceUserView 开启的状况下 开启才能生效（仅作用于autotrack）
-///
 @property (nonatomic, assign) BOOL enableTraceUserAction;
 /// 设置是否追踪页面生命周期 （仅作用于autotrack）
-///
 @property (nonatomic, assign) BOOL enableTraceUserView;
 /// 设置是否追踪用户网络请求  (仅作用于native http)
-///
 @property (nonatomic, assign) BOOL enableTraceUserResource;
 /// 设置是否需要采集崩溃日志
-///
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿
-///
 @property (nonatomic, assign) BOOL enableTrackAppFreeze;
 /// 设置是否需要采集 ANR
-/// runloop 采集主线程卡顿
 ///
+/// runloop 采集主线程卡顿
 @property (nonatomic, assign) BOOL enableTrackAppANR;
 /// ERROR 中的设备信息
-///
 @property (nonatomic, assign) FTErrorMonitorType errorMonitorType;
 /// 设置监控类型 不设置则不开启监控
-///
 @property (nonatomic, assign) FTDeviceMetricsMonitorType deviceMetricsMonitorType;
 /// 设置监控采样周期
-///
 @property (nonatomic, assign) FTMonitorFrequency monitorFrequency;
 /// 设置 rum 全局 tag
 ///
@@ -177,26 +168,23 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
-///
 @property (nonatomic, assign) int samplerate;
-/// 设置网络请求信息采集时 使用链路追踪类型 type 默认为 Zipkin
-///
+/// 设置网络请求信息采集时 使用链路追踪类型 type 默认为 DDtrace
 @property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 /// 是否将 Trace 数据与 rum 关联
 ///
 /// 仅在 FTNetworkTraceType 设置为 FTNetworkTraceTypeDDtrace 时生效
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// 设置是否开启自动 http trace
-///
 @property (nonatomic, assign) BOOL enableAutoTrace;
 @end
 
+/// SDK 配置项
 @interface FTMobileConfig : NSObject
 /// 指定初始化方法，设置 metricsUrl
 ///
 /// - Parameters:
 ///  -metricsUrl: 数据上报地址
-///
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
 
 /// 禁用 init 初始化
@@ -209,24 +197,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// 两种模式：
 /// ①使用Dataflux的数据网关，可在控制台获取对应网址；
 /// ②使用私有化部署的数据网关，填写对应网址即可。
-///
 @property (nonatomic, copy) NSString *metricsUrl;
 /// 请求 HTTP 请求头 X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
-///
 @property (nonatomic, copy) NSString *XDataKitUUID;
 /// 环境字段。
-///
 @property (nonatomic, assign) FTEnv env;
 /// 设置是否允许 SDK 打印 Debug 日志。
-///
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
 /// 应用版本号。
-///
 @property (nonatomic, copy) NSString *version;
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native
-///
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
 @end

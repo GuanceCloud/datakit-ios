@@ -132,8 +132,8 @@ static dispatch_once_t onceToken;
 - (void)bindUserWithUserID:(NSString *)Id{
     [self bindUserWithUserID:Id userName:nil userEmail:nil extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
-    [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
+-(void)bindUserWithUserID:(NSString *)userId userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
+    [self bindUserWithUserID:userId userName:userName userEmail:userEmail extra:nil];
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);

@@ -67,7 +67,7 @@
 }
 - (void)testBindUserWithNameEmail{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
+    [[FTMobileAgent sharedInstance] bindUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];

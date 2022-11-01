@@ -10,12 +10,12 @@
 #import "FTMobileConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^TraceHeader)(NSString * _Nullable traceId, NSString *_Nullable spanID,NSDictionary *_Nullable header);
+/// 根据 trace 类型获取对应的请求头拼接数据
 @interface FTTraceHeaderManager : NSObject
-@property (nonatomic, assign) BOOL enableLinkRumData;
-@property (nonatomic, assign) FTNetworkTraceType networkTraceType;
 
 
 + (instancetype)sharedInstance;
+
 - (void)setNetworkTrace:(FTTraceConfig *)traceConfig;
 - (void)networkTrackHeaderWithUrl:(NSURL *)url traceHeader:(TraceHeader)traceHeader;
 @end

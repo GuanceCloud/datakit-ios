@@ -46,7 +46,7 @@
     }
     return deviceId;
 }
-+ (NSString *)sessionId{
++ (NSString *)userSessionId{
     NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
     if (!sessionid) {
         sessionid = [[NSUUID UUID] UUIDString];

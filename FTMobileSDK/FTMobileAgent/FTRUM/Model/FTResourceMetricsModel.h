@@ -10,6 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// 资源加载时间数据模型
 @interface FTResourceMetricsModel : NSObject
 ///资源加载DNS解析时间 domainLookupEnd - domainLookupStart
 @property (nonatomic, strong) NSNumber *resource_dns;

@@ -27,6 +27,7 @@
 #import "FTTraceHandler.h"
 #import "FTTraceManager.h"
 #import "FTRUMMonitor.h"
+#import "FTConfigManager.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTMobileConfig *config;
@@ -218,7 +219,7 @@ static dispatch_once_t onceToken;
     [self.rumManger startResource:key];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
+    if ([FTConfigManager sharedInstance].traceConfig.enableLinkRumData) {
         FTTraceHandler *handler = [[FTTraceManager sharedInstance] getTraceHandler:key];
         [self.rumManger addResource:key metrics:metrics content:content spanID:handler.span_id traceID:handler.trace_id];
     }else{

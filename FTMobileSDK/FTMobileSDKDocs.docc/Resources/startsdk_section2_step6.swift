@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         mobileConfig.enableSDKDebugLog = true
         mobileConfig.xDataKitUUID = "Custom_xDataKitUUID"
         mobileConfig.env = .common
-        mobileConfig.globalContext = {"CustomKey":"CustomValue"}
+        mobileConfig.globalContext = ["CustomKey":"CustomValue"]
         FTMobileAgent.start(withConfigOptions: mobileConfig)
         
         let rumConfig = FTRumConfig.init(appid: "YOUR APP ID")
@@ -35,7 +35,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         rumConfig.enableTrackAppFreeze = true
         rumConfig.deviceMetricsMonitorType = .all
         rumConfig.monitorFrequency = .default
-        FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
         return true
     }
 
