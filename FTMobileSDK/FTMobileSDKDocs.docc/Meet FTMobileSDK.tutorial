@@ -11,8 +11,22 @@
         
         @TutorialReference(tutorial: "doc:StartSDK")
     }
+    @Chapter(name: "用户数据绑定") {
+        
+        @Image(source: binduser, alt: "用户数据绑定")
+        
+        @TutorialReference(tutorial: "doc:UserData")
+    }
+    
     @Chapter(name: "自定义日志") {
-       
-        @TutorialReference(tutorial: "doc:customLog")
+        
+        @Image(source: logger, alt: "用户访问监测-新建应用")
+        
+        @TutorialReference(tutorial: "doc:CustomLog")
+    }
+    
+    @Chapter(name: "自定义 RUM 数据") {
+        @Image(source: rum_access, alt: "用户访问监测-新建应用")
+        @TutorialReference(tutorial: "doc:CustomRUM")
     }
 }

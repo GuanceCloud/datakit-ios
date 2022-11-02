@@ -1,0 +1,29 @@
+@Tutorial(time: 10) {
+    @Intro(title: "用户的绑定与注销") {
+        
+        
+        @Image(source: binduser, alt: "用户数据")
+    }
+    
+    @Section(title: "用户数据") {
+        @ContentAndMedia {
+            
+            
+            @Image(source: binduserdata, alt: "用户数据绑定与注销")
+        }
+        
+        @Steps {
+            @Step {
+                用户数据绑定
+                
+                @Code(name: "BindUser.swift", file: UserData.swift)
+            }
+            
+            @Step {
+                用户数据注销
+                
+                @Code(name: "BindUser.swift", file: UserData2.swift,previousFile:UserData.swift)
+            }
+        }
+    }
+}

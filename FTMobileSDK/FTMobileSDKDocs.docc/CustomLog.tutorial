@@ -1,29 +1,19 @@
 @Tutorial(time: 10) {
     @Intro(title: "自定义日志") {
-        
-        
-<!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
-    }
+        一般情况下， 因为 NSLog 的输出会消耗系统资源，而且输出的数据也可能会暴露出 App 里的保密数据， 所以在发布正式版时通常会把这些输出全部屏蔽掉。此时开启采集控制台日志，也并不能抓取到工程里打印的日志。建议使用**自定义上报日志**来上传想查看的日志。
+        @Image(source: logger, alt: "自定义日志的使用")
+    }             
     
-    @Section(title: "<#text#>") {
-<!--        @ContentAndMedia {-->
-<!--            <#text#>-->
-<!--            -->
-<!--            @Image(source: <#file#>, alt: "<#accessible description#>")-->
-<!--        }-->
+    @Section(title: "自定义日志使用") {
+        SDK 提供添加自定义日志的方法
         
         @Steps {
             @Step {
-                <#text#>
+                方法
                 
-                @Image(source: <#file#>, alt: "<#accessible description#>")
+            @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift)
             }
-            
-            @Step {
-                <#text#>
-                
-                @Code(name: "<#display name#>", file: <#filename.swift#>)
-            }
+    
         }
     }
 }

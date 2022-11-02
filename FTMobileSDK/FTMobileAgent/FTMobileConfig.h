@@ -82,7 +82,7 @@ typedef NS_ENUM(NSInteger, FTEnv) {
 };
 /// 日志废弃策略
 typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
-    /// 默认，当日志数据大于最大值时 废弃新传入的数据
+    /// 默认，当日志数据数量大于最大值（5000）时，新数据不进行写入
     FTDiscard,
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest

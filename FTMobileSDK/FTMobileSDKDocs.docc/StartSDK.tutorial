@@ -39,6 +39,7 @@
             @Step {
                 配置环境字段，默认值为 FTEnvProd
                 
+                查看环境 ``FTMobileAgent/FTEnv``
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
             }
             @Step {
@@ -90,7 +91,7 @@
             @Step {
                 设置是否需要采集崩溃日志，以及配置崩溃时监控的设备信息
              
-                 监控项包括：电池电量，内存总量、内存使用率，CPU使用率   
+                查看监控配置 ``FTMobileAgent/FTErrorMonitorType``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step4.swift,previousFile:startsdk_section2_step3.swift)
             }
             @Step {
@@ -101,7 +102,8 @@
             @Step {
                 设置监控类型，与监控周期，不设置则不开启监控
              
-                监控项:平均内存、最高内存，CPU 跳动最大、平均数，fps 最低帧率、平均帧率
+                查看监控项类型 ``FTMobileAgent/FTDeviceMetricsMonitorType``
+                监控项周期 ``FTMobileAgent/FTMonitorFrequency``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step6.swift,previousFile:startsdk_section2_step5.swift)
             }
             @Step {
@@ -134,12 +136,13 @@
           @Step {
               设置日志废弃策略
               
+              查看废弃策略 ``FTMobileAgent/FTLogCacheDiscard``
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
            }
           @Step {
-              设置是否采集控制台与自定义日志
+              设置是否采集控制台与自定义日志,默认为 NO
               
-              enableConsoleLog 是否需要采集控制台日志,默认为 NO.enableCustomLog 是否采集自定义 log,默认为 NO
+              自定义日志使用方法 <doc:CustomLog>
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift,previousFile:startsdk_section3_step2.swift)
            }
           @Step {
@@ -186,7 +189,7 @@
           @Step {
               设置网络请求信息采集时使用链路追踪类型
               
-              默认链路追踪类型为 DDtrace
+              默认链路追踪类型为 DDtrace ，查看支持追踪的链路类型 ``FTMobileAgent/FTNetworkTraceType``
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step3.swift,previousFile:startsdk_section4_step2.swift)
            }
           @Step {
