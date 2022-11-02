@@ -9,92 +9,88 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 ///事件等级和状态，默认：FTStatusInfo
-///
-/// - term FTStatusInfo : 提示
-/// - term FTStatusWarning : 警告
-/// - term FTStatusError : 错误
-/// - term FTStatusCritical : 严重
-/// - term FTStatusOk : 恢复
 typedef NS_ENUM(NSInteger, FTLogStatus) {
+    /// 提示
     FTStatusInfo         = 0,
+    /// 警告
     FTStatusWarning,
+    /// 错误
     FTStatusError,
+    /// 严重
     FTStatusCritical,
+    /// 恢复
     FTStatusOk,
 };
 /// ERROR 中的设备信息
-///
-/// - term FTErrorMonitorBattery: 电池电量
-/// - term FTErrorMonitorMemory: 内存总量、内存使用率
-/// - term FTErrorMonitorCpu: CPU使用率
 typedef NS_OPTIONS(NSUInteger, FTErrorMonitorType) {
+    /// 开启所有监控： 电池、内存、CPU使用率
     FTErrorMonitorAll          = 0xFFFFFFFF,
+    /// 电池电量
     FTErrorMonitorBattery      = 1 << 1,
+    /// 内存总量、内存使用率
     FTErrorMonitorMemory       = 1 << 2,
+    /// CPU使用率
     FTErrorMonitorCpu          = 1 << 3,
 };
-/// 监控项
-///
-/// - term FTDeviceMetricsMonitorMemory: 平均内存、最高内存
-/// - term FTDeviceMetricsMonitorCpu: CPU 跳动最大、平均数
-/// - term FTDeviceMetricsMonitorFps: fps 最低帧率、平均帧率
+/// 设备信息监控项
 typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
+    /// 开启所有监控项:内存、CPU、FPS
     FTDeviceMetricsMonitorAll      = 0xFFFFFFFF,
+    /// 平均内存、最高内存
     FTDeviceMetricsMonitorMemory   = 1 << 2,
+    /// CPU 跳动最大、平均数
     FTDeviceMetricsMonitorCpu      = 1 << 3,
+    /// fps 最低帧率、平均帧率
     FTDeviceMetricsMonitorFps      = 1 << 4,
 };
 ///监控项采样周期
-///
-/// - term FTMonitorFrequencyDefault: 500ms (默认)
-/// - term FTMonitorFrequencyFrequent: 100ms
-/// - term FTMonitorFrequencyRare: 1000ms
 typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
+    /// 500ms (默认)
     FTMonitorFrequencyDefault,
+    /// 100ms
     FTMonitorFrequencyFrequent,
+    /// 1000ms
     FTMonitorFrequencyRare,
 };
 /// 网络链路追踪使用类型
-///
-/// - term FTNetworkTraceTypeDDtrace: datadog trace
-/// - term FTNetworkTraceTypeZipkinMultiHeader: zipkin multi header
-/// - term FTNetworkTraceTypeZipkinSingleHeader: zipkin single header
-/// - term FTNetworkTraceTypeTraceparent: w3c traceparent
-/// - term FTNetworkTraceTypeSkywalking: skywalking 8.0+
-/// - term FTNetworkTraceTypeJaeger: jaeger
 typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
+    /// datadog trace
     FTNetworkTraceTypeDDtrace,
+    /// zipkin multi header
     FTNetworkTraceTypeZipkinMultiHeader,
+    /// zipkin single header
     FTNetworkTraceTypeZipkinSingleHeader,
+    /// w3c traceparent
     FTNetworkTraceTypeTraceparent,
+    /// skywalking 8.0+
     FTNetworkTraceTypeSkywalking,
+    /// jaeger
     FTNetworkTraceTypeJaeger,
 };
 /// 环境字段。属性值：prod/gray/pre/common/local。
-///
-/// - term FTEnvProd: 线上环境
-/// - term FTEnvGray: 灰度环境
-/// - term FTEnvPre: 预发布环境
-/// - term FTEnvCommon: 日常环境
-/// - term FTEnvLocal: 本地环境
 typedef NS_ENUM(NSInteger, FTEnv) {
+    /// 线上环境
     FTEnvProd         = 0,
+    /// 灰度环境
     FTEnvGray,
+    /// 预发布环境
     FTEnvPre,
+    /// 日常环境
     FTEnvCommon,
+    /// 本地环境
     FTEnvLocal,
 };
 /// 日志废弃策略
-///
-/// - term FTDiscard: 默认，当日志数据大于最大值时 废弃新传入的数据
-/// - term FTDiscardOldest: 当日志数据大于最大值时,废弃旧数据
 typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
+    /// 默认，当日志数据大于最大值时 废弃新传入的数据
     FTDiscard,
+    /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// logger 功能配置项
 @interface FTLoggerConfig : NSObject
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
@@ -120,6 +116,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// logger 全局 tag
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
+/// 设置控制台日志采集条件
+/// - Parameters:
+///   - enable: 是否上传自定义 log
+///   - prefix: 采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
 - (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix;
 @end
 
@@ -164,6 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 保留标签:特殊 key - track_id (用于追踪功能)
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 @end
+/// Trace 功能配置项
 @interface FTTraceConfig : NSObject
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
@@ -179,7 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableAutoTrace;
 @end
 
-/// SDK 配置项
+/// SDK 基础配置项
 @interface FTMobileConfig : NSObject
 /// 指定初始化方法，设置 metricsUrl
 ///

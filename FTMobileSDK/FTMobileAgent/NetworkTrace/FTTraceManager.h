@@ -12,14 +12,16 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTTraceHandler;
 /// 管理 trace 的类
 ///
-/// 功能：1. 根据 URL 判断请求是否进行 trace 追踪
-///      2. 获取 trace 的请求头参数
-///      3. 根据 key 管理 traceHandler
+/// 功能：
+/// -  根据 URL 判断请求是否进行 trace 追踪
+/// -  获取 trace 的请求头参数
+/// -  根据 key 管理 traceHandler
 @interface FTTraceManager : NSObject
 
 /// 是否允许自动开启 trace
 @property (nonatomic, assign) BOOL enableAutoTrace;
 
+/// 单例
 + (instancetype)sharedInstance;
 
 /// 判断 url 是否进行采集

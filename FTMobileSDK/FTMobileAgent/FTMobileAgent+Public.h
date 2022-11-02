@@ -33,22 +33,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions;
 /// 配置 Logger Config 开启 Logger 功能
 ///
-/// 日志服务
-///
 /// - Parameters:
 ///   - loggerConfigOptions: logger 配置项.
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions;
 
 /// 配置 Trace Config 开启 Trace 功能
 ///
-/// Trace
-///
 /// - Parameters:
 ///   - traceConfigOptions: trace 配置项.
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions;
-/// 日志上报
-///
-/// 可以添加自定义日志。
+/// 添加自定义日志
 ///
 /// - Parameters:
 ///   - content: 日志内容，可为 json 字符串

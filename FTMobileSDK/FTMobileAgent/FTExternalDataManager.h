@@ -13,10 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// 用户可以自定义 RUM 相关数据
 @interface FTExternalDataManager : NSObject<FTExternalRum>
+/// 单例
 + (instancetype)sharedManager;
 /// 创建页面
 ///
-/// 在 `- startViewWithName` 方法前调用，该方法用于记录页面的加载时间，如果无法获得加载时间该方法可以不调用。
+/// 在 `-startViewWithName` 方法前调用，该方法用于记录页面的加载时间，如果无法获得加载时间该方法可以不调用。
 ///
 /// - Parameters:
 ///   - viewName: 页面名称
