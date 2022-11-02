@@ -1,1 +1,0 @@
-/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/FTMobileAgent/FTRUM/Model/FTResourceContentModel.h
