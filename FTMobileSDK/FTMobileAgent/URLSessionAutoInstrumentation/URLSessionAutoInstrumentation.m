@@ -50,7 +50,7 @@ static dispatch_once_t onceToken;
 }
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr{
     _sdkUrlStr = sdkUrlStr;
-    _interceptor.innerUrl = sdkUrlStr;
+    self.interceptor.innerUrl = sdkUrlStr;
 }
 -(id<FTRumResourceProtocol>)rumResourceHandler{
     return _sessionInterceptor;

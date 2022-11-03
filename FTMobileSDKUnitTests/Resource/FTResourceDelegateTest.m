@@ -26,6 +26,15 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+}
+
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [[FTGlobalRumManager sharedInstance].rumManger applicationWillTerminate];
+    [[FTMobileAgent sharedInstance] resetInstance];
+
+}
+- (void)sdkNormalSet{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
@@ -42,25 +51,42 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
-
 }
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTGlobalRumManager sharedInstance].rumManger applicationWillTerminate];
-    [[FTMobileAgent sharedInstance] resetInstance];
-
+- (void)sdkInnerURLTestSet{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"TRACE_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
+    traceConfig.enableLinkRumData = YES;
+    traceConfig.enableAutoTrace = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [FTModelHelper startView];
 }
 - (void)testUseDelegateDirect{
-    [self startWithTest:InstrumentationDirect];
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationDirect hasResource:YES];
 }
 - (void)testUseDelegateInherit{
-    [self startWithTest:InstrumentationInherit];
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit hasResource:YES];
 }
 - (void)testUseDelegateProperty{
-    [self startWithTest:InstrumentationProperty];
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationProperty hasResource:YES];
 }
-- (void)startWithTest:(FTSessionInstrumentationType)type{
+- (void)testInnerURLFilter{
+    [self sdkInnerURLTestSet];
+    [self startWithTest:InstrumentationDirect hasResource:NO];
+}
+- (void)startWithTest:(FTSessionInstrumentationType)type hasResource:(BOOL)has{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
     HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:type];
@@ -85,6 +111,6 @@
             *stop = YES;
         }
     }];
-    XCTAssertTrue(hasResource == YES);
+    XCTAssertTrue(hasResource == has);
 }
 @end
