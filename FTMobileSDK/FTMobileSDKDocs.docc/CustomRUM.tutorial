@@ -17,28 +17,40 @@
             @Step {
                 View
                 
-                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData.swift)
+                ``FTMobileAgent/FTExternalDataManager/onCreateView:loadTime:``
+                ``FTMobileAgent/FTExternalDataManager/startViewWithName:``
+                ``FTMobileAgent/FTExternalDataManager/stopView``
+                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData1.swift)
                 }            
             
             @Step {
                 Action
                 
-                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData.swift)
+                ``FTMobileAgent/FTExternalDataManager/addClickActionWithName:``
+                ``FTMobileAgent/FTExternalDataManager/addActionName:actionType:``
+                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData2.swift,previousFile:DemoCustomRumData1.swift)
                 } 
             @Step {
                 Error
                 
-                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData.swift)
+                ``FTMobileAgent/FTExternalDataManager/addErrorWithType:message:stack:``
+                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData3.swift,previousFile:DemoCustomRumData2.swift)
                 }
             @Step {
                 LongTask
                 
-                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData.swift)
+                ``FTMobileAgent/FTExternalDataManager/addLongTaskWithStack:duration:``
+                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData4.swift,previousFile:DemoCustomRumData3.swift)
                 }
             @Step {
                 Resource
                 
-                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData.swift)
+                ``FTMobileAgent/FTExternalDataManager/startResourceWithKey:``  
+                ``FTMobileAgent/FTExternalDataManager/stopResource(withKey:)``
+                ``FTMobileAgent/FTExternalDataManager/addResourceWithKey:metrics:content:``
+                ``FTMobileAgent/FTResourceContentModel``
+                ``FTMobileAgent/FTResourceMetricsModel``
+                @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData5.swift,previousFile:DemoCustomRumData4.swift)
                 }
             
     }

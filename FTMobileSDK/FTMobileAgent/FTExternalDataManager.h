@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// - Parameters:
 ///   - stack: 卡顿堆栈
-///   - duration: 卡顿时长
+///   - duration: 卡顿时长（纳秒）
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
 /// HTTP 请求开始
 ///

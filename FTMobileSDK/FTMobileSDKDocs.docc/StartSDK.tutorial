@@ -216,16 +216,45 @@
                        不仅仅是这些 ！
                    }
                }
-
                @Choice(isCorrect: true) {
                    View、Action、Http Resource、Error、Long Task.
 
                    @Justification(reaction: "That's right!") {
                        正确 .
                    }
-               }
+               }              
+           } 
+           @MultipleChoice {
+               将 Trace 类型设置成那种可以支持 Trace 数据与 rum 关联 ？
 
-              
+               @Choice(isCorrect: false) {
+                   zipkin
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程 
+                   }
+               }
+               @Choice(isCorrect: true) {
+                   datadog
+
+                   @Justification(reaction: "That's right!") {
+                       正确 .
+                   }
+               }  
+               @Choice(isCorrect: false) {
+                   traceparent、skywalking
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程 
+                   }
+               } 
+               @Choice(isCorrect: false) {
+                   jaeger
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程
+                   }
+               } 
            }  
        }
 }
