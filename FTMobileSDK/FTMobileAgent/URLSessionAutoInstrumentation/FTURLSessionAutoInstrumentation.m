@@ -18,19 +18,21 @@
 //  limitations under the License.
 
 
-#import "URLSessionAutoInstrumentation.h"
+#import "FTURLSessionAutoInstrumentation.h"
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTURLSessionInterceptor.h"
 #include "FTURLProtocol.h"
 #import "FTMobileConfig.h"
-@interface URLSessionAutoInstrumentation()<URLSessionInterceptorType>
+#import "FTTracer.h"
+@interface FTURLSessionAutoInstrumentation()<URLSessionInterceptorType>
 @property (nonatomic, assign) BOOL swizzle;
 @property (nonatomic, assign) BOOL enableRumTrack;
 @property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
+@property (nonatomic, strong) FTTracer *tracer;
 @end
-@implementation URLSessionAutoInstrumentation
-static URLSessionAutoInstrumentation *sharedInstance = nil;
+@implementation FTURLSessionAutoInstrumentation
+static FTURLSessionAutoInstrumentation *sharedInstance = nil;
 static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
     dispatch_once(&onceToken, ^{
@@ -55,17 +57,24 @@ static dispatch_once_t onceToken;
 -(id<FTRumResourceProtocol>)rumResourceHandler{
     return _sessionInterceptor;
 }
+-(id<FTTracerProtocol>)tracer{
+    return _tracer;
+}
 - (void)setRUMConfig:(FTRumConfig *)config{
     self.enableRumTrack = config.enableTraceUserResource;
+    self.interceptor.enableAutoRumTrack = config.enableTraceUserResource;
     [self startMonitor];
 }
-- (void)setTraceConfig:(FTTraceConfig *)config tracer:(nonnull id<FTTracerProtocol>)tracer{
+- (void)setTraceConfig:(FTTraceConfig *)config{
     [_sessionInterceptor enableAutoTrace:config.enableAutoTrace];
     [_sessionInterceptor enableLinkRumData:config.enableLinkRumData];
-    [_sessionInterceptor setTracer:tracer];
-    [FTURLProtocol setDelegate:self];
-    [self startMonitor];
+    _tracer = [[FTTracer alloc]initWithConfig:config];
+    if(config.enableAutoTrace){
+        [_sessionInterceptor setTracer:_tracer];
+        [self startMonitor];
+    }
 }
+
 - (void)startMonitor{
     if (self.swizzle) {
         return;
@@ -82,10 +91,10 @@ static dispatch_once_t onceToken;
         [NSURLSession ft_swizzleMethod:@selector(dataTaskWithRequest:completionHandler:) withMethod:@selector(ft_dataTaskWithRequest:completionHandler:) error:&error];
     });
     [FTURLProtocol startMonitor];
-    [FTURLProtocol setDelegate:self];
+    [FTURLProtocol setDelegate:self.interceptor];
 }
 #pragma mark --------- URLSessionInterceptorType ----------
-// 处理 URLProtocol 获取的 resource 数据
+// 处理 URLProtocol 获取的 resource 数据，由于可能用户设置不自动采集rum resource，但是开启了 enableAutoTrace ，在这里做一个过滤
 -(NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
     return [_sessionInterceptor injectTraceHeader:request];
 }

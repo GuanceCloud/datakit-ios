@@ -19,7 +19,7 @@
 
 
 #import "NSURLSession+FTSwizzler.h"
-#import "URLSessionAutoInstrumentation.h"
+#import "FTURLSessionAutoInstrumentation.h"
 #import "FTURLSessionDelegate.h"
 #import "FTURLSessionInterceptorProtocol.h"
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);

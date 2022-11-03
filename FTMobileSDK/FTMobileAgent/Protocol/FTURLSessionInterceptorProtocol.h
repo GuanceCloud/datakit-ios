@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 @property (nonatomic, weak) id<FTRumInnerResourceProtocol> innerResourceHandeler;
 @property (nonatomic, copy) NSString *innerUrl;
+@property (nonatomic, assign) BOOL enableAutoRumTrack;
+
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;
 - (void)taskCreated:(NSURLSessionTask *)task  session:(NSURLSession *)session;
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;

@@ -14,7 +14,7 @@
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
 #import "FTMobileConfig.h"
-#import "URLSessionAutoInstrumentation.h"
+#import "FTURLSessionAutoInstrumentation.h"
 #import "FTTracer.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTBaseInfoHandler.h"
@@ -23,8 +23,7 @@
 #import "FTMobileConfig+Private.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTRUMManager *rumManager;
-@property (nonatomic, strong) URLSessionAutoInstrumentation *sessionInstrumentation;
-@property (nonatomic, strong) FTTracer *tracer;
+@property (nonatomic, strong) FTURLSessionAutoInstrumentation *sessionInstrumentation;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTExtensionConfig *extensionConfig;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
@@ -79,18 +78,17 @@ static FTExtensionManager *sharedInstance = nil;
     if (rumConfigOptions.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
     }
-    [URLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
+    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
 }
-- (URLSessionAutoInstrumentation *)sessionInstrumentation{
+- (FTURLSessionAutoInstrumentation *)sessionInstrumentation{
     if(!_sessionInstrumentation){
-        _sessionInstrumentation = [[URLSessionAutoInstrumentation alloc]init];
+        _sessionInstrumentation = [[FTURLSessionAutoInstrumentation alloc]init];
     }
     return _sessionInstrumentation;
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    self.tracer = [[FTTracer alloc]initWithConfig:traceConfigOptions];
-    [self.sessionInstrumentation setTraceConfig:traceConfigOptions tracer:self.tracer];
-    [FTExternalDataManager sharedManager].traceDelegate = self.tracer;
+    [self.sessionInstrumentation setTraceConfig:traceConfigOptions];
+    [FTExternalDataManager sharedManager].traceDelegate = self.sessionInstrumentation.tracer;
     [FTExternalDataManager sharedManager].resourceDelegate = self.sessionInstrumentation.rumResourceHandler;
 
 }

@@ -22,7 +22,7 @@
 @implementation FTURLSessionInterceptor
 @synthesize innerResourceHandeler = _innerResourceHandeler;
 @synthesize innerUrl = _innerUrl;
-
+@synthesize enableAutoRumTrack = _enableAutoRumTrack;
 
 -(instancetype)init{
     self = [super init];
@@ -53,7 +53,7 @@
     }
     return NO;
 }
-// traceHandler 处理
+// traceHeader 处理
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     return [self.tracer networkTraceHeaderWithUrl:url];
 }
@@ -96,6 +96,12 @@
 }
 -(NSString *)innerUrl{
     return _innerUrl;
+}
+-(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
+    _enableAutoRumTrack = enableAutoRumTrack;
+}
+-(BOOL)enableAutoRumTrack{
+    return _enableAutoRumTrack;
 }
 -(void)setInnerResourceHandeler:(id<FTRumInnerResourceProtocol>)innerResourceHandeler{
     _innerResourceHandeler = innerResourceHandeler;

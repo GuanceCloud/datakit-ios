@@ -11,13 +11,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSessionConfiguration : NSObject
-//是否交换方法
+/// 是否交换方法
 @property (nonatomic,assign) BOOL isExchanged;
 
 + (FTSessionConfiguration *)defaultConfiguration;
-// 交换掉NSURLSessionConfiguration的 protocolClasses方法
+/// 交换掉NSURLSessionConfiguration的 protocolClasses方法
 - (void)load;
-// 还原初始化
+/// 还原初始化
 - (void)unload;
 @end
 

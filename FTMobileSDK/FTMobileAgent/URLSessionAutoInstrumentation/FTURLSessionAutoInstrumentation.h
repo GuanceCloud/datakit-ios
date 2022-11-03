@@ -24,18 +24,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTRumConfig,FTTraceConfig;
-@interface URLSessionAutoInstrumentation : NSObject
-@property (nonatomic,copy) NSString *sdkUrlStr;
-//session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
-@property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
-//外部传入 rum resource 数据处理对象
-@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
+///  url session 自动化 采集 rum 数据，实现 trace 功能
+@interface FTURLSessionAutoInstrumentation : NSObject
 
+/// sdk 内部的数据上传 url
+@property (nonatomic,copy) NSString *sdkUrlStr;
+/// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
+@property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
+/// 处理外部传入 rum resource 数据的对象
+@property (nonatomic, weak ,readonly) id<FTRumResourceProtocol> rumResourceHandler;
+
+/// 单例
 + (instancetype)sharedInstance;
 
+/// 设置 rum 配置项，采集 resource 数据
+/// - Parameter config: rum 配置项
 - (void)setRUMConfig:(FTRumConfig *)config;
 
-- (void)setTraceConfig:(FTTraceConfig *)config tracer:(id<FTTracerProtocol>)tracer;
+/// 设置 trace 配置项，开启 trace
+/// - Parameters:
+///   - config: trace 配置项
+- (void)setTraceConfig:(FTTraceConfig *)config;
+
+/// 获取实现 tracerProtocol 处理获取与解包 trace 请求头的对象
+-(id<FTTracerProtocol> _Nullable)tracer;
+/// 注销
 - (void)resetInstance;
 @end
 

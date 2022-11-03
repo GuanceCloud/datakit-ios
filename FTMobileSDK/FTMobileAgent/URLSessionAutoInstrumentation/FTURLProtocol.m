@@ -101,7 +101,7 @@ static id<URLSessionInterceptorType> sDelegate;
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     id<URLSessionInterceptorType> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(taskCreated:session:)]) {
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&  [strongeDelegate respondsToSelector:@selector(taskCreated:session:)]) {
         [strongeDelegate taskCreated:task session:self.session];
     }
     [task resume];
@@ -122,7 +122,7 @@ static id<URLSessionInterceptorType> sDelegate;
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     id<URLSessionInterceptorType> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(taskReceivedData:data:)]) {
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&[strongeDelegate respondsToSelector:@selector(taskReceivedData:data:)]) {
         [strongeDelegate taskReceivedData:dataTask data:data];
     }
     [self.client URLProtocol:self didLoadData:data];
@@ -137,7 +137,7 @@ static id<URLSessionInterceptorType> sDelegate;
     }
     id<URLSessionInterceptorType> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(taskCompleted:error:)]) {
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskCompleted:error:)]) {
         [strongeDelegate taskCompleted:task error:error];
     }
     
@@ -145,7 +145,7 @@ static id<URLSessionInterceptorType> sDelegate;
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
     id<URLSessionInterceptorType> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
         [strongeDelegate taskMetricsCollected:task metrics:metrics];
     };
 }

@@ -25,7 +25,6 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
-#import "FTTracer.h"
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
 #import "FTExtensionDataManager.h"
@@ -33,7 +32,7 @@
 #import "FTWKWebViewHandler.h"
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
-#import "URLSessionAutoInstrumentation.h"
+#import "FTURLSessionAutoInstrumentation.h"
 #import "FTMobileConfig+Private.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t concurrentLabel;
@@ -42,7 +41,6 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
-@property (nonatomic, strong) FTTracer *tracer;
 @end
 @implementation FTMobileAgent
 
@@ -80,7 +78,7 @@ static dispatch_once_t onceToken;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
             .setSdkVersion(SDK_VERSION)
             .setXDataKitUUID(config.XDataKitUUID);
-            [URLSessionAutoInstrumentation sharedInstance].sdkUrlStr = config.metricsUrl;
+            [FTURLSessionAutoInstrumentation sharedInstance].sdkUrlStr = config.metricsUrl;
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -103,9 +101,9 @@ static dispatch_once_t onceToken;
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
-    [[URLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
-    [URLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
-    [FTExternalDataManager sharedManager].resourceDelegate = [URLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
+    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -123,11 +121,10 @@ static dispatch_once_t onceToken;
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
-    self.tracer = [[FTTracer alloc]initWithConfig:traceConfigOptions];
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
-    [FTWKWebViewHandler sharedInstance].interceptor = [URLSessionAutoInstrumentation sharedInstance].interceptor;
-    [[URLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions tracer:self.tracer];
-    [FTExternalDataManager sharedManager].traceDelegate = self.tracer;
+    [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionAutoInstrumentation sharedInstance].interceptor;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [FTExternalDataManager sharedManager].traceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].tracer;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 
 }
@@ -300,7 +297,7 @@ static dispatch_once_t onceToken;
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTGlobalRumManager sharedInstance] resetInstance];
-    [[URLSessionAutoInstrumentation sharedInstance] resetInstance];
+    [[FTURLSessionAutoInstrumentation sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];

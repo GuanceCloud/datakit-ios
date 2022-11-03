@@ -21,13 +21,13 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTURLSessionDelegate,URLSessionAutoInstrumentation;
+@class FTURLSessionDelegate,FTURLSessionAutoInstrumentation;
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 
 - (FTURLSessionDelegate *)ftURLSessionDelegate;
 @end
 @interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) URLSessionAutoInstrumentation *instrumentation;
+@property (nonatomic, strong) FTURLSessionAutoInstrumentation *instrumentation;
 
 - (FTURLSessionDelegate *)ftURLSessionDelegate;
 @end
