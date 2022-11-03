@@ -8,6 +8,7 @@
 import Foundation
 import FTMobileAgent
 
+
 class CustomRumDemo{
     
     func simulationView(){
@@ -19,4 +20,14 @@ class CustomRumDemo{
         FTExtensionManager.shared().stopView()
         
     }
+    
+    func simulationAction(){
+        FTExtensionManager.shared().addActionName("Custom_action_name", actionType: "click")
+        
+        FTExtensionManager.shared().addClickAction(withName: "Custom_action_name2")
+    }
+
 }
+
+
+

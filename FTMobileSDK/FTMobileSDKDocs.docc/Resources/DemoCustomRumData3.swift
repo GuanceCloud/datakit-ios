@@ -19,4 +19,17 @@ class CustomRumDemo{
         FTExtensionManager.shared().stopView()
         
     }
+    
+    func simulationAction(){
+        FTExtensionManager.shared().addActionName("Custom_action_name", actionType: "click")
+        
+        FTExtensionManager.shared().addClickAction(withName: "Custom_action_name2")
+    }
+
+    func simulationError(){
+        FTExtensionManager.shared().addError(withType: "ios_crash", message: "Error_Message", stack: "Error_Stack")
+    }
 }
+
+
+
