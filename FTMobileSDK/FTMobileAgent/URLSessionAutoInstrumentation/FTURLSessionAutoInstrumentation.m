@@ -22,10 +22,10 @@
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
 #import "FTURLSessionInterceptor.h"
-#include "FTURLProtocol.h"
+#import "FTURLProtocol.h"
 #import "FTMobileConfig.h"
 #import "FTTracer.h"
-@interface FTURLSessionAutoInstrumentation()<URLSessionInterceptorType>
+@interface FTURLSessionAutoInstrumentation()
 @property (nonatomic, assign) BOOL swizzle;
 @property (nonatomic, assign) BOOL enableRumTrack;
 @property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
@@ -92,31 +92,6 @@ static dispatch_once_t onceToken;
     });
     [FTURLProtocol startMonitor];
     [FTURLProtocol setDelegate:self.interceptor];
-}
-#pragma mark --------- URLSessionInterceptorType ----------
-// 处理 URLProtocol 获取的 resource 数据，由于可能用户设置不自动采集rum resource，但是开启了 enableAutoTrace ，在这里做一个过滤
--(NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
-    return [_sessionInterceptor injectTraceHeader:request];
-}
--(void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
-    if(self.enableRumTrack){
-        [_sessionInterceptor taskCreated:task session:session];
-    }
-}
--(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
-    if(self.enableRumTrack){
-        [_sessionInterceptor taskReceivedData:task data:data];
-    }
-}
--(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    if(self.enableRumTrack){
-        [_sessionInterceptor taskCompleted:task error:error];
-    }
-}
--(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
-    if(self.enableRumTrack){
-        [_sessionInterceptor taskMetricsCollected:task metrics:metrics];
-    }
 }
 - (void)resetInstance{
     onceToken = 0;
