@@ -9,6 +9,7 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
+/// rum 数据协议
 @protocol FTAddRumDatasProtocol <NSObject>
 /**
  * 创建页面

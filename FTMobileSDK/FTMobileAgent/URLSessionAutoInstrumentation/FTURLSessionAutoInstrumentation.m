@@ -27,7 +27,6 @@
 #import "FTTracer.h"
 @interface FTURLSessionAutoInstrumentation()
 @property (nonatomic, assign) BOOL swizzle;
-@property (nonatomic, assign) BOOL enableRumTrack;
 @property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
 @property (nonatomic, strong) FTTracer *tracer;
 @end
@@ -47,7 +46,7 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
--(id<URLSessionInterceptorType>)interceptor{
+-(id<FTURLSessionInterceptorDelegate>)interceptor{
     return _sessionInterceptor;
 }
 -(void)setSdkUrlStr:(NSString *)sdkUrlStr{
@@ -61,9 +60,10 @@ static dispatch_once_t onceToken;
     return _tracer;
 }
 - (void)setRUMConfig:(FTRumConfig *)config{
-    self.enableRumTrack = config.enableTraceUserResource;
     self.interceptor.enableAutoRumTrack = config.enableTraceUserResource;
-    [self startMonitor];
+    if(config.enableTraceUserResource){
+        [self startMonitor];
+    }
 }
 - (void)setTraceConfig:(FTTraceConfig *)config{
     [_sessionInterceptor enableAutoTrace:config.enableAutoTrace];

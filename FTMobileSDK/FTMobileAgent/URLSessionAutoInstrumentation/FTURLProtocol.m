@@ -22,7 +22,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, copy) NSString *identifier;
 @end
 @implementation FTURLProtocol
-static id<URLSessionInterceptorType> sDelegate;
+static id<FTURLSessionInterceptorDelegate> sDelegate;
 
 // 开始监听
 + (void)startMonitor {
@@ -41,16 +41,16 @@ static id<URLSessionInterceptorType> sDelegate;
         [sessionConfiguration unload];
     }
 }
-+ (id<URLSessionInterceptorType>)delegate{
-    id<URLSessionInterceptorType> result;
++ (id<FTURLSessionInterceptorDelegate>)delegate{
+    id<FTURLSessionInterceptorDelegate> result;
     @synchronized (self) {
         result = sDelegate;
     }
     return result;
 }
-+ (void)setDelegate:(id<URLSessionInterceptorType>)newValue{
++ (void)setDelegate:(id<FTURLSessionInterceptorDelegate>)delegate{
     @synchronized (self) {
-        sDelegate = newValue;
+        sDelegate = delegate;
     }
 }
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
@@ -70,7 +70,7 @@ static id<URLSessionInterceptorType> sDelegate;
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    id<URLSessionInterceptorType> strongeDelegate;
+    id<FTURLSessionInterceptorDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if ([strongeDelegate respondsToSelector:@selector(injectTraceHeader:)]) {
         return [strongeDelegate injectTraceHeader:request];
@@ -99,7 +99,7 @@ static id<URLSessionInterceptorType> sDelegate;
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
-    id<URLSessionInterceptorType> strongeDelegate;
+    id<FTURLSessionInterceptorDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&  [strongeDelegate respondsToSelector:@selector(taskCreated:session:)]) {
         [strongeDelegate taskCreated:task session:self.session];
@@ -120,7 +120,7 @@ static id<URLSessionInterceptorType> sDelegate;
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
-    id<URLSessionInterceptorType> strongeDelegate;
+    id<FTURLSessionInterceptorDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&[strongeDelegate respondsToSelector:@selector(taskReceivedData:data:)]) {
         [strongeDelegate taskReceivedData:dataTask data:data];
@@ -135,7 +135,7 @@ static id<URLSessionInterceptorType> sDelegate;
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    id<URLSessionInterceptorType> strongeDelegate;
+    id<FTURLSessionInterceptorDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskCompleted:error:)]) {
         [strongeDelegate taskCompleted:task error:error];
@@ -143,7 +143,7 @@ static id<URLSessionInterceptorType> sDelegate;
     
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-    id<URLSessionInterceptorType> strongeDelegate;
+    id<FTURLSessionInterceptorDelegate> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
         [strongeDelegate taskMetricsCollected:task metrics:metrics];

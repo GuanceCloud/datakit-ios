@@ -32,27 +32,25 @@
  *
  */
 @interface InstrumentationPropertyClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-@property (nonatomic, strong) FTURLSessionDelegate *sessionDelegate;
+@property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 @end
 @implementation InstrumentationPropertyClass
--(FTURLSessionDelegate *)sessionDelegate{
-    if(!_sessionDelegate){
-        _sessionDelegate = [[FTURLSessionDelegate alloc]init];
-    }
-    return _sessionDelegate;
-}
+
 - (nonnull FTURLSessionDelegate *)ftURLSessionDelegate {
-    return self.sessionDelegate;
+    if(!_ftURLSessionDelegate){
+        _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
+    }
+    return _ftURLSessionDelegate;
 }
  
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
-    [self.sessionDelegate URLSession:session dataTask:dataTask didReceiveData:data];
+    [self.ftURLSessionDelegate URLSession:session dataTask:dataTask didReceiveData:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.sessionDelegate URLSession:session task:task didCompleteWithError:error];
+    [self.ftURLSessionDelegate URLSession:session task:task didCompleteWithError:error];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    [self.sessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+    [self.ftURLSessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
 }
 @end
 

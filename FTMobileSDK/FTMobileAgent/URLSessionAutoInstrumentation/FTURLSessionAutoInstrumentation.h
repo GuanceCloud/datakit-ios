@@ -24,13 +24,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTRumConfig,FTTraceConfig;
-///  url session 自动化 采集 rum 数据，实现 trace 功能
+///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
 @interface FTURLSessionAutoInstrumentation : NSObject
 
 /// sdk 内部的数据上传 url
 @property (nonatomic,copy) NSString *sdkUrlStr;
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
-@property (nonatomic, weak) id<URLSessionInterceptorType> interceptor;
+@property (nonatomic, weak) id<FTURLSessionInterceptorDelegate> interceptor;
 /// 处理外部传入 rum resource 数据的对象
 @property (nonatomic, weak ,readonly) id<FTRumResourceProtocol> rumResourceHandler;
 

@@ -10,8 +10,11 @@
 #import "FTTracerProtocol.h"
 @class FTTraceConfig;
 NS_ASSUME_NONNULL_BEGIN
+/// 具体实现 trace 功能，请求头添加参数实现
 @interface FTTracer : NSObject<FTTracerProtocol>
 
+/// 初始化
+/// - Parameter config: trace 配置项
 -(instancetype)initWithConfig:(FTTraceConfig *)config;
 #if FTSDKUNITTEST
 -(NSUInteger)getSkywalkingSeq;

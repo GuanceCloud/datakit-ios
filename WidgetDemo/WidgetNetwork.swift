@@ -33,8 +33,8 @@ class InheritHttpEngine:FTURLSessionDelegate {
 }
 
 class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
+    var ftURLSessionDelegate: FTURLSessionDelegate = FTURLSessionDelegate()
     
-    let sessionDelegate = FTURLSessionDelegate()
     var session:URLSession?
     /// HttpEngine 初始化，当 apiHostUrl 为空 或 token 为"" 则初始化失败
     override init(){
@@ -44,9 +44,7 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
         configuration.timeoutIntervalForRequest = 30
         session = URLSession.init(configuration: configuration, delegate:self, delegateQueue: nil)
     }
-    func ftURLSessionDelegate() -> FTURLSessionDelegate {
-        return sessionDelegate
-    }
+    
     func network(completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void){
         let processInfo = ProcessInfo.processInfo
         let urlStr = processInfo.environment["TRACE_URL"] ?? "https://www.baidu.com"
@@ -56,14 +54,14 @@ class HttpEngine:NSObject,URLSessionDataDelegate,FTURLSessionDelegateProviding {
         task.resume()
     }
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        sessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
+        ftURLSessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        sessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
+        ftURLSessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        sessionDelegate.urlSession(session, task: task, didCompleteWithError: error)
+        ftURLSessionDelegate.urlSession(session, task: task, didCompleteWithError: error)
     }
 }

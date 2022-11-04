@@ -103,10 +103,10 @@
 -(BOOL)enableAutoRumTrack{
     return _enableAutoRumTrack;
 }
--(void)setInnerResourceHandeler:(id<FTRumInnerResourceProtocol>)innerResourceHandeler{
+-(void)setInnerResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
     _innerResourceHandeler = innerResourceHandeler;
 }
--(id<FTRumInnerResourceProtocol>)innerResourceHandeler{
+-(id<FTRumResourceProtocol>)innerResourceHandeler{
     return _innerResourceHandeler;
 }
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{

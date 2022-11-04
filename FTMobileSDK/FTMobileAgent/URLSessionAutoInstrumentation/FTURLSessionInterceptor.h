@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTTraceHandler;
 
 /// url session 的拦截器，实现 rum resource 数据的采集
-@interface FTURLSessionInterceptor : NSObject<URLSessionInterceptorType,FTRumResourceProtocol>
+@interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorDelegate,FTRumResourceProtocol>
 
 /// 设置实现 trace 功能的对象
 /// @param tracer 实现 trace 功能的对象

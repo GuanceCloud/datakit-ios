@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
  * @param key       请求标识
  */
 - (void)stopResourceWithKey:(NSString *)key;
+@optional
+- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
+
 @end
 NS_ASSUME_NONNULL_END
 

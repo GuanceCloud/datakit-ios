@@ -28,7 +28,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
         FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<URLSessionInterceptorType> interceptor = sessionDelegate.instrumentation.interceptor;
+        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
         NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
         if (@available(iOS 13.0, *)) {
             [interceptor taskCreated:task session:self];
@@ -42,7 +42,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
         FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<URLSessionInterceptorType> interceptor = sessionDelegate.instrumentation.interceptor;
+        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
         
         NSURLSessionDataTask *task;
         if (completionHandler) {
@@ -69,7 +69,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
         FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<URLSessionInterceptorType> interceptor = sessionDelegate.instrumentation.interceptor;
+        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
         NSURLRequest *newRequest = [interceptor injectTraceHeader:request];
         NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
         if (@available(iOS 13.0, *)) {
@@ -84,7 +84,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
         FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<URLSessionInterceptorType> interceptor = sessionDelegate.instrumentation.interceptor;
+        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
         NSURLSessionDataTask *task;
         if (completionHandler) {
             __block NSURLSessionDataTask *taskReference;

@@ -10,12 +10,17 @@
 #import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTURLProtocol : NSURLProtocol
-+ (void)setDelegate:(id<URLSessionInterceptorType>)newValue;
 
-+ (id<URLSessionInterceptorType>)delegate;
+/// 设置 url 拦截代理
+/// - Parameter delegate: url 会话拦截代理
++ (void)setDelegate:(id<FTURLSessionInterceptorDelegate>)delegate;
 
++ (id<FTURLSessionInterceptorDelegate>)delegate;
+
+/// 开始监控
 + (void)startMonitor;
 
+/// 停止监控
 + (void)stopMonitor;
 @end
 

@@ -25,6 +25,7 @@
 #import <FTNetworkManager.h>
 #import "FTTracer.h"
 #import <objc/runtime.h>
+#import "FTURLSessionAutoInstrumentation.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
@@ -151,7 +152,7 @@
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [FTMobileAgent sharedInstance].tracer;
+    id<FTTracerProtocol> tracer = [FTURLSessionAutoInstrumentation sharedInstance].tracer;
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {

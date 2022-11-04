@@ -25,7 +25,7 @@
 @interface FTURLSessionDelegate()
 @end
 @implementation FTURLSessionDelegate
-
+@synthesize ftURLSessionDelegate;
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }

@@ -10,12 +10,12 @@
 #import "FTEnumConstant.h"
 #import "FTErrorDataProtocol.h"
 #import "FTAddRumDatasProtocol.h"
-#import "FTURLSessionInterceptorProtocol.h"
+#import "FTRumResourceProtocol.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTRUMManager : FTRUMHandler<FTRumInnerResourceProtocol,FTErrorDataDelegate,FTAddRumDatasProtocol>
+@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTAddRumDatasProtocol>
 @property (nonatomic, assign) AppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -

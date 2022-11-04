@@ -26,6 +26,7 @@
 #import "FTResourceMetricsModel.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTModelHelper.h"
+#import "FTURLSessionAutoInstrumentation.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -741,7 +742,7 @@
 - (void)addResource{
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    id<FTTracerProtocol> tracer =(id<FTTracerProtocol>)[FTMobileAgent sharedInstance].tracer;
+    id<FTTracerProtocol> tracer =(id<FTTracerProtocol>)[FTURLSessionAutoInstrumentation sharedInstance].tracer;
     NSDictionary *traceHeader = [tracer networkTraceHeaderWithUrl:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];

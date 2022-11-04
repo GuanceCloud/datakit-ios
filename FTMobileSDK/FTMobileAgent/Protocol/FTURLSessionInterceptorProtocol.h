@@ -23,20 +23,42 @@
 #import "FTRumResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol FTRumInnerResourceProtocol <FTRumResourceProtocol>
-- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
-@end
-
-@protocol URLSessionInterceptorType<NSObject>
-@optional
-@property (nonatomic, weak) id<FTRumInnerResourceProtocol> innerResourceHandeler;
+/// session 拦截处理代理
+@protocol FTURLSessionInterceptorDelegate<NSObject>
+@required
+/// 设置需要屏蔽的内部链接
 @property (nonatomic, copy) NSString *innerUrl;
+
+@optional
+/// 采集的 resource 数据接收对象
+@property (nonatomic, weak) id<FTRumResourceProtocol> innerResourceHandeler;
+/// 设置是否支持自动采集 rum resource 数据
 @property (nonatomic, assign) BOOL enableAutoRumTrack;
 
+/// 实现 trace 功能
+/// - Parameter request: http 初始请求
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;
+
+/// 请求开始 -startResource
+/// - Parameters:
+///   - task: 请求任务
+///   - session: session
 - (void)taskCreated:(NSURLSessionTask *)task  session:(NSURLSession *)session;
+
+/// 收集请求的数据信息
+/// - Parameters:
+///   - task: 请求任务
+///   - metrics: 请求任务的数据记录
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;
+/// 收集请求的返回数据
+/// - Parameters:
+///   - task: 请求任务
+///   - data: 请求的返回数据
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data;
+/// 请求结束 -stopResource
+/// - Parameters:
+///   - task: 请求任务
+///   - error: error 信息
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
 
 @end
