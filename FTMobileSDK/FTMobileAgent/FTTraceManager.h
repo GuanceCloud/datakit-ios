@@ -11,7 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTraceManager : NSObject
++ (instancetype)sharedInstance;
 
+- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url __attribute__((deprecated("已过时，请参考 FTExternalDataManager 类的 -getTraceHeaderWithKey 方法")));
 @end
 
 NS_ASSUME_NONNULL_END

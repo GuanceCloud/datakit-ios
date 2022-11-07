@@ -179,6 +179,8 @@
 		17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56A28A1094200CE40E5 /* FTUserInfo.h */; };
 		17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4A56B28A1094200CE40E5 /* FTUserInfo.m */; };
+		17C2DCB4291901ED000BD785 /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2DCB2291901ED000BD785 /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17C2DCB5291901ED000BD785 /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2DCB3291901ED000BD785 /* FTTraceManager.m */; };
 		17D4AAE22856E6EC0045EFF2 /* FTRumDatasProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTRumDatasProtocol.h */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */; };
@@ -352,6 +354,8 @@
 		17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Public.h"; sourceTree = "<group>"; };
 		17A4A56A28A1094200CE40E5 /* FTUserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUserInfo.h; sourceTree = "<group>"; };
 		17A4A56B28A1094200CE40E5 /* FTUserInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUserInfo.m; sourceTree = "<group>"; };
+		17C2DCB2291901ED000BD785 /* FTTraceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
+		17C2DCB3291901ED000BD785 /* FTTraceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
 		17D4AAE12856E6EC0045EFF2 /* FTRumDatasProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRumDatasProtocol.h; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
@@ -726,6 +730,8 @@
 				7CA1809626D344CA0035DDF0 /* FTMobileAgentVersion.h */,
 				4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */,
 				4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */,
+				17C2DCB2291901ED000BD785 /* FTTraceManager.h */,
+				17C2DCB3291901ED000BD785 /* FTTraceManager.m */,
 				174C508728DB29FA00FBE425 /* Protocol */,
 				1740585728D8074E0092E096 /* Exception */,
 				1740582F28D807390092E096 /* URLSessionAutoInstrumentation */,
@@ -987,6 +993,7 @@
 				1740588228D807C90092E096 /* FTReadWriteHelper.h in Headers */,
 				7C28B85E2660980000CECBA6 /* FTWKWebViewJavascriptBridge.h in Headers */,
 				4A884288239E5768001B44C3 /* FTBaseInfoHandler.h in Headers */,
+				17C2DCB4291901ED000BD785 /* FTTraceManager.h in Headers */,
 				7CF4E09426A7FF360076D238 /* UIGestureRecognizer+FTAutoTrack.h in Headers */,
 				4A7135B52579E82A00444C3D /* FTLogHook.h in Headers */,
 				4A7C739725C0318D003936A0 /* FTPingThread.h in Headers */,
@@ -1231,6 +1238,7 @@
 				4A7135B32579E82A00444C3D /* FTfishhook.c in Sources */,
 				1740587B28D807C90092E096 /* FTReadWriteHelper.m in Sources */,
 				4A2EFD9D254278DE00F93B1E /* FTPresetProperty.m in Sources */,
+				17C2DCB5291901ED000BD785 /* FTTraceManager.m in Sources */,
 				1740584828D807390092E096 /* FTURLProtocol.m in Sources */,
 				1740584928D807390092E096 /* FTTracer.m in Sources */,
 				1740589F28D807CF0092E096 /* FTRUMResourceHandler.m in Sources */,
