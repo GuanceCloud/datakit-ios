@@ -13,7 +13,7 @@
 #import <FTResourceMetricsModel.h>
 #import <FTResourceContentModel.h>
 #import "FTURLSessionInterceptor.h"
-
+#import "FTTraceManager.h"
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -77,7 +77,9 @@
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    // 上面方法已废弃，使用下面方法进行替换
+    //    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
