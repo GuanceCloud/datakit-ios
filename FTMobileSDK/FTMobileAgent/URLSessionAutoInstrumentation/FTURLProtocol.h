@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter delegate: url 会话拦截代理
 + (void)setDelegate:(id<FTURLSessionInterceptorDelegate>)delegate;
 
+/// url 拦截代理
 + (id<FTURLSessionInterceptorDelegate>)delegate;
 
 /// 开始监控

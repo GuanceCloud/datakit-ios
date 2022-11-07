@@ -22,110 +22,75 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// extension 组件数据管理对象
 @interface FTExtensionDataManager : NSObject{
     NSArray * _groupIdentifierArray;
 }
-
-/**
- * @property
- *
- * @abstract
- * AppGroups Identifier 数组
- */
+/// AppGroups Identifier 数组
 @property (nonatomic, strong) NSArray *groupIdentifierArray;
 
+/// 单例
 + (instancetype)sharedInstance;
-/**
- * @abstract
- * 获取 groupIdentifier 对应 Extension 当前缓存路径
- *
- * @param groupIdentifier AppGroups Identifier
- * @return 在 group 中的数据缓存路径
- */
+
+/// 获取 groupIdentifier 对应 Extension 当前缓存路径
+/// @param groupIdentifier AppGroups Identifier
+/// @return 在 group 中的数据缓存路径
 - (NSString *)filePathForApplicationGroupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 设置 rumConfig
- *
- * @param rumConfig rum 配置项
- */
+
+/// 存储 rumConfig
+/// @param rumConfig rum 配置项
 - (void)writeRumConfig:(NSDictionary *)rumConfig;
-/**
- * @abstract
- * 设置 traceConfig
- *
- * @param traceConfig trace 配置项
- */
+
+/// 存储 traceConfig
+/// @param traceConfig trace 配置项
 - (void)writeTraceConfig:(NSDictionary *)traceConfig;
-/**
- * @abstract
- * 设置 loggerConfig
- *
- * @param loggerConfig  logger 配置项
- */
+
+/// 存储 loggerConfig
+/// @param loggerConfig logger 配置项
 - (void)writeLoggerConfig:(NSDictionary *)loggerConfig;
-/**
- * @abstract
- * 获取 rumConfig
- *
- * @param groupIdentifier AppGroups Identifier
- * @return   rum 配置项
- */
+
+/// 获取 rumConfig
+/// @param groupIdentifier AppGroups Identifier
+/// @return rum 配置项
 - (NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 获取 traceConfig
- *
- * @param groupIdentifier AppGroups Identifier
- * @return   trace 配置项
- */
+
+/// 获取 traceConfig
+/// @param groupIdentifier AppGroups Identifier
+/// @return trace 配置项
 - (NSDictionary *)getTraceConfigWithGroupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 获取 loggerConfig
- *
- * @param groupIdentifier AppGroups Identifier
- * @return  logger 配置项
- */
+
+/// 获取 loggerConfig
+/// @param groupIdentifier AppGroups Identifier
+/// @return  logger 配置项
 - (NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 给对应 groupIdentifier 添加 RUM 事件
- *
- * @param eventType 事件类型
- * @param tags      事件属性
- * @param groupIdentifier AppGroups Identifier
- * 
- * @return 是否写入成功
- */
+
+/// 给对应 groupIdentifier 添加 RUM 事件
+/// @param eventType 事件类型
+/// @param tags 事件标签
+/// @param fields 事件指标
+/// @param tm 时间戳
+/// @param groupIdentifier AppGroups Identifier
+/// @return 是否写入成功
 - (BOOL)writeRumEventType:(NSString *)eventType tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 给对应 groupIdentifier 添加 LOGGER 事件
- *
- * @param status 事件类型
- * @Param content logger 内容
- * @param tags      事件属性
- * @param groupIdentifier AppGroups Identifier
- *
- * @return 是否写入成功
- */
+
+/// 给对应 groupIdentifier 添加 LOGGER 事件
+/// @param status 事件类型
+/// @param content logger 内容
+/// @param tags 事件标签
+/// @param fields 事件指标
+/// @param tm 时间戳
+/// @param groupIdentifier AppGroups Identifier
+/// @return 是否写入成功
 - (BOOL)writeLoggerEvent:(int)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
-/**
- * @abstract
- * 读取 groupIdentifier 对应的所有缓存事件
- * @param groupIdentifier AppGroups Identifier
- * @return 当前 groupIdentifier 缓存的所有事件
- */
+
+/// 读取 groupIdentifier 对应的所有缓存事件
+/// @param groupIdentifier AppGroups Identifier
+/// @return 当前 groupIdentifier 缓存的所有事件
 - (NSArray *)readAllEventsWithGroupIdentifier:(NSString *)groupIdentifier;
 
-/**
- * @abstract
- * 删除 groupIdentifier 对应的所有缓存事件
- *
- * @param groupIdentifier AppGroups Identifier
- * @return 是否删除成功
- */
+/// 删除 groupIdentifier 对应的所有缓存事件
+/// @param groupIdentifier AppGroups Identifier
+/// @return 是否删除成功
 - (BOOL)deleteEventsWithGroupIdentifier:(NSString *)groupIdentifier;
 @end
 

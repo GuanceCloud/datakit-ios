@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 设置是否支持自动采集 rum resource 数据
 @property (nonatomic, assign) BOOL enableAutoRumTrack;
 
-/// 实现 trace 功能
+/// 实现 trace 功能，给 request header 添加 trace 参数
 /// - Parameter request: http 初始请求
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;
 
@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - task: 请求任务
 ///   - error: error 信息
+///
+/// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
 
 @end

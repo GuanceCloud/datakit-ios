@@ -38,10 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
  * 获取 logger base Tag
  */
 - (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName;
-///**
-// * 获取 trace base Tag
-// */
-//- (NSDictionary *)traceProperty;
 /**
  *  重新设置
  */
