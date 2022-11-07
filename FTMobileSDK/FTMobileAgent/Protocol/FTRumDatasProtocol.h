@@ -10,7 +10,7 @@
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
 /// rum 数据协议
-@protocol FTAddRumDatasProtocol <NSObject>
+@protocol FTRumDatasProtocol <NSObject>
 /**
  * 创建页面
  * @param viewName     页面名称
