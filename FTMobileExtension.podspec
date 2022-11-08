@@ -1,7 +1,8 @@
 Pod::Spec.new do |s|
 
   s.name         = "FTMobileExtension"
-  s.version      = "1.0.0-alpha.1"
+  #s.version      = "1.0.0-alpha.1"
+  s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "观测云 DataFlux iOS Extension 数据采集 SDK"
   s.description  = "观测云 DataFlux iOS Extension 数据采集 SDK"
   s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
@@ -12,7 +13,7 @@ Pod::Spec.new do |s|
   s.default_subspec = 'Extension'
 
   s.ios.deployment_target = '9.0'
-  s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => s.version }
+  s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
   s.subspec 'Extension' do |e|
    e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/Extension/*{.h,.m}',
        'FTMobileSDK/FTMobileAgent/FTMobileConfig.{h,m}','FTMobileSDK/FTMobileAgent/FTMobileConfig+Private.h',
