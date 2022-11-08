@@ -109,7 +109,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManger addLongTaskWithStack:stack duration:duration];
+    [self.rumManger addLongTaskWithStack:stack duration:duration context:nil];
 }
 -(void)stopMonitor{
     [self stopPingThread];
@@ -151,8 +151,8 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [self.rumManger addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000]];
-
+    [self.rumManger addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000] context:nil];
+    
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
@@ -164,7 +164,7 @@ static dispatch_once_t onceToken;
         NSString *viewReferrer =self.rumManger.viewReferrer;
         self.rumManger.viewReferrer = @"";
         [self.rumManger onCreateView:viewReferrer loadTime:loadDuration];
-        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer];
+        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer context:nil];
     }
 }
 -(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
@@ -175,7 +175,7 @@ static dispatch_once_t onceToken;
 - (void)applicationWillTerminate{
     @try {
         self.rumManger.appState = AppStateStartUp;
-        [self.rumManger stopView];
+        [self.rumManger stopViewWithContext:nil];
         [self.rumManger applicationWillTerminate];
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
@@ -185,11 +185,11 @@ static dispatch_once_t onceToken;
     NSString *viewID = viewController.ft_viewUUID;
     NSString *className = viewController.ft_viewControllerName;
     [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
-    [self.rumManger startViewWithViewID:viewID viewName:className];
+    [self.rumManger startViewWithViewID:viewID viewName:className context:nil];
 }
 - (void)trackViewDidDisappear:(UIViewController *)viewController{
     if(self.currentController == viewController){
-        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
+        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID context:nil];
     }
 }
 #pragma mark --------- FTExternalRum ----------
@@ -197,25 +197,46 @@ static dispatch_once_t onceToken;
     [self.rumManger onCreateView:viewName loadTime:loadTime];
 }
 -(void)startViewWithName:(NSString *)viewName{
-    [self.rumManger startViewWithName:viewName];
+    [self.rumManger startViewWithName:viewName context:nil];
+}
+-(void)startViewWithName:(NSString *)viewName context:(nullable NSDictionary *)context{
+    [self.rumManger startViewWithName:viewName context:context];
 }
 -(void)stopView{
-    [self.rumManger stopView];
+    [self.rumManger stopViewWithContext:nil];
+}
+-(void)stopViewWithContext:(NSDictionary *)context{
+    [self.rumManger stopViewWithContext:context];
 }
 - (void)addClickActionWithName:(NSString *)actionName{
-    [self.rumManger addClickActionWithName:actionName];
+    [self.rumManger addClickActionWithName:actionName context:nil];
+}
+- (void)addClickActionWithName:(NSString *)actionName context:(nullable NSDictionary *)context{
+    [self.rumManger addClickActionWithName:actionName context:context];
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    [self.rumManger addActionName:actionName actionType:actionType];
+    [self.rumManger addActionName:actionName actionType:actionType context:nil];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType context:(nullable NSDictionary *)context{
+    [self.rumManger addActionName:actionName actionType:actionType context:context];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self.rumManger addErrorWithType:type message:message stack:stack];
+    [self.rumManger addErrorWithType:type message:message stack:stack context:nil];
+}
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack context:(nullable NSDictionary *)context{
+    [self.rumManger addErrorWithType:type message:message stack:stack context:context];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManger addLongTaskWithStack:stack duration:duration];
+    [self.rumManger addLongTaskWithStack:stack duration:duration context:nil];
+}
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration context:(nullable NSDictionary *)context{
+    [self.rumManger addLongTaskWithStack:stack duration:duration context:context];
 }
 - (void)startResourceWithKey:(NSString *)key{
-    [self.rumManger startResource:key];
+    [self.rumManger startResource:key context:nil];
+}
+- (void)startResourceWithKey:(NSString *)key context:(nullable NSDictionary *)context{
+    [self.rumManger startResource:key context:context];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     if ([FTTraceHeaderManager sharedInstance].enableLinkRumData) {
@@ -225,9 +246,11 @@ static dispatch_once_t onceToken;
         [self.rumManger addResource:key metrics:metrics content:content];
     }
 }
-
 - (void)stopResourceWithKey:(NSString *)key{
-    [self.rumManger stopResource:key];
+    [self.rumManger stopResourceWithKey:key context:nil];
+}
+- (void)stopResourceWithKey:(NSString *)key context:(nullable NSDictionary *)context{
+    [self.rumManger stopResourceWithKey:key context:context];
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{

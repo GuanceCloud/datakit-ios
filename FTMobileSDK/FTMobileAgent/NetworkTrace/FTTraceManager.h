@@ -14,7 +14,7 @@ typedef BOOL(^FTIntakeUrl)(NSURL *url);
 @class FTTraceHandler;
 @interface FTTraceManager : NSObject
 @property (nonatomic, assign) BOOL enableAutoTrace;
-@property (nonatomic, copy) FTIntakeUrl intakeUrl;
+@property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrl;
 
 + (instancetype)sharedInstance;
 - (BOOL)isTraceUrl:(NSURL *)url;

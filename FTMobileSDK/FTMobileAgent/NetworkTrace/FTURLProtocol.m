@@ -100,7 +100,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     if (self.trackUrl) {
         if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserResource) {
-            [[FTGlobalRumManager sharedInstance] startResourceWithKey:self.identifier];
+            [[FTGlobalRumManager sharedInstance] startResourceWithKey:self.identifier context:nil];
         }else{
             [[FTTraceManager sharedInstance] removeTraceHandlerWithKey:self.identifier];
         }
@@ -169,7 +169,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
                 metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
             }
         }
-        [[FTGlobalRumManager sharedInstance] stopResourceWithKey:self.identifier];
+        [[FTGlobalRumManager sharedInstance] stopResourceWithKey:self.identifier context:nil];
         [[FTGlobalRumManager sharedInstance] addResourceWithKey:self.identifier metrics:metricsModel content:model];
        
     }

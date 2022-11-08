@@ -32,10 +32,10 @@
     UIView *view = (UIView *)sender;
     if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
         [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        [[FTGlobalRumManager sharedInstance] addClickActionWithName:view.ft_actionName];
+        [[FTGlobalRumManager sharedInstance] addClickActionWithName:view.ft_actionName context:nil];
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        [[FTGlobalRumManager sharedInstance] addClickActionWithName:view.ft_actionName];
+        [[FTGlobalRumManager sharedInstance] addClickActionWithName:view.ft_actionName context:nil];
     }
     
 }

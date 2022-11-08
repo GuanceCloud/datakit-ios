@@ -21,7 +21,7 @@
    
     os_log(OS_LOG_DEFAULT, "[FTLog][Crash]%{public}@", info);
 
-    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info];
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info context:nil];
     
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

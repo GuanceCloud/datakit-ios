@@ -15,6 +15,7 @@
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
+@property (nonatomic, strong) NSMutableDictionary *resourceContext;
 @end
 @implementation FTRUMResourceHandler
 -(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context{
@@ -23,6 +24,10 @@
         self.identifier = model.identifier;
         self.assistant = self;
         self.time = model.time;
+        self.resourceContext = [[NSMutableDictionary alloc]init];
+        if(model.fields && model.fields.allKeys.count>0){
+            [self.resourceContext addEntriesFromDictionary:model.fields];
+        }
         self.context = [context copy];
     }
     return self;
@@ -41,6 +46,9 @@
                     if (self.resourceHandler) {
                         self.resourceHandler();
                     }
+                    if(data.fields && data.fields.allKeys.count>0){
+                        [self.resourceContext addEntriesFromDictionary:data.fields];
+                    }
                 }
                 default:
                     break;
@@ -53,6 +61,9 @@
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
     NSMutableDictionary *fields = [NSMutableDictionary new];
+    if(self.resourceContext && self.resourceContext.allKeys.count>0){
+        [fields addEntriesFromDictionary:self.resourceContext];
+    }
     [fields addEntriesFromDictionary:data.fields];
     [fields setValue:[FTDateUtil nanosecondTimeIntervalSinceDate:self.time toDate:data.time] forKey:FT_DURATION];
     if(model.metrics){

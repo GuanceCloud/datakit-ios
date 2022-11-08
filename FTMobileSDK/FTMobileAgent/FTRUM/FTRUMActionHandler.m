@@ -25,7 +25,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-
+@property (nonatomic, strong) NSDictionary *actionContext;//添加到field中
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @end
@@ -41,6 +41,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.action_type = model.action_type;
         self.type = model.type;
         self.context = [context copy];
+        self.actionContext = model.fields;
         self.context.action_id = self.action_id;
     }
     return  self;
@@ -100,11 +101,14 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
                                  FT_RUM_KEY_ACTION_NAME:self.action_name,
                                  FT_RUM_KEY_ACTION_TYPE:self.action_type
     };
-    NSDictionary *fields = @{FT_DURATION:self.duration,
+    NSMutableDictionary *fields = @{FT_DURATION:self.duration,
                              FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
                              FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
                              FT_RUM_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
-    };
+    }.mutableCopy;
+    if(self.actionContext && self.actionContext.allKeys.count>0){
+        [fields addEntriesFromDictionary:self.actionContext];
+    }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];

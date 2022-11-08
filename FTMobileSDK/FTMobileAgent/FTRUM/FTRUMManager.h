@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * resource Start
  */
-- (void)startResource:(NSString *)identifier;
+- (void)startResource:(NSString *)identifier context:(nullable NSDictionary *)context;
 /**
  * add resource metrics content
  */
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * resource Stop
  */
-- (void)stopResource:(NSString *)identifier;
+- (void)stopResourceWithKey:(NSString *)key context:(nullable NSDictionary *)context;
 #pragma mark - webview js -
 
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
@@ -50,23 +50,23 @@ NS_ASSUME_NONNULL_BEGIN
  * 进入页面 viewId 内部管理
  * @param viewName        页面名称
  */
--(void)startViewWithName:(NSString *)viewName;
+-(void)startViewWithName:(NSString *)viewName context:(nullable NSDictionary *)context;
 /**
  * 进入页面
  * @param viewId          页面id
  * @param viewName        页面名称
  */
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName;
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName context:(nullable NSDictionary *)context;
 /**
  * 离开页面
  * @param viewId         页面id
  */
--(void)stopViewWithViewID:(NSString *)viewId;
+-(void)stopViewWithViewID:(NSString *)viewId context:(nullable NSDictionary *)context;
 /**
  * 离开页面
  * viewId 内部管理
  */
--(void)stopView;
+-(void)stopViewWithContext:(nullable NSDictionary *)context;
 
 #pragma mark - action -
 
@@ -74,13 +74,13 @@ NS_ASSUME_NONNULL_BEGIN
  * 点击事件
  * @param actionName 点击的事件名称
  */
-- (void)addClickActionWithName:(NSString *)actionName;
+- (void)addClickActionWithName:(NSString *)actionName context:(nullable NSDictionary *)context;
 /**
  * action 事件
  * @param actionName 事件名称
  * @param actionType 事件类型
  */
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType context:(nullable NSDictionary *)context;
 /**
  * 应用启动
  * @param isHot     是否是热启动
@@ -104,14 +104,16 @@ NS_ASSUME_NONNULL_BEGIN
  * @param type       错误类型:java_crash/native_crash/abort/ios_crash
  * @param message    错误信息
  * @param stack      错误堆栈
+ * @param context 事件上下文(可选)
  */
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack context:(nullable NSDictionary *)context;
 /**
  * 卡顿
  * @param stack      卡顿堆栈
  * @param duration   卡顿时长
+ * @param context 事件上下文(可选)
  */
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration;
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration context:(nullable NSDictionary *)context;
 #pragma mark - get LinkRumData -
 
 /**
