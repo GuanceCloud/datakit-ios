@@ -51,17 +51,27 @@
     return model;
 }
 + (void)startView{
+    [FTModelHelper startView:nil];
+}
++ (void)startView:(NSDictionary *)context{
     NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
     [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
-    [[FTExternalDataManager sharedManager] startViewWithName:viewName];
+    [[FTExternalDataManager sharedManager] startViewWithName:viewName context:context];
 }
+
 + (void)stopView{
     [[FTExternalDataManager sharedManager] stopView];
 }
++ (void)stopView:(NSDictionary *)context{
+    [[FTExternalDataManager sharedManager] stopViewWithContext:context];
+}
 + (void)addAction{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick"];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" context:nil];
 }
 + (void)addActionWithType:(NSString *)type{
-    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type];
+    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type context:nil];
+}
++ (void)addActionWithContext:(NSDictionary *)context{
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionWithContext" context:context];
 }
 @end

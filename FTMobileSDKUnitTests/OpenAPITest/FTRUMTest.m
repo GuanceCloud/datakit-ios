@@ -49,7 +49,7 @@
 - (void)testSessionIdChecks{
     [self setRumConfig];
     
-    [self addErrorData];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
@@ -64,7 +64,7 @@
  */
 - (void)testSessionTimeElapse{
     [self setRumConfig];
-    [self addErrorData];
+    [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     
@@ -76,7 +76,7 @@
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"lastInteractionTime"];
     
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *newModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
@@ -97,7 +97,7 @@
  */
 - (void)testSessionTimeOut{
     [self setRumConfig];
-    [self addErrorData];
+    [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *oldModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] firstObject];
@@ -108,7 +108,7 @@
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"sessionStartTime"];
     
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     FTRecordModel *newModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:oldModel.data];
@@ -129,7 +129,7 @@
 - (void)testAddViewDataAndFormatChecks{
     [self setRumConfig];
     [FTModelHelper startView];
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasView = NO;
@@ -170,9 +170,9 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper startView];
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     [self addResource];
-    [self addErrorData];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasViewData = NO;
@@ -322,7 +322,7 @@
     [[FTExternalDataManager sharedManager] onCreateView:@"view1" loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:@"view1"];
     
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@""];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"" context:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTExternalDataManager sharedManager] stopView];
@@ -359,7 +359,7 @@
 
     //把session上次记录数据改为15分钟前 模拟session过期
     
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasClickAction = NO;
@@ -394,9 +394,8 @@
     [FTModelHelper startView];
     [FTModelHelper addAction];
     [self addResource];
-    [self addLongTaskData];
-    
-    [self addErrorData];
+    [self addLongTaskData:nil];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasActionData = NO;
@@ -423,7 +422,7 @@
 }
 - (void)testAddErrorData{
     [self setRumConfig];
-    [self addErrorData];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasErrorData = NO;
@@ -446,7 +445,7 @@
     [FTModelHelper startView];
     [FTModelHelper addActionWithType:@""];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
-    [self addErrorData];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasClickAction = NO;
@@ -488,7 +487,7 @@
 }
 - (void)testAddLongTaskData{
     [self setRumConfig];
-    [self addLongTaskData];
+    [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasDatas = NO;
@@ -542,7 +541,7 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
     [FTModelHelper addAction];
-    [self addErrorData];
+    [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -556,7 +555,7 @@
     
     [FTModelHelper startView];
     [FTModelHelper addAction];
-    [self addErrorData];
+    [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -583,7 +582,7 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
-    [self addErrorData];
+    [self addErrorData:nil];
     [self addResource];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -620,7 +619,7 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
-    [self addErrorData];
+    [self addErrorData:nil];
     [self addResource];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -652,7 +651,7 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     [FTModelHelper startView];
-    [self addErrorData];
+    [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -665,25 +664,232 @@
     XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
-- (void)addErrorData{
+- (void)testActionContext{
+    [self setRumConfig];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper startView];
+    [FTModelHelper addActionWithContext:@{@"action_context":@"testActionContext1"}];
+    [FTModelHelper addActionWithContext:@{@"action_context":@"testActionContext2"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count>oldArray.count);
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+            NSDictionary *fields = opdata[FT_FIELDS];
+            XCTAssertTrue([fields[@"action_context"] isEqualToString:@"testActionContext1"]);
+            *stop = YES;
+        }
+    }];
+
+}
+- (void)testStartViewContext{
+    [self setRumConfig];
+    [FTModelHelper startView:@{@"view_context":@"testStartViewContext"}];
+    [self addErrorData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasViewData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"view_context"] isEqualToString:@"testStartViewContext"]);
+            hasViewData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+    [FTModelHelper stopView];
+}
+- (void)testStopViewContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addErrorData:nil];
+    [FTModelHelper stopView:@{@"view_stop_context":@"testStopViewContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasViewData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testStopViewContext"]);
+            hasViewData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+}
+- (void)testViewContext{
+    [self setRumConfig];
+    [FTModelHelper startView:@{@"view_start_context":@"testViewContext"}];
+    [self addErrorData:nil];
+    [FTModelHelper stopView:@{@"view_stop_context":@"testViewContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasViewData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testViewContext"]);
+            XCTAssertTrue([field[@"view_start_context"] isEqualToString:@"testViewContext"]);
+            hasViewData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+}
+- (void)testErrorContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addErrorData:@{@"error_context":@"testErrorContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasErrorData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ERROR]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"error_context"] isEqualToString:@"testErrorContext"]);
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
+- (void)testLongTaskContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addLongTaskData:@{@"longtask_context":@"testLongTaskContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasErrorData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"longtask_context"] isEqualToString:@"testLongTaskContext"]);
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
+- (void)testStartResourceContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addResource:@{@"resource_start_context":@"testStartResourceContext"} endContext:nil];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"resource_start_context"] isEqualToString:@"testStartResourceContext"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
+- (void)testStopResourceContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addResource:nil endContext:@{@"resource_stop_context":@"testStopResourceContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"resource_stop_context"] isEqualToString:@"testStopResourceContext"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
+- (void)testResourceContext{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [self addResource:@{@"resource_start_context":@"testResourceContext"} endContext:@{@"resource_stop_context":@"testResourceContext"}];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *field = opdata[FT_FIELDS];
+            XCTAssertTrue([field[@"resource_start_context"] isEqualToString:@"testResourceContext"]);
+            XCTAssertTrue([field[@"resource_stop_context"] isEqualToString:@"testResourceContext"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
+- (void)addErrorData:(NSDictionary *)context{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
     NSString *error_stack = @"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15";
     NSString *error_type = @"ios_crash";
     
-    [[FTExternalDataManager sharedManager] addErrorWithType:error_type  message:error_message stack:error_stack];
+    [[FTExternalDataManager sharedManager] addErrorWithType:error_type  message:error_message stack:error_stack context:context];
 }
-- (void)addLongTaskData{
+- (void)addLongTaskData:(NSDictionary *)context{
     NSString *stack = @"Backtrace of Thread 771:\n0 libsystem_kernel.dylib          0x7fff6112d756 __semwait_signal + 10\n1 libsystem_c.dylib               0x7fff200f7500 usleep + 53\n2 SampleApp                       0x1038b9a96 -[TestANRVC tableView:cellForRowAtIndexPath:] + 230\n3 UIKitCore                       0x7fff248ce1af -[UITableView _createPreparedCellForGlobalRow:withIndexPath:willDisplay:] + 865\n4 UIKitCore                       0x7fff248ce637 -[UITableView _createPreparedCellForRowAtIndexPath:willDisplay:] + 80\n5 UIKitCore                       0x7fff248dab61 -[UITableView _heightForRowAtIndexPath:] + 204\n6 UIKitCore                       0x7fff248eea95 -[UISectionRowData heightForRow:inSection:canGuess:] + 220\n7 UIKitCore                       0x7fff248f40ca -[UITableViewRowData heightForRow:inSection:canGuess:adjustForReorderedRow:] + 238\n8 UIKitCore                       0x7fff248f7c1a -[UITableViewRowData ensureHeightsFaultedInForScrollToIndexPath:boundsHeight:] + 864\n9 UIKitCore                       0x7fff248ad10f -[UITableView _contentOffsetForScrollingToRowAtIndexPath:atScrollPosition:usingPresentationValues:] + 1138\n10 UIKitCore                       0x7fff248ae07c -[UITableView _scrollToRowAtIndexPath:atScrollPosition:animated:usingPresentationValues:] + 142\n11 UIKitCore                       0x7fff248b18dc -[UITableView _selectRowAtIndexPath:animated:scrollPosition:notifyDelegate:isCellMultiSelect:] + 719\n12 UIKitCore                       0x7fff248b2004 -[UITableView selectRowAtIndexPath:animated:scrollPosition:] + 91\n";
     NSNumber *dutation = @5000000000;
     
     
-    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation];
+    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation context:context];
 }
 - (void)addResource{
+    [self addResource:nil endContext:nil];
+}
+- (void)addResource:(NSDictionary *)startContext endContext:(NSDictionary *)endContext{
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
-    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key context:startContext];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
     model.duration = @1000;
@@ -698,7 +904,7 @@
                               @"Vary": @"Accept-Encoding,User-Agent"
                               
     };
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key context:endContext];
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
     metrics.duration = @1000;
     metrics.resource_dns = @0;
@@ -708,7 +914,6 @@
     metrics.resource_trans = @102;
     metrics.resource_first_byte = @103;
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
-
 }
 - (void)addErrorResource{
 
@@ -771,7 +976,7 @@
     [[FTMobileAgent sharedInstance] logout];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
-    [self addErrorData];
+    [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     
