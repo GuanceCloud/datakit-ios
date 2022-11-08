@@ -19,6 +19,8 @@
 #import "NSString+FTAdd.h"
 #import <FTJSONUtil.h>
 #import "FTPresetProperty.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
 @interface FTMobileAgentTests : XCTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -137,7 +139,7 @@
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:2];
+    [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [newDatas lastObject];
