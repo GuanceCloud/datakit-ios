@@ -26,8 +26,11 @@ if [[ $? -eq 0 ]];then
   replaceVersion "FTMobileAgent"
 
   sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
+  sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileExtension.podspec
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
+  pod trunk push FTMobileExtension.podspec --verbose --allow-warnings
+
 fi
 
 
