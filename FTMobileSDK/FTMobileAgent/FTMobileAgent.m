@@ -261,6 +261,7 @@ static dispatch_once_t onceToken;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];
     [[FTConfigManager sharedInstance] resetInstance];
+    [FTTraceManager sharedInstance].intakeUrl = nil;
     onceToken = 0;
     sharedInstance =nil;
 }
