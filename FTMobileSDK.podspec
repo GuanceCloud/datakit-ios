@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
    s.subspec  'FTMobileAgent' do | agent |
        core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '9.0'
-       agent.source_files = core_dir + 'FTMobileAgent.{h,m}',core_dir + 'FTMobileAgent+Public.h',core_dir + 'FTMobileAgent+Private.h',core_dir + 'FTMobileAgentVersion.h',core_dir + 'FTPresetProperty.{h,m}',core_dir + 'FTUserInfo.{h,m}',core_dir + 'FTGlobalManager.{h,m}',core_dir + 'FTGlobalRumManager.{h,m}'
+       agent.source_files = core_dir + 'FTMobileAgent.{h,m}',core_dir + 'FTMobileAgent+Public.h',core_dir + 'FTMobileAgent+Private.h',core_dir + 'FTMobileAgentVersion.h',core_dir + 'FTPresetProperty.{h,m}',core_dir + 'FTUserInfo.{h,m}',core_dir + 'FTGlobalManager.{h,m}',core_dir + 'FTGlobalRumManager.{h,m}',core_dir + 'FTTraceManager.{h,m}'
       
        agent.subspec 'FTRUM' do |r|
        r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
