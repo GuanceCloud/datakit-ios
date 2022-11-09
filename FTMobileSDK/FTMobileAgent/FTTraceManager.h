@@ -9,9 +9,8 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-DEPRECATED_ATTRIBUTE
 @interface FTTraceManager : NSObject
-+ (instancetype)sharedInstance DEPRECATED_ATTRIBUTE;
++ (instancetype)sharedInstance;
 
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:url:] 替换");
 @end
