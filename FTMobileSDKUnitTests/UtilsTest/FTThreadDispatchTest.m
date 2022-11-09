@@ -32,7 +32,7 @@
         XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
         [FTThreadDispatchManager dispatchInRUMThread:^{
             XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-            [NSThread sleepForTimeInterval:1];
+            [NSThread sleepForTimeInterval:0.5];
             string = [string stringByAppendingString:@"2"];
         }];
         string = [string stringByAppendingString:@"3"];
@@ -43,7 +43,7 @@
         string = [string stringByAppendingString:@"4"];
     }];
     XCTAssertFalse([string isEqualToString:@"1234"]);
-    [NSThread sleepForTimeInterval:2];
+    [NSThread sleepForTimeInterval:1];
 
 }
 /**
@@ -54,7 +54,7 @@
     XCTAssertTrue([NSThread currentThread].isMainThread);
     [FTThreadDispatchManager dispatchSyncInRUMThread:^{
         XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        [NSThread sleepForTimeInterval:1];
+        [NSThread sleepForTimeInterval:0.5];
         string = [string stringByAppendingString:@"2"];
         [FTThreadDispatchManager dispatchSyncInRUMThread:^{
             XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
@@ -78,7 +78,7 @@
             XCTAssertTrue([NSThread currentThread].isMainThread);
             [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
                 XCTAssertTrue([NSThread currentThread].isMainThread);
-                [NSThread sleepForTimeInterval:1];
+                [NSThread sleepForTimeInterval:0.5];
                 string = [string stringByAppendingString:@"2"];
             }];
             string = [string stringByAppendingString:@"3"];
@@ -108,7 +108,7 @@
         }];
         [FTThreadDispatchManager performBlockDispatchMainAsync:^{
             XCTAssertTrue([NSThread currentThread].isMainThread);
-                [NSThread sleepForTimeInterval:1];
+                [NSThread sleepForTimeInterval:0.5];
                 string = [string stringByAppendingString:@"4"];
         }];
        

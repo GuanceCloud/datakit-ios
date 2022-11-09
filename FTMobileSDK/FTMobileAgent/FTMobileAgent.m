@@ -35,7 +35,7 @@
 #import "FTURLSessionAutoInstrumentation.h"
 #import "FTMobileConfig+Private.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
-@property (nonatomic, strong) dispatch_queue_t concurrentLabel;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -69,9 +69,10 @@ static dispatch_once_t onceToken;
         if (self) {
             //基础类型的记录
             [FTLog enableLog:config.enableSDKDebugLog];
-            NSString *concurrentLabel = [NSString stringWithFormat:@"io.concurrentLabel.%p", self];
-            _concurrentLabel = dispatch_queue_create([concurrentLabel UTF8String], DISPATCH_QUEUE_CONCURRENT);
+            NSString *serialLabel = [NSString stringWithFormat:@"ft.serialLabel.%p", self];
+            _serialQueue = dispatch_queue_create([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL);
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
+
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
@@ -138,7 +139,7 @@ static dispatch_once_t onceToken;
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        dispatch_async(self.concurrentLabel, ^{
+        dispatch_async(self.serialQueue, ^{
             [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
         });
     } @catch (NSException *exception) {
@@ -271,7 +272,7 @@ static dispatch_once_t onceToken;
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
-        dispatch_async(self.concurrentLabel, ^{
+        dispatch_async(self.serialQueue, ^{
             if (!weakSelf.loggerConfig.enableConsoleLog ) {
                 return;
             }
@@ -303,5 +304,10 @@ static dispatch_once_t onceToken;
     [FTURLProtocol stopMonitor];
     onceToken = 0;
     sharedInstance =nil;
+}
+- (void)syncProcess{
+    dispatch_sync(self.serialQueue, ^{
+        
+    });
 }
 @end

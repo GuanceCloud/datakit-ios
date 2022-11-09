@@ -21,7 +21,6 @@
 #import "FTRUMViewHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTLog.h"
 @interface FTRUMMonitorTest : KIFTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -41,7 +40,7 @@
 
 }
 - (void)shutDownSDK{
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testNoneMonitor{
@@ -50,7 +49,7 @@
     [NSThread sleepForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -77,12 +76,12 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
-        ZYDebug(@"op：%@\ndict:%@",op,dict);
+        NSLog(@"op：%@\ndict:%@",op,dict);
         XCTAssertTrue([op isEqualToString:FT_DATA_TYPE_RUM]);
         NSDictionary *opdata = dict[@"opdata"];
         NSString *measurement = opdata[@"source"];
@@ -105,7 +104,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -130,7 +129,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -140,7 +139,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
-            ZYDebug(@"field:%@\n",field);
+            NSLog(@"field:%@\n",field);
             XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]);
             XCTAssertFalse([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
@@ -154,7 +153,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [tester waitForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -164,6 +163,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
             NSDictionary *field = opdata[FT_FIELDS];
+            NSLog(@"field:%@\n",field);
             XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
@@ -244,6 +244,7 @@
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
     rumConfig.deviceMetricsMonitorType = type;
+    rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];

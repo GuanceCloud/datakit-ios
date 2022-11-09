@@ -19,6 +19,8 @@
 #import <FTJSONUtil.h>
 #import <FTConstants.h>
 #import <FTMobileAgent/FTMobileAgent+Private.h>
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
 typedef void(^FTTraceRequest)(NSURLRequest *);
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
@@ -66,7 +68,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
     self.window.hidden = YES;
     self.window = nil;
-    [NSThread sleepForTimeInterval:2];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setsdk{

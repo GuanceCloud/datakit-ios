@@ -22,5 +22,6 @@
 
 -(void)resetInstance;
 
+- (void)syncProcess;
 @end
 #endif /* FTMobileAgent_Private_h */

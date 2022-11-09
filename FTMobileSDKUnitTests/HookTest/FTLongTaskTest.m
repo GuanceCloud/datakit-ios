@@ -47,10 +47,10 @@
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
 
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
-    [tester waitForTimeInterval:1];
 
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[FTMobileAgent sharedInstance] syncProcess];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_RUM];
         XCTAssertTrue(newCount-lastCount>0);
 
@@ -77,9 +77,10 @@
 - (void)testNoTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
-    [tester waitForTimeInterval:1];
+
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[FTMobileAgent sharedInstance] syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
         BOOL noLongTask = YES;
         for (NSInteger i=0; i<datas.count; i++) {
