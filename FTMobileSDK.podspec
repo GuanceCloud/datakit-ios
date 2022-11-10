@@ -114,16 +114,16 @@ Pod::Spec.new do |s|
 
    end
 
-   #  s.subspec 'Extension' do |e|
-   #     e.platform = :ios, '9.0'
-   #     e.ios.deployment_target = '9.0'
-   #     e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}'
-   #     e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
-   #     e.dependency 'FTMobileSDK/FTMobileAgent/FTRUM'
-   #     e.dependency 'FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation'
-   #     e.dependency 'FTMobileSDK/FTMobileAgent/Exception'
-   #     e.dependency 'FTMobileSDK/FTMobileAgent/ExternalData'
-   # end
+    s.subspec 'Extension' do |e|
+       e.platform = :ios, '9.0'
+       e.ios.deployment_target = '9.0'
+       e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}'
+       e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
+       e.dependency 'FTMobileSDK/FTMobileAgent/FTRUM'
+       e.dependency 'FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation'
+       e.dependency 'FTMobileSDK/FTMobileAgent/Exception'
+       e.dependency 'FTMobileSDK/FTMobileAgent/ExternalData'
+   end
 end
 
 
