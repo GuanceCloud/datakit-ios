@@ -303,4 +303,20 @@
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
 
 }
+- (void)testLoggerProperty{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableConsoleLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testLoggerProperty" status:FTStatusInfo property:@{@"logger_property":@"testLoggerProperty"}];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *fields = op[FT_FIELDS];
+    XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
+}
 @end

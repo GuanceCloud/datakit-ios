@@ -39,7 +39,7 @@
 @property (nonatomic, assign) BOOL needUpdateView;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
-@property (nonatomic, strong) NSMutableDictionary *viewContext;//存储在field中
+@property (nonatomic, strong) NSMutableDictionary *viewProperty;//存储在field中
 @end
 @implementation FTRUMViewHandler
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context monitor:(FTRUMMonitor *)monitor{
@@ -54,9 +54,9 @@
         self.didReceiveStartData = NO;
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
-        self.viewContext = [NSMutableDictionary new];
+        self.viewProperty = [NSMutableDictionary new];
         if(model.fields && model.fields.allKeys.count>0){
-            [self.viewContext addEntriesFromDictionary:model.fields];
+            [self.viewProperty addEntriesFromDictionary:model.fields];
         }
         self.sessionContext = context;
         self.monitor = monitor;
@@ -98,7 +98,7 @@
                 self.isActiveView = NO;
                 self.isStopView = YES;
                 if(viewModel.fields && viewModel.fields.allKeys.count>0){
-                    [self.viewContext addEntriesFromDictionary:viewModel.fields];
+                    [self.viewProperty addEntriesFromDictionary:viewModel.fields];
                 }
             }
         }
@@ -191,8 +191,8 @@
                                    FT_KEY_TIME_SPEND:timeSpend,
                                    
     }.mutableCopy;
-    if(self.viewContext && self.viewContext.allKeys.count>0){
-        [field addEntriesFromDictionary:self.viewContext];
+    if(self.viewProperty && self.viewProperty.allKeys.count>0){
+        [field addEntriesFromDictionary:self.viewProperty];
     }
     if (cpu && cpu.greatestDiff>0) {
         [field setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];

@@ -118,6 +118,9 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
+    [self logging:content status:status property:nil];
+}
+-(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;
     }
@@ -127,7 +130,7 @@ static dispatch_once_t onceToken;
             return;
         }
         dispatch_async(self.serialQueue, ^{
-            [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
+            [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
         });
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);

@@ -238,7 +238,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 - (void)handleException:(NSException *)exception {
     NSString *info = [self handleExceptionInfo:exception];
     
-    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] message:[exception reason] stack:info context:nil];
+    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name] message:[exception reason] stack:info property:nil];
     NSSetUncaughtExceptionHandler(NULL);
     FTClearSignalRegister();
 }

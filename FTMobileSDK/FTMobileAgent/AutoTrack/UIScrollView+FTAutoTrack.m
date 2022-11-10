@@ -26,7 +26,7 @@
             
             if (tableView && indexPath) {
                 UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName context:nil];
+                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName property:nil];
             }
         };
         
@@ -57,7 +57,7 @@
             
             if (collectionView && indexPath) {
                 UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName context:nil];
+                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName property:nil];
             }
         };
         

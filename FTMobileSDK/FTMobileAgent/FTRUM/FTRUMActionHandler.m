@@ -25,7 +25,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
-@property (nonatomic, strong) NSDictionary *actionContext;//添加到field中
+@property (nonatomic, strong) NSDictionary *actionProperty;//添加到field中
 //private
 @property (nonatomic, assign) NSInteger activeResourcesCount;
 @end
@@ -41,7 +41,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.action_type = model.action_type;
         self.type = model.type;
         self.context = [context copy];
-        self.actionContext = model.fields;
+        self.actionProperty = model.fields;
         self.context.action_id = self.action_id;
     }
     return  self;
@@ -106,8 +106,8 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
                              FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
                              FT_RUM_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
     }.mutableCopy;
-    if(self.actionContext && self.actionContext.allKeys.count>0){
-        [fields addEntriesFromDictionary:self.actionContext];
+    if(self.actionProperty && self.actionProperty.allKeys.count>0){
+        [fields addEntriesFromDictionary:self.actionProperty];
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];

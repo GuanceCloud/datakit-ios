@@ -56,22 +56,22 @@
 + (void)startView:(NSDictionary *)context{
     NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
     [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
-    [[FTExternalDataManager sharedManager] startViewWithName:viewName context:context];
+    [[FTExternalDataManager sharedManager] startViewWithName:viewName property:context];
 }
 
 + (void)stopView{
     [[FTExternalDataManager sharedManager] stopView];
 }
 + (void)stopView:(NSDictionary *)context{
-    [[FTExternalDataManager sharedManager] stopViewWithContext:context];
+    [[FTExternalDataManager sharedManager] stopViewWithProperty:context];
 }
 + (void)addAction{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" context:nil];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];
 }
 + (void)addActionWithType:(NSString *)type{
-    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type context:nil];
+    [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
 }
 + (void)addActionWithContext:(NSDictionary *)context{
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionWithContext" context:context];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionWithContext" property:context];
 }
 @end

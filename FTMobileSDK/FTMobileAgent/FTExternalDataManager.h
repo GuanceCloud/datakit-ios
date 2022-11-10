@@ -25,18 +25,18 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 进入页面
  * @param viewName        页面名称
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
--(void)startViewWithName:(NSString *)viewName context:(nullable NSDictionary *)context;
+-(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property;
 /**
  * 离开页面
  */
 -(void)stopView;
 /**
  * 离开页面
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
--(void)stopViewWithContext:(nullable NSDictionary *)context;
+-(void)stopViewWithProperty:(nullable NSDictionary *)property;
 /**
  * 添加 Click Action 事件
  * @param actionName 事件名称
@@ -45,9 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 添加 Click Action 事件
  * @param actionName 事件名称
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)addClickActionWithName:(NSString *)actionName context:(nullable NSDictionary *)context;
+- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 /**
  * 添加  Action 事件
  * @param actionName 事件名称
@@ -58,9 +58,9 @@ NS_ASSUME_NONNULL_BEGIN
  * 添加  Action 事件
  * @param actionName 事件名称
  * @param actionType 事件类型
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType context:(nullable NSDictionary *)context;
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 /**
  * 添加 Error 事件
  * @param type       error 类型
@@ -73,9 +73,9 @@ NS_ASSUME_NONNULL_BEGIN
  * @param type       error 类型
  * @param message    错误信息
  * @param stack      堆栈信息
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack context:(nullable NSDictionary *)context;
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 /**
  * 添加 卡顿 事件
  * @param stack      卡顿堆栈
@@ -86,9 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
  * 添加 卡顿 事件
  * @param stack      卡顿堆栈
  * @param duration   卡顿时长
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration context:(nullable NSDictionary *)context;
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 /**
  * 请求开始
  * @param key       请求标识
@@ -97,9 +97,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 请求开始
  * @param key       请求标识
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)startResourceWithKey:(NSString *)key context:(nullable NSDictionary *)context;
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 /**
  * 请求数据
  * @param key       请求标识
@@ -115,9 +115,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 请求结束
  * @param key       请求标识
- * @param context 事件上下文(可选)
+ * @param property 事件上下文(可选)
  */
-- (void)stopResourceWithKey:(NSString *)key context:(nullable NSDictionary *)context;
+- (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @end
 
 NS_ASSUME_NONNULL_END

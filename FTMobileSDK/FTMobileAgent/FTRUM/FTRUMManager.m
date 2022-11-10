@@ -38,19 +38,19 @@
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
     [self.preViewDuration setValue:loadTime forKey:viewName];
 }
--(void)startViewWithName:(NSString *)viewName context:(nullable NSDictionary *)context{
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName context:context];
+-(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property{
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName property:property];
 }
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName context:(nullable NSDictionary *)context{
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
     NSNumber *duration = @-1;
     if ([self.preViewDuration.allKeys containsObject:viewName]) {
         duration = self.preViewDuration[viewName];
         [self.preViewDuration removeObjectForKey:viewName];
     }
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:duration context:context];
+    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:duration property:property];
 
 }
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration context:(nullable NSDictionary *)context{
+-(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration property:(nullable NSDictionary *)property{
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         return;
     }
@@ -59,7 +59,7 @@
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.loading_time = loadDuration?:@0;
             viewModel.type = FTRUMDataViewStart;
-            viewModel.fields = context;
+            viewModel.fields = property;
             self.viewReferrer = viewName;
             [self process:viewModel];
         }];
@@ -68,10 +68,10 @@
     }
 }
 
--(void)stopViewWithContext:(NSDictionary *)context{
-    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] context:context];
+-(void)stopViewWithProperty:(NSDictionary *)property{
+    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
 }
--(void)stopViewWithViewID:(NSString *)viewId context:(nullable NSDictionary *)context{
+-(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
     if (!viewId) {
         return;
     }
@@ -79,7 +79,7 @@
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
             viewModel.type = FTRUMDataViewStop;
-            viewModel.fields = context;
+            viewModel.fields = property;
             [self process:viewModel];
         }];
     } @catch (NSException *exception) {
@@ -87,10 +87,10 @@
     }
 }
 #pragma mark - Action -
-- (void)addClickActionWithName:(NSString *)actionName context:(NSDictionary *)context{
-    [self addActionName:actionName actionType:FT_RUM_KEY_ACTION_TYPE_CLICK context:context];
+- (void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
+    [self addActionName:actionName actionType:FT_RUM_KEY_ACTION_TYPE_CLICK property:property];
 }
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType context:(NSDictionary *)context{
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     if (!actionName || actionName.length == 0 || !actionType || actionType.length == 0) {
         return;
     }
@@ -98,7 +98,7 @@
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.type = FTRUMDataClick;
-            actionModel.fields = context;
+            actionModel.fields = property;
             [self process:actionModel];
         }];
     } @catch (NSException *exception) {
@@ -132,14 +132,14 @@
 }
 
 #pragma mark - Resource -
-- (void)startResource:(NSString *)identifier context:(nullable NSDictionary *)context{
+- (void)startResource:(NSString *)identifier property:(nullable NSDictionary *)property{
     if (!identifier) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:identifier];
-            resourceStart.fields = context;
+            resourceStart.fields = property;
             [self process:resourceStart];
         }];
     } @catch (NSException *exception) {
@@ -235,16 +235,16 @@
     return nil;
 }
 - (void)stopResource:(NSString *)identifier{
-    [self stopResourceWithKey:identifier context:nil];
+    [self stopResourceWithKey:identifier property:nil];
 }
-- (void)stopResourceWithKey:(NSString *)key context:(NSDictionary *)context{
+- (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
     if (!key) {
         return;
     }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMResourceDataModel *resource = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:key];
-            resource.fields = context;
+            resource.fields = property;
             [self process:resource];
         }];
     } @catch (NSException *exception) {
@@ -252,7 +252,7 @@
     }
 }
 #pragma mark - error 、 long_task -
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack context:(nullable NSDictionary *)context{
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
@@ -260,8 +260,8 @@
         NSMutableDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:message,
                                  FT_RUM_KEY_ERROR_STACK:stack,
         }.mutableCopy;
-        if(context && context.allKeys.count>0){
-            [field addEntriesFromDictionary:context];
+        if(property && property.allKeys.count>0){
+            [field addEntriesFromDictionary:property];
         }
         NSDictionary *tags = @{
             FT_RUM_KEY_ERROR_TYPE:type,
@@ -284,7 +284,7 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration context:(nullable NSDictionary *)context{
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
     if (!stack || stack.length == 0 || !duration) {
         return;
     }
@@ -293,8 +293,8 @@
             NSMutableDictionary *fields = @{FT_DURATION:duration,
                                      FT_RUM_KEY_LONG_TASK_STACK:stack
             }.mutableCopy;
-            if(context && context.allKeys.count>0){
-                [fields addEntriesFromDictionary:context];
+            if(property && property.allKeys.count>0){
+                [fields addEntriesFromDictionary:property];
             }
             FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
             model.tags = @{};

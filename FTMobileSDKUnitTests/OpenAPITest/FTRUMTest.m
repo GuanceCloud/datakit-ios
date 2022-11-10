@@ -322,7 +322,7 @@
     [[FTExternalDataManager sharedManager] onCreateView:@"view1" loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:@"view1"];
     
-    [[FTExternalDataManager sharedManager] addClickActionWithName:@"" context:nil];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"" property:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     [[FTExternalDataManager sharedManager] stopView];
@@ -664,12 +664,12 @@
     XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
-- (void)testActionContext{
+- (void)testActionProperty{
     [self setRumConfig];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
-    [FTModelHelper addActionWithContext:@{@"action_context":@"testActionContext1"}];
-    [FTModelHelper addActionWithContext:@{@"action_context":@"testActionContext2"}];
+    [FTModelHelper addActionWithContext:@{@"action_property":@"testActionProperty1"}];
+    [FTModelHelper addActionWithContext:@{@"action_property":@"testActionPropert2"}];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -681,15 +681,15 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
             NSDictionary *fields = opdata[FT_FIELDS];
-            XCTAssertTrue([fields[@"action_context"] isEqualToString:@"testActionContext1"]);
+            XCTAssertTrue([fields[@"action_property"] isEqualToString:@"testActionProperty1"]);
             *stop = YES;
         }
     }];
 
 }
-- (void)testStartViewContext{
+- (void)testStartViewProperty{
     [self setRumConfig];
-    [FTModelHelper startView:@{@"view_context":@"testStartViewContext"}];
+    [FTModelHelper startView:@{@"view_context":@"testStartViewProperty"}];
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -702,7 +702,7 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field[@"view_context"] isEqualToString:@"testStartViewContext"]);
+            XCTAssertTrue([field[@"view_context"] isEqualToString:@"testStartViewProperty"]);
             hasViewData = YES;
             *stop = YES;
         }
@@ -710,11 +710,11 @@
     XCTAssertTrue(hasViewData);
     [FTModelHelper stopView];
 }
-- (void)testStopViewContext{
+- (void)testStopViewProperty{
     [self setRumConfig];
     [FTModelHelper startView];
     [self addErrorData:nil];
-    [FTModelHelper stopView:@{@"view_stop_context":@"testStopViewContext"}];
+    [FTModelHelper stopView:@{@"view_stop_context":@"testStopViewProperty"}];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasViewData = NO;
@@ -726,18 +726,18 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testStopViewContext"]);
+            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testStopViewProperty"]);
             hasViewData = YES;
             *stop = YES;
         }
     }];
     XCTAssertTrue(hasViewData);
 }
-- (void)testViewContext{
+- (void)testViewProperty{
     [self setRumConfig];
-    [FTModelHelper startView:@{@"view_start_context":@"testViewContext"}];
+    [FTModelHelper startView:@{@"view_start_context":@"testViewProperty"}];
     [self addErrorData:nil];
-    [FTModelHelper stopView:@{@"view_stop_context":@"testViewContext"}];
+    [FTModelHelper stopView:@{@"view_stop_context":@"testViewProperty"}];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasViewData = NO;
@@ -749,18 +749,18 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW] && hasViewData == NO) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testViewContext"]);
-            XCTAssertTrue([field[@"view_start_context"] isEqualToString:@"testViewContext"]);
+            XCTAssertTrue([field[@"view_stop_context"] isEqualToString:@"testViewProperty"]);
+            XCTAssertTrue([field[@"view_start_context"] isEqualToString:@"testViewProperty"]);
             hasViewData = YES;
             *stop = YES;
         }
     }];
     XCTAssertTrue(hasViewData);
 }
-- (void)testErrorContext{
+- (void)testErrorProperty{
     [self setRumConfig];
     [FTModelHelper startView];
-    [self addErrorData:@{@"error_context":@"testErrorContext"}];
+    [self addErrorData:@{@"error_context":@"testErrorProperty"}];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasErrorData = NO;
@@ -772,14 +772,14 @@
         NSString *measurement = opdata[@"source"];
         if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ERROR]) {
             NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field[@"error_context"] isEqualToString:@"testErrorContext"]);
+            XCTAssertTrue([field[@"error_context"] isEqualToString:@"testErrorProperty"]);
             hasErrorData = YES;
             *stop = YES;
         }
     }];
     XCTAssertTrue(hasErrorData);
 }
-- (void)testLongTaskContext{
+- (void)testLongTaskProperty{
     [self setRumConfig];
     [FTModelHelper startView];
     [self addLongTaskData:@{@"longtask_context":@"testLongTaskContext"}];
@@ -801,7 +801,7 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
-- (void)testStartResourceContext{
+- (void)testStartResourceProperty{
     [self setRumConfig];
     [FTModelHelper startView];
     [self addResource:@{@"resource_start_context":@"testStartResourceContext"} endContext:nil];
@@ -823,7 +823,7 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
-- (void)testStopResourceContext{
+- (void)testStopResourceProperty{
     [self setRumConfig];
     [FTModelHelper startView];
     [self addResource:nil endContext:@{@"resource_stop_context":@"testStopResourceContext"}];
@@ -845,7 +845,7 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
-- (void)testResourceContext{
+- (void)testResourceProperty{
     [self setRumConfig];
     [FTModelHelper startView];
     [self addResource:@{@"resource_start_context":@"testResourceContext"} endContext:@{@"resource_stop_context":@"testResourceContext"}];
@@ -868,19 +868,19 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
-- (void)addErrorData:(NSDictionary *)context{
+- (void)addErrorData:(NSDictionary *)property{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
     NSString *error_stack = @"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15";
     NSString *error_type = @"ios_crash";
     
-    [[FTExternalDataManager sharedManager] addErrorWithType:error_type  message:error_message stack:error_stack context:context];
+    [[FTExternalDataManager sharedManager] addErrorWithType:error_type  message:error_message stack:error_stack property:property];
 }
-- (void)addLongTaskData:(NSDictionary *)context{
+- (void)addLongTaskData:(NSDictionary *)property{
     NSString *stack = @"Backtrace of Thread 771:\n0 libsystem_kernel.dylib          0x7fff6112d756 __semwait_signal + 10\n1 libsystem_c.dylib               0x7fff200f7500 usleep + 53\n2 SampleApp                       0x1038b9a96 -[TestANRVC tableView:cellForRowAtIndexPath:] + 230\n3 UIKitCore                       0x7fff248ce1af -[UITableView _createPreparedCellForGlobalRow:withIndexPath:willDisplay:] + 865\n4 UIKitCore                       0x7fff248ce637 -[UITableView _createPreparedCellForRowAtIndexPath:willDisplay:] + 80\n5 UIKitCore                       0x7fff248dab61 -[UITableView _heightForRowAtIndexPath:] + 204\n6 UIKitCore                       0x7fff248eea95 -[UISectionRowData heightForRow:inSection:canGuess:] + 220\n7 UIKitCore                       0x7fff248f40ca -[UITableViewRowData heightForRow:inSection:canGuess:adjustForReorderedRow:] + 238\n8 UIKitCore                       0x7fff248f7c1a -[UITableViewRowData ensureHeightsFaultedInForScrollToIndexPath:boundsHeight:] + 864\n9 UIKitCore                       0x7fff248ad10f -[UITableView _contentOffsetForScrollingToRowAtIndexPath:atScrollPosition:usingPresentationValues:] + 1138\n10 UIKitCore                       0x7fff248ae07c -[UITableView _scrollToRowAtIndexPath:atScrollPosition:animated:usingPresentationValues:] + 142\n11 UIKitCore                       0x7fff248b18dc -[UITableView _selectRowAtIndexPath:animated:scrollPosition:notifyDelegate:isCellMultiSelect:] + 719\n12 UIKitCore                       0x7fff248b2004 -[UITableView selectRowAtIndexPath:animated:scrollPosition:] + 91\n";
     NSNumber *dutation = @5000000000;
     
     
-    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation context:context];
+    [[FTExternalDataManager sharedManager] addLongTaskWithStack:stack duration:dutation property:property];
 }
 - (void)addResource{
     [self addResource:nil endContext:nil];
@@ -889,7 +889,7 @@
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
-    [[FTExternalDataManager sharedManager] startResourceWithKey:key context:startContext];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key property:startContext];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
     model.duration = @1000;
@@ -904,7 +904,7 @@
                               @"Vary": @"Accept-Encoding,User-Agent"
                               
     };
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:key context:endContext];
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key property:endContext];
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
     metrics.duration = @1000;
     metrics.resource_dns = @0;

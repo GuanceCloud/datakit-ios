@@ -32,44 +32,44 @@
 -(void)startViewWithName:(NSString *)viewName {
     [FTGlobalRumManager.sharedInstance startViewWithName:viewName];
 }
--(void)startViewWithName:(NSString *)viewName context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance startViewWithName:viewName context:context];
+-(void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance startViewWithName:viewName property:property];
 }
 - (void)stopView{
     [FTGlobalRumManager.sharedInstance stopView];
 }
--(void)stopViewWithContext:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance stopViewWithContext:context];
+-(void)stopViewWithProperty:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance stopViewWithProperty:property];
 }
 - (void)addClickActionWithName:(NSString *)actionName {
     [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName];
 }
-- (void)addClickActionWithName:(NSString *)actionName context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName context:context];
+- (void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance addClickActionWithName:actionName property:property];
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
     [FTGlobalRumManager.sharedInstance addActionName:actionName actionType:actionType];
 }
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance addActionName:actionName actionType:actionType context:context];
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance addActionName:actionName actionType:actionType property:property];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
     [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack];
 }
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack context:context];
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance addErrorWithType:type  message:message stack:stack property:property];
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
     [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration];
 }
--(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration context:context];
+-(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance addLongTaskWithStack:stack duration:duration property:property];
 }
 - (void)startResourceWithKey:(NSString *)key{
     [FTGlobalRumManager.sharedInstance startResourceWithKey:key];
 }
-- (void)startResourceWithKey:(NSString *)key context:(NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance startResourceWithKey:key context:context];
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance startResourceWithKey:key property:property];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     [FTGlobalRumManager.sharedInstance addResourceWithKey:key metrics:metrics content:content];
@@ -77,8 +77,8 @@
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     [FTGlobalRumManager.sharedInstance stopResourceWithKey:key];
 }
-- (void)stopResourceWithKey:(nonnull NSString *)key context:(nullable NSDictionary *)context{
-    [FTGlobalRumManager.sharedInstance stopResourceWithKey:key context:context];
+- (void)stopResourceWithKey:(nonnull NSString *)key property:(nullable NSDictionary *)property{
+    [FTGlobalRumManager.sharedInstance stopResourceWithKey:key property:property];
 }
 
 @end
