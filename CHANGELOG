@@ -1,3 +1,6 @@
+1.3.9-alpha.7
+1. 解决集成 extesion 功能时头文件冲突问题
+---
 1.3.9-alpha.6
 1. 兼容老的版本 API
 2. 解决集成 extesion SDK 时头文件冲突问题
