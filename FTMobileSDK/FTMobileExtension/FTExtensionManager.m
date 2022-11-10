@@ -23,7 +23,6 @@
 #import "FTMobileConfig+Private.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTRUMManager *rumManager;
-@property (nonatomic, strong) FTURLSessionAutoInstrumentation *sessionInstrumentation;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTExtensionConfig *extensionConfig;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
@@ -69,7 +68,7 @@ static FTExtensionManager *sharedInstance = nil;
     self.loggerConfig = loggerConfig;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [self.sessionInstrumentation setRUMConfig:rumConfigOptions];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
     self.rumManager = [[FTRUMManager alloc] initWithRumConfig:rumConfigOptions monitor:nil wirter:self];
     self.rumManager.appState = AppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
@@ -80,16 +79,11 @@ static FTExtensionManager *sharedInstance = nil;
     }
     [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
 }
-- (FTURLSessionAutoInstrumentation *)sessionInstrumentation{
-    if(!_sessionInstrumentation){
-        _sessionInstrumentation = [[FTURLSessionAutoInstrumentation alloc]init];
-    }
-    return _sessionInstrumentation;
-}
+
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [self.sessionInstrumentation setTraceConfig:traceConfigOptions];
-    [FTExternalDataManager sharedManager].traceDelegate = self.sessionInstrumentation.tracer;
-    [FTExternalDataManager sharedManager].resourceDelegate = self.sessionInstrumentation.rumResourceHandler;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [FTExternalDataManager sharedManager].traceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].tracer;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
 
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
