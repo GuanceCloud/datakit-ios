@@ -240,7 +240,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
                                 @"fields": fields?fields:@{},
                                 @"tags": tags?tags:@{},
                                 @"tm":[NSNumber numberWithLongLong:tm]};
-        [self writeEvent:event groupIdentifier:groupIdentifier];
+        return  [self writeEvent:event groupIdentifier:groupIdentifier];
     } @catch (NSException *exception) {
         return NO;
     }
@@ -265,7 +265,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
                                 @"fields": fields?fields:@{},
                                 @"tags": tags?tags:@{},
                                 @"tm":[NSNumber numberWithLongLong:tm]};
-        [self writeEvent:event groupIdentifier:groupIdentifier];
+        return [self writeEvent:event groupIdentifier:groupIdentifier];
     } @catch (NSException *exception) {
         return NO;
     }
