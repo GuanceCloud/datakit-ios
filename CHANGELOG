@@ -1,9 +1,13 @@
+1.3.9-alpha.8
+1. 解决 extension RUM 采集异常问题
+2. extension SDK 测试用例补充
+---
 1.3.9-alpha.7
-1. 解决集成 extesion 功能时头文件冲突问题
+1. 解决集成 extension 功能时头文件冲突问题
 ---
 1.3.9-alpha.6
 1. 兼容老的版本 API
-2. 解决集成 extesion SDK 时头文件冲突问题
+2. 解决集成 extension SDK 时头文件冲突问题
 ---
 1.3.9-alpha.5
 1. SDK 内部 URL 过滤 bug 修复
