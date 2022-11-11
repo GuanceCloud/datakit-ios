@@ -9,6 +9,13 @@
 #import "FTExtensionConfig.h"
 
 @implementation FTExtensionConfig
+- (instancetype)initWithGroupIdentifier:(NSString *)groupIdentifier{
+    self = [super init];
+    if(self){
+        _groupIdentifier = groupIdentifier;
+    }
+    return self;
+}
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTExtensionConfig *options = [[[self class] allocWithZone:zone] init];
     options.enableSDKDebugLog = self.enableSDKDebugLog;

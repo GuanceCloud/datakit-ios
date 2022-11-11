@@ -28,6 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 设置是否开启自动 http trace
  */
 @property (nonatomic, assign) BOOL enableAutoTraceResource;
+
+/// 初始化方法，同时设置必要参数 groupIdentifier
+/// - Parameter groupIdentifier: 文件共享 Group Identifier
+- (instancetype)initWithGroupIdentifier:(NSString *)groupIdentifier;
 @end
 
 NS_ASSUME_NONNULL_END

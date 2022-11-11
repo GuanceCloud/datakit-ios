@@ -46,8 +46,7 @@
 - (void)setExtensionSDK{
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        FTExtensionConfig *config = [[FTExtensionConfig alloc]init];
-        config.groupIdentifier = @"group.com.ft.widget.demo";
+        FTExtensionConfig *config = [[FTExtensionConfig alloc]initWithGroupIdentifier:@"group.com.ft.widget.demo"];
         config.enableSDKDebugLog = YES;
         config.enableAutoTraceResource = YES;
         [FTExtensionManager startWithExtensionConfig:config];
