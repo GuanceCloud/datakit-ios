@@ -130,7 +130,7 @@ NSString * const FT_MONITOR_POWER = @"power";
 #pragma mark ========== logging key ==========
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_KEY_STATUS = @"status";
-NSString * const FT_KEY_CONTENT = @"conent";
+NSString * const FT_KEY_CONTENT = @"content";
 NSString * const FT_KEY_MESSAGE = @"message";
 NSString * const FT_KEY_SPANTYPE = @"span_type";
 
