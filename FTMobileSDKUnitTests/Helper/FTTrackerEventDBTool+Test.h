@@ -6,8 +6,8 @@
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTDataBase/fmdb/ZY_FMDB.h>
+#import "FTTrackerEventDBTool.h"
+#import "ZY_FMDB.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

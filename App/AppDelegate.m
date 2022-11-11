@@ -7,14 +7,14 @@
 //
 
 #import "AppDelegate.h"
-#import <FTTrackerEventDBTool.h>
-#import <FTBaseInfoHandler.h>
-#import <FTDateUtil.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
-#import <FTTrackDataManger.h>
+#import "FTTrackDataManger.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"

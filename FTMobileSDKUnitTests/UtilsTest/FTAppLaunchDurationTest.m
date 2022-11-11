@@ -7,14 +7,14 @@
 //
 
 #import <KIF/KIF.h>
-#import <FTMobileAgent/FTMobileAgent.h>
+#import "FTMobileAgent.h"
 #import "FTTrackDataManger+Test.h"
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTDateUtil.h>
-#import <FTRecordModel.h>
-#import <FTJSONUtil.h>
-#import <FTConstants.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTDateUtil.h"
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
+#import "FTConstants.h"
+#import "FTMobileAgent+Private.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 @interface FTAppLaunchDurationTest : KIFTestCase

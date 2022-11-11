@@ -7,13 +7,13 @@
 //
 
 #import <KIF/KIF.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTDateUtil.h>
-#import <FTConstants.h>
-#import <FTJSONUtil.h>
-#import <FTRecordModel.h>
+#import "FTMobileAgent.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTMobileAgent+Private.h"
+#import "FTDateUtil.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "FTRecordModel.h"
 #import "UITestVC.h"
 #import "FTTrackDataManger+Test.h"
 

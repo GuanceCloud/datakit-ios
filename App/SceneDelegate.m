@@ -1,7 +1,7 @@
 #import "SceneDelegate.h"
 #import "DemoViewController.h"
 #import "UITestVC.h"
-#import <FTMobileAgent/FTMobileAgent.h>
+#import "FTMobileAgent.h"
 @interface SceneDelegate ()
 
 @end

@@ -8,9 +8,9 @@
 
 #import "ResultVC.h"
 #import "AppDelegate.h"
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTThread.h>
-#import <FTTrackerEventDBTool.h>
+#import "FTMobileAgent.h"
+#import "FTThread.h"
+#import "FTTrackerEventDBTool.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"

@@ -7,19 +7,18 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTRecordModel.h>
-#import <FTBaseInfoHandler.h>
-#import <FTDateUtil.h>
-#import <FTConstants.h>
-#import <FTJSONUtil.h>
-#import <NSString+FTAdd.h>
-//#import "FTBaseInfoHander.h"
+#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTRecordModel.h"
+#import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "NSString+FTAdd.h"
 #import "FTTrackDataManger+Test.h"
-#import <FTRequest.h>
-#import <FTNetworkManager.h>
+#import "FTRequest.h"
+#import "FTNetworkManager.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 @interface FTUtilsTest : XCTestCase

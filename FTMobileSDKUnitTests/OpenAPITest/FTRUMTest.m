@@ -7,18 +7,18 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTBaseInfoHandler.h>
-#import <FTConstants.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTDateUtil.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTMobileAgent.h"
+#import "FTBaseInfoHandler.h"
+#import "FTConstants.h"
+#import "FTMobileAgent+Private.h"
+#import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
-#import <FTRecordModel.h>
-#import <FTJSONUtil.h>
-#import <FTRUMManager.h>
-#import <FTRUMSessionHandler.h>
-#import <FTGlobalRumManager.h>
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
+#import "FTRUMManager.h"
+#import "FTRUMSessionHandler.h"
+#import "FTGlobalRumManager.h"
 #import "FTTrackDataManger+Test.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
