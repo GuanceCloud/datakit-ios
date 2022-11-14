@@ -58,8 +58,7 @@ struct WidgetDemoEntryView : View {
 struct WidgetDemo: Widget {
     let kind: String = "WidgetDemo"
     init() {
-        let extensionConfig = FTExtensionConfig.init()
-        extensionConfig.groupIdentifier = "group.com.ft.widget.demo"
+        let extensionConfig = FTExtensionConfig.init(groupIdentifier: "group.com.ft.widget.demo")
         extensionConfig.enableTrackAppCrash = true
         extensionConfig.enableAutoTraceResource = true
         extensionConfig.enableSDKDebugLog = true
