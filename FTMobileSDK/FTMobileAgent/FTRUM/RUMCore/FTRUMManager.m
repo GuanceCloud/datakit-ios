@@ -275,7 +275,7 @@
     }
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    if (!stack || stack.length == 0 || !duration) {
+    if (!stack || stack.length == 0 || duration == nil) {
         return;
     }
     @try {

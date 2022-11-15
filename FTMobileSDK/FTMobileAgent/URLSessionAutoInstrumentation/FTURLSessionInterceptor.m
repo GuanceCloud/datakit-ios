@@ -45,7 +45,7 @@
 }
 - (BOOL)isInternalURL:(NSURL *)url{
     if (self.innerUrl) {
-        if (url.port) {
+        if (url.port!=nil) {
             return ([url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host]&&[url.port isEqual:[NSURL URLWithString:self.innerUrl].port]);
         }else{
             return [url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host];
@@ -134,7 +134,7 @@
         [self.innerResourceHandeler startResourceWithKey:handler.identifier];
     }
 }
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if ([self isInternalURL:task.originalRequest.URL]) {
         return;
     }
