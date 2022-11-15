@@ -84,7 +84,7 @@
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     }
     // UI 测试
-    if(isUITests){
+    if(url && isUITests){
         //禁止上传逻辑
         [[FTTrackDataManger sharedInstance] setValue:@YES forKey:@"isUploading"];
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -129,12 +129,8 @@
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options  API_AVAILABLE(ios(13.0)){
     // Called when a new scene session is being created.
     // Use this method to select a configuration to create the new scene with.
-    if (@available(iOS 13.0, *)) {
-        return [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
-    } else {
-        // Fallback on earlier versions
-    }
-    return nil;
+    
+    return [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
 }
 
 
