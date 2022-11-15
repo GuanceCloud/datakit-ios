@@ -139,9 +139,7 @@ static dispatch_once_t onceToken;
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        dispatch_async(self.serialQueue, ^{
-            [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
-        });
+        [self logging:content status:status tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -199,7 +197,7 @@ static dispatch_once_t onceToken;
 }
 
 // FT_DATA_TYPE_LOGGING
--(void)loggingWithType:(FTAddDataType)type status:(FTLogStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(void)logging:(NSString *)content status:(FTLogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     if (!self.loggerConfig) {
         ZYErrorLog(@"请先设置 FTLoggerConfig");
         return;
@@ -217,24 +215,26 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
-            if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
-                NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
-                [tagDict addEntriesFromDictionary:rumTag];
+        dispatch_async(self.serialQueue, ^{
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
+            if (tags) {
+                [tagDict addEntriesFromDictionary:tags];
             }
-        }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
-        [self insertDBWithItemData:model type:type];
+            if (self.loggerConfig.enableLinkRumData) {
+                [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
+                if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
+                    NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
+                    [tagDict addEntriesFromDictionary:rumTag];
+                }
+            }
+            NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
+            }.mutableCopy;
+            if (field) {
+                [filedDict addEntriesFromDictionary:field];
+            }
+            FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
+            [self insertDBWithItemData:model type:FTAddDataLogging];
+        });
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -251,7 +251,7 @@ static dispatch_once_t onceToken;
                 NSNumber *tm = dict[@"tm"];
                 if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
                     FTLogStatus status = [dict[@"status"] intValue];
-                    [self loggingWithType:FTAddDataLogging status:status content:dict[@"content"] tags:dict[@"tags"] field:dict[@"fields"] tm:tm.longLongValue];
+                    [self logging:dict[@"content"] status:status tags:dict[@"tags"] field:dict[@"fields"] tm:tm.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
                     [self rumWrite:eventType terminal:FT_TERMINAL_APP tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
@@ -272,18 +272,16 @@ static dispatch_once_t onceToken;
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
-        dispatch_async(self.serialQueue, ^{
             if (!weakSelf.loggerConfig.enableConsoleLog ) {
                 return;
             }
             if (weakSelf.loggerConfig.prefix.length>0) {
                 if([logStr containsString:weakSelf.loggerConfig.prefix]){
-                    [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                    [weakSelf logging:logStr status:FTStatusInfo tags:nil field:nil tm:tm];
                 }
             }else{
-                [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                [weakSelf logging:logStr status:FTStatusInfo tags:nil field:nil tm:tm];
             }
-        });
     }];
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
