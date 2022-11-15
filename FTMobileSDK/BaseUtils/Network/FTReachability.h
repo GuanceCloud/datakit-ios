@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
-NS_ASSUME_NONNULL_BEGIN
+
 #ifndef NS_ENUM
 #define NS_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
 #endif
@@ -47,4 +47,3 @@ typedef void(^NetworkChangeBlock)(void);
 
 @end
 
-NS_ASSUME_NONNULL_END

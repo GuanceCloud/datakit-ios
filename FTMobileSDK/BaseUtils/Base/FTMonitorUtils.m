@@ -25,27 +25,8 @@
 #define IP_ADDR_IPv6    @"ipv6"
 @implementation FTMonitorUtils
 
-#pragma mark ========== WIFI的SSID 与 IP ==========
-#if !TARGET_OS_OSX
-// 获取设备当前连接的WIFI的SSID  需要配置 Access WiFi Infomation
-+ (NSString *)currentWifiSSID{
-    NSString * wifiName = FT_NULL_VALUE;
-    CFArrayRef wifiInterfaces = CNCopySupportedInterfaces();
-    if (!wifiInterfaces) {
-        wifiName = FT_NULL_VALUE;
-    }
-    NSArray *interfaces = (__bridge NSArray *)wifiInterfaces;
-    for (NSString *interfaceName in interfaces) {
-        CFDictionaryRef dictRef = CNCopyCurrentNetworkInfo((__bridge CFStringRef)(interfaceName));
-        if (dictRef) {
-            NSDictionary *networkInfo = (__bridge NSDictionary *)dictRef;
-            wifiName = [networkInfo objectForKey:(__bridge NSString *)kCNNetworkInfoKeySSID];
-            CFRelease(dictRef);
-        }
-    }
-    return wifiName;
-}
-#endif
+#pragma mark ========== WIFI IP ==========
+
 // - 获取当前Wi-Fi的IP
 + (NSString *)ipAddress{
     NSString *address = FT_NULL_VALUE;
@@ -83,10 +64,10 @@
     __block NSString *address;
     [searchArray enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop)
      {
-         address = addresses[key];
-         //筛选出IP地址格式
-         if([self isValidatIP:address]) *stop = YES;
-     } ];
+        address = addresses[key];
+        //筛选出IP地址格式
+        if([self isValidatIP:address]) *stop = YES;
+    } ];
     return address ? address : @"0.0.0.0";
 }
 + (BOOL)isValidatIP:(NSString *)ipAddress {
@@ -158,7 +139,7 @@
     if (deviceLevel == -1) {
         return 0;
     }else{
-    return deviceLevel*100;
+        return deviceLevel*100;
     }
 }
 #endif
@@ -195,12 +176,11 @@
     mach_msg_type_number_t task_info_count;
     
     task_info_count = TASK_INFO_MAX;
-    kr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
+    kr = task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
     if (kr != KERN_SUCCESS) {
         return -1;
     }
     
-    task_basic_info_t      basic_info;
     thread_array_t         thread_list;
     mach_msg_type_number_t thread_count;
     
@@ -208,24 +188,15 @@
     mach_msg_type_number_t thread_info_count;
     
     thread_basic_info_t basic_info_th;
-    uint32_t stat_thread = 0; // Mach threads
     
-    basic_info = (task_basic_info_t)tinfo;
-    
-    // get threads in the task
+    // mach_task_self()，表示获取当前的 Mach task
     kr = task_threads(mach_task_self(), &thread_list, &thread_count);
     if (kr != KERN_SUCCESS) {
         return -1;
     }
-    if (thread_count > 0)
-        stat_thread += thread_count;
-    
-    long tot_sec = 0;
-    long tot_usec = 0;
+
     float tot_cpu = 0;
-    int j;
-    
-    for (j = 0; j < (int)thread_count; j++)
+    for (int j = 0; j < (int)thread_count; j++)
     {
         thread_info_count = THREAD_INFO_MAX;
         kr = thread_info(thread_list[j], THREAD_BASIC_INFO,
@@ -237,8 +208,6 @@
         basic_info_th = (thread_basic_info_t)thinfo;
         
         if (!(basic_info_th->flags & TH_FLAGS_IDLE)) {
-            tot_sec = tot_sec + basic_info_th->user_time.seconds + basic_info_th->system_time.seconds;
-            tot_usec = tot_usec + basic_info_th->user_time.microseconds + basic_info_th->system_time.microseconds;
             tot_cpu = tot_cpu + basic_info_th->cpu_usage / (float)TH_USAGE_SCALE * 100.0;
         }
         

@@ -46,7 +46,7 @@
 {
     FTJSONUtil *util = [FTJSONUtil new];
     NSData *jsonData = [util JSONSerializeDictObject:dict];
-    NSString *jsonString;
+    NSString *jsonString = @"";
     if (jsonData) {
         jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     }

@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - task: 请求任务
 ///   - metrics: 请求任务的数据记录
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics;
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
 /// 收集请求的返回数据
 /// - Parameters:
 ///   - task: 请求任务
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - error: error 信息
 ///
 /// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
 
 @end
 NS_ASSUME_NONNULL_END

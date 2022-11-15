@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FTURLSessionInterceptorProtocol.h"
-NS_ASSUME_NONNULL_BEGIN
+
 @interface FTURLProtocol : NSURLProtocol
 
 /// 设置 url 拦截代理
@@ -25,4 +25,4 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)stopMonitor;
 @end
 
-NS_ASSUME_NONNULL_END
+

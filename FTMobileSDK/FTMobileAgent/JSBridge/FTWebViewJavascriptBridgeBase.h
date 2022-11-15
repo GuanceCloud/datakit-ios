@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTWebViewJavascriptBridgeBaseDelegate <NSObject>
-- (NSString*)_evaluateJavascript:(NSString*)javascriptCommand;
+- (nullable NSString*)_evaluateJavascript:(NSString*)javascriptCommand;
 @end
 typedef NSDictionary WVJBMessage;
 typedef void (^WVJBResponseCallback)(id responseData);
@@ -20,7 +20,7 @@ typedef void (^WVJBHandler)(id data, WVJBResponseCallback responseCallback);
 @property (nonatomic, strong) NSMutableDictionary *responseCallbacks;
 @property (nonatomic, strong) NSMutableDictionary *messageHandlers;
 - (void)flushMessageQueue:(NSString *)messageQueueString;
-- (void)sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName;
+- (void)sendData:(nullable id)data responseCallback:(nullable WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName;
 
 @end
 

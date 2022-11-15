@@ -293,7 +293,7 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
         uint64_t loadEndAddress = 0;
         NSString *imageName = @"";
         NSString *imagePath = @"";
-        NSString *uuid;
+        NSString *uuid = @"";
         
         const struct mach_header *header = _dyld_get_image_header(i);
         const char *name = _dyld_get_image_name(i);

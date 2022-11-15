@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param key   请求标识
  * @param url   请求 URL
  */
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
+- (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
 @end
 
 NS_ASSUME_NONNULL_END
