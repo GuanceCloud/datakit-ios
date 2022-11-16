@@ -69,8 +69,8 @@ static dispatch_once_t onceToken;
     [_sessionInterceptor enableAutoTrace:config.enableAutoTrace];
     [_sessionInterceptor enableLinkRumData:config.enableLinkRumData];
     _tracer = [[FTTracer alloc]initWithConfig:config];
+    [_sessionInterceptor setTracer:_tracer];
     if(config.enableAutoTrace){
-        [_sessionInterceptor setTracer:_tracer];
         [self startMonitor];
     }
 }
