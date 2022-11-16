@@ -176,7 +176,7 @@
     [self addErrorData];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    __block NSInteger hasViewData = NO;
+    __block BOOL hasViewData = NO;
     __block NSInteger actionCount,trueActionCount=0;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -683,8 +683,7 @@
 - (void)addResource{
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    id<FTTracerProtocol> tracer =(id<FTTracerProtocol>)[FTURLSessionAutoInstrumentation sharedInstance].tracer;
-    NSDictionary *traceHeader = [tracer networkTraceHeaderWithUrl:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;

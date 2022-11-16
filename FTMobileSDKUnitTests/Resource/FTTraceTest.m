@@ -26,6 +26,9 @@
 #import "FTTracer.h"
 #import <objc/runtime.h>
 #import "FTURLSessionAutoInstrumentation.h"
+#import "FTModelHelper.h"
+#import "FTGlobalRumManager.h"
+#import "FTRUMManager.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate>
 @end
@@ -247,6 +250,72 @@
         XCTAssertNil(error);
     }];
 
+}
+- (void)testUnableAutoTraceLinkRumExternalAdd{
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:murl];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.samplerate = 100;
+    traceConfig.enableAutoTrace = NO;
+    traceConfig.enableLinkRumData = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    
+    [FTModelHelper startView];
+    
+    NSString *key = [[NSUUID UUID]UUIDString];
+    NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = url;
+    model.duration = @1000;
+    model.httpStatusCode = 200;
+    model.httpMethod = @"GET";
+    model.requestHeader = traceHeader;
+    model.responseHeader = @{ @"Accept-Ranges": @"bytes",
+                              @"Cache-Control": @"max-age=86400", @"Content-Encoding": @"gzip",
+                              @"Content-Length": @"11328",
+                              @"Content-Type": @"text/html",
+                              @"Server": @"Apache",
+                              @"Vary": @"Accept-Encoding,User-Agent"
+                              
+    };
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
+    metrics.duration = @1000;
+    metrics.resource_dns = @0;
+    metrics.resource_ssl = @12;
+    metrics.resource_tcp = @100;
+    metrics.resource_ttfb = @101;
+    metrics.resource_trans = @102;
+    metrics.resource_first_byte = @103;
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
+    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasResourceData = NO;
+    [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSString *op = dict[@"op"];
+        XCTAssertTrue([op isEqualToString:@"RUM"]);
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *measurement = opdata[@"source"];
+        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            hasResourceData = YES;
+            NSDictionary *tags = opdata[FT_TAGS];
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
 }
 - (void)testDisableAutoTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
