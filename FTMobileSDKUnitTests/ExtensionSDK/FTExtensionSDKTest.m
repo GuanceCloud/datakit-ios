@@ -49,6 +49,7 @@
         FTExtensionConfig *config = [[FTExtensionConfig alloc]initWithGroupIdentifier:@"group.com.ft.widget.demo"];
         config.enableSDKDebugLog = YES;
         config.enableAutoTraceResource = YES;
+        config.memoryMaxCount = 100;
         [FTExtensionManager startWithExtensionConfig:config];
     });
 }
@@ -138,6 +139,18 @@
         }
     }];
     XCTAssertTrue(hasLogger);
+}
+- (void)testMaxCount{
+    [self saveMobileSdkConfig];
+    [self setExtensionSDK];
+    NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
+    for (int i = 0; i<120; i++) {
+        [[FTExtensionManager sharedInstance] logging:[NSString stringWithFormat:@"testMaxCount:%d",i] status:FTStatusInfo];
+    }
+    [NSThread sleepForTimeInterval:0.5];
+    NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
+    XCTAssertTrue(newDatas.count>olddatas.count);
+    XCTAssertTrue(newDatas.count == 100);
 }
 - (void)testWriteInMobileSDK{
     [self saveMobileSdkConfig];

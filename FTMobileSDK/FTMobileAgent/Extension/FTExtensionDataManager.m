@@ -24,7 +24,6 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 
 @interface FTExtensionDataManager()
 @property (nonatomic, strong) dispatch_queue_t appExtensionQueue;
-
 @end
 @implementation FTExtensionDataManager
 + (instancetype)sharedInstance {
@@ -39,6 +38,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
     if (self = [super init]) {
         self.appExtensionQueue = dispatch_queue_create("com.ft.FTMobileExtension", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(self.appExtensionQueue, FTAppExtensionQueueTag, &FTAppExtensionQueueTag, NULL);
+        _maxCount = NSIntegerMax;
     }
     return self;
 }
@@ -279,6 +279,9 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         }
         NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:path];
         if (array.count) {
+            if(array.count>=self.maxCount){
+                [array removeObjectAtIndex:0];
+            }
             [array addObject:event];
         } else {
             array = [NSMutableArray arrayWithObject:event];

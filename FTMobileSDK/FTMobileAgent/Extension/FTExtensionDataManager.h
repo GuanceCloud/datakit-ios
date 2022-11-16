@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 /// AppGroups Identifier 数组
 @property (nonatomic, strong) NSArray *groupIdentifierArray;
+/// 存储数据最大值
+@property (nonatomic, assign) NSInteger maxCount;
 
 /// 单例
 + (instancetype)sharedInstance;

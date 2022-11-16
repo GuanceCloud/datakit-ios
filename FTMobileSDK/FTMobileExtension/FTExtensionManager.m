@@ -45,6 +45,7 @@ static FTExtensionManager *sharedInstance = nil;
     if (self) {
         _extensionConfig = extensionConfig;
         [FTLog enableLog:extensionConfig.enableSDKDebugLog];
+        [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
         [self processingConfigItems];
     }
     return self;

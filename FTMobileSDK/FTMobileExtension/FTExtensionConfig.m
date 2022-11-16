@@ -13,6 +13,7 @@
     self = [super init];
     if(self){
         _groupIdentifier = groupIdentifier;
+        _memoryMaxCount = 1000;
     }
     return self;
 }
@@ -22,6 +23,7 @@
     options.enableTrackAppCrash = self.enableTrackAppCrash;
     options.enableAutoTraceResource = self.enableAutoTraceResource;
     options.groupIdentifier = self.groupIdentifier;
+    options.memoryMaxCount = self.memoryMaxCount;
     return options;
 }
 @end
