@@ -13,7 +13,7 @@
 #import <objc/runtime.h>
 
 @interface FTURLSessionInterceptor ()
-@property (nonatomic, strong) NSMutableDictionary<id,FTTraceHandler *> *traceHandlers;
+@property (nonatomic, strong) NSCache <id,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) BOOL enableTrace;
@@ -28,7 +28,8 @@
     self = [super init];
     if (self) {
         _lock = dispatch_semaphore_create(1);
-        _traceHandlers = [NSMutableDictionary new];
+        _traceHandlers = [NSCache new];
+        _traceHandlers.countLimit = 1000;
         _enableTrace = NO;
         _enableLinkRumData = NO;
     }
@@ -53,10 +54,6 @@
     }
     return NO;
 }
-// traceHeader 处理
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    return [self.tracer networkTraceHeaderWithUrl:url];
-}
 /**
  * 内部采集以 task 为 key
  * 外部传传入为 NSString 类型的 key
@@ -65,30 +62,20 @@
     if (key == nil) {
         return;
     }
-    dispatch_semaphore_wait(self.lock, DISPATCH_TIME_FOREVER);
-    [self.traceHandlers setValue:handler forKey:key];
-    dispatch_semaphore_signal(self.lock);
+    [self.traceHandlers setObject:handler forKey:key];
 }
 // 因为不涉及 trace 数据写入 调用-getTraceHandler方法的仅是 rum 操作 需要确保 rum 调用此方法
 - (FTTraceHandler *)getTraceHandler:(id)key{
     if (key == nil) {
         return nil;
     }
-    FTTraceHandler *handler = nil;
-    dispatch_semaphore_wait(self.lock, DISPATCH_TIME_FOREVER);
-    if ([self.traceHandlers.allKeys containsObject:key]) {
-      handler = self.traceHandlers[key];
-    }
-    dispatch_semaphore_signal(self.lock);
-    return handler;
+    return [self.traceHandlers objectForKey:key];
 }
 -(void)removeTraceHandlerWithKey:(id)key{
     if (key == nil) {
         return;
     }
-    dispatch_semaphore_wait(self.lock, DISPATCH_TIME_FOREVER);
     [self.traceHandlers removeObjectForKey:key];
-    dispatch_semaphore_signal(self.lock);
 }
 #pragma mark --------- URLSessionInterceptorType ----------
 -(void)setInnerUrl:(NSString *)innerUrl{
@@ -114,7 +101,7 @@
     if (!self.enableTrace || [self isInternalURL:request.URL]) {
         return request;
     }
-    NSDictionary *traceHeader = [self getTraceHeaderWithKey:@"" url:request.URL];
+    NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
     NSMutableURLRequest *mutableReqeust = [request mutableCopy];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
@@ -130,9 +117,7 @@
     FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:task.currentRequest.URL identifier:[NSUUID UUID].UUIDString];
     [self setTraceHandler:handler forKey:task];
     
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(startResourceWithKey:)]) {
-        [self.innerResourceHandeler startResourceWithKey:handler.identifier];
-    }
+    [self startResourceWithKey:handler.identifier];
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
     if ([self isInternalURL:task.originalRequest.URL]) {
@@ -155,26 +140,34 @@
     FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskCompleted:task error:error];
     [self removeTraceHandlerWithKey:task];
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(stopResourceWithKey:)]) {
-        [self.innerResourceHandeler stopResourceWithKey:handler.identifier];
-    }
+    [self stopResourceWithKey:handler.identifier];
+    __block NSString *span_id,*trace_id;
     if (self.enableLinkRumData) {
-        if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
-            __block NSString *span_id,*trace_id;
-            [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
-                span_id = spanID;
-                trace_id = traceId;
-            }];
-            [self.innerResourceHandeler addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
-        }
-    }else{
-        if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:)]) {
-            [self.innerResourceHandeler addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel];
-        }
+        
+        [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            span_id = spanID;
+            trace_id = traceId;
+        }];
     }
+    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
 }
 
 #pragma mark --------- external data ----------
+-(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+    __block FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:url identifier:key];
+    NSDictionary *dict = nil;
+    if(self.enableLinkRumData){
+       dict  = [self.tracer networkTraceHeaderWithUrl:url handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            handler.traceID = traceId;
+            handler.spanID = spanID;
+        }];
+    }
+    else{
+        dict = [self.tracer networkTraceHeaderWithUrl:url];
+    }
+    [self setTraceHandler:handler forKey:key];
+    return  dict;
+}
 - (void)startResourceWithKey:(NSString *)key{
     if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(startResourceWithKey:)]) {
         [self.innerResourceHandeler startResourceWithKey:key];
@@ -186,20 +179,14 @@
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
+    FTTraceHandler *handler = [self getTraceHandler:key];
     [self removeTraceHandlerWithKey:key];
-    if (self.enableLinkRumData) {
-        if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
-            __block NSString *span_id,*trace_id;
-            [self.tracer unpackTraceHeader:content.requestHeader handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
-                span_id = spanID;
-                trace_id = traceId;
-            }];
-            [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:span_id traceID:trace_id];
-        }
-    }else{
-        if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:)]) {
-            [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content];
-        }
+    [self addResourceWithKey:key metrics:metrics content:content spanID:handler.spanID traceID:handler.traceID];
+}
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nonnull NSString *)spanID traceID:(nonnull NSString *)traceID{
+    [self removeTraceHandlerWithKey:key];
+    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
+        [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
 

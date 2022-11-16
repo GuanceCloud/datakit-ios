@@ -30,6 +30,13 @@ typedef void(^UnpackTraceHeaderHandler)(NSString * _Nullable traceId, NSString *
 /// - Parameter url: 请求 URL
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url;
 
+/// 获取 trace 的请求头（外部调用时使用）
+/// - Parameters:
+///   - url: 请求 URL
+///   - handler: 返回 traceID、spanID
+- (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler;
+
+
 /// trace 的请求头参数解包
 /// - Parameters:
 ///   - header: trace 的请求头

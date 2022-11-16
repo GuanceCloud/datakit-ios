@@ -125,7 +125,7 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
     [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionAutoInstrumentation sharedInstance].interceptor;
     [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
-    [FTExternalDataManager sharedManager].traceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].tracer;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 
 }

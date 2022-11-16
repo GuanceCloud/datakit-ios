@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
 /// rum resource 需要的基本数据
 @property (nonatomic, strong) FTResourceContentModel *contentModel;
+/// span_id
+@property (nonatomic, copy) NSString *spanID;
+/// trace_id
+@property (nonatomic, copy) NSString *traceID;
 
 /// 初始化方法
 /// - Parameters:
