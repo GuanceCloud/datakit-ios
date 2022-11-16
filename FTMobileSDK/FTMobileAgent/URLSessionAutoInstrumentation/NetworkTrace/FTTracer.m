@@ -123,15 +123,15 @@ static NSUInteger SkywalkingSeq = 0.0;
 - (NSDictionary *)getDDTRACEHeader:(BOOL)sampled{
     NSString *traceid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
     NSString *spanid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
+    NSString *samplingPriority = sampled? @"2":@"-1";
     return @{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
              FT_NETWORK_DDTRACE_SPANID:spanid,
-             FT_NETWORK_DDTRACE_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
              FT_NETWORK_DDTRACE_TRACEID:traceid,
-             FT_NETWORK_DDTRACE_SAMPLING_PRIORITY:@"1"
+             FT_NETWORK_DDTRACE_SAMPLING_PRIORITY:samplingPriority
     };
 }
 -(void)unpackDDTRACEHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
-    if ([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED] && [header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID] &&
+    if ([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID] &&
         [header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]) {
         NSString *trace = [header valueForKey:FT_NETWORK_DDTRACE_TRACEID];
         NSString *span = [header valueForKey:FT_NETWORK_DDTRACE_SPANID];

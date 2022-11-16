@@ -117,9 +117,8 @@
     [self networkUpload:@"DDtrace" handler:^(NSDictionary *header) {
        
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
-        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
-        XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"1"]);
+        XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"2"]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
 
         [expectation fulfill];
@@ -217,7 +216,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
 
     [self networkUpload:@"SampleRate0" handler:^(NSDictionary *header) {
-        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLED] isEqualToString:@"0"]);
+        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"-1"]);
         [expectation fulfill];
     }];
     
@@ -239,7 +238,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
 
     [self networkUpload:@"SampleRate100" handler:^(NSDictionary *header) {
-        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLED] isEqualToString:@"1"]);
+        XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"2"]);
 
         [expectation fulfill];
     }];
@@ -301,7 +300,6 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self networkUpload:@"testNewThread" handler:^(NSDictionary *header) {
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
-            XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
             XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
             [expectation fulfill];
@@ -329,7 +327,7 @@
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
-        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
 
