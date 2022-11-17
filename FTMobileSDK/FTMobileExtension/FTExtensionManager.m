@@ -30,7 +30,7 @@
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
 + (instancetype)sharedInstance{
-    NSAssert(sharedInstance, @"请先使用 startWithApplicationGroupIdentifier: 初始化");
+    NSAssert(sharedInstance, @"请先使用 startWithExtensionConfig: 初始化");
     return sharedInstance;
 }
 + (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
@@ -59,11 +59,12 @@ static FTExtensionManager *sharedInstance = nil;
     FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
     if(rumConfig){
-        rumConfig.enableTraceUserResource = self.extensionConfig.enableAutoTraceResource;
+        rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
         rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
         [self startRumWithConfigOptions:rumConfig];
     }
     if(traceConfig){
+        traceConfig.enableAutoTrace = self.extensionConfig.enableTracerAutoTrace;
         [self startTraceWithConfigOptions:traceConfig];
     }
     self.loggerConfig = loggerConfig;

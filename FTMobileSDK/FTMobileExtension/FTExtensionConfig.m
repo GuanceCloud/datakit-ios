@@ -24,7 +24,8 @@
     FTExtensionConfig *options = [[[self class] allocWithZone:zone] init];
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.enableTrackAppCrash = self.enableTrackAppCrash;
-    options.enableAutoTraceResource = self.enableAutoTraceResource;
+    options.enableTracerAutoTrace = self.enableTracerAutoTrace;
+    options.enableRUMAutoTraceResource = self.enableRUMAutoTraceResource;
     options.groupIdentifier = self.groupIdentifier;
     options.memoryMaxCount = self.memoryMaxCount;
     return options;

@@ -21,8 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 设置是否需要采集崩溃日志
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 
-/// 设置是否开启自动 http trace
-@property (nonatomic, assign) BOOL enableAutoTraceResource;
+/// 设置是否开启 RUM 中 http Resource 事件自动采集
+@property (nonatomic, assign) BOOL enableRUMAutoTraceResource;
+
+/// 设置是否开启自动 http 链路追踪
+@property (nonatomic, assign) BOOL enableTracerAutoTrace;
 
 /// 数据保存在 Extension 数量最大值
 ///
