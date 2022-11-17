@@ -161,11 +161,11 @@
             handler.traceID = traceId;
             handler.spanID = spanID;
         }];
+        [self setTraceHandler:handler forKey:key];
     }
     else{
         dict = [self.tracer networkTraceHeaderWithUrl:url];
     }
-    [self setTraceHandler:handler forKey:key];
     return  dict;
 }
 - (void)startResourceWithKey:(NSString *)key{
