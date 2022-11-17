@@ -43,6 +43,8 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -104,8 +106,6 @@
     NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
-
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 用户解绑
@@ -126,7 +126,6 @@
     XCTAssertFalse([userName isEqualToString:@"name"]);
     XCTAssertFalse([userEmail isEqualToString:@"email"]);
     XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
-    
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
