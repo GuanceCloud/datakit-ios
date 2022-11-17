@@ -1,3 +1,7 @@
+1.3.9-alpha.10
+1. 修复 memoryMaxCount 默认设置失败问题
+2. extension SDK 新增 Tracer 自动采集开关
+---
 1.3.9-alpha.9
 1. extension SDK 添加数据删除逻辑，支持设置存储数据最大量
 2. 解决部分情况下自定义 Network Resource 数据绑定 Trace 失败问题
