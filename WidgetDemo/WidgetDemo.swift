@@ -60,7 +60,8 @@ struct WidgetDemo: Widget {
     init() {
         let extensionConfig = FTExtensionConfig.init(groupIdentifier: "group.com.ft.widget.demo")
         extensionConfig.enableTrackAppCrash = true
-        extensionConfig.enableAutoTraceResource = true
+        extensionConfig.enableRUMAutoTraceResource = true
+        extensionConfig.enableTracerAutoTrace = true
         extensionConfig.enableSDKDebugLog = true
         FTExtensionManager.start(with: extensionConfig)
     }

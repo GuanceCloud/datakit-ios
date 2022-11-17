@@ -34,6 +34,7 @@
         NSString *appid = [processInfo environment][@"APP_ID"];
 
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+        traceConfig.enableLinkRumData = YES;
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
@@ -48,7 +49,8 @@
     dispatch_once(&onceToken, ^{
         FTExtensionConfig *config = [[FTExtensionConfig alloc]initWithGroupIdentifier:@"group.com.ft.widget.demo"];
         config.enableSDKDebugLog = YES;
-        config.enableAutoTraceResource = YES;
+        config.enableRUMAutoTraceResource = YES;
+        config.enableTracerAutoTrace = YES;
         config.memoryMaxCount = 100;
         [FTExtensionManager startWithExtensionConfig:config];
     });
@@ -119,6 +121,35 @@
     NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 
     XCTAssertTrue(newDatas.count>olddatas.count);
+}
+- (void)testTracer{
+    [self saveMobileSdkConfig];
+    [self setExtensionSDK];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+    [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:0.5];
+    FTRUMManager *manager = [[FTExtensionManager sharedInstance] valueForKey:@"rumManager"];
+    [manager syncProcess];
+    NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
+    __block BOOL hasResource = NO;
+    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSDictionary  *dict, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *op = dict[@"dataType"];
+        NSString *measurement = dict[@"eventType"];
+        if ([op isEqualToString:@"RUM"]&&[measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+            NSDictionary *tags = dict[FT_TAGS];
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
+            hasResource = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResource);
 }
 - (void)testCustomLogger{
     [self saveMobileSdkConfig];
