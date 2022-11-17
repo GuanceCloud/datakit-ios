@@ -9,6 +9,9 @@
 #import "FTExtensionConfig.h"
 
 @implementation FTExtensionConfig
+-(instancetype)init{
+    return [self initWithGroupIdentifier:@""];
+}
 - (instancetype)initWithGroupIdentifier:(NSString *)groupIdentifier{
     self = [super init];
     if(self){
