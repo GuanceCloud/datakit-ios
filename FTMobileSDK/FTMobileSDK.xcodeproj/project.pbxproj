@@ -182,6 +182,8 @@
 		17C2DCB4291901ED000BD785 /* FTTraceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C2DCB2291901ED000BD785 /* FTTraceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17C2DCB5291901ED000BD785 /* FTTraceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C2DCB3291901ED000BD785 /* FTTraceManager.m */; };
 		17D4AAE22856E6EC0045EFF2 /* FTRumDatasProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17D4AAE12856E6EC0045EFF2 /* FTRumDatasProtocol.h */; };
+		17E079692925D5410014A420 /* FTExternalResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E079682925D5410014A420 /* FTExternalResourceProtocol.h */; };
+		17E0796A2925D5410014A420 /* FTExternalResourceProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E079682925D5410014A420 /* FTExternalResourceProtocol.h */; };
 		4A1DF2DD2445939100BEC337 /* FTGlobalRumManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */; };
 		4A1DF2DE2445939100BEC337 /* FTGlobalRumManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */; };
 		4A1FFA2724AB072D00049D9E /* NSString+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */; };
@@ -357,6 +359,7 @@
 		17C2DCB2291901ED000BD785 /* FTTraceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
 		17C2DCB3291901ED000BD785 /* FTTraceManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
 		17D4AAE12856E6EC0045EFF2 /* FTRumDatasProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRumDatasProtocol.h; sourceTree = "<group>"; };
+		17E079682925D5410014A420 /* FTExternalResourceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTExternalResourceProtocol.h; sourceTree = "<group>"; };
 		4A1DF2DB2445939100BEC337 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
 		4A1DF2DC2445939100BEC337 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
 		4A1FFA2524AB072D00049D9E /* NSString+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+FTAdd.h"; sourceTree = "<group>"; };
@@ -585,6 +588,7 @@
 				17D4AAE12856E6EC0045EFF2 /* FTRumDatasProtocol.h */,
 				1775A7F428D9B52100D70779 /* FTRumResourceProtocol.h */,
 				1757AF6428F6CF14008AB196 /* FTErrorDataProtocol.h */,
+				17E079682925D5410014A420 /* FTExternalResourceProtocol.h */,
 			);
 			path = Protocol;
 			sourceTree = "<group>";
@@ -894,6 +898,7 @@
 				172DA11528F949F200733AD0 /* FTJSONUtil.h in Headers */,
 				172DA0F728F9497900733AD0 /* FTThreadDispatchManager.h in Headers */,
 				172DA0EA28F9493100733AD0 /* FTTracerProtocol.h in Headers */,
+				17E0796A2925D5410014A420 /* FTExternalResourceProtocol.h in Headers */,
 				172DA11C28F94A9B00733AD0 /* FTRUMHandler.h in Headers */,
 				172DA13428F94AFC00733AD0 /* FTMonitorItem.h in Headers */,
 				172DA13928F94B2C00733AD0 /* NSURLSession+FTSwizzler.h in Headers */,
@@ -947,6 +952,7 @@
 				7CF4E11126B1265E0076D238 /* WKWebView+FTAutoTrack.h in Headers */,
 				4A884294239E5768001B44C3 /* FTMobileAgent.h in Headers */,
 				7C0FBD3C274B89BA007CD0D3 /* FTExternalDataManager.h in Headers */,
+				17E079692925D5410014A420 /* FTExternalResourceProtocol.h in Headers */,
 				17D4AAE22856E6EC0045EFF2 /* FTRumDatasProtocol.h in Headers */,
 				1740585128D807390092E096 /* FTURLProtocol.h in Headers */,
 				17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */,

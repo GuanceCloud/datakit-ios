@@ -20,13 +20,13 @@
 
 #import "FTExternalDataManager.h"
 #import "FTRumDatasProtocol.h"
-#import "FTRumResourceProtocol.h"
+#import "FTExternalResourceProtocol.h"
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTExternalDataManager (Private)<FTRumDatasProtocol,FTRumResourceProtocol>
+@interface FTExternalDataManager (Private)<FTRumDatasProtocol,FTExternalResourceProtocol>
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
-@property (nonatomic, weak) id <FTRumResourceProtocol> resourceDelegate;
+@property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
 
 @end
 

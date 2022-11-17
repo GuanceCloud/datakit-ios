@@ -21,7 +21,7 @@
 #import <Foundation/Foundation.h>
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
-
+#import "FTExternalResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTRumConfig,FTTraceConfig;
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
 @property (nonatomic, weak) id<FTURLSessionInterceptorDelegate> interceptor;
 /// 处理外部传入 rum resource 数据的对象
-@property (nonatomic, weak ,readonly) id<FTRumResourceProtocol> rumResourceHandler;
+@property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> rumResourceHandler;
 
 /// 单例
 + (instancetype)sharedInstance;

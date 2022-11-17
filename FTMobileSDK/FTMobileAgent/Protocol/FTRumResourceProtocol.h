@@ -43,11 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopResourceWithKey:(NSString *)key;
 @optional
 - (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
-///  获取 trace 需要添加的请求头
-/// @param key 请求标识
-/// @param url 请求 URL
-- (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
-
 @end
 NS_ASSUME_NONNULL_END
 

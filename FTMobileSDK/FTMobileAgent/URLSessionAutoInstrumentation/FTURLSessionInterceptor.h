@@ -9,11 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
+#import "FTExternalResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTTraceHandler;
 
 /// url session 的拦截器，实现 rum resource 数据的采集
-@interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorDelegate,FTRumResourceProtocol>
+@interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorDelegate,FTExternalResourceProtocol>
 
 /// 设置实现 trace 功能的对象
 /// @param tracer 实现 trace 功能的对象

@@ -53,7 +53,7 @@ static dispatch_once_t onceToken;
     _sdkUrlStr = sdkUrlStr;
     self.interceptor.innerUrl = sdkUrlStr;
 }
--(id<FTRumResourceProtocol>)rumResourceHandler{
+-(id<FTExternalResourceProtocol>)rumResourceHandler{
     return _sessionInterceptor;
 }
 -(id<FTTracerProtocol>)tracer{
