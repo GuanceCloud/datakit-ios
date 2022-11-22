@@ -11,6 +11,7 @@
 #import "FTRecordModel.h"
 #import "FTLog.h"
 #import "FTConstants.h"
+#import <pthread.h>
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
@@ -19,7 +20,8 @@
 
 @end
 @implementation FTTrackerEventDBTool{
-    dispatch_semaphore_t _lock;
+    pthread_mutex_t _lock;
+
 }
 static FTTrackerEventDBTool *dbTool = nil;
 static dispatch_once_t onceToken;
@@ -45,8 +47,8 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
-            dbTool->_lock = dispatch_semaphore_create(1);
         }
+        pthread_mutex_init(&(dbTool->_lock), NULL);
         [dbTool createTable];
      }
     });
@@ -112,12 +114,12 @@ static dispatch_once_t onceToken;
     if (!item) {
         return;
     }
-    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
+    pthread_mutex_lock(&_lock);
     [self.messageCaches addObject:item];
     if (self.messageCaches.count>=20) {
         NSArray *array = self.messageCaches.copy;
         [self.messageCaches removeAllObjects];
-        dispatch_semaphore_signal(_lock);
+        pthread_mutex_unlock(&_lock);
         NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING]-array.count;
         
         if(count < 0){
@@ -134,7 +136,7 @@ static dispatch_once_t onceToken;
         [self insertItemsWithDatas:array];
 
     }else{
-        dispatch_semaphore_signal(_lock);
+        pthread_mutex_unlock(&_lock);
     }
 }
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
@@ -155,14 +157,14 @@ static dispatch_once_t onceToken;
     return !needRoolback;
 }
 -(void)insertCacheToDB{
-    dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
+    pthread_mutex_lock(&_lock);
     if (self.messageCaches.count > 0) {
         NSArray *array = [self.messageCaches copy];
         self.messageCaches = nil;
-        dispatch_semaphore_signal(_lock);
+        pthread_mutex_unlock(&_lock);
         [self insertItemsWithDatas:array];
     }else{
-        dispatch_semaphore_signal(_lock);
+        pthread_mutex_unlock(&_lock);
     }
 }
 -(NSArray *)getAllDatas{
