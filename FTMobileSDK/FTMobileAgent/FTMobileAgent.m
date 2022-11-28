@@ -76,6 +76,10 @@ static dispatch_once_t onceToken;
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
+            [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
+            .setSdkVersion(SDK_VERSION)
+            .setXDataKitUUID(config.XDataKitUUID);
+            [FTURLSessionAutoInstrumentation sharedInstance].sdkUrlStr = config.metricsUrl;
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -144,8 +148,8 @@ static dispatch_once_t onceToken;
 - (void)bindUserWithUserID:(NSString *)Id{
     [self bindUserWithUserID:Id userName:nil userEmail:nil extra:nil];
 }
--(void)bindUserWithUserID:(NSString *)userId userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
-    [self bindUserWithUserID:userId userName:userName userEmail:userEmail extra:nil];
+-(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail{
+    [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
