@@ -24,10 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 /// 设备名称
 + (NSString *)deviceInfo;
-/// 通讯公司
-+ (NSString *)telephonyCarrier;
-/// 初始化方法
-/// - Parameter config: SDK 基本配置
+
+/**
+ * 初始化方法
+ * @param config 应用版本号
+ * @return 初始化对象
+ */
 - (instancetype)initWithMobileConfig:(FTMobileConfig *)config;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -43,9 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: 事件等级和状态
 ///   - serviceName: 日志所属业务或服务的名称
 - (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName;
-
-/// 重置
-/// - Parameter config: SDK 基础配置
+/**
+ *  重新设置
+ */
 - (void)resetWithMobileConfig:(FTMobileConfig *)config;
 @end
 

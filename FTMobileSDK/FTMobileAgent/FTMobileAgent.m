@@ -21,14 +21,19 @@
 #import "FTPresetProperty.h"
 #import "FTLogHook.h"
 #import "FTReachability.h"
-#import "FTConfigManager.h"
 #import "FTTrackDataManger.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
-#import "FTTraceHeaderManager.h"
 #import "FTURLProtocol.h"
 #import "FTUserInfo.h"
+#import "FTExtensionDataManager.h"
+#import "FTExternalDataManager+Private.h"
+#import "FTWKWebViewHandler.h"
+#import "FTMobileAgentVersion.h"
+#import "FTNetworkInfoManager.h"
+#import "FTURLSessionAutoInstrumentation.h"
+#import "FTMobileConfig+Private.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
@@ -63,10 +68,11 @@ static dispatch_once_t onceToken;
         self = [super init];
         if (self) {
             //基础类型的记录
-            [[FTConfigManager sharedInstance] setTrackConfig:config];
             [FTLog enableLog:config.enableSDKDebugLog];
             NSString *serialLabel = [NSString stringWithFormat:@"ft.serialLabel.%p", self];
             _serialQueue = dispatch_queue_create([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL);
+            [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
+
             //开启数据处理管理器
             [FTTrackDataManger sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
@@ -78,7 +84,6 @@ static dispatch_once_t onceToken;
 }
 -(void)resetConfig:(FTMobileConfig *)config{
     [FTLog enableLog:config.enableSDKDebugLog];
-    [[FTConfigManager sharedInstance] setTrackConfig:config];
     if (_presetProperty) {
         [self.presetProperty resetWithMobileConfig:config];
     }else{
@@ -86,13 +91,17 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    if (!_rumConfig) {
-        _rumConfig = [rumConfigOptions copy];
-        [FTConfigManager sharedInstance].rumConfig = _rumConfig;
-        [self.presetProperty setAppid:_rumConfig.appid];
-        self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
-        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
+    if(rumConfigOptions.appid == nil || rumConfigOptions.appid.length == 0){
+        ZYErrorLog(@"FTRumConfig appid 设置格式错误");
+        return;
     }
+    [self.presetProperty setAppid:rumConfigOptions.appid];
+    self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
+    [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
+    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
@@ -104,12 +113,17 @@ static dispatch_once_t onceToken;
         if(self.loggerConfig.enableConsoleLog){
             [self _traceConsoleLog];
         }
+        [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
-    [FTConfigManager sharedInstance].traceConfig = traceConfigOptions;
-    [[FTTraceHeaderManager sharedInstance] setNetworkTrace:traceConfigOptions];
+    [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
+    [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionAutoInstrumentation sharedInstance].interceptor;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
+
 }
 #pragma mark ========== publick method ==========
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -121,9 +135,7 @@ static dispatch_once_t onceToken;
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        dispatch_async(self.serialQueue, ^{
-            [self loggingWithType:FTAddDataLogging status:status content:content tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
-        });
+        [self logging:content status:status tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -164,9 +176,6 @@ static dispatch_once_t onceToken;
     [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
-    if (![self judgeRUMTraceOpen]) {
-        return;
-    }
     if (![type isKindOfClass:NSString.class] || type.length == 0 || terminal.length == 0) {
         return;
     }
@@ -184,7 +193,7 @@ static dispatch_once_t onceToken;
 }
 
 // FT_DATA_TYPE_LOGGING
--(void)loggingWithType:(FTAddDataType)type status:(FTLogStatus)status content:(NSString *)content tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(void)logging:(NSString *)content status:(FTLogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     if (!self.loggerConfig) {
         ZYErrorLog(@"请先设置 FTLoggerConfig");
         return;
@@ -202,48 +211,79 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
-        if (tags) {
-            [tagDict addEntriesFromDictionary:tags];
-        }
-        if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
-            NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
-            [tagDict addEntriesFromDictionary:rumTag];
-        }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-        }.mutableCopy;
-        if (field) {
-            [filedDict addEntriesFromDictionary:field];
-        }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
-        [self insertDBWithItemData:model type:type];
+        dispatch_async(self.serialQueue, ^{
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
+            if (tags) {
+                [tagDict addEntriesFromDictionary:tags];
+            }
+            if (self.loggerConfig.enableLinkRumData) {
+                [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
+                if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
+                    NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
+                    [tagDict addEntriesFromDictionary:rumTag];
+                }
+            }
+            NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
+            }.mutableCopy;
+            if (field) {
+                [filedDict addEntriesFromDictionary:field];
+            }
+            FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
+            [self insertDBWithItemData:model type:FTAddDataLogging];
+        });
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
 }
+- (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
+    @try {
+        if (groupIdentifier == nil || [groupIdentifier isEqualToString:@""]) {
+            return;
+        }
+        NSArray *eventArray = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:groupIdentifier];
+        if (eventArray) {
+            for (NSDictionary *dict in eventArray) {
+                NSString *dataType = dict[@"dataType"];
+                NSNumber *tm = dict[@"tm"];
+                if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
+                    FTLogStatus status = [dict[@"status"] intValue];
+                    [self logging:dict[@"content"] status:status tags:dict[@"tags"] field:dict[@"fields"] tm:tm.longLongValue];
+                }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
+                    NSString *eventType = dict[@"eventType"];
+                    [self rumWrite:eventType terminal:FT_TERMINAL_APP tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
+                }
+               
+            }
+            [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
+            if (completion) {
+                completion(groupIdentifier, eventArray);
+            }
+        }
+    } @catch (NSException *exception) {
+        ZYErrorLog(@"%@ error: %@", self, exception);
+    }
+}
+
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
     [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
-        dispatch_async(self.serialQueue, ^{
             if (!weakSelf.loggerConfig.enableConsoleLog ) {
                 return;
             }
             if (weakSelf.loggerConfig.prefix.length>0) {
                 if([logStr containsString:weakSelf.loggerConfig.prefix]){
-                    [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                    [weakSelf logging:logStr status:FTStatusInfo tags:nil field:nil tm:tm];
                 }
             }else{
-                [weakSelf loggingWithType:FTAddDataLogging status:FTStatusInfo content:logStr tags:nil field:nil tm:tm];
+                [weakSelf logging:logStr status:FTStatusInfo tags:nil field:nil tm:tm];
             }
-        });
     }];
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     [[FTTrackDataManger sharedInstance] addTrackData:model type:type];
 }
-- (BOOL)judgeRUMTraceOpen{
+- (BOOL)judgeRUMTrackOpen{
     if (self.rumConfig.appid.length>0) {
         return YES;
     }
@@ -252,10 +292,10 @@ static dispatch_once_t onceToken;
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTGlobalRumManager sharedInstance] resetInstance];
+    [[FTURLSessionAutoInstrumentation sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];
-    [[FTConfigManager sharedInstance] resetInstance];
     onceToken = 0;
     sharedInstance =nil;
 }

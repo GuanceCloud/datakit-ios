@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
 #import "FTLog.h"
-#import "FTGlobalRumManager.h"
+#import "FTTrack.h"
 #import "FTDateUtil.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
@@ -73,11 +73,11 @@ static char *viewLoadDuration = "viewLoadDuration";
     [self dataflux_viewDidAppear:animated];
     if(![self isBlackListContainsViewController]){
         // 预防撤回侧滑
-        if ([FTGlobalRumManager sharedInstance].currentController != self) {
+        if ([FTTrack sharedInstance].currentController != self) {
             if ([self dataflux_parentViewControllerIsContainer]) {
                 return;
             }
-            [FTGlobalRumManager sharedInstance].currentController = self;
+            [FTTrack sharedInstance].currentController = self;
             if(self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
@@ -87,7 +87,15 @@ static char *viewLoadDuration = "viewLoadDuration";
                 self.ft_loadDuration = loadTime;
             }
             self.ft_viewUUID = [NSUUID UUID].UUIDString;
-            [[FTGlobalRumManager sharedInstance] trackViewDidAppear:self];
+            if([FTTrack sharedInstance].addRumDatasDelegate){
+                if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:)]){
+                    [[FTTrack sharedInstance].addRumDatasDelegate onCreateView:self.ft_viewControllerName loadTime:self.ft_loadDuration];
+                }
+                if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startViewWithViewID:viewName:)]){
+                    [[FTTrack sharedInstance].addRumDatasDelegate startViewWithViewID:self.ft_viewUUID viewName:self.ft_viewControllerName];
+                }
+                
+            }
         }
     }
 }
@@ -96,8 +104,10 @@ static char *viewLoadDuration = "viewLoadDuration";
     if([self isBlackListContainsViewController]){
         return;
     }
-    if ([FTGlobalRumManager sharedInstance].currentController == self) {
-        [[FTGlobalRumManager sharedInstance] trackViewDidDisappear:self];
+    if ([FTTrack sharedInstance].currentController == self) {
+        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(stopViewWithViewID:)]){
+            [[FTTrack sharedInstance].addRumDatasDelegate stopViewWithViewID:self.ft_viewUUID];
+        }
     }
 }
 

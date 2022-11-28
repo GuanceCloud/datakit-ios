@@ -7,103 +7,121 @@
 //
 
 #import "FTExtensionManager.h"
+#import "FTExtensionDataManager.h"
+#import "FTUncaughtExceptionHandler.h"
+#import "FTDateUtil.h"
 #import "FTLog.h"
-#import "FTExtensionExceptionHandler.h"
-@interface FTExtensionManager ()
-@property (nonatomic, copy) NSString *pathStr;
+#import "FTRUMManager.h"
+#import "FTRUMDataWriteProtocol.h"
+#import "FTMobileConfig.h"
+#import "FTURLSessionAutoInstrumentation.h"
+#import "FTTracer.h"
+#import "FTExternalDataManager+Private.h"
+#import "FTBaseInfoHandler.h"
+#import "NSString+FTAdd.h"
+#import "FTConstants.h"
+#import "FTMobileConfig+Private.h"
+@interface FTExtensionManager ()<FTRUMDataWriteProtocol>
+@property (nonatomic, strong) FTRUMManager *rumManager;
+@property (nonatomic, strong) FTLoggerConfig *loggerConfig;
+@property (nonatomic, strong) FTExtensionConfig *extensionConfig;
+@property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTExtensionManager
 static FTExtensionManager *sharedInstance = nil;
 + (instancetype)sharedInstance{
-    NSAssert(sharedInstance, @"请先使用 startWithApplicationGroupIdentifier: 初始化");
+    NSAssert(sharedInstance, @"请先使用 startWithExtensionConfig: 初始化");
     return sharedInstance;
 }
-+ (void)startWithApplicationGroupIdentifier:(NSString *)groupIdentifer{    NSAssert((groupIdentifer.length!=0 ), @"请填写Group Identifier");
++ (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
+    NSAssert((extensionConfig.groupIdentifier.length!=0 ), @"请填写Group Identifier");
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTExtensionManager alloc]initWithGroupIdentifier:groupIdentifer];
+        sharedInstance = [[FTExtensionManager alloc]initWithExtensionConfig:extensionConfig];
     });
-
 }
--(instancetype)initWithGroupIdentifier:(NSString *)identifier{
+-(instancetype)initWithExtensionConfig:(FTExtensionConfig *)extensionConfig{
     self = [super init];
     if (self) {
-        self.pathStr =[[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:identifier] URLByAppendingPathComponent:@"ft_crash_data.plist"].path;
-        [self startTrackCrash];
+        _extensionConfig = extensionConfig;
+        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
+        [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
+        [self processingConfigItems];
     }
     return self;
 }
-- (void)startTrackCrash{
-    FTExtensionExceptionHandler *handler = [[FTExtensionExceptionHandler alloc]init];
-    __weak typeof(self) weakSelf = self;
-    [handler hookWithBlock:^(NSDictionary * _Nonnull content, NSNumber * _Nonnull tm) {
-        //主线程 即将crash
-        [weakSelf writeCrash:content tm:tm];
-    }];
-}
-- (BOOL)writeCrash:(NSDictionary *)field tm:(NSNumber *)tm{
-    @try {
-        if (![field isKindOfClass:NSDictionary.class] || !field) {
-            return NO;
-        }
-        if(![[NSFileManager defaultManager] fileExistsAtPath:self.pathStr]) {
-            BOOL success = [[NSFileManager defaultManager] createFileAtPath:self.pathStr contents:nil attributes:nil];
-            if (success) {
-                ZYLog(@"Create Group File Success!");
-            }
-        }
-        ZYDebug(@"writeCrash content :%@\n tm:%@",field,tm);
-        NSDictionary *event = @{@"field":field,@"tm":tm};
-        NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:self.pathStr];
-        if (array.count) {
-            [array addObject:event];
-        } else {
-            array = [NSMutableArray arrayWithObject:event];
-        }
-        NSError *err = NULL;
-        BOOL result = NO;
-        NSData *data= [NSPropertyListSerialization dataWithPropertyList:array
-                                                                 format:NSPropertyListBinaryFormat_v1_0
-                                                                options:0
-                                                                  error:&err];
-        if (self.pathStr.length && data.length) {
-            result = [data  writeToFile:self.pathStr options:NSDataWritingAtomic error:nil];
-        }
-        return result;
-    } @catch (NSException *exception) {
-        return NO;
+- (void)processingConfigItems{
+    NSDictionary *rumDict = [[FTExtensionDataManager sharedInstance] getRumConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *traceDict = [[FTExtensionDataManager sharedInstance] getTraceConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+    NSDictionary *loggerDict = [[FTExtensionDataManager sharedInstance] getLoggerConfigWithGroupIdentifier:self.extensionConfig.groupIdentifier];
+   
+    FTRumConfig *rumConfig =[[FTRumConfig alloc]initWithDictionary:rumDict];
+    FTTraceConfig *traceConfig =[[FTTraceConfig alloc]initWithDictionary:traceDict];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]initWithDictionary:loggerDict];
+    if(rumConfig){
+        rumConfig.enableTraceUserResource = self.extensionConfig.enableRUMAutoTraceResource;
+        rumConfig.enableTrackAppCrash = self.extensionConfig.enableTrackAppCrash;
+        [self startRumWithConfigOptions:rumConfig];
     }
-    
+    if(traceConfig){
+        traceConfig.enableAutoTrace = self.extensionConfig.enableTracerAutoTrace;
+        [self startTraceWithConfigOptions:traceConfig];
+    }
+    self.loggerConfig = loggerConfig;
+}
+- (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
+    self.rumManager = [[FTRUMManager alloc] initWithRumConfig:rumConfigOptions monitor:nil wirter:self];
+    self.rumManager.appState = AppStateUnknown;
+    id <FTRumDatasProtocol> rum = self.rumManager;
+    [[FTExternalDataManager sharedManager] setDelegate:rum];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    if (rumConfigOptions.enableTrackAppCrash){
+        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
+    }
+    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
 }
 
-- (NSArray *)getCrashData{
-    @try {
-        NSArray *array = [[NSArray alloc] initWithContentsOfFile:self.pathStr];
-        return array;
-    } @catch (NSException *exception) {
-        return @[];
+- (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+
+}
+-(void)logging:(NSString *)content status:(FTLogStatus)status{
+    if (![content isKindOfClass:[NSString class]] || content.length==0) {
+        return;
     }
+    NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
     
-}
-- (BOOL)deleteEvents{
-    @try {
-        BOOL result = NO;
-        NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:self.pathStr];
-        [array removeAllObjects];
-        NSData *data= [NSPropertyListSerialization dataWithPropertyList:array
-                                                                 format:NSPropertyListBinaryFormat_v1_0
-                                                                options:0
-                                                                  error:nil];
-        if (self.pathStr.length && data.length) {
-            result = [data  writeToFile:self.pathStr options:NSDataWritingAtomic error:nil];
-        }
-        
-        return result ;
-    } @catch (NSException *exception) {
-        return NO;
+    NSMutableDictionary *tagDict = @{
+        @"extension_identifier":bundleIdentifier,
+    }.mutableCopy;
+    if (self.loggerConfig.enableLinkRumData) {
+        NSDictionary *rumTag = [self.rumManager getCurrentSessionInfo];
+        [tagDict addEntriesFromDictionary:rumTag];
     }
+
+    ZYDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
+                      @"tags":tagDict,
+                      @"content":content
+                    });
+    [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:content tags:tagDict fields:nil tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.extensionConfig.groupIdentifier];
 }
-+ (void)enableLog:(BOOL)enable{
-    [FTLog enableLog:enable];
+
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+    [self rumWrite:type terminal:terminal tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
+}
+- (void)rumWrite:(NSString *)type terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+    NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+    NSMutableDictionary *newTags = @{
+          @"extension_identifier":bundleIdentifier,
+    }.mutableCopy;
+    if(tags){
+        [newTags addEntriesFromDictionary:tags];
+    }
+    ZYDebug(@"%@\n",@{@"type":type,
+                    @"tags":newTags,
+                    @"fields":fields});
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 @end

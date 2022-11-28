@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "FTMobileSDK"
-#   s.version      = "1.0.2-alpha.8"
+  #s.version      = "1.3.9-alpha.4"
   s.version      = "$JENKINS_DYNAMIC_VERSION"
   s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
   s.description  = "观测云 DataFlux iOS 数据采集 SDK"
@@ -26,14 +26,104 @@ Pod::Spec.new do |s|
    end
    
    s.subspec  'FTMobileAgent' do | agent |
+       core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '9.0'
-       agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
-       agent.dependency 'FTMobileSDK/Common'
-   end
+       agent.source_files = core_dir + 'FTMobileAgent.{h,m}',core_dir + 'FTMobileAgent+Public.h',core_dir + 'FTMobileAgent+Private.h',core_dir + 'FTMobileAgentVersion.h',core_dir + 'FTPresetProperty.{h,m}',core_dir + 'FTUserInfo.{h,m}',core_dir + 'FTGlobalManager.{h,m}',core_dir + 'FTGlobalRumManager.{h,m}',core_dir + 'FTTraceManager.{h,m}'
+      
+       agent.subspec 'FTRUM' do |r|
+       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
+       r.dependency 'FTMobileSDK/Common/Base'
+       r.dependency 'FTMobileSDK/Common/Thread'
+       r.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
+       end
 
-   s.subspec 'Common' do |common|
-       common.source_files = 'FTMobileSDK/BaseUtils/**/*{.h,.m,.c}'
+       agent.subspec 'Protocol' do |r|
+       r.source_files = 'FTMobileSDK/FTMobileAgent/Protocol/**/*{.h,.m}'
+       end
+
+       agent.subspec 'JSBridge' do |j|
+       j.source_files = 'FTMobileSDK/FTMobileAgent/JSBridge/*{.h,.m}'
+       j.dependency 'FTMobileSDK/Common/Base'
+       end
+
+       agent.subspec 'AutoTrack' do |a|
+       a.source_files = 'FTMobileSDK/FTMobileAgent/AutoTrack/**/*{.h,.m}'
+       a.dependency 'FTMobileSDK/Common'
+       a.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
+       a.dependency 'FTMobileSDK/FTMobileAgent/JSBridge'
+       end
+
+       agent.subspec 'LongTask' do |a|
+       a.source_files = 'FTMobileSDK/FTMobileAgent/LongTask/**/*{.h,.m}'
+       a.dependency 'FTMobileSDK/Common'
+       end
+
+       agent.subspec 'ExternalData' do |a|
+       a.source_files = 'FTMobileSDK/FTMobileAgent/ExternalData/*{.h,.m}'
+       a.public_header_files = 'FTMobileSDK/FTMobileAgent/ExternalData/FTExternalDataManager.h'
+       a.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
+       a.dependency 'FTMobileSDK/Common/Base'
+       end
+
+       agent.subspec 'URLSessionAutoInstrumentation' do |a|
+       a.source_files = 'FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation/**/*{.h,.m}'
+       a.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
+       a.dependency 'FTMobileSDK/Common/Base'
+       a.dependency 'FTMobileSDK/Common/Swizzle'
+       end
+
+       agent.subspec 'ExtensionDataManager' do |e|
+       e.source_files = 'FTMobileSDK/FTMobileAgent/Extension/*{.h,.m}'
+       e.dependency 'FTMobileSDK/Common/Base'
+       end
+
+       agent.subspec 'Exception' do |e|
+       e.source_files = 'FTMobileSDK/FTMobileAgent/Exception/*{.h,.m}'
+       e.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
+       e.dependency 'FTMobileSDK/Common/Base'
+       end
    end
    
 
+   s.subspec 'Common' do |c|
+
+       c.subspec 'Base' do |cc|
+       cc.source_files = 'FTMobileSDK/BaseUtils/Base/*{.h,.m}'
+
+       end
+
+       c.subspec 'Thread' do |cc|
+       cc.source_files = 'FTMobileSDK/BaseUtils/Thread/*{.h,.m}'
+       end
+
+       c.subspec 'Network' do |cc|
+       cc.source_files =  'FTMobileSDK/BaseUtils/Network/*{.h,.m}'
+       cc.dependency 'FTMobileSDK/Common/Thread'
+       cc.dependency 'FTMobileSDK/Common/FTDataBase'
+       end
+
+       c.subspec 'FTDataBase' do |cc|
+       cc.source_files =  'FTMobileSDK/BaseUtils/FTDataBase/**/*{.h,.m}'
+       cc.dependency 'FTMobileSDK/Common/Base'
+       end
+
+       c.subspec 'Swizzle' do |cc|
+       cc.source_files = 'FTMobileSDK/BaseUtils/Swizzle/*{.h,.m,.c}'
+       cc.dependency 'FTMobileSDK/Common/Base'
+       end
+
+   end
+
+    s.subspec 'Extension' do |e|
+       e.platform = :ios, '9.0'
+       e.ios.deployment_target = '9.0'
+       e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}'
+       e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
+       e.dependency 'FTMobileSDK/FTMobileAgent/FTRUM'
+       e.dependency 'FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation'
+       e.dependency 'FTMobileSDK/FTMobileAgent/Exception'
+       e.dependency 'FTMobileSDK/FTMobileAgent/ExternalData'
+   end
 end
+
+

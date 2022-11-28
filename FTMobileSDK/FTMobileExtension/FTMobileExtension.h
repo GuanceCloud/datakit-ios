@@ -8,12 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-//! Project version number for FTMobileExtension.
-FOUNDATION_EXPORT double FTMobileExtensionVersionNumber;
-
-//! Project version string for FTMobileExtension.
-FOUNDATION_EXPORT const unsigned char FTMobileExtensionVersionString[];
-
-// In this header, you should import all the public headers of your framework using statements like #import <FTMobileExtension/PublicHeader.h>
-
-
+#import "FTExtensionConfig.h"
+#import "FTExtensionManager.h"
+#import "FTExternalDataManager.h"
+#import "FTURLSessionDelegate.h"

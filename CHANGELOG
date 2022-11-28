@@ -1,3 +1,47 @@
+1.3.9-alpha.11
+1.修复冷启动 active_pre_warm 字段缺失问题
+---
+1.3.9-alpha.10
+1. 修复 memoryMaxCount 默认设置失败问题
+2. extension SDK 新增 Tracer 自动采集开关
+---
+1.3.9-alpha.9
+1. extension SDK 添加数据删除逻辑，支持设置存储数据最大量
+2. 解决部分情况下自定义 Network Resource 数据绑定 Trace 失败问题
+---
+1.3.9-alpha.8
+1. 解决 extension RUM 采集异常问题
+2. extension SDK 测试用例补充
+---
+1.3.9-alpha.7
+1. 解决集成 extension 功能时头文件冲突问题
+---
+1.3.9-alpha.6
+1. 兼容老的版本 API
+2. 解决集成 extension SDK 时头文件冲突问题
+---
+1.3.9-alpha.5
+1. SDK 内部 URL 过滤 bug 修复
+---
+
+1.3.9-alpha.4
+1. 新增 resource 数据采集方式，支持定向采集指定 URLSession 的数据
+2. 新增采集 extension、extension widget 数据功能
+---
+
+1.3.8-beta.4
+1.修改 DDtrace Header Propagation 规则
+---
+
+1.3.8-beta.3
+1.文件引用格式修复
+---
+
+1.3.8-beta.2
+1.修复获取 GMT 时间时修改了全局 timezone 问题
+2.内部数据上传 URLSession 使用自定义 session 替换 sharedSession
+---
+
 1.3.8-beta.1
 1. 外部接入 RUM 补充自定义 actionType 方法
 2. 添加 iPhone14 设备信息适配
