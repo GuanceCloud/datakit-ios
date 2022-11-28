@@ -12,6 +12,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
+#import "FTMobileAgent+Public.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import <objc/runtime.h>
@@ -68,7 +69,7 @@
 }
 - (void)testBindUserWithNameEmail{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] bindUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
+    [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testBindUser2" userName:@"name1" userEmail:@"111@qq.com"];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *userid = dict[FT_USER_ID];
     NSString *username = dict[FT_USER_NAME];
