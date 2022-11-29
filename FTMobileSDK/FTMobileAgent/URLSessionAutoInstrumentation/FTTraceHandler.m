@@ -49,7 +49,6 @@
     self.metricsModel = metricsModel;
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.startTime toDate:[NSDate date]];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = task.currentRequest.URL;
     model.requestHeader = task.currentRequest.allHTTPHeaderFields;

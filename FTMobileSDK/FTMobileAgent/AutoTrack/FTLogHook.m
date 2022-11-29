@@ -70,7 +70,7 @@ static size_t (*orig_fwrite)(const void * __restrict, size_t, size_t, FILE * __r
 
 static char *__messageBuffer = {0};
 static int __buffIdx = 0;
-void reset_buffer()
+void reset_buffer(void)
 {
     __messageBuffer = calloc(1, sizeof(char));
     __messageBuffer[0] = '\0';

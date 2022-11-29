@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)stopResourceWithKey:(NSString *)key;
 @optional
-- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(NSString *)spanID traceID:(NSString *)traceID;
+- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;
 @end
 NS_ASSUME_NONNULL_END
 

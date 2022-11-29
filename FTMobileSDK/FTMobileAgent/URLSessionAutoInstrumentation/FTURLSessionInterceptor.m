@@ -141,7 +141,7 @@
     [handler taskCompleted:task error:error];
     [self removeTraceHandlerWithKey:task];
     [self stopResourceWithKey:handler.identifier];
-    __block NSString *span_id,*trace_id;
+    __block NSString *span_id = nil,*trace_id=nil;
     if (self.enableLinkRumData) {
         
         [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
@@ -183,7 +183,7 @@
     [self removeTraceHandlerWithKey:key];
     [self addResourceWithKey:key metrics:metrics content:content spanID:handler.spanID traceID:handler.traceID];
 }
-- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nonnull NSString *)spanID traceID:(nonnull NSString *)traceID{
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
     [self removeTraceHandlerWithKey:key];
     if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
         [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
