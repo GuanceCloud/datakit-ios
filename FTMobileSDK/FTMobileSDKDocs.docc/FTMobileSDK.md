@@ -1,5 +1,4 @@
 # ``FTMobileAgent``
-## Overview
 用于收集 iOS 应用的指标数据，用于 “观测云” 应用监测功能，以可视化的方式分析各个iOS应用端的性能。
 
 ## Topics
@@ -16,7 +15,7 @@
 - ``FTMobileAgent/FTLoggerConfig``
 - ``FTMobileAgent/FTExternalDataManager``
 - ``FTMobileAgent/FTTraceManager``
-- ``FTMobileAgent/FTTraceHandler``
+- ``FTMobileAgent/FTURLSessionDelegate``
 
 ### Enumerations
 - ``FTMobileAgent/FTEnv``
@@ -32,5 +31,6 @@
 - ``FTMobileAgent/FTResourceContentModel``
 - ``FTMobileAgent/FTResourceMetricsModel``
 
-
+### Protocol
+- ``FTMobileAgent/FTURLSessionDelegateProviding``
 

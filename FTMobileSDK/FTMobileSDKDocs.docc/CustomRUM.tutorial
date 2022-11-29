@@ -46,7 +46,7 @@
                 Resource
                 
                 ``FTMobileAgent/FTExternalDataManager/startResourceWithKey:``  
-                ``FTMobileAgent/FTExternalDataManager/stopResource(withKey:)``
+                ``FTMobileAgent/FTExternalDataManager/stopResourceWithKey:``
                 ``FTMobileAgent/FTExternalDataManager/addResourceWithKey:metrics:content:``
                 ``FTMobileAgent/FTResourceContentModel``
                 ``FTMobileAgent/FTResourceMetricsModel``

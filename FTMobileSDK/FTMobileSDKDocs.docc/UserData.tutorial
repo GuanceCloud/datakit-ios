@@ -17,8 +17,8 @@
                 用户数据绑定
                 
                 ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:``
-                ``FTMobileAgent/FTMobileAgent/bindUser(withUserID:userName:userEmail:)``
-                ``FTMobileAgent/FTMobileAgent/bindUser(withUserID:userName:userEmail:extra:)``
+                ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:userName:userEmail:``
+                ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:userName:userEmail:extra:``
                 @Code(name: "BindUser.swift", file: UserData.swift)
             }
             

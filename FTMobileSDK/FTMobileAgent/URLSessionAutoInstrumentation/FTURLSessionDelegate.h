@@ -24,19 +24,40 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate,FTURLSessionAutoInstrumentation;
 
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
+///
+///  使用示例
+///  ```objc
+///  @interface InstrumentationPropertyClass:NSObject<NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+///  @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
+///  @end
+///  @implementation InstrumentationPropertyClass
+///  - (nonnull FTURLSessionDelegate *)ftURLSessionDelegate {
+///      if(!_ftURLSessionDelegate){
+///          _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
+///      }
+///      return _ftURLSessionDelegate;
+///  }
+///  -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+///      [self.ftURLSessionDelegate URLSession:session dataTask:dataTask didReceiveData:data];
+///  }
+///  -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
+///      [self.ftURLSessionDelegate URLSession:session task:task didCompleteWithError:error];
+///  }
+///  -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
+///      [self.ftURLSessionDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
+///  }
+///  @end
+///  ```
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 /// 自动化采集的委托代理对象
 ///
 /// 同时，必须要让 ftURLSessionDelegate 实现以下方法， SDK 才能进行数据采集
-///  `- URLSession:dataTask:didReceiveData:`
-///  `- URLSession:task:didCompleteWithError:`
-///  `- URLSession:task:didFinishCollectingMetrics:`
-///  eg:
-///  ```objc
-///  -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
-///   [self.ftURLSessionDelegate URLSession:session dataTask:dataTask didReceiveData:data];
-///  }
-///  ```
+/// -  `- URLSession:dataTask:didReceiveData:`
+/// -  `- URLSession:task:didCompleteWithError:`
+/// -  `- URLSession:task:didFinishCollectingMetrics:`
+///
+/// 使用参考： ``FTMobileAgent/FTURLSessionDelegateProviding`` 中提供的使用示例
+
 @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 
 @end
