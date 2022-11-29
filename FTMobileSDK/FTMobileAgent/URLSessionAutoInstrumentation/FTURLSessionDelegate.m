@@ -23,6 +23,7 @@
 #import "FTURLSessionInterceptorProtocol.h"
 
 @interface FTURLSessionDelegate()
+@property (nonatomic, strong,readwrite) FTURLSessionAutoInstrumentation *instrumentation;
 @end
 @implementation FTURLSessionDelegate
 @synthesize ftURLSessionDelegate;
