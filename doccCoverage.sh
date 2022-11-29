@@ -1,7 +1,7 @@
 
 cd FTMobileSDK
 pwd
-xcodebuild -target FTMobileAgent
+xcodebuild -target FTMobileAgent DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO
 
 xcrun docc convert FTMobileSDKDocs.docc \
 --fallback-display-name FTMobileAgent \
