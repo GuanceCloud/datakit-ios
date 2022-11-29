@@ -28,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSError *error;
 /// 响应结果
 @property (nonatomic, copy) NSString *responseBody;
-//ios native
-@property (nonatomic, strong) NSNumber *duration;
 @end
 
 NS_ASSUME_NONNULL_END

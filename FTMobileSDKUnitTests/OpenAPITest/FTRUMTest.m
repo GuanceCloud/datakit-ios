@@ -687,7 +687,6 @@
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
-    model.duration = @1000;
     model.httpStatusCode = 200;
     model.httpMethod = @"GET";
     model.requestHeader = traceHeader;
@@ -717,7 +716,6 @@
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    model.duration = @1000;
     model.httpStatusCode = 404;
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
