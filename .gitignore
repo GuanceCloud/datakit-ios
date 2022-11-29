@@ -11,3 +11,5 @@ Pod_Products/
 !Podfile.lock
 ft-sdk-iosTest/testAccount.json
 Carthage
+FTMobileSDK/FTMobileSDKDocs.docc/.docc-build/
+FTMobileSDK/build/
