@@ -9,14 +9,17 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTResourceMetricsModel,FTResourceContentModel;
+
+/// 实现用户自定义 RUM、 Trace 功能的类
 @interface FTExternalDataManager : NSObject
+
+/// 单例
 + (instancetype)sharedManager;
 #pragma mark --------- Rum ----------
-/**
- * 创建页面
- * @param viewName     页面名称
- * @param loadTime     页面加载时间
- */
+/// 创建页面
+/// - Parameters:
+///   - viewName: 页面名称
+///   - loadTime: 页面加载时间
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime;
 /// 进入页面
 ///
@@ -67,11 +70,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - key: 请求标识
 - (void)stopResourceWithKey:(NSString *)key;
 #pragma mark --------- Trace ----------
-/**
- * 获取 trace 需要添加的请求头
- * @param key   请求标识
- * @param url   请求 URL
- */
+
+/// 获取 trace 需要添加的请求头
+/// - Parameters:
+///   - key: 请求标识
+///   - url: 请求 URL
 - (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
 @end
 

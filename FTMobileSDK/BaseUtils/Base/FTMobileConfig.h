@@ -43,7 +43,7 @@ typedef NS_OPTIONS(NSUInteger, FTDeviceMetricsMonitorType){
     /// fps 最低帧率、平均帧率
     FTDeviceMetricsMonitorFps      = 1 << 4,
 };
-///监控项采样周期
+/// 监控项采样周期
 typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
     /// 500ms (默认)
     FTMonitorFrequencyDefault,
@@ -183,9 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// SDK 基础配置项
 @interface FTMobileConfig : NSObject
 /// 指定初始化方法，设置 metricsUrl
-///
-/// - Parameters:
-///  -metricsUrl: 数据上报地址
+/// - Parameter metricsUrl: 数据上报地址
 - (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
 
 /// 禁用 init 初始化
@@ -211,9 +209,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
-/**
- * 需要采集的 Extensions 对应的 AppGroups Identifier 数组
- */
+
+/// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
 @property (nonatomic, strong) NSArray *groupIdentifiers;
 @end
 

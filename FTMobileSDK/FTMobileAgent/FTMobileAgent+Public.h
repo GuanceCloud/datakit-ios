@@ -28,8 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 配置 RUM Config 开启 RUM 功能
 ///
 /// RUM 用户监测，采集用户的行为数据，支持采集 View、Action、Resource、LongTask、Error。支持自动采集和手动添加。
-///
-/// - Parameters: rumConfigOptions: rum 配置项.
+/// - Parameter rumConfigOptions: rum 配置项.
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions;
 /// 配置 Logger Config 开启 Logger 功能
 ///
@@ -74,13 +73,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// 注销当前用户
 - (void)logout;
 
-/**
- @abstract
- * Track App Extension groupIdentifier 中缓存的数据
- *
- * @param groupIdentifier groupIdentifier
- * @param completion  完成 track 后的 callback
- */
+/// Track App Extension groupIdentifier 中缓存的数据
+/// - Parameters:
+///   - groupIdentifier: groupIdentifier
+///   - completion: 完成 track 后的 callback
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(nullable void (^)(NSString *groupIdentifier, NSArray *events)) completion;
 
 
