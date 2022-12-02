@@ -94,6 +94,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:)]) {
                 [self.delegate ftAppHotStart:duration];
             }
+            _applicationDidEnterBackground = NO;
         }
     }
     @catch (NSException *exception) {
