@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 ///事件等级和状态，默认：FTStatusInfo
 typedef NS_ENUM(NSInteger, FTLogStatus) {
     /// 提示
