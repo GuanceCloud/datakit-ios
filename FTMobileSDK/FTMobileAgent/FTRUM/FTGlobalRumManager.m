@@ -156,8 +156,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
-    self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:YES duration:duration];
+    [self.rumManger addLaunch:FTLaunchHot duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
         NSNumber *loadDuration = self.currentController?self.currentController.ft_loadDuration:@-1;
@@ -168,8 +167,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:NO duration:duration isPreWarming:isPreWarming];
+    [self.rumManger addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{

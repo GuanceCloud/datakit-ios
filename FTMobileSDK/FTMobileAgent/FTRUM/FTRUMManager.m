@@ -105,20 +105,30 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration{
-    [self addLaunch:isHot duration:duration isPreWarming:NO];
-}
-- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
+- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
+    self.appState = AppStateRun;
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
-            NSString *actionName = isHot?@"app_hot_start":@"app_cold_start";
-            NSString *actionType = isHot?@"launch_hot":@"launch_cold";
-            FTRUMDataType type = isHot?FTRUMDataLaunchHot:FTRUMDataLaunchCold;
-            FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithType:type duration:duration];
+            NSString *actionName;
+            NSString *actionType;
+            switch (type) {
+                case FTLaunchHot:
+                    actionName = @"app_hot_start";
+                    actionType = @"launch_hot";
+                    break;
+                case FTLaunchCold:
+                    actionName = @"app_cold_start";
+                    actionType = @"launch_cold";
+                    break;
+                case FTLaunchWarm:
+                    actionName = @"app_warm_start";
+                    actionType = @"launch_warm";
+                    break;
+            }
+            FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
             launchModel.action_name = actionName;
             launchModel.action_type = actionType;
-            //启动时是否进行了预热
-            launchModel.tags = @{@"active_pre_warm":@(isPreWarming)};
+        
             [self process:launchModel];
         }];
     } @catch (NSException *exception) {

@@ -52,7 +52,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         [self writeActionData:model.time];
         return NO;
     }
-    if (model.type ==  FTRUMDataLaunchHot|| model.type == FTRUMDataLaunchCold||
+    if (model.type ==  FTRUMDataLaunch ||
         model.type == FTRUMDataClick) {
         if ([self allResourcesCompletedLoading]) {
             [self writeActionData:model.time];

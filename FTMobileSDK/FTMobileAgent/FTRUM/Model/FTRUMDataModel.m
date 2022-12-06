@@ -73,8 +73,8 @@
 @end
 
 @implementation FTRUMLaunchDataModel
--(instancetype)initWithType:(FTRUMDataType)type duration:(NSNumber *)duration{
-    self = [super initWithType:type time:[NSDate date]];
+-(instancetype)initWithDuration:(NSNumber *)duration{
+    self = [super initWithType:FTRUMDataLaunch time:[NSDate date]];
     if (self) {
         self.duration = duration;
     }
