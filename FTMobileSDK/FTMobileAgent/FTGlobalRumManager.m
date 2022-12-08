@@ -158,8 +158,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
-    self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:YES duration:duration];
+    [self.rumManger addLaunch:FTLaunchHot duration:duration];
     if (self.rumManger.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
         NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
@@ -170,8 +169,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    self.rumManger.appState = AppStateRun;
-    [self.rumManger addLaunch:NO duration:duration isPreWarming:isPreWarming];
+    [self.rumManger addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{
@@ -183,17 +181,6 @@ static dispatch_once_t onceToken;
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
-//- (void)trackViewDidAppear:(UIViewController *)viewController{
-//    NSString *viewID = viewController.ft_viewUUID;
-//    NSString *className = viewController.ft_viewControllerName;
-//    [self.rumManger onCreateView:className loadTime:viewController.ft_loadDuration];
-//    [self.rumManger startViewWithViewID:viewID viewName:className];
-//}
-//- (void)trackViewDidDisappear:(UIViewController *)viewController{
-//    if(self.currentController == viewController){
-//        [self.rumManger stopViewWithViewID:viewController.ft_viewUUID];
-//    }
-//}
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
     _rumManger = nil;

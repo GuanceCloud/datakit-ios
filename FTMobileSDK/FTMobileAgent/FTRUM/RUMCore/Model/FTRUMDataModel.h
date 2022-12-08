@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FTRUMDataWriteProtocol.h"
 typedef NS_ENUM(NSUInteger, FTRUMDataType) {
-    FTRUMDataLaunchHot,
-    FTRUMDataLaunchCold,
+    FTRUMDataLaunch,
     FTRUMDataClick,
     FTRUMDataViewStart,
     FTRUMDataViewStop,
@@ -59,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTRUMLaunchDataModel : FTRUMActionModel
 @property (nonatomic, strong) NSNumber *duration;
--(instancetype)initWithType:(FTRUMDataType)type duration:(NSNumber *)duration;
+-(instancetype)initWithDuration:(NSNumber *)duration;
 @end
 @interface FTRUMWebViewData : FTRUMDataModel
 @property (nonatomic, assign) long long tm;

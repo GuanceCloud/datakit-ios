@@ -66,10 +66,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         case FTRUMDataResourceError:
             [self writeErrorData:model];
             break;
-        case FTRUMDataLaunchHot:
-            [self writeLaunchData:(FTRUMLaunchDataModel*)model];
-            break;
-        case FTRUMDataLaunchCold:
+        case FTRUMDataLaunch:
             [self writeLaunchData:(FTRUMLaunchDataModel*)model];
             break;
         case FTRUMDataWebViewJSBData:

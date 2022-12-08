@@ -14,7 +14,14 @@
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
-
+typedef NS_ENUM(NSUInteger, FTLaunchType) {
+    /// 热启动
+    FTLaunchHot,
+    /// 冷启动
+    FTLaunchCold,
+    /// 预启动，在APP启动前，系统进行了预加载
+    FTLaunchWarm
+};
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol>
 @property (nonatomic, assign) AppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
@@ -85,17 +92,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
 /**
  * 应用启动
- * @param isHot     是否是热启动
+ * @param type      启动类型
  * @param duration  启动时长
  */
-- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration;
-/**
- * 应用启动
- * @param isHot     是否是热启动
- * @param duration  启动时长
- * @param isPreWarming 是否进行了预热
- */
-- (void)addLaunch:(BOOL)isHot duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
+- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration;
 /**
  * 应用终止使用
  */
