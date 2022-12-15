@@ -132,7 +132,7 @@ static dispatch_once_t onceToken;
 #pragma mark ========== publick method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
-        [FTTraceManager sharedInstance].intakeUrl = handler;
+        [FTURLSessionAutoInstrumentation sharedInstance].interceptor.intakeUrlHandler = handler;
     }
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{
@@ -147,7 +147,7 @@ static dispatch_once_t onceToken;
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        [self logging:content status:status tags:nil field:nil tm:[FTDateUtil currentTimeNanosecond]];
+        [self logging:content status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -308,7 +308,6 @@ static dispatch_once_t onceToken;
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [FTURLProtocol stopMonitor];
-    [FTTraceManager sharedInstance].intakeUrl = nil;
     onceToken = 0;
     sharedInstance =nil;
 }

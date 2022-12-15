@@ -23,6 +23,7 @@
 @synthesize innerResourceHandeler = _innerResourceHandeler;
 @synthesize innerUrl = _innerUrl;
 @synthesize enableAutoRumTrack = _enableAutoRumTrack;
+@synthesize intakeUrlHandler = _intakeUrlHandler;
 
 -(instancetype)init{
     self = [super init];
@@ -44,15 +45,19 @@
 -(void)enableLinkRumData:(BOOL)enable{
     self.enableLinkRumData = enable;
 }
-- (BOOL)isInternalURL:(NSURL *)url{
+- (BOOL)isTraceUrl:(NSURL *)url{
+    BOOL trace = YES;
     if (self.innerUrl) {
-        if (url.port!=nil) {
-            return ([url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host]&&[url.port isEqual:[NSURL URLWithString:self.innerUrl].port]);
+        if (url.port) {
+            trace = !([url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host]&&[url.port isEqual:[NSURL URLWithString:self.innerUrl].port]);
         }else{
-            return [url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host];
+            trace = ![url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host];
+        }
+        if(trace && self.intakeUrlHandler){
+            return self.intakeUrlHandler(url);
         }
     }
-    return NO;
+    return trace;
 }
 /**
  * 内部采集以 task 为 key
@@ -84,6 +89,12 @@
 -(NSString *)innerUrl{
     return _innerUrl;
 }
+-(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
+    _intakeUrlHandler = intakeUrlHandler;
+}
+-(FTIntakeUrl)intakeUrlHandler{
+    return _intakeUrlHandler;
+}
 -(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
     _enableAutoRumTrack = enableAutoRumTrack;
 }
@@ -97,8 +108,8 @@
     return _innerResourceHandeler;
 }
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
-    //判断是否开启 trace ，是否是内部 url
-    if (!self.enableTrace || [self isInternalURL:request.URL]) {
+    //判断是否开启 trace ，是否是要采集的url
+    if (!self.enableTrace || ![self isTraceUrl:request.URL]) {
         return request;
     }
     NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
@@ -111,7 +122,7 @@
     return mutableReqeust;
 }
 - (void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
-    if ([self isInternalURL:task.originalRequest.URL] ) {
+    if (![self isTraceUrl:task.originalRequest.URL] ) {
         return;
     }
     FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:task.currentRequest.URL identifier:[NSUUID UUID].UUIDString];
@@ -120,24 +131,24 @@
     [self startResourceWithKey:handler.identifier];
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
-    if ([self isInternalURL:task.originalRequest.URL]) {
+    FTTraceHandler *handler = [self getTraceHandler:task];
+    if(!handler){
         return;
     }
-    FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskReceivedMetrics:metrics];
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
-    if ([self isInternalURL:task.originalRequest.URL]) {
+    FTTraceHandler *handler = [self getTraceHandler:task];
+    if(!handler){
         return;
     }
-    FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskReceivedData:data];
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    if ([self isInternalURL:task.originalRequest.URL]) {
+    FTTraceHandler *handler = [self getTraceHandler:task];
+    if(!handler){
         return;
     }
-    FTTraceHandler *handler = [self getTraceHandler:task];
     [handler taskCompleted:task error:error];
     [self removeTraceHandlerWithKey:task];
     [self stopResourceWithKey:handler.identifier];
@@ -173,9 +184,19 @@
         [self.innerResourceHandeler startResourceWithKey:key];
     }
 }
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
+    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(startResourceWithKey:property:)]) {
+        [self.innerResourceHandeler startResourceWithKey:key property:property];
+    }
+}
 - (void)stopResourceWithKey:(nonnull NSString *)key{
     if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(stopResourceWithKey:)]) {
         [self.innerResourceHandeler stopResourceWithKey:key];
+    }
+}
+-(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
+        [self.innerResourceHandeler stopResourceWithKey:key property:property];
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -189,6 +210,7 @@
         [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
+
 
 
 @end

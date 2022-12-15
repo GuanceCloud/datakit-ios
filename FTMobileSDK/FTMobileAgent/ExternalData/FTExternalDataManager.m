@@ -34,9 +34,19 @@
         [self.delegate startViewWithName:viewName];
     }
 }
+-(void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:property:)]){
+        [self.delegate startViewWithName:viewName property:property];
+    }
+}
 -(void)stopView{
     if(self.delegate && [self.delegate respondsToSelector:@selector(stopView)]){
         [self.delegate stopView];
+    }
+}
+-(void)stopViewWithProperty:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(stopViewWithProperty:)]){
+        [self.delegate stopViewWithProperty:property];
     }
 }
 - (void)addClickActionWithName:(NSString *)actionName {
@@ -44,9 +54,19 @@
         [self.delegate addClickActionWithName:actionName];
     }
 }
+-(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:property:)]){
+        [self.delegate addClickActionWithName:actionName property:property];
+    }
+}
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
     if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:)]){
         [self.delegate addActionName:actionName actionType:actionType];
+    }
+}
+-(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
+        [self.delegate addActionName:actionName actionType:actionType property:property];
     }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
@@ -54,14 +74,29 @@
         [self.delegate addErrorWithType:type message:message stack:stack];
     }
 }
+-(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:message:stack:property:)]){
+        [self.delegate addErrorWithType:type message:message stack:stack property:property];
+    }
+}
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
     if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:)]){
         [self.delegate addLongTaskWithStack:stack duration:duration];
     }
 }
+-(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:property:)]){
+        [self.delegate addLongTaskWithStack:stack duration:duration property:property];
+    }
+}
 - (void)startResourceWithKey:(NSString *)key{
     if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(startResourceWithKey:)]){
         [self.resourceDelegate startResourceWithKey:key];
+    }
+}
+-(void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(startResourceWithKey:property:)]){
+        [self.resourceDelegate startResourceWithKey:key property:property];
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -72,6 +107,11 @@
 - (void)stopResourceWithKey:(nonnull NSString *)key {
     if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(stopResourceWithKey:)]){
         [self.resourceDelegate stopResourceWithKey:key];
+    }
+}
+-(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(stopResourceWithKey:property:)]){
+        [self.resourceDelegate stopResourceWithKey:key property:property];
     }
 }
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{

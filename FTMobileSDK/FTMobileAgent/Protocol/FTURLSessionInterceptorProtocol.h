@@ -22,13 +22,15 @@
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
+typedef BOOL(^FTIntakeUrl)(NSURL *url);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorDelegate<NSObject>
 @required
 /// 设置需要屏蔽的内部链接
 @property (nonatomic, copy) NSString *innerUrl;
-
+/// 用户采集过滤回调
+@property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
 @optional
 /// 采集的 resource 数据接收对象
 @property (nonatomic, weak) id<FTRumResourceProtocol> innerResourceHandeler;

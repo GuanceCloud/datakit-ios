@@ -24,25 +24,43 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class FTResourceMetricsModel,FTResourceContentModel;
 @protocol FTRumResourceProtocol <NSObject>
-/**
- * 请求开始
- * @param key       请求标识
- */
+/// HTTP 请求开始
+///
+/// - Parameters:
+///   - key: 请求标识
 - (void)startResourceWithKey:(NSString *)key;
-/**
- * 请求数据
- * @param key       请求标识
- * @param metrics   请求相关性能属性
- * @param content   请求相关数据
- */
+/// HTTP 请求开始
+/// - Parameters:
+///   - key: 请求标识
+///   - property: 事件自定义属性(可选)
+- (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
+
+/// HTTP 请求数据
+///
+/// - Parameters:
+///   - key: 请求标识
+///   - metrics: 请求相关性能属性
+///   - content: 请求相关数据
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content;
-/**
- * 请求结束
- * @param key       请求标识
- */
+/// HTTP 请求结束
+///
+/// - Parameters:
+///   - key: 请求标识
 - (void)stopResourceWithKey:(NSString *)key;
+/// HTTP 请求结束
+/// - Parameters:
+///   - key: 请求标识
+///   - property: 事件自定义属性(可选)
+- (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 @optional
-- (void)addResourceWithKey:(NSString *)identifier metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;
+/// HTTP 请求数据 包含 tracer 信息 spanID、traceID
+/// - Parameters:
+///   - key: 请求标识
+///   - metrics: 请求相关性能属性
+///   - content: 请求相关数据
+///   - spanID: tracer spanid
+///   - traceID: tracer traceid
+- (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID;
 @end
 NS_ASSUME_NONNULL_END
 

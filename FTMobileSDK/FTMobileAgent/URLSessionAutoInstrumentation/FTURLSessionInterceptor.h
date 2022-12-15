@@ -28,9 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param enable 授权许可
 -(void)enableLinkRumData:(BOOL)enable;
 
-/// 判断是否是 SDK 内部 url,内部 url 不进行采集
-/// @param url 请求 URL
-- (BOOL)isInternalURL:(NSURL *)url;
 @end
 
 NS_ASSUME_NONNULL_END

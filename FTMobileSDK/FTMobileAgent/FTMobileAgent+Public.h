@@ -35,10 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - loggerConfigOptions: logger 配置项.
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions;
-/**
- * @abstract
- * 设置过滤 Trace Resource 域名
- */
+
+/// 设置过滤 Trace Resource 域名
+/// - Parameter handler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler;
 /// 配置 Trace Config 开启 Trace 功能
 ///
