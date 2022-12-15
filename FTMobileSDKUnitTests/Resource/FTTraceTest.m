@@ -156,7 +156,7 @@
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [FTURLSessionAutoInstrumentation sharedInstance].tracer;
+    id<FTTracerProtocol> tracer = [[FTURLSessionAutoInstrumentation sharedInstance] valueForKey:@"tracer"];
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
@@ -452,7 +452,7 @@ NSString *keyName;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [FTModelHelper startView];
-    id<FTExternalResourceProtocol> handler = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    id<FTExternalResourceProtocol> handler = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     FTURLSessionInterceptor *interceptor = (FTURLSessionInterceptor *)handler;
     NSCache *cache = [interceptor valueForKey:@"traceHandlers"];
     cache.delegate = self;

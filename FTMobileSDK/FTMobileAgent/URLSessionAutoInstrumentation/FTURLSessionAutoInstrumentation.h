@@ -27,12 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
 @interface FTURLSessionAutoInstrumentation : NSObject
 
-/// sdk 内部的数据上传 url
-@property (nonatomic,copy) NSString *sdkUrlStr;
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
-@property (nonatomic, weak) id<FTURLSessionInterceptorDelegate> interceptor;
-/// 处理外部传入 rum resource 数据的对象
-@property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> rumResourceHandler;
+@property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorDelegate> interceptor;
+/// 向外部提供处理用户自定义 resource 数据的对象
+@property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
 /// 单例
 + (instancetype)sharedInstance;
@@ -46,8 +44,19 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - config: trace 配置项
 - (void)setTraceConfig:(FTTraceConfig *)config;
 
-/// 获取实现 tracerProtocol 处理获取与解包 trace 请求头的对象
--(id<FTTracerProtocol> _Nullable)tracer;
+/// 设置 sdk 内部的数据上传 url
+/// - Parameter sdkUrlStr: sdk 内部的数据上传 url
+- (void)setSdkUrlStr:(NSString *)sdkUrlStr;
+
+/// 设置遵循 FTRumResourceProtocol 的 rum resource 数据处理对象
+///
+/// 该模块采集到的 http resource 数据要传给 RUM 模块
+/// - Parameter handler: RUM 模块数据接收对象
+- (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler;
+
+/// 设置 URL 过滤
+/// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
+- (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
 /// 注销
 - (void)resetInstance;
 @end

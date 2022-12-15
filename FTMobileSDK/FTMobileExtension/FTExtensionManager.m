@@ -75,16 +75,16 @@ static FTExtensionManager *sharedInstance = nil;
     self.rumManager.appState = AppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
     }
-    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = self.rumManager;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
 
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{

@@ -79,7 +79,7 @@ static dispatch_once_t onceToken;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
             .setSdkVersion(SDK_VERSION)
             .setXDataKitUUID(config.XDataKitUUID);
-            [FTURLSessionAutoInstrumentation sharedInstance].sdkUrlStr = config.metricsUrl;
+            [[FTURLSessionAutoInstrumentation sharedInstance] setSdkUrlStr:config.metricsUrl];
         }
     }@catch(NSException *exception) {
         ZYErrorLog(@"exception: %@", self, exception);
@@ -103,8 +103,8 @@ static dispatch_once_t onceToken;
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
     [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
-    [FTURLSessionAutoInstrumentation sharedInstance].interceptor.innerResourceHandeler = [FTGlobalRumManager sharedInstance].rumManger;
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManger];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -124,14 +124,14 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
     [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionAutoInstrumentation sharedInstance].interceptor;
     [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].rumResourceHandler;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 
 }
 #pragma mark ========== publick method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
-        [FTURLSessionAutoInstrumentation sharedInstance].interceptor.intakeUrlHandler = handler;
+        [[FTURLSessionAutoInstrumentation sharedInstance] setIntakeUrlHandler:handler];
     }
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{

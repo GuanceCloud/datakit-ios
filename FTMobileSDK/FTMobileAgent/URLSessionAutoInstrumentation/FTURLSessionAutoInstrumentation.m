@@ -26,6 +26,8 @@
 #import "FTMobileConfig.h"
 #import "FTTracer.h"
 @interface FTURLSessionAutoInstrumentation()
+/// sdk 内部的数据上传 url
+@property (nonatomic,copy) NSString *sdkUrlStr;
 @property (nonatomic, assign) BOOL swizzle;
 @property (nonatomic, strong) FTURLSessionInterceptor *sessionInterceptor;
 @property (nonatomic, strong) FTTracer *tracer;
@@ -53,7 +55,7 @@ static dispatch_once_t onceToken;
     _sdkUrlStr = sdkUrlStr;
     self.interceptor.innerUrl = sdkUrlStr;
 }
--(id<FTExternalResourceProtocol>)rumResourceHandler{
+-(id<FTExternalResourceProtocol>)externalResourceHandler{
     return _sessionInterceptor;
 }
 -(id<FTTracerProtocol>)tracer{
@@ -74,7 +76,12 @@ static dispatch_once_t onceToken;
         [self startMonitor];
     }
 }
-
+- (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
+    self.interceptor.innerResourceHandeler = handler;
+}
+-(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
+    self.interceptor.intakeUrlHandler = intakeUrlHandler;
+}
 - (void)startMonitor{
     if (self.swizzle) {
         return;
