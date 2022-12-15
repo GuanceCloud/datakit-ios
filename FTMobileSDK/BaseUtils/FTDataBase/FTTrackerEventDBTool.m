@@ -47,6 +47,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             ZYDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
+            dbTool.dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
         }
         pthread_mutex_init(&(dbTool->_lock), NULL);
         [dbTool createTable];

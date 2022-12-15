@@ -113,7 +113,6 @@ static dispatch_once_t onceToken;
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
         self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
-        [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
         if(self.loggerConfig.enableConsoleLog){
             [self _traceConsoleLog];
         }
