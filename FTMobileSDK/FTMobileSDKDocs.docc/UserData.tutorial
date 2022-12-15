@@ -1,0 +1,60 @@
+@Tutorial(time: 10) {
+    @Intro(title: "用户的绑定与注销") {
+        绑定用户信息，SDK支持设置用户ID、用户姓名、用户邮箱，还可以添加额外的信息。保留字段 userid、user_name、user_email，设置额外信息的时候应避免重复。
+
+        
+        @Image(source: binduser, alt: "用户数据")
+    }
+    
+    @Section(title: "用户数据") {
+        @ContentAndMedia {
+            
+            @Image(source: binduserdata, alt: "用户数据绑定与注销")
+        }
+        
+        @Steps {
+            @Step {
+                用户数据绑定
+                
+                ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:``
+                ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:userName:userEmail:``
+                ``FTMobileAgent/FTMobileAgent/bindUserWithUserID:userName:userEmail:extra:``
+                @Code(name: "BindUser.swift", file: UserData.swift)
+            }
+            
+            @Step {
+                用户数据注销
+                
+                ``FTMobileAgent/FTMobileAgent/logout``
+                @Code(name: "BindUser.swift", file: UserData2.swift,previousFile:UserData.swift)
+            }
+        }
+    }
+    @Assessments {
+           @MultipleChoice {
+               用户信息的保留字段有哪些？
+
+               @Choice(isCorrect: false) {
+                   userid 
+
+                   @Justification(reaction: "Try again!") {
+                       不仅仅是这些 ！
+                   }
+               }
+               @Choice(isCorrect: false) {
+                   userid、user_name
+
+                   @Justification(reaction: "That's right!") {
+                       不仅仅是这些 ！
+                   }
+               } 
+               @Choice(isCorrect: true) {
+                   userid、user_name、user_email
+
+                   @Justification(reaction: "That's right!") {
+                       正确 .
+                   }
+               }
+           } 
+       }
+}

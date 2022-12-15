@@ -19,13 +19,10 @@ static BOOL isActivePrewarm = NO;
 static BOOL AppRelaunched = NO;
 
 static CFTimeInterval processStartTime(NSTimeInterval now) {
-    size_t len = 4;
-    int mib[len];
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
     struct kinfo_proc kp;
     NSTimeInterval startTime = now;
-    sysctlnametomib("kern.proc.pid", mib, &len);
-    mib[3] = getpid();
-    len = sizeof(kp);
+    size_t len = sizeof(kp);
     int res = sysctl(mib, 4, &kp, &len, NULL, 0);
     if (res == 0) {
         struct timeval startTimeval = kp.kp_proc.p_un.__p_starttime;
@@ -63,6 +60,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     if (self) {
         self.delegate = delegate;
         _launchTime = [NSDate date];
+        //ApplicationRespondedTime > 0 来判断在此之前就已经接收到了 UIApplicationDidBecomeActiveNotification 通知，进行冷启动记录
         if (ApplicationRespondedTime>0) {
             [self appColdStartEvent];
         }
@@ -96,6 +94,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:)]) {
                 [self.delegate ftAppHotStart:duration];
             }
+            _applicationDidEnterBackground = NO;
         }
     }
     @catch (NSException *exception) {

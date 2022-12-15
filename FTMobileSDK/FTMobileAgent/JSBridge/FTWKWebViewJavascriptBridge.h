@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeHandler:( NSString* )handlerName;
 - (void)callHandler:(NSString*)handlerName;
 - (void)callHandler:(NSString*)handlerName data:(nullable id)data;
-- (void)callHandler:(NSString*)handlerName data:(nullable id)data responseCallback:(nullable  WVJBResponseCallback)responseCallback;
+- (void)callHandler:(NSString*)handlerName data:(nullable id)data responseCallback:(nullable WVJBResponseCallback)responseCallback;
 
 @end
 

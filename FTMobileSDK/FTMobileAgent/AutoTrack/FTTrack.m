@@ -13,27 +13,28 @@
 #import "UIApplication+FTAutoTrack.h"
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "UIScrollView+FTAutoTrack.h"
-#import "FTConfigManager.h"
 @interface FTTrack()
 
 @end
 @implementation FTTrack
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        [self startHook];
-    }
-    return  self;
+
++ (instancetype)sharedInstance {
+    static FTTrack *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
 }
-- (void)startHook{
-    if (FTConfigManager.sharedInstance.rumConfig.enableTraceUserView) {
+-(void)startWithTrackView:(BOOL)trackView action:(BOOL)trackAction{
+    if (trackView) {
         [self logViewControllerLifeCycle];
     }
-    if ([FTConfigManager sharedInstance].rumConfig.enableTraceUserAction) {
+    if (trackAction) {
         [self logTargetAction];
     }
-  
 }
+
 - (void)logViewControllerLifeCycle{
     @try {
         static dispatch_once_t onceToken;

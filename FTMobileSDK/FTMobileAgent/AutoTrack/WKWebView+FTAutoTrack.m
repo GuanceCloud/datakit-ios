@@ -8,16 +8,16 @@
 
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewHandler.h"
-#import "NSURLRequest+FTMonitor.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
+#import "FTURLSessionInterceptorProtocol.h"
 @implementation WKWebView (FTAutoTrack)
 
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        NSURLRequest *newrequest = [request ft_NetworkTrace];
-        [[FTWKWebViewHandler sharedInstance] addWebView:self request:newrequest];
+        NSURLRequest *newrequest = [[FTWKWebViewHandler sharedInstance].interceptor injectTraceHeader:request];
+        [[FTWKWebViewHandler sharedInstance] addWebView:self request:request];
         return  [self dataflux_loadRequest:newrequest];
     }else{
         return [self dataflux_loadRequest:request];

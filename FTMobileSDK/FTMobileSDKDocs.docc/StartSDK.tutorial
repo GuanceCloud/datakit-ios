@@ -1,0 +1,260 @@
+@Tutorial(time: 20) {
+    @Intro(title: "SDK 配置") {
+        基础配置、Trace 配置、RUM 配置、Logger 配置
+        
+        
+        @Image(source: rum_access, alt: "SSS")
+    }
+    
+    @Section(title: "基础配置") {
+        @ContentAndMedia {
+            
+            通过 ``FTMobileAgent/FTMobileConfig`` 进行配置。
+
+            
+            @Image(source: rum_access, alt: "accessible description")
+        }
+        
+        @Steps {
+            @Step {
+                SDK FTMobileConfig 基础配置
+                
+                在启动 SDK 的同时配置基础的配置项，必要的配置项有 FT-GateWay metrics 写入地址。SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。 
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step1.swift)
+            }
+            
+            @Step {
+                配置是否允许 SDK 打印 Debug 日志 
+                
+                开启后控制台会输出 SDK 内部打印的日志信息。
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step2.swift,previousFile:startsdk_section1_step1.swift){
+                    @Image(source:enableSDKDebugLog, alt:"enableSDKDebugLog set to true")
+                }
+            }
+            @Step {
+                配置请求 HTTP 请求头 X-Datakit-UUID 数据采集端，如果用户不设置会自动配置
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step3.swift,previousFile:startsdk_section1_step2.swift)
+            }
+            @Step {
+                配置环境字段，默认值为 FTEnvProd
+                
+                查看环境 ``FTMobileAgent/FTEnv``
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
+            }
+            @Step {
+                设置 SDK 全局 tag
+               
+                保留标签： sdk_package_flutter、sdk_package_react_native
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step5.swift,previousFile:startsdk_section1_step4.swift)
+            }
+            @Step {
+                开启 SDK
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step6.swift,previousFile:startsdk_section1_step5.swift)
+            }
+        }
+    }
+    
+    @Section(title: "RUM 功能配置") {
+        @ContentAndMedia {
+            应用的用户访问监测数据采集到的 “观测云” 后，可以通过 “观测云” 控制台进行自定义配置场景，对应用的用户访问情况数据进行可视化洞察与分析。
+   
+            通过 ``FTMobileAgent/FTRumConfig`` 进行配置。
+
+            开启用户访问监测功能 [前置条件](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
+            
+                
+            @Image(source: ios_overview, alt: "ios overview")
+        }
+        @Steps {
+            
+            @Step {
+                RUM 基础配置，设置 appid 应用唯一ID，设置后 rum 数据才能正常上报
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step1.swift,previousFile:startsdk_section1_step6.swift)
+            }
+            
+            @Step {
+                采样率配置
+                
+                可设置 0 至 100，100 表示百分百采集，不做数据样本压缩，是 session 级别，未被采样时，整个 session 上的 view、action、resource等都不采集
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step2.swift,previousFile:startsdk_section2_step1.swift)
+            }
+            @Step {
+                设置是否自动采集 View、Action、Resource 数据
+                
+                注意：Action、Resource 数据是与 View 进行绑定的，如果没有 View 自动采集或手动采集的 Action 与 Resource 数据无法正确写入
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step3.swift,previousFile:startsdk_section2_step2.swift)
+            }
+            @Step {
+                设置是否需要采集崩溃日志，以及配置崩溃时监控的设备信息
+             
+                查看监控配置 ``FTMobileAgent/FTErrorMonitorType``
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step4.swift,previousFile:startsdk_section2_step3.swift)
+            }
+            @Step {
+                设置是否需要采集 Long Task
+             
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step5.swift,previousFile:startsdk_section2_step4.swift)
+            }
+            @Step {
+                设置监控类型，与监控周期，不设置则不开启监控
+             
+                查看监控项类型 ``FTMobileAgent/FTDeviceMetricsMonitorType``
+                监控项周期 ``FTMobileAgent/FTMonitorFrequency``
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step6.swift,previousFile:startsdk_section2_step5.swift)
+            }
+            @Step {
+                设置 RUM 全局 tag
+                
+                保留标签:特殊 key - track_id (用于追踪功能)
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step7.swift,previousFile:startsdk_section2_step6.swift)
+            }
+            @Step {
+                开启 RUM 
+                
+                @Code(name: "AppDelegate.swift", file: startsdk_section2_step8.swift,previousFile:startsdk_section2_step7.swift)
+            }
+        }
+    }
+    @Section(title: "Logger 功能配置"){
+        @ContentAndMedia {
+          日志数据采集到 “观测云” 后，您可以在 “观测云” 控制台，通过「日志」查看工作空间内全部的日志内容。
+        
+          通过 ``FTMobileAgent/FTLoggerConfig`` 进行配置。            
+                
+         @Image(source: logger, alt: "logger")
+        }
+        @Steps {           
+          @Step {
+              设置日志所属业务或服务的名称
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step1.swift,previousFile:startsdk_section2_step8.swift)
+           }
+          @Step {
+              设置日志废弃策略
+              
+              查看废弃策略 ``FTMobileAgent/FTLogCacheDiscard``
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
+           }
+          @Step {
+              设置是否采集控制台与自定义日志,默认为 NO
+              
+              自定义日志使用方法 <doc:CustomLog>
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift,previousFile:startsdk_section3_step2.swift)
+           }
+          @Step {
+              设置日志采集条件配置
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step4.swift,previousFile:startsdk_section3_step3.swift)
+           }
+          @Step {
+              设置 logger 数据与 rum 关联
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step5.swift,previousFile:startsdk_section3_step4.swift)
+           }
+          @Step {
+              logger 全局 tag
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step6.swift,previousFile:startsdk_section3_step5.swift)
+           }
+          @Step {
+              启动 logger
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step7.swift,previousFile:startsdk_section3_step6.swift)
+           }
+        }
+    }
+    @Section(title: "Trace 功能配置"){
+        @ContentAndMedia {
+         “观测云” 的链路数据采集目前支持使用 Opentracing 协议的采集器，如  DDTrace 、Apache Jaeger 、OpenTelemetry 、Skywalking 、Zipkin 等。
+        
+          通过 ``FTMobileAgent/FTTraceConfig`` 进行配置。            
+                
+         @Image(source: trace, alt: "trace")
+        }
+        @Steps {
+          @Step {
+              设置是否开启自动 http trace
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section4_step1.swift,previousFile:startsdk_section3_step7.swift)
+           }
+          @Step {
+              设置采样率
+            
+              @Code(name: "AppDelegate.swift", file: startsdk_section4_step2.swift,previousFile:startsdk_section4_step2.swift)
+           }
+          @Step {
+              设置网络请求信息采集时使用链路追踪类型
+              
+              默认链路追踪类型为 DDtrace ，查看支持追踪的链路类型 ``FTMobileAgent/FTNetworkTraceType``
+              @Code(name: "AppDelegate.swift", file: startsdk_section4_step3.swift,previousFile:startsdk_section4_step2.swift)
+           }
+          @Step {
+              是否将 Trace 数据与 rum 关联
+              
+              仅在 FTNetworkTraceType 设置为 DDtrace 时生效
+              @Code(name: "AppDelegate.swift", file: startsdk_section4_step4.swift,previousFile:startsdk_section4_step3.swift)
+           }
+          @Step {
+              开启 Trace
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section4_step5.swift,previousFile:startsdk_section4_step4.swift)
+           }
+        }
+    }
+    @Assessments {
+           @MultipleChoice {
+               RUM 可以配置自动采集的数据类型有哪些？
+
+               @Choice(isCorrect: false) {
+                   View、Action、Http Resource.
+
+                   @Justification(reaction: "Try again!") {
+                       不仅仅是这些 ！
+                   }
+               }
+               @Choice(isCorrect: true) {
+                   View、Action、Http Resource、Error、Long Task.
+
+                   @Justification(reaction: "That's right!") {
+                       正确 .
+                   }
+               }              
+           } 
+           @MultipleChoice {
+               将 Trace 类型设置成那种可以支持 Trace 数据与 rum 关联 ？
+
+               @Choice(isCorrect: false) {
+                   zipkin
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程 
+                   }
+               }
+               @Choice(isCorrect: true) {
+                   datadog
+
+                   @Justification(reaction: "That's right!") {
+                       正确 .
+                   }
+               }  
+               @Choice(isCorrect: false) {
+                   traceparent、skywalking
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程 
+                   }
+               } 
+               @Choice(isCorrect: false) {
+                   jaeger
+
+                   @Justification(reaction: "Try again!") {
+                       可以再查看一下👆🏻的教程
+                   }
+               } 
+           }  
+       }
+}

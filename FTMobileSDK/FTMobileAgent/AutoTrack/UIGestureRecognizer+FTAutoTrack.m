@@ -9,8 +9,7 @@
 #import "UIGestureRecognizer+FTAutoTrack.h"
 #import "FTLog.h"
 #import "UIView+FTAutoTrack.h"
-#import "FTGlobalRumManager.h"
-#import "FTRUMManager.h"
+#import "FTTrack.h"
 @implementation UIGestureRecognizer (FTAutoTrack)
 
 - (void)ftTrackGestureRecognizerAppClick:(UIGestureRecognizer *)gesture{
@@ -29,7 +28,9 @@
         BOOL isAlterType = [view isAlertClick];
         BOOL isTrackClass = [view isKindOfClass:UILabel.class] || [view isKindOfClass:UIImageView.class] ||isAlterType;
         if(isTrackClass){
-            [[FTGlobalRumManager sharedInstance] addClickActionWithName:view.ft_actionName property:nil];
+            if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+                [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
+            }
         }
         
     }@catch (NSException *exception) {

@@ -7,13 +7,11 @@
 //
 
 #import "FTUncaughtExceptionHandler+Test.h"
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTGlobalRumManager.h>
+#import <UIKit/UIKit.h>
 #include <execinfo.h>
 #import <objc/runtime.h>
-#import <FTConstants.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
-#import <FTRUMManager.h>
+//#import <FTConstants.h>
+//#import <FTMobileAgent/FTBaseInfoHandler.h>
 #import <os/log.h>
 @implementation FTUncaughtExceptionHandler (Test)
 - (void)handleException:(NSException *)exception {
@@ -21,7 +19,6 @@
    
     os_log(OS_LOG_DEFAULT, "[FTLog][Crash]%{public}@", info);
 
-    [[FTGlobalRumManager sharedInstance].rumManger addErrorWithType:[exception name]  message:[exception reason] stack:info property:nil];
     
     NSSetUncaughtExceptionHandler(NULL);
     signal(SIGSEGV,SIG_DFL);

@@ -7,23 +7,22 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTRecordModel.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
-#import <FTDateUtil.h>
-#import <FTConstants.h>
-#import <FTJSONUtil.h>
-#import <NSString+FTAdd.h>
+#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTRecordModel.h"
+#import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
+#import "NSString+FTAdd.h"
 //#import "FTBaseInfoHander.h"
 #import "FTTrackDataManger+Test.h"
-#import <FTRequest.h>
-#import <FTNetworkManager.h>
+#import "FTRequest.h"
+#import "FTNetworkManager.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
-#import <FTEnumConstant.h>
-
+#import "FTEnumConstant.h"
 @interface FTLineProtocol : XCTestCase
 
 @end
@@ -138,7 +137,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
 
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+//    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     FTRecordModel *model = [FTModelHelper createLogModel:str];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
@@ -148,17 +147,17 @@
         NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];
         XCTAssertTrue([array[1] isEqualToString:message]);
     }
-    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        if(!error){
-        NSInteger statusCode = httpResponse.statusCode;
-        BOOL success = (statusCode >=200 && statusCode < 500);
-        XCTAssertTrue(success);
-        }
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
-    }];
+//    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
+//    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+//        if(!error){
+//        NSInteger statusCode = httpResponse.statusCode;
+//        BOOL success = (statusCode >=200 && statusCode < 500);
+//        XCTAssertTrue(success);
+//        }
+//        [expectation fulfill];
+//    }];
+//    [self waitForExpectationsWithTimeout:32 handler:^(NSError *error) {
+//    }];
 }
 
 - (BOOL)isNum:(NSString *)checkedNumString {

@@ -7,14 +7,14 @@
 //
 
 #import "AppDelegate.h"
-#import <FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTBaseInfoHandler.h>
-#import <FTDateUtil.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
-#import <FTTrackDataManger.h>
+#import "FTTrackDataManger.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"
@@ -54,6 +54,7 @@
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
+        config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
@@ -63,7 +64,7 @@
         rumConfig.enableTrackAppFreeze = YES;
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
-        rumConfig.enableTraceUserResource = YES;
+        rumConfig.enableTraceUserResource = NO;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
@@ -81,10 +82,9 @@
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-        
     }
     // UI 测试
-    if(isUITests){
+    if(url && isUITests){
         //禁止上传逻辑
         [[FTTrackDataManger sharedInstance] setValue:@YES forKey:@"isUploading"];
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -126,16 +126,11 @@
 
 #pragma mark - UISceneSession lifecycle
 
-
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options  API_AVAILABLE(ios(13.0)){
     // Called when a new scene session is being created.
     // Use this method to select a configuration to create the new scene with.
-    if (@available(iOS 13.0, *)) {
-        return [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
-    } else {
-        // Fallback on earlier versions
-    }
-    return nil;
+    
+    return [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
 }
 
 

@@ -7,21 +7,22 @@
 //
 #import <KIF/KIF.h>
 #import <XCTest/XCTest.h>
-#import <UIViewController+FTAutoTrack.h>
-#import <UIView+FTAutoTrack.h>
+#import "UIViewController+FTAutoTrack.h"
+#import "UIView+FTAutoTrack.h"
 #import "UITestVC.h"
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTMobileAgent.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTMobileAgent.h"
 #import <objc/runtime.h>
-#import <FTTrack.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTBaseInfoHandler.h>
-#import <FTRecordModel.h>
-#import <FTJSONUtil.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
+#import "FTTrack.h"
+#import "FTMobileAgent+Private.h"
+#import "FTBaseInfoHandler.h"
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
+#import "FTTrackerEventDBTool.h"
 #import "FTDateUtil.h"
 #import "FTTrackDataManger+Test.h"
 #import "DemoViewController.h"
+#import "FTConstants.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
@@ -242,6 +243,8 @@
 }
 - (void)testAutoTrackResource{
     [FTModelHelper startView];
+    [FTModelHelper addAction];
+    [tester waitForTimeInterval:1];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
  
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {

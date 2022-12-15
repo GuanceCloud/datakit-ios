@@ -7,14 +7,14 @@
 //
 
 #import <KIF/KIF.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
+#import "FTMobileAgent+Private.h"
 #import "FTTrackDataManger+Test.h"
-#import <FTDateUtil.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
+#import "FTDateUtil.h"
+#import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"
-#import <FTRecordModel.h>
-#import <FTConstants.h>
-#import <FTJSONUtil.h>
+#import "FTRecordModel.h"
+#import "FTConstants.h"
+#import "FTJSONUtil.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"

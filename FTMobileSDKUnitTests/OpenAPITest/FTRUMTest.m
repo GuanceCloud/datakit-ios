@@ -7,25 +7,26 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTBaseInfoHandler.h>
-#import <FTConstants.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTDateUtil.h>
+#import "FTTrackerEventDBTool.h"
+#import "FTMobileAgent.h"
+#import "FTBaseInfoHandler.h"
+#import "FTConstants.h"
+#import "FTMobileAgent+Private.h"
+#import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
-#import <FTRecordModel.h>
-#import <FTJSONUtil.h>
-#import <FTRUMManager.h>
-#import <FTRUMSessionHandler.h>
-#import <FTGlobalRumManager.h>
+#import "FTRecordModel.h"
+#import "FTJSONUtil.h"
+#import "FTRUMManager.h"
+#import "FTRUMSessionHandler.h"
+#import "FTGlobalRumManager.h"
 #import "FTTrackDataManger+Test.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
-#import "FTTraceManager.h"
+#import "FTURLSessionInterceptor.h"
 #import "FTModelHelper.h"
+#import "FTURLSessionAutoInstrumentation.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
 @interface FTRUMTest : XCTestCase
@@ -175,7 +176,7 @@
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    __block NSInteger hasViewData = NO;
+    __block BOOL hasViewData = NO;
     __block NSInteger actionCount,trueActionCount=0;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -892,7 +893,6 @@
     [[FTExternalDataManager sharedManager] startResourceWithKey:key property:startContext];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = url;
-    model.duration = @1000;
     model.httpStatusCode = 200;
     model.httpMethod = @"GET";
     model.requestHeader = traceHeader;
@@ -921,7 +921,6 @@
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-    model.duration = @1000;
     model.httpStatusCode = 404;
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];

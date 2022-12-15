@@ -7,16 +7,15 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTRecordModel.h>
+#import "FTMobileAgent.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTRecordModel.h"
 #import "OHHTTPStubs.h"
-#import <FTConstants.h>
-#import <FTDateUtil.h>
-#import <FTJSONUtil.h>
-#import "FTConfigManager.h"
-#import <FTRequest.h>
-#import <FTNetworkManager.h>
+#import "FTConstants.h"
+#import "FTDateUtil.h"
+#import "FTJSONUtil.h"
+#import "FTRequest.h"
+#import "FTNetworkManager.h"
 #import "FTNetworkInfoManager.h"
 #import "FTEnumConstant.h"
 #import "FTModelHelper.h"

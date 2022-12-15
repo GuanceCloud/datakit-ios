@@ -9,7 +9,7 @@
 #import "FTReachability.h"
 #import <netinet/in.h>
 #import <arpa/inet.h>
-#if    TARGET_OS_IPHONE
+#if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif

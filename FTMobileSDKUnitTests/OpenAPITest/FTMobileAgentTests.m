@@ -7,17 +7,17 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <FTMobileAgent/FTMobileAgent.h>
-#import <FTDataBase/FTTrackerEventDBTool.h>
-#import <FTBaseInfoHandler.h>
-#import <FTRecordModel.h>
-#import <FTMobileAgent/FTMobileAgent+Private.h>
-#import <FTConstants.h>
-#import <FTDateUtil.h>
-#import <NSURLRequest+FTMonitor.h>
+#import "FTMobileAgent.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTBaseInfoHandler.h"
+#import "FTRecordModel.h"
+#import "FTMobileAgent+Private.h"
+#import "FTMobileAgent+Public.h"
+#import "FTConstants.h"
+#import "FTDateUtil.h"
 #import <objc/runtime.h>
 #import "NSString+FTAdd.h"
-#import <FTJSONUtil.h>
+#import "FTJSONUtil.h"
 #import "FTPresetProperty.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
@@ -44,6 +44,8 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -105,8 +107,6 @@
     NSDictionary *newDict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
     NSString *newUserid = newDict[@"userid"];
    XCTAssertTrue([newUserid isEqualToString:@"testChangeUser2"]);
-
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
  * 用户解绑
@@ -127,7 +127,6 @@
     XCTAssertFalse([userName isEqualToString:@"name"]);
     XCTAssertFalse([userEmail isEqualToString:@"email"]);
     XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
-    
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];

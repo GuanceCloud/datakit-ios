@@ -22,6 +22,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
 }
 -(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
     [self.view addSubview:self.myTableView];
 #if FTSDKUNITTEST
     [self testAnrBlock];

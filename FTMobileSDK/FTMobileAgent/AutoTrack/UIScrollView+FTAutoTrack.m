@@ -8,8 +8,7 @@
 
 #import "UIScrollView+FTAutoTrack.h"
 #import "FTSwizzler.h"
-#import "FTGlobalRumManager.h"
-#import "FTRUMManager.h"
+#import "FTTrack.h"
 #import "UIView+FTAutoTrack.h"
 @implementation UITableView (FTAutoTrack)
 
@@ -26,7 +25,9 @@
             
             if (tableView && indexPath) {
                 UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName property:nil];
+                if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+                    [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                }
             }
         };
         
@@ -57,7 +58,9 @@
             
             if (collectionView && indexPath) {
                 UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                [[FTGlobalRumManager sharedInstance] addClickActionWithName:cell.ft_actionName property:nil];
+                if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+                    [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                }
             }
         };
         
