@@ -47,22 +47,18 @@
     [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName property:property];
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
-    NSNumber *duration = @-1;
+    NSNumber *duration = @0;
+    if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
+        return;
+    }
     if ([self.preViewDuration.allKeys containsObject:viewName]) {
         duration = self.preViewDuration[viewName];
         [self.preViewDuration removeObjectForKey:viewName];
     }
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName  loadDuration:duration property:property];
-
-}
--(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName loadDuration:(NSNumber *)loadDuration property:(nullable NSDictionary *)property{
-    if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
-        return;
-    }
     @try {
         [FTThreadDispatchManager dispatchInRUMThread:^{
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
-            viewModel.loading_time = loadDuration?:@0;
+            viewModel.loading_time = duration?:@0;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;
             self.viewReferrer = viewName;
@@ -72,7 +68,9 @@
         ZYErrorLog(@"exception %@",exception);
     }
 }
-
+-(void)stopView{
+    [self startViewWithName:[self.sessionHandler getCurrentViewID] property:nil];
+}
 -(void)stopViewWithProperty:(NSDictionary *)property{
     [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
 }
