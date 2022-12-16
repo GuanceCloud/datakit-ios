@@ -69,7 +69,7 @@
     }
 }
 -(void)stopView{
-    [self startViewWithName:[self.sessionHandler getCurrentViewID] property:nil];
+    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
     [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
