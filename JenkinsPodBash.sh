@@ -28,6 +28,9 @@ if [[ $? -eq 0 ]];then
   sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
+
+else
+  exit  1
 fi
 
 
