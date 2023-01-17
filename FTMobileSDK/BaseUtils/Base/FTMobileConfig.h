@@ -128,12 +128,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// 指定初始化方法，设置 appid
 ///
 /// - Parameters:
-///   - appid: 应用唯一ID 设置后 rum 数据才能正常上报.
+///   - appid: 用户访问监测应用 ID 唯一标识，在用户访问监测控制台上面创建监控时自动生成.
 /// - Returns: rum 配置项.
 - (instancetype)initWithAppid:(nonnull NSString *)appid;
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-/// 应用唯一 ID，在 DataFlux 控制台上面创建监控时自动生成。
+/// 用户访问监测应用 ID 唯一标识，在用户访问监测控制台上面创建监控时自动生成.
 @property (nonatomic, copy) NSString *appid;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int samplerate;
@@ -191,10 +191,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
-///
-/// 两种模式：
-/// ①使用Dataflux的数据网关，可在控制台获取对应网址；
-/// ②使用私有化部署的数据网关，填写对应网址即可。
 @property (nonatomic, copy) NSString *metricsUrl;
 /// 请求 HTTP 请求头 X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
 @property (nonatomic, copy) NSString *XDataKitUUID;

@@ -662,7 +662,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1400;
 				LastUpgradeCheck = 1110;
-				ORGANIZATIONNAME = "DataFlux-cn";
+				ORGANIZATIONNAME = GuanceCloud;
 				TargetAttributes = {
 					172DD33228F7FC27007AE5E9 = {
 						CreatedOnToolsVersion = 14.0;

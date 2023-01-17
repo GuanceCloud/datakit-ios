@@ -3,7 +3,7 @@
 
 ## 简介
 
-“观测云” 应用监测能够通过收集各个iOS应用的指标数据，以可视化的方式分析各个iOS应用端的性能。
+观测云应用监测能够通过收集各个iOS应用的指标数据，以可视化的方式分析各个iOS应用端的性能。
 
 ## 前置条件
 
@@ -24,7 +24,6 @@
 **Demo**：[https://github.com/GuanceCloud/datakit-ios/demo](https://github.com/GuanceCloud/datakit-ios/tree/develop/demo)
 
 **源码地址**：[https://github.com/GuanceCloud/datakit-ios](https://github.com/GuanceCloud/datakit-ios)
-
 ### 源码方式
 
 1.从 GitHub 获取 SDK 的源代码。
@@ -40,7 +39,7 @@
 target 'yourProjectName' do
 
 # Pods for your project
-pod 'FTMobileSDK', '1.3.8-beta.2'
+pod 'FTMobileSDK', '1.3.8-beta.4'
     
 end
 ```
@@ -52,7 +51,7 @@ end
 1.配置 `Cartfile` 文件。
 
 ```
-github "GuanceCloud/datakit-ios" == 1.3.8-beta.2
+github "GuanceCloud/datakit-ios" == 1.3.7-beta.1
 ```
 
 2.在 `Cartfile` 目录下执行  `carthage update --platform iOS` ， 并将  `FTMobileSDK.framework` 拖拽到您的项目中使用。若出现 "Building universal frameworks with common architectures is not possible. The device and simulator slices for "FTMobileSDK.framework" both build for: arm64" 错误，请执行  `carthage update --platform iOS --use-xcframeworks` 命令，生成  `FTMobileSDK.xcframework `，与普通的 Framework 使用方法相同，请将它拖拽到您的项目中使用。
@@ -129,7 +128,7 @@ typedef NS_ENUM(NSInteger, FTEnv) {
 
 | **字段** | **类型** | **说明** | **必须** |
 | --- | --- | --- | --- |
-| appid | NSString | DataFlux rum应用唯一ID标识，在DataFlux控制台上面创建监控时自动生成。 | 否（开启RUM 必选） |
+| appid | NSString | 用户访问监测应用 ID 唯一标识，在用户访问监测控制台上面创建监控时自动生成。 | 否（开启RUM 必选） |
 | samplerate | int | 采样采集率 | 否（默认100） |
 | errorMonitorType | NS_OPTIONS | error数据中的采集数据 | 否 |
 | enableTrackAppCrash | BOOL | 设置是否需要采集崩溃日志 | 否（默认NO） |
@@ -254,7 +253,7 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
 @property (nonatomic, copy) NSString *prefix;
 ```
 
-## Trace 配置 
+### Trace 配置 
 
 ```objectivec
     //开启 trace
@@ -575,7 +574,7 @@ rumConfig.globalContext = @{@"dynamic_tag":dynamicTag};
 
 4. `FTMobileConfig` 中配置的自定义标签将添加在所有类型的数据中。
 
-详细细节请见 [SDK Demo](https://github.com/DataFlux-cn/datakit-ios/tree/develop/demo)。
+详细细节请见 [SDK Demo](https://github.com/GuanceCloud/datakit-ios/tree/develop/demo)。
 
 ## 崩溃日志符号化
 
