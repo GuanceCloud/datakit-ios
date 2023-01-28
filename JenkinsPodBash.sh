@@ -29,6 +29,8 @@ if [[ $? -eq 0 ]];then
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
 
+else
+  exit  1
 fi
 
 
