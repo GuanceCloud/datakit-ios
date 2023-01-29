@@ -69,13 +69,6 @@
 }
 @end
 @implementation FTLoggingRequest
-//-(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-//    self = [super init];
-//    if(self){
-//        self.events = events;
-//    }
-//    return self;
-//}
 -(id<FTRequestBodyProtocol>)requestBody{
     return [[FTRequestLineBody alloc]init];
 }
@@ -85,13 +78,6 @@
 
 @end
 @implementation FTRumRequest
-//-(instancetype)initWithEvents:(NSArray<FTRecordModel *> *)events{
-//    self = [super init];
-//    if(self){
-//        self.events = events;
-//    }
-//    return self;
-//}
 -(id<FTRequestBodyProtocol>)requestBody{
     return [[FTRequestLineBody alloc]init];
 }
