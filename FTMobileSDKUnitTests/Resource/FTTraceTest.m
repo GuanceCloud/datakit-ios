@@ -31,8 +31,10 @@
 #import "FTRUMManager.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTTraceHandler.h"
+#import "FTTracer.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate,NSCacheDelegate>
+@property (nonatomic, strong) FTTracer *tracer;
 @end
 
 @implementation FTTraceTest
@@ -44,6 +46,7 @@
 
 - (void)tearDown {
     [[FTMobileAgent sharedInstance] resetInstance];
+    self.tracer = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
@@ -56,6 +59,7 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    self.tracer = [[FTTracer alloc]initWithConfig:traceConfig];
 }
 
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
@@ -70,6 +74,10 @@
         XCTAssertEqualObjects(sampled, @"1");
         XCTAssertTrue(traceId.length == 32 && spanID.length == 16);
         XCTAssertTrue([traceId.lowercaseString isEqualToString:traceId] && [spanID.lowercaseString isEqualToString:spanID]);
+        [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable atraceId, NSString * _Nullable aspanID) {
+            XCTAssertTrue([traceId isEqualToString:atraceId]);
+            XCTAssertTrue([spanID isEqualToString:aspanID]);
+        }];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -90,6 +98,7 @@
         XCTAssertEqualObjects(sampling, @"1");
         XCTAssertTrue(trace.length == 32 && span.length == 16);
         XCTAssertTrue([trace.lowercaseString isEqualToString:trace] && [span.lowercaseString isEqualToString:span]);
+        
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -101,14 +110,18 @@
     
     [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
     [self networkUpload:@"Jaeger" handler:^(NSDictionary *header) {
-        NSString *trace =header[FT_NETWORK_JAEGER_TRACEID];
-        NSArray *traceAry = [trace componentsSeparatedByString:@":"];
-        NSString *traceId = [traceAry firstObject];
-        NSString *spanID =traceAry[1];
+        NSString *traceStr =header[FT_NETWORK_JAEGER_TRACEID];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@":"];
+        NSString *trace = [traceAry firstObject];
+        NSString *span =traceAry[1];
         NSString *sampled = [traceAry lastObject];
-        XCTAssertTrue(traceId.length == 32 && spanID.length == 16);
-        XCTAssertTrue([traceId.lowercaseString isEqualToString:traceId] && [spanID.lowercaseString isEqualToString:spanID]);
+        XCTAssertTrue(trace.length == 32 && span.length == 16);
+        XCTAssertTrue([trace.lowercaseString isEqualToString:trace] && [span.lowercaseString isEqualToString:span]);
         XCTAssertEqualObjects(sampled, @"1");
+        [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            XCTAssertTrue([trace isEqualToString:traceId]);
+            XCTAssertTrue([span isEqualToString:spanID]);
+        }];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -125,7 +138,10 @@
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"2"]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-
+        [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            XCTAssertTrue([header[FT_NETWORK_DDTRACE_TRACEID] isEqualToString:traceId]);
+            XCTAssertTrue([header[FT_NETWORK_DDTRACE_SPANID] isEqualToString:spanID]);
+        }];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -147,6 +163,10 @@
         NSString *parentTraceID=[traceAry[2] ft_base64Decode];
         NSString *span = [parentTraceID stringByAppendingString:@"0"];
         XCTAssertTrue(trace && span && sampling);
+        [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            XCTAssertTrue([trace isEqualToString:traceId]);
+            XCTAssertTrue([span isEqualToString:spanID]);
+        }];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

@@ -208,10 +208,10 @@ static NSUInteger SkywalkingSeq = 0.0;
     return @{FT_NETWORK_SKYWALKING_V3:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,[FT_DEFAULT_SERVICE_NAME ft_base64Encode],parentServiceInstance,urlPath,urlStr]};
 }
 -(void)unpackSkyWalking_V3Header:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
-    if([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V2]){
-        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V2];
+    if([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]){
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
-        if (traceAry.count == 9) {
+        if (traceAry.count == 8) {
             NSString *trace = [traceAry[1] ft_base64Decode];
             NSString *parentTraceID=[traceAry[2] ft_base64Decode];
             NSString *span = [parentTraceID stringByAppendingString:@"0"];
