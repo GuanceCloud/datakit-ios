@@ -24,9 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// HTTP 请求头 X-Datakit-UUID 数据采集端
 + (NSString *)XDataKitUUID;
 
-/// userID 用户未设置时的默认值
-+ (NSString *)userSessionId;
-
 /// 将字典转换成字符串
 /// - Parameter dict: 待转化字典
 + (NSString *)convertToStringData:(NSDictionary *)dict;
@@ -48,6 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 电话运营商
 +(NSString *)telephonyCarrier;
 #endif
+/// 设备 IP Adderss
+/// - Parameter preferIPv4 是否优先IPv4
++ (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 @end
 
 NS_ASSUME_NONNULL_END

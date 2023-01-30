@@ -22,13 +22,13 @@
     }
     return self;
 }
--(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(instancetype)initWithSource:(NSString *)source op:(NSString *)op tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     self = [super init];
     if (self) {
         NSMutableDictionary *opdata = @{
             @"source":source,
         }.mutableCopy;
-        [opdata setValue:field forKey:FT_FIELDS];
+        [opdata setValue:fields forKey:FT_FIELDS];
         [opdata setValue:tags forKey:FT_TAGS];
         NSDictionary *data =@{@"op":op,
                               @"opdata":opdata,

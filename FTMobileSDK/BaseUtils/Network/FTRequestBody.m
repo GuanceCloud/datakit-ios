@@ -150,18 +150,3 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
     return requestDatas;
 }
 @end
-//@implementation FTRequestObjectBody
-//- (NSString *)getRequestBodyWithEventArray:(NSArray *)events{
-//    NSMutableArray *list = [NSMutableArray new];
-//    [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data].mutableCopy;
-//        [list addObject:item];
-//    }];
-//    // 待处理 object 类型
-//    NSError *error = nil;
-//    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:list options:NSJSONWritingPrettyPrinted error:&error];
-//    NSString *requestData = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-//    ZYLog(@"requestData = %@",requestData);
-//    return  requestData;
-//}
-//@end

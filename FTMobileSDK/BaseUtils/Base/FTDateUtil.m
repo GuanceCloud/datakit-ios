@@ -29,7 +29,7 @@
     iosDateFormatter.timeZone = tzGMT;
     return [iosDateFormatter stringFromDate:[NSDate date]];
 }
-+ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate{
-    return  [NSNumber numberWithLong:[toDate timeIntervalSinceDate:anotherDate]*1000000000];
++ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)date toDate:(NSDate *)toDate{
+    return  [NSNumber numberWithLong:[toDate timeIntervalSinceDate:date]*1000000000];
 }
 @end

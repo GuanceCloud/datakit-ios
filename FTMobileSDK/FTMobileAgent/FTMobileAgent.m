@@ -103,7 +103,7 @@ static dispatch_once_t onceToken;
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
     [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
-    [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManger];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
 }
@@ -196,7 +196,7 @@ static dispatch_once_t onceToken;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:terminal]];
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags field:fields tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
@@ -230,7 +230,7 @@ static dispatch_once_t onceToken;
             if (self.loggerConfig.enableLinkRumData) {
                 [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
                 if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
-                    NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManger getCurrentSessionInfo];
+                    NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
                     [tagDict addEntriesFromDictionary:rumTag];
                 }
             }
@@ -239,7 +239,7 @@ static dispatch_once_t onceToken;
             if (field) {
                 [filedDict addEntriesFromDictionary:field];
             }
-            FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:tm];
+            FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
             [self insertDBWithItemData:model type:FTAddDataLogging];
         });
     } @catch (NSException *exception) {

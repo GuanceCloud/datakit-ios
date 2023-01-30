@@ -149,7 +149,7 @@
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         [[FTTrackerEventDBTool sharedManger] insertItem:model];
     }
-    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(count == 15);
 }
 - (void)testDelete{

@@ -121,7 +121,7 @@ static dispatch_once_t onceToken;
         NSArray *array = self.messageCaches.copy;
         [self.messageCaches removeAllObjects];
         pthread_mutex_unlock(&_lock);
-        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING]-array.count;
+        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING]-array.count;
         
         if(count < 0){
             if(!self.discardNew){
@@ -218,7 +218,7 @@ static dispatch_once_t onceToken;
     }];
      return count;
 }
-- (NSInteger)getDatasCountWithOp:(NSString *)op{
+- (NSInteger)getDatasCountWithType:(NSString *)op{
     __block NSInteger count =0;
        [self zy_inDatabase:^{
            NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACREVENT_TABLE_NAME,op];

@@ -318,7 +318,7 @@
     metrics.resource_trans = @102;
     metrics.resource_first_byte = @103;
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResourceData = NO;

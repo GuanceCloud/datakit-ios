@@ -16,13 +16,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter value: 需要线程安全的对象
 -(instancetype)initWithValue:(ValueType)value;
 
-/// 读数据
+/// 线程安全读数据
 /// - Parameter block: 读数据block块
 - (void)concurrentRead:(void (^)(ValueType value))block;
-/// 写数据
+/// 线程安全写数据
 /// - Parameter block: 写数据block块
 - (void)concurrentWrite:(void (^)(ValueType value))block;
-/// 读数据
+/// 线程安全读数据
+/// - Returns: 读取的数据.
 - (ValueType)currentValue;
 @end
 

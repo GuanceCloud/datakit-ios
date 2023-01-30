@@ -30,7 +30,7 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTGlobalRumManager sharedInstance].rumManger applicationWillTerminate];
+    [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
     [[FTMobileAgent sharedInstance] resetInstance];
 
 }
@@ -97,7 +97,7 @@
         XCTAssertNil(error);
     }];
     [NSThread sleepForTimeInterval:0.5];
-    [[FTGlobalRumManager sharedInstance].rumManger applicationWillTerminate];
+    [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {

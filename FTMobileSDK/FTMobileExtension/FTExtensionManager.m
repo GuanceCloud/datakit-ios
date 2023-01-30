@@ -77,7 +77,7 @@ static FTExtensionManager *sharedInstance = nil;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManager];
+        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }

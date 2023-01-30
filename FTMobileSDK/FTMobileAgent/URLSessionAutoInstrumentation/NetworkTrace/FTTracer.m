@@ -9,7 +9,6 @@
 #import "FTTracer.h"
 #import "FTDateUtil.h"
 #import "NSString+FTAdd.h"
-#import "FTMonitorUtils.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTURLProtocol.h"
@@ -192,7 +191,7 @@ static NSUInteger SkywalkingSeq = 0.0;
 //}
 - (NSDictionary *)getSkyWalking_V3Header:(BOOL)sampled url:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
     NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceId,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
-    NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.skyParentInstance,[FTMonitorUtils cellularIPAddress:YES]] ft_base64Encode];
+    NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.skyParentInstance,[FTBaseInfoHandler cellularIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port!=nil ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
     urlPath = [urlPath ft_base64Encode];

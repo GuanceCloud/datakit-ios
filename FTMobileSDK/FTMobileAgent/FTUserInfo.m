@@ -7,7 +7,6 @@
 //
 
 #import "FTUserInfo.h"
-#import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 @interface FTUserInfo()
 @property (nonatomic, copy, readwrite) NSString *userId;
@@ -32,7 +31,7 @@
             if (user) {
                 [self updateUser:user name:nil email:nil extra:nil];
             }else{
-                self.userId = [FTBaseInfoHandler userSessionId];
+                self.userId = [FTUserInfo userSessionId];
                 self.isSignin = NO;
             }
         }
@@ -56,7 +55,7 @@
 -(void)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:FT_USER_INFO];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    self.userId = [FTBaseInfoHandler userSessionId];
+    self.userId = [FTUserInfo userSessionId];
     self.name = nil;
     self.extra = nil;
     self.email = nil;
@@ -64,7 +63,17 @@
 }
 //适配 1.3.6 及以下版本
 + (NSString *)userId{
-    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
+    NSString  *userid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_userid"];
+    return userid;
+}
+//userID 用户未设置时的默认值
++ (NSString *)userSessionId{
+    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
+    if (!sessionid) {
+        sessionid = [[NSUUID UUID] UUIDString];
+        [[NSUserDefaults standardUserDefaults] setValue:sessionid forKey:@"ft_sessionid"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
     return sessionid;
 }
 @end

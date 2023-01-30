@@ -18,10 +18,13 @@
 @class FTPresetProperty,FTTracer;
 
 @interface FTMobileAgent (Private)<FTRUMDataWriteProtocol>
+/// 管理预设属性的实例
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 
+/// SDK注销
 -(void)resetInstance;
 
+/// 等待正在处理数据全部处理
 - (void)syncProcess;
 @end
 #endif /* FTMobileAgent_Private_h */

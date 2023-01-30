@@ -10,21 +10,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// 字符串附加方法
 @interface NSString (FTAdd)
+/// 16位 MD5 小写
 -(NSString *)ft_md5HashToLower16Bit;
--(NSUInteger)ft_characterNumber;
+/// 字符串 base64 编码
 -(NSString *)ft_base64Encode;
+/// 字符串 base64 解码
 -(NSString *)ft_base64Decode;
-
-/**
- *  @abstract
- *  清除字符串前后的空格
-*/
+/// utf8 编码模式下 字符串长度. 英文8位（一个字节)、中文24位(三个字节)
+-(NSUInteger)ft_characterNumber;
+/// 清除字符串前后的空格
 -(NSString *)ft_removeFrontBackBlank;
-/**
- *  @abstract
- *  Content-MD5 加密方法
-*/
+/// MD5-Base64 加密方法
 - (NSString *)ft_md5base64Encrypt;
 @end
 

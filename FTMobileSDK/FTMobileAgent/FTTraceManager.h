@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTraceManager : NSObject
 /// 单例
 + (instancetype)sharedInstance;
-/// 获取 trace 的请求头参数
+/// 获取 trace 的请求头参数 (已废弃)
 /// - Parameters:
 ///   - key: 能够确定某一请求的唯一标识
 ///   - url: 请求 URL

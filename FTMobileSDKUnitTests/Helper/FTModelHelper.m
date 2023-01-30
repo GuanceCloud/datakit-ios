@@ -22,7 +22,7 @@
     };
     NSDictionary *tagDict = @{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]};
 
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict field:filedDict tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[FTDateUtil currentTimeNanosecond]];
     return model;
 }
 + (FTRecordModel *)createRumModel{
@@ -36,7 +36,7 @@
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:field tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[FTDateUtil currentTimeNanosecond]];
     return model;
 }
 + (FTRecordModel *)createWrongFormatRumModel{
@@ -47,7 +47,7 @@
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:nil tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[FTDateUtil currentTimeNanosecond]];
     return model;
 }
 + (void)startView{

@@ -40,7 +40,7 @@
 
 }
 - (void)shutDownSDK{
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)testNoneMonitor{
@@ -49,7 +49,7 @@
     [NSThread sleepForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -76,7 +76,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -104,7 +104,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -129,7 +129,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -153,7 +153,7 @@
     [tester waitForTimeInterval:1];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -174,7 +174,7 @@
     [self setMonitorFrequency:FTMonitorFrequencyDefault];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1];
-    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManger;
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *sessionHandler = [rumManager valueForKey:@"sessionHandler"];
     FTRUMViewHandler *view = [[sessionHandler valueForKey:@"viewHandlers"] lastObject];
     FTMonitorItem *item = [view valueForKey:@"monitorItem"];
@@ -188,7 +188,7 @@
     [self setMonitorFrequency:FTMonitorFrequencyRare];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1];
-    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManger;
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *sessionHandler = [rumManager valueForKey:@"sessionHandler"];
     FTRUMViewHandler *view = [[sessionHandler valueForKey:@"viewHandlers"] lastObject];
     FTMonitorItem *item = [view valueForKey:@"monitorItem"];
@@ -202,7 +202,7 @@
     [self setMonitorFrequency:FTMonitorFrequencyFrequent];
     [FTModelHelper startView];
     [tester waitForTimeInterval:1];
-    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManger;
+    FTRUMManager *rumManager = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *sessionHandler = [rumManager valueForKey:@"sessionHandler"];
     FTRUMViewHandler *view = [[sessionHandler valueForKey:@"viewHandlers"] lastObject];
     FTMonitorItem *item = [view valueForKey:@"monitorItem"];

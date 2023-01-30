@@ -10,8 +10,6 @@
 #import "FTRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
-typedef void (^FTNetworkSuccessBlock)(NSHTTPURLResponse *response,NSData *data);
-typedef void (^FTNetworkFailureBlock)(NSHTTPURLResponse *response,NSData *data,NSError *error);
 @interface FTNetworkManager : NSObject
 + (instancetype)sharedInstance;
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request

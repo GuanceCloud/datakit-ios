@@ -164,10 +164,10 @@
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context];
-    resourceHandler.errorHandler = ^(){
-        weakSelf.viewErrorCount +=1;
-        weakSelf.needUpdateView = YES;
-    };
+//    resourceHandler.errorHandler = ^(){
+//        weakSelf.viewErrorCount +=1;
+//        weakSelf.needUpdateView = YES;
+//    };
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
         weakSelf.needUpdateView = YES;

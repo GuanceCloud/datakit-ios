@@ -33,11 +33,8 @@
 #import "FTConstants.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
-@property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
-@property (nonatomic, assign) CFTimeInterval launch;
-@property (nonatomic, strong) NSDate *launchTime;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
@@ -48,7 +45,6 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _launchTime = [NSDate date];
         [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     }
     return self;
@@ -66,12 +62,12 @@ static dispatch_once_t onceToken;
         return;
     }
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
-    self.rumManger = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
+    self.rumManager = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
-    [FTTrack sharedInstance].addRumDatasDelegate = self.rumManger;
+    [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
     self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addftSDKInstance:self.rumManger];
+        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -88,7 +84,7 @@ static dispatch_once_t onceToken;
         }
     });
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
-    [FTExternalDataManager sharedManager].delegate = self.rumManger;
+    [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
 -(FTPingThread *)pingThread{
     if (!_pingThread || _pingThread.isCancelled) {
@@ -111,7 +107,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManger addLongTaskWithStack:stack duration:duration property:nil];
+    [self.rumManager addLongTaskWithStack:stack duration:duration property:nil];
 }
 -(void)stopMonitor{
     [self stopPingThread];
@@ -143,7 +139,7 @@ static dispatch_once_t onceToken;
             time = time>0?:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    [self.rumManger addWebviewData:measurement tags:tags fields:fields tm:time];
+                    [self.rumManager addWebviewData:measurement tags:tags fields:fields tm:time];
                 }
             }
         }
@@ -153,37 +149,37 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
 - (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [self.rumManger addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000] property:nil];
+    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000] property:nil];
     
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
-    [self.rumManger addLaunch:FTLaunchHot duration:duration];
-    if (self.rumManger.viewReferrer) {
+    [self.rumManager addLaunch:FTLaunchHot duration:duration];
+    if (self.rumManager.viewReferrer) {
         NSString *viewid = [NSUUID UUID].UUIDString;
         NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
-        NSString *viewReferrer =self.rumManger.viewReferrer;
-        self.rumManger.viewReferrer = @"";
-        [self.rumManger onCreateView:viewReferrer loadTime:loadDuration];
-        [self.rumManger startViewWithViewID:viewid viewName:viewReferrer property:nil];
+        NSString *viewReferrer =self.rumManager.viewReferrer;
+        self.rumManager.viewReferrer = @"";
+        [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
+        [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
     }
 }
 -(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    [self.rumManger addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
+    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 - (void)applicationWillTerminate{
     @try {
-        self.rumManger.appState = AppStateStartUp;
-        [self.rumManger stopViewWithProperty:nil];
-        [self.rumManger applicationWillTerminate];
+        self.rumManager.appState = AppStateStartUp;
+        [self.rumManager stopViewWithProperty:nil];
+        [self.rumManager applicationWillTerminate];
     }@catch (NSException *exception) {
         ZYErrorLog(@"applicationWillResignActive exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
-    _rumManger = nil;
+    _rumManager = nil;
     onceToken = 0;
     sharedInstance =nil;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

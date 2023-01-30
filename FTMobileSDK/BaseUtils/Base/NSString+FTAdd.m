@@ -44,10 +44,8 @@
     //2、把二进制数据转换成字符串
     return [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
 }
-- (NSUInteger)ft_characterNumber
-{
-    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-    return [self lengthOfBytesUsingEncoding:encoding];
+- (NSUInteger)ft_characterNumber{
+    return [self lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 }
 -(NSString *)ft_removeFrontBackBlank{
     NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];

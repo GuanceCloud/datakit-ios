@@ -14,6 +14,7 @@
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
+/// App 启动类型
 typedef NS_ENUM(NSUInteger, FTLaunchType) {
     /// 热启动
     FTLaunchHot,
@@ -60,6 +61,12 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 #pragma mark - webview js -
 
+/// 添加 Webview 数据
+/// - Parameters:
+///   - measurement: measurement description
+///   - tags: tags description
+///   - fields: fields description
+///   - tm: tm description
 - (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 #pragma mark - view -
 /**
@@ -149,13 +156,10 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
 
-/**
- * 当 traceConfig 开启 enableLinkRumData 时 获取 rum 信息
- */
+/// 当 traceConfig 开启 enableLinkRumData 时 获取 rum 信息
 -(NSDictionary *)getCurrentSessionInfo;
-/**
- * 等待 rum 正在处理数据全部处理
- */
+
+/// 等待 rum 正在处理数据全部处理
 - (void)syncProcess;
 @end
 

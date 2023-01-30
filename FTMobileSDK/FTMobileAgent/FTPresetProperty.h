@@ -25,11 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 设备名称
 + (NSString *)deviceInfo;
 
-/**
- * 初始化方法
- * @param config 应用版本号
- * @return 初始化对象
- */
+/// 初始化方法
+/// - Parameter config: SDK 配置项
 - (instancetype)initWithMobileConfig:(FTMobileConfig *)config;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -45,9 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: 事件等级和状态
 ///   - serviceName: 日志所属业务或服务的名称
 - (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName;
-/**
- *  重新设置
- */
+/// 重新设置
+/// - Parameter config: SDK 配置项
 - (void)resetWithMobileConfig:(FTMobileConfig *)config;
 @end
 

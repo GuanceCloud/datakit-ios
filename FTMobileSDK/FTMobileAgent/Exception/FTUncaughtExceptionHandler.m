@@ -128,13 +128,13 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
     }
     return self;
 }
-- (void)addftSDKInstance:(id <FTErrorDataDelegate>)instance{
+- (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
     NSParameterAssert(instance != nil);
     if (![self.ftSDKInstances containsObject:instance]) {
         [self.ftSDKInstances addObject:instance];
     }
 }
-- (void)removeftSDKInstance:(id <FTErrorDataDelegate>)instance{
+- (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
     NSParameterAssert(instance != nil);
     if ([self.ftSDKInstances containsObject:instance]) {
         [self.ftSDKInstances removeObject:instance];

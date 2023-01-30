@@ -32,8 +32,6 @@ static NSString * const FT_COMMON_PROPERTY_DEVICE = @"device";
 static NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
 //分辨率，格式 height * width，例子：1920*1080
 static NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
-//运营商
-static NSString * const FT_COMMON_PROPERTY_CARRIER = @"carrier";
 //agent 版本号
 static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
 //autotrack 版本号

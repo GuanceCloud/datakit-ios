@@ -88,7 +88,7 @@
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     long long time = [FTDateUtil currentTimeNanosecond];
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags field:field tm:time];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:time];
     
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];

@@ -10,43 +10,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// 时间工具类
 @interface FTDateUtil : NSObject
-/**
- *  @abstract
- *  获取当前时间戳 豪秒级
- *
- *  @return 时间戳
-*/
+/// 获取当前时间戳 豪秒级
 + (long long)currentTimeMillisecond;
-/**
- *  @abstract
- *  获取给定时间的时间戳 纳秒级
- *
- *  @return 时间戳
-*/
+/// 获取给定时间的时间戳 纳秒级
+/// @param date 时间
 + (long long)dateTimeNanosecond:(NSDate *)date;
-/**
- *  @abstract
- *  获取当前时间戳 纳秒级
- *
- *  @return 时间戳
-*/
+/// 获取当前时间戳 纳秒级
 + (long long)currentTimeNanosecond;
-/**
- *  @abstract
- *  获取GMT格式的时间
- *
- *  @return GMT格式的时间
-*/
-
+/// 获取GMT格式的时间
 + (NSString *)currentTimeGMT;
-/**
- *  @abstract
- *  获取时间间隔 纳秒级
- *
- *  @return 时间间隔
-*/
-+ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)anotherDate toDate:(NSDate *)toDate;
+/// 获取时间间隔 纳秒级
+/// - Parameters:
+///   - date: 起始时间
+///   - toDate: 终止时间
++ (NSNumber *)nanosecondTimeIntervalSinceDate:(NSDate *)date toDate:(NSDate *)toDate;
 @end
 
 NS_ASSUME_NONNULL_END

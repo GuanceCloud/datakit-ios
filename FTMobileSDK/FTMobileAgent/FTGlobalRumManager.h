@@ -12,17 +12,19 @@
 NS_ASSUME_NONNULL_BEGIN
 @class  FTRUMManager,FTRumConfig;
 
-// 用于 开启各项数据的采集 
+/// 管理 RUM 的类，用于开启 RUM 各项数据的采集
 @interface FTGlobalRumManager : NSObject
-@property (nonatomic, strong) FTRUMManager *rumManger;
-/**
- * 获取 FTMonitorManager 单例
- * @return 返回的单例
-*/
+/// 处理 RUM 数据的对象
+@property (nonatomic, strong) FTRUMManager *rumManager;
+
+/// 单例
 + (instancetype)sharedInstance;
 
--(void)setRumConfig:(FTRumConfig *)rumConfig;
+/// 设置 rum 配置项
+/// - Parameter rumConfig: rum 配置项
+- (void)setRumConfig:(FTRumConfig *)rumConfig;
 
+/// 重置
 - (void)resetInstance;
 @end
 

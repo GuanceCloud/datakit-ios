@@ -83,6 +83,7 @@ NSString * const FT_RUM_KEY_ERROR_STACK = @"error_stack";
 NSString * const FT_RUM_KEY_ERROR_SOURCE = @"error_source";
 NSString * const FT_RUM_KEY_ERROR_TYPE = @"error_type";
 NSString * const FT_RUM_KEY_ERROR_SITUATION = @"error_situation";
+NSString * const FT_KEY_CARRIER = @"carrier";
 NSString * const FT_RUM_KEY_NETWORK = @"network";
 
 //long task field

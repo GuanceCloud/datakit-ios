@@ -58,7 +58,7 @@
 - (void)tearDown {
 //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 /**
@@ -118,7 +118,7 @@
     [demovc viewDidAppear:NO];
     [[tester waitForViewWithAccessibilityLabel:@"BindUser"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"UserLogout"] tap];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -143,7 +143,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
 
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
 
@@ -173,7 +173,7 @@
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
 
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -197,7 +197,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
 
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -223,7 +223,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -254,7 +254,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasRes = NO;
     [newArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {

@@ -67,7 +67,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
     self.window.hidden = YES;
     self.window = nil;
-    [[FTGlobalRumManager sharedInstance].rumManger syncProcess];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setsdk{

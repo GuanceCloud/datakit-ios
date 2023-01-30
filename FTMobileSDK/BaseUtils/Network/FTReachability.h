@@ -13,14 +13,17 @@
 #define NS_ENUM(_type, _name) enum _name : _type _name; enum _name : _type
 #endif
 extern NSString *const kFTReachabilityChangedNotification;
-
+/// 当前网络连接状态
 typedef NS_ENUM(NSInteger, FTNetworkStatus) {
-    // Apple NetworkStatus Compatible Names.
+    /// 无网络连接
     FTNotReachable = 0,
+    /// WiFi
     FTReachableViaWiFi = 2,
+    /// 蜂窝网络
     FTReachableViaWWAN = 1
 };
 typedef void(^NetworkChangeBlock)(void);
+/// 网络状态监听工具
 @interface FTReachability : NSObject
 
 /// 是否有网络连接
@@ -33,7 +36,7 @@ typedef void(^NetworkChangeBlock)(void);
 
 /// 当前网络状态类型
 @property (nonatomic, copy, readonly) NSString *net;
-
+/// 单例
 + (instancetype)sharedInstance;
 /// 重新获取当前网络状态类型
 - (NSString *)networkType;
