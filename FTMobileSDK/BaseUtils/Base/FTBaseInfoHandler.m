@@ -99,7 +99,7 @@
     return YES;
 }
 #if !TARGET_OS_OSX
-+(NSString *)telephonyInfo
++(NSString *)telephonyCarrier
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
     CTCarrier *carrier;

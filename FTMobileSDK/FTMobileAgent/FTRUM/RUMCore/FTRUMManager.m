@@ -348,7 +348,7 @@
     if (monitorType & FTErrorMonitorBattery) {
         errorTag[FT_MONITOR_POWER] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
-    errorTag[@"carrier"] = [FTBaseInfoHandler telephonyInfo];
+    errorTag[@"carrier"] = [FTBaseInfoHandler telephonyCarrier];
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
     errorTag[@"locale"] = preferredLanguage;
     return errorTag;

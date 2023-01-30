@@ -45,7 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)randomSampling:(int)sampling;
 
 #if !TARGET_OS_OSX
-+(NSString *)telephonyInfo;
+/// 电话运营商
++(NSString *)telephonyCarrier;
 #endif
 @end
 
