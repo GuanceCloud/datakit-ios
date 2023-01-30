@@ -548,6 +548,8 @@
 				1740587128D807C90092E096 /* FTRUMMonitor.m */,
 				1740586828D807C90092E096 /* FTMonitorItem.h */,
 				1740587028D807C90092E096 /* FTMonitorItem.m */,
+				1740587428D807C90092E096 /* FTMonitorUtils.h */,
+				1740586928D807C90092E096 /* FTMonitorUtils.m */,
 			);
 			path = Monitor;
 			sourceTree = "<group>";
@@ -607,8 +609,6 @@
 				1740589428D807CF0092E096 /* FTResourceContentModel.m */,
 				1740587228D807C90092E096 /* FTReadWriteHelper.h */,
 				1740586B28D807C90092E096 /* FTReadWriteHelper.m */,
-				1740587428D807C90092E096 /* FTMonitorUtils.h */,
-				1740586928D807C90092E096 /* FTMonitorUtils.m */,
 				7CB26D4426FD6A44005C9028 /* FTAppLifeCycle.h */,
 				7CB26D4526FD6A44005C9028 /* FTAppLifeCycle.m */,
 				1740585828D8074E0092E096 /* FTCallStack.h */,

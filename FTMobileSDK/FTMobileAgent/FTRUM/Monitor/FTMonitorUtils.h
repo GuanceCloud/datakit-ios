@@ -9,30 +9,18 @@
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
 
+/// 监控项相关数据获取工具
 @interface FTMonitorUtils : NSObject
-/**
- *  @abstract
- *  获取当前设备CPU使用率
- */
+/// 获取当前设备CPU使用率
 + (long )cpuUsage;
 #if TARGET_OS_IOS
-/**
- *  @abstract
- *  获取当前电池电量使用率
- */
+/// 获取当前电池电量使用率
 + (double)batteryUse;
 #endif
-/**
- *  @abstract
- *  获取设备总内存
- */
+/// 获取设备总内存
 + (NSString *)totalMemorySize;
-/**
- *  @abstract
- *  获取当前内存使用率
- */
+/// 获取当前内存使用率
 + (double)usedMemory;
-+ (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 
 @end
 
