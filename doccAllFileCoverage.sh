@@ -28,19 +28,6 @@ do
   fi
 done
 }
-# 拷贝原有的 project.pbxproj
-copyProjectFile(){
-# -f 参数判断 $file 是否存在
-if [ ! -f "$copyFile" ]; then
- touch "$copyFile"
-fi
-cp  $project_path $copyFile
-}
-# 将 project.pbxproj 复原，删除拷贝文件
-recoverProjectFile(){
-cp  $copyFile $project_path
-rm $copyFile
-}
 
 doccCoverage(){
 xcodebuild -target FTMobileAgent DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO
@@ -54,11 +41,11 @@ xcrun docc convert FTMobileSDKDocs.docc \
 --level detailed
 }
 
-
+echo "----- Start -----"
 
 cd FTMobileSDK
 pwd
-copyProjectFile
+
 echo "-----changeFileAttributeToPublic Start-----"
 changeFileAttributeToPublic
 echo "-----changeFileAttributeToPublic End-----"
@@ -67,4 +54,6 @@ echo "-----Coverage Start-----"
 doccCoverage
 echo "-----Coverage End-----"
 
-recoverProjectFile
+git checkout -- $project_path
+echo "----- End -----"
+ 
