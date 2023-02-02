@@ -50,7 +50,6 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _service = FT_DEFAULT_SERVICE_NAME;
         _discardType = FTDiscard;
         _samplerate = 100;
         _enableConsoleLog = NO;
@@ -67,7 +66,6 @@
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
-    options.service = self.service;
     options.samplerate = self.samplerate;
     options.enableConsoleLog = self.enableConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
@@ -102,6 +100,7 @@
     if (self = [super init]) {
         _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
+        _service = FT_DEFAULT_SERVICE_NAME;
         _XDataKitUUID = [FTBaseInfoHandler XDataKitUUID];
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _env = FTEnvProd;
@@ -117,6 +116,7 @@
     options.env = self.env;
     options.version = self.version;
     options.globalContext = self.globalContext;
+    options.service = self.service;
     return options;
 }
 @end

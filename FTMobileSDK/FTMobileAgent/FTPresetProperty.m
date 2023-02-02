@@ -85,12 +85,12 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @end
 @interface FTPresetProperty ()
 @property (nonatomic, strong) MobileDevice *mobileDevice;
-//@property (nonatomic, strong) NSMutableDictionary *webCommonPropertyTags;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *context;
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
+@property (nonatomic, copy) NSString *service;
 @end
 @implementation FTPresetProperty
 - (instancetype)initWithMobileConfig:(FTMobileConfig *)config{
@@ -98,6 +98,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     if (self){
         _version = config.version;
         _env = FTEnvStringMap[config.env];
+        _service = config.service;
         _mobileDevice = [[MobileDevice alloc]init];
         _context = [config.globalContext copy];
         _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
@@ -127,6 +128,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
             _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
             _rumCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
             _rumCommonPropertyTags[FT_SDK_VERSION] = SDK_VERSION;
+            _rumCommonPropertyTags[FT_KEY_SERVICE] = self.service;
         }
     }
     return _rumCommonPropertyTags;
@@ -135,8 +137,10 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     if (!_baseCommonPropertyTags) {
         @synchronized (self) {
             if (!_baseCommonPropertyTags) {
-                _baseCommonPropertyTags =@{@"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                                           @"device_uuid":[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                _baseCommonPropertyTags =@{
+                    @"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
+                    FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                    FT_KEY_SERVICE:self.service,
                 };
             }
         }
@@ -153,14 +157,13 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
         _rumContext = tags;
     }
 }
-- (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName{
+- (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status{
     NSMutableDictionary *tag = [NSMutableDictionary new];
     [tag addEntriesFromDictionary:self.context];
     [tag addEntriesFromDictionary:self.logContext];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
-    [tag setValue:serviceName forKey:FT_KEY_SERVICE];
     return tag;
 }
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{

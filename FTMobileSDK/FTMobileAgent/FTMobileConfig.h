@@ -101,10 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /**
- * 设置日志所属业务或服务的名称 默认：df_rum_ios
- */
-@property (nonatomic, copy) NSString *service;
-/**
  * 设置日志废弃策略
  */
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
@@ -253,6 +249,10 @@ NS_ASSUME_NONNULL_BEGIN
  * 环境字段。
  */
 @property (nonatomic, assign) FTEnv env;
+/**
+ * 设置所属业务或服务的名称 默认：df_rum_ios
+ */
+@property (nonatomic, copy) NSString *service;
 /**
  * 设置是否允许 SDK 打印 Debug 日志
  */

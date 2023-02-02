@@ -192,24 +192,6 @@
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue(serviceName.length>0);
 }
-
--(void)testSetLoggerServiceName{
-    [self setRightSDKConfig];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.service = @"testSetServiceName";
-    loggerConfig.enableCustomLog = YES;
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
-    [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
-    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    FTRecordModel *model = [array lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *tags = op[FT_TAGS];
-    NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
-    XCTAssertTrue([serviceName isEqualToString:@"testSetServiceName"]);
-}
 - (void)testEnableLinkRumData{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];

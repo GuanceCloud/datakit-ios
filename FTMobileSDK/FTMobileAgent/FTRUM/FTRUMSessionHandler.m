@@ -111,7 +111,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_RUM_KEY_ACTION_ERROR_COUNT:@(0),
     };
     [tags addEntriesFromDictionary:actiontags];
-    
+    if(model.tags && model.tags.allKeys.count>0){
+        [tags addEntriesFromDictionary:model.tags];
+    }
+    [tags addEntriesFromDictionary:model.tags];
     [[FTMobileAgent sharedInstance] rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }

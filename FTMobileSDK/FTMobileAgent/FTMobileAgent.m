@@ -210,7 +210,7 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
