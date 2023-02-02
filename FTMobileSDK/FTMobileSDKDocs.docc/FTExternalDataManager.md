@@ -22,6 +22,6 @@
 ### Resource
 
 - ``FTExternalDataManager/startResourceWithKey:``
-- ``FTExternalDataManager/stopResource(withKey:)``
+- ``FTExternalDataManager/stopResourceWithKey:``
 - ``FTExternalDataManager/addResourceWithKey:metrics:content:``
 
