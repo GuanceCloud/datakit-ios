@@ -18,7 +18,6 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 @interface FTAppLaunchDurationTest : KIFTestCase
-@property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 
 @implementation FTAppLaunchDurationTest
@@ -47,16 +46,11 @@
 }
 - (void)testLaunchCold{
     [self setSDK];
-    self.expectation= [self expectationWithDescription:@"异步操作timeout"];
     [[NSNotificationCenter defaultCenter] addObserver:self
 selector:@selector(applicationDidBecomeActive:)
     name:UIApplicationDidBecomeActiveNotification
 object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [self waitForExpectationsWithTimeout:10 handler:^(NSError *error) {
-        XCTAssertNil(error);
-        [[NSNotificationCenter defaultCenter] removeObserver:self];
-    }];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)noti{
@@ -75,9 +69,6 @@ object:nil];
                        isEqualToString:@"launch_cold"]);
     }
     XCTAssertTrue(haslaunch);
-    if(self.expectation){
-        [self.expectation fulfill];
-    }
 }
 - (void)testSetSdkAfterLaunch{
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
