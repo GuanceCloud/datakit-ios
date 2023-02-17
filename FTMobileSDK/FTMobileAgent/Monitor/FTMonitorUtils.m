@@ -140,24 +140,20 @@
 
 #pragma mark ========== 内存 ==========
 //当前任务所占用的内存
-+ (double)usedMemory
-{
-    vm_statistics_data_t vmStats;
-    mach_msg_type_number_t infoCount = HOST_VM_INFO_COUNT;
-    kern_return_t kernReturn = host_statistics(mach_host_self(),
-                                               HOST_VM_INFO,
-                                               (host_info_t)&vmStats,
-                                               &infoCount);
-    
-    if (kernReturn != KERN_SUCCESS) {
++ (float)usedMemory{
+    int64_t memoryUsageInByte = 0;
+    task_vm_info_data_t vmInfo;
+    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+    kern_return_t kernelReturn = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &vmInfo, &count);
+    if(kernelReturn == KERN_SUCCESS) {
+        memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
+    } else {
         return 0;
     }
-    
-    double availableMemory = ((vm_page_size * vmStats.free_count) / 1024.0) / 1024.0;
-    double total = [NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0;
-    double numFloat =(total-availableMemory)/total;
-    return numFloat*100;
+    double total = [NSProcessInfo processInfo].physicalMemory ;
+    return memoryUsageInByte/total*100.00;
 }
+
 //总内存
 +(NSString *)totalMemorySize{
     return [NSString stringWithFormat:@"%.2fG",[NSProcessInfo processInfo].physicalMemory / 1024.0 / 1024.0/ 1024.0];

@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (long )cpuUsage;
 /**
  *  @abstract
- *  获取当前电池电量使用率
+ *  获取当前电池电量
  */
 + (double)batteryUse;
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @abstract
  *  获取当前内存使用率
  */
-+ (double)usedMemory;
++ (float)usedMemory;
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;
 
 @end
