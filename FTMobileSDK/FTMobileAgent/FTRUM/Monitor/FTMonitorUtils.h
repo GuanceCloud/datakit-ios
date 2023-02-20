@@ -20,8 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取设备总内存
 + (NSString *)totalMemorySize;
 /// 获取当前内存使用率
-+ (double)usedMemory;
-
++ (float)usedMemory;
 @end
 
 NS_ASSUME_NONNULL_END

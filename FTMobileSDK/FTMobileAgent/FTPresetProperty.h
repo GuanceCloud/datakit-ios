@@ -40,8 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取 logger 数据公共 Tag
 /// - Parameters:
 ///   - status: 事件等级和状态
-///   - serviceName: 日志所属业务或服务的名称
-- (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status serviceName:(NSString *)serviceName;
+- (NSDictionary *)loggerPropertyWithStatus:(FTLogStatus)status;
 /// 重新设置
 /// - Parameter config: SDK 配置项
 - (void)resetWithMobileConfig:(FTMobileConfig *)config;

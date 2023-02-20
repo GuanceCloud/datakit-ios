@@ -46,9 +46,9 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
-    if (!isUnitTests && !isUITests) {
-        [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:nil];
-    }
+//    if (!isUnitTests && !isUITests) {
+//        [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:nil];
+//    }
 }
 
 

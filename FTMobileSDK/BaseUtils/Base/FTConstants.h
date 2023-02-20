@@ -110,8 +110,9 @@ extern NSString * const FT_KEY_EVENT;
 
 extern NSString * const FT_MONITOR_MEMORY_TOTAL;
 extern NSString * const FT_MONITOR_MEMORY_USE;
-extern NSString * const FT_MONITOR_CPU_USAGE;
-extern NSString * const FT_MONITOR_MEM_USAGE;
+extern NSString * const FT_MONITOR_CPU_USE;
+extern NSString * const FT_MONITOR_BATTERY_USE;
+
 extern NSString * const FT_MONITOR_POWER;
 extern NSString * const FT_MONITOR_CAMERA_FRONT_PX;
 extern NSString * const FT_MONITOR_CAMERA_BACK_PX;

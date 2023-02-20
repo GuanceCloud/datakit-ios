@@ -88,7 +88,6 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _service = FT_DEFAULT_SERVICE_NAME;
         _discardType = FTDiscard;
         _samplerate = 100;
         _enableConsoleLog = NO;
@@ -105,7 +104,6 @@
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
-    options.service = self.service;
     options.samplerate = self.samplerate;
     options.enableConsoleLog = self.enableConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
@@ -118,7 +116,6 @@
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if (self = [super init]) {
-        _service = dict[@"service"];
         _samplerate = [dict[@"samplerate"] intValue];
         _enableConsoleLog = [dict[@"enableConsoleLog"] boolValue];
         _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
@@ -132,7 +129,6 @@
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict setValue:self.service forKey:@"service"];
     [dict setValue:@(self.samplerate) forKey:@"samplerate"];
     [dict setValue:@(self.enableConsoleLog) forKey:@"enableConsoleLog"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
@@ -185,6 +181,7 @@
         _enableSDKDebugLog = NO;
         _XDataKitUUID = [FTBaseInfoHandler XDataKitUUID];
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        _service = FT_DEFAULT_SERVICE_NAME;
         _env = FTEnvProd;
     }
     return self;
@@ -199,6 +196,7 @@
     options.version = self.version;
     options.globalContext = self.globalContext;
     options.groupIdentifiers = self.groupIdentifiers;
+    options.service = self.service;
     return options;
 }
 @end

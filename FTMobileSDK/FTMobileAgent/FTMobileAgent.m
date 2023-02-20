@@ -223,7 +223,7 @@ static dispatch_once_t onceToken;
     }
     @try {
         dispatch_async(self.serialQueue, ^{
-            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status serviceName:self.loggerConfig.service]];
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status]];
             if (tags) {
                 [tagDict addEntriesFromDictionary:tags];
             }

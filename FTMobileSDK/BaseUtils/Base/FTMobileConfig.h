@@ -93,8 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTLoggerConfig : NSObject
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
-/// 日志所属业务或服务的名称 默认：df_rum_ios
-@property (nonatomic, copy) NSString *service;
 /// 日志废弃策略
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
@@ -200,6 +198,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
 /// 应用版本号。
 @property (nonatomic, copy) NSString *version;
+/// 所属业务或服务的名称 默认：df_rum_ios
+@property (nonatomic, copy) NSString *service;
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

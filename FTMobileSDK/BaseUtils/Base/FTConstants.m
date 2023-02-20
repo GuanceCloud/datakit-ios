@@ -107,6 +107,8 @@ NSString * const FT_KEY_EVENT = @"event";
 #pragma mark ========== MONTION ==========
 NSString * const FT_MONITOR_MEMORY_TOTAL  = @"memory_total";
 NSString * const FT_MONITOR_MEMORY_USE  = @"memory_use";
+NSString * const FT_MONITOR_CPU_USE  = @"cpu_use";
+NSString * const FT_MONITOR_BATTERY_USE = @"battery_use";
 NSString * const FT_MONITOR_DEVICE_NAME  = @"device_name";
 NSString * const FT_MONITOR_PROVINCE  = @"province";
 NSString * const FT_MONITOR_CITY  = @"city";
@@ -124,8 +126,6 @@ NSString * const FT_ISERROR = @"isError";
 NSString * const FT_MONITOR_GPS_OPEN  = @"gps_open";
 NSString * const FT_MONITOR_FPS  = @"fps";
 NSString * const FT_MONITOR_BT_OPEN  = @"bt_open";
-NSString * const FT_MONITOR_CPU_USAGE = @"cpu_usage";
-NSString * const FT_MONITOR_MEM_USAGE = @"mem_usage";
 NSString * const FT_MONITOR_POWER = @"power";
 
 #pragma mark ========== logging key ==========
