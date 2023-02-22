@@ -14,8 +14,6 @@
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
 #import "FTConstants.h"
-//设备对象 __class 值
-static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
 static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
 //操作系统主要版本
@@ -23,7 +21,6 @@ static NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR = @"os_version_major
 
 //是否是注册用户，属性值：True / False
 static NSString * const FT_IS_SIGNIN = @"is_signin";
-static NSString * const FT_ORIGIN_ID = @"origin_id";
 //操作系统
 static NSString * const FT_COMMON_PROPERTY_OS = @"os";
 //设备提供商
@@ -51,7 +48,6 @@ static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
 static NSString * const FT_SDK_VERSION = @"sdk_version";
 static NSString * const FT_APP_ID = @"app_id";
-static NSString * const FTBaseInfoHanderDeviceType = @"FTBaseInfoHanderDeviceType";
 static NSString * const FT_SDK_NAME = @"sdk_name";
 
 @interface MobileDevice : NSObject
