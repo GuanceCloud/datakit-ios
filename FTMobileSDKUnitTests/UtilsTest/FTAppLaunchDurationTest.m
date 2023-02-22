@@ -31,7 +31,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
-  
+    rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];

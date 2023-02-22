@@ -65,7 +65,9 @@ static dispatch_once_t onceToken;
     self.rumManager = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
-    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    if(rumConfig.enableTraceUserAction){
+        self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    }
     if(rumConfig.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
