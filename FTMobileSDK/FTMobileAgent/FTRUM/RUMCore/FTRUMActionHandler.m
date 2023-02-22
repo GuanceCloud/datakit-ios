@@ -96,21 +96,21 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     }
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewTags];
 
-    NSDictionary *actiontags = @{FT_RUM_KEY_ACTION_ID:self.action_id,
-                                 FT_RUM_KEY_ACTION_NAME:self.action_name,
-                                 FT_RUM_KEY_ACTION_TYPE:self.action_type
+    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:self.action_id,
+                                 FT_KEY_ACTION_NAME:self.action_name,
+                                 FT_KEY_ACTION_TYPE:self.action_type
     };
     NSMutableDictionary *fields = @{FT_DURATION:self.duration,
-                             FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
-                             FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
-                             FT_RUM_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
+                             FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
+                             FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
+                             FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
     }.mutableCopy;
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:actiontags];
-    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }

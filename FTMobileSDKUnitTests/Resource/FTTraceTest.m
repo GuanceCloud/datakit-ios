@@ -326,9 +326,9 @@
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
+        if ([measurement isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             hasResourceData = YES;
             NSDictionary *tags = opdata[FT_TAGS];
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);

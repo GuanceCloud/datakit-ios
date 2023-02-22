@@ -74,9 +74,9 @@
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *op = dict[@"dataType"];
         NSString *measurement = dict[@"eventType"];
-        if ([op isEqualToString:@"RUM"]&&[measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+        if ([op isEqualToString:@"RUM"]&&[measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
             NSDictionary *tags = dict[FT_TAGS];
-            XCTAssertTrue([tags[FT_RUM_KEY_ACTION_NAME] isEqualToString:@"extensionClick1"]);
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"extensionClick1"]);
             hasAction = YES;
             *stop = YES;
         }
@@ -141,7 +141,7 @@
     [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSDictionary  *dict, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *op = dict[@"dataType"];
         NSString *measurement = dict[@"eventType"];
-        if ([op isEqualToString:@"RUM"]&&[measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+        if ([op isEqualToString:@"RUM"]&&[measurement isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             NSDictionary *tags = dict[FT_TAGS];
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);

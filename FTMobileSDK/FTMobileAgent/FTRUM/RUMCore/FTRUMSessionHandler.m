@@ -99,27 +99,27 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    NSDictionary *actiontags = @{FT_RUM_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
-                                 FT_RUM_KEY_ACTION_NAME:model.action_name,
-                                 FT_RUM_KEY_ACTION_TYPE:model.action_type
+    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
+                                 FT_KEY_ACTION_NAME:model.action_name,
+                                 FT_KEY_ACTION_TYPE:model.action_type
     };
     NSDictionary *fields = @{FT_DURATION:model.duration,
-                             FT_RUM_KEY_ACTION_LONG_TASK_COUNT:@(0),
-                             FT_RUM_KEY_ACTION_RESOURCE_COUNT:@(0),
-                             FT_RUM_KEY_ACTION_ERROR_COUNT:@(0),
+                             FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
+                             FT_KEY_ACTION_RESOURCE_COUNT:@(0),
+                             FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
     [tags addEntriesFromDictionary:actiontags];
     if(model.tags && model.tags.allKeys.count>0){
         [tags addEntriesFromDictionary:model.tags];
     }
-    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
-    NSString *error = model.type == FTRUMDataLongTask?FT_MEASUREMENT_RUM_LONG_TASK :FT_MEASUREMENT_RUM_ERROR;
+    NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     
     [self.context.writer rumWrite:error terminal:FT_TERMINAL_APP tags:tags fields:model.fields];
 }

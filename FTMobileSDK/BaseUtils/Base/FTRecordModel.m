@@ -26,12 +26,12 @@
     self = [super init];
     if (self) {
         NSMutableDictionary *opdata = @{
-            @"source":source,
+            FT_KEY_SOURCE:source,
         }.mutableCopy;
         [opdata setValue:fields forKey:FT_FIELDS];
         [opdata setValue:tags forKey:FT_TAGS];
-        NSDictionary *data =@{@"op":op,
-                              @"opdata":opdata,
+        NSDictionary *data =@{FT_OP:op,
+                              FT_OPDATA:opdata,
         };
         ZYDebug(@"write data = %@",data);
         _op = op;

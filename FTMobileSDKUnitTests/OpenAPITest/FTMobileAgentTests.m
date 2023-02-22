@@ -147,7 +147,7 @@
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *op = dict[FT_OPDATA];
     NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue([serviceName isEqualToString:@"testSetServiceName"]);
@@ -157,7 +157,7 @@
     NSArray *rumArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     FTRecordModel *rumModel = [rumArray lastObject];
     NSDictionary *rumdict = [FTJSONUtil dictionaryWithJsonString:rumModel.data];
-    NSDictionary *rumop = rumdict[@"opdata"];
+    NSDictionary *rumop = rumdict[FT_OPDATA];
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumserviceName = [rumtags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue([rumserviceName isEqualToString:@"testSetServiceName"]);
@@ -177,7 +177,7 @@
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [newDatas lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *op = dict[FT_OPDATA];
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
 }

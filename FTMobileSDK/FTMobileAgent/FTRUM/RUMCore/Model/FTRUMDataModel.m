@@ -126,7 +126,7 @@
 }
 -(NSDictionary *)getGlobalSessionViewActionTags{
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self getGlobalSessionViewTags]];
-    [dict setValue:self.action_id forKey:FT_RUM_KEY_ACTION_ID];
+    [dict setValue:self.action_id forKey:FT_KEY_ACTION_ID];
     return dict;
 }
 @end

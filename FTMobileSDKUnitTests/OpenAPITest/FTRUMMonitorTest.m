@@ -37,7 +37,7 @@
 }
 
 - (void)tearDown {
-
+    
 }
 - (void)shutDownSDK{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -51,15 +51,14 @@
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-            NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_MINI]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_MAX]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -78,21 +77,14 @@
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        NSLog(@"op：%@\ndict:%@",op,dict);
-        XCTAssertTrue([op isEqualToString:FT_DATA_TYPE_RUM]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-            NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]);
-            NSNumber *tickCount = field[FT_CPU_TICK_COUNT];
-            NSNumber *tickCountPerSecond = field[FT_CPU_TICK_COUNT_PER_SECOND];
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertTrue([fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            NSNumber *tickCount = fields[FT_CPU_TICK_COUNT];
+            NSNumber *tickCountPerSecond = fields[FT_CPU_TICK_COUNT_PER_SECOND];
             XCTAssertTrue(tickCount.doubleValue < 10000);
             XCTAssertTrue(tickCountPerSecond.doubleValue < 1000);
-            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_MINI]&&[fields.allKeys containsObject:FT_FPS_AVG]&&[fields.allKeys containsObject:FT_MEMORY_MAX]&&[fields.allKeys containsObject:FT_MEMORY_AVG]);
             *stop = YES;
         }
     }];
@@ -106,16 +98,10 @@
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-            NSDictionary *field = opdata[FT_FIELDS];
-            XCTAssertTrue([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]);
-            XCTAssertFalse([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertTrue([fields.allKeys containsObject:FT_MEMORY_MAX]&&[fields.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_FPS_MINI]&&[fields.allKeys containsObject:FT_FPS_AVG]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -131,17 +117,11 @@
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-            NSDictionary *field = opdata[FT_FIELDS];
-            NSLog(@"field:%@\n",field);
-            XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]);
-            XCTAssertFalse([field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            NSLog(@"field:%@\n",fields);
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]&&[fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertFalse([fields.allKeys containsObject:FT_MEMORY_MAX]&&[fields.allKeys containsObject:FT_MEMORY_AVG]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT]&&[fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];
@@ -155,16 +135,14 @@
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [newDatas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
-            NSDictionary *field = opdata[FT_FIELDS];
-            NSLog(@"field:%@\n",field);
-            XCTAssertTrue([field.allKeys containsObject:FT_FPS_MINI]&&[field.allKeys containsObject:FT_FPS_AVG]&&[field.allKeys containsObject:FT_MEMORY_MAX]&&[field.allKeys containsObject:FT_MEMORY_AVG]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT]&&[field.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
+    [FTModelHelper resolveModelArray:newDatas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_MINI]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_FPS_AVG]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_MEMORY_MAX]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_MEMORY_AVG]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_CPU_TICK_COUNT]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_CPU_TICK_COUNT_PER_SECOND]);
             *stop = YES;
         }
     }];

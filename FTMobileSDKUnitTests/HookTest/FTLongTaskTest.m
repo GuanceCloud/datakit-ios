@@ -17,7 +17,7 @@
 #import "FTConstants.h"
 #import "FTTrackDataManger+Test.h"
 #import <KIF/KIF.h>
-
+#import "FTModelHelper.h"
 @interface FTLongTaskTest : KIFTestCase
 
 @end
@@ -55,18 +55,11 @@
         XCTAssertTrue(newCount-lastCount>0);
 
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-
-        for (NSInteger i=0; i<datas.count; i++) {
-           FTRecordModel *model = datas[i];
-           NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-            NSDictionary *opdata = [dict valueForKey:@"opdata"];
-
-            NSString *measurement = opdata[FT_MEASUREMENT];
-            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]) {
-                NSDictionary *field = [opdata valueForKey:FT_FIELDS];
-                XCTAssertTrue([field.allKeys containsObject:FT_RUM_KEY_LONG_TASK_STACK]&&[field.allKeys containsObject:FT_DURATION]);
+        [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+            if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+                XCTAssertTrue([fields.allKeys containsObject:FT_KEY_LONG_TASK_STACK]&&[fields.allKeys containsObject:FT_DURATION]);
             }
-        }
+        }];
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
@@ -82,17 +75,13 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-        BOOL noLongTask = YES;
-        for (NSInteger i=0; i<datas.count; i++) {
-           FTRecordModel *model = datas[i];
-           NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-            NSDictionary *opdata = [dict valueForKey:@"opdata"];
-
-            NSString *measurement = opdata[FT_MEASUREMENT];
-            if ([measurement isEqualToString:FT_MEASUREMENT_RUM_LONG_TASK]) {
+        __block BOOL noLongTask = YES;
+        [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+            if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
                 noLongTask = NO;
+                *stop = YES;
             }
-        }
+        }];
         XCTAssertTrue(noLongTask == YES);
         [expect fulfill];
         

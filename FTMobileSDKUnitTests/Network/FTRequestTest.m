@@ -92,18 +92,18 @@
     XCTAssertTrue([mRequest.HTTPBody isEqual: [@"" dataUsingEncoding:NSUTF8StringEncoding]]);
 }
 - (void)testNullValue{
-    NSDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:@"rum_model_create",
-                             FT_RUM_KEY_ERROR_STACK:@"rum_model_create",
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"rum_model_create",
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
     };
     NSDictionary *tags = @{
-        FT_RUM_KEY_ERROR_TYPE:@"ios_crash",
-        FT_RUM_KEY_ERROR_SOURCE:@"logger",
-        FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SESSION_TYPE:@"user",
         @"null_value":[NSNull null],
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[FTDateUtil currentTimeNanosecond]];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_RUM];
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];

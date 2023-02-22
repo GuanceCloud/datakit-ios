@@ -96,10 +96,10 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSString *op = dict[@"op"];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
         NSDictionary *tags = opdata[FT_TAGS];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
             if([tags[@"sdk_name"] isEqualToString:@"df_web_rum_sdk"]){
                 NSDictionary *field = opdata[FT_FIELDS];
                 NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
@@ -127,12 +127,12 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
+        NSString *op = dict[FT_OP];
         XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
+        NSDictionary *opdata = dict[FT_OPDATA];
+        NSString *measurement = opdata[FT_KEY_SOURCE];
         NSDictionary *tags = opdata[FT_TAGS];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_VIEW]) {
+        if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
             if([tags[@"sdk_name"] isEqualToString:@"df_web_rum_sdk"]){
                 NSDictionary *field = opdata[FT_FIELDS];
                 NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];

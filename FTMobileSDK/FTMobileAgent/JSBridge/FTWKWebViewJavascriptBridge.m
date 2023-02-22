@@ -81,7 +81,7 @@
     [self removeScriptMessageHandler];
 }
 
-NSString * FTWebViewJavascriptBridge_js() {
+NSString * FTWebViewJavascriptBridge_js(void) {
 #define __WVJB_js_func__(x) #x
     //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode

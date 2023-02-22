@@ -100,13 +100,8 @@
     [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
-    [newArray enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSString *op = dict[@"op"];
-        XCTAssertTrue([op isEqualToString:@"RUM"]);
-        NSDictionary *opdata = dict[@"opdata"];
-        NSString *measurement = opdata[@"source"];
-        if ([measurement isEqualToString:FT_MEASUREMENT_RUM_RESOURCE]) {
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             hasResource = YES;
             *stop = YES;
         }

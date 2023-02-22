@@ -164,10 +164,6 @@
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context];
-//    resourceHandler.errorHandler = ^(){
-//        weakSelf.viewErrorCount +=1;
-//        weakSelf.needUpdateView = YES;
-//    };
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
         weakSelf.needUpdateView = YES;
@@ -206,9 +202,9 @@
         [field setValue:@(refreshRateInfo.meanValue) forKey:FT_FPS_AVG];
     }
     if (![self.loading_time isEqual:@0]) {
-        [field setValue:self.loading_time forKey:FT_RUM_KEY_LOADING_TIME];
+        [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_MEASUREMENT_RUM_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW terminal:FT_TERMINAL_APP tags:sessionViewTag fields:field];
 }
 
 @end

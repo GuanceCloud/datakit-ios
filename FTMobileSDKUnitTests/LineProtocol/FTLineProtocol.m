@@ -42,8 +42,8 @@
         FT_FIELDS:@{@"event":@"testLineProtocol"},
         FT_TAGS:@{@"name":@"testLineProtocol"},
     };
-    NSDictionary *data =@{FT_AGENT_OP:FT_DATA_TYPE_RUM,
-                          FT_AGENT_OPDATA:dict,
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
     };
 
     FTRecordModel *model = [FTRecordModel new];
@@ -77,28 +77,28 @@
     XCTAssertTrue([self isNum:times]);
 }
 - (void)testRumLineProtocol{
-    NSDictionary *field = @{ FT_RUM_KEY_ERROR_MESSAGE:@"rum_model_create",
-                             FT_RUM_KEY_ERROR_STACK:@"rum_model_create",
+    NSDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"rum_model_create",
+                             FT_KEY_ERROR_STACK:@"rum_model_create",
     };
     NSDictionary *tags = @{
-        FT_RUM_KEY_ERROR_TYPE:@"ios_crash",
-        FT_RUM_KEY_ERROR_SOURCE:@"logger",
-        FT_RUM_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
+        FT_KEY_ERROR_TYPE:@"ios_crash",
+        FT_KEY_ERROR_SOURCE:@"logger",
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     long long time = [FTDateUtil currentTimeNanosecond];
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_MEASUREMENT_RUM_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:time];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:time];
     
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     NSArray *sourceAndTagsArray = [[array firstObject] componentsSeparatedByString:@","];
-    XCTAssertTrue([[sourceAndTagsArray firstObject] isEqualToString:FT_MEASUREMENT_RUM_ERROR]);
-    NSString *errorType = [NSString stringWithFormat:@"%@=%@",FT_RUM_KEY_ERROR_TYPE,@"ios_crash"];
+    XCTAssertTrue([[sourceAndTagsArray firstObject] isEqualToString:FT_RUM_SOURCE_ERROR]);
+    NSString *errorType = [NSString stringWithFormat:@"%@=%@",FT_KEY_ERROR_TYPE,@"ios_crash"];
     XCTAssertTrue([sourceAndTagsArray containsObject:errorType]);
     NSArray *fieldsArray = [array[1] componentsSeparatedByString:@","];
-    NSString *errorMessage = [NSString stringWithFormat:@"%@=\"%@\"",FT_RUM_KEY_ERROR_MESSAGE,@"rum_model_create"];
+    NSString *errorMessage = [NSString stringWithFormat:@"%@=\"%@\"",FT_KEY_ERROR_MESSAGE,@"rum_model_create"];
     XCTAssertTrue([fieldsArray containsObject:errorMessage]);
     NSString *timeStr = [array lastObject];
     XCTAssertTrue([self isNum:timeStr] && [timeStr longLongValue] == time);

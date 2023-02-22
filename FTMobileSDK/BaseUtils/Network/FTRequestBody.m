@@ -124,9 +124,9 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
-        NSDictionary *opdata =item[@"opdata"];
+        NSDictionary *opdata =item[FT_OPDATA];
         
-        NSString *source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:@"source"]];
+        NSString *source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_KEY_SOURCE]];
         if (!source) {
             source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
         }

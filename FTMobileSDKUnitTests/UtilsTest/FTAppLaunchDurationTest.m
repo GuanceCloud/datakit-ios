@@ -63,9 +63,9 @@ object:nil];
     NSDictionary *tags = opdata[FT_TAGS];
     NSString *measurement = opdata[@"source"];
     BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
         haslaunch = YES;
-        XCTAssertTrue([tags[FT_RUM_KEY_ACTION_TYPE]
+        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
                        isEqualToString:@"launch_cold"]);
     }
     XCTAssertTrue(haslaunch);
@@ -82,9 +82,9 @@ object:nil];
     NSDictionary *tags = opdata[FT_TAGS];
     NSString *measurement = opdata[@"source"];
     BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
         haslaunch = YES;
-        XCTAssertTrue([tags[FT_RUM_KEY_ACTION_TYPE]
+        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
                        isEqualToString:@"launch_cold"]);
     }
     XCTAssertTrue(haslaunch);
@@ -108,9 +108,9 @@ object:nil];
     NSDictionary *tags = opdata[FT_TAGS];
     NSString *measurement = opdata[@"source"];
     BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_MEASUREMENT_RUM_ACTION]) {
+    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
         haslaunch = YES;
-        XCTAssertTrue([tags[FT_RUM_KEY_ACTION_TYPE]
+        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
                        isEqualToString:@"launch_hot"]);
     }
     XCTAssertTrue(haslaunch);
