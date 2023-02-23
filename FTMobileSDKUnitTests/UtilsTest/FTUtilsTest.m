@@ -21,6 +21,7 @@
 #import "FTNetworkManager.h"
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
+#import "FTReadWriteHelper.h"
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -30,10 +31,6 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-}
-
-- (void)tearDown {
-
 }
 - (void)testMd5Base64{
     NSString *str = [@"iosTest" ft_md5base64Encrypt];
@@ -85,5 +82,26 @@
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSString *replace = [FTBaseInfoHandler replaceNumberCharByUrl:[NSURL URLWithString:urlStr]];
     XCTAssertTrue([replace isEqualToString:@"/data/sk/?"]);
+}
+- (void)testReadWriteHelper{
+    NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
+    FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:array];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [helper concurrentWrite:^(id  _Nonnull value) {
+            sleep(0.5);
+            [value addObject:@"e"];
+        }];
+    });
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [helper concurrentWrite:^(id  _Nonnull value) {
+            [value addObject:@"f"];
+        }];
+    });
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [helper concurrentRead:^(NSMutableArray *value) {
+            XCTAssertTrue(value.count == 6);
+            XCTAssertTrue([value.lastObject isEqualToString:@"f"]);
+        }];
+    });
 }
 @end

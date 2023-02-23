@@ -22,21 +22,6 @@
     NSString *actionName = [NSString stringWithFormat:@"[%@]%@",className,viewTitle];
     return actionName;
 }
--(UIViewController *)ft_currentViewController{
-    __block UIResponder *next = nil;
-    [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-        next = [self nextResponder];
-        do {
-            if ([next isKindOfClass:[UIViewController class]]) {
-                break;        }
-            next = [next nextResponder];
-        } while (next != nil);
-    }];
-    if (next != nil) {
-        return (UIViewController *)next;
-    }
-    return nil;
-}
 - (BOOL)isAlertView {
     UIResponder *responder = self;
     do {

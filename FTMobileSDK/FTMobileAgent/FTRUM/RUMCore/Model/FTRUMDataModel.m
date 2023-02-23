@@ -26,13 +26,6 @@
     }
     return self;
 }
--(void)setTime:(NSDate *)time{
-    if (!time) {
-        _time = [NSDate date];
-    }else{
-        _time = time;
-    }
-}
 @end
 @implementation FTRUMViewModel
 -(instancetype)initWithViewID:(NSString *)viewid viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{

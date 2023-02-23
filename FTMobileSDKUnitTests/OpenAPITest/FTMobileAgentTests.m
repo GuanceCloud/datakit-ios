@@ -56,6 +56,22 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 #pragma mark ========== 用户数据绑定 ==========
+///
+- (void)testAdaptOldUserSet{
+    [self setRightSDKConfig];
+    [[FTMobileAgent sharedInstance] logout];
+    [[NSUserDefaults standardUserDefaults] setValue:@"old_user" forKey:@"ft_userid"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTMobileAgent sharedInstance] resetInstance];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    [FTMobileAgent startWithConfigOptions:config];
+   
+    NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+    NSString *userid = dict[FT_USER_ID];
+    XCTAssertTrue([userid isEqualToString:@"old_user"]);
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"ft_userid"];
+}
 /**
  * 测试 绑定用户
  * 验证：获取 RUM ES 数据 判断 userid 是否与设置一致

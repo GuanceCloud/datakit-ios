@@ -24,6 +24,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 
 @interface FTExtensionDataManager()
 @property (nonatomic, strong) dispatch_queue_t appExtensionQueue;
+@property (nonatomic, strong) NSMutableDictionary *filePaths;
 @end
 @implementation FTExtensionDataManager
 + (instancetype)sharedInstance {
@@ -38,6 +39,7 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
     if (self = [super init]) {
         self.appExtensionQueue = dispatch_queue_create("com.ft.FTMobileExtension", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(self.appExtensionQueue, FTAppExtensionQueueTag, &FTAppExtensionQueueTag, NULL);
+        _filePaths = [[NSMutableDictionary alloc]init];
         _maxCount = NSIntegerMax;
     }
     return self;
@@ -273,9 +275,13 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 - (BOOL)writeEvent:(NSDictionary *)event groupIdentifier:(NSString *)groupIdentifier {
     __block BOOL result = NO;
     dispatch_block_t block = ^{
-        NSString *path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
-        if(![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-            [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+        NSString *path = [self.filePaths objectForKey:groupIdentifier];
+        if(!path){
+            path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
+            if(![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+            }
+            [self.filePaths setValue:path forKey:groupIdentifier];
         }
         NSMutableArray *array = [[NSMutableArray alloc] initWithContentsOfFile:path];
         if (array.count) {

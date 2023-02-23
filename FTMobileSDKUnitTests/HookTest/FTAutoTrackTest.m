@@ -61,40 +61,40 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] resetInstance];
 }
-/**
-  测试当前控制器获取是否正确
-*/
-- (void)testControllerOfTheView{
-    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-    self.window.backgroundColor = [UIColor whiteColor];
-    
-    self.testVC = [[UITestVC alloc] init];
-    
-    self.tabBarController = [[UITabBarController alloc] init];
-    
-    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
-    self.navigationController.tabBarItem.title = @"UITestVC";
-    
-    UITableViewController *firstViewController = [[UITableViewController alloc] init];
-    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
-    
-    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
-    self.window.rootViewController = self.tabBarController;
-    
-    [self.testVC view];
-    [self.testVC viewWillAppear:NO];
-    [self.testVC viewDidAppear:NO];
-    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    __block UIViewController *currentVC;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        currentVC = [self.testVC.firstButton ft_currentViewController];
-        [expect fulfill];
-    });
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    XCTAssertEqualObjects(self.testVC, currentVC);
-}
+///**
+//  测试当前控制器获取是否正确
+//*/
+//- (void)testControllerOfTheView{
+//    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+//    self.window.backgroundColor = [UIColor whiteColor];
+//
+//    self.testVC = [[UITestVC alloc] init];
+//
+//    self.tabBarController = [[UITabBarController alloc] init];
+//
+//    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
+//    self.navigationController.tabBarItem.title = @"UITestVC";
+//
+//    UITableViewController *firstViewController = [[UITableViewController alloc] init];
+//    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
+//
+//    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
+//    self.window.rootViewController = self.tabBarController;
+//
+//    [self.testVC view];
+//    [self.testVC viewWillAppear:NO];
+//    [self.testVC viewDidAppear:NO];
+//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+//    __block UIViewController *currentVC;
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        currentVC = [self.testVC.firstButton ft_currentViewController];
+//        [expect fulfill];
+//    });
+//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+//        XCTAssertNil(error);
+//    }];
+//    XCTAssertEqualObjects(self.testVC, currentVC);
+//}
 - (void)testAutoTableViewClick{
     
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];

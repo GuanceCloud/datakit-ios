@@ -37,10 +37,9 @@
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
-                case FTRUMDataResourceComplete:{
+                case FTRUMDataResourceComplete:
                     [self writeResourceData:data];
                     return NO;
-                }
                 case FTRUMDataResourceStop:{
                     if (self.resourceHandler) {
                         self.resourceHandler();

@@ -26,8 +26,6 @@
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, strong) NSNumber *loading_time;
 @property (nonatomic, assign,readwrite) BOOL isActiveView;
-@property (nonatomic, assign,readwrite) BOOL isStopView;
-
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
 @property (nonatomic, assign) NSInteger viewErrorCount;
@@ -86,16 +84,14 @@
             }else{
                 self.needUpdateView = YES;
                 self.isActiveView = NO;
-                self.isStopView = YES;
             }
-            break;
         }
+            break;
         case FTRUMDataViewStop:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
             if (self.view_id && [self.view_id isEqualToString:viewModel.view_id]) {
                 self.needUpdateView = YES;
                 self.isActiveView = NO;
-                self.isStopView = YES;
                 if(viewModel.fields && viewModel.fields.allKeys.count>0){
                     [self.viewProperty addEntriesFromDictionary:viewModel.fields];
                 }
@@ -143,7 +139,7 @@
     }
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
-    BOOL shouldComplete = self.isStopView && hasNoPendingResources;
+    BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
     if (shouldComplete) {
         [self.actionHandler writeActionData:[NSDate date]];
     }

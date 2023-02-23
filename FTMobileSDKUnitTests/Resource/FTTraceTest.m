@@ -361,6 +361,42 @@
         XCTAssertNil(error);
     }];
 }
+- (void)testUnenabledTrace{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    [FTMobileAgent startWithConfigOptions:config];
+    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+
+    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    XCTAssertNil(header);
+}
+- (void)testCustomTrace{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTrace = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    
+    [self networkUpload:@"DisableAutoTrace" traceHeader:traceHeader handler:^(NSDictionary *header) {
+        XCTAssertTrue([header[FT_NETWORK_DDTRACE_TRACEID] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_TRACEID]]);
+        XCTAssertTrue([header[FT_NETWORK_DDTRACE_SPANID] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_SPANID]]);
+        XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
+        XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY]]);
+    
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
 - (void)testIntakeUrl{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
@@ -393,11 +429,18 @@
     
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
+    [self networkUpload:str traceHeader:nil handler:completionHandler];
+}
+- (void)networkUpload:(NSString *)str traceHeader:(nullable NSDictionary *)traceHeader handler:(void (^)(NSDictionary *header))completionHandler{
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-    
+    if(traceHeader){
+        [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+            [request setValue:value forHTTPHeaderField:field];
+        }];
+    }
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
         completionHandler?completionHandler(header):nil;

@@ -294,12 +294,6 @@ static dispatch_once_t onceToken;
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     [[FTTrackDataManger sharedInstance] addTrackData:model type:type];
 }
-- (BOOL)judgeRUMTrackOpen{
-    if (self.rumConfig.appid.length>0) {
-        return YES;
-    }
-    return NO;
-}
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTGlobalRumManager sharedInstance] resetInstance];
