@@ -600,13 +600,13 @@
 		174C50B828DC305D00FBE425 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */,
 				4A88426B239E5768001B44C3 /* FTMobileConfig.h */,
 				4A884276239E5768001B44C3 /* FTMobileConfig.m */,
-				17605EEA28FD355D00822B88 /* FTMobileConfig+Private.h */,
 				1740589128D807CF0092E096 /* FTResourceContentModel.h */,
+				1740589428D807CF0092E096 /* FTResourceContentModel.m */,
 				1740589228D807CF0092E096 /* FTResourceMetricsModel.h */,
 				1740589328D807CF0092E096 /* FTResourceMetricsModel.m */,
-				1740589428D807CF0092E096 /* FTResourceContentModel.m */,
 				1740587228D807C90092E096 /* FTReadWriteHelper.h */,
 				1740586B28D807C90092E096 /* FTReadWriteHelper.m */,
 				7CB26D4426FD6A44005C9028 /* FTAppLifeCycle.h */,

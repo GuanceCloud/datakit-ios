@@ -1,0 +1,1 @@
+/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/FTMobileAgent/FTTraceManager.h

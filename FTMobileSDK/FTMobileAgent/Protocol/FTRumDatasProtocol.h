@@ -105,4 +105,4 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
 @end
 NS_ASSUME_NONNULL_END
-#endif /* FTExternalRumProtocol_h */
+#endif 
