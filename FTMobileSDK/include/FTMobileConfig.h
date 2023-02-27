@@ -1,1 +1,1 @@
-/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/BaseUtils/Base/FTMobileConfig.h
+../BaseUtils/Base/FTMobileConfig.h

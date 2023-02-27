@@ -1,1 +1,1 @@
-/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/BaseUtils/Base/FTResourceMetricsModel.h
+../BaseUtils/Base/FTResourceMetricsModel.h

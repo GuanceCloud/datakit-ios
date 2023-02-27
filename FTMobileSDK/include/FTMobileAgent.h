@@ -1,1 +1,1 @@
-/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/FTMobileAgent/FTMobileAgent.h
+../FTMobileAgent/FTMobileAgent.h

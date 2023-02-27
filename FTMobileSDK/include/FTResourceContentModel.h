@@ -1,1 +1,1 @@
-/Users/hulilei/Desktop/ft-sdk-ios/FTMobileSDK/BaseUtils/Base/FTResourceContentModel.h
+../BaseUtils/Base/FTResourceContentModel.h
