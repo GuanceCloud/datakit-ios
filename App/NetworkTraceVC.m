@@ -9,14 +9,28 @@
 #import "NetworkTraceVC.h"
 #import "TableViewCellItem.h"
 #import "HttpEngine.h"
-#import "FTExternalDataManager.h"
-#import "FTResourceMetricsModel.h"
-#import "FTResourceContentModel.h"
-#import "FTTraceHandler.h"
+#import <FTMobileAgent/FTMobileAgent.h>
+//仅做示例，可以使用类保存单条 task 的数据
+@interface RUMResource: NSObject
+@property (nonatomic,copy) NSString *key;
+@property (nonatomic,strong,nullable) NSData *data;
+@property (nonatomic,strong,nullable) NSURLSessionTaskMetrics *metrics;
+@end
+@implementation RUMResource
+
+-(instancetype)initWithKey:(NSString *)key{
+    self = [super init];
+    if(self){
+        _key = key;
+    }
+    return self;
+}
+
+@end
 @interface NetworkTraceVC ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDataDelegate>
 @property (nonatomic, strong) UITableView *mTableView;
 @property (nonatomic, strong) NSArray<NSArray*> *datas;
-@property (nonatomic, strong) NSMutableDictionary *taskHandler;
+@property (nonatomic, strong) NSMutableDictionary <NSURLSessionTask  *,RUMResource*>*taskHandler;
 
 @end
 
@@ -24,14 +38,14 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"network trace";
+    self.title = @"network data collection";
     self.view.backgroundColor = [UIColor whiteColor];
     self.taskHandler = [NSMutableDictionary new];
     [self createUI];
 }
 - (void)createUI{
     // enableTraceUserResource = YES;
-    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"开启 Rum enableTraceUserResource 自动采集" handler:^{
+    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Rum、Trace 开启 Resource 自动采集" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
         
@@ -61,14 +75,17 @@
     
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-       
+        NSString *key = [[NSUUID UUID] UUIDString];
         NSURL *url = [NSURL URLWithString:urlStr];
+        // 获取 trace（链路追踪）需要添加的请求头
+        NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        
+        for (NSString *httpHeaderField in traceHeader.keyEnumerator) {
+            [request addValue:traceHeader[httpHeaderField] forHTTPHeaderField:httpHeaderField];
+        }
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
         NSURLSessionTask *task = [session dataTaskWithRequest:request];
-        NSString *key = [[NSUUID UUID] UUIDString];
-        FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:url identifier:key];
+        RUMResource *handler = [[RUMResource alloc]initWithKey:key];
         self.taskHandler[task] = handler;
         [[FTExternalDataManager sharedManager] startResourceWithKey:key];
 
@@ -95,9 +112,9 @@
 }
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
     if(section == 0){
-        return @"Use Auto Trace";
+        return @"Use Autotrace";
     }else if(section == 1){
-        return @"Use Session Auto Instrumentation";
+        return @"Trace-Autotrace, Rum-Session Auto Instrumentation";
     }else{
         return @"Use Manual";
     }
@@ -117,23 +134,26 @@
 #pragma mark --------- NSURLSessionDataDelegate ----------
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macosx(10.12), ios(10.0), watchos(3.0), tvos(10.0)){
-    FTTraceHandler *handler =  self.taskHandler[task];
-    [handler taskReceivedMetrics:metrics];
-
+    RUMResource *handler =  self.taskHandler[task];
+    handler.metrics = metrics;
 }
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data{
-    FTTraceHandler *handler =  self.taskHandler[dataTask];
-    [handler taskReceivedData:data];
+    RUMResource *handler =  self.taskHandler[dataTask];
+    handler.data = data;
 
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    FTTraceHandler *handler =  self.taskHandler[task];
-    [handler taskCompleted:task error:error];
-
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:handler.identifier];
-    
-    [[FTExternalDataManager sharedManager] addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel];
+    RUMResource *handler =  self.taskHandler[task];
+    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:handler.key];
+    FTResourceMetricsModel *metricsModel;
+    if(handler.metrics){
+        metricsModel  = [[FTResourceMetricsModel alloc]initWithTaskMetrics:
+                         handler.metrics];
+    }
+    FTResourceContentModel *contentModel = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:response data:handler.data error:error];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:handler.key metrics:metricsModel content:contentModel];
 }
 
 /*

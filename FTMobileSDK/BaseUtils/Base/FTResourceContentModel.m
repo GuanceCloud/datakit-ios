@@ -18,5 +18,23 @@
     }
     return self;
 }
+-(instancetype)initWithRequest:(NSURLRequest *)request response:(NSHTTPURLResponse *)response data:(NSData *)data error:(NSError *)error{
+    self = [super init];
+    if(self){
+        _url = request.URL;
+        _requestHeader = request.allHTTPHeaderFields;
+        _httpMethod = request.HTTPMethod;
+        if (response) {
+            NSDictionary *responseHeader = response.allHeaderFields;
+            _responseHeader = responseHeader;
+            _httpStatusCode = response.statusCode;
+        }
+        if (data) {
+            _responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        }
+        _error = error;
+    }
+    return self;
+}
 @end
 

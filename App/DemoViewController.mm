@@ -49,10 +49,10 @@
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
         [[FTMobileAgent sharedInstance] logout];
     }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace" handler:^{
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"Network data collection" handler:^{
         [weakSelf.navigationController pushViewController:[NetworkTraceVC new] animated:YES];
     }];
-    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"NetworkTrace_webview" handler:^{
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"webview data collection" handler:^{
         [weakSelf.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"TraceConsoleLog" handler:^{

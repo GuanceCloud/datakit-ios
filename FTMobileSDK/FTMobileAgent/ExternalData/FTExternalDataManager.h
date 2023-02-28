@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark --------- Trace ----------
 
-/// 获取 trace 需要添加的请求头
+/// 获取 trace（链路追踪）需要添加的请求头
 /// - Parameters:
 ///   - key: 请求标识
 ///   - url: 请求 URL

@@ -8,12 +8,7 @@
 
 #import "ManualRumAndTraceDataAdd.h"
 #import "TableViewCellItem.h"
-#import <FTExternalDataManager.h>
-#import <FTRUMManager.h>
-#import <FTResourceMetricsModel.h>
-#import <FTResourceContentModel.h>
-#import "FTURLSessionInterceptor.h"
-#import "FTTraceManager.h"
+#import <FTMobileAgent/FTMobileAgent.h>
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -121,21 +116,13 @@
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
 
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)task.response;
-    NSString * responseBody  =[[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
 
     [[FTExternalDataManager sharedManager] stopResourceWithKey:self.rumKey];
     
     FTResourceMetricsModel *metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:self.metrics];
 
 
-    FTResourceContentModel *content = [[FTResourceContentModel alloc]init];
-    content.httpMethod = task.originalRequest.HTTPMethod;
-    content.requestHeader = task.originalRequest.allHTTPHeaderFields;
-    content.responseHeader = httpResponse.allHeaderFields;
-    content.httpStatusCode = httpResponse.statusCode;
-    content.responseBody = responseBody;
-    //ios native
-    content.error = error;
+    FTResourceContentModel *content = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:httpResponse data:self.data error:error];
     [[FTExternalDataManager sharedManager] addResourceWithKey:self.rumKey metrics:metricsModel content:content];
 }
 #pragma mark ========== UITableViewDataSource ==========

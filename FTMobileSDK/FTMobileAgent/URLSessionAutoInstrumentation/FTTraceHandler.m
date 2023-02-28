@@ -32,12 +32,6 @@
     }
     return self;
 }
--(FTResourceContentModel *)contentModel{
-    if (!_contentModel) {
-        _contentModel = [FTResourceContentModel new];
-    }
-    return _contentModel;
-}
 - (void)taskReceivedData:(NSData *)data{
     self.data = data;
 }
@@ -49,20 +43,8 @@
     self.metricsModel = metricsModel;
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    FTResourceContentModel *model = [FTResourceContentModel new];
-    model.url = task.currentRequest.URL;
-    model.requestHeader = task.currentRequest.allHTTPHeaderFields;
-    model.httpMethod = task.currentRequest.HTTPMethod;
     NSHTTPURLResponse *response =(NSHTTPURLResponse *)task.response;
-    if (response) {
-        NSDictionary *responseHeader = response.allHeaderFields;
-        model.responseHeader = responseHeader;
-        model.httpStatusCode = response.statusCode;
-        if (self.data) {
-            model.responseBody = [[NSString alloc] initWithData:self.data encoding:NSUTF8StringEncoding];
-        }
-    }
-    model.error = error;
+    FTResourceContentModel *model = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:response data:self.data error:error];
     self.contentModel = model;
 }
 @end
