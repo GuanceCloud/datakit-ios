@@ -50,7 +50,7 @@ static dispatch_once_t onceToken;
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
     
-    NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置FT-GateWay metrics 写入地址");
+    NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置 datakit metrics 写入地址");
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
     }
@@ -95,10 +95,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    if(rumConfigOptions.appid == nil || rumConfigOptions.appid.length == 0){
-        ZYErrorLog(@"FTRumConfig appid 设置格式错误");
-        return;
-    }
+    NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];

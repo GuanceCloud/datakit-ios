@@ -106,7 +106,7 @@ static dispatch_once_t onceToken;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
           success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
-           ZYDebug(@"data storage success == %d",success);
+           ZYDebug(@"data storage %@",success?@"success":@"fail");
        }];
    }
     return success;
