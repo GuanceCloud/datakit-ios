@@ -154,6 +154,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
+            ZYDebug(@"Upload Response statusCode : %d",statusCode);
             if (!success) {
                 ZYErrorLog(@"服务器异常 稍后再试 response = %@",httpResponse);
             }

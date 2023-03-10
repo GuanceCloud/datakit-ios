@@ -10,7 +10,6 @@
 #define FTLOG_MACRO(lvl, frmt, ...) \
 [FTLog log : YES                                     \
      level : lvl                                     \
-      file : __FILE__                                \
   function : __PRETTY_FUNCTION__                     \
       line : __LINE__                                \
     format : (frmt), ## __VA_ARGS__]
@@ -35,7 +34,6 @@ typedef NS_ENUM(NSUInteger, FTLogLevel){
 + (void)enableLog:(BOOL)enableLog;
 + (void)log:(BOOL)asynchronous
       level:(NSInteger)level
-       file:(const char *)file
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... ;

@@ -47,24 +47,17 @@ static dispatch_queue_t _loggingQueue;
 }
 + (void)log:(BOOL)asynchronous
       level:(NSInteger)level
-       file:(const char *)file
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... {
     if (![FTLog isLoggerEnabled]) {
         return;
     }
-#if TARGET_OS_IOS
-    NSInteger systemVersion = UIDevice.currentDevice.systemVersion.integerValue;
-    if (systemVersion == 10) {
-        return;
-    }
-#endif
     @try {
         va_list args;
         va_start(args, format);
         NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-        [self.sharedInstance log:asynchronous message:message level:level file:file function:function line:line];
+        [self.sharedInstance log:asynchronous message:message level:level function:function line:line];
         va_end(args);
     } @catch(NSException *e) {
        
@@ -73,7 +66,6 @@ static dispatch_queue_t _loggingQueue;
 - (void)log:(BOOL)asynchronous
     message:(NSString *)message
       level:(NSInteger)level
-       file:(const char *)file
    function:(const char *)function
        line:(NSUInteger)line {
     @try {
