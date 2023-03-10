@@ -167,6 +167,27 @@
     XCTAssertTrue(newCount2 == newCount);
 
 }
+- (void)testEmptyStringMessageLog{
+    [self setRightSDKConfig];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == count);
+}
+- (void)testNotSetLoggerConfig{
+    [self setRightSDKConfig];
+    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTMobileAgent sharedInstance] logging:@"testNotSetLoggerConfig" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == count);
+}
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;

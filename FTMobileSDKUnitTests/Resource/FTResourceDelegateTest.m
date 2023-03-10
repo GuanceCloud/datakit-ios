@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "HttpEngine.h"
+#import "HttpEngineTestUtil.h"
 #import "FTMobileConfig.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool+Test.h"
@@ -18,6 +18,13 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
+
+typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
+    DataTaskWithRequestCompletionHandler,
+    DataTaskWithRequest,
+    DataTaskWithURLCompletionHandler,
+    DataTaskWithURL,
+};
 @interface FTResourceDelegateTest : XCTestCase
 
 @end
@@ -86,13 +93,54 @@
     [self sdkInnerURLTestSet];
     [self startWithTest:InstrumentationDirect hasResource:NO];
 }
-- (void)startWithTest:(FTSessionInstrumentationType)type hasResource:(BOOL)has{
+- (void)testDataTaskWithRequestCompletionHandler{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES];
+}
+- (void)testDataTaskWithRequest{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES];
+}
+- (void)testDataTaskWithURLCompletionHandler{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationProperty requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
+}
+- (void)testDataTaskWithURL{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
+}
+- (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
+    [self sdkNormalSet];
+    [self startWithTest:type requestMethod:DataTaskWithRequestCompletionHandler hasResource:has];
+}
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
-    HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:type];
-    [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        [expectation fulfill];
-    }];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation];
+    switch (requestMethod){
+        case DataTaskWithRequestCompletionHandler:
+            if(type != InstrumentationDirect){
+                [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+               
+                }];
+            }
+        break;
+        case DataTaskWithRequest:
+            [engine network];
+            break;
+        case DataTaskWithURLCompletionHandler:
+            [engine urlNetwork:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+           
+            }];
+            break;
+        case DataTaskWithURL:
+            [engine urlNetwork];
+            break;
+    }
+    if(type == InstrumentationDirect){
+        [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            [expectation fulfill];
+        }];
+    }
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];

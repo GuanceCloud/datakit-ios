@@ -138,10 +138,11 @@ static dispatch_once_t onceToken;
     [self logging:content status:status property:nil];
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
-    if (![content isKindOfClass:[NSString class]] || content.length==0) {
-        return;
-    }
     @try {
+        if (!self.loggerConfig) {
+            ZYErrorLog(@"请先设置 FTLoggerConfig");
+            return;
+        }
         if (!self.loggerConfig.enableCustomLog) {
             ZYLog(@"enableCustomLog 未开启，数据不进行采集");
             return;
@@ -205,10 +206,6 @@ static dispatch_once_t onceToken;
 
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(FTLogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!self.loggerConfig) {
-        ZYErrorLog(@"请先设置 FTLoggerConfig");
-        return;
-    }
     if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
         ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
         return;

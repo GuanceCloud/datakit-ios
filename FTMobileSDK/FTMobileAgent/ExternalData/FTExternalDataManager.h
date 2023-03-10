@@ -107,7 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - property: 事件自定义属性(可选)
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
-/// HTTP 请求数据
+/// HTTP 添加请求数据
 ///
 /// - Parameters:
 ///   - key: 请求标识

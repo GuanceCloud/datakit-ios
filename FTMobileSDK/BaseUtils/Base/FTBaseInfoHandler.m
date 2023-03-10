@@ -28,25 +28,6 @@
 #define IP_ADDR_IPv6    @"ipv6"
 @implementation FTBaseInfoHandler : NSObject
 
-#pragma mark ========== 请求加密 ==========
-+(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data
-{
-    NSMutableString *signString = [[NSMutableString alloc] init];
-    [signString appendString:method];
-    [signString appendString:@"\n"];
-    [signString appendString:[data ft_md5base64Encrypt]];
-    [signString appendString:@"\n"];
-    [signString appendString:contentType];
-    [signString appendString:@"\n"];
-    [signString appendString:dateStr];
-    const char *secretStr = [akSecret UTF8String];
-    const char *signStr = [signString UTF8String];
-    
-    unsigned char cHMAC[CC_SHA1_DIGEST_LENGTH];
-    CCHmac(kCCHmacAlgSHA1, secretStr, strlen(secretStr), signStr, strlen(signStr), cHMAC);
-    NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:CC_SHA1_DIGEST_LENGTH];
-    return [HMAC base64EncodedStringWithOptions:0];
-}
 + (NSString *)XDataKitUUID{
     NSString *deviceId;
     deviceId = [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"];

@@ -17,7 +17,6 @@
 		172DD34928F7FC56007AE5E9 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34728F7FC50007AE5E9 /* WidgetNetwork.swift */; };
 		172DD34B28F7FD9E007AE5E9 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		172DD35128F7FEDF007AE5E9 /* NetworkTraceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */; };
-		172DD35428F7FF0D007AE5E9 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 172DD35228F7FF0D007AE5E9 /* HttpEngine.m */; };
 		174058BB28D813190092E096 /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BA28D813190092E096 /* FTLoggerTest.m */; };
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
@@ -37,6 +36,8 @@
 		177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892C029A60FE90007B47F /* PerformanceTracingTest.m */; };
+		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
+		1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11729BAFE94007FDFF1 /* HttpEngine.m */; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
@@ -162,7 +163,6 @@
 		172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetDemoExtension.entitlements; sourceTree = "<group>"; };
 		172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetworkTraceVC.m; sourceTree = "<group>"; };
 		172DD35028F7FEDF007AE5E9 /* NetworkTraceVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkTraceVC.h; sourceTree = "<group>"; };
-		172DD35228F7FF0D007AE5E9 /* HttpEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
 		172DD35328F7FF0D007AE5E9 /* HttpEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpEngine.h; sourceTree = "<group>"; };
 		174058BA28D813190092E096 /* FTLoggerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLoggerTest.m; sourceTree = "<group>"; };
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
@@ -185,6 +185,9 @@
 		177892BC29A60FA10007B47F /* PerformanceRumTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceRumTest.m; sourceTree = "<group>"; };
 		177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceLoggingTest.m; sourceTree = "<group>"; };
 		177892C029A60FE90007B47F /* PerformanceTracingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceTracingTest.m; sourceTree = "<group>"; };
+		1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HttpEngineTestUtil.m; path = App/HttpEngineTestUtil.m; sourceTree = SOURCE_ROOT; };
+		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
+		1788B11729BAFE94007FDFF1 /* HttpEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
@@ -374,6 +377,8 @@
 		17593ADE29068DC200A15CD9 /* Resource */ = {
 			isa = PBXGroup;
 			children = (
+				1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */,
+				1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */,
 				4A037EF924F791CB007B2104 /* FTTraceTest.m */,
 				17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */,
 			);
@@ -503,7 +508,7 @@
 				172DD35028F7FEDF007AE5E9 /* NetworkTraceVC.h */,
 				172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */,
 				172DD35328F7FF0D007AE5E9 /* HttpEngine.h */,
-				172DD35228F7FF0D007AE5E9 /* HttpEngine.m */,
+				1788B11729BAFE94007FDFF1 /* HttpEngine.m */,
 				7CA16CD226B8ECD10079840D /* TestWkWebViewHandler.h */,
 				7CA16CD326B8ECD10079840D /* TestWkWebViewHandler.m */,
 				7CA16CE126B9110E0079840D /* TestWKProxy.h */,
@@ -951,7 +956,7 @@
 			files = (
 				7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */,
 				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
-				172DD35428F7FF0D007AE5E9 /* HttpEngine.m in Sources */,
+				1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */,
 				7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */,
 				4A3931552531C26300BC2134 /* TestANRVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
@@ -1008,6 +1013,7 @@
 				174058BB28D813190092E096 /* FTLoggerTest.m in Sources */,
 				17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */,
 				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,
+				1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */,
 				177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */,
 				4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */,
 				177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */,

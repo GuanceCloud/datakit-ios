@@ -52,12 +52,4 @@
     NSString *string = [self stringByTrimmingCharactersInSet:set];
     return string;
 }
-- (NSString *)ft_md5base64Encrypt{
-    const char *input = [self UTF8String];//UTF8转码
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(input, (CC_LONG)strlen(input), result);
-    NSData *data = [NSData dataWithBytes: result length:16];
-    NSString *string = [data base64EncodedStringWithOptions:0];//base64编码;
-    return string;
-}
 @end

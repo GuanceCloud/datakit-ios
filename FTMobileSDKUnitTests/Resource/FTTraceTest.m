@@ -222,6 +222,10 @@
         NSString *sampling = [traceAry lastObject];
         XCTAssertTrue(trace.length == 32 && span.length == 16);
         XCTAssertTrue([sampling isEqualToString:@"01"]);
+        [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+            XCTAssertTrue([trace isEqualToString:traceId]);
+            XCTAssertTrue([span isEqualToString:spanID]);
+        }];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

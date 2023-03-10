@@ -32,16 +32,19 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
-- (void)testMd5Base64{
-    NSString *str = [@"iosTest" ft_md5base64Encrypt];
-    XCTAssertEqualObjects(str, @"YODdoqDoIU+kZc597EPHXQ==");
+#pragma mark NSString+FTAdd
+- (void)testStringRemoveFrontBackBlank{
+    NSString *string = @"    a  ";
+    XCTAssertTrue([[string ft_removeFrontBackBlank] isEqualToString:@"a"]);
 }
-- (void)testSignature{
-    NSString *date =@"Wed, 02 Sep 2020 09:41:24 GMT";
-    NSString *signature = [FTBaseInfoHandler signatureWithHTTPMethod:@"POST" contentType:@"application/json" dateStr:date akSecret:@"screct" data:@"testSignature"];
-    
-    XCTAssertEqualObjects(signature, @"kdmAYSUlyDEVS/J5Dlnm33ecDxY=");
+/// 字符串的编码格式为 NSUTF8StringEncoding ，英文字符占一字节，中文占三字节
+- (void)testCharacterNumber{
+    NSString *letterStr = @"abcde";
+    XCTAssertTrue([letterStr ft_characterNumber] == 5);
+    NSString *Chinese = @"一二三";
+    XCTAssertTrue([Chinese ft_characterNumber] == 9);
 }
+#pragma mark FTJSONUtil
 - (void)testJSONSerializeDictObject{
     NSDictionary *dict =@{@"key1":@"value1",
                           @"key2":@{@"key11":@1,
@@ -78,30 +81,44 @@
 - (void)testConvertToJsonDataWithNilArray{
     XCTAssertNil([FTJSONUtil convertToJsonDataWithArray:nil]);
 }
+#pragma mark FTBaseInfoHandler
 - (void)testReplaceUrlGroupNumberChar{
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSString *replace = [FTBaseInfoHandler replaceNumberCharByUrl:[NSURL URLWithString:urlStr]];
     XCTAssertTrue([replace isEqualToString:@"/data/sk/?"]);
+    NSString *baidu = @"https://www.baidu.com";
+    XCTAssertTrue([[FTBaseInfoHandler replaceNumberCharByUrl:[NSURL URLWithString:baidu]] isEqualToString:@""]);
 }
+- (void)testRandomSampling{
+    XCTAssertTrue([FTBaseInfoHandler randomSampling:100]);
+    XCTAssertFalse([FTBaseInfoHandler randomSampling:0]);
+    NSMutableArray *ary = [[NSMutableArray alloc]init];
+    for (int i= 0; i<10; i++) {
+        [ary addObject:@([FTBaseInfoHandler randomSampling:50])];
+    }
+    XCTAssertTrue([ary containsObject:@(1)]);
+    XCTAssertTrue([ary containsObject:@(0)]);
+}
+#pragma mark FTReadWriteHelper
 - (void)testReadWriteHelper{
     NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
     FTReadWriteHelper *helper = [[FTReadWriteHelper alloc]initWithValue:array];
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [helper concurrentWrite:^(id  _Nonnull value) {
-            sleep(0.5);
-            [value addObject:@"e"];
-        }];
-    });
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [helper concurrentWrite:^(id  _Nonnull value) {
-            [value addObject:@"f"];
-        }];
-    });
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [helper concurrentRead:^(NSMutableArray *value) {
-            XCTAssertTrue(value.count == 6);
-            XCTAssertTrue([value.lastObject isEqualToString:@"f"]);
-        }];
-    });
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 4);
+    }];
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 4);
+    }];
+    [helper concurrentWrite:^(id  _Nonnull value) {
+        sleep(0.5);
+        [value addObject:@"e"];
+    }];
+    
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue(value.count == 5);
+    }];
+    [helper concurrentRead:^(NSMutableArray *value) {
+        XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
+    }];    
 }
 @end

@@ -78,31 +78,23 @@ static dispatch_queue_t _loggingQueue;
        line:(NSUInteger)line {
     @try {
         dispatch_async(_loggingQueue , ^{
-            NSString *logMessage = [[NSString alloc] initWithFormat:@"[FTLog][%@]  %s [line %lu]  %@", [self descriptionForLevel:level], function, (unsigned long)line, message];
-            os_log_info(OS_LOG_DEFAULT, "%@",logMessage);
+            switch (level) {
+                case FTLogLevelInfo:
+                    os_log_info(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"INFO", function, (unsigned long)line, message);
+                    break;
+                case FTLogLevelWarning:
+                    os_log_info(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"WARN", function, (unsigned long)line, message);
+                    break;
+                case FTLogLevelError:
+                    os_log_error(OS_LOG_DEFAULT, "[FTLog][%@] %s [line %lu] %@", @"ERROR", function, (unsigned long)line, message);
+                    break;
+                default:
+                    os_log_debug(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"DEBUG", function, (unsigned long)line, message);
+                    break;
+            }
         });
-        //file
     } @catch(NSException *e) {
        
     }
-}
-
-- (NSString *)descriptionForLevel:(FTLogLevel)level {
-    NSString *desc = nil;
-    switch (level) {
-        case FTLogLevelInfo:
-            desc = @"INFO";
-            break;
-        case FTLogLevelWarning:
-            desc = @"WARN";
-            break;
-        case FTLogLevelError:
-            desc = @"ERROR";
-            break;
-        default:
-            desc = @"UNKNOW";
-            break;
-    }
-    return desc;
 }
 @end

@@ -22,8 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSUInteger)ft_characterNumber;
 /// 清除字符串前后的空格
 -(NSString *)ft_removeFrontBackBlank;
-/// MD5-Base64 加密方法
-- (NSString *)ft_md5base64Encrypt;
 @end
 
 NS_ASSUME_NONNULL_END

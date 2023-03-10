@@ -175,6 +175,8 @@
 		1775A82528D9CE9D00D70779 /* FTExternalDataManager+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1775A82328D9CE9D00D70779 /* FTExternalDataManager+Private.h */; };
 		177BDF582799773800DA4EA7 /* FTEnumConstant.m in Sources */ = {isa = PBXBuildFile; fileRef = 177BDF572799773800DA4EA7 /* FTEnumConstant.m */; };
 		177BDF5A2799775F00DA4EA7 /* FTEnumConstant.h in Headers */ = {isa = PBXBuildFile; fileRef = 177BDF592799775F00DA4EA7 /* FTEnumConstant.h */; };
+		1788B10729B723CF007FDFF1 /* FTTracer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1764E41F29ADAD9A00E70DBB /* FTTracer.h */; };
+		1788B10829B723D5007FDFF1 /* FTTracer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1764E42029ADAD9A00E70DBB /* FTTracer.m */; };
 		17A4A56428A0D88400CE40E5 /* FTMobileAgent+Public.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56328A0D88400CE40E5 /* FTMobileAgent+Public.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17A4A56C28A1094200CE40E5 /* FTUserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 17A4A56A28A1094200CE40E5 /* FTUserInfo.h */; };
 		17A4A56D28A1094200CE40E5 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A4A56B28A1094200CE40E5 /* FTUserInfo.m */; };
@@ -918,6 +920,7 @@
 				172DA11328F949EE00733AD0 /* FTRecordModel.h in Headers */,
 				172DA0E828F9491C00733AD0 /* FTExtensionDataManager.h in Headers */,
 				17605EE828FCFFA500822B88 /* FTExtensionConfig.h in Headers */,
+				1788B10729B723CF007FDFF1 /* FTTracer.h in Headers */,
 				172DA13728F94B2700733AD0 /* FTURLSessionAutoInstrumentation.h in Headers */,
 				172DA0E728F948E300733AD0 /* FTExternalDataManager.h in Headers */,
 				172DA12C28F94AE700733AD0 /* FTCPUMonitor.h in Headers */,
@@ -1144,6 +1147,7 @@
 				172DA0F628F9497700733AD0 /* FTThread.m in Sources */,
 				172DA11428F949F000733AD0 /* FTRecordModel.m in Sources */,
 				172DA14128F94B4100733AD0 /* FTURLSessionDelegate.m in Sources */,
+				1788B10829B723D5007FDFF1 /* FTTracer.m in Sources */,
 				172DA11128F949E700733AD0 /* FTConstants.m in Sources */,
 				172DA10028F949A500733AD0 /* FTReadWriteHelper.m in Sources */,
 				172DA12B28F94AE400733AD0 /* FTMemoryMonitor.m in Sources */,

@@ -57,10 +57,6 @@ static dispatch_once_t onceToken;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
-    if (self.rumConfig.appid.length<=0) {
-        ZYErrorLog(@"RumConfig appid 数据格式有误，未能开启 RUM");
-        return;
-    }
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
     self.rumManager = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];

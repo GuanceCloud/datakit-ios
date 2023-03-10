@@ -11,6 +11,7 @@
 #import "FTLogHook.h"
 #import "FTfishhook.h"
 #import "FTDateUtil.h"
+#import <os/log.h>
 static FTFishHookCallBack FTHookCallBack;
 
 static ssize_t (*orig_writev)(int a, const struct iovec * v, int v_len);
@@ -54,7 +55,6 @@ int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
     NSString *formatter = [NSString stringWithUTF8String:format];
     NSString *string = [[NSString alloc] initWithFormat:formatter arguments:args];
     
-    ////////// do something  这里可以捕获到日志
     if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
         FTHookCallBack(string,[FTDateUtil currentTimeNanosecond]);
     }
@@ -122,19 +122,19 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
 @implementation FTLogHook
 
 + (void)hookWithBlock:(FTFishHookCallBack)callBack{
+    // simulator NSLog、CocoaLumberjack-DDTTYLogger
     ft_rebind_symbols((struct ft_rebinding[1]){{
         "writev",
         asl_writev,
         (void*)&orig_writev
     }}, 1);
     
-    // hook fwrite
+    // hook fwrite: swift print
     ft_rebind_symbols((struct ft_rebinding[1]){{
         "fwrite",
         asl_fwrite,
         (void *)&orig_fwrite}}, 1);
-    
-    // hook fprintf
+    // hook printf c语言日志打印
     ft_rebind_symbols((struct ft_rebinding[1]){{
         "fprintf",
         asl_fprintf,

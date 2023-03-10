@@ -11,15 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 一些工具方法
 @interface FTBaseInfoHandler : NSObject
-/// FT access 签名算法
-/// - Parameters:
-///   - method: HTTP方法
-///   - contentType: 请求的 contentType
-///   - dateStr: GMT 格式时间字符串
-///   - akSecret: akSecret
-///   - data: 加密数据 data
-/// - Returns: 签名后字符串
-+(NSString*)signatureWithHTTPMethod:(NSString *)method contentType:(NSString *)contentType dateStr:(NSString *)dateStr akSecret:(NSString *)akSecret data:(NSString *)data;
 
 /// HTTP 请求头 X-Datakit-UUID 数据采集端
 + (NSString *)XDataKitUUID;
