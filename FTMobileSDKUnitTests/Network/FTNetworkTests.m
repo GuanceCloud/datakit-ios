@@ -125,12 +125,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
+        FTTraceConfig *trace = [[FTTraceConfig alloc]init];
+        trace.enableAutoTrace = YES;
+        [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     }
-}
--(void)setBadMetricsUrl{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"https://baidu.com"];
-    config.enableSDKDebugLog = YES;
-    [FTMobileAgent startWithConfigOptions:config];
 }
 /**
  测试上传过程是否正确

@@ -11,7 +11,8 @@
 #import "FTSessionConfiguration.h"
 #import <objc/runtime.h>
 #import "FTURLProtocol.h"
-
+#import "FTSwizzle.h"
+#import "NSURLSessionConfiguration+FTSwizzler.h"
 @implementation FTSessionConfiguration
 + (FTSessionConfiguration *)defaultConfiguration {
     static FTSessionConfiguration *staticConfiguration;
@@ -30,27 +31,14 @@
 }
 - (void)load {
     self.isExchanged=YES;
-    Class cls = NSClassFromString(@"__NSCFURLSessionConfiguration") ?: NSClassFromString(@"NSURLSessionConfiguration");
-    [self swizzleSelector:@selector(protocolClasses) fromClass:cls toClass:[self class]];
-    
+    NSError *error = NULL;
+    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(defaultSessionConfiguration) withClassMethod:@selector(ft_defaultSessionConfiguration) error:&error];
+    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(ephemeralSessionConfiguration) withClassMethod:@selector(ft_ephemeralSessionConfiguration) error:&error];
 }
 - (void)unload {
     self.isExchanged=NO;
-    Class cls = NSClassFromString(@"__NSCFURLSessionConfiguration") ?: NSClassFromString(@"NSURLSessionConfiguration");
-    [self swizzleSelector:@selector(protocolClasses) fromClass:cls toClass:[self class]];
-}
-- (void)swizzleSelector:(SEL)selector fromClass:(Class)original toClass:(Class)stub {
-    Method originalMethod = class_getInstanceMethod(original, selector);
-    Method stubMethod = class_getInstanceMethod(stub, selector);
-    if (!originalMethod || !stubMethod) {
-        [NSException raise:NSInternalInconsistencyException format:@"Couldn't load NEURLSessionConfiguration."];
-    }
-    method_exchangeImplementations(originalMethod, stubMethod);
-}
-
-- (NSArray *)protocolClasses {
-    // 如果还有其他的监控 protocol
-    // 可以继承 FTSessionConfiguration 重写 - protocolClasses 方法 返回值中 添加其他的监控 protocol
-    return @[[FTURLProtocol class]];
+    NSError *error = NULL;
+    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(defaultSessionConfiguration) withClassMethod:@selector(ft_defaultSessionConfiguration) error:&error];
+    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(ephemeralSessionConfiguration) withClassMethod:@selector(ft_ephemeralSessionConfiguration) error:&error];
 }
 @end
