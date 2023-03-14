@@ -18,7 +18,6 @@
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTDateUtil.h"
-#import "FTSessionConfiguration+Test.h"
 #import "FTJSONUtil.h"
 #import "FTTrackDataManger+Test.h"
 #import "FTRequest.h"

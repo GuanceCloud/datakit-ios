@@ -7,10 +7,9 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "PerformanceBase.h"
-#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
 
-@interface PerformanceTracingTest : PerformanceBase
+@interface PerformanceTracingTest : XCTestCase
 
 @end
 
@@ -19,9 +18,62 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
-- (void)testGetTraceHeaderPerformance{
+- (void)setNetworkTraceType:(FTNetworkTraceType)type{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTraceType = type;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+}
+- (void)testDDtraceGetTraceHeaderPerformance{
     // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
+    
+    [self measureBlock:^{
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+    }];
+}
+- (void)testZipkinMultiHeaderGetTraceHeaderPerformance{
+    // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkinMultiHeader];
+    
+    [self measureBlock:^{
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+    }];
+}
+- (void)testZipkinSingleHeaderGetTraceHeaderPerformance{
+    // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeZipkinSingleHeader];
+    
+    [self measureBlock:^{
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+    }];
+}
+- (void)testTraceparentGetTraceHeaderPerformance{
+    // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeTraceparent];
+    
+    [self measureBlock:^{
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+    }];
+}
+- (void)testSkywalkingGetTraceHeaderPerformance{
+    // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
+    
+    [self measureBlock:^{
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+    }];
+}
+- (void)testJaegerGetTraceHeaderPerformance{
+    // This is an example of a performance test case.
+    [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
+    
     [self measureBlock:^{
         [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];

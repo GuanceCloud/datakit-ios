@@ -7,19 +7,29 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "PerformanceBase.h"
-#import "FTMobileAgent.h"
+#import "FTMobileAgent+Private.h"
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
-@interface PerformanceRumTest : PerformanceBase
+@interface PerformanceRumTest : XCTestCase
 
 @end
 
 @implementation PerformanceRumTest
 
-
+-(void)setUp{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+//    config.enableSDKDebugLog = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appid];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+}
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [[FTMobileAgent sharedInstance] resetInstance];
 }
 
 - (void)testAddActionEventPerformance{
