@@ -14,7 +14,7 @@
 #import "FTMobileAgent+Private.h"
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
-#import "FTTrackDataManger.h"
+#import "FTTrackDataManager.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"
@@ -87,7 +87,7 @@
     // UI 测试
     if(url && isUITests){
         //禁止上传逻辑
-        [[FTTrackDataManger sharedInstance] setValue:@YES forKey:@"isUploading"];
+        [[FTTrackDataManager sharedInstance] setValue:@YES forKey:@"isUploading"];
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
         config.enableSDKDebugLog = YES;
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];

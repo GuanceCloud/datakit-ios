@@ -15,7 +15,7 @@
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
 #import "UITestVC.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 
 @interface FTLoggerTest : KIFTestCase
 
@@ -98,7 +98,7 @@
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_LOGGING;
         model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackDataManger sharedInstance] addTrackData:model type:FTAddDataLogging];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
 
     }
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
@@ -118,7 +118,7 @@
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_LOGGING;
         model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackDataManger sharedInstance] addTrackData:model type:FTAddDataLogging];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
 
     }
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];

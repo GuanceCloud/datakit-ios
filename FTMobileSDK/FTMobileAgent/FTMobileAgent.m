@@ -21,7 +21,7 @@
 #import "FTPresetProperty.h"
 #import "FTLogHook.h"
 #import "FTReachability.h"
-#import "FTTrackDataManger.h"
+#import "FTTrackDataManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
@@ -74,7 +74,7 @@ static dispatch_once_t onceToken;
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
 
             //开启数据处理管理器
-            [FTTrackDataManger sharedInstance];
+            [FTTrackDataManager sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
             .setSdkVersion(SDK_VERSION)
@@ -286,7 +286,7 @@ static dispatch_once_t onceToken;
     }];
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
-    [[FTTrackDataManger sharedInstance] addTrackData:model type:type];
+    [[FTTrackDataManager sharedInstance] addTrackData:model type:type];
 }
 #pragma mark - SDK注销
 - (void)resetInstance{

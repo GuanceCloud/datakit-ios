@@ -15,7 +15,7 @@
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import <KIF/KIF.h>
 #import "FTModelHelper.h"
 @interface FTLongTaskTest : KIFTestCase

@@ -75,7 +75,7 @@
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
 		7C3C289627683983009DB8E2 /* FTRUMTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C3C289527683983009DB8E2 /* FTRUMTest.m */; };
-		7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */; };
+		7C57E8BE26D3A40F002DA85B /* FTTrackDataManager+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */; };
 		7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
@@ -239,7 +239,6 @@
 		4A85318B23B23A4000B40B5D /* FTNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTests.m; sourceTree = "<group>"; };
 		4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackTest.m; sourceTree = "<group>"; };
 		4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FTMobileSDK.xcodeproj; path = FTMobileSDK/FTMobileSDK.xcodeproj; sourceTree = "<group>"; };
-		4A89DD1B23D70C07006EB6BB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = IOKit.framework; sourceTree = "<group>"; };
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
@@ -255,8 +254,8 @@
 		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		7C3C289527683983009DB8E2 /* FTRUMTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTest.m; sourceTree = "<group>"; };
-		7C57E8BC26D3A40F002DA85B /* FTTrackDataManger+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackDataManger+Test.h"; sourceTree = "<group>"; };
-		7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTTrackDataManger+Test.m"; sourceTree = "<group>"; };
+		7C57E8BC26D3A40F002DA85B /* FTTrackDataManager+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackDataManager+Test.h"; sourceTree = "<group>"; };
+		7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTTrackDataManager+Test.m"; sourceTree = "<group>"; };
 		7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
 		7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
@@ -563,7 +562,6 @@
 			children = (
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
 				4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */,
-				4A89DD1B23D70C07006EB6BB /* IOKit.framework */,
 				F0D035494FA8F2716499977E /* Pods_SampleApp.framework */,
 				7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */,
 				4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */,
@@ -604,8 +602,8 @@
 			isa = PBXGroup;
 			children = (
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
-				7C57E8BC26D3A40F002DA85B /* FTTrackDataManger+Test.h */,
-				7C57E8BD26D3A40F002DA85B /* FTTrackDataManger+Test.m */,
+				7C57E8BC26D3A40F002DA85B /* FTTrackDataManager+Test.h */,
+				7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */,
 				17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */,
 				17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */,
 			);
@@ -998,7 +996,7 @@
 				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
-				7C57E8BE26D3A40F002DA85B /* FTTrackDataManger+Test.m in Sources */,
+				7C57E8BE26D3A40F002DA85B /* FTTrackDataManager+Test.m in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */,
 				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,

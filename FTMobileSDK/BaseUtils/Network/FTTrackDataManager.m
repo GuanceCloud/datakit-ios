@@ -6,7 +6,7 @@
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTTrackDataManger.h"
+#import "FTTrackDataManager.h"
 #import "FTRecordModel.h"
 #import "FTReachability.h"
 #import "FTTrackerEventDBTool.h"
@@ -18,15 +18,15 @@
 #import "FTConstants.h"
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
-@interface FTTrackDataManger ()<FTAppLifeCycleDelegate>
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTThread *ftThread;
 @property (nonatomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @end
-@implementation FTTrackDataManger{
+@implementation FTTrackDataManager{
 }
 +(instancetype)sharedInstance{
-    static  FTTrackDataManger *sharedInstance;
+    static  FTTrackDataManager *sharedInstance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:nil] init];

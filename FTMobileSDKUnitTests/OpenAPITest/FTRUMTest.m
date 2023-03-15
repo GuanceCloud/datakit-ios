@@ -19,7 +19,7 @@
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"
 #import "FTGlobalRumManager.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceContentModel.h"

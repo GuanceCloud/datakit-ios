@@ -19,7 +19,7 @@ typedef NS_ENUM(NSInteger, FTAddDataType) {
 NS_ASSUME_NONNULL_BEGIN
 @class FTRecordModel;
 /// 数据写入，数据上传 相关操作
-@interface FTTrackDataManger : NSObject
+@interface FTTrackDataManager : NSObject
 /// 单例
 +(instancetype)sharedInstance;
 /// 数据写入

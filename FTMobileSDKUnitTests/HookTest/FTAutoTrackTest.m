@@ -20,7 +20,7 @@
 #import "FTJSONUtil.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTDateUtil.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "DemoViewController.h"
 #import "FTConstants.h"
 #import "FTGlobalRumManager.h"

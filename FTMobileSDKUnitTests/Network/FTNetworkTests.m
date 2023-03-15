@@ -17,7 +17,7 @@
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -278,8 +278,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
         FTRecordModel *rumModel = [FTModelHelper createRumModel];
 
-        [[FTTrackDataManger sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-        [[FTTrackDataManger sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 20);

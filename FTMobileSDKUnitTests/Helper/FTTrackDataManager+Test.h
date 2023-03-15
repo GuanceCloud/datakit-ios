@@ -6,12 +6,12 @@
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTTrackDataManger.h"
+#import "FTTrackDataManager.h"
 #import "FTThread.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTTrackDataManger (Test)
+@interface FTTrackDataManager (Test)
 @property (nonatomic, strong) FTThread *ftThread;
 
 @end

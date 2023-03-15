@@ -11,7 +11,7 @@
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTConstants.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTDateUtil.h"
 #import "FTRecordModel.h"

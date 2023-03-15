@@ -18,7 +18,7 @@
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"

@@ -8,7 +8,7 @@
 
 #import <KIF/KIF.h>
 #import "FTMobileAgent+Private.h"
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 #import "FTDateUtil.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"

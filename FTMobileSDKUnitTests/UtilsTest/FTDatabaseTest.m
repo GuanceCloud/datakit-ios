@@ -12,7 +12,7 @@
 #import "ZY_FMDatabase.h"
 #import "FTRecordModel.h"
 #import "FTDateUtil.h"
-#import "FTTrackDataManger.h"
+#import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTConstants.h"
 @interface FTDatabaseTest : XCTestCase

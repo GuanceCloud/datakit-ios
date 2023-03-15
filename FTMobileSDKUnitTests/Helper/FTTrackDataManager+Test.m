@@ -6,9 +6,9 @@
 //  Copyright © 2021 DataFlux-cn. All rights reserved.
 //
 
-#import "FTTrackDataManger+Test.h"
+#import "FTTrackDataManager+Test.h"
 
-@implementation FTTrackDataManger (Test)
+@implementation FTTrackDataManager (Test)
 - (void)uploadTrackData{
     
 }
