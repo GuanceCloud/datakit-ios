@@ -75,7 +75,7 @@
 }
 - (void)testIllegalUrl{
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:[NSString stringWithFormat:@"%@11",self.url]];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"111"];
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;

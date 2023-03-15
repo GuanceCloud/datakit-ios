@@ -46,7 +46,7 @@
 - (void)testNoneMonitor{
     [self setRumMonitorNone];
     [FTModelHelper startView];
-    [NSThread sleepForTimeInterval:1];
+    [NSThread sleepForTimeInterval:0.5];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -93,7 +93,7 @@
 - (void)testMonitorMemory{
     [self setRumMonitorType:FTDeviceMetricsMonitorMemory];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:1];
+    [tester waitForTimeInterval:0.5];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -112,7 +112,7 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:1];
+    [tester waitForTimeInterval:0.5];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

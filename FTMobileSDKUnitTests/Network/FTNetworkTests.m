@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTestErrorNet,
 };
 @interface FTNetworkTests : XCTestCase
+@property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 
 @implementation FTNetworkTests
@@ -283,18 +284,25 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 20);
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+       
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManager sharedInstance].ftThread withObject:nil waitUntilDone:NO];
 
-    [[FTTrackDataManger sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManger sharedInstance].ftThread withObject:nil waitUntilDone:NO];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [NSThread sleepForTimeInterval:3];
-        NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-        XCTAssertTrue(newCount == 0);
-        [expectation fulfill];
-    });
-    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 0);
+}
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    if([keyPath isEqualToString:@"isUploading"]){
+        FTTrackDataManager *manager = object;
+        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
+        if(!isUploading.boolValue){
+            [self.expectation fulfill];
+            self.expectation = nil;
+        }
+    }
 }
 @end

@@ -43,7 +43,6 @@
         string = [string stringByAppendingString:@"4"];
     }];
     XCTAssertFalse([string isEqualToString:@"1234"]);
-    [NSThread sleepForTimeInterval:1];
 
 }
 /**
@@ -54,7 +53,7 @@
     XCTAssertTrue([NSThread currentThread].isMainThread);
     [FTThreadDispatchManager dispatchSyncInRUMThread:^{
         XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        [NSThread sleepForTimeInterval:0.5];
+        [NSThread sleepForTimeInterval:0.1];
         string = [string stringByAppendingString:@"2"];
         [FTThreadDispatchManager dispatchSyncInRUMThread:^{
             XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);

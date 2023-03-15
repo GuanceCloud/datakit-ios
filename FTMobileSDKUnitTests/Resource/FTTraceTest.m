@@ -480,24 +480,16 @@
 - (void)testBadResponse{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
-    NSString *uuid = [NSUUID UUID].UUIDString;
-
-    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:[NSOperationQueue currentQueue]];
-    NSString *parameters = [NSString stringWithFormat:@"key=free&appid=0&msg=%@",uuid];
-    NSString *urlStr = @"http://api.qingyunke.com/api.php1";
+    [self setBadNetOHHTTPStubs];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-
-    request.HTTPMethod = @"POST";
-
-    request.HTTPBody = [parameters dataUsingEncoding:NSUTF8StringEncoding];
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSDictionary *header = task.currentRequest.allHTTPHeaderFields;
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-
         [expectation fulfill];
     }];
 
