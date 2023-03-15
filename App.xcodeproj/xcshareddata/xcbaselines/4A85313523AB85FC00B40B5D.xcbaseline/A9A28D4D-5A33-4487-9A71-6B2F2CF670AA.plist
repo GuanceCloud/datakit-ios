@@ -80,7 +80,7 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000042</real>
+					<real>0.000372</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
 				</dict>
@@ -90,7 +90,17 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000024</real>
+					<real>0.000347</real>
+					<key>baselineIntegrationDisplayName</key>
+					<string>Local Baseline</string>
+				</dict>
+			</dict>
+			<key>testPerformance</key>
+			<dict>
+				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
+				<dict>
+					<key>baselineAverage</key>
+					<real>0.000045</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
 				</dict>
@@ -100,7 +110,7 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000646</real>
+					<real>0.187000</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
 				</dict>
@@ -113,9 +123,11 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000058</real>
+					<real>0.000361</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>20.000000</real>
 				</dict>
 			</dict>
 			<key>testCustomLoggingPerformance</key>
@@ -123,9 +135,11 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000026</real>
+					<real>0.000247</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>20.000000</real>
 				</dict>
 			</dict>
 			<key>testCustomLoggingWithPropertyPerformance</key>
@@ -133,9 +147,11 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000064</real>
+					<real>0.000227</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>20.000000</real>
 				</dict>
 			</dict>
 		</dict>
@@ -156,9 +172,11 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000026</real>
+					<real>0.000225</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
+					<key>maxPercentRelativeStandardDeviation</key>
+					<real>20.000000</real>
 				</dict>
 			</dict>
 			<key>testAddErrorEventPerformance</key>
@@ -179,7 +197,7 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000063</real>
+					<real>0.000503</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
 				</dict>
@@ -219,7 +237,7 @@
 				<key>com.apple.XCTPerformanceMetric_WallClockTime</key>
 				<dict>
 					<key>baselineAverage</key>
-					<real>0.000114</real>
+					<real>0.000224</real>
 					<key>baselineIntegrationDisplayName</key>
 					<string>Local Baseline</string>
 				</dict>

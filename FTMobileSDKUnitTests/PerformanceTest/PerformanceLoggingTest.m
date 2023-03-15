@@ -28,7 +28,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
-    logger.enableCustomLog = enableLinkRumData;
+    logger.enableLinkRumData = enableLinkRumData;
     if(enableLinkRumData){
         FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appid];
         rum.enableTraceUserView = YES;
