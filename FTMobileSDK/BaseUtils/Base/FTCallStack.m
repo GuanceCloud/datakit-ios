@@ -16,7 +16,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import <sys/utsname.h>
-#if !TARGET_OS_OSX
+#if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
 #endif
 
