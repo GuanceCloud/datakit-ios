@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0235FA138588229E504FACE1 /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA27A847C08A0CBC01BFB58B /* Pods_App.framework */; };
 		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
 		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
 		172DD33528F7FC27007AE5E9 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 172DD33428F7FC27007AE5E9 /* WidgetKit.framework */; };
@@ -15,12 +16,12 @@
 		172DD33C28F7FC28007AE5E9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 172DD33B28F7FC28007AE5E9 /* Assets.xcassets */; };
 		172DD34028F7FC28007AE5E9 /* WidgetDemoExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 172DD33328F7FC27007AE5E9 /* WidgetDemoExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		172DD34928F7FC56007AE5E9 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34728F7FC50007AE5E9 /* WidgetNetwork.swift */; };
-		172DD34B28F7FD9E007AE5E9 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		172DD35128F7FEDF007AE5E9 /* NetworkTraceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */; };
 		174058BB28D813190092E096 /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BA28D813190092E096 /* FTLoggerTest.m */; };
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
+		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		1764E40229AC9B0500E70DBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40129AC9B0500E70DBB /* AppDelegate.swift */; };
 		1764E40429AC9B0500E70DBB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40329AC9B0500E70DBB /* SceneDelegate.swift */; };
@@ -31,13 +32,17 @@
 		1764E41929ACB5BB00E70DBB /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41829ACB5BB00E70DBB /* LogViewController.swift */; };
 		1764E41B29ACB68C00E70DBB /* TraceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41A29ACB68C00E70DBB /* TraceViewController.swift */; };
 		1764E41D29ACB70200E70DBB /* RUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41C29ACB70200E70DBB /* RUMViewController.swift */; };
-		1764E42929ADD4E100E70DBB /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892B929A60F2E0007B47F /* PerformanceBaseTest.m */; };
 		177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892C029A60FE90007B47F /* PerformanceTracingTest.m */; };
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
 		1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11729BAFE94007FDFF1 /* HttpEngine.m */; };
+		1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */; };
+		179FCFFA29C9982200DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; };
+		179FCFFB29C9982200DBB66F /* FTMobileAgent.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		179FCFFF29C99A1600DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */; };
+		179FD00029C99A1600DBB66F /* FTMobileAgent.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
@@ -45,7 +50,6 @@
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
-		17E0792F291E60B80014A420 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
 		4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11695A239113B600C0BC4E /* AppDelegate.m */; };
 		4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11695D239113B600C0BC4E /* SceneDelegate.m */; };
@@ -54,15 +58,12 @@
 		4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A116967239113B900C0BC4E /* LaunchScreen.storyboard */; };
 		4A11696C239113B900C0BC4E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11696B239113B900C0BC4E /* main.m */; };
 		4A1169842391145B00C0BC4E /* DemoViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169832391145B00C0BC4E /* DemoViewController.mm */; };
-		4A11698A2391146600C0BC4E /* ResultVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1169872391146600C0BC4E /* ResultVC.m */; };
 		4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */; };
 		4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */; };
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
-		4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
-		4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299BC32519937800400931 /* FTUncaughtExceptionHandler+Test.m */; };
 		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
@@ -84,8 +85,6 @@
 		7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA16CC126B8DF1D0079840D /* TestWKParentVC.m */; };
 		7CA16CD426B8ECD10079840D /* TestWkWebViewHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA16CD326B8ECD10079840D /* TestWkWebViewHandler.m */; };
 		7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CA16CE226B9110F0079840D /* TestWKProxy.m */; };
-		B766CD87A66C0D52A14880AC /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA27A847C08A0CBC01BFB58B /* Pods_App.framework */; };
-		EB7FBD05560C86B03821AC4D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA27A847C08A0CBC01BFB58B /* Pods_App.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,20 +102,6 @@
 			remoteGlobalIDString = 4A116955239113B600C0BC4E;
 			remoteInfo = "ft-sdk-iosTest";
 		};
-		4A270E6924FD0D7F0079F455 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A88425A239E5754001B44C3;
-			remoteInfo = FTMobileAgent;
-		};
-		4A78B9C12563C3A50021E0BC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A6C541E255E6464009771B8;
-			remoteInfo = FTMobileExtension;
-		};
 		4A85313B23AB85FC00B40B5D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4A11694E239113B600C0BC4E /* Project object */;
@@ -127,6 +112,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		179FCFFC29C9982200DBB66F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				179FCFFB29C9982200DBB66F /* FTMobileAgent.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		179FD00129C99A1700DBB66F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				179FD00029C99A1600DBB66F /* FTMobileAgent.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A78B9D82563C43E0021E0BC /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -167,6 +174,8 @@
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
 		174058C728D826540092E096 /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchDurationTest.m; sourceTree = "<group>"; };
+		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
 		1764E3FF29AC9B0400E70DBB /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1764E40129AC9B0500E70DBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -186,6 +195,13 @@
 		1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HttpEngineTestUtil.m; path = App/HttpEngineTestUtil.m; sourceTree = SOURCE_ROOT; };
 		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
 		1788B11729BAFE94007FDFF1 /* HttpEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
+		1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		179FCFF529C9887600DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		179FCFF729C989B900DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		179FCFF929C9982200DBB66F /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
@@ -194,11 +210,11 @@
 		17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTModelHelper.m; sourceTree = "<group>"; };
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
-		18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		17E1927929C9883A0067B23D /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.release.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		37257EFB0F297750E2779D74 /* Pods-App.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.pre.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.pre.xcconfig"; sourceTree = "<group>"; };
 		3825CDE3174FF0BDE7082484 /* Pods-FTMobileSDKUnitTests.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FTMobileSDKUnitTests.pre.xcconfig"; path = "Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests.pre.xcconfig"; sourceTree = "<group>"; };
-		4135E22EDAB8975BAD10FD50 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		4A037EF924F791CB007B2104 /* FTTraceTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceTest.m; sourceTree = "<group>"; };
 		4A116956239113B600C0BC4E /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A116959239113B600C0BC4E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -212,8 +228,6 @@
 		4A11696B239113B900C0BC4E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		4A1169822391145B00C0BC4E /* DemoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemoViewController.h; sourceTree = "<group>"; };
 		4A1169832391145B00C0BC4E /* DemoViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DemoViewController.mm; sourceTree = "<group>"; };
-		4A1169852391146600C0BC4E /* ResultVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResultVC.h; sourceTree = "<group>"; };
-		4A1169872391146600C0BC4E /* ResultVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ResultVC.m; sourceTree = "<group>"; };
 		4A159F3623D3F3BD00804D70 /* RootTabbarVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootTabbarVC.h; sourceTree = "<group>"; };
 		4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootTabbarVC.m; sourceTree = "<group>"; };
 		4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTDatabaseTest.m; sourceTree = "<group>"; };
@@ -223,8 +237,6 @@
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
 		4A299B932514953300400931 /* FTPropertyTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPropertyTest.m; sourceTree = "<group>"; };
-		4A299BC32519937800400931 /* FTUncaughtExceptionHandler+Test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FTUncaughtExceptionHandler+Test.m"; sourceTree = "<group>"; };
-		4A299BC62519937900400931 /* FTUncaughtExceptionHandler+Test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTUncaughtExceptionHandler+Test.h"; sourceTree = "<group>"; };
 		4A3931532531C26300BC2134 /* TestANRVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
 		4A3931542531C26300BC2134 /* TestANRVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestANRVC.m; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -238,15 +250,11 @@
 		4A85314523AC6B2700B40B5D /* UITestVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestVC.m; sourceTree = "<group>"; };
 		4A85318B23B23A4000B40B5D /* FTNetworkTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNetworkTests.m; sourceTree = "<group>"; };
 		4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackTest.m; sourceTree = "<group>"; };
-		4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FTMobileSDK.xcodeproj; path = FTMobileSDK/FTMobileSDK.xcodeproj; sourceTree = "<group>"; };
 		4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
+		62A84AAACDCA606DEB4BE91E /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
 		6B6E2163E1D9572FA4052E13 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		6B6E2AE64DF63C535602DE59 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = file.gitignore; path = .gitignore; sourceTree = "<group>"; };
 		6B6E2B890B98491C61DE3B19 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		6CF344C34916E4FAE256EEDA /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
-		6F303C4D960BF29EC67480B7 /* Pods-ft-sdk-iosTest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest/Pods-ft-sdk-iosTest.debug.xcconfig"; sourceTree = "<group>"; };
-		74CC6CC4479FC4E5FAC65FCF /* Pods-SampleApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SampleApp.debug.xcconfig"; path = "Target Support Files/Pods-SampleApp/Pods-SampleApp.debug.xcconfig"; sourceTree = "<group>"; };
 		7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FTMobileSDKUnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C02F60C268C498200A0FE90 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		7C28B870266098B800CECBA6 /* TestJsbridgeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestJsbridgeData.h; sourceTree = "<group>"; };
@@ -271,18 +279,9 @@
 		7CA16CD326B8ECD10079840D /* TestWkWebViewHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestWkWebViewHandler.m; sourceTree = "<group>"; };
 		7CA16CE126B9110E0079840D /* TestWKProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestWKProxy.h; sourceTree = "<group>"; };
 		7CA16CE226B9110F0079840D /* TestWKProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestWKProxy.m; sourceTree = "<group>"; };
-		84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig"; sourceTree = "<group>"; };
-		892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		A7C2BAF1B667F5A8064AE281 /* Pods-SampleApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SampleApp.release.xcconfig"; path = "Target Support Files/Pods-SampleApp/Pods-SampleApp.release.xcconfig"; sourceTree = "<group>"; };
-		B7477B854C6244D34C8A9AFD /* Pods-AppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppTests.release.xcconfig"; path = "Target Support Files/Pods-AppTests/Pods-AppTests.release.xcconfig"; sourceTree = "<group>"; };
-		C7BE81B84F1354BD6164DD8C /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
-		CD55C805E57315E634BCC5B3 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests/Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig"; sourceTree = "<group>"; };
-		DC8D7A551013AD302F9D4A65 /* Pods-ft-sdk-iosTest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ft-sdk-iosTest.release.xcconfig"; path = "Target Support Files/Pods-ft-sdk-iosTest/Pods-ft-sdk-iosTest.release.xcconfig"; sourceTree = "<group>"; };
-		DE80FEE5FFFB90C211D460D8 /* Pods-AppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AppTests.debug.xcconfig"; path = "Target Support Files/Pods-AppTests/Pods-AppTests.debug.xcconfig"; sourceTree = "<group>"; };
+		CC1B0A2F389AA3B88F436B9F /* Pods_SwiftApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwiftApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA27A847C08A0CBC01BFB58B /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F0D035494FA8F2716499977E /* Pods_SampleApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SampleApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F4789F6DC168FB54BF86F009 /* Pods_AppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F4F082AD71032FFAFB861E78 /* Pods-App.pre.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.pre.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.pre.xcconfig"; sourceTree = "<group>"; };
+		F1DEC52D05565033F0DAC36C /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -290,7 +289,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				172DD34B28F7FD9E007AE5E9 /* FTMobileExtension.framework in Frameworks */,
+				1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */,
 				172DD33728F7FC27007AE5E9 /* SwiftUI.framework in Frameworks */,
 				172DD33528F7FC27007AE5E9 /* WidgetKit.framework in Frameworks */,
 			);
@@ -300,7 +299,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1764E42929ADD4E100E70DBB /* FTMobileAgent.framework in Frameworks */,
+				179FCFFA29C9982200DBB66F /* FTMobileAgent.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,11 +307,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A270E6E24FD0D990079F455 /* FTMobileAgent.framework in Frameworks */,
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
+				179FCFFF29C99A1600DBB66F /* FTMobileAgent.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
-				B766CD87A66C0D52A14880AC /* Pods_App.framework in Frameworks */,
-				EB7FBD05560C86B03821AC4D /* Pods_App.framework in Frameworks */,
+				0235FA138588229E504FACE1 /* Pods_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,7 +325,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17E0792F291E60B80014A420 /* FTMobileExtension.framework in Frameworks */,
+				17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */,
 				4E953B54CC64EBC979926072 /* Pods_FTMobileSDKUnitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -353,6 +351,7 @@
 		172DD33828F7FC27007AE5E9 /* WidgetDemo */ = {
 			isa = PBXGroup;
 			children = (
+				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
 				172DD34728F7FC50007AE5E9 /* WidgetNetwork.swift */,
 				172DD33928F7FC27007AE5E9 /* WidgetDemo.swift */,
 				172DD33B28F7FC28007AE5E9 /* Assets.xcassets */,
@@ -436,13 +435,11 @@
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
-				172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */,
-				4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */,
 				4A116958239113B600C0BC4E /* App */,
-				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
-				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
 				1764E40029AC9B0500E70DBB /* SwiftApp */,
+				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
+				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				4A116957239113B600C0BC4E /* Products */,
 				6B6E2AE64DF63C535602DE59 /* .gitignore */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
@@ -487,12 +484,8 @@
 				4A159F3723D3F3BD00804D70 /* RootTabbarVC.m */,
 				4A85314423AC6B2700B40B5D /* UITestVC.h */,
 				4A85314523AC6B2700B40B5D /* UITestVC.m */,
-				4A1169852391146600C0BC4E /* ResultVC.h */,
-				4A1169872391146600C0BC4E /* ResultVC.m */,
 				7C28B870266098B800CECBA6 /* TestJsbridgeData.h */,
 				7C28B871266098B800CECBA6 /* TestJsbridgeData.m */,
-				4A299BC62519937900400931 /* FTUncaughtExceptionHandler+Test.h */,
-				4A299BC32519937800400931 /* FTUncaughtExceptionHandler+Test.m */,
 				4A3931532531C26300BC2134 /* TestANRVC.h */,
 				4A3931542531C26300BC2134 /* TestANRVC.m */,
 				4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */,
@@ -528,15 +521,6 @@
 			path = FTMobileSDKUITests;
 			sourceTree = "<group>";
 		};
-		4A270E6524FD0D7F0079F455 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */,
-				4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		4A2C825F24EFC9AB006D4FC6 /* HookTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -560,15 +544,24 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */,
+				17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */,
+				179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */,
+				179FCFF929C9982200DBB66F /* FTMobileAgent.framework */,
+				179FCFF729C989B900DBB66F /* FTMobileSDK.framework */,
+				179FCFF529C9887600DBB66F /* FTMobileSDK.framework */,
+				17E1927929C9883A0067B23D /* FTMobileSDK.framework */,
+				1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */,
+				1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */,
+				1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */,
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
 				4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */,
-				F0D035494FA8F2716499977E /* Pods_SampleApp.framework */,
 				7A0BBFB561FCDDD212ED9F72 /* Pods_FTMobileSDKUnitTests.framework */,
 				4A78B9C82563C43E0021E0BC /* NotificationCenter.framework */,
 				EA27A847C08A0CBC01BFB58B /* Pods_App.framework */,
-				F4789F6DC168FB54BF86F009 /* Pods_AppTests.framework */,
 				172DD33428F7FC27007AE5E9 /* WidgetKit.framework */,
 				172DD33628F7FC27007AE5E9 /* SwiftUI.framework */,
+				CC1B0A2F389AA3B88F436B9F /* Pods_SwiftApp.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -613,29 +606,27 @@
 		EAFAF1A32908DA0F7D097C44 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				6F303C4D960BF29EC67480B7 /* Pods-ft-sdk-iosTest.debug.xcconfig */,
-				DC8D7A551013AD302F9D4A65 /* Pods-ft-sdk-iosTest.release.xcconfig */,
-				892E68607374DB171B3D737F /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.debug.xcconfig */,
-				CD55C805E57315E634BCC5B3 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUITests.release.xcconfig */,
-				18E9CBE4E98A2305403D3559 /* Pods-ft-sdk-iosTestUnitTests.debug.xcconfig */,
-				5684FFCAE643ABF7A6C74894 /* Pods-ft-sdk-iosTestUnitTests.release.xcconfig */,
-				4135E22EDAB8975BAD10FD50 /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.debug.xcconfig */,
-				84030A56E51DA2E7CB8DC2CC /* Pods-ft-sdk-iosTest-ft-sdk-iosTestUnitTests.release.xcconfig */,
-				74CC6CC4479FC4E5FAC65FCF /* Pods-SampleApp.debug.xcconfig */,
-				A7C2BAF1B667F5A8064AE281 /* Pods-SampleApp.release.xcconfig */,
 				29E09F7280EE562813E214F7 /* Pods-FTMobileSDKUnitTests.debug.xcconfig */,
 				21D967C81E5CEFD95DF4E2B9 /* Pods-FTMobileSDKUnitTests.release.xcconfig */,
-				6CF344C34916E4FAE256EEDA /* Pods-App.debug.xcconfig */,
-				C7BE81B84F1354BD6164DD8C /* Pods-App.release.xcconfig */,
-				DE80FEE5FFFB90C211D460D8 /* Pods-AppTests.debug.xcconfig */,
-				B7477B854C6244D34C8A9AFD /* Pods-AppTests.release.xcconfig */,
-				F4F082AD71032FFAFB861E78 /* Pods-App.pre.xcconfig */,
 				3825CDE3174FF0BDE7082484 /* Pods-FTMobileSDKUnitTests.pre.xcconfig */,
+				F1DEC52D05565033F0DAC36C /* Pods-App.debug.xcconfig */,
+				37257EFB0F297750E2779D74 /* Pods-App.pre.xcconfig */,
+				62A84AAACDCA606DEB4BE91E /* Pods-App.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		1788B21229C86FB0007FDFF1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		172DD33228F7FC27007AE5E9 /* WidgetDemoExtension */ = {
@@ -659,9 +650,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1764E41529AC9B0600E70DBB /* Build configuration list for PBXNativeTarget "SwiftApp" */;
 			buildPhases = (
+				1788B21229C86FB0007FDFF1 /* Headers */,
 				1764E3FB29AC9B0400E70DBB /* Sources */,
 				1764E3FC29AC9B0400E70DBB /* Frameworks */,
 				1764E3FD29AC9B0400E70DBB /* Resources */,
+				179FCFFC29C9982200DBB66F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -676,12 +669,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "App" */;
 			buildPhases = (
-				9F68AFC96271DEE2B2F610E4 /* [CP] Check Pods Manifest.lock */,
+				317EC2DCD8D39FE7DC557114 /* [CP] Check Pods Manifest.lock */,
 				4A116952239113B600C0BC4E /* Sources */,
 				4A116953239113B600C0BC4E /* Frameworks */,
 				4A116954239113B600C0BC4E /* Resources */,
 				4AB783AF23C2D660001FC994 /* CopyFiles */,
 				4A78B9D82563C43E0021E0BC /* Embed App Extensions */,
+				179FD00129C99A1700DBB66F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -773,12 +767,6 @@
 			mainGroup = 4A11694D239113B600C0BC4E;
 			productRefGroup = 4A116957239113B600C0BC4E /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 4A270E6524FD0D7F0079F455 /* Products */;
-					ProjectRef = 4A8842A8239E57B6001B44C3 /* FTMobileSDK.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				4A116955239113B600C0BC4E /* App */,
@@ -789,23 +777,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		4A270E6A24FD0D7F0079F455 /* FTMobileAgent.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = FTMobileAgent.framework;
-			remoteRef = 4A270E6924FD0D7F0079F455 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4A78B9C22563C3A50021E0BC /* FTMobileExtension.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = FTMobileExtension.framework;
-			remoteRef = 4A78B9C12563C3A50021E0BC /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		172DD33128F7FC27007AE5E9 /* Resources */ = {
@@ -855,24 +826,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		320DD14D718F07296F5EBEE3 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9F68AFC96271DEE2B2F610E4 /* [CP] Check Pods Manifest.lock */ = {
+		317EC2DCD8D39FE7DC557114 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -892,6 +846,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		320DD14D718F07296F5EBEE3 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FTMobileSDKUnitTests/Pods-FTMobileSDKUnitTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CE6774076FADD73ADBE41655 /* [CP] Check Pods Manifest.lock */ = {
@@ -946,7 +917,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */,
-				4A11698A2391146600C0BC4E /* ResultVC.m in Sources */,
 				1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */,
 				7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */,
 				4A3931552531C26300BC2134 /* TestANRVC.m in Sources */,
@@ -957,7 +927,6 @@
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,
-				4A299BCF2519EF8C00400931 /* FTUncaughtExceptionHandler+Test.m in Sources */,
 				4A11696C239113B900C0BC4E /* main.m in Sources */,
 				7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */,
 				7C8CE50B25F8DD2A0043B213 /* PrintHookTest.swift in Sources */,
@@ -1075,7 +1044,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRLM22BB37;
@@ -1113,7 +1082,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRLM22BB37;
@@ -1147,7 +1116,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = WidgetDemoExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WidgetDemo/WidgetDemoExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RRLM22BB37;
@@ -1338,7 +1307,7 @@
 		};
 		17A4A55B289D15D000CE40E5 /* Pre */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4F082AD71032FFAFB861E78 /* Pods-App.pre.xcconfig */;
+			baseConfigurationReference = 37257EFB0F297750E2779D74 /* Pods-App.pre.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1354,11 +1323,6 @@
 					"PREPROD=1",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
-					"$(PODS_ROOT)/**",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
@@ -1415,7 +1379,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Pre;
 		};
@@ -1553,7 +1520,7 @@
 		};
 		4A116970239113B900C0BC4E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6CF344C34916E4FAE256EEDA /* Pods-App.debug.xcconfig */;
+			baseConfigurationReference = F1DEC52D05565033F0DAC36C /* Pods-App.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1569,11 +1536,6 @@
 					"$(inherited)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
-					"$(PODS_ROOT)/**",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
@@ -1595,7 +1557,7 @@
 		};
 		4A116971239113B900C0BC4E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C7BE81B84F1354BD6164DD8C /* Pods-App.release.xcconfig */;
+			baseConfigurationReference = 62A84AAACDCA606DEB4BE91E /* Pods-App.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1608,11 +1570,6 @@
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/FTMobileSDK\"/**",
-					"$(PODS_ROOT)/**",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "$(SRCROOT)/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
@@ -1688,6 +1645,7 @@
 					"\"$(SRCROOT)/FTMobileSDK\"",
 					"$(inherited)",
 					"\"$(SRCROOT)/FTMobileSDK\"/**",
+					"\"$(SRCROOT)/FTMobileSDK/FTMobileExtension\"",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -1712,7 +1670,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Debug;
 		};
@@ -1747,7 +1708,10 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
-				USER_HEADER_SEARCH_PATHS = "$(inherited)  ";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					" ",
+				);
 			};
 			name = Release;
 		};

@@ -8,7 +8,6 @@
 
 #import "UITestVC.h"
 #import "AppDelegate.h"
-#import "ResultVC.h"
 @interface UITestVC ()<UICollectionViewDelegate,UICollectionViewDataSource>
 
 @end
@@ -141,7 +140,6 @@
 }
 - (void)resultAction:(UIButton *)sender{
     
-    [self.navigationController pushViewController:[ResultVC new] animated:YES];
 }
 - (void)stepperAction:(UIStepper *)sender {
     NSLog(@"UIStepper on:%f", sender.value);

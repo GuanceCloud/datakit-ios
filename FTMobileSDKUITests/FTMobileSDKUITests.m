@@ -79,27 +79,6 @@
   error 数据会在 - testTraceUserActionUIExample 方法中进行上传
  */
 }
-- (void)testCrash{
-    XCUIApplication *app = [[XCUIApplication alloc] init];
-    ////将test 运行使用环境赋值给 application
-    NSMutableDictionary *environment = [[NSProcessInfo processInfo] environment].mutableCopy;
-    [environment setValue:@YES forKey:@"CLEAN_DATAS"];//清除旧数据
-    app.launchEnvironment = environment;
-    
-    [app launch];
-    
-    [app.tables.staticTexts[@"TrackAppCrash"] tap];
-    XCUIElementQuery *tablesQuery2 = app.tables;
-
-    [tablesQuery2.staticTexts[@"throwUncaughtNSException"] tap];
-
-    [NSThread sleepForTimeInterval:3];
-    XCUIElement *success  = app.alerts[@"Crash"];
-    
-    XCTAssertTrue(success.exists);
-    
-}
-
 
 
 @end

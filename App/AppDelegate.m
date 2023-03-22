@@ -7,14 +7,9 @@
 //
 
 #import "AppDelegate.h"
-#import "FTTrackerEventDBTool.h"
-#import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
-#import "FTMobileAgent.h"
-#import "FTMobileAgent+Private.h"
+#import <FTMobileAgent/FTMobileAgent.h>
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
-#import "FTTrackDataManager.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"
@@ -85,26 +80,7 @@
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     }
     // UI 测试
-    if(url && isUITests){
-        //禁止上传逻辑
-        [[FTTrackDataManager sharedInstance] setValue:@YES forKey:@"isUploading"];
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-        config.enableSDKDebugLog = YES;
-        FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
-        rumConfig.appid = appid;
-        rumConfig.enableTrackAppCrash = YES;
-        rumConfig.enableTrackAppANR = YES;
-        rumConfig.enableTrackAppFreeze = YES;
-        rumConfig.enableTraceUserAction = YES;
-        rumConfig.enableTraceUserView = YES;
-        rumConfig.enableTraceUserResource = YES;
-        rumConfig.globalContext = @{@"track_id":trackid};//eg.
-        [FTMobileAgent startWithConfigOptions:config];
-        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-        if([[processInfo environment] valueForKey:@"CLEAN_DATAS"]){
-            [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-        }
-    }
+   
     if (@available(iOS 13.0, *)) {
         //iOS 13以上系统
     } else {

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTURLSessionDelegate.h"
+#import <FTMobileAgent/FTMobileAgent.h>
 NS_ASSUME_NONNULL_BEGIN
 /**
  * 使用 session 工具的方法
