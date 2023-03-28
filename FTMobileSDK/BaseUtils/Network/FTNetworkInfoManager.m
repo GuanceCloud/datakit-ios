@@ -7,6 +7,7 @@
 //
 
 #import "FTNetworkInfoManager.h"
+#import "FTLog.h"
 @interface FTNetworkInfoManager()
 
 @end
@@ -23,6 +24,7 @@
 - (FTNetworkInfoManager *(^)(NSString *value))setMetricsUrl {
     return ^(NSString *value) {
         self->_metricsUrl = value;
+        ZYDebug(@"SDK 数据采集地址：%@",value);
         return self;
     };
 }
