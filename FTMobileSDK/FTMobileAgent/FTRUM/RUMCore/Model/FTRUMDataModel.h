@@ -32,14 +32,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
-//tags
+/// 处理 Action 事件的数据模型
 @interface FTRUMActionModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *action_name;
 @property (nonatomic, copy) NSString *action_type;
 -(instancetype)initWithActionName:(NSString *)actionName actionType:(NSString *)actionType;
 
 @end
-//tags
+/// 处理 View 事件的数据模型
 @interface FTRUMViewModel : FTRUMDataModel
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;

@@ -50,11 +50,17 @@ extern NSString * const FT_KEY_VIEW_RESOURCE_COUNT;
 extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
 #pragma mark --- monitor field
+/// View 页面 每秒平均 CPU 跳动次数
 extern NSString * const FT_CPU_TICK_COUNT_PER_SECOND;
+/// View 页面 CPU 跳动次数
 extern NSString * const FT_CPU_TICK_COUNT;
+/// 页面内存使用平均值
 extern NSString * const FT_MEMORY_AVG;
+/// 页面内存峰值
 extern NSString * const FT_MEMORY_MAX;
+/// 页面最小每秒帧数
 extern NSString * const FT_FPS_MINI;
+/// 页面平均每秒帧数
 extern NSString * const FT_FPS_AVG;
 
 #pragma mark ---------- resource ----------
