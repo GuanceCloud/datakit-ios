@@ -28,8 +28,7 @@ Pod::Spec.new do |s|
    s.subspec  'FTMobileAgent' do | agent |
        core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '9.0'
-       agent.source_files = core_dir + 'FTMobileAgent.{h,m}',core_dir + 'FTMobileAgent+Public.h',core_dir + 'FTMobileAgent+Private.h',core_dir + 'FTMobileAgentVersion.h',core_dir + 'FTPresetProperty.{h,m}',core_dir + 'FTUserInfo.{h,m}',core_dir + 'FTGlobalManager.{h,m}',core_dir + 'FTGlobalRumManager.{h,m}',core_dir + 'FTTraceManager.{h,m}'
-      
+       agent.source_files = 'FTMobileSDK/FTMobileAgent/Core/*{.h,.m}'
        agent.subspec 'FTRUM' do |r|
        r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
        r.dependency 'FTMobileSDK/Common/Base'
@@ -47,7 +46,7 @@ Pod::Spec.new do |s|
        end
 
        agent.subspec 'AutoTrack' do |a|
-       a.source_files = 'FTMobileSDK/FTMobileAgent/AutoTrack/**/*{.h,.m}'
+       a.source_files = 'FTMobileSDK/FTMobileAgent/AutoTrack/**/*{.h,.m}','FTMobileSDK/FTMobileAgent/Logger/*{.h,.m,.c}'
        a.dependency 'FTMobileSDK/Common'
        a.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
        a.dependency 'FTMobileSDK/FTMobileAgent/JSBridge'
