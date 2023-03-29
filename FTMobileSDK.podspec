@@ -26,10 +26,8 @@ Pod::Spec.new do |s|
    end
    
    s.subspec  'FTMobileAgent' do | agent |
-       core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '9.0'
-       agent.source_files = core_dir+'FTMobileAgent.{h,m}',core_dir+'FTGlobalRumManager.{h,m}',core_dir+'FTMobileAgent+Public.h',core_dir+'FTMobileAgent+Private.h',core_dir+'FTMobileConfig.{h,m}',core_dir+'FTMobileAgentVersion.h',core_dir+'FTMobileConfig+Private.h',core_dir+'FTTraceManager.{h,m}'
-       agent.public_header_files = core_dir + 'FTMobileAgent.h',core_dir + 'FTMobileAgent+Public.h',core_dir+'FTMobileConfig.h',core_dir+'FTTraceManager.h'
+       agent.source_files =  'FTMobileSDK/FTMobileAgent/Core/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*{.h,.m}'
        agent.dependency  'FTMobileSDK/FunctionModule'        
 
        agent.subspec 'AutoTrack' do |a|
@@ -56,7 +54,7 @@ Pod::Spec.new do |s|
     
     s.subspec 'FunctionModule' do |f|
        f.subspec 'FTRUM' do |r|
-       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/*{.h,.m}'
+       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
        r.dependency 'FTMobileSDK/Common/Base'
        r.dependency 'FTMobileSDK/Common/Thread'
        r.dependency 'FTMobileSDK/FunctionModule/Protocol'
@@ -126,7 +124,7 @@ Pod::Spec.new do |s|
     s.subspec 'Extension' do |e|
        e.platform = :ios, '9.0'
        e.ios.deployment_target = '9.0'
-       e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/FTMobileConfig.{h,m}','FTMobileSDK/FTMobileAgent/FTMobileConfig+Private.h'
+       e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*.{h,m}'
        e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
        e.dependency 'FTMobileSDK/FunctionModule/FTRUM'
        e.dependency 'FTMobileSDK/FunctionModule/URLSessionAutoInstrumentation'
