@@ -190,15 +190,14 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();
     uint32_t mainImg = 0;
-    NSBundle* mainBundle = [NSBundle mainBundle];
-    NSDictionary* infoDict = [mainBundle infoDictionary];
-    NSString* bundlePath = [mainBundle bundlePath];
-    NSString* executableName = infoDict[@"CFBundleExecutable"];
-    NSString *path =[bundlePath stringByAppendingPathComponent:executableName];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *bundlePath = [mainBundle bundlePath];
+    NSString *executableName = infoDict[@"CFBundleExecutable"];
     for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
         const char* name = _dyld_get_image_name(iImg);
         NSString *imagePath = [NSString stringWithUTF8String:name];
-        if ([imagePath isEqualToString:path]){
+        if ([imagePath containsString:bundlePath]&&[[imagePath lastPathComponent] isEqualToString:executableName]){
             mainImg = iImg;
             // 根据 index 获取 header
             const struct mach_header* header = _dyld_get_image_header(mainImg);

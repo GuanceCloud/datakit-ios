@@ -39,17 +39,6 @@
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
 		1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11729BAFE94007FDFF1 /* HttpEngine.m */; };
 		1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */; };
-		1799DF7129CAE42D0043D7B5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF7029CAE42D0043D7B5 /* AppDelegate.m */; };
-		1799DF7429CAE42E0043D7B5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF7329CAE42D0043D7B5 /* ViewController.m */; };
-		1799DF7629CAE42F0043D7B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1799DF7529CAE42F0043D7B5 /* Assets.xcassets */; };
-		1799DF7929CAE42F0043D7B5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1799DF7729CAE42F0043D7B5 /* Main.storyboard */; };
-		1799DF7B29CAE42F0043D7B5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF7A29CAE42F0043D7B5 /* main.m */; };
-		1799DF8229CAE4430043D7B5 /* FTMobileAgent macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */; };
-		1799DF8329CAE4430043D7B5 /* FTMobileAgent macOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1799DF8E29CAE4A60043D7B5 /* LoginWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF8629CAE4A60043D7B5 /* LoginWindowController.m */; };
-		1799DF8F29CAE4A60043D7B5 /* LoginWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF8729CAE4A60043D7B5 /* LoginWindow.m */; };
-		1799DF9029CAE4A60043D7B5 /* MainWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF8A29CAE4A60043D7B5 /* MainWindowController.m */; };
-		1799DF9129CAE4A60043D7B5 /* MainWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799DF8D29CAE4A60043D7B5 /* MainWindow.m */; };
 		179FCFFA29C9982200DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; };
 		179FCFFB29C9982200DBB66F /* FTMobileAgent.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		179FCFFF29C99A1600DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */; };
@@ -122,17 +111,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		1799DF8429CAE4430043D7B5 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				1799DF8329CAE4430043D7B5 /* FTMobileAgent macOS.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		179FCFFC29C9982200DBB66F /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -220,7 +198,6 @@
 		1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1799DF6D29CAE42D0043D7B5 /* MacOSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1799DF6F29CAE42D0043D7B5 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1799DF7029CAE42D0043D7B5 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1799DF7229CAE42D0043D7B5 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -336,14 +313,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				179FCFFA29C9982200DBB66F /* FTMobileAgent.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		1799DF6A29CAE42D0043D7B5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1799DF8229CAE4430043D7B5 /* FTMobileAgent macOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,7 +500,6 @@
 				4A22526C23B5AC7600B0ED41 /* FTMobileSDKUITests.xctest */,
 				172DD33328F7FC27007AE5E9 /* WidgetDemoExtension.appex */,
 				1764E3FF29AC9B0400E70DBB /* SwiftApp.app */,
-				1799DF6D29CAE42D0043D7B5 /* MacOSApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -741,24 +709,6 @@
 			productReference = 1764E3FF29AC9B0400E70DBB /* SwiftApp.app */;
 			productType = "com.apple.product-type.application";
 		};
-		1799DF6C29CAE42D0043D7B5 /* MacOSApp */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 1799DF8029CAE42F0043D7B5 /* Build configuration list for PBXNativeTarget "MacOSApp" */;
-			buildPhases = (
-				1799DF6929CAE42D0043D7B5 /* Sources */,
-				1799DF6A29CAE42D0043D7B5 /* Frameworks */,
-				1799DF6B29CAE42D0043D7B5 /* Resources */,
-				1799DF8429CAE4430043D7B5 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = MacOSApp;
-			productName = MacOSApp;
-			productReference = 1799DF6D29CAE42D0043D7B5 /* MacOSApp.app */;
-			productType = "com.apple.product-type.application";
-		};
 		4A116955239113B600C0BC4E /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A11696F239113B900C0BC4E /* Build configuration list for PBXNativeTarget "App" */;
@@ -835,9 +785,6 @@
 					1764E3FE29AC9B0400E70DBB = {
 						CreatedOnToolsVersion = 14.2;
 					};
-					1799DF6C29CAE42D0043D7B5 = {
-						CreatedOnToolsVersion = 14.2;
-					};
 					4A116955239113B600C0BC4E = {
 						CreatedOnToolsVersion = 11.1;
 						LastSwiftMigration = 1140;
@@ -871,7 +818,6 @@
 				4A22526B23B5AC7600B0ED41 /* FTMobileSDKUITests */,
 				172DD33228F7FC27007AE5E9 /* WidgetDemoExtension */,
 				1764E3FE29AC9B0400E70DBB /* SwiftApp */,
-				1799DF6C29CAE42D0043D7B5 /* MacOSApp */,
 			);
 		};
 /* End PBXProject section */
@@ -892,15 +838,6 @@
 				1764E40E29AC9B0600E70DBB /* LaunchScreen.storyboard in Resources */,
 				1764E40B29AC9B0600E70DBB /* Assets.xcassets in Resources */,
 				1764E40929AC9B0500E70DBB /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		1799DF6B29CAE42D0043D7B5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1799DF7629CAE42F0043D7B5 /* Assets.xcassets in Resources */,
-				1799DF7929CAE42F0043D7B5 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1015,20 +952,6 @@
 				1764E41D29ACB70200E70DBB /* RUMViewController.swift in Sources */,
 				1764E41B29ACB68C00E70DBB /* TraceViewController.swift in Sources */,
 				1764E41929ACB5BB00E70DBB /* LogViewController.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		1799DF6929CAE42D0043D7B5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1799DF9029CAE4A60043D7B5 /* MainWindowController.m in Sources */,
-				1799DF7429CAE42E0043D7B5 /* ViewController.m in Sources */,
-				1799DF7B29CAE42F0043D7B5 /* main.m in Sources */,
-				1799DF8F29CAE4A60043D7B5 /* LoginWindow.m in Sources */,
-				1799DF9129CAE4A60043D7B5 /* MainWindow.m in Sources */,
-				1799DF7129CAE42D0043D7B5 /* AppDelegate.m in Sources */,
-				1799DF8E29CAE4A60043D7B5 /* LoginWindowController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1374,100 +1297,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		1799DF7D29CAE42F0043D7B5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = MacOSApp/MacOSApp.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BW62V33GLH;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 GuanceCloud. All rights reserved.";
-				INFOPLIST_KEY_NSMainStoryboardFile = Main;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = guance.com.MacOSApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-			};
-			name = Debug;
-		};
-		1799DF7E29CAE42F0043D7B5 /* Pre */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = MacOSApp/MacOSApp.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BW62V33GLH;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 GuanceCloud. All rights reserved.";
-				INFOPLIST_KEY_NSMainStoryboardFile = Main;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = guance.com.MacOSApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-			};
-			name = Pre;
-		};
-		1799DF7F29CAE42F0043D7B5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CODE_SIGN_ENTITLEMENTS = MacOSApp/MacOSApp.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BW62V33GLH;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 GuanceCloud. All rights reserved.";
-				INFOPLIST_KEY_NSMainStoryboardFile = Main;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = guance.com.MacOSApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -1935,16 +1764,6 @@
 				1764E41029AC9B0600E70DBB /* Debug */,
 				1764E41129AC9B0600E70DBB /* Pre */,
 				1764E41229AC9B0600E70DBB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		1799DF8029CAE42F0043D7B5 /* Build configuration list for PBXNativeTarget "MacOSApp" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				1799DF7D29CAE42F0043D7B5 /* Debug */,
-				1799DF7E29CAE42F0043D7B5 /* Pre */,
-				1799DF7F29CAE42F0043D7B5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

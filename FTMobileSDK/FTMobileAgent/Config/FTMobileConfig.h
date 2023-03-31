@@ -136,7 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int samplerate;
 /// 设置是否追踪用户操作，目前支持应用启动和点击操作，
-/// 在 enableTraceUserView 开启的状况下 开启才能生效（仅作用于autotrack）
+/// 在有 View 事件的情况下，开启才能生效
 @property (nonatomic, assign) BOOL enableTraceUserAction;
 /// 设置是否追踪页面生命周期 （仅作用于autotrack）
 @property (nonatomic, assign) BOOL enableTraceUserView;
