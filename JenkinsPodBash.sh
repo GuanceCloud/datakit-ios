@@ -6,7 +6,7 @@ replaceVersion(){
 
   PRODUCT_NAME=$1
 
-  cd "FTMobileSDK/$PRODUCT_NAME" || exit
+  cd "FTMobileSDK/$PRODUCT_NAME/Core" || exit
 
   sed  -i '' 's/SDK_VERSION.*/SDK_VERSION @"'$VERSION'"/g' "$PRODUCT_NAME"Version.h
 
@@ -24,7 +24,7 @@ if [[ $? -eq 0 ]];then
 
 #  replaceVersion "FTAutoTrack"
   replaceVersion "FTMobileAgent"
-
+  cd ..
   sed  -i '' 's/$JENKINS_DYNAMIC_VERSION/'"$VERSION"'/g' FTMobileSDK.podspec
 
   pod trunk push FTMobileSDK.podspec --verbose --allow-warnings
