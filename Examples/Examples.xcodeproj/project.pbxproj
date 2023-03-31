@@ -198,23 +198,7 @@
 		1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1799DF6F29CAE42D0043D7B5 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		1799DF7029CAE42D0043D7B5 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		1799DF7229CAE42D0043D7B5 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		1799DF7329CAE42D0043D7B5 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		1799DF7529CAE42F0043D7B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		1799DF7829CAE42F0043D7B5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		1799DF7A29CAE42F0043D7B5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		1799DF7C29CAE42F0043D7B5 /* MacOSApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacOSApp.entitlements; sourceTree = "<group>"; };
 		1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = "FTMobileAgent macOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
-		1799DF8629CAE4A60043D7B5 /* LoginWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginWindowController.m; sourceTree = "<group>"; };
-		1799DF8729CAE4A60043D7B5 /* LoginWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoginWindow.m; sourceTree = "<group>"; };
-		1799DF8829CAE4A60043D7B5 /* MainWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindowController.h; sourceTree = "<group>"; };
-		1799DF8929CAE4A60043D7B5 /* MainWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainWindow.h; sourceTree = "<group>"; };
-		1799DF8A29CAE4A60043D7B5 /* MainWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainWindowController.m; sourceTree = "<group>"; };
-		1799DF8B29CAE4A60043D7B5 /* LoginWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginWindow.h; sourceTree = "<group>"; };
-		1799DF8C29CAE4A60043D7B5 /* LoginWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginWindowController.h; sourceTree = "<group>"; };
-		1799DF8D29CAE4A60043D7B5 /* MainWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainWindow.m; sourceTree = "<group>"; };
 		179FCFF529C9887600DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179FCFF729C989B900DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179FCFF929C9982200DBB66F /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -420,37 +404,6 @@
 			path = PerformanceTest;
 			sourceTree = "<group>";
 		};
-		1799DF6E29CAE42D0043D7B5 /* MacOSApp */ = {
-			isa = PBXGroup;
-			children = (
-				1799DF8529CAE4A60043D7B5 /* WindowController */,
-				1799DF6F29CAE42D0043D7B5 /* AppDelegate.h */,
-				1799DF7029CAE42D0043D7B5 /* AppDelegate.m */,
-				1799DF7229CAE42D0043D7B5 /* ViewController.h */,
-				1799DF7329CAE42D0043D7B5 /* ViewController.m */,
-				1799DF7529CAE42F0043D7B5 /* Assets.xcassets */,
-				1799DF7729CAE42F0043D7B5 /* Main.storyboard */,
-				1799DF7A29CAE42F0043D7B5 /* main.m */,
-				1799DF7C29CAE42F0043D7B5 /* MacOSApp.entitlements */,
-			);
-			path = MacOSApp;
-			sourceTree = "<group>";
-		};
-		1799DF8529CAE4A60043D7B5 /* WindowController */ = {
-			isa = PBXGroup;
-			children = (
-				1799DF8C29CAE4A60043D7B5 /* LoginWindowController.h */,
-				1799DF8629CAE4A60043D7B5 /* LoginWindowController.m */,
-				1799DF8B29CAE4A60043D7B5 /* LoginWindow.h */,
-				1799DF8729CAE4A60043D7B5 /* LoginWindow.m */,
-				1799DF8829CAE4A60043D7B5 /* MainWindowController.h */,
-				1799DF8A29CAE4A60043D7B5 /* MainWindowController.m */,
-				1799DF8929CAE4A60043D7B5 /* MainWindow.h */,
-				1799DF8D29CAE4A60043D7B5 /* MainWindow.m */,
-			);
-			path = WindowController;
-			sourceTree = "<group>";
-		};
 		17B1715828153F9D004002C9 /* Network */ = {
 			isa = PBXGroup;
 			children = (
@@ -484,7 +437,6 @@
 				1764E40029AC9B0500E70DBB /* SwiftApp */,
 				4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */,
 				4A22526D23B5AC7600B0ED41 /* FTMobileSDKUITests */,
-				1799DF6E29CAE42D0043D7B5 /* MacOSApp */,
 				4A116957239113B600C0BC4E /* Products */,
 				4A5BCD9A239A77340056C12E /* Frameworks */,
 				7C28B7D2266092C400CECBA6 /* Recovered References */,
@@ -1059,14 +1011,6 @@
 				1764E40D29AC9B0600E70DBB /* Base */,
 			);
 			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		1799DF7729CAE42F0043D7B5 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				1799DF7829CAE42F0043D7B5 /* Base */,
-			);
-			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 		4A116962239113B600C0BC4E /* Main.storyboard */ = {
