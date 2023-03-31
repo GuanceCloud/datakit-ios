@@ -28,6 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSError *error;
 /// 响应结果
 @property (nonatomic, copy) NSString *responseBody;
+///  初始化方法
+/// - Parameters:
+///   - request: 网络请求
+///   - response: 网络请求响应结果
+///   - data: 网络请求获得的数据
+///   - error: error 信息
 -(instancetype)initWithRequest:(NSURLRequest *)request response:(nullable NSHTTPURLResponse *)response data:(nullable NSData *)data error:(nullable NSError *)error;
 @end
 
