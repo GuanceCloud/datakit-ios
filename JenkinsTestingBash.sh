@@ -50,7 +50,7 @@ sed -i '' 's~$TRACE_URL~'"$TRACE_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
 cd ../../..
 pod install
 
-xcodebuild test -workspace Examples.xcworkspace \
+xcodebuild test -project Examples.xcodeproj \
   -scheme FTMobileSDKUnitTestsForCmd \
   -only-testing FTMobileSDKUnitTests \
   -destination "$DEVICE_DESTINATION"
