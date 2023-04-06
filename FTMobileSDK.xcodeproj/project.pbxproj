@@ -232,6 +232,8 @@
 		1776073929D1416200D17137 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776073529D1416200D17137 /* FTUserInfo.m */; };
 		1776073A29D1416200D17137 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776073529D1416200D17137 /* FTUserInfo.m */; };
 		1776073B29D1416200D17137 /* FTUserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776073529D1416200D17137 /* FTUserInfo.m */; };
+		177BA55629DBF7C100DB7497 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC529CD42E4005C2D99 /* FTAppLaunchTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		177BA55729DBF7C500DB7497 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBE29CD42E4005C2D99 /* FTAppLaunchTracker.m */; };
 		1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
 		1799581529D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1799581629D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
@@ -1184,6 +1186,7 @@
 				17678E4329D28C5B00C1DA98 /* FTLogHook.h in Headers */,
 				1776068529D1371600D17137 /* FTDateUtil.h in Headers */,
 				1776069529D1373100D17137 /* FTJSONUtil.h in Headers */,
+				177BA55629DBF7C100DB7497 /* FTAppLaunchTracker.h in Headers */,
 				1776065429D1364900D17137 /* FTNetworkManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1512,6 +1515,7 @@
 				1776067229D136F800D17137 /* FTThreadDispatchManager.m in Sources */,
 				17AB76EF29D432DE008FBBF5 /* FTRUMResourceHandler.m in Sources */,
 				1776071029D139EF00D17137 /* FTSessionConfiguration.m in Sources */,
+				177BA55729DBF7C500DB7497 /* FTAppLaunchTracker.m in Sources */,
 				177606FE29D1399B00D17137 /* FTANRDetector.m in Sources */,
 				1776069229D1372E00D17137 /* FTLog.m in Sources */,
 				177606B629D137E000D17137 /* FTErrorDataProtocol.m in Sources */,

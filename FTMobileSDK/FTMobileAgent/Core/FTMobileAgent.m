@@ -91,7 +91,7 @@ static dispatch_once_t onceToken;
 -(void)resetConfig:(FTMobileConfig *)config{
     [FTLog enableLog:config.enableSDKDebugLog];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
+        [self.presetProperty resetWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
     }else{
         _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
     }

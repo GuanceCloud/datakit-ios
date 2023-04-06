@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
   # s.platform     = :ios, "8.0"
   s.default_subspec = 'Core'
 
-  s.ios.deployment_target = '9.0'
-  s.osx.deployment_target = '10.12'
+  s.ios.deployment_target = '10.0'
+  s.osx.deployment_target = '10.13'
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
    end
    
    s.subspec  'FTMobileAgent' do | agent |
-       agent.ios.deployment_target = '9.0'
+       agent.ios.deployment_target = '10.0'
        agent.source_files =  'FTMobileSDK/FTMobileAgent/Core/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*{.h,.m}'
        agent.dependency  'FTMobileSDK/FunctionModule'        
 
@@ -54,7 +54,7 @@ Pod::Spec.new do |s|
     
     s.subspec 'FunctionModule' do |f|
        f.subspec 'FTRUM' do |r|
-       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
+       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/RUMCore/**/*{.h,.m}','FTMobileSDK/FTMobileAgent/FTRUM/Monitor/*{.h,.m}','FTMobileSDK/FTMobileAgent/FTRUM/FTAppLaunchTracker.{h,m}'
        r.dependency 'FTMobileSDK/Common/Base'
        r.dependency 'FTMobileSDK/Common/Thread'
        r.dependency 'FTMobileSDK/FunctionModule/Protocol'
@@ -122,8 +122,7 @@ Pod::Spec.new do |s|
    end
 
     s.subspec 'Extension' do |e|
-       e.platform = :ios, '9.0'
-       e.ios.deployment_target = '9.0'
+       e.platform = :ios, '10.0'
        e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*.{h,m}'
        e.dependency 'FTMobileSDK/FTMobileAgent/ExtensionDataManager'
        e.dependency 'FTMobileSDK/FunctionModule/FTRUM'
@@ -133,6 +132,7 @@ Pod::Spec.new do |s|
    end
 
    s.subspec 'FTMacOSSupport' do |m|
+       m.source_files = 'FTMobileSDK/FTMobileAgent/Logger/*{.h,.m,.c}'
        m.dependency 'FTMobileSDK/Common'
        m.dependency  'FTMobileSDK/FunctionModule'        
 
