@@ -1,1 +1,1 @@
-../BaseUtils/Base/FTResourceMetricsModel.h
+../FTSDKCore/BaseUtils/Base/FTResourceMetricsModel.h

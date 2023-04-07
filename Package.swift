@@ -22,10 +22,10 @@ let package = Package(
                       "FTMobileExtension",
                      ]),
         .library(
-            name: "FTMacOSSupport",
+            name: "FTSDKCore",
             type: .static,
             targets: [
-                      "FTMacOSSupport",
+                      "FTSDKCore",
                      ]),
     ],
     dependencies: [
@@ -36,16 +36,10 @@ let package = Package(
         .target(
             name: "FTMobileAgent",
             dependencies: [
-                           "_FTBaseUtils_Network",
-                           "_FTRUM",
+                           "FTSDKCore",
                            "_FTExtension",
                            "_FTExternalData",
-                           "_FTException",
-                           "_FTLongTask",
-                           "_FTURLSessionAutoInstrumentation",
                            "_FTConfig",
-                           "_FTWKWebView",
-                           "_FTLogger"
                           ],
             path: "FTMobileSDK",
             sources: ["FTMobileAgent/Core",
@@ -74,7 +68,7 @@ let package = Package(
         .target(
             name: "_FTProtocol",
             dependencies: [],
-            path: "FTMobileSDK/FTMobileAgent/Protocol",
+            path: "FTMobileSDK/FTSDKCore/Protocol",
             publicHeadersPath: ".",
             cSettings: [
                 .headerSearchPath("FTErrorDataProtocol.h"),
@@ -85,74 +79,49 @@ let package = Package(
             dependencies: ["_FTBaseUtils_Base",
                            "_FTBaseUtils_Thread",
                            "_FTProtocol"],
-            path: "FTMobileSDK/FTMobileAgent/FTRUM",
+            path: "FTMobileSDK/FTSDKCore/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
             ]
         ),
         .target(name: "_FTURLSessionAutoInstrumentation",
                 dependencies: ["_FTProtocol","_FTBaseUtils_Swizzle"],
-                path: "FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation",
+                path: "FTMobileSDK/FTSDKCore/URLSessionAutoInstrumentation",
                 publicHeadersPath: ".",
                 cSettings: [
                 ]),
         .target(name: "_FTLongTask",
                 dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTMobileAgent/LongTask",
+                path: "FTMobileSDK/FTSDKCore/LongTask",
                 publicHeadersPath: "."
                
                ),
         .target(name: "_FTLogger",
                 dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTMobileAgent/Logger",
+                path: "FTMobileSDK/FTSDKCore/Logger",
                 publicHeadersPath: ".",
                 cSettings: [
                    
-                ]
-               ),
-        .target(name: "_FTWKWebView",
-                dependencies: [
-                               "_FTProtocol",
-                               "_FTBaseUtils_Swizzle"
-                              ],
-                path: "FTMobileSDK/FTMobileAgent/FTWKWebView",
-                publicHeadersPath: "Public",
-                cSettings: [
-                    .headerSearchPath("JSBridge")
                 ]
                ),
         .target(name: "_FTException",
                 dependencies: ["_FTBaseUtils_Base",
                                "_FTProtocol",
                               ],
-                path: "FTMobileSDK/FTMobileAgent/Exception",
+                path: "FTMobileSDK/FTSDKCore/Exception",
                 publicHeadersPath: "."),
         
         // MARK: - BaseUtils
         .target(name: "_FTBaseUtils_Base",
                 dependencies: [],
-                path: "FTMobileSDK/BaseUtils/Base",
-                publicHeadersPath: ".",
-                cSettings: [
-                    
-                ]),
-        .target(name: "_FTBaseUtils_FTDataBase",
-                dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/BaseUtils/FTDataBase",
-                publicHeadersPath: ".",
-                cSettings: [
-                    .headerSearchPath("fmdb"),
-                ]),
-        .target(name: "_FTBaseUtils_Network",
-                dependencies: ["_FTBaseUtils_Base","_FTBaseUtils_FTDataBase","_FTBaseUtils_Thread"],
-                path: "FTMobileSDK/BaseUtils/Network",
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Base",
                 publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),
         .target(name: "_FTBaseUtils_Swizzle",
                 dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/BaseUtils/Swizzle",
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Swizzle",
                 publicHeadersPath: ".",
                 cSettings: [
                     .headerSearchPath("Swizzle"),
@@ -160,7 +129,7 @@ let package = Package(
                 ]),
         .target(name: "_FTBaseUtils_Thread",
                 dependencies: [],
-                path: "FTMobileSDK/BaseUtils/Thread",
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Thread",
                 publicHeadersPath: ".",
                 cSettings: [
                     
@@ -188,20 +157,20 @@ let package = Package(
                 cSettings: [
                     
                 ]),
-        .target(name: "FTMacOSSupport",
+        .target(name: "FTSDKCore",
                 dependencies: [
-                               "_FTBaseUtils_Network",
                                "_FTRUM",
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
-                               "_FTWKWebView",
                                "_FTLongTask",
                                "_FTLogger"
                               ],
-                path: "FTMobileSDK/FTMacOSSDK",
-                publicHeadersPath: ".",
+                path: "FTMobileSDK/FTSDKCore",
+                sources: ["FTWKWebView","DataManager"],
                 cSettings: [
-                    
+                    .headerSearchPath("DataManager/fmdb"),
+                    .headerSearchPath("FTWKWebView/JSBridge"),
+
                 ]
                )
     ]

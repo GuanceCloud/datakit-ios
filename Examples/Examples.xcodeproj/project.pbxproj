@@ -23,6 +23,8 @@
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
 		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
+		1763BD6829DFEAF6009EE026 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */; };
+		1763BD6929DFEAF6009EE026 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1764E40229AC9B0500E70DBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40129AC9B0500E70DBB /* AppDelegate.swift */; };
 		1764E40429AC9B0500E70DBB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40329AC9B0500E70DBB /* SceneDelegate.swift */; };
 		1764E40629AC9B0500E70DBB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40529AC9B0500E70DBB /* ViewController.swift */; };
@@ -41,8 +43,6 @@
 		1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */; };
 		179FCFFA29C9982200DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; };
 		179FCFFB29C9982200DBB66F /* FTMobileAgent.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFF929C9982200DBB66F /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		179FCFFF29C99A1600DBB66F /* FTMobileAgent.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */; };
-		179FD00029C99A1600DBB66F /* FTMobileAgent.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
@@ -111,6 +111,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		1763BD6A29DFEAF6009EE026 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				1763BD6929DFEAF6009EE026 /* FTMobileSDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		179FCFFC29C9982200DBB66F /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -118,17 +129,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				179FCFFB29C9982200DBB66F /* FTMobileAgent.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		179FD00129C99A1700DBB66F /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				179FD00029C99A1600DBB66F /* FTMobileAgent.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,6 +177,7 @@
 		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
+		1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1764E3FF29AC9B0400E70DBB /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1764E40129AC9B0500E70DBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1764E40329AC9B0500E70DBB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -305,7 +306,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AECBCDE24497DBF0023DEF7 /* CoreBluetooth.framework in Frameworks */,
-				179FCFFF29C99A1600DBB66F /* FTMobileAgent.framework in Frameworks */,
+				1763BD6829DFEAF6009EE026 /* FTMobileSDK.framework in Frameworks */,
 				4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */,
 				0235FA138588229E504FACE1 /* Pods_App.framework in Frameworks */,
 			);
@@ -538,6 +539,7 @@
 		4A5BCD9A239A77340056C12E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */,
 				1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */,
 				17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */,
 				17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */,
@@ -671,7 +673,7 @@
 				4A116954239113B600C0BC4E /* Resources */,
 				4AB783AF23C2D660001FC994 /* CopyFiles */,
 				4A78B9D82563C43E0021E0BC /* Embed App Extensions */,
-				179FD00129C99A1700DBB66F /* Embed Frameworks */,
+				1763BD6A29DFEAF6009EE026 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
