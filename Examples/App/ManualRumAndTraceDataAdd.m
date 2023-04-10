@@ -8,7 +8,7 @@
 
 #import "ManualRumAndTraceDataAdd.h"
 #import "TableViewCellItem.h"
-#import <FTMobileAgent/FTMobileAgent.h>
+#import <FTMobileSDK/FTMobileAgent.h>
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;

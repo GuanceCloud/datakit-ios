@@ -7,6 +7,8 @@
 //
 
 #import "HttpEngine.h"
+#import <FTMobileSDK/FTMobileAgent.h>
+
 // id <NSURLSessionDelegate>)delegate 直接继承 FTURLSessionDelegate 示例
 @interface InstrumentationInheritClass:FTURLSessionDelegate
 @property (nonatomic, strong) NSURLSession *session;

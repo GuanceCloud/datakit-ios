@@ -9,7 +9,7 @@
 #import "NetworkTraceVC.h"
 #import "TableViewCellItem.h"
 #import "HttpEngine.h"
-#import <FTMobileAgent/FTMobileAgent.h>
+#import <FTMobileSDK/FTMobileAgent.h>
 //仅做示例，可以使用类保存单条 task 的数据
 @interface RUMResource: NSObject
 @property (nonatomic,copy) NSString *key;

@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import <FTMobileAgent/FTMobileAgent.h>
+#import <FTMobileSDK/FTMobileAgent.h>
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
