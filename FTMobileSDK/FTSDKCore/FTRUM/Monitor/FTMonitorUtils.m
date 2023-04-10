@@ -9,16 +9,42 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMonitorUtils.h"
+#import "FTSDKCompat.h"
 #import <mach/mach.h>
 #import "FTConstants.h"
-#if !TARGET_OS_OSX
+#if FT_MAC
+#import <IOKit/ps/IOPowerSources.h>
+#import <IOKit/ps/IOPSKeys.h>
+#else
 #import <UIKit/UIKit.h>
 #endif
 @implementation FTMonitorUtils
 #pragma mark ========== 电池 ==========
-#if !TARGET_OS_OSX
 //电池电量
 +(double)batteryUse{
+#if FT_MAC
+    CFTypeRef info = IOPSCopyPowerSourcesInfo();
+    if (info == NULL)
+        return 0;
+    
+    CFArrayRef list = IOPSCopyPowerSourcesList(info);
+    // Nothing we care about here...
+    if (list == NULL || !CFArrayGetCount(list)) {
+        if (list)
+            CFRelease(list);
+        
+        CFRelease(info);
+        return 0;
+    }
+    CFDictionaryRef battery = CFDictionaryCreateCopy(NULL, IOPSGetPowerSourceDescription(info, CFArrayGetValueAtIndex(list, 0)));
+    
+    // Battery is released by ARC transfer.
+    CFRelease(list);
+    CFRelease(info);
+    NSDictionary *infoDict = (__bridge_transfer NSDictionary* ) battery;
+    NSNumber *current_capacity = infoDict[@"Current Capacity"];
+    return current_capacity?[current_capacity doubleValue]:0;
+#else
     [UIDevice currentDevice].batteryMonitoringEnabled = YES;
     double deviceLevel = [UIDevice currentDevice].batteryLevel;
     if (deviceLevel == -1) {
@@ -26,8 +52,8 @@
     }else{
         return deviceLevel*100;
     }
-}
 #endif
+}
 #pragma mark ========== 内存 ==========
 //当前任务所占用的内存
 + (float)usedMemory{

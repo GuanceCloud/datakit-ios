@@ -13,10 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMonitorUtils : NSObject
 /// 获取当前设备CPU使用率
 + (long )cpuUsage;
-#if TARGET_OS_IOS
 /// 获取当前电池电量使用率
 + (double)batteryUse;
-#endif
 /// 获取设备总内存
 + (NSString *)totalMemorySize;
 /// 获取当前内存使用率

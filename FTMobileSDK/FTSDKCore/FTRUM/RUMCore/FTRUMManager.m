@@ -346,10 +346,10 @@
     if (monitorType & ErrorMonitorCpu) {
         errorTag[FT_CPU_USE] = [NSNumber numberWithLong:[FTMonitorUtils cpuUsage]];
     }
-#if !TARGET_OS_OSX
     if (monitorType & ErrorMonitorBattery) {
         errorTag[FT_BATTERY_USE] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
+#if !TARGET_OS_OSX
     errorTag[FT_KEY_CARRIER] = [FTBaseInfoHandler telephonyCarrier];
 #endif
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];
