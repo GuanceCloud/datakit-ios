@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
 	s.name         = "FTMobileSDK"
 	#s.version      = "1.3.12-alpha.3"
 	s.version      = "$JENKINS_DYNAMIC_VERSION"
-	s.summary      = "观测云 DataFlux iOS 数据采集 SDK"
-	s.description  = "观测云 DataFlux iOS 数据采集 SDK"
+	s.summary      = "观测云 iOS 数据采集 SDK"
+	#s.description  = ""
 	s.homepage     = "https://github.com/GuanceCloud/datakit-ios.git"
 
 	s.license      = { type: 'Apache', :file => 'LICENSE'}
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
 	s.ios.deployment_target = '10.0'
 	s.osx.deployment_target = '10.13'
 
-	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
+	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "#{spec.version}" }
 
 
 	s.subspec  'FTMobileAgent' do | agent |
