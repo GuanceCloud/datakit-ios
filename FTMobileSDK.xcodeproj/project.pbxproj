@@ -72,18 +72,12 @@
 		17678E3229D28BED00C1DA98 /* FTMobileConfig+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1729D28BD200C1DA98 /* FTMobileConfig+Private.h */; };
 		17678E3429D28BF000C1DA98 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E3529D28BF400C1DA98 /* FTMobileConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E1929D28BD200C1DA98 /* FTMobileConfig.m */; };
-		17678E3C29D28C4D00C1DA98 /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3729D28C4D00C1DA98 /* FTfishhook.h */; };
 		17678E3D29D28C4D00C1DA98 /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3929D28C4D00C1DA98 /* FTLogHook.h */; };
 		17678E3E29D28C4D00C1DA98 /* FTLogHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3A29D28C4D00C1DA98 /* FTLogHook.m */; };
-		17678E3F29D28C4D00C1DA98 /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3B29D28C4D00C1DA98 /* FTfishhook.c */; };
-		17678E4029D28C5500C1DA98 /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3729D28C4D00C1DA98 /* FTfishhook.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17678E4129D28C5600C1DA98 /* FTfishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3729D28C4D00C1DA98 /* FTfishhook.h */; };
 		17678E4229D28C5B00C1DA98 /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3929D28C4D00C1DA98 /* FTLogHook.h */; };
 		17678E4329D28C5B00C1DA98 /* FTLogHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E3929D28C4D00C1DA98 /* FTLogHook.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17678E4429D28C5E00C1DA98 /* FTLogHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3A29D28C4D00C1DA98 /* FTLogHook.m */; };
 		17678E4629D28C6000C1DA98 /* FTLogHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3A29D28C4D00C1DA98 /* FTLogHook.m */; };
-		17678E4729D28C6300C1DA98 /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3B29D28C4D00C1DA98 /* FTfishhook.c */; };
-		17678E4829D28C6300C1DA98 /* FTfishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 17678E3B29D28C4D00C1DA98 /* FTfishhook.c */; };
 		1776062929D1347500D17137 /* WKWebView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 1776061D29D1347400D17137 /* WKWebView+FTAutoTrack.h */; };
 		1776062A29D1347500D17137 /* FTWKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776061F29D1347400D17137 /* FTWKWebViewJavascriptBridge.m */; };
 		1776062B29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */ = {isa = PBXBuildFile; fileRef = 1776062029D1347400D17137 /* FTWebViewJavascriptLeakAvoider.m */; };
@@ -489,10 +483,8 @@
 		17678E2129D28BD200C1DA98 /* FTMobileAgent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileAgent.m; sourceTree = "<group>"; };
 		17678E2229D28BD200C1DA98 /* FTMobileAgent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Private.h"; sourceTree = "<group>"; };
 		17678E2329D28BD200C1DA98 /* FTTraceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTraceManager.h; sourceTree = "<group>"; };
-		17678E3729D28C4D00C1DA98 /* FTfishhook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTfishhook.h; sourceTree = "<group>"; };
 		17678E3929D28C4D00C1DA98 /* FTLogHook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTLogHook.h; sourceTree = "<group>"; };
 		17678E3A29D28C4D00C1DA98 /* FTLogHook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLogHook.m; sourceTree = "<group>"; };
-		17678E3B29D28C4D00C1DA98 /* FTfishhook.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTfishhook.c; sourceTree = "<group>"; };
 		1776061D29D1347400D17137 /* WKWebView+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "WKWebView+FTAutoTrack.h"; sourceTree = "<group>"; };
 		1776061F29D1347400D17137 /* FTWKWebViewJavascriptBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTWKWebViewJavascriptBridge.m; sourceTree = "<group>"; };
 		1776062029D1347400D17137 /* FTWebViewJavascriptLeakAvoider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTWebViewJavascriptLeakAvoider.m; sourceTree = "<group>"; };
@@ -734,8 +726,6 @@
 			children = (
 				17678E3929D28C4D00C1DA98 /* FTLogHook.h */,
 				17678E3A29D28C4D00C1DA98 /* FTLogHook.m */,
-				17678E3729D28C4D00C1DA98 /* FTfishhook.h */,
-				17678E3B29D28C4D00C1DA98 /* FTfishhook.c */,
 			);
 			path = Logger;
 			sourceTree = "<group>";
@@ -1158,7 +1148,6 @@
 				1776070629D139D500D17137 /* FTTracer.h in Headers */,
 				1776066D29D136EF00D17137 /* FTThreadDispatchManager.h in Headers */,
 				1799581529D43FDE0033B46E /* FTPresetProperty.h in Headers */,
-				17678E4029D28C5500C1DA98 /* FTfishhook.h in Headers */,
 				1776073829D1416200D17137 /* FTUserInfo.h in Headers */,
 				17678E4329D28C5B00C1DA98 /* FTLogHook.h in Headers */,
 				1776068529D1371600D17137 /* FTDateUtil.h in Headers */,
@@ -1190,7 +1179,6 @@
 				17678E3429D28BF000C1DA98 /* FTMobileConfig.h in Headers */,
 				1776066C29D136EF00D17137 /* FTThreadDispatchManager.h in Headers */,
 				17AB76E829D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */,
-				17678E4129D28C5600C1DA98 /* FTfishhook.h in Headers */,
 				177606C029D137FB00D17137 /* FTErrorDataProtocol.h in Headers */,
 				1776064429D1360800D17137 /* FTExternalDataManager.h in Headers */,
 				1776071D29D13A0400D17137 /* FTURLSessionInterceptor.h in Headers */,
@@ -1266,7 +1254,6 @@
 				1763BD9429DFF04F009EE026 /* FTRequest.h in Headers */,
 				17AB76DB29D432DE008FBBF5 /* FTMonitorUtils.h in Headers */,
 				1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */,
-				17678E3C29D28C4D00C1DA98 /* FTfishhook.h in Headers */,
 				17E4CBE629CD42E4005C2D99 /* FTURLProtocol.h in Headers */,
 				17AB770529D432DE008FBBF5 /* FTRUMResourceHandler.h in Headers */,
 				17AB76BD29D432DE008FBBF5 /* FTMonitorItem.h in Headers */,
@@ -1529,7 +1516,6 @@
 				1776066729D1367300D17137 /* FTSwizzler.m in Sources */,
 				177606A729D1376B00D17137 /* FTReadWriteHelper.m in Sources */,
 				17AB770429D432DE008FBBF5 /* FTRUMHandler.m in Sources */,
-				17678E4729D28C6300C1DA98 /* FTfishhook.c in Sources */,
 				1776063F29D135FC00D17137 /* FTUncaughtExceptionHandler.m in Sources */,
 				1763BDAF29DFF04F009EE026 /* ZY_FMDatabaseAdditions.m in Sources */,
 				17AB76D129D432DE008FBBF5 /* FTMemoryMonitor.m in Sources */,
@@ -1542,7 +1528,6 @@
 			files = (
 				1776069329D1372E00D17137 /* FTLog.m in Sources */,
 				17AB76C129D432DE008FBBF5 /* FTMonitorUtils.m in Sources */,
-				17678E4829D28C6300C1DA98 /* FTfishhook.c in Sources */,
 				177606B329D1378800D17137 /* FTResourceContentModel.m in Sources */,
 				17AB76F729D432DE008FBBF5 /* FTRUMSessionHandler.m in Sources */,
 				177606B129D1378500D17137 /* FTResourceMetricsModel.m in Sources */,
@@ -1664,7 +1649,6 @@
 				1776062B29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				17E4CC4429CD42E4005C2D99 /* FTUncaughtExceptionHandler.m in Sources */,
 				17AB76EA29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
-				17678E3F29D28C4D00C1DA98 /* FTfishhook.c in Sources */,
 				17E4CB3D29CD42DA005C2D99 /* FTThreadDispatchManager.m in Sources */,
 				17AB76D829D432DE008FBBF5 /* FTDisplayRateMonitor.m in Sources */,
 				17AB76ED29D432DE008FBBF5 /* FTRUMResourceHandler.m in Sources */,

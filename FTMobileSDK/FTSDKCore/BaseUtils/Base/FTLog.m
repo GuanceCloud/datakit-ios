@@ -42,7 +42,7 @@ static dispatch_queue_t _loggingQueue;
     });
 }
 + (void)log:(BOOL)asynchronous
-      level:(NSInteger)level
+      level:(LogStatus)level
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... {
@@ -53,7 +53,7 @@ static dispatch_queue_t _loggingQueue;
         va_list args;
         va_start(args, format);
         NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-        [self.sharedInstance log:asynchronous message:message level:level function:function line:line];
+        [self.sharedInstance log:asynchronous message:[NSString stringWithFormat:@"%s [line %lu] %@",function, (unsigned long)line, message] level:level];
         va_end(args);
     } @catch(NSException *e) {
        
@@ -61,23 +61,21 @@ static dispatch_queue_t _loggingQueue;
 }
 - (void)log:(BOOL)asynchronous
     message:(NSString *)message
-      level:(NSInteger)level
-   function:(const char *)function
-       line:(NSUInteger)line {
+      level:(LogStatus)level{
     @try {
         dispatch_async(_loggingQueue , ^{
             switch (level) {
-                case FTLogLevelInfo:
-                    os_log_info(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"INFO", function, (unsigned long)line, message);
+                case StatusWarning:
+                case StatusCritical:
+                case StatusOk:
+                case StatusInfo:
+                    os_log_info(OS_LOG_DEFAULT,"%{public}s",[[NSString stringWithFormat:@"[FTLog][%@] %@",[FTStatusStringMap[level] uppercaseString],message] UTF8String]);
                     break;
-                case FTLogLevelWarning:
-                    os_log_info(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"WARN", function, (unsigned long)line, message);
+                case StatusError:
+                    os_log_error(OS_LOG_DEFAULT, "%{public}s",[[NSString stringWithFormat:@"[FTLog][ERROR] %@",message] UTF8String]);
                     break;
-                case FTLogLevelError:
-                    os_log_error(OS_LOG_DEFAULT, "[FTLog][%@] %s [line %lu] %@", @"ERROR", function, (unsigned long)line, message);
-                    break;
-                default:
-                    os_log_debug(OS_LOG_DEFAULT,"[FTLog][%@] %s [line %lu] %@", @"DEBUG", function, (unsigned long)line, message);
+                case StatusDebug:
+                    os_log_debug(OS_LOG_DEFAULT, "%{public}s",[[NSString stringWithFormat:@"[FTLog][DEBUG] %@",message] UTF8String]);
                     break;
             }
         });

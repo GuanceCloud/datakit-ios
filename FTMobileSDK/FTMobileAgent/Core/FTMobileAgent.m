@@ -42,6 +42,7 @@
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
+@property (nonatomic, strong) FTLogHook *logHook;
 @end
 @implementation FTMobileAgent
 
@@ -111,6 +112,7 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
+        self.logHook = [[FTLogHook alloc]init];
         self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         if(self.loggerConfig.enableConsoleLog){
@@ -219,7 +221,7 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        dispatch_async(self.serialQueue, ^{
+        dispatch_block_t logBlock = ^{
             NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
             if (tags) {
                 [tagDict addEntriesFromDictionary:tags];
@@ -238,7 +240,12 @@ static dispatch_once_t onceToken;
             }
             FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
             [self insertDBWithItemData:model type:FTAddDataLogging];
-        });
+        };
+        if(status == FTStatusError){
+            dispatch_sync(self.serialQueue, logBlock);
+        }else{
+            dispatch_async(self.serialQueue, logBlock);
+        }
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -275,7 +282,7 @@ static dispatch_once_t onceToken;
 //控制台日志采集
 - (void)_traceConsoleLog{
     __weak typeof(self) weakSelf = self;
-    [FTLogHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
+    [self.logHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
             if (!weakSelf.loggerConfig.enableConsoleLog ) {
                 return;
             }
@@ -294,6 +301,7 @@ static dispatch_once_t onceToken;
 #pragma mark - SDK注销
 - (void)resetInstance{
     [[FTGlobalRumManager sharedInstance] resetInstance];
+    [self.logHook recoverStandardOutput];
     [[FTURLSessionAutoInstrumentation sharedInstance] resetInstance];
     _presetProperty = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];

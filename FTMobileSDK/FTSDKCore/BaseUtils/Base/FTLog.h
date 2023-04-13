@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTEnumConstant.h"
 #define FTLOG_MACRO(lvl, frmt, ...) \
 [FTLog log : YES                                     \
      level : lvl                                     \
@@ -17,26 +18,31 @@
 #define ZYDebug(...) ZYLog(__VA_ARGS__)
 
 #define ZYLog(frmt,...)\
-FTLOG_MACRO(FTLogLevelInfo,(frmt), ## __VA_ARGS__)
+FTLOG_MACRO(StatusDebug,(frmt), ## __VA_ARGS__)
 
 #define ZYErrorLog(frmt,...)\
-FTLOG_MACRO(FTLogLevelError,(frmt), ## __VA_ARGS__)
+FTLOG_MACRO(StatusError,(frmt), ## __VA_ARGS__)
+
+#define FTCUSTOMLOG(lvl, frmt) \
+[[FTLog sharedInstance] log : YES                                     \
+   message : frmt                                     \
+     level : lvl  ]
 
 NS_ASSUME_NONNULL_BEGIN
-typedef NS_ENUM(NSUInteger, FTLogLevel){
-    FTLogLevelInfo     = 1,
-    FTLogLevelError,
-    FTLogLevelWarning,
-};
+
 @interface FTLog : NSObject
 
 + (instancetype)sharedInstance;
 + (void)enableLog:(BOOL)enableLog;
++ (BOOL)isLoggerEnabled;
 + (void)log:(BOOL)asynchronous
-      level:(NSInteger)level
+      level:(LogStatus)level
    function:(const char *)function
        line:(NSUInteger)line
      format:(NSString *)format, ... ;
+- (void)log:(BOOL)asynchronous
+    message:(NSString *)message
+      level:(LogStatus)level;
 
 @end
 

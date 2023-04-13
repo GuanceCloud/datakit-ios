@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTFishHookCallBack)(NSString *logStr,long long tm);
 
 @interface FTLogHook : NSObject
-
-+ (void)hookWithBlock:(FTFishHookCallBack)callBack;
+- (void)hookWithBlock:(FTFishHookCallBack)callBack;
+- (void)recoverStandardOutput;
 @end
 
 NS_ASSUME_NONNULL_END

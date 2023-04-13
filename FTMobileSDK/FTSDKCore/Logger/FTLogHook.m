@@ -9,139 +9,107 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTLogHook.h"
-#import "FTfishhook.h"
 #import "FTDateUtil.h"
-#import <os/log.h>
+#import "FTSDKCompat.h"
+#import "FTLog.h"
 static FTFishHookCallBack FTHookCallBack;
-
-static ssize_t (*orig_writev)(int a, const struct iovec * v, int v_len);
-
-// swizzle method
-ssize_t asl_writev(int a, const struct iovec *v, int v_len) {
-    
-    NSMutableString *string = [NSMutableString string];
-    for (int i = 0; i < v_len; i++) {
-        char *c = (char *)v[i].iov_base;
-        [string appendString:[NSString stringWithCString:c encoding:NSUTF8StringEncoding]];
-    }
-    
-    ////////// do something  这里可以捕获到日志 string
-    if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string,[FTDateUtil currentTimeNanosecond]);
-    }
-    // invoke origin mehtod
-    ssize_t result = orig_writev(a, v, v_len);
-    return result;
-}
-// origin fprintf IMP
-static int     (*origin_fprintf)(FILE * __restrict, const char * __restrict, ...);
-
-// swizzle method
-int     asl_fprintf(FILE * __restrict file, const char * __restrict format, ...)
-{
-    /*
-     typedef struct {
-     
-     unsigned int gp_offset;
-     unsigned int fp_offset;
-     void *overflow_arg_area;
-     void *reg_save_area;
-     } va_list[1];
-     */
-    va_list args;
-    
-    va_start(args, format);
-    
-    NSString *formatter = [NSString stringWithUTF8String:format];
-    NSString *string = [[NSString alloc] initWithFormat:formatter arguments:args];
-    
-    if(string.length&&![string containsString:@"[FTLog]"]&&FTHookCallBack){
-        FTHookCallBack(string,[FTDateUtil currentTimeNanosecond]);
-    }
-    // invoke origin fprintf
-    int result = origin_fprintf(file, [string UTF8String]);
-    
-    va_end(args);
-    
-    return result;
-}
-// origin fwrite IMP
-static size_t (*orig_fwrite)(const void * __restrict, size_t, size_t, FILE * __restrict);
-
-static char *__messageBuffer = {0};
-static int __buffIdx = 0;
-void reset_buffer(void)
-{
-    __messageBuffer = calloc(1, sizeof(char));
-    __messageBuffer[0] = '\0';
-    __buffIdx = 0;
-}
-
-
-// swizzle method
-size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE * __restrict stream) {
-    
-    if (__messageBuffer == NULL) {
-        // initial Buffer
-        reset_buffer();
-    }
-    
-    char *str = (char *)ptr;
-    
-    NSString *s = [NSString stringWithCString:str encoding:NSUTF8StringEncoding];
-    
-    if (__messageBuffer != NULL) {
-        
-        if (str[0] == '\n' && __messageBuffer[0] != '\0') {
-            
-            s = [[NSString stringWithCString:__messageBuffer encoding:NSUTF8StringEncoding] stringByAppendingString:s];
-            
-            // reset buffIdx
-            reset_buffer();
-            
-            ////////// do something  这里可以捕获到日志
-            if(s.length>0&&![s containsString:@"[FTLog]"]&&FTHookCallBack){
-                FTHookCallBack(s,[FTDateUtil currentTimeNanosecond]);
-            }
-        }
-        else {
-            
-            // append buffer
-            __messageBuffer = realloc(__messageBuffer, sizeof(char) * (__buffIdx + nitems + 1));
-            for (size_t i = __buffIdx; i < nitems; i++) {
-                __messageBuffer[i] = str[i];
-                __buffIdx ++;
-            }
-            __messageBuffer[__buffIdx + 1] = '\0';
-            __buffIdx ++;
-        }
-    }
-    
-    return orig_fwrite(ptr, size, nitems, stream);
-}
+@interface FTLogHook ()
+@property (nonatomic, assign) int errFd;
+@property (nonatomic, assign) int outFd;
+@property (nonatomic, copy) NSString *regexStr;
+@end
 @implementation FTLogHook
 
-+ (void)hookWithBlock:(FTFishHookCallBack)callBack{
-    // simulator NSLog、CocoaLumberjack-DDTTYLogger
-    ft_rebind_symbols((struct ft_rebinding[1]){{
-        "writev",
-        asl_writev,
-        (void*)&orig_writev
-    }}, 1);
-    
-    // hook fwrite: swift print
-    ft_rebind_symbols((struct ft_rebinding[1]){{
-        "fwrite",
-        asl_fwrite,
-        (void *)&orig_fwrite}}, 1);
-    // hook printf c语言日志打印
-    ft_rebind_symbols((struct ft_rebinding[1]){{
-        "fprintf",
-        asl_fprintf,
-        (void *)&origin_fprintf}}, 1);
+- (void)hookWithBlock:(FTFishHookCallBack)callBack{
+    NSString *pname = [[NSProcessInfo processInfo] processName];
+    self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
     FTHookCallBack = callBack;
+    [self redirectSTD:STDERR_FILENO];
+}
+- (void)redirectSTD:(int )fd {
+    // 由于真机在断开数据线后会输出到 /dev/null 中, 这里要手动将buff设置为unbuffered
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+    self.outFd = dup(STDOUT_FILENO);
+    self.errFd = dup(STDERR_FILENO);
+
+    NSPipe *outPipe = [NSPipe pipe];
+    NSFileHandle *pipeOutHandle = [outPipe fileHandleForReading] ;
+    dup2([[outPipe fileHandleForWriting] fileDescriptor], STDOUT_FILENO);
+    [pipeOutHandle readInBackgroundAndNotify];
+    
+    NSPipe *errPipe = [NSPipe pipe];
+    NSFileHandle*pipeErrHandle = [errPipe fileHandleForReading];
+    dup2([[errPipe fileHandleForWriting] fileDescriptor], STDERR_FILENO);
+    [pipeErrHandle readInBackgroundAndNotify];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(redirectNotificationHandle:)
+                                                 name:NSFileHandleReadCompletionNotification
+                                               object:pipeOutHandle];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(redirectErrNotificationHandle:)
+                                                 name:NSFileHandleReadCompletionNotification
+                                               object:pipeErrHandle];
+}
+- (void)recoverStandardOutput{
+    if(self.outFd>0){
+        dup2(self.outFd, STDOUT_FILENO);
+    }
+    if(self.errFd>0){
+        dup2(self.errFd, STDERR_FILENO);
+    }
+}
+- (void)redirectNotificationHandle:(NSNotification *)nf {
+    NSData *data = [[nf userInfo] objectForKey:NSFileHandleNotificationDataItem];
+    NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] ;
+    //swift print 、printf 不用做过滤，直接回调
+    if(str.length>0&&FTHookCallBack){
+        FTHookCallBack(str,[FTDateUtil currentTimeNanosecond]);
+    }
+    write(self.outFd,str.UTF8String,strlen(str.UTF8String));
+    [[nf object] readInBackgroundAndNotify];
+}
+//NSLog、os_log
+- (void)redirectErrNotificationHandle:(NSNotification *)nf {
+    NSData *data = [[nf userInfo] objectForKey: NSFileHandleNotificationDataItem];
+    NSString *str = [[NSString alloc]initWithData:data encoding: NSUTF8StringEncoding];
+    long long tm = [FTDateUtil currentTimeNanosecond];
+    //如果开启 SDK 日志调试，需要进行过滤 SDK 内的调试日志
+    NSString *repleceStr = str;
+    if([FTLog isLoggerEnabled]){
+         repleceStr = [self matchString:str];
+    }
+    if(repleceStr){
+        FTHookCallBack(repleceStr,tm);
+    }
+    write(self.errFd,str.UTF8String,strlen(str.UTF8String));
+    [[nf object] readInBackgroundAndNotify];
 }
 
-
+- (NSString *)matchString:(NSString *)string{
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:_regexStr options:NSRegularExpressionAnchorsMatchLines error:nil];
+    
+    NSArray<NSTextCheckingResult *> * matches = [regex matchesInString:string options:0 range:NSMakeRange(0, [string length])];
+    if(matches.count>1){
+        __block NSMutableString *result = [NSMutableString stringWithString:string];
+        [matches enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSTextCheckingResult *match, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString *component;
+            if(idx == matches.count-1){
+                component = [string substringFromIndex:match.range.location];
+            }else{
+                component = [string substringWithRange:NSMakeRange(match.range.location, matches[idx+1].range.location-match.range.location)];
+            }
+            if([component containsString:@"[FTLog]"]){
+                [result deleteCharactersInRange:NSMakeRange(match.range.location, component.length)];
+            }
+        }];
+        return result;
+    }
+    if(string.length>0&&![string containsString:@"[FTLog]"]){
+        return string;
+    }
+    return nil;
+}
 
 @end
