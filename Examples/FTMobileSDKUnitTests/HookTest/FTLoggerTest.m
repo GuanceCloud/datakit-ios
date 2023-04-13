@@ -68,8 +68,9 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
-    for (int i = 0; i<19; i++) {
-        NSLog(@"testEnableTraceConsoleLog");
+    for (int i = 0; i<10; i++) {
+        [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+
     }
 
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -130,21 +131,25 @@
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    [loggerConfig enableConsoleLog:YES prefix:@"debug"];
+    [loggerConfig enableConsoleLog:YES prefix:@"debug-Test"];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    NSLog(@"debug testDisableTraceConsoleLog");
-    for (int i = 0; i<20; i++) {
-        NSLog(@"testDisableTraceConsoleLog");
-    }
+    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
-    for (int i = 0; i<20; i++) {
-        NSLog(@"debug testDisableTraceConsoleLog");
-    }
+    [[FTMobileAgent sharedInstance] resetInstance];
+    [self setRightSDKConfig];
+    
+    [loggerConfig enableConsoleLog:YES prefix:@"debug"];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
+    
     [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount2 == count+20);
+    XCTAssertTrue(newCount2 == count+1);
 
 }
 - (void)testLogLevelFilter{
@@ -277,15 +282,13 @@
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
-    NSLog(@"testSampleRate100");
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    XCTAssertTrue(oldDatas.count+2 == newDatas.count);
+    XCTAssertTrue(oldDatas.count+1 == newDatas.count);
 
 }
 - (void)testGlobalContext{

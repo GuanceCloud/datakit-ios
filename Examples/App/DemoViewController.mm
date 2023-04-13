@@ -18,6 +18,7 @@
 #import "TestJsbridgeData.h"
 #import "ManualRumAndTraceDataAdd.h"
 #import "NetworkTraceVC.h"
+#import "LoggerVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -55,29 +56,33 @@
         [weakSelf.navigationController pushViewController:[TestWKWebViewVC new] animated:YES];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"TraceConsoleLog" handler:^{
-        NSLog(@"Test_traceConsoleLog");
+        NSLog(@"debug Test_traceConsoleLog");
         PrintHookTest *test = [[PrintHookTest alloc]init];
         [test show];
     }];
-    TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppFreezeAndANR" handler:^{
+    TableViewCellItem *item7 = [[TableViewCellItem alloc]initWithTitle:@"Custom Logger" handler:^{
+        [weakSelf.navigationController pushViewController:[LoggerVC new] animated:YES];
+
+    }];
+    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppFreezeAndANR" handler:^{
         [weakSelf.navigationController pushViewController:[TestANRVC new] animated:YES];
     }];
-    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
+    TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
         [weakSelf.navigationController pushViewController:[CrashVC new] animated:YES];
     }];
-    TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"WebViewBridge" handler:^{
+    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"WebViewBridge" handler:^{
         [weakSelf.navigationController pushViewController:[TestJsbridgeData new] animated:YES];
     }];
-    TableViewCellItem *item10 = [[TableViewCellItem alloc]initWithTitle:@"globalContext dynamic tag" handler:^{
+    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"globalContext dynamic tag" handler:^{
         NSInteger i = arc4random();
         [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithFormat:@"dynamic_tags%ld",(long)i] forKey:@"DYNAMIC_TAG"];
     }];
-    TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"Manual Rum、Trace Data Add" handler:^{
+    TableViewCellItem *item12 = [[TableViewCellItem alloc]initWithTitle:@"Manual Rum、Trace Data Add" handler:^{
         [weakSelf.navigationController pushViewController:[ManualRumAndTraceDataAdd new] animated:YES];
 
     }];
    
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,item11,item12]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
