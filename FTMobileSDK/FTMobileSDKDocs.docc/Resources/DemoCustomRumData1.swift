@@ -6,17 +6,17 @@
 //
 
 import Foundation
-import FTMobileAgent
+import FTMobileSDK
 
 class CustomRumDemo{
     
     func simulationView(){
         
-        FTExtensionManager.shared().onCreateView("ViewA", loadTime: NSNumber.init(long: 123456))
+        FTExternalDataManager.shared().onCreateView("ViewA", loadTime: NSNumber.init(long: 123456))
         
-        FTExtensionManager.shared().startView(withName: "ViewA")
+        FTExternalDataManager.shared().startView(withName: "ViewA")
         
-        FTExtensionManager.shared().stopView()
+        FTExternalDataManager.shared().stopView()
         
     }
 }

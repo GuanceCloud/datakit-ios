@@ -32,13 +32,13 @@ done
 }
 
 doccCoverage(){
-xcodebuild -target FTMobileAgent DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO
+xcodebuild -target FTMobileSDK DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO
 
 xcrun docc convert FTMobileSDK/FTMobileSDKDocs.docc \
---fallback-display-name FTMobileAgent \
---fallback-bundle-identifier com.cloudcare.ft.mobile.sdk.FTMobileAgent \
+--fallback-display-name FTMobileSDK \
+--fallback-bundle-identifier com.cloudcare.ft.mobile.sdk.FTMobileSDK \
 --fallback-bundle-version 1.0 \
---additional-symbol-graph-dir ./build/FTMobileSDK.build/Release-iphoneos/FTMobileAgent.build/symbol-graph \
+--additional-symbol-graph-dir ./build/FTMobileSDK.build/Release-iphoneos/FTMobileSDK.build/symbol-graph \
 --experimental-documentation-coverage \
 --level detailed
 }
