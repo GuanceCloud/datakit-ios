@@ -6,32 +6,32 @@
 //
 
 import Foundation
-import FTMobileAgent
+import FTMobileSDK
 
 class CustomRumDemo:URLSessionTaskDelegate,URLSessionDataDelegate{
     
     func simulationView(){
         
-        FTExtensionManager.shared().onCreateView("ViewA", loadTime: NSNumber.init(long: 123456))
+        FTExternalDataManager.shared().onCreateView("ViewA", loadTime: NSNumber.init(long: 123456))
         
-        FTExtensionManager.shared().startView(withName: "ViewA")
+        FTExternalDataManager.shared().startView(withName: "ViewA")
         
-        FTExtensionManager.shared().stopView()
+        FTExternalDataManager.shared().stopView()
         
     }
     
     func simulationAction(){
-        FTExtensionManager.shared().addActionName("Custom_action_name", actionType: "click")
+        FTExternalDataManager.shared().addActionName("Custom_action_name", actionType: "click")
         
-        FTExtensionManager.shared().addClickAction(withName: "Custom_action_name2")
+        FTExternalDataManager.shared().addClickAction(withName: "Custom_action_name2")
     }
 
     func simulationError(){
-        FTExtensionManager.shared().addError(withType: "ios_crash", message: "Error_Message", stack: "Error_Stack")
+        FTExternalDataManager.shared().addError(withType: "ios_crash", message: "Error_Message", stack: "Error_Stack")
     }
     
     func simulationLongTask(){
-        FTExtensionManager.shared().addLongTask(withStack: "Stack", duration: NSNumber.init(long: 1000000000))
+        FTExternalDataManager.shared().addLongTask(withStack: "Stack", duration: NSNumber.init(long: 1000000000))
     }
     
     var data:Data?
@@ -40,7 +40,7 @@ class CustomRumDemo:URLSessionTaskDelegate,URLSessionDataDelegate{
     func simulationResource(){
         key = NSUUID().uuidString
         
-        FTExtensionManager.shared().startResource(withKey: key)
+        FTExternalDataManager.shared().startResource(withKey: key)
         
         let session = URLSession(configuration: URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil))
         let request = URLRequest.init(url: URL.init(string: "https://www.baidu.com"))
@@ -53,7 +53,7 @@ class CustomRumDemo:URLSessionTaskDelegate,URLSessionDataDelegate{
         self.metrics = metrics
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        FTExtensionManager.shared().stopResource(withKey: key)
+        FTExternalDataManager.shared().stopResource(withKey: key)
         
         let contentModel:FTResourceContentModel = FTResourceContentModel()
         let metricsModel:FTResourceMetricsModel? = nil
@@ -75,6 +75,6 @@ class CustomRumDemo:URLSessionTaskDelegate,URLSessionDataDelegate{
         if let metrics = self.metrics {
             metricsModel = FTResourceMetricsModel.init(taskMetrics: metrics)
         }
-        FTExtensionManager.shared().addResource(withKey: key, metrics: metricsModel, content: contentModel)
+        FTExternalDataManager.shared().addResource(withKey: key, metrics: metricsModel, content: contentModel)
     }
 }

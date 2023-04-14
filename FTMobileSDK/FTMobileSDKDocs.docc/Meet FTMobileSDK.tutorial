@@ -1,4 +1,4 @@
-@Tutorials(name: "FTMobileAgent") {
+@Tutorials(name: "FTMobileSDK") {
     @Intro(title: "应用监测 配置教程") {
              
     @Image(source: rum_access, alt: "应用监测 配置教程")

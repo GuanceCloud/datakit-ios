@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FTMobileAgent
+import FTMobileSDK
 
 
 func userLogin(userId:String,userName:String?,userEmail:String?){

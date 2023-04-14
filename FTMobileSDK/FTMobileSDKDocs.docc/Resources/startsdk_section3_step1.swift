@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FTMobileAgent
+import FTMobileSDK
 
 import UIKit
 
