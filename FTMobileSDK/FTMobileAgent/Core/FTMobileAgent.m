@@ -85,7 +85,7 @@ static dispatch_once_t onceToken;
             [[FTURLSessionAutoInstrumentation sharedInstance] setSdkUrlStr:config.metricsUrl];
         }
     }@catch(NSException *exception) {
-        ZYErrorLog(@"exception: %@", self, exception);
+        ZYLogError(@"exception: %@", self, exception);
     }
     return self;
 }
@@ -99,7 +99,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
-    ZYDebug(@"SDK RUM APPID:%@",rumConfigOptions.appid);
+    ZYLogDebug(@"SDK RUM APPID:%@",rumConfigOptions.appid);
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
@@ -142,16 +142,16 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     @try {
         if (!self.loggerConfig) {
-            ZYErrorLog(@"请先设置 FTLoggerConfig");
+            ZYLogError(@"请先设置 FTLoggerConfig");
             return;
         }
         if (!self.loggerConfig.enableCustomLog) {
-            ZYLog(@"enableCustomLog 未开启，数据不进行采集");
+            ZYLogDebug(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
         [self logging:content status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 }
 //用户绑定
@@ -166,15 +166,15 @@ static dispatch_once_t onceToken;
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:extra];
     }];
-    ZYDebug(@"Bind User ID : %@",Id);
+    ZYLogDebug(@"Bind User ID : %@",Id);
     if (userName) {
-        ZYDebug(@"Bind User Name : %@",userName);
+        ZYLogDebug(@"Bind User Name : %@",userName);
     }
     if (userEmail) {
-        ZYDebug(@"Bind User Email : %@",userEmail);
+        ZYLogDebug(@"Bind User Email : %@",userEmail);
     }
     if (extra) {
-        ZYDebug(@"Bind User Extra : %@",extra);
+        ZYLogDebug(@"Bind User Extra : %@",extra);
     }
 }
 //用户注销
@@ -182,7 +182,7 @@ static dispatch_once_t onceToken;
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value clearUser];
     }];
-    ZYDebug(@"User Logout");
+    ZYLogDebug(@"User Logout");
 }
 #pragma mark ========== private method ==========
 //RUM  ES
@@ -202,22 +202,22 @@ static dispatch_once_t onceToken;
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 }
 
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(FTLogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
     if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYErrorLog(@"传入的第数据格式有误，或content超过30kb");
+        ZYLogError(@"传入的第数据格式有误，或content超过30kb");
         return;
     }
     if (![self.logLevelFilterSet containsObject:@(status)]) {
-        ZYDebug(@"经过过滤算法判断-此条日志不采集");
+        ZYLogDebug(@"经过过滤算法判断-此条日志不采集");
         return;
     }
     if (![FTBaseInfoHandler randomSampling:self.loggerConfig.samplerate]){
-        ZYDebug(@"经过采集算法判断-此条日志不采集");
+        ZYLogDebug(@"经过采集算法判断-此条日志不采集");
         return;
     }
     @try {
@@ -247,7 +247,7 @@ static dispatch_once_t onceToken;
             dispatch_async(self.serialQueue, logBlock);
         }
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 }
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
@@ -275,7 +275,7 @@ static dispatch_once_t onceToken;
             }
         }
     } @catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
+        ZYLogError(@"%@ error: %@", self, exception);
     }
 }
 

@@ -58,7 +58,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         [self uploadTrackData];
     }
     @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 }
 -(void)applicationWillResignActive{
@@ -66,14 +66,14 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+        ZYLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
 -(void)applicationWillTerminate{
     @try {
         [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 }
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
@@ -123,7 +123,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         [self flushWithType:FT_DATA_TYPE_LOGGING];
         self.isUploading = NO;
     } @catch (NSException *exception) {
-        ZYErrorLog(@"执行上传操作失败 %@",exception);
+        ZYLogError(@"执行上传操作失败 %@",exception);
     }
 }
 -(BOOL)flushWithType:(NSString *)type{
@@ -133,37 +133,37 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     }
     FTRecordModel *model = [events lastObject];
     if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
-        ZYErrorLog(@"数据库删除已上传数据失败");
+        ZYLogError(@"数据库删除已上传数据失败");
         return NO;
     }
     return [self flushWithType:type];
 }
 -(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
     @try {
-        ZYDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
+        ZYLogDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
       
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                ZYErrorLog(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                ZYLogError(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;
                 dispatch_semaphore_signal(flushSemaphore);
                 return;
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
-            ZYDebug(@"Upload Response statusCode : %d",statusCode);
+            ZYLogDebug(@"Upload Response statusCode : %d",statusCode);
             if (!success) {
-                ZYErrorLog(@"服务器异常 稍后再试 response = %@",httpResponse);
+                ZYLogError(@"服务器异常 稍后再试 response = %@",httpResponse);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];
         dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
         return success;
     }  @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        ZYLogError(@"exception %@",exception);
     }
 
     return NO;

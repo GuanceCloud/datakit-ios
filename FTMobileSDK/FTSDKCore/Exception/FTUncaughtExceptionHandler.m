@@ -199,7 +199,7 @@ static void FTSignalHandler(int signal, siginfo_t* info, void* context) {
         sigaction(signals[i], &action, 0);
     }
 }
-static void FTClearSignalRegister() {
+static void FTClearSignalRegister(void) {
     signal(SIGSEGV,SIG_DFL);
     signal(SIGFPE,SIG_DFL);
     signal(SIGBUS,SIG_DFL);

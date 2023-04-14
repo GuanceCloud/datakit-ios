@@ -24,7 +24,7 @@
 - (FTNetworkInfoManager *(^)(NSString *value))setMetricsUrl {
     return ^(NSString *value) {
         self->_metricsUrl = value;
-        ZYDebug(@"SDK 数据采集地址：%@",value);
+        ZYLogInfo(@"SDK 数据采集地址：%@",value);
         return self;
     };
 }

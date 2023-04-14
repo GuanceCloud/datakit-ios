@@ -423,10 +423,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
         if (size) {
             result = @(answer);
         } else {
-            ZYErrorLog(@"Failed fetch %@ from sysctl.", hwName);
+            ZYLogError(@"Failed fetch %@ from sysctl.", hwName);
         }
     } @catch (NSException *exception) {
-        ZYErrorLog(@"%@: %@", self, exception);
+        ZYLogError(@"%@: %@", self, exception);
     }
     return result;
 }

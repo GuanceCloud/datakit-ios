@@ -33,7 +33,7 @@
         NSDictionary *data =@{FT_OP:op,
                               FT_OPDATA:opdata,
         };
-        ZYDebug(@"write data = %@",data);
+        ZYLogDebug(@"write data = %@",data);
         _op = op;
         _data =[FTJSONUtil convertToJsonData:data];
         if (tm&&tm>0) {

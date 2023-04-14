@@ -34,7 +34,7 @@
         }
         
     }@catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
+        ZYLogError(@"%@ error: %@", self, exception);
     }
 }
 // 查找弹框手势选择所在的 view

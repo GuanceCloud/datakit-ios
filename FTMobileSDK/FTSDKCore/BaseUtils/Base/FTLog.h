@@ -15,13 +15,13 @@
       line : __LINE__                                \
     format : (frmt), ## __VA_ARGS__]
 
-#define ZYDebug(...) ZYLog(__VA_ARGS__)
+#define ZYLogInfo(frmt,...) FTLOG_MACRO(StatusInfo,(frmt), ## __VA_ARGS__)
 
-#define ZYLog(frmt,...)\
-FTLOG_MACRO(StatusDebug,(frmt), ## __VA_ARGS__)
+#define ZYLogDebug(frmt,...) FTLOG_MACRO(StatusDebug,(frmt), ## __VA_ARGS__)
 
-#define ZYErrorLog(frmt,...)\
-FTLOG_MACRO(StatusError,(frmt), ## __VA_ARGS__)
+#define ZYLogError(frmt,...) FTLOG_MACRO(StatusError,(frmt), ## __VA_ARGS__)
+
+#define ZYLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
 #define FTCUSTOMLOG(lvl, frmt) \
 [[FTLog sharedInstance] log : YES                                     \

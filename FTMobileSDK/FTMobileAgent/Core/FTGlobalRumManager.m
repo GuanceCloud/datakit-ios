@@ -128,7 +128,7 @@ static dispatch_once_t onceToken;
     @try {
         NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
-            ZYErrorLog(@"Message body is formatted failure from JS SDK");
+            ZYLogError(@"Message body is formatted failure from JS SDK");
             return;
         }
         NSString *name = messageDic[@"name"];
@@ -146,7 +146,7 @@ static dispatch_once_t onceToken;
             }
         }
     } @catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
+        ZYLogError(@"%@ error: %@", self, exception);
     }
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
@@ -176,7 +176,7 @@ static dispatch_once_t onceToken;
         [self.rumManager stopViewWithProperty:nil];
         [self.rumManager applicationWillTerminate];
     }@catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+        ZYLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========

@@ -102,19 +102,19 @@ static void runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActi
             if (dsw != 0) {
                 if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
                     if (++strongSelf.countTime < strongSelf.standstillCount){
-                        ZYDebug(@"%ld",(long)strongSelf.countTime);
+                        ZYLogDebug(@"%ld",(long)strongSelf.countTime);
                         continue;
                     }
                     NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
-                    ZYDebug(@"++++%@",backtrace);
+                    ZYLogDebug(@"++++%@",backtrace);
                     id<FTANRDetectorDelegate> del = [FTANRDetector sharedInstance].delegate;
                     if (del != nil && [del respondsToSelector:@selector(onMainThreadSlowStackDetected:)]) {
                         [del onMainThreadSlowStackDetected:backtrace];
                     }
                     else
                     {
-                        ZYDebug(@"detect slow call stack on main thread! \n");
-                        ZYDebug(@"%@\n", backtrace);
+                        ZYLogDebug(@"detect slow call stack on main thread! \n");
+                        ZYLogDebug(@"%@\n", backtrace);
                     }
                 }
             }

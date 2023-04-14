@@ -102,7 +102,7 @@ static FTExtensionManager *sharedInstance = nil;
         [tagDict addEntriesFromDictionary:rumTag];
     }
 
-    ZYDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
+    ZYLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
                       @"tags":tagDict,
                       @"content":content
                     });
@@ -120,7 +120,7 @@ static FTExtensionManager *sharedInstance = nil;
     if(tags){
         [newTags addEntriesFromDictionary:tags];
     }
-    ZYDebug(@"%@\n",@{@"type":type,
+    ZYLogDebug(@"%@\n",@{@"type":type,
                     @"tags":newTags,
                     @"fields":fields});
     [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.extensionConfig.groupIdentifier];

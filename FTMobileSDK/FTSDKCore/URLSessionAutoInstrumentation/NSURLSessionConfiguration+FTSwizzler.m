@@ -33,7 +33,7 @@
         }
         self.protocolClasses = urlProtocolClasses;
     }else{
-        ZYErrorLog(@"NSURLSessionConfiguration get protocolClasses fail");
+        ZYLogError(@"NSURLSessionConfiguration get protocolClasses fail");
     }
 }
 @end

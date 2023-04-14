@@ -90,7 +90,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         BOOL success = [_db open];
 #endif
         if (!success) {
-            ZYDebug(@"Could not create database queue for path %@", aPath);
+            ZYLogError(@"Could not create database queue for path %@", aPath);
             ZY_FMDBRelease(self);
             return 0x00;
         }
@@ -167,7 +167,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         BOOL success = [_db open];
 #endif
         if (!success) {
-            ZYDebug(@"ZY_FMDatabaseQueue could not reopen database for path %@", _path);
+            ZYLogError(@"ZY_FMDatabaseQueue could not reopen database for path %@", _path);
             ZY_FMDBRelease(_db);
             _db  = 0x00;
             return 0x00;
@@ -194,13 +194,13 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
         block(db);
         
         if ([db hasOpenResultSets]) {
-            ZYDebug(@"Warning: there is at least one open result set around after performing [ZY_FMDatabaseQueue inDatabase:]");
+            ZYLogWarning(@"Warning: there is at least one open result set around after performing [ZY_FMDatabaseQueue inDatabase:]");
             
 #if defined(DEBUG) && DEBUG
             NSSet *openSetCopy = ZY_FMDBReturnAutoreleased([[db valueForKey:@"_openResultSets"] copy]);
             for (NSValue *rsInWrappedInATastyValueMeal in openSetCopy) {
                 ZY_FMResultSet *rs = (ZY_FMResultSet *)[rsInWrappedInATastyValueMeal pointerValue];
-                ZYDebug(@"query: '%@'", [rs query]);
+                ZYLogDebug(@"query: '%@'", [rs query]);
             }
 #endif
         }
@@ -283,7 +283,7 @@ static const void * const kDispatchQueueSpecificKey = &kDispatchQueueSpecificKey
     return err;
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (_db.logsErrors) ZYDebug(@"%@", errorMessage);
+    if (_db.logsErrors) ZYLogError(@"%@", errorMessage);
     return [NSError errorWithDomain:@"ZY_FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
 #endif
 }

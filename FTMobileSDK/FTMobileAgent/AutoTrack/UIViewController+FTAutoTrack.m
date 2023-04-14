@@ -50,7 +50,7 @@ static char *viewLoadDuration = "viewLoadDuration";
             blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
             
         } @catch(NSException *exception) {  // json加载和解析可能失败
-            ZYDebug(@"error: %@",exception);
+            ZYLogError(@"error: %@",exception);
         }
     });
     
