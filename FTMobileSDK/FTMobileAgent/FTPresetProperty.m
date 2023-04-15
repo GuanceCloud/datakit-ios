@@ -15,6 +15,12 @@
 #import "FTEnumConstant.h"
 #import "FTJSONUtil.h"
 #import "FTUserInfo.h"
+#import "FTConstants.h"
+#include <mach-o/dyld.h>
+#include <mach-o/nlist.h>
+#import <IOKit/IOKitLib.h>
+#include <sys/sysctl.h>
+#import "FTLog.h"
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
@@ -105,41 +111,13 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return self;
 }
-//-(NSMutableDictionary *)webCommonPropertyTags{
-//    @synchronized (self) {
-//        if (!_webCommonPropertyTags) {
-//            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-//            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-//        }
-//    }
-//    return _webCommonPropertyTags;
-//}
--(NSMutableDictionary *)rumCommonPropertyTags{
-    @synchronized (self) {
-        if (!_rumCommonPropertyTags) {
-            _rumCommonPropertyTags = [NSMutableDictionary new];
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
-            _rumCommonPropertyTags[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
-            _rumCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-            _rumCommonPropertyTags[FT_SDK_VERSION] = SDK_VERSION;
-            _rumCommonPropertyTags[FT_KEY_SERVICE] = self.service;
-        }
-    }
-    return _rumCommonPropertyTags;
-}
 -(NSDictionary *)baseCommonPropertyTags{
     if (!_baseCommonPropertyTags) {
         @synchronized (self) {
             if (!_baseCommonPropertyTags) {
                 _baseCommonPropertyTags =@{
-                    @"application_identifier":[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"],
-                    FT_COMMON_PROPERTY_DEVICE_UUID:[[UIDevice currentDevice] identifierForVendor].UUIDString,
+                    FT_APPLICATION_UUID:[self getApplicationUUID],
+                    FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
                     FT_KEY_SERVICE:self.service,
                 };
             }
@@ -169,6 +147,8 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{
     self.version = config.version;
     self.env = FTEnvStringMap[config.env];
+    self.service = config.service;
+    self.context = [config.globalContext copy];
 }
 - (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -177,8 +157,18 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     if (self.userHelper.currentValue.extra) {
         [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
     }
-    [dict addEntriesFromDictionary:self.rumCommonPropertyTags];
+    // rum common property tags
+    dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
+    dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
+    dict[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+    dict[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+    dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
+    dict[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
+    dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+    dict[FT_SDK_VERSION] = SDK_VERSION;
+    dict[FT_KEY_SERVICE] = self.service;
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
+    // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;
     dict[FT_USER_EMAIL] = self.userHelper.currentValue.email;
@@ -190,6 +180,60 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 }
 - (NSString *)isSigninStr{
     return self.userHelper.currentValue.isSignin?@"T":@"F";
+}
+- (NSString *)getApplicationUUID{
+    // 获取 image 的 index
+    const uint32_t imageCount = _dyld_image_count();
+    uint32_t mainImg = 0;
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *bundlePath = [mainBundle bundlePath];
+    NSString *executableName = infoDict[@"CFBundleExecutable"];
+    for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
+        const char* name = _dyld_get_image_name(iImg);
+        NSString *imagePath = [NSString stringWithUTF8String:name];
+        if ([imagePath containsString:bundlePath]&&[[imagePath lastPathComponent] isEqualToString:executableName]){
+            mainImg = iImg;
+            // 根据 index 获取 header
+            const struct mach_header* header = _dyld_get_image_header(mainImg);
+            uintptr_t cmdPtr = firstCmdAfterHeader(header);
+            if(cmdPtr == 0) {
+                return @"NULL";
+            }
+            uint8_t* uuid = NULL;
+            for(uint32_t iCmd = 0; iCmd < header->ncmds; iCmd++){
+                struct load_command* loadCmd = (struct load_command*)cmdPtr;
+                if (loadCmd->cmd == LC_UUID) {
+                    struct uuid_command* uuidCmd = (struct uuid_command*)cmdPtr;
+                    uuid = uuidCmd->uuid;
+                    break;
+                }
+                cmdPtr += loadCmd->cmdsize;
+            }
+            if(uuid != NULL){
+                CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuid));
+                NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
+                CFRelease(uuidRef);
+                return str == NULL ? @"NULL" : str;
+            }
+        }
+    }
+    return @"NULL";
+}
+//// 获取 Load Command
+static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
+    switch(header->magic)
+    {
+        case MH_MAGIC:
+        case MH_CIGAM:
+            return (uintptr_t)(header + 1);
+        case MH_MAGIC_64:
+        case MH_CIGAM_64:
+            return (uintptr_t)(((struct mach_header_64*)header) + 1);
+        default:
+            // Header is corrupt
+            return 0;
+    }
 }
 + (NSString *)deviceInfo{
     struct utsname systemInfo;
