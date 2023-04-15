@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
    end
    
    s.subspec  'FTMobileAgent' do | agent |
-       agent.ios.deployment_target = '9.0'
+       agent.ios.deployment_target = '10.0'
        agent.source_files = 'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
        agent.dependency 'FTMobileSDK/Common'
    end
