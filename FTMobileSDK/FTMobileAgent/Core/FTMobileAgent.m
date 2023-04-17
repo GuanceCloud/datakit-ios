@@ -71,7 +71,7 @@ static dispatch_once_t onceToken;
         if (self) {
             //基础类型的记录
             [FTLog enableLog:config.enableSDKDebugLog];
-            NSString *serialLabel = [NSString stringWithFormat:@"ft.serialLabel.%p", self];
+            NSString *serialLabel = [NSString stringWithFormat:@"ft.logger.%p", self];
             _serialQueue = dispatch_queue_create([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL);
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
 
@@ -112,7 +112,6 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
-        self.logHook = [[FTLogHook alloc]init];
         self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         if(self.loggerConfig.enableConsoleLog){
@@ -149,7 +148,19 @@ static dispatch_once_t onceToken;
             ZYLogDebug(@"enableCustomLog 未开启，数据不进行采集");
             return;
         }
-        [self logging:content status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
+        if (!content || content.length == 0 ) {
+            ZYLogError(@"传入的第数据格式有误");
+            return;
+        }
+        dispatch_block_t logBlock = ^{
+            [self logging:content status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
+        };
+        if(status == FTStatusError){
+            dispatch_sync(self.serialQueue, logBlock);
+        }else{
+            dispatch_async(self.serialQueue, logBlock);
+        }
+        
     } @catch (NSException *exception) {
         ZYLogError(@"exception %@",exception);
     }
@@ -208,10 +219,6 @@ static dispatch_once_t onceToken;
 
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(FTLogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
-    if (!content || content.length == 0 || [content ft_characterNumber]>FT_LOGGING_CONTENT_SIZE) {
-        ZYLogError(@"传入的第数据格式有误，或content超过30kb");
-        return;
-    }
     if (![self.logLevelFilterSet containsObject:@(status)]) {
         ZYLogDebug(@"经过过滤算法判断-此条日志不采集");
         return;
@@ -221,31 +228,25 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        dispatch_block_t logBlock = ^{
-            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
-            if (tags) {
-                [tagDict addEntriesFromDictionary:tags];
-            }
-            if (self.loggerConfig.enableLinkRumData) {
-                [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
-                if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
-                    NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-                    [tagDict addEntriesFromDictionary:rumTag];
-                }
-            }
-            NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
-            }.mutableCopy;
-            if (field) {
-                [filedDict addEntriesFromDictionary:field];
-            }
-            FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
-            [self insertDBWithItemData:model type:FTAddDataLogging];
-        };
-        if(status == FTStatusError){
-            dispatch_sync(self.serialQueue, logBlock);
-        }else{
-            dispatch_async(self.serialQueue, logBlock);
+        NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
+        if (tags) {
+            [tagDict addEntriesFromDictionary:tags];
         }
+        if (self.loggerConfig.enableLinkRumData) {
+            [tagDict addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP]];
+            if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
+                NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+                [tagDict addEntriesFromDictionary:rumTag];
+            }
+        }
+        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:newContent,
+        }.mutableCopy;
+        if (field) {
+            [filedDict addEntriesFromDictionary:field];
+        }
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
+        [self insertDBWithItemData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
         ZYLogError(@"exception %@",exception);
     }
@@ -281,6 +282,7 @@ static dispatch_once_t onceToken;
 
 //控制台日志采集
 - (void)_traceConsoleLog{
+    self.logHook = [[FTLogHook alloc]initWithQueue:self.serialQueue];
     __weak typeof(self) weakSelf = self;
     [self.logHook hookWithBlock:^(NSString * _Nonnull logStr,long long tm) {
             if (!weakSelf.loggerConfig.enableConsoleLog ) {

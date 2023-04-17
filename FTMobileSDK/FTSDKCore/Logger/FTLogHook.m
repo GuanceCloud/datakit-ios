@@ -17,14 +17,24 @@ static FTFishHookCallBack FTHookCallBack;
 @property (nonatomic, assign) int errFd;
 @property (nonatomic, assign) int outFd;
 @property (nonatomic, copy) NSString *regexStr;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTLogHook
-
+-(instancetype)initWithQueue:(dispatch_queue_t)queue{
+    self = [super init];
+    if(self){
+        _serialQueue = queue;
+    }
+    return self;
+}
 - (void)hookWithBlock:(FTFishHookCallBack)callBack{
-    NSString *pname = [[NSProcessInfo processInfo] processName];
-    self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
-    FTHookCallBack = callBack;
-    [self redirectSTD:STDERR_FILENO];
+   
+    dispatch_async(self.serialQueue, ^{
+        NSString *pname = [[NSProcessInfo processInfo] processName];
+        self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
+        FTHookCallBack = callBack;
+        [self redirectSTD:STDERR_FILENO];
+    });
 }
 - (void)redirectSTD:(int )fd {
     // 由于真机在断开数据线后会输出到 /dev/null 中, 这里要手动将buff设置为unbuffered
@@ -32,7 +42,7 @@ static FTFishHookCallBack FTHookCallBack;
     setvbuf(stderr, NULL, _IONBF, 0);
     self.outFd = dup(STDOUT_FILENO);
     self.errFd = dup(STDERR_FILENO);
-
+    
     NSPipe *outPipe = [NSPipe pipe];
     NSFileHandle *pipeOutHandle = [outPipe fileHandleForReading] ;
     dup2([[outPipe fileHandleForWriting] fileDescriptor], STDOUT_FILENO);
@@ -51,6 +61,9 @@ static FTFishHookCallBack FTHookCallBack;
                                              selector:@selector(redirectErrNotificationHandle:)
                                                  name:NSFileHandleReadCompletionNotification
                                                object:pipeErrHandle];
+    @autoreleasepool {
+        CFRunLoopRun();
+    }
 }
 - (void)recoverStandardOutput{
     if(self.outFd>0){
@@ -76,19 +89,25 @@ static FTFishHookCallBack FTHookCallBack;
     NSString *str = [[NSString alloc]initWithData:data encoding: NSUTF8StringEncoding];
     long long tm = [FTDateUtil currentTimeNanosecond];
     //如果开启 SDK 日志调试，需要进行过滤 SDK 内的调试日志
-    NSString *repleceStr = str;
-    if([FTLog isLoggerEnabled]){
-         repleceStr = [self matchString:str];
+    if(str.length>0){
+        NSString *repleceStr = str;
+        if([FTLog isLoggerEnabled]){
+            repleceStr = [self matchString:str];
+        }
+        if(repleceStr&&repleceStr.length>0){
+            FTHookCallBack(repleceStr,tm);
+        }
+        write(self.errFd,str.UTF8String,strlen(str.UTF8String));
     }
-    if(repleceStr){
-        FTHookCallBack(repleceStr,tm);
-    }
-    write(self.errFd,str.UTF8String,strlen(str.UTF8String));
     [[nf object] readInBackgroundAndNotify];
 }
 
 - (NSString *)matchString:(NSString *)string{
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:_regexStr options:NSRegularExpressionAnchorsMatchLines error:nil];
+    if(!string||string.length == 0){
+        return nil;
+    }
+    NSError *error;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:self.regexStr options:NSRegularExpressionAnchorsMatchLines error:&error];
     
     NSArray<NSTextCheckingResult *> * matches = [regex matchesInString:string options:0 range:NSMakeRange(0, [string length])];
     if(matches.count>1){
