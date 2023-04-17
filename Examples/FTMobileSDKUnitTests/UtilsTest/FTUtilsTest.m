@@ -44,6 +44,15 @@
     NSString *Chinese = @"一二三";
     XCTAssertTrue([Chinese ft_characterNumber] == 9);
 }
+- (void)testSubStringWithCharacterLength{
+    NSString *letterStr = @"abcde一二三";
+    NSString *subStr = [letterStr ft_subStringWithCharacterLength:4];
+    XCTAssertTrue([subStr isEqualToString:@"abcd"]);
+    NSString *subStr2 = [letterStr ft_subStringWithCharacterLength:15];
+    XCTAssertTrue([subStr2 isEqualToString:letterStr]);
+    NSString *subStr3 = [letterStr ft_subStringWithCharacterLength:6];
+    XCTAssertTrue([subStr3 isEqualToString:@"abcde"]);
+}
 #pragma mark FTJSONUtil
 - (void)testJSONSerializeDictObject{
     NSDictionary *dict =@{@"key1":@"value1",

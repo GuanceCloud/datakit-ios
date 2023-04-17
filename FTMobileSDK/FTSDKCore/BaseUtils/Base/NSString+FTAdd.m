@@ -47,6 +47,34 @@
 - (NSUInteger)ft_characterNumber{
     return [self lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 }
+- (NSString *)ft_subStringWithCharacterLength:(NSUInteger)length{
+    if (!self) return nil;
+    NSUInteger character = 0;
+    const char *chars = [self cStringUsingEncoding:NSUTF8StringEncoding];
+    NSUInteger charLength = length;
+    if (strlen(chars) <= charLength/3 +1) {//1个汉字或中文字符3个字节，1个英文1个字节
+        return self;
+    }
+    NSString *str = self;
+    for (int i=0; i<self.length; i++) {
+        unichar a = [self characterAtIndex:i];
+        if( a >= 0x4e00 && a <= 0x9fa5){ //判断是否为中文
+            character +=3;
+        }else{
+            character +=1;
+        }
+        if (character >= length) {//按字数截取
+            if (character == length) {
+                str = [str substringToIndex:i+1];
+            }else{
+                str = [str substringToIndex:i];
+            }
+//            str = [str stringByAppendingString:@"..."];
+            break;
+        }
+    }
+    return str;
+}
 -(NSString *)ft_removeFrontBackBlank{
     NSCharacterSet  *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
     NSString *string = [self stringByTrimmingCharactersInSet:set];
