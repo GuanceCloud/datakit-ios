@@ -137,7 +137,6 @@ extern NSString * const FT_MONITOR_FPS;
 extern NSString * const FT_MONITOR_BT_OPEN;
 
 #pragma mark ========== logging network trace key ==========
-extern NSString * const FT_APPLICATION_UUID;
 extern NSString * const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString * const FT_NETWORK_ZIPKIN_SPANID;
 extern NSString * const FT_NETWORK_ZIPKIN_PARENTSPANID;

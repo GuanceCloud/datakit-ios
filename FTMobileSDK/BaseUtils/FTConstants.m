@@ -140,7 +140,6 @@ NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";
 NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_KEY_OPERATION = @"operation";
-NSString * const FT_APPLICATION_UUID = @"application_UUID";
 NSString * const FT_NETWORK_ZIPKIN_TRACEID = @"X-B3-TraceId";
 NSString * const FT_NETWORK_ZIPKIN_SPANID = @"X-B3-SpanId";
 NSString * const FT_NETWORK_ZIPKIN_PARENTSPANID = @"X-B3-ParentSpanId";
