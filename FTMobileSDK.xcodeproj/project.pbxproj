@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1723363729F0197D000B0ED4 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 1723363629F0197D000B0ED4 /* FTMobileSDK.h */; };
+		1723363729F0197D000B0ED4 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 1723363629F0197D000B0ED4 /* FTMobileSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0729E9422600A7F271 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
