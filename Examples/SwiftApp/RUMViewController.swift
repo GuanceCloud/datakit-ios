@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import FTMobileAgent
+import FTMobileSDK
 struct RUMResource {
     var key:String
     var data:Data?

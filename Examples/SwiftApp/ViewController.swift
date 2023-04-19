@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import FTMobileAgent
+import FTMobileSDK
 class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     var dataSource:Array<String> = []
