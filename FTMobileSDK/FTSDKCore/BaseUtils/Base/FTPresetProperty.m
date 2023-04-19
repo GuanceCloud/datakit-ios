@@ -44,7 +44,7 @@ static NSString * const FT_SCREEN_SIZE = @"screen_size";
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
-static NSString * const FT_APPLICATION_UUID = @"application_UUID";
+static NSString * const FT_APPLICATION_UUID = @"application_uuid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
@@ -139,6 +139,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
+    [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
 - (void)resetWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
