@@ -12,7 +12,6 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
-#import "FTMobileAgent+Public.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import <objc/runtime.h>
@@ -177,6 +176,39 @@
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumserviceName = [rumtags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue([rumserviceName isEqualToString:@"testSetServiceName"]);
+}
+- (void)testEnvProperty{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.env = FTEnvLocal;
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testEnvProperty" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[FT_OPDATA];
+    NSDictionary *tags = op[FT_TAGS];
+    NSString *env = [tags valueForKey:@"env"];
+    XCTAssertTrue([env isEqualToString:FTEnvStringMap[FTEnvLocal]]);
+    [FTModelHelper startView];
+    [FTModelHelper startView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *rumArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *rumModel = [rumArray lastObject];
+    NSDictionary *rumdict = [FTJSONUtil dictionaryWithJsonString:rumModel.data];
+    NSDictionary *rumop = rumdict[FT_OPDATA];
+    NSDictionary *rumtags = rumop[FT_TAGS];
+    NSString *rumEnv = [rumtags valueForKey:@"env"];
+    XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvLocal]]);
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];

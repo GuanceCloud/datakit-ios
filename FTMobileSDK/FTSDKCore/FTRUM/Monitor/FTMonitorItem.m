@@ -10,7 +10,6 @@
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTMonitorValue.h"
-#import "FTThreadDispatchManager.h"
 #if !TARGET_OS_OSX
 #import <UIKit/UIKit.h>
 #endif

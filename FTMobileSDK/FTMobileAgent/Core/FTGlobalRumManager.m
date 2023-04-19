@@ -73,11 +73,6 @@ static dispatch_once_t onceToken;
     }
     //采集view、resource、jsBridge
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (rumConfig.enableTrackAppFreeze) {
-            [self startPingThread];
-        }else{
-            [self stopPingThread];
-        }
         if (rumConfig.enableTrackAppANR) {
             [FTANRDetector sharedInstance].delegate = self;
             [[FTANRDetector sharedInstance] startDetecting];
@@ -85,6 +80,11 @@ static dispatch_once_t onceToken;
             [[FTANRDetector sharedInstance] stopDetecting];
         }
     });
+    if (rumConfig.enableTrackAppFreeze) {
+        [self startPingThread];
+    }else{
+        [self stopPingThread];
+    }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }

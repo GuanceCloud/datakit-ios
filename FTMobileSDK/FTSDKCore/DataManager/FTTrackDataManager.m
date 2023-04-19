@@ -13,15 +13,14 @@
 #import "FTLog.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
-#import "FTThread.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
-@property (nonatomic, strong) FTThread *ftThread;
-@property (nonatomic, assign) BOOL isUploading;
+@property (atomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTTrackDataManager{
 }
@@ -36,8 +35,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.ftThread = [[FTThread alloc]init];
-        [self.ftThread start];
+        NSString *serialLabel = @"com.guance.network";
+        _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_CONCURRENT, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
@@ -110,31 +109,35 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     if(![FTReachability sharedInstance].isReachable){
         return;
     }
-    //常驻线程 进行上传操作
-    [self performSelector:@selector(privateUpload) onThread:self.ftThread withObject:nil waitUntilDone:NO];
+    [self privateUpload];
 }
 - (void)privateUpload{
-    if (self.isUploading) {
-        return;
-    }
-    self.isUploading = YES;
     @try {
-        [self flushWithType:FT_DATA_TYPE_RUM];
-        [self flushWithType:FT_DATA_TYPE_LOGGING];
-        self.isUploading = NO;
+        dispatch_async(self.serialQueue, ^{
+            if (self.isUploading) {
+                return;
+            }
+            self.isUploading = YES;
+            [self flushWithType:FT_DATA_TYPE_RUM];
+            [self flushWithType:FT_DATA_TYPE_LOGGING];
+            
+            self.isUploading = NO;
+        });
     } @catch (NSException *exception) {
         ZYLogError(@"执行上传操作失败 %@",exception);
     }
 }
 -(BOOL)flushWithType:(NSString *)type{
-    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
-    if (events.count == 0 || ![self flushWithEvents:events type:type]) {
-        return NO;
-    }
-    FTRecordModel *model = [events lastObject];
-    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
-        ZYLogError(@"数据库删除已上传数据失败");
-        return NO;
+    @autoreleasepool {
+        NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+        if (events.count == 0 || ![self flushWithEvents:events type:type]) {
+            return NO;
+        }
+        FTRecordModel *model = [events lastObject];
+        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
+            ZYLogError(@"数据库删除已上传数据失败");
+            return NO;
+        }
     }
     return [self flushWithType:type];
 }

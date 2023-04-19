@@ -18,6 +18,7 @@
 @implementation FTPingThread
 
 - (void)main {
+    self.name = @"com.guance.pingthread";
     [self pingMainThread];
 }
 -(dispatch_semaphore_t)semaphore{

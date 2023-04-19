@@ -17,19 +17,19 @@ static FTFishHookCallBack FTHookCallBack;
 @property (nonatomic, assign) int errFd;
 @property (nonatomic, assign) int outFd;
 @property (nonatomic, copy) NSString *regexStr;
-@property (nonatomic, strong) dispatch_queue_t serialQueue;
+@property (nonatomic, strong) dispatch_queue_t concurrentQueue;
 @end
 @implementation FTLogHook
--(instancetype)initWithQueue:(dispatch_queue_t)queue{
+-(instancetype)init{
     self = [super init];
     if(self){
-        _serialQueue = queue;
+        _concurrentQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
 - (void)hookWithBlock:(FTFishHookCallBack)callBack{
    
-    dispatch_async(self.serialQueue, ^{
+    dispatch_async(self.concurrentQueue, ^{
         NSString *pname = [[NSProcessInfo processInfo] processName];
         self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
         FTHookCallBack = callBack;
