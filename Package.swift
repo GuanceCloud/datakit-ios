@@ -13,7 +13,7 @@ let package = Package(
             name: "FTMobileSDK",
             type: .static,
             targets: [
-                "FTMobileAgent",
+                "FTMobileSDK",
             ]),
         .library(
             name: "FTMobileExtension",
@@ -34,7 +34,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "FTMobileAgent",
+            name: "FTMobileSDK",
             dependencies: [
                            "FTSDKCore",
                            "_FTExtension",

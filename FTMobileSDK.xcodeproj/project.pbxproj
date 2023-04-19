@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1723363729F0197D000B0ED4 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 1723363629F0197D000B0ED4 /* FTMobileSDK.h */; };
+		175C7D0729E9422600A7F271 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		175C7D0E29E9438600A7F271 /* FTMobileAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		175C7D1029E9439700A7F271 /* FTURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB7629CD42E4005C2D99 /* FTURLSessionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1763BD8629DFF04F009EE026 /* FTNetworkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */; };
 		1763BD8729DFF04F009EE026 /* FTNetworkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1763BD8829DFF04F009EE026 /* FTReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 1763BD6D29DFF04F009EE026 /* FTReachability.m */; };
@@ -451,6 +457,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1723363629F0197D000B0ED4 /* FTMobileSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTMobileSDK.h; path = FTMobileSDK/FTMobileSDK.h; sourceTree = "<group>"; };
 		17510EC829C9C24500C8F1E4 /* FTSDKCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSDKCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
 		1763BD6D29DFF04F009EE026 /* FTReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReachability.m; sourceTree = "<group>"; };
@@ -482,7 +489,6 @@
 		17678E1929D28BD200C1DA98 /* FTMobileConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMobileConfig.m; sourceTree = "<group>"; };
 		17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileAgent.h; sourceTree = "<group>"; };
 		17678E1C29D28BD200C1DA98 /* FTGlobalRumManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTGlobalRumManager.h; sourceTree = "<group>"; };
-		17678E1D29D28BD200C1DA98 /* FTMobileAgent+Public.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FTMobileAgent+Public.h"; sourceTree = "<group>"; };
 		17678E1E29D28BD200C1DA98 /* FTMobileAgentVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileAgentVersion.h; sourceTree = "<group>"; };
 		17678E1F29D28BD200C1DA98 /* FTTraceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTraceManager.m; sourceTree = "<group>"; };
 		17678E2029D28BD200C1DA98 /* FTGlobalRumManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTGlobalRumManager.m; sourceTree = "<group>"; };
@@ -716,7 +722,6 @@
 		17678E1A29D28BD200C1DA98 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				17678E1D29D28BD200C1DA98 /* FTMobileAgent+Public.h */,
 				17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */,
 				17678E2129D28BD200C1DA98 /* FTMobileAgent.m */,
 				17678E1C29D28BD200C1DA98 /* FTGlobalRumManager.h */,
@@ -1054,6 +1059,7 @@
 		4A884250239E5754001B44C3 = {
 			isa = PBXGroup;
 			children = (
+				1723363629F0197D000B0ED4 /* FTMobileSDK.h */,
 				17E4CC5429CD42F3005C2D99 /* FTMobileSDKDocs.docc */,
 				17E4CB6529CD42E3005C2D99 /* FTMobileAgent */,
 				17E4CC4729CD42EB005C2D99 /* FTMobileExtension */,
@@ -1310,6 +1316,7 @@
 				17E4CBE029CD42E4005C2D99 /* NSURLSessionConfiguration+FTSwizzler.h in Headers */,
 				17E4CC1F29CD42E4005C2D99 /* FTTracerProtocol.h in Headers */,
 				1763BDA429DFF04F009EE026 /* ZY_FMDatabaseQueue.h in Headers */,
+				1723363729F0197D000B0ED4 /* FTMobileSDK.h in Headers */,
 				17E4CB3329CD42DA005C2D99 /* FTSwizzler.h in Headers */,
 				1776063029D1347500D17137 /* FTWKWebViewHandler.h in Headers */,
 				17E4CB4D29CD42DA005C2D99 /* FTResourceMetricsModel.h in Headers */,
