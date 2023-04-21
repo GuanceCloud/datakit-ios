@@ -47,9 +47,8 @@
         
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         
-        dispatch_async(dispatch_get_main_queue(), ^{
             callback(httpResponse,data,error);
-        });
+       
     }];
     
     [task resume];

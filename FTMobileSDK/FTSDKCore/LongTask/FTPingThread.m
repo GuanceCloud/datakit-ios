@@ -18,6 +18,7 @@
 @implementation FTPingThread
 
 - (void)main {
+    self.name = @"com.guance.freeze_monitor";
     [self pingMainThread];
 }
 -(dispatch_semaphore_t)semaphore{
