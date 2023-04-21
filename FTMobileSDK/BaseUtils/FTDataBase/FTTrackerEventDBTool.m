@@ -117,27 +117,23 @@ static dispatch_once_t onceToken;
     pthread_mutex_lock(&_lock);
     [self.messageCaches addObject:item];
     if (self.messageCaches.count>=20) {
-        NSArray *array = self.messageCaches.copy;
-        [self.messageCaches removeAllObjects];
-        pthread_mutex_unlock(&_lock);
-        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING]-array.count;
+        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithOp:FT_DATA_TYPE_LOGGING]-self.messageCaches.count;
         
         if(count < 0){
             if(!self.discardNew){
                 [[FTTrackerEventDBTool sharedManger] deleteLoggingItem:-count];
             }else{
-                if (count+array.count>0) {
-                    array =  [array subarrayWithRange:NSMakeRange(0, count+array.count)];
-                }else{
-                    return;
+                NSInteger sum = count+self.messageCaches.count;
+                if (sum>=0) {
+                    [self.messageCaches removeObjectsInRange:NSMakeRange(sum, self.messageCaches.count-sum)];
                 }
             }
         }
-        [self insertItemsWithDatas:array];
-
-    }else{
-        pthread_mutex_unlock(&_lock);
+        [self insertItemsWithDatas:self.messageCaches];
+        [self.messageCaches removeAllObjects];
     }
+    pthread_mutex_unlock(&_lock);
+
 }
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
     __block BOOL needRoolback = NO;
