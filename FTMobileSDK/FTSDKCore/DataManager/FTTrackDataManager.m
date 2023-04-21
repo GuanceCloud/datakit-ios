@@ -36,7 +36,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     self = [super init];
     if (self) {
         NSString *serialLabel = @"com.guance.network";
-        _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_CONCURRENT, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+        _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;

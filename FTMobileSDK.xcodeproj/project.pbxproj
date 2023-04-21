@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1723363729F0197D000B0ED4 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 1723363629F0197D000B0ED4 /* FTMobileSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		174CA02E29F0DBB20003BB40 /* FTSDKCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 174CA02D29F0DBB20003BB40 /* FTSDKCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0729E9422600A7F271 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -434,6 +435,7 @@
 
 /* Begin PBXFileReference section */
 		1723363629F0197D000B0ED4 /* FTMobileSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTMobileSDK.h; path = FTMobileSDK/FTMobileSDK.h; sourceTree = "<group>"; };
+		174CA02D29F0DBB20003BB40 /* FTSDKCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSDKCore.h; sourceTree = "<group>"; };
 		17510EC829C9C24500C8F1E4 /* FTSDKCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSDKCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
 		1763BD6D29DFF04F009EE026 /* FTReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReachability.m; sourceTree = "<group>"; };
@@ -871,6 +873,7 @@
 				17E4CB6629CD42E3005C2D99 /* URLSessionAutoInstrumentation */,
 				17E4CB7929CD42E4005C2D99 /* LongTask */,
 				17E4CACF29CD42DA005C2D99 /* BaseUtils */,
+				174CA02D29F0DBB20003BB40 /* FTSDKCore.h */,
 			);
 			name = FTSDKCore;
 			path = FTMobileSDK/FTSDKCore;
@@ -1072,6 +1075,7 @@
 				1776067729D1370000D17137 /* FTConstants.h in Headers */,
 				177606B529D137DD00D17137 /* FTRumResourceProtocol.h in Headers */,
 				1776073329D13A4500D17137 /* WKWebView+FTAutoTrack.h in Headers */,
+				174CA02E29F0DBB20003BB40 /* FTSDKCore.h in Headers */,
 				1776071629D139F700D17137 /* FTURLSessionAutoInstrumentation.h in Headers */,
 				177606BF29D137F100D17137 /* FTTracerProtocol.h in Headers */,
 				1776071E29D13A0500D17137 /* FTURLSessionInterceptor.h in Headers */,
