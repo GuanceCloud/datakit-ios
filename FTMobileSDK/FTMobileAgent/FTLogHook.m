@@ -111,8 +111,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
                 __messageBuffer[i] = str[i];
                 __buffIdx ++;
             }
-            __messageBuffer[__buffIdx + 1] = '\0';
-            __buffIdx ++;
+            __messageBuffer[__buffIdx ] = '\0';
         }
     }
     
