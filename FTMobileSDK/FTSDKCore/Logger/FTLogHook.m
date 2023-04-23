@@ -18,6 +18,7 @@ static FTFishHookCallBack FTHookCallBack;
 @property (nonatomic, assign) int outFd;
 @property (nonatomic, copy) NSString *regexStr;
 @property (nonatomic, strong) dispatch_queue_t concurrentQueue;
+@property (nonatomic, strong) NSDateFormatter *consoletmf;
 @end
 @implementation FTLogHook
 -(instancetype)init{
@@ -32,6 +33,9 @@ static FTFishHookCallBack FTHookCallBack;
     dispatch_async(self.concurrentQueue, ^{
         NSString *pname = [[NSProcessInfo processInfo] processName];
         self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];// 创建一个时间格式化对象2023-04-21 20:14:40.871026+0800
+        [dateFormatter setDateFormat:@"YYYY-MM-dd HH:mm:ss.SSSSSS"];
+        self.consoletmf = dateFormatter;
         FTHookCallBack = callBack;
         [self redirectSTD:STDERR_FILENO];
     });
@@ -87,48 +91,35 @@ static FTFishHookCallBack FTHookCallBack;
 - (void)redirectErrNotificationHandle:(NSNotification *)nf {
     NSData *data = [[nf userInfo] objectForKey: NSFileHandleNotificationDataItem];
     NSString *str = [[NSString alloc]initWithData:data encoding: NSUTF8StringEncoding];
-    long long tm = [FTDateUtil currentTimeNanosecond];
     //如果开启 SDK 日志调试，需要进行过滤 SDK 内的调试日志
     if(str.length>0){
-        NSString *repleceStr = str;
-        if([FTLog isLoggerEnabled]){
-            repleceStr = [self matchString:str];
-        }
-        if(repleceStr&&repleceStr.length>0){
-            FTHookCallBack(repleceStr,tm);
-        }
         write(self.errFd,str.UTF8String,strlen(str.UTF8String));
+        [self matchString:str];
     }
     [[nf object] readInBackgroundAndNotify];
 }
 
-- (NSString *)matchString:(NSString *)string{
-    if(!string||string.length == 0){
-        return nil;
-    }
+- (void)matchString:(NSString *)string{
     NSError *error;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:self.regexStr options:NSRegularExpressionAnchorsMatchLines error:&error];
     
     NSArray<NSTextCheckingResult *> * matches = [regex matchesInString:string options:0 range:NSMakeRange(0, [string length])];
-    if(matches.count>1){
+    if(matches.count>0){
         __block NSMutableString *result = [NSMutableString stringWithString:string];
-        [matches enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSTextCheckingResult *match, NSUInteger idx, BOOL * _Nonnull stop) {
+        [matches enumerateObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(NSTextCheckingResult *match, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *component;
             if(idx == matches.count-1){
                 component = [string substringFromIndex:match.range.location];
             }else{
                 component = [string substringWithRange:NSMakeRange(match.range.location, matches[idx+1].range.location-match.range.location)];
             }
-            if([component containsString:@"[FTLog]"]){
-                [result deleteCharactersInRange:NSMakeRange(match.range.location, component.length)];
+            if(![component containsString:@"[FTLog]"] && FTHookCallBack){
+              
+              NSDate *tm = [self.consoletmf dateFromString:[result substringToIndex:25]];
+              FTHookCallBack(result,[FTDateUtil dateTimeNanosecond:tm]);
             }
         }];
-        return result;
     }
-    if(string.length>0&&![string containsString:@"[FTLog]"]){
-        return string;
-    }
-    return nil;
 }
 
 @end
