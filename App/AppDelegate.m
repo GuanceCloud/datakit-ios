@@ -85,7 +85,7 @@
         
     }
     // UI 测试
-    if(isUITests){
+    if(isUITests && url){
         //禁止上传逻辑
         [[FTTrackDataManger sharedInstance] setValue:@YES forKey:@"isUploading"];
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
