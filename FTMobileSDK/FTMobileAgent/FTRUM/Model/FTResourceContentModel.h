@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *errorMessage;
 
 //trace ios native
-@property (nonatomic, strong) NSError *error;
+@property (nonatomic, strong, nullable) NSError *error;
 
 //rum
 @property (nonatomic, copy) NSString *responseBody;

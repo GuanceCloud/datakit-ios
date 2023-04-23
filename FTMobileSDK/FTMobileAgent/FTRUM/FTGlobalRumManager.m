@@ -252,7 +252,6 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
-    _rumManger = nil;
     onceToken = 0;
     sharedInstance =nil;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

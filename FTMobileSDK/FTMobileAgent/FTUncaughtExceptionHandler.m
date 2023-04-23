@@ -311,17 +311,19 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
                     uuid = [[[NSUUID alloc] initWithUUIDBytes:uuidCommand->uuid] UUIDString];
                 }
             }
-            loadAddress = vmbase + vmslide;
-            loadEndAddress = loadAddress + vmsize - 1;
-            NSString *loadAddressStr = [NSString stringWithFormat:@"0x%llx",loadAddress];
-            address = [address stringByReplacingOccurrencesOfString:uuid withString:loadAddressStr];
-            address = [address stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"%@_",imageName] withString:loadAddressStr];
-            uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
-            NSString *cpuType = [FTCallStack getMachine:header->cputype];
-            NSString *image = [NSString stringWithFormat:@"       %@ -        0x%llx %@ %@ <%@> %@",loadAddressStr,loadEndAddress,imageName,[cpuType lowercaseString],uuid,imagePath];
-            [images addObject:image];
-            if (header->filetype == MH_EXECUTE) {
-                codeType =[NSString stringWithFormat:@"Code Type:   %@",cpuType];
+            if(uuid != nil){
+                loadAddress = vmbase + vmslide;
+                loadEndAddress = loadAddress + vmsize - 1;
+                NSString *loadAddressStr = [NSString stringWithFormat:@"0x%llx",loadAddress];
+                address = [address stringByReplacingOccurrencesOfString:uuid withString:loadAddressStr];
+                address = [address stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"%@_",imageName] withString:loadAddressStr];
+                uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
+                NSString *cpuType = [FTCallStack getMachine:header->cputype];
+                NSString *image = [NSString stringWithFormat:@"       %@ -        0x%llx %@ %@ <%@> %@",loadAddressStr,loadEndAddress,imageName,[cpuType lowercaseString],uuid,imagePath];
+                [images addObject:image];
+                if (header->filetype == MH_EXECUTE) {
+                    codeType =[NSString stringWithFormat:@"Code Type:   %@",cpuType];
+                }
             }
         }
     }

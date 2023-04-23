@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * 获取 trace 添加的请求头参数
  */
-- (NSDictionary *)getTraceHeader;
+- (nullable NSDictionary *)getTraceHeader;
 
 @end
 NS_ASSUME_NONNULL_END

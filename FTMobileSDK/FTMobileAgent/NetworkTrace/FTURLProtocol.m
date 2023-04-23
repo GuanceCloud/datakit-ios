@@ -136,12 +136,9 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
         [self.client URLProtocolDidFinishLoading:self];
     }
     if (self.trackUrl) {
-        NSDate *start = nil;
         NSNumber *duration = @(-1);
         if (@available(iOS 11.0, *)) {
             if (self.metrics) {
-                NSURLSessionTaskTransactionMetrics *taskMes = [self.metrics.transactionMetrics lastObject];
-                start = taskMes.requestStartDate;
                 duration = [NSNumber numberWithInt:[self.metrics.taskInterval duration]*1000000];
             }
         }

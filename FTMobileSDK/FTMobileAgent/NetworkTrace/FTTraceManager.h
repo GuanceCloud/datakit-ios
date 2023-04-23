@@ -21,7 +21,7 @@ typedef BOOL(^FTIntakeUrl)(NSURL *url);
 
 - (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url;
 
-- (FTTraceHandler *)getTraceHandler:(NSString *)key;
+- (nullable FTTraceHandler *)getTraceHandler:(NSString *)key;
 - (void)removeTraceHandlerWithKey:(NSString *)key;
 @end
 

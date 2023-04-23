@@ -72,16 +72,15 @@
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
 }
 
-- (NSString*) _evaluateJavascript:(NSString*)javascriptCommand {
+- (void) _evaluateJavascript:(NSString*)javascriptCommand {
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
-    return NULL;
 }
 
 -(void)dealloc{
     [self removeScriptMessageHandler];
 }
 
-NSString * FTWebViewJavascriptBridge_js() {
+NSString * FTWebViewJavascriptBridge_js(void) {
 #define __WVJB_js_func__(x) #x
     //FTWebViewJavascriptBridge
     // BEGIN preprocessorJSCode

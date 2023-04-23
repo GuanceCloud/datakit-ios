@@ -146,7 +146,7 @@ static dispatch_once_t onceToken;
                     needRoolback = YES;
                 }
             }];
-            rollback = &needRoolback;
+            *rollback = needRoolback;
         }];
         
     }
