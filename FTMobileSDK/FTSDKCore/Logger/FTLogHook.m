@@ -93,8 +93,8 @@ static FTFishHookCallBack FTHookCallBack;
     NSString *str = [[NSString alloc]initWithData:data encoding: NSUTF8StringEncoding];
     //如果开启 SDK 日志调试，需要进行过滤 SDK 内的调试日志
     if(str.length>0){
-        write(self.errFd,str.UTF8String,strlen(str.UTF8String));
         [self matchString:str];
+        write(self.errFd,str.UTF8String,strlen(str.UTF8String));
     }
     [[nf object] readInBackgroundAndNotify];
 }
@@ -105,7 +105,6 @@ static FTFishHookCallBack FTHookCallBack;
     
     NSArray<NSTextCheckingResult *> * matches = [regex matchesInString:string options:0 range:NSMakeRange(0, [string length])];
     if(matches.count>0){
-        __block NSMutableString *result = [NSMutableString stringWithString:string];
         [matches enumerateObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(NSTextCheckingResult *match, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *component;
             if(idx == matches.count-1){
@@ -115,8 +114,8 @@ static FTFishHookCallBack FTHookCallBack;
             }
             if(![component containsString:@"[FTLog]"] && FTHookCallBack){
               
-              NSDate *tm = [self.consoletmf dateFromString:[result substringToIndex:25]];
-              FTHookCallBack(result,[FTDateUtil dateTimeNanosecond:tm]);
+              NSDate *tm = [self.consoletmf dateFromString:[component substringToIndex:25]];
+              FTHookCallBack(component,[FTDateUtil dateTimeNanosecond:tm]);
             }
         }];
     }
