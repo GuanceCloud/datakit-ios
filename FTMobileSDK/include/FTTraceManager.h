@@ -1,1 +1,1 @@
-../FTMobileAgent/FTTraceManager.h
+../FTMobileAgent/Core/FTTraceManager.h

@@ -1,1 +1,1 @@
-../FTMobileAgent/FTMobileAgent+Public.h
+../FTMobileAgent/Core/FTMobileAgent+Public.h

@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
        agent.dependency  'FTMobileSDK/FunctionModule'        
 
        agent.subspec 'AutoTrack' do |a|
-       a.source_files = 'FTMobileSDK/FTMobileAgent/AutoTrack/**/*{.h,.m}'
+       a.source_files = 'FTMobileSDK/FTMobileAgent/AutoTrack/**/*{.h,.m}','FTMobileSDK/FTMobileAgent/Logger/*{.h,.m,.c}'
        a.dependency 'FTMobileSDK/Common'
        a.dependency 'FTMobileSDK/FunctionModule/Protocol'
        a.dependency 'FTMobileSDK/FunctionModule/FTWKWebView'
