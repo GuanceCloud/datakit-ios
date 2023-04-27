@@ -22,6 +22,7 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
+#import "FTEnumConstant.h"
 NS_ASSUME_NONNULL_BEGIN
 @class FTRumConfig,FTTraceConfig;
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
@@ -37,13 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 设置 rum 配置项，采集 resource 数据
 /// - Parameter config: rum 配置项
-- (void)setRUMConfig:(FTRumConfig *)config;
+- (void)setRUMEnableTraceUserResource:(BOOL)enable;
 
 /// 设置 trace 配置项，开启 trace
 /// - Parameters:
 ///   - config: trace 配置项
-- (void)setTraceConfig:(FTTraceConfig *)config;
-
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType;
 /// 设置 sdk 内部的数据上传 url
 /// - Parameter sdkUrlStr: sdk 内部的数据上传 url
 - (void)setSdkUrlStr:(NSString *)sdkUrlStr;

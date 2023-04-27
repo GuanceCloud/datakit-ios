@@ -51,7 +51,7 @@ typedef BOOL(^FTIntakeUrl)(NSURL *url);
 /// - Parameters:
 ///   - task: 请求任务
 ///   - metrics: 请求任务的数据记录
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macos(10.12));
 /// 收集请求的返回数据
 /// - Parameters:
 ///   - task: 请求任务

@@ -18,6 +18,8 @@ NSString * const FT_OP  = @"op";
 // source
 NSString * const FT_KEY_SOURCE = @"source";
 NSString * const FT_LOGGER_SOURCE = @"df_rum_ios_log";
+NSString * const FT_LOGGER_MACOS_SOURCE = @"df_rum_macos_log";
+
 NSString * const FT_RUM_SOURCE_RESOURCE = @"resource";
 NSString * const FT_RUM_SOURCE_ERROR = @"error";
 NSString * const FT_RUM_SOURCE_VIEW = @"view";

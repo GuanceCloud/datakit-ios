@@ -21,6 +21,7 @@
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
 #import "FTMobileConfig+Private.h"
+#import "FTEnumConstant.h"
 @interface FTExtensionManager ()<FTRUMDataWriteProtocol>
 @property (nonatomic, strong) FTRUMManager *rumManager;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -70,8 +71,8 @@ static FTExtensionManager *sharedInstance = nil;
     self.loggerConfig = loggerConfig;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
-    self.rumManager = [[FTRUMManager alloc] initWithRumConfig:rumConfigOptions monitor:nil wirter:self];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMEnableTraceUserResource:rumConfigOptions.enableTraceUserResource];
+    self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil wirter:self];
     self.rumManager.appState = AppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
@@ -83,7 +84,7 @@ static FTExtensionManager *sharedInstance = nil;
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
 
 }

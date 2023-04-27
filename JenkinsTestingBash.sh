@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}" # restore positional parametersCERT_FILE
 
-cd "App.xcodeproj/xcshareddata/xcschemes/"
+cd "Examples/Examples.xcodeproj/xcshareddata/xcschemes/"
 
 sed -i '' 's/$APP_ID/'"$APP_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
@@ -50,7 +50,7 @@ sed -i '' 's~$TRACE_URL~'"$TRACE_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
 cd ../../..
 pod install
 
-xcodebuild test -workspace App.xcworkspace \
+xcodebuild test -workspace Examples.xcworkspace \
   -scheme FTMobileSDKUnitTestsForCmd \
   -only-testing FTMobileSDKUnitTests \
   -destination "$DEVICE_DESTINATION"

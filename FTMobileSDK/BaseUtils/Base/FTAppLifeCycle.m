@@ -6,9 +6,7 @@
 //
 
 #import "FTAppLifeCycle.h"
-#if !TARGET_OS_OSX
-#import <UIKit/UIKit.h>
-#endif
+#import "FTSDKCompat.h"
 @interface FTAppLifeCycle()
 @property(strong, nonatomic, readonly) NSPointerArray *appLifecycleDelegates;
 @property(strong, nonatomic, readonly) NSLock *delegateLock;

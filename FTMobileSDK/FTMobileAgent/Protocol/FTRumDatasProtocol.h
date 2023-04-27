@@ -36,19 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 离开页面
 /// - Parameter property: 事件自定义属性(可选)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
-
-/// 添加 Click Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-- (void)addClickActionWithName:(NSString *)actionName;
-
-/// 添加 Click Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - property: 事件自定义属性(可选)
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
-
 /// 添加 Action 事件
 ///
 /// - Parameters:
@@ -92,6 +79,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
 
 @optional
+/// 添加 Click Action 事件
+///
+/// - Parameters:
+///   - actionName: 事件名称
+- (void)addClickActionWithName:(NSString *)actionName;
+
+/// 添加 Click Action 事件
+/// - Parameters:
+///   - actionName: 事件名称
+///   - property: 事件自定义属性(可选)
+- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 /**
  * 进入页面
  * @param viewId          页面id

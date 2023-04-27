@@ -13,72 +13,71 @@
 #import "FTBaseInfoHandler.h"
 #import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
-#import "FTMobileConfig.h"
 static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, copy) NSString *skyTraceId;
 @property (nonatomic, copy) NSString *skyParentInstance;
-@property (nonatomic, assign) int samplerate;
-@property (nonatomic, assign) FTNetworkTraceType networkTraceType;
+@property (nonatomic, assign) int sampleRate;
+@property (nonatomic, assign) NetworkTraceType networkTraceType;
 @end
 @implementation FTTracer
--(instancetype)initWithConfig:(FTTraceConfig *)config{
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
     self = [super init];
     if (self) {
-        _samplerate = config.samplerate;
-        _networkTraceType = config.networkTraceType;
+        _sampleRate = sampleRate;
+        _networkTraceType = traceType;
     }
     return self;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
-    BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
+    BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
     switch (self.networkTraceType) {
-        case FTNetworkTraceTypeJaeger:
+        case Jaeger:
             return [self getJaegerHeader:sampled handler:nil];
-        case FTNetworkTraceTypeZipkinMultiHeader:
+        case ZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled handler:nil];
-        case FTNetworkTraceTypeDDtrace:
+        case DDtrace:
             return [self getDDTRACEHeader:sampled handler:nil];
-        case FTNetworkTraceTypeZipkinSingleHeader:
+        case ZipkinSingleHeader:
             return [self getZipkinSingleHeader:sampled handler:nil];
-        case FTNetworkTraceTypeSkywalking:
+        case Skywalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:nil];
-        case FTNetworkTraceTypeTraceparent:
+        case Traceparent:
             return [self getTraceparentHeader:sampled handler:nil];
     }
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
-    BOOL sampled = [FTBaseInfoHandler randomSampling:self.samplerate];
+    BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
     switch (self.networkTraceType) {
-        case FTNetworkTraceTypeJaeger:
+        case Jaeger:
             return [self getJaegerHeader:sampled handler:handler];
-        case FTNetworkTraceTypeZipkinMultiHeader:
+        case ZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled handler:handler];
-        case FTNetworkTraceTypeDDtrace:
+        case DDtrace:
             return [self getDDTRACEHeader:sampled handler:handler];
-        case FTNetworkTraceTypeZipkinSingleHeader:
+        case ZipkinSingleHeader:
             return [self getZipkinSingleHeader:sampled handler:handler];
-        case FTNetworkTraceTypeSkywalking:
+        case Skywalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:handler];
-        case FTNetworkTraceTypeTraceparent:
+        case Traceparent:
             return [self getTraceparentHeader:sampled handler:handler];
     }
 }
 - (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
     switch (self.networkTraceType) {
-        case FTNetworkTraceTypeJaeger:
+        case Jaeger:
             return [self unpackJaegerHeader:header handler:handler];
-        case FTNetworkTraceTypeZipkinMultiHeader:
+        case ZipkinMultiHeader:
             return [self unpackZipkinMultiHeader:header handler:handler];
-        case FTNetworkTraceTypeDDtrace:
+        case DDtrace:
             return [self unpackDDTRACEHeader:header handler:handler];
-        case FTNetworkTraceTypeZipkinSingleHeader:
+        case ZipkinSingleHeader:
             return [self unpackZipkinSingleHeader:header handler:handler];
-        case FTNetworkTraceTypeSkywalking:
+        case Skywalking:
             return [self unpackSkyWalking_V3Header:header handler:handler];
-        case FTNetworkTraceTypeTraceparent:
+        case Traceparent:
             return [self unpackTraceparentHeader:header handler:handler];
     }
 }

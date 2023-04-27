@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter metrics: 数据信息
 ///
 /// traceHandle 内部将数据处理成 rum 可接收的 metricsModel
-- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics;
+- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macos(10.12));
 
 /// 请求结束
 /// - Parameters:

@@ -47,9 +47,6 @@ xcrun docc convert FTMobileSDKDocs.docc \
 FT_ALL_FILE_COVERAGE="$1"
 echo "----- Start -----"
 
-cd FTMobileSDK
-pwd
-
 if [[ "$FT_ALL_FILE_COVERAGE" == "all" ]]; then
 echo "-----changeFileAttributeToPublic Start-----"
 changeFileAttributeToPublic

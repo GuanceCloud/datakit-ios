@@ -33,6 +33,7 @@
 #import "FTMobileAgentVersion.h"
 #import "FTNetworkInfoManager.h"
 #import "FTURLSessionAutoInstrumentation.h"
+#import "FTEnumConstant.h"
 #import "FTMobileConfig+Private.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
@@ -75,7 +76,8 @@ static dispatch_once_t onceToken;
 
             //开启数据处理管理器
             [FTTrackDataManager sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
+            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+            _presetProperty.sdkVersion = SDK_VERSION;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
             .setSdkVersion(SDK_VERSION)
             .setXDataKitUUID(config.XDataKitUUID);
@@ -89,9 +91,9 @@ static dispatch_once_t onceToken;
 -(void)resetConfig:(FTMobileConfig *)config{
     [FTLog enableLog:config.enableSDKDebugLog];
     if (_presetProperty) {
-        [self.presetProperty resetWithMobileConfig:config];
+        [self.presetProperty resetWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     }else{
-        self.presetProperty = [[FTPresetProperty alloc] initWithMobileConfig:config];
+        _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
@@ -99,7 +101,7 @@ static dispatch_once_t onceToken;
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
-    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMConfig:rumConfigOptions];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMEnableTraceUserResource:rumConfigOptions.enableTraceUserResource];
     [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
@@ -120,7 +122,7 @@ static dispatch_once_t onceToken;
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
     [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionAutoInstrumentation sharedInstance].interceptor;
-    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceConfig:traceConfigOptions];
+    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 
@@ -217,7 +219,7 @@ static dispatch_once_t onceToken;
     }
     @try {
         dispatch_async(self.serialQueue, ^{
-            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:status]];
+            NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
             if (tags) {
                 [tagDict addEntriesFromDictionary:tags];
             }

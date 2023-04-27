@@ -23,7 +23,6 @@
 #import "FTSwizzle.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTURLProtocol.h"
-#import "FTMobileConfig.h"
 #import "FTTracer.h"
 @interface FTURLSessionAutoInstrumentation()
 /// sdk 内部的数据上传 url
@@ -61,18 +60,18 @@ static dispatch_once_t onceToken;
 -(id<FTTracerProtocol>)tracer{
     return _tracer;
 }
-- (void)setRUMConfig:(FTRumConfig *)config{
-    self.interceptor.enableAutoRumTrack = config.enableTraceUserResource;
-    if(config.enableTraceUserResource){
+- (void)setRUMEnableTraceUserResource:(BOOL)enable{
+    self.interceptor.enableAutoRumTrack = enable;
+    if(enable){
         [self startMonitor];
     }
 }
-- (void)setTraceConfig:(FTTraceConfig *)config{
-    [_sessionInterceptor enableAutoTrace:config.enableAutoTrace];
-    [_sessionInterceptor enableLinkRumData:config.enableLinkRumData];
-    _tracer = [[FTTracer alloc]initWithConfig:config];
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
+    [_sessionInterceptor enableAutoTrace:enableAutoTrace];
+    [_sessionInterceptor enableLinkRumData:enableLinkRumData];
+    _tracer = [[FTTracer alloc]initWithSampleRate:sampleRate traceType:traceType];
     [_sessionInterceptor setTracer:_tracer];
-    if(config.enableAutoTrace){
+    if(enableAutoTrace){
         [self startMonitor];
     }
 }

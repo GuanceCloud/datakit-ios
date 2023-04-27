@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - metrics: SessionTaskMetric
 /// - Returns: metrics 实例.
--(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0));
+-(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0),macosx(10.12));
 
 @end
 

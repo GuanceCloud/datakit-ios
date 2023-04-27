@@ -7,38 +7,36 @@
 //
 
 #import "FTEnumConstant.h"
-#import "FTMobileConfig.h"
-
 NSString * const AppStateStringMap[] = {
     [AppStateUnknown] = @"unknown",
     [AppStateStartUp] = @"startup",
     [AppStateRun] = @"run",
 };
 NSString * const FTStatusStringMap[] = {
-    [FTStatusInfo] = @"info",
-    [FTStatusWarning] = @"warning",
-    [FTStatusError] = @"error",
-    [FTStatusCritical] = @"critical",
-    [FTStatusOk] = @"ok"
+    [StatusInfo] = @"info",
+    [StatusWarning] = @"warning",
+    [StatusError] = @"error",
+    [StatusCritical] = @"critical",
+    [StatusOk] = @"ok"
 };
 NSString * const FTNetworkTraceStringMap[] = {
-    [FTNetworkTraceTypeZipkinMultiHeader] = @"zipkin",
-    [FTNetworkTraceTypeZipkinSingleHeader] = @"zipkin",
-    [FTNetworkTraceTypeJaeger] = @"jaeger",
-    [FTNetworkTraceTypeDDtrace] = @"ddtrace",
-    [FTNetworkTraceTypeSkywalking] = @"skywalking",
-    [FTNetworkTraceTypeTraceparent] = @"traceparent",
+    [ZipkinMultiHeader] = @"zipkin",
+    [ZipkinSingleHeader] = @"zipkin",
+    [Jaeger] = @"jaeger",
+    [DDtrace] = @"ddtrace",
+    [Skywalking] = @"skywalking",
+    [Traceparent] = @"traceparent",
 };
 NSString * const FTEnvStringMap[] = {
-    [FTEnvProd] = @"prod",
-    [FTEnvGray] = @"gray",
-    [FTEnvPre] = @"pre",
-    [FTEnvCommon] = @"common",
-    [FTEnvLocal] = @"local",
+    [Prod] = @"prod",
+    [Gray] = @"gray",
+    [Pre] = @"pre",
+    [Common] = @"common",
+    [Local] = @"local",
 };
 
 NSTimeInterval const MonitorFrequencyMap[] = {
-    [FTMonitorFrequencyDefault] = 0.5,
-    [FTMonitorFrequencyRare] = 1.0,
-    [FTMonitorFrequencyFrequent] = 0.1
+    [MonitorFrequencyDefault] = 0.5,
+    [MonitorFrequencyRare] = 1.0,
+    [MonitorFrequencyFrequent] = 0.1
 };

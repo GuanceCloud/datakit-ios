@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - content: 日志内容，可为 json 字符串
 ///   - status: 事件等级和状态
 ///   - property: 事件自定义属性(可选)
--(void)logging:(NSString *)content status:(FTLogStatus)status property:(nullable NSDictionary *)property;;
+-(void)logging:(NSString *)content status:(FTLogStatus)status property:(nullable NSDictionary *)property;
 
 /// 绑定用户信息
 ///

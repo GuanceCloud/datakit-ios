@@ -23,6 +23,7 @@ extern NSString * const FT_TYPE;
 #pragma mark ----- data source
 extern NSString * const FT_KEY_SOURCE;
 extern NSString * const FT_LOGGER_SOURCE;
+extern NSString * const FT_LOGGER_MACOS_SOURCE;
 extern NSString * const FT_RUM_SOURCE_RESOURCE;
 extern NSString * const FT_RUM_SOURCE_ERROR;
 extern NSString * const FT_RUM_SOURCE_ACTION ;
