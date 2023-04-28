@@ -192,7 +192,7 @@ static dispatch_once_t onceToken;
         return;
     }
     @try {
-        FTAddDataType dataType = FTAddDataImmediate;
+        FTAddDataType dataType = [type isEqualToString:FT_RUM_SOURCE_ERROR]?FTAddDataImmediate:FTAddDataNormal;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
         [baseTags addEntriesFromDictionary:[self.presetProperty rumPropertyWithTerminal:terminal]];
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;

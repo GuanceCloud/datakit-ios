@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 请求错误信息
 @property (nonatomic, copy) NSString *errorMessage;
 /// error 信息 （ios native）
-@property (nonatomic, strong) NSError *error;
+@property (nonatomic, strong,nullable) NSError *error;
 /// 响应结果
 @property (nonatomic, copy) NSString *responseBody;
 ///  初始化方法

@@ -71,7 +71,7 @@ static size_t (*orig_fwrite)(const void * __restrict, size_t, size_t, FILE * __r
 static char *__messageBuffer = {0};
 static int __buffIdx = 0;
 void reset_buffer(void)
-{
+{   free(__messageBuffer);
     __messageBuffer = calloc(1, sizeof(char));
     __messageBuffer[0] = '\0';
     __buffIdx = 0;
@@ -112,8 +112,7 @@ size_t asl_fwrite(const void * __restrict ptr, size_t size, size_t nitems, FILE 
                 __messageBuffer[i] = str[i];
                 __buffIdx ++;
             }
-            __messageBuffer[__buffIdx + 1] = '\0';
-            __buffIdx ++;
+            __messageBuffer[__buffIdx ] = '\0';
         }
     }
     

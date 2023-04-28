@@ -17,6 +17,18 @@
 3.添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
 ---
 
+1.3.10-beta.3
+1.修复内存泄漏问题
+2.修复其他已知 BUG
+---
+1.3.10-alpha.7
+1.修复多线程数组copy导致的内存泄漏
+2.修复已知 BUG
+---
+1.3.10-alpha.6
+1.修复日志采集时产生的内存泄漏
+3.SDK 支持版本修改，iOS 支持10.0及以上，macOS支持10.13及以上
+---
 1.3.10-beta.2
 1.修复 Error 监控采集属性字段错误问题
 ---
@@ -38,44 +50,6 @@
 1.添加 intakeUrl 采集 Resource 过滤方法
 2.Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
 ---
-1.3.9-alpha.14
-1. Action Type 新增 launch_warm 适配 iOS15 后APP启动前进行了预热
----
-1.3.9-alpha.13
-1.修复从应用切换器进入 APP 导致的启动时长统计异常问题
----
-
-1.3.9-alpha.11
-1.修复冷启动 active_pre_warm 字段缺失问题
----
-1.3.9-alpha.10
-1. 修复 memoryMaxCount 默认设置失败问题
-2. extension SDK 新增 Tracer 自动采集开关
----
-1.3.9-alpha.9
-1. extension SDK 添加数据删除逻辑，支持设置存储数据最大量
-2. 解决部分情况下自定义 Network Resource 数据绑定 Trace 失败问题
----
-1.3.9-alpha.8
-1. 解决 extension RUM 采集异常问题
-2. extension SDK 测试用例补充
----
-1.3.9-alpha.7
-1. 解决集成 extension 功能时头文件冲突问题
----
-1.3.9-alpha.6
-1. 兼容老的版本 API
-2. 解决集成 extension SDK 时头文件冲突问题
----
-1.3.9-alpha.5
-1. SDK 内部 URL 过滤 bug 修复
----
-
-1.3.9-alpha.4
-1. 新增 resource 数据采集方式，支持定向采集指定 URLSession 的数据
-2. 新增采集 extension、extension widget 数据功能
----
-
 1.3.8-beta.4
 1.修改 DDtrace Header Propagation 规则
 ---

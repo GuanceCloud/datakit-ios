@@ -18,3 +18,14 @@ target 'FTMobileSDKUnitTests' do
   # Pods for SampleApp
 
 end
+
+#解决找不到静态库 libarclite_iphonesimulator.a/libarclite_iphoneos.a 问题
+post_install do |installer|
+   installer.generated_projects.each do |project|
+    project.targets.each do |target|
+        target.build_configurations.each do |config|
+            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+         end
+    end
+  end
+end

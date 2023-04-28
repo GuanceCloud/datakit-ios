@@ -13,9 +13,9 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import <IOKit/IOKitLib.h>
-#include <sys/sysctl.h>
 #import "FTLog.h"
+//设备对象 __class 值
+static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
 static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
 //操作系统主要版本
@@ -44,7 +44,7 @@ static NSString * const FT_SCREEN_SIZE = @"screen_size";
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
-static NSString * const FT_APPLICATION_UUID = @"application_UUID";
+static NSString * const FT_APPLICATION_UUID = @"application_uuid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
@@ -111,13 +111,15 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     return self;
 }
 -(NSDictionary *)baseCommonPropertyTags{
-    @synchronized (self) {
-        if (!_baseCommonPropertyTags) {
-            _baseCommonPropertyTags =@{
-                FT_APPLICATION_UUID:[self getApplicationUUID],
-                FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
-                FT_KEY_SERVICE:self.service,
-            };
+    if (!_baseCommonPropertyTags) {
+        @synchronized (self) {
+            if (!_baseCommonPropertyTags) {
+                _baseCommonPropertyTags =@{
+                    FT_APPLICATION_UUID:[self getApplicationUUID],
+                    FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
+                    FT_KEY_SERVICE:self.service,
+                };
+            }
         }
     }
     return _baseCommonPropertyTags;
@@ -139,6 +141,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
+    [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
 - (void)resetWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
@@ -215,23 +218,16 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
                 }
                 cmdPtr += loadCmd->cmdsize;
             }
-            const char* result = nil;
             if(uuid != NULL){
-                result = uuidBytesToString(uuid);
-                NSString *lduuid = [NSString stringWithUTF8String:result];
-                return lduuid;
+                CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuid));
+                NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
+                CFRelease(uuidRef);
+                return str == NULL ? @"NULL" : str;
             }
         }
     }
     return @"NULL";
 }
-static const char* uuidBytesToString(const uint8_t* uuidBytes) {
-    CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuidBytes));
-    NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
-    CFRelease(uuidRef);
-    return str == NULL ? NULL : strdup(str.UTF8String);
-}
-
 //// 获取 Load Command
 static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     switch(header->magic)
