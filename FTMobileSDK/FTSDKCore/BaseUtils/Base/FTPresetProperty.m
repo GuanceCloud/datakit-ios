@@ -14,6 +14,10 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import "FTLog.h"
+#if FT_MAC
+#import <IOKit/IOKitLib.h>
+#include <sys/sysctl.h>
+#endif
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
