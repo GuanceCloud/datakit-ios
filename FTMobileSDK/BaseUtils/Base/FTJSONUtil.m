@@ -50,8 +50,7 @@
     if (jsonData) {
         jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
-    NSMutableString *mutStr = [NSMutableString stringWithString:jsonString];
-    return mutStr;
+    return jsonString;
 }
 + (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString
 {

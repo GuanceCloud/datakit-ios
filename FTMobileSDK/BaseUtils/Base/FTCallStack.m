@@ -324,8 +324,8 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const 
     info->dli_sname = NULL;
     info->dli_saddr = NULL;
     binaryImages->name = NULL;
-    binaryImages->cpuType = 0;
-    binaryImages->loadEndAddress = 0;
+    binaryImages->cpuType = NULL;
+    binaryImages->loadEndAddress = NULL;
     const uint32_t idx = ft_imageIndexContainingAddress(address);
     if(idx == UINT_MAX) {
         return false;

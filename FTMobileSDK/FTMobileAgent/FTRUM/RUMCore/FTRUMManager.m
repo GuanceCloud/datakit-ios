@@ -314,7 +314,7 @@
     [self addLongTaskWithStack:stack duration:duration property:nil];
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
-    if (!stack || stack.length == 0 || !duration) {
+    if (!stack || stack.length == 0 || (duration == nil)) {
         return;
     }
     @try {

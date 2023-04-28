@@ -16,6 +16,9 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
+#import "FTLog.h"
+//设备对象 __class 值
+static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
 //系统版本
 static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
 //操作系统主要版本
@@ -44,7 +47,7 @@ static NSString * const FT_SCREEN_SIZE = @"screen_size";
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
-static NSString * const FT_APPLICATION_UUID = @"application_UUID";
+static NSString * const FT_APPLICATION_UUID = @"application_uuid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
@@ -100,25 +103,16 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     }
     return self;
 }
-//-(NSMutableDictionary *)webCommonPropertyTags{
-//    @synchronized (self) {
-//        if (!_webCommonPropertyTags) {
-//            _webCommonPropertyTags = [[NSMutableDictionary alloc]init];
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
-//            _webCommonPropertyTags[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
-//            _webCommonPropertyTags[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-//        }
-//    }
-//    return _webCommonPropertyTags;
-//}
 -(NSDictionary *)baseCommonPropertyTags{
-    @synchronized (self) {
-        if (!_baseCommonPropertyTags) {
-            _baseCommonPropertyTags =@{
-                FT_APPLICATION_UUID:[self getApplicationUUID],
-                FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
-                FT_KEY_SERVICE:self.service,
-            };
+    if (!_baseCommonPropertyTags) {
+        @synchronized (self) {
+            if (!_baseCommonPropertyTags) {
+                _baseCommonPropertyTags =@{
+                    FT_APPLICATION_UUID:[self getApplicationUUID],
+                    FT_COMMON_PROPERTY_DEVICE_UUID:self.mobileDevice.deviceUUID,
+                    FT_KEY_SERVICE:self.service,
+                };
+            }
         }
     }
     return _baseCommonPropertyTags;
@@ -140,11 +134,14 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
+    [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
 - (void)resetWithMobileConfig:(FTMobileConfig *)config{
     self.version = config.version;
     self.env = FTEnvStringMap[config.env];
+    self.service = config.service;
+    self.context = [config.globalContext copy];
 }
 - (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -163,7 +160,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_SDK_VERSION] = SDK_VERSION;
     dict[FT_KEY_SERVICE] = self.service;
-    
     dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
@@ -182,15 +178,14 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     // 获取 image 的 index
     const uint32_t imageCount = _dyld_image_count();
     uint32_t mainImg = 0;
-    NSBundle* mainBundle = [NSBundle mainBundle];
-    NSDictionary* infoDict = [mainBundle infoDictionary];
-    NSString* bundlePath = [mainBundle bundlePath];
-    NSString* executableName = infoDict[@"CFBundleExecutable"];
-    NSString *path =[bundlePath stringByAppendingPathComponent:executableName];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *bundlePath = [mainBundle bundlePath];
+    NSString *executableName = infoDict[@"CFBundleExecutable"];
     for(uint32_t iImg = 0; iImg < imageCount; iImg++) {
         const char* name = _dyld_get_image_name(iImg);
         NSString *imagePath = [NSString stringWithUTF8String:name];
-        if ([imagePath isEqualToString:path]){
+        if ([imagePath containsString:bundlePath]&&[[imagePath lastPathComponent] isEqualToString:executableName]){
             mainImg = iImg;
             // 根据 index 获取 header
             const struct mach_header* header = _dyld_get_image_header(mainImg);
@@ -208,23 +203,16 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
                 }
                 cmdPtr += loadCmd->cmdsize;
             }
-            const char* result = nil;
             if(uuid != NULL){
-                result = uuidBytesToString(uuid);
-                NSString *lduuid = [NSString stringWithUTF8String:result];
-                return lduuid;
+                CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuid));
+                NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
+                CFRelease(uuidRef);
+                return str == NULL ? @"NULL" : str;
             }
         }
     }
     return @"NULL";
 }
-static const char* uuidBytesToString(const uint8_t* uuidBytes) {
-    CFUUIDRef uuidRef = CFUUIDCreateFromUUIDBytes(NULL, *((CFUUIDBytes*)uuidBytes));
-    NSString* str = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, uuidRef);
-    CFRelease(uuidRef);
-    return str == NULL ? NULL : strdup(str.UTF8String);
-}
-
 //// 获取 Load Command
 static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     switch(header->magic)
