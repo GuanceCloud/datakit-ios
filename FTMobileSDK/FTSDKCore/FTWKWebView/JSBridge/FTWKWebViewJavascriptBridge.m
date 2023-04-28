@@ -72,9 +72,8 @@
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:FT_SCRIPT_MESSAGE_HANDLER_NAME];
 }
 
-- (NSString*) _evaluateJavascript:(NSString*)javascriptCommand {
+- (void) _evaluateJavascript:(NSString*)javascriptCommand {
     [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
-    return NULL;
 }
 
 -(void)dealloc{
