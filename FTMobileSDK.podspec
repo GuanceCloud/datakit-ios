@@ -29,8 +29,9 @@ Pod::Spec.new do |s|
        core_dir = 'FTMobileSDK/FTMobileAgent/'
        agent.ios.deployment_target = '10.0'
        agent.source_files = 'FTMobileSDK/FTMobileAgent/Core/*{.h,.m}'
+
        agent.subspec 'FTRUM' do |r|
-       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/**/*{.h,.m}'
+       r.source_files = 'FTMobileSDK/FTMobileAgent/FTRUM/RUMCore/**/*{.h,.m}','FTMobileSDK/FTMobileAgent/FTRUM/Monitor/*{.h,.m}'
        r.dependency 'FTMobileSDK/Common/Base'
        r.dependency 'FTMobileSDK/Common/Thread'
        r.dependency 'FTMobileSDK/FTMobileAgent/Protocol'
