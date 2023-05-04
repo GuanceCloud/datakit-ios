@@ -214,6 +214,8 @@
             }];
         }
         [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
+        [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
+
         if(content.responseHeader){
             [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
             for (id key in content.responseHeader.allKeys) {
@@ -223,7 +225,6 @@
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
                     }else if ([lowercasekey isEqualToString:@"content-type"]){
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
-                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESOURCE_TYPE];
                     }else if([lowercasekey isEqualToString:@"content-encoding"]){
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
                     }else if ([lowercasekey isEqualToString:@"content-length"]){
