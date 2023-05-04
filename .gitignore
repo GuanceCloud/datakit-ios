@@ -13,5 +13,6 @@ ft-sdk-iosTest/testAccount.json
 Carthage
 FTMobileSDK/FTMobileSDKDocs.docc/.docc-build/
 FTMobileSDK/build/
+.swiftpm
 build
 xcuserdata

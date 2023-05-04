@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "FTMobileSDK",
-    platforms: [.iOS(.v9),
+    platforms: [.iOS(.v10),
                 .macOS(.v10_13)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
