@@ -26,7 +26,8 @@ NSString * const FT_RUM_SOURCE_LONG_TASK = @"long_task";
 //service
 NSString * const FT_KEY_SERVICE = @"service";
 NSString * const FT_DEFAULT_SERVICE_NAME = @"df_rum_ios";
-
+NSString * const FT_IOS_SDK_NAME = @"df_ios_rum_sdk";
+NSString * const FT_IS_WEBVIEW = @"is_web_view";
 NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
 

@@ -143,7 +143,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     self.service = config.service;
     self.context = [config.globalContext copy];
 }
-- (NSDictionary *)rumPropertyWithTerminal:(NSString *)terminal{
+- (NSDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict addEntriesFromDictionary:self.context];
     [dict addEntriesFromDictionary:self.rumContext];
@@ -160,7 +160,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_SDK_VERSION] = SDK_VERSION;
     dict[FT_KEY_SERVICE] = self.service;
-    dict[FT_SDK_NAME] = [terminal isEqualToString:FT_TERMINAL_APP]?@"df_ios_rum_sdk":@"df_web_rum_sdk";
+    dict[FT_SDK_NAME] = FT_IOS_SDK_NAME;
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;

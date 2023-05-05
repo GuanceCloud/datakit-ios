@@ -26,7 +26,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithMobileConfig:config];
     [self measureBlock:^{
-      [presetProperty rumPropertyWithTerminal:FT_TERMINAL_APP];
+      [presetProperty rumProperty];
     }];
 }
 - (void)testGetLoggerPropertyPerformance {
