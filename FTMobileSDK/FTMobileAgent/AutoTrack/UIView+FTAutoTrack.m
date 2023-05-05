@@ -48,3 +48,36 @@
     return NO;
 }
 @end
+@implementation UISegmentedControl (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    NSString *title = [self titleForSegmentAtIndex:self.selected];
+    return title?[NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title]:super.ft_actionName;
+}
+@end
+
+@implementation UIStepper (FTAutoTrack)
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+}
+@end
+@implementation UISlider (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+}
+
+@end
+@implementation UIPageControl (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%ld",NSStringFromClass(self.class),(long)self.currentPage];
+}
+@end
+@implementation UISwitch (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    NSString *title = self.isOn?@"On":@"Off";
+    return [NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title];
+}
+@end
