@@ -409,22 +409,132 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return uuid;
 }
 + (NSString *)macOSdeviceModel {
-    NSString *result = nil;
-    @try {
-        NSString *hwName = @"hw.machine";
-        size_t size;
-        sysctlbyname([hwName UTF8String], NULL, &size, NULL, 0);
-        char answer[size];
-        sysctlbyname([hwName UTF8String], answer, &size, NULL, 0);
-        if (size) {
-            result = @(answer);
-        } else {
-            ZYErrorLog(@"Failed fetch %@ from sysctl.", hwName);
+    NSString *macDevTypeStr = @"Unknown Mac";//设备型号
+    size_t len = 0;
+    sysctlbyname("hw.model", NULL, &len, NULL, 0);
+    if (len) {
+        NSMutableData *data = [NSMutableData dataWithLength:len];
+        sysctlbyname("hw.model", [data mutableBytes], &len, NULL, 0);
+        macDevTypeStr = [NSString stringWithUTF8String:[data bytes]];
+        NSDictionary *deviceNamesByCode = @{
+            //MacBook Pro
+            @"Mac14,5":@"MacBook Pro (14-inch, 2023)",
+            @"Mac14,9":@"MacBook Pro (14-inch, 2023)",
+            @"Mac14,6":@"MacBook Pro (16-inch, 2023)",
+            @"Mac14,10":@"MacBook Pro (16-inch, 2023)",
+            @"Mac14,7":@"MacBook Pro (13-inch, M2, 2022)",
+            @"MacBookPro18,3":@"MacBook Pro (14-inch, 2021)",
+            @"MacBookPro18,4":@"MacBook Pro (14-inch, 2021)",
+            @"MacBookPro18,1":@"MacBook Pro (16-inch, 2021)",
+            @"MacBookPro18,2":@"MacBook Pro (16-inch, 2021)",
+            @"MacBookPro17,1":@"MacBook Pro (13-inch, M1, 2020)",
+            @"MacBookPro16,3":@"MacBook Pro (13-inch, 2020, two Thunderbolt 3 ports)",
+            @"MacBookPro16,2":@"MacBook Pro (13-inch, 2020, four Thunderbolt 3 ports)",
+            @"MacBookPro16,1":@"MacBook Pro (16-inch, 2019)",
+            @"MacBookPro16,4":@"MacBook Pro (16-inch, 2019)",
+            @"MacBookPro15,4":@"MacBook Pro (13-inch, 2019, two Thunderbolt 3 ports)",
+            @"MacBookPro15,1":@"MacBook Pro (15-inch, 2019/2018)",
+            @"MacBookPro15,3":@"MacBook Pro (15-inch, 2019)",
+            @"MacBookPro15,2":@"MacBook Pro (13-inch, 2019/2018, four Thunderbolt 3 ports)",
+            @"MacBookPro14,3":@"MacBook Pro (15-inch, 2017)",
+            @"MacBookPro14,2":@"MacBook Pro (13-inch, 2017, four Thunderbolt 3 ports)",
+            @"MacBookPro14,1":@"MacBook Pro (13-inch, 2017, two Thunderbolt 3 ports)",
+            @"MacBookPro13,3":@"MacBook Pro (15-inch, 2016)",
+            @"MacBookPro13,2":@"MacBook Pro (13-inch, 2016, four Thunderbolt 3 ports)",
+            @"MacBookPro13,1":@"MacBook Pro (13-inch, 2016, two Thunderbolt 3 ports)",
+            @"MacBookPro11,4":@"MacBook Pro (Retina, 15-inch, Mid 2015)",
+            @"MacBookPro11,5":@"MacBook Pro (Retina, 15-inch, Mid 2015)",
+            @"MacBookPro12,1":@"MacBook Pro (Retina, 13-inch, Early 2015)",
+            @"MacBookPro11,2":@"MacBook Pro (Retina, 15-inch, Mid 2014)",
+            @"MacBookPro11,3":@"MacBook Pro (Retina, 15-inch, Mid 2014)",
+            @"MacBookPro11,1":@"MacBook Pro (Retina, 13-inch, Mid 2014)",
+            @"MacBookPro11,2":@"MacBook Pro (Retina, 15-inch, Late 2013)",
+            @"MacBookPro11,3":@"MacBook Pro (Retina, 15-inch, Late 2013)",
+            @"MacBookPro11,1":@"MacBook Pro (Retina, 13-inch, Late 2013)",
+            @"MacBookPro10,1":@"MacBook Pro (Retina Display, 15-inch, Early 2013)",
+            @"MacBookPro10,2":@"MacBook Pro (Retina Display, 13-inch, 2013/2012)",
+            @"MacBookPro10,1":@"MacBook Pro (Retina, 15-inch, Mid 2012)",
+            @"MacBookPro9,1":@"MacBook Pro (15-inch, Mid 2012)",
+            @"MacBookPro9,2":@"MacBook Pro (13-inch, Mid 2012)",
+            @"MacBookPro8,3":@"MacBook Pro (17-inch, 2011)",
+            @"MacBookPro8,2":@"MacBook Pro (15-inch, 2011)",
+            @"MacBookPro8,1":@"MacBook Pro (13-inch, 2011)",
+            @"MacBookPro6,1":@"MacBook Pro (17-inch, Mid 2010)",
+            @"MacBookPro6,2":@"MacBook Pro (15-inch, Mid 2010)",
+            @"MacBookPro7,1":@"MacBook Pro (13-inch, Mid 2010)",
+            //MacBook
+            @"MacBook10,1":@"MacBook (Retina, 12-inch, 2017)",
+            @"MacBook9,1":@"MacBook (Retina Display, 12-inch, Early 2016)",
+            @"MacBook8,1":@"MacBook (Retina, 12-inch, Early 2015)",
+            @"MacBook7,1":@"MacBook (13-inch, Mid 2010)",
+            @"MacBook6,1":@"MacBook (13-inch, Late 2009)",
+            @"MacBook5,2":@"MacBook (13-inch, 2009)",
+            //MacBook Air
+            @"Mac14,2":@"MacBook Air (M2, 2022)",
+            @"MacBookAir10,1":@"MacBook Air (M1, 2020)",
+            @"MacBookAir9,1":@"MacBook Air (Retina, 13-inch, 2020)",
+            @"MacBookAir8,2":@"MacBook Air (Retina, 13-inch, 2019)",
+            @"MacBookAir8,1":@"MacBook Air (Retina Display, 13-inch, 2018)",
+            @"MacBookAir7,2":@"MacBook Air (13-inch, 2017/Early 2015)",
+            @"MacBookAir7,1":@"MacBook Air (11-inch, Early 2015)",
+            @"MacBookAir6,2":@"MacBook Air (13-inch, Mid 2013/Early 2014)",
+            @"MacBookAir6,1":@"MacBook Air (11-inch, Mid 2013/Early 2014)",
+            @"MacBookAir5,2":@"MacBook Air (13-inch, Mid 2012)",
+            @"MacBookAir5,1":@"MacBook Air (11-inch, Mid 2012)",
+            @"MacBookAir4,2":@"MacBook Air (13-inch, Mid 2011)",
+            @"MacBookAir4,1":@"MacBook Air (11-inch, Mid 2011)",
+            @"MacBookAir3,2":@"MacBook Air (13-inch, Late 2010)",
+            @"MacBookAir3,2":@"MacBook Air (13-inch, Late 2010)",
+            @"MacBookAir3,1":@"MacBook Air (11-inch, Late 2010)",
+            @"MacBookAir2,1":@"MacBook Air (Mid 2009)",
+            //Mac Pro
+            @"MacPro7,1":@"Mac Pro (2019)",
+            @"MacPro7,1Technical":@"Mac Pro (Rackmount, 2019)",
+            @"MacPro6,1":@"Mac Pro (Late 2013)",
+            @"MacPro5,1":@"Mac Pro Server/Mac Pro (Mid 2010)",
+            //iMac
+            @"iMac21,1":@"iMac (24-inch, M1, 2021)",
+            @"iMac21,2":@"iMac (24-inch, M1, 2021)",
+            @"iMac20,1":@"iMac (Retina 5K Display, 27-inch, 2020)",
+            @"iMac20,2":@"iMac (Retina 5K Display, 27-inch, 2020)",
+            @"iMac19,1":@"iMac (Retina 5K Display, 27-inch, 2019)",
+            @"iMac19,2":@"iMac (Retina 4K Display, 21.5-inch, 2019)",
+            @"iMacPro1,1":@"iMac Pro",
+            @"iMac18,3":@"iMac (Retina 5K Display, 27-inch, 2017)",
+            @"iMac18,2":@"iMac (Retina 4K Display, 21.5-inch, 2017)",
+            @"iMac18,1":@"iMac (21.5-inch, 2017)",
+            @"iMac17,1":@"iMac (Retina 5K Display, 27-inch, Late 2015)",
+            @"iMac16,2":@"iMac (Retina 4K, 21.5-inch, Late 2015)",
+            @"iMac16,1":@"iMac (21.5-inch, Late 2015)",
+            @"iMac15,1":@"iMac (Retina 5K, 27-in, Late 2014/Mid 2015)",
+            @"iMac14,4":@"iMac (21.5-inch, Mid 2014)",
+            @"iMac14,2":@"iMac (27-inch, Late 2013)",
+            @"iMac14,1":@"iMac (21.5-inch, Late 2013)",
+            @"iMac13,2":@"iMac (27-inch, Late 2012)",
+            @"iMac13,1":@"iMac (21.5-inch, Late 2012)",
+            @"iMac12,2":@"iMac (27-inch, Mid 2011)",
+            @"iMac12,1":@"iMac (21.5-inch, Mid 2011)",
+            @"iMac11,3":@"iMac (27-inch, Mid 2010)",
+            @"iMac11,2":@"iMac (21.5-inch, Mid 2010)",
+            @"iMac10,1":@"iMac (27-inch/21.5-inch, Late 2009)",
+            //Mac mini
+            @"Mac14,3":@"The Mac mini (2023)",
+            @"Mac14,12":@"The Mac mini (2023)",
+            @"Macmini9,1":@"Mac mini (M1, 2020)",
+            @"Macmini8,1":@"Mac mini (2018)",
+            @"Macmini7,1":@"Mac mini (Late 2014)",
+            @"Macmini6,1":@"Mac mini (Late 2012)",
+            @"Macmini6,2":@"Mac mini (Late 2012)",
+            @"Macmini5,1":@"Mac mini (Mid 2011)",
+            @"Macmini5,2":@"Mac mini (Mid 2011)",
+            @"Macmini4,1":@"Mac mini (Mid 2010)",
+        };
+        NSString* deviceName = [deviceNamesByCode objectForKey:macDevTypeStr];
+        if (deviceName) {
+            macDevTypeStr = deviceNamesByCode[macDevTypeStr];
         }
-    } @catch (NSException *exception) {
-        ZYErrorLog(@"%@: %@", self, exception);
     }
-    return result;
+    return macDevTypeStr;
 }
 + (NSString *)macOSSystermVersion{
     NSProcessInfo *info = [NSProcessInfo processInfo];
