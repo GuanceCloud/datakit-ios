@@ -477,7 +477,7 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx,FTMachoImage* const bina
     NSMutableString *header = [NSMutableString new];
     NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     [header appendFormat:@"Hardware Model:  %@\n",deviceString];
-#if TARGET_OS_IOS
+#if FT_IOS
     [header appendFormat:@"OS Version:   iPhone OS %@\n",[UIDevice currentDevice].systemVersion];
 #endif
     [header appendString:@"Report Version:  104\n"];

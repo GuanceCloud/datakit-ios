@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTSDKCompat.h"
 NS_ASSUME_NONNULL_BEGIN
 
 /// 一些工具方法
@@ -32,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Returns: 是否进行采样
 + (BOOL)randomSampling:(int)sampling;
 
-#if !TARGET_OS_OSX
+#if FT_IOS
 /// 电话运营商
 +(NSString *)telephonyCarrier;
 #endif

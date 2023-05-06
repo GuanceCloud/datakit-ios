@@ -9,8 +9,8 @@
 #import "FTReachability.h"
 #import <netinet/in.h>
 #import <arpa/inet.h>
-#if !TARGET_OS_OSX
-#import <UIKit/UIKit.h>
+#import "FTSDKCompat.h"
+#if FT_IOS
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #endif
 
@@ -57,7 +57,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if (status == FTReachableViaWiFi) {
         return @"wifi";
     }
-#if TARGET_OS_IPHONE
+#if FT_IOS
     NSArray *typeStrings2G = @[CTRadioAccessTechnologyEdge,
                                CTRadioAccessTechnologyGPRS,
                                CTRadioAccessTechnologyCDMA1x];
@@ -208,7 +208,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     if( (flags & testcase) == testcase )
         connectionUP = NO;
     
-#if    TARGET_OS_IPHONE
+#if    FT_IOS
     if(flags & kSCNetworkReachabilityFlagsIsWWAN)
     {
         // We're on 3G.
@@ -224,7 +224,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 -(BOOL)isReachableViaWWAN
 {
-#if    TARGET_OS_IPHONE
+#if    FT_IOS
 
     SCNetworkReachabilityFlags flags = 0;
     
@@ -251,7 +251,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         if([self isReachableViaWiFi])
             return FTReachableViaWiFi;
         
-#if    TARGET_OS_IPHONE
+#if    FT_IOS
         return FTReachableViaWWAN;
 #endif
     }
@@ -267,7 +267,7 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         // Check we're reachable
         if((flags & kSCNetworkReachabilityFlagsReachable))
         {
-#if    TARGET_OS_IPHONE
+#if    FT_IOS
             // Check we're NOT on WWAN
             if((flags & kSCNetworkReachabilityFlagsIsWWAN))
             {

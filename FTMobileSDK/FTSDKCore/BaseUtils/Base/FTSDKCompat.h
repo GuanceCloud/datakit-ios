@@ -19,8 +19,10 @@
 #endif
 
 #if TARGET_OS_IOS
+    #define FT_IOS 1
     #define FT_UIKIT 1
 #else
+    #define FT_IOS 0
     #define FT_UIKIT 0
 #endif
 

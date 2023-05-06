@@ -13,6 +13,7 @@
 #import "FTLog.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
+#import "FTSDKCompat.h"
 #import "FTConstants.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
@@ -349,7 +350,7 @@
     if (monitorType & ErrorMonitorBattery) {
         errorTag[FT_BATTERY_USE] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
-#if !TARGET_OS_OSX
+#if FT_IOS
     errorTag[FT_KEY_CARRIER] = [FTBaseInfoHandler telephonyCarrier];
 #endif
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];

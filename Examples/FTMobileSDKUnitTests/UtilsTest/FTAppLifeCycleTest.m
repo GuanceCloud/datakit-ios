@@ -55,7 +55,7 @@
     XCTAssertTrue(self.applicationWillResignActiveCount-count == 1);
 }
 
-#if TARGET_OS_IOS
+#if FT_IOS
 - (void)testApplicationWillEnterForeground{
     NSInteger count = self.applicationWillEnterForegroundCount;
     [[NSNotificationCenter defaultCenter]
@@ -92,7 +92,7 @@
     self.applicationWillResignActiveCount += 1;
 }
 
-#if TARGET_OS_IOS
+#if FT_IOS
 - (void)applicationWillEnterForeground{
     self.applicationWillEnterForegroundCount += 1;
 }

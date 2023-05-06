@@ -49,13 +49,13 @@
 }
 - (void)setupAppStateNotification{
     NSNotificationCenter *notification = [NSNotificationCenter defaultCenter];
-#if TARGET_OS_OSX
+#if FT_MAC
     [notification addObserver:self selector:@selector(applicationDidBecomeActive:) name:NSApplicationDidBecomeActiveNotification object:[NSApplication sharedApplication]];
     
     [notification addObserver:self selector:@selector(applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:[NSApplication sharedApplication]];
     
     [notification addObserver:self selector:@selector(applicationWillTerminate:) name:NSApplicationWillTerminateNotification object:[NSApplication sharedApplication]];
-#else
+#elif FT_IOS
     [notification addObserver:self
                            selector:@selector(applicationWillEnterForeground:)
                                name:UIApplicationWillEnterForegroundNotification
@@ -105,7 +105,7 @@
     }
     [self.delegateLock unlock];
 }
-#if TARGET_OS_IOS
+#if FT_IOS
 - (void)applicationWillEnterForeground:(NSNotification *)notification{
     [self.delegateLock lock];
     for (id delegate in self.appLifecycleDelegates) {
