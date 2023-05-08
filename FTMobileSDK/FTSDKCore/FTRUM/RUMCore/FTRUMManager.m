@@ -71,22 +71,24 @@
     }
 }
 -(void)stopView{
-    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
+    [FTThreadDispatchManager dispatchInRUMThread:^{
+        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
+    }];
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
-    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
+    [FTThreadDispatchManager dispatchInRUMThread:^{
+        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
+    }];
 }
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
     if (!viewId) {
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
-            viewModel.type = FTRUMDataViewStop;
-            viewModel.fields = property;
-            [self process:viewModel];
-        }];
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
+        viewModel.type = FTRUMDataViewStop;
+        viewModel.fields = property;
+        [self process:viewModel];
     } @catch (NSException *exception) {
         ZYErrorLog(@"exception %@",exception);
     }
@@ -394,7 +396,11 @@
 }
 
 -(NSDictionary *)getCurrentSessionInfo{
-    return [self.sessionHandler getCurrentSessionInfo];
+    __block NSDictionary *sessionInfo = nil;
+    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
+        sessionInfo = [self.sessionHandler getCurrentSessionInfo];
+    }];
+    return sessionInfo;
 }
 - (void)syncProcess{
     [FTThreadDispatchManager dispatchSyncInRUMThread:^{
