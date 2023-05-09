@@ -221,7 +221,6 @@
                                FT_KEY_RESOURCE_TTFB,
                                FT_KEY_RESOURCE_TRANS,
                                FT_KEY_RESOURCE_FIRST_BYTE,
-                               FT_KEY_RESOURCE_SIZE,
     ];
     [self setRumConfig];
     [FTModelHelper startView];
