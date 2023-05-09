@@ -228,7 +228,7 @@
                     }else if([lowercasekey isEqualToString:@"content-encoding"]){
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
                     }else if ([lowercasekey isEqualToString:@"content-length"]){
-                        id size = content.responseHeader[lowercasekey];
+                        id size = content.responseHeader[key];
                         NSNumber *length = @([size integerValue]);
                         [fields setValue:length forKey:FT_KEY_RESOURCE_SIZE];
                     }
