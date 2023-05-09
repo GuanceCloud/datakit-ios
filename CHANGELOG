@@ -1,3 +1,6 @@
+1.4.1-alpha.3
+1.修复 RUM resource 数据格式错误问题
+---
 1.4.1-alpha.2
 1.RUM resource 中 resource_type 赋值修改
 ---
