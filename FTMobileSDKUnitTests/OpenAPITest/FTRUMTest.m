@@ -29,6 +29,7 @@
 #import "FTURLSessionAutoInstrumentation.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
+#import "FTRequestBody.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -231,8 +232,10 @@
     }
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasView = NO;
-    [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+    __block BOOL hasResource = NO;
+    __block FTRecordModel *resourceModel;
+    __block NSDictionary *fieldDict;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             [self rumTags:tags];
             [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -241,11 +244,22 @@
             [resourceField enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 XCTAssertTrue([fields.allKeys containsObject:obj]);
             }];
-            hasView = YES;
+            resourceModel = array[idx];
+            fieldDict = fields;
+            hasResource = YES;
             *stop = YES;
         }
     }];
-    XCTAssertTrue(hasView);
+    XCTAssertTrue(hasResource);
+    FTRequestLineBody *lineBody = [[FTRequestLineBody alloc]init];
+    lineBody.events = @[resourceModel];
+    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel]];
+    NSArray *nameAry = @[FT_KEY_RESOURCE_SIZE,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_TTFB,FT_KEY_RESOURCE_SSL,FT_KEY_RESOURCE_TCP,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_FIRST_BYTE,FT_DURATION,FT_KEY_RESOURCE_TRANS];
+    for (NSString *name in nameAry) {
+        NSString *line = [NSString stringWithFormat:@"%@=%@i",name,fieldDict[name]];
+        XCTAssertTrue([lineStr containsString:line]);
+    }
+    
     [FTModelHelper stopView];
 }
 
