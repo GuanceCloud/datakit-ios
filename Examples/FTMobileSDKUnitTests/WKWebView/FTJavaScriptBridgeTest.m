@@ -106,6 +106,8 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSDictionary *tags = opdata[FT_TAGS];
+                XCTAssertTrue(tags[FT_KEY_IS_ACTIVE] == NO);
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
