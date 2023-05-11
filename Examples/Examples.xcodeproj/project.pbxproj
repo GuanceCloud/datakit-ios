@@ -21,6 +21,7 @@
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
+		174486DB2A0CF9F30049DA89 /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 174486DA2A0CF9F30049DA89 /* CHANGELOG */; };
 		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		1763BD6829DFEAF6009EE026 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */; };
@@ -174,6 +175,7 @@
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
 		174058C728D826540092E096 /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchDurationTest.m; sourceTree = "<group>"; };
+		174486DA2A0CF9F30049DA89 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CHANGELOG; path = ../../CHANGELOG; sourceTree = "<group>"; };
 		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
@@ -503,6 +505,7 @@
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
+				174486DA2A0CF9F30049DA89 /* CHANGELOG */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -803,6 +806,7 @@
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
+				174486DB2A0CF9F30049DA89 /* CHANGELOG in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
