@@ -12,7 +12,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
-#import "FTMobileAgent+Public.h"
+#import "FTMobileAgent.h"
 #import "FTConstants.h"
 #import "FTDateUtil.h"
 #import <objc/runtime.h>
