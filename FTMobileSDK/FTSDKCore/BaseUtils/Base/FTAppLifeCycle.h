@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "FTSDKCompat.h"
 NS_ASSUME_NONNULL_BEGIN
 /// APP 生命周期协议
 @protocol FTAppLifeCycleDelegate <NSObject>
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// App 即将失活
 - (void)applicationWillResignActive;
 
-#if TARGET_OS_IOS
+#if FT_IOS
 /// App 即将进入后台
 - (void)applicationWillEnterForeground;
 /// App 进入后台

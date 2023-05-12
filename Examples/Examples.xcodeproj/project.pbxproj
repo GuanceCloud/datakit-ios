@@ -22,12 +22,12 @@
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
 		174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058C728D826540092E096 /* FTAppLaunchDurationTest.m */; };
+		174486F62A0E38CA0049DA89 /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 174486F52A0E38C90049DA89 /* CHANGELOG */; };
 		174CA02C29F01DFD0003BB40 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 174CA02B29F01DFD0003BB40 /* FTMobileSDK.framework */; };
 		17510DD829C99F2E00C8F1E4 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */; };
 		17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */; };
 		175C7CFC29E6CE1B00A7F271 /* LoggerVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 175C7CF929E6CE1A00A7F271 /* LoggerVC.m */; };
 		1763BD6829DFEAF6009EE026 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */; };
-		1763BD6929DFEAF6009EE026 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1764E40229AC9B0500E70DBB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40129AC9B0500E70DBB /* AppDelegate.swift */; };
 		1764E40429AC9B0500E70DBB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40329AC9B0500E70DBB /* SceneDelegate.swift */; };
 		1764E40629AC9B0500E70DBB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E40529AC9B0500E70DBB /* ViewController.swift */; };
@@ -123,17 +123,6 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		1763BD6A29DFEAF6009EE026 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				1763BD6929DFEAF6009EE026 /* FTMobileSDK.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4A78B9D82563C43E0021E0BC /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -176,6 +165,7 @@
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
 		174058C728D826540092E096 /* FTAppLaunchDurationTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchDurationTest.m; sourceTree = "<group>"; };
+		174486F52A0E38C90049DA89 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = "<group>"; };
 		174CA02B29F01DFD0003BB40 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -203,12 +193,7 @@
 		1788B11729BAFE94007FDFF1 /* HttpEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
 		1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = "FTMobileAgent macOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
-		179FCFF529C9887600DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		179FCFF729C989B900DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		179FCFF929C9982200DBB66F /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileAgent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
 		17B1715928154A6E004002C9 /* FTRequestTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRequestTest.m; sourceTree = "<group>"; };
@@ -510,6 +495,7 @@
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
+				174486F52A0E38C90049DA89 /* CHANGELOG */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -549,15 +535,10 @@
 				174CA02B29F01DFD0003BB40 /* FTMobileSDK.framework */,
 				1723363C29F01D5F000B0ED4 /* FTMobileSDK.framework */,
 				1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */,
-				1799DF8129CAE4430043D7B5 /* FTMobileAgent macOS.framework */,
 				17510DD729C99F2E00C8F1E4 /* FTMobileExtension.framework */,
 				17510DD429C99F0900C8F1E4 /* FTMobileExtension.framework */,
-				179FCFFD29C999A100DBB66F /* FTMobileAgent.framework */,
-				179FCFF929C9982200DBB66F /* FTMobileAgent.framework */,
 				179FCFF729C989B900DBB66F /* FTMobileSDK.framework */,
-				179FCFF529C9887600DBB66F /* FTMobileSDK.framework */,
 				17E1927929C9883A0067B23D /* FTMobileSDK.framework */,
-				1788B21029C86FA5007FDFF1 /* FTMobileSDK.framework */,
 				1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */,
 				1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */,
 				4AECBCD924497DBF0023DEF7 /* CoreBluetooth.framework */,
@@ -682,7 +663,6 @@
 				4A116954239113B600C0BC4E /* Resources */,
 				4AB783AF23C2D660001FC994 /* CopyFiles */,
 				4A78B9D82563C43E0021E0BC /* Embed App Extensions */,
-				1763BD6A29DFEAF6009EE026 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -812,6 +792,7 @@
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
+				174486F62A0E38CA0049DA89 /* CHANGELOG in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

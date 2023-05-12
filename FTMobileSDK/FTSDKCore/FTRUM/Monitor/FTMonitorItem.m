@@ -10,9 +10,8 @@
 #import "FTMemoryMonitor.h"
 #import "FTDisplayRateMonitor.h"
 #import "FTMonitorValue.h"
-#if !TARGET_OS_OSX
-#import <UIKit/UIKit.h>
-#endif
+#import "FTThreadDispatchManager.h"
+#import "FTSDKCompat.h"
 static double NormalizedRefreshRate = 60.0;
 @interface FTMonitorItem()
 @property (nonatomic, strong) NSTimer *timer;
@@ -45,7 +44,7 @@ static double NormalizedRefreshRate = 60.0;
         [_displayRateMonitor addMonitorItem:_displayHelper];
         _maximumRefreshRate = 60;
         if (@available(iOS 10.3, *)) {
-#if TARGET_OS_IOS
+#if FT_IOS
             _maximumRefreshRate = [UIScreen mainScreen].maximumFramesPerSecond;
 #endif
         }

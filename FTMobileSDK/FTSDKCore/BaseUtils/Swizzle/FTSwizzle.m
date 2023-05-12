@@ -7,8 +7,8 @@
 //
 
 #import "FTSwizzle.h"
-
-#if TARGET_OS_IPHONE
+#import "FTSDKCompat.h"
+#if FT_IOS
     #import <objc/runtime.h>
 #else
     #import <objc/objc-class.h>
@@ -35,7 +35,7 @@
 #if OBJC_API_VERSION >= 2
     Method origMethod = class_getInstanceMethod(self, origSel_);
     if (!origMethod) {
-#if TARGET_OS_IPHONE
+#if FT_IOS
         FTSetNSError(error_, @"original method %@ not found for class %@", NSStringFromSelector(origSel_), [self class]);
 #else
         FTSetNSError(error_, @"original method %@ not found for class %@", NSStringFromSelector(origSel_), [self className]);
@@ -45,7 +45,7 @@
 
     Method altMethod = class_getInstanceMethod(self, altSel_);
     if (!altMethod) {
-#if TARGET_OS_IPHONE
+#if FT_IOS
         FTSetNSError(error_, @"alternate method %@ not found for class %@", NSStringFromSelector(altSel_), [self class]);
 #else
         FTSetNSError(error_, @"alternate method %@ not found for class %@", NSStringFromSelector(altSel_), [self className]);
@@ -91,7 +91,7 @@
         if (!directOriginalMethod) {
             inheritedOriginalMethod = class_getInstanceMethod(self, origSel_);
             if (!inheritedOriginalMethod) {
-#if TARGET_OS_IPHONE
+#if FT_IOS
                 FTSetNSError(error_, @"original method %@ not found for class %@", NSStringFromSelector(origSel_), [self class]);
 #else
                 FTSetNSError(error_, @"original method %@ not found for class %@", NSStringFromSelector(origSel_), [self className]);
@@ -102,7 +102,7 @@
         if (!directAlternateMethod) {
             inheritedAlternateMethod = class_getInstanceMethod(self, altSel_);
             if (!inheritedAlternateMethod) {
-#if TARGET_OS_IPHONE
+#if FT_IOS
                 FTSetNSError(error_, @"alternate method %@ not found for class %@", NSStringFromSelector(altSel_), [self class]);
 #else
                 FTSetNSError(error_, @"alternate method %@ not found for class %@", NSStringFromSelector(altSel_), [self className]);

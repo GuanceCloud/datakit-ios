@@ -18,6 +18,9 @@ extern NSString * const FT_TAGS;
 extern NSString * const FT_OPDATA;
 extern NSString * const FT_OP;
 extern NSString * const FT_DEFAULT_SERVICE_NAME;
+extern NSString * const FT_IOS_SDK_NAME;
+extern NSString * const FT_MACOS_SDK_NAME;
+extern NSString * const FT_IS_WEBVIEW;
 extern NSString * const FT_NULL_VALUE;
 extern NSString * const FT_TYPE;
 #pragma mark ----- data source
@@ -79,13 +82,6 @@ extern NSString * const FT_KEY_RESPONSE_CONNECTION;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_TYPE;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_ENCODING;
 #pragma mark --- field
-extern NSString * const FT_KEY_RESOURCE_SIZE;
-extern NSString * const FT_KEY_RESOURCE_DNS;
-extern NSString * const FT_KEY_RESOURCE_TCP;
-extern NSString * const FT_KEY_RESOURCE_SSL;
-extern NSString * const FT_KEY_RESOURCE_TTFB;
-extern NSString * const FT_KEY_RESOURCE_TRANS;
-extern NSString * const FT_KEY_RESOURCE_FIRST_BYTE;
 extern NSString * const FT_KEY_RESOURCE_SIZE;
 extern NSString * const FT_KEY_RESOURCE_DNS;
 extern NSString * const FT_KEY_RESOURCE_TCP;

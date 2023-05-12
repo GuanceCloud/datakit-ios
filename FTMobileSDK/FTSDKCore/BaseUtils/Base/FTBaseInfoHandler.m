@@ -78,7 +78,7 @@
     }
     return YES;
 }
-#if !TARGET_OS_OSX
+#if FT_IOS
 +(NSString *)telephonyCarrier
 {
     CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];

@@ -17,10 +17,8 @@
 #import "FTJSONUtil.h"
 #import "FTPingThread.h"
 #import "FTWKWebViewJavascriptBridge.h"
-#if !FT_MAC
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
-#endif
 #import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
@@ -61,10 +59,8 @@ static dispatch_once_t onceToken;
     _rumConfig = rumConfig;
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
-#if !FT_MAC
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
-#endif
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
@@ -181,7 +177,6 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
-    _rumManager = nil;
     onceToken = 0;
     sharedInstance =nil;
     [self stopPingThread];

@@ -100,12 +100,14 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         NSString *measurement = opdata[FT_KEY_SOURCE];
         NSDictionary *tags = opdata[FT_TAGS];
         if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-            if([tags[@"sdk_name"] isEqualToString:@"df_web_rum_sdk"]){
+            if(tags[FT_IS_WEBVIEW]){
                 NSDictionary *field = opdata[FT_FIELDS];
                 NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
+                NSDictionary *tags = opdata[FT_TAGS];
+                XCTAssertTrue(tags[FT_KEY_IS_ACTIVE] == NO);
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
@@ -133,7 +135,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         NSString *measurement = opdata[FT_KEY_SOURCE];
         NSDictionary *tags = opdata[FT_TAGS];
         if ([measurement isEqualToString:FT_RUM_SOURCE_VIEW]) {
-            if([tags[@"sdk_name"] isEqualToString:@"df_web_rum_sdk"]){
+            if(tags[FT_IS_WEBVIEW]){
                 NSDictionary *field = opdata[FT_FIELDS];
                 NSInteger errorCount = [field[FT_KEY_VIEW_ERROR_COUNT] integerValue];
                 NSInteger resourceCount = [field[FT_KEY_VIEW_RESOURCE_COUNT] integerValue];

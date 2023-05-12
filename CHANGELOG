@@ -1,3 +1,26 @@
+1.4.2-alpha.1
+1.解决打包无 module 问题
+2.修复已知 BUG
+---
+1.4.1-alpha.3
+1.修复 RUM resource 数据格式错误问题
+---
+1.4.1-alpha.2
+1.RUM resource 中 resource_type 赋值修改
+---
+1.4.1-alpha.1
+1.修复 RUM resource 处理 response header 时未考虑大小写兼容问题
+---
+1.4.0-beta.2
+1.podspec source_files 调整，解决软连接文件导致的 duplicate 警告
+---
+
+1.4.0-beta.1
+1.新增 Widget Extension 数据采集功能
+2.网络链路追踪自动追踪优化
+3.添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
+4.修复已知 BUG
+---
 1.3.12-alpha.4
 1.macos error监控项支持采集设备电量使用率
 ---

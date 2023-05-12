@@ -26,19 +26,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// rum 数据写入
 /// - Parameters:
 ///   - source: 数据来源 view|action|resource|error
-///   - terminal: 数据产生终端
 ///   - tags:  属性
 ///   - fields:  指标
-- (void)rumWrite:(NSString *)source terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
 /// rum 数据写入
 /// - Parameters:
 ///   - source: 数据来源 view|action|resource|error
-///   - terminal: 数据产生终端
 ///   - tags: 属性
 ///   - fields: 指标
 ///   - tm: 数据产生时间戳(ns)
-- (void)rumWrite:(NSString *)source terminal:(NSString *)terminal tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTRUMDataWriteProtocol_h */

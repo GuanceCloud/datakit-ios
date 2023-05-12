@@ -29,6 +29,7 @@
 #import "FTURLSessionAutoInstrumentation.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
+#import "FTRequestBody.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -193,15 +194,25 @@
  * 验证 source：resource 的数据格式
  */
 - (void)testAddResourceDataAndFormatChecks{
+    [self resourceDataAndFormatChecks:NO];
+}
+-(void)testLowercaseResponseHeader{
+    [self resourceDataAndFormatChecks:YES];
+}
+-(void)resourceDataAndFormatChecks:(BOOL)lowercase{
     NSArray *resourceTag = @[FT_KEY_RESOURCE_URL,
                              FT_KEY_RESOURCE_URL_HOST,
                              FT_KEY_RESOURCE_URL_PATH,
-                             //                             FT_RUM_KEY_RESOURCE_URL_QUERY,
                              FT_KEY_RESOURCE_URL_PATH_GROUP,
                              FT_KEY_RESOURCE_TYPE,
                              FT_KEY_RESOURCE_METHOD,
                              FT_KEY_RESOURCE_STATUS,
                              FT_KEY_RESOURCE_STATUS_GROUP,
+                             FT_KEY_RESPONSE_CONTENT_ENCODING,
+                             FT_KEY_RESOURCE_TYPE,
+                             FT_KEY_RESPONSE_CONTENT_ENCODING,
+                             FT_KEY_RESPONSE_CONNECTION
+                             
     ];
     NSArray *resourceField = @[FT_DURATION,
                                FT_KEY_RESOURCE_SIZE,
@@ -214,13 +225,17 @@
     ];
     [self setRumConfig];
     [FTModelHelper startView];
-    
-    [self addResource];
-    
+    if(lowercase){
+        [self addLowercaseResource];
+    }else{
+        [self addResource];
+    }
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasView = NO;
-    [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+    __block BOOL hasResource = NO;
+    __block FTRecordModel *resourceModel;
+    __block NSDictionary *fieldDict;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             [self rumTags:tags];
             [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -229,13 +244,25 @@
             [resourceField enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 XCTAssertTrue([fields.allKeys containsObject:obj]);
             }];
-            hasView = YES;
+            resourceModel = array[idx];
+            fieldDict = fields;
+            hasResource = YES;
             *stop = YES;
         }
     }];
-    XCTAssertTrue(hasView);
+    XCTAssertTrue(hasResource);
+    FTRequestLineBody *lineBody = [[FTRequestLineBody alloc]init];
+    lineBody.events = @[resourceModel];
+    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel]];
+    NSArray *nameAry = @[FT_KEY_RESOURCE_SIZE,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_TTFB,FT_KEY_RESOURCE_SSL,FT_KEY_RESOURCE_TCP,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_FIRST_BYTE,FT_DURATION,FT_KEY_RESOURCE_TRANS];
+    for (NSString *name in nameAry) {
+        NSString *line = [NSString stringWithFormat:@"%@=%@i",name,fieldDict[name]];
+        XCTAssertTrue([lineStr containsString:line]);
+    }
+    
     [FTModelHelper stopView];
 }
+
 - (void)testAddErrorResource{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -750,14 +777,47 @@
     model.httpMethod = @"GET";
     model.requestHeader = traceHeader;
     model.responseHeader = @{ @"Accept-Ranges": @"bytes",
-                              @"Cache-Control": @"max-age=86400", @"Content-Encoding": @"gzip",
-                              @"Content-Length": @"11328",
+                              @"Cache-Control": @"max-age=86400",
+                              @"Content-Encoding": @"gzip",
+                              @"Connection":@"keep-alive",
+                              @"Content-Length":@"11328",
                               @"Content-Type": @"text/html",
                               @"Server": @"Apache",
                               @"Vary": @"Accept-Encoding,User-Agent"
                               
     };
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key property:endContext];
+    FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
+    metrics.duration = @1000;
+    metrics.resource_dns = @0;
+    metrics.resource_ssl = @12;
+    metrics.resource_tcp = @100;
+    metrics.resource_ttfb = @101;
+    metrics.resource_trans = @102;
+    metrics.resource_first_byte = @103;
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
+}
+- (void)addLowercaseResource{
+    NSString *key = [[NSUUID UUID]UUIDString];
+    NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = url;
+    model.httpStatusCode = 200;
+    model.httpMethod = @"GET";
+    model.requestHeader = traceHeader;
+    model.responseHeader = @{ @"accept-ranges": @"bytes",
+                              @"cache-control": @"max-age=86400",
+                              @"content-encoding": @"gzip",
+                              @"connection":@"keep-alive",
+                              @"content-length":@"11328",
+                              @"content-type": @"text/html",
+                              @"server": @"Apache",
+                              @"Vary": @"Accept-Encoding,User-Agent",
+                              
+    };
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     FTResourceMetricsModel *metrics = [FTResourceMetricsModel new];
     metrics.duration = @1000;
     metrics.resource_dns = @0;

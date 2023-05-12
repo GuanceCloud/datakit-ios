@@ -12,6 +12,7 @@
 #import "FTLog.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
+#import "FTSDKCompat.h"
 #import "FTConstants.h"
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
@@ -72,22 +73,26 @@
     }
 }
 -(void)stopView{
-    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
+    dispatch_async(self.rumQueue, ^{
+        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
+        
+    });
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
-    [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
+    dispatch_async(self.rumQueue, ^{
+        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
+    });
 }
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
     if (!viewId) {
         return;
     }
     @try {
-        dispatch_async(self.rumQueue, ^{
-            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
-            viewModel.type = FTRUMDataViewStop;
-            viewModel.fields = property;
-            [self process:viewModel];
-        });
+        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
+        viewModel.type = FTRUMDataViewStop;
+        viewModel.fields = property;
+        [self process:viewModel];
+        
     } @catch (NSException *exception) {
         ZYLogError(@"exception %@",exception);
     }
@@ -215,20 +220,30 @@
             });
         }
         [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
-        
-        if([content.responseHeader.allKeys containsObject:@"Content-Length"]){
-            NSNumber *size = content.responseHeader[@"Content-Length"];
-            [fields setValue:size forKey:FT_KEY_RESOURCE_SIZE];
-        }else if (content.responseBody) {
-            NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-            [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
-        }
+        [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
+
         if(content.responseHeader){
             [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
-            [tags setValue:content.responseHeader[@"Connection"] forKey:FT_KEY_RESPONSE_CONNECTION];
-            [tags setValue:content.responseHeader[@"Content-Type"] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
-            [tags setValue:content.responseHeader[@"Content-Encoding"] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
-            [tags setValue:content.responseHeader[@"Content-Type"] forKey:FT_KEY_RESOURCE_TYPE];
+            for (id key in content.responseHeader.allKeys) {
+                if([key isKindOfClass:NSString.class]){
+                    NSString *lowercasekey = [(NSString *)key lowercaseString];
+                    if([lowercasekey isEqualToString:@"connection"]){
+                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
+                    }else if ([lowercasekey isEqualToString:@"content-type"]){
+                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
+                    }else if([lowercasekey isEqualToString:@"content-encoding"]){
+                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                    }else if ([lowercasekey isEqualToString:@"content-length"]){
+                        id size = content.responseHeader[key];
+                        NSNumber *length = @([size integerValue]);
+                        [fields setValue:length forKey:FT_KEY_RESOURCE_SIZE];
+                    }
+                }
+            }
+            if(![fields.allKeys containsObject:FT_KEY_RESOURCE_SIZE]&&content.responseBody){
+                NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+                [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
+            }
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
         }
         [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
@@ -345,7 +360,7 @@
     if (monitorType & ErrorMonitorBattery) {
         errorTag[FT_BATTERY_USE] =[NSNumber numberWithDouble:[FTMonitorUtils batteryUse]];
     }
-#if !TARGET_OS_OSX
+#if FT_IOS
     errorTag[FT_KEY_CARRIER] = [FTBaseInfoHandler telephonyCarrier];
 #endif
     NSString *preferredLanguage = [[[NSBundle mainBundle] preferredLocalizations] firstObject];

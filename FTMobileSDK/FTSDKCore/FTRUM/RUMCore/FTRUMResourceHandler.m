@@ -78,6 +78,6 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE terminal:FT_TERMINAL_APP tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
 }
 @end

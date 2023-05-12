@@ -117,7 +117,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
     _applicationDidEnterBackground = YES;
 }
 - (BOOL)isActivePrewarmAvailable{
-#    if TARGET_OS_IOS
+#    if FT_IOS
     // 用户数据显示，iOS 14的应用程序启动也进行了预热，与苹果文档中在iOS 15及之后支持矛盾。
     if (@available(iOS 14, *)) {
         return YES;

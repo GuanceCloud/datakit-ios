@@ -324,8 +324,8 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const 
     info->dli_sname = NULL;
     info->dli_saddr = NULL;
     binaryImages->name = NULL;
-    binaryImages->cpuType = NULL;
-    binaryImages->loadEndAddress = NULL;
+    binaryImages->cpuType = 0;
+    binaryImages->loadEndAddress = 0;
     const uint32_t idx = ft_imageIndexContainingAddress(address);
     if(idx == UINT_MAX) {
         return false;
@@ -477,7 +477,7 @@ uintptr_t ft_segmentBaseOfImageIndex(const uint32_t idx,FTMachoImage* const bina
     NSMutableString *header = [NSMutableString new];
     NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
     [header appendFormat:@"Hardware Model:  %@\n",deviceString];
-#if TARGET_OS_IOS
+#if FT_IOS
     [header appendFormat:@"OS Version:   iPhone OS %@\n",[UIDevice currentDevice].systemVersion];
 #endif
     [header appendString:@"Report Version:  104\n"];
