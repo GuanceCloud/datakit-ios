@@ -29,7 +29,7 @@ static FTFishHookCallBack FTHookCallBack;
     return self;
 }
 - (void)hookWithBlock:(FTFishHookCallBack)callBack{
-   
+    ZYLogInfo(@"****控制台日志采集开启****");
     dispatch_async(self.concurrentQueue, ^{
         NSString *pname = [[NSProcessInfo processInfo] processName];
         self.regexStr = [NSString stringWithFormat:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}\\+\\d{4}\\s%@\\[%d:\\d{1,}]",pname,[NSProcessInfo processInfo].processIdentifier];
@@ -76,6 +76,7 @@ static FTFishHookCallBack FTHookCallBack;
     if(self.errFd>0){
         dup2(self.errFd, STDERR_FILENO);
     }
+    ZYLogInfo(@"****控制台日志采集关闭****");
 }
 - (void)redirectNotificationHandle:(NSNotification *)nf {
     NSData *data = [[nf userInfo] objectForKey:NSFileHandleNotificationDataItem];

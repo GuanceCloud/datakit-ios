@@ -99,7 +99,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
-    ZYLogDebug(@"SDK RUM APPID:%@",rumConfigOptions.appid);
+    ZYLogInfo(@"SDK RUM APPID:%@",rumConfigOptions.appid);
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
