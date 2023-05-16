@@ -79,8 +79,7 @@ static dispatch_once_t onceToken;
             _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
             _presetProperty.sdkVersion = SDK_VERSION;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
-            .setSdkVersion(SDK_VERSION)
-            .setXDataKitUUID(config.XDataKitUUID);
+                .setSdkVersion(SDK_VERSION);
             [[FTURLSessionAutoInstrumentation sharedInstance] setSdkUrlStr:config.metricsUrl];
         }
     }@catch(NSException *exception) {

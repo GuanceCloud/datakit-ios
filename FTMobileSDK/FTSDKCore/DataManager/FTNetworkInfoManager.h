@@ -11,12 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTNetworkInfoManager : NSObject
 @property (nonatomic,copy,readonly) NSString *metricsUrl;
-@property (nonatomic,copy,readonly) NSString *XDataKitUUID;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
 
 + (instancetype)sharedInstance;
 - (FTNetworkInfoManager *(^)(NSString *value))setMetricsUrl;
-- (FTNetworkInfoManager *(^)(NSString *value))setXDataKitUUID;
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 
 @end

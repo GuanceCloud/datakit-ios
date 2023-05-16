@@ -28,16 +28,6 @@
 #define IP_ADDR_IPv6    @"ipv6"
 @implementation FTBaseInfoHandler : NSObject
 
-+ (NSString *)XDataKitUUID{
-    NSString *deviceId;
-    deviceId = [[NSUserDefaults standardUserDefaults] valueForKey:@"FTSDKUUID"];
-    if (!deviceId) {
-        deviceId = [[NSUUID UUID] UUIDString];
-        [[NSUserDefaults standardUserDefaults] setValue:deviceId forKey:@"FTSDKUUID"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-    return deviceId;
-}
 + (NSString *)convertToStringData:(NSDictionary *)dict{
     __block NSString *str = @"";
     if (dict) {

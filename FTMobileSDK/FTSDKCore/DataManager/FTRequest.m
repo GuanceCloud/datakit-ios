@@ -56,7 +56,6 @@
      [mutableRequest addValue:@"charset=utf-8" forHTTPHeaderField:@"Content-Type"];
      [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
      //设置请求参数
-     [mutableRequest setValue:FTNetworkInfoManager.sharedInstance.XDataKitUUID forHTTPHeaderField:@"X-Datakit-UUID"];
      [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
      [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
