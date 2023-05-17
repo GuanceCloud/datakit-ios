@@ -32,8 +32,7 @@
     NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setMetricsUrl(urlStr)
-        .setSdkVersion(@"RequestTest")
-        .setXDataKitUUID([NSUUID UUID].UUIDString);
+        .setSdkVersion(@"RequestTest");
     
 }
 

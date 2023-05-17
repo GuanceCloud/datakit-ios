@@ -179,7 +179,6 @@
     if (self = [super init]) {
         _metricsUrl = metricsUrl;
         _enableSDKDebugLog = NO;
-        _XDataKitUUID = [FTBaseInfoHandler XDataKitUUID];
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
         _env = FTEnvProd;
@@ -191,7 +190,6 @@
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
     options.metricsUrl = self.metricsUrl;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
-    options.XDataKitUUID = self.XDataKitUUID;
     options.env = self.env;
     options.version = self.version;
     options.globalContext = self.globalContext;

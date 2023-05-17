@@ -190,8 +190,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
 @property (nonatomic, copy) NSString *metricsUrl;
-/// 请求 HTTP 请求头 X-Datakit-UUID 数据采集端  如果用户不设置会自动配置
-@property (nonatomic, copy) NSString *XDataKitUUID;
 /// 环境字段。
 @property (nonatomic, assign) FTEnv env;
 /// 设置是否允许 SDK 打印 Debug 日志。

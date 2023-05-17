@@ -13,8 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 一些工具方法
 @interface FTBaseInfoHandler : NSObject
 
-/// HTTP 请求头 X-Datakit-UUID 数据采集端
-+ (NSString *)XDataKitUUID;
 
 /// 将字典转换成字符串
 /// - Parameter dict: 待转化字典

@@ -29,12 +29,6 @@
     };
 }
 
-- (FTNetworkInfoManager *(^)(NSString *value))setXDataKitUUID{
-    return ^(NSString *value) {
-        self->_XDataKitUUID = value;
-        return self;
-    };
-}
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion{
     return ^(NSString *value) {
         self->_sdkVersion = value;
