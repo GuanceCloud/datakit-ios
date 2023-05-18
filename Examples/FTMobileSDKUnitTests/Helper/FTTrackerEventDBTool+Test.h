@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTrackerEventDBTool (Test)
 @property (nonatomic, strong) ZY_FMDatabase *db;
-+ (instancetype)shareDatabase:(NSString *)dbName;
 - (BOOL)zy_isExistTable:(NSString *)tableName;
 - (void)resetInstance;
 @end
