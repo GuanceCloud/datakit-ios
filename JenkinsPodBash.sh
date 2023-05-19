@@ -2,7 +2,7 @@
 
 VERSION=$(echo "$FT_PUSH_TAG" | sed -e 's/.*\///g' | sed -e 's/~.*//g' )
 
-git config remote.github.url >&- || git remote add github git@github.com:DataFlux-cn/datakit-ios.git
+if git config remote.github.url; then git config remote.github.url git@github.com:GuanceCloud/datakit-ios.git; else git remote add github git@github.com:GuanceCloud/datakit-macos.git; fi
 git push github $VERSION
 
 if [[ $? -eq 0 ]];then
