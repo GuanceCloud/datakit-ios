@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
 
 	s.ios.deployment_target = '10.0'
 	s.osx.deployment_target = '10.13'
+	#$JENKINS_DYNAMIC_VERSION 替换成 "#{s.version}" 会在 pod valid 阶段报错
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
 
