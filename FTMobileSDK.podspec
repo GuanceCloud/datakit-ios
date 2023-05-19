@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
 
 	s.ios.deployment_target = '10.0'
 	s.osx.deployment_target = '10.13'
-	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "#{s.version}" }
+	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
 
 	s.subspec  'FTMobileAgent' do | agent |
