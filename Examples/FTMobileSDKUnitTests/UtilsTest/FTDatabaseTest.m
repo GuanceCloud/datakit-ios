@@ -25,7 +25,7 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[FTTrackerEventDBTool sharedManger] resetInstance];
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[NSUUID UUID].UUIDString];
-    [FTTrackerEventDBTool shareDatabase:self.dbName];
+    [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = 5000;
 }

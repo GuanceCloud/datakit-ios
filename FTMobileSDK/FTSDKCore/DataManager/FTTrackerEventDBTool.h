@@ -20,8 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 单例
 + (FTTrackerEventDBTool *)sharedManger;
 /// 单例
-/// @param dbName 数据库名称，默认 ZYFMDB.sqlite
-+ (FTTrackerEventDBTool *)shareDatabase:(NSString *)dbName;
+/// @param dbPath 数据库地址
+/// @param dbPath 数据库名称
++ (FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 /**
  * @abstract
  * 向数据库中添加一个对象
