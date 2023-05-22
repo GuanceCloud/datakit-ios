@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (FTTrackerEventDBTool *)sharedManger;
 /// 单例
 /// @param dbPath 数据库地址
-/// @param dbPath 数据库名称
+/// @param dbName 数据库名称
 + (FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 /**
  * @abstract
