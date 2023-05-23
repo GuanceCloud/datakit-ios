@@ -25,7 +25,7 @@
 -(void)tearDown{
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:2];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

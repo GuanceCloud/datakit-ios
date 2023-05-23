@@ -197,6 +197,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {
         [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
@@ -209,7 +210,7 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)networkUpload:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];

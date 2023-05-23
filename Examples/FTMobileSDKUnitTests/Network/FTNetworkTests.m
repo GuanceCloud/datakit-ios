@@ -41,7 +41,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
 }
 - (void)tearDown{
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

@@ -44,7 +44,7 @@
 }
 
 - (void)tearDown {
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
     self.tracer = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
@@ -132,7 +132,7 @@
     
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     [self networkUpload:@"DDtrace" handler:^(NSDictionary *header) {
-       
+        
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"2"]);
@@ -179,33 +179,31 @@
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
-            if( [tracerInstence getSkywalkingSeq] == 9996){
+            if( [tracerInstence getSkywalkingSeq] == 9998){
                 break;;
             }
         }
     }
-    [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
-        [self networkUpload:@"Skywalking_v3_2" handler:^(NSDictionary *header) {
-            XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
-            NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
-            NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
-            XCTAssertTrue(traceAry.count == 8);
-            
-            NSString *sampling = [traceAry firstObject];
-            NSString *trace = [traceAry[1] ft_base64Decode];
-            NSString *parentTraceID=[traceAry[2] ft_base64Decode];
-            NSString *span = [parentTraceID stringByAppendingString:@"0"];
-            NSRange range = NSMakeRange(span.length-5, 5);
-            XCTAssertTrue([[span substringWithRange:range] isEqualToString:@"00000"]);
-            XCTAssertTrue(trace && span && sampling);
-            [expectation fulfill];
-        }];
+    [self networkUpload:@"Skywalking_v3_2" handler:^(NSDictionary *header) {
+        XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        XCTAssertTrue(traceAry.count == 8);
+        
+        NSString *sampling = [traceAry firstObject];
+        NSString *trace = [traceAry[1] ft_base64Decode];
+        NSString *parentTraceID=[traceAry[2] ft_base64Decode];
+        NSString *span = [parentTraceID stringByAppendingString:@"0"];
+        NSRange range = NSMakeRange(span.length-5, 5);
+        XCTAssertTrue([[span substringWithRange:range] isEqualToString:@"00000"]);
+        XCTAssertTrue(trace && span && sampling);
+        [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-        
-
+    
+    
 }
 - (void)testFTNetworkTrackTypeTraceparent{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -233,7 +231,7 @@
 }
 - (void)testSampleRate0{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -242,7 +240,7 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-
+    
     [self networkUpload:@"SampleRate0" handler:^(NSDictionary *header) {
         XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"-1"]);
         [expectation fulfill];
@@ -254,7 +252,7 @@
 }
 - (void)testSampleRate100{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
@@ -264,20 +262,20 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-
+    
     [self networkUpload:@"SampleRate100" handler:^(NSDictionary *header) {
         XCTAssertTrue([[header valueForKey:FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:@"2"]);
-
+        
         [expectation fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-
+    
 }
 - (void)testUnableAutoTraceLinkRumExternalAdd{
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
@@ -295,7 +293,7 @@
     
     NSString *key = [[NSUUID UUID]UUIDString];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
-
+    
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
@@ -343,7 +341,7 @@
 }
 - (void)testDisableAutoTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -356,7 +354,7 @@
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-
+        
         [expectation fulfill];
     }];
     
@@ -370,13 +368,13 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-
+    
     NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
     XCTAssertNil(header);
 }
 - (void)testCustomTrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -385,7 +383,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-
+    
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
     
     [self networkUpload:@"DisableAutoTrace" traceHeader:traceHeader handler:^(NSDictionary *header) {
@@ -393,7 +391,7 @@
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_SPANID] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_SPANID]]);
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_SAMPLING_PRIORITY]]);
-    
+        
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
@@ -402,7 +400,7 @@
 }
 - (void)testIntakeUrl{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
+    
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
@@ -422,7 +420,7 @@
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
         XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-
+        
         [expectation fulfill];
     }];
     
@@ -492,7 +490,7 @@
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
         [expectation fulfill];
     }];
-
+    
     [task resume];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);

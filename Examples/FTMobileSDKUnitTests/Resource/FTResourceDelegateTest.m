@@ -38,7 +38,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 
 }
 - (void)sdkNormalSet{

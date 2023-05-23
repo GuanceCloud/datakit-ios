@@ -44,10 +44,13 @@
 -(void)ft_stopLoading{
     [self.webView stopLoading];
 }
-- (void)test_addWebViewRumView{
+- (void)test_addWebViewRumView:(void(^)(void))complete{
     [self.webView evaluateJavaScript:@"testRumView()" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
         //js函数调用return,这里才会有东西,否则无任何信息。
         NSLog(@"response: %@ error: %@", response, error);
+        if(complete){
+            complete();
+        }
     }];
 
 }
