@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import FTMobileAgent
+import FTMobileSDK
 class TraceViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     var dataSource:Array<String> = []
     

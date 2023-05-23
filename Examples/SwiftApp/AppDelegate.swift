@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import FTMobileAgent
+import FTMobileSDK
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
