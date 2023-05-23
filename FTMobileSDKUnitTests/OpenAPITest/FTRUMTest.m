@@ -44,7 +44,7 @@
 }
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 
 - (void)testSessionIdChecks{

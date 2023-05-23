@@ -89,7 +89,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - completion: 完成 track 后的 callback
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(nullable void (^)(NSString *groupIdentifier, NSArray *events)) completion;
 
-
+/// 关闭 SDK 内正在运行对象
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

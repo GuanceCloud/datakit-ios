@@ -290,7 +290,9 @@ static dispatch_once_t onceToken;
     [[FTTrackDataManager sharedInstance] addTrackData:model type:type];
 }
 #pragma mark - SDK注销
-- (void)resetInstance{
+- (void)shutDown{
+    [self syncProcess];
+    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     [[FTGlobalRumManager sharedInstance] resetInstance];
     [[FTURLSessionAutoInstrumentation sharedInstance] resetInstance];
     _presetProperty = nil;

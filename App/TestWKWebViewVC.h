@@ -12,12 +12,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TestWKWebViewVC : TestWKParentVC
-- (void)ft_load:(NSString *)urlStr;
 - (void)ft_loadOther:(NSString *)urlStr;
 - (void)ft_reload;
 - (void)ft_testNextLink;
 - (void)ft_stopLoading;
-- (void)test_addWebViewRumView;
+- (void)test_addWebViewRumView:(void(^)(void))complete;
 @end
 
 NS_ASSUME_NONNULL_END

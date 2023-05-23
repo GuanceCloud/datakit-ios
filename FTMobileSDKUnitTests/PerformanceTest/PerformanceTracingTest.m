@@ -18,7 +18,7 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

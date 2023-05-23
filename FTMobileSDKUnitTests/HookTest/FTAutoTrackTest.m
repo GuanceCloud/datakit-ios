@@ -59,7 +59,7 @@
 //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] resetInstance];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 ///**
 //  测试当前控制器获取是否正确
@@ -170,7 +170,6 @@
         }
     }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [tester waitForTimeInterval:1];
 }
 - (void)testButtonClick{
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
@@ -213,16 +212,15 @@
 - (void)testAutoTrackResource{
     [FTModelHelper startView];
     [FTModelHelper addAction];
-    [tester waitForTimeInterval:1];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
  
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
-    [NSThread sleepForTimeInterval:1];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
+    [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasRes = NO;

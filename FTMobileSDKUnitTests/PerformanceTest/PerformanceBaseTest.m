@@ -69,7 +69,7 @@
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
         [self stopMeasuring];
-        [[FTMobileAgent sharedInstance] resetInstance];
+        [[FTMobileAgent sharedInstance] shutDown];
     }];
    
 }
