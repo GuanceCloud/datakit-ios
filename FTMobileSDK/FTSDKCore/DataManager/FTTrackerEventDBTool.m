@@ -12,6 +12,7 @@
 #import "FTLog.h"
 #import "FTConstants.h"
 #import <pthread.h>
+#import "FTSDKCompat.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
@@ -29,16 +30,20 @@ static dispatch_once_t onceToken;
 #pragma mark --创建数据库
 + (instancetype)sharedManger
 {
-    return [FTTrackerEventDBTool shareDatabase:nil];
+    return [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:nil];
 }
-+ (instancetype)shareDatabase:(NSString *)dbName {
++ (instancetype)shareDatabaseWithPath:(NSString *)dbPath dbName:(NSString *)dbName{
     dispatch_once(&onceToken, ^{
     if (!dbTool) {
+        NSString *path = dbPath;
         NSString *name = dbName;
-        if (!name) {
+        if (!path) {
+            path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+        }
+        if(!name){
             name = @"ZYFMDB.sqlite";
         }
-        NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:name];
+        path = [path stringByAppendingPathComponent:name];
         ZY_FMDatabaseQueue *dbQueue = [ZY_FMDatabaseQueue databaseQueueWithPath:path];
         ZY_FMDatabase *fmdb = [dbQueue valueForKey:@"_db"];
         if ([fmdb  open]) {

@@ -27,7 +27,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 @property (nonatomic, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UITabBarController *tabBarController;
 @property (nonatomic, copy) FTTraceRequest block;
-
+@property (nonatomic, strong) XCTestExpectation *loadExpect;
 @end
 
 @implementation FTJavaScriptBridgeTest
@@ -67,8 +67,6 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
     self.window.hidden = YES;
     self.window = nil;
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] resetInstance];
 }
 - (void)setsdk{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -87,9 +85,18 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [self setsdk];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController ft_load:url.absoluteString];
-    [tester waitForTimeInterval:2];
-    [self.viewController test_addWebViewRumView];
-    [tester waitForTimeInterval:3];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -117,14 +124,24 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         }
     }];
     XCTAssertTrue(hasViewData);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 -(void)testloadFileURL{
     [self setsdk];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
-    [tester waitForTimeInterval:2];
-    [self.viewController test_addWebViewRumView];
-    [tester waitForTimeInterval:3];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *datas =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasViewData = NO;
     [datas enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -150,30 +167,91 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         }
     }];
     XCTAssertTrue(hasViewData);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testReloadTrace{
     [self setsdk];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     __block NSString *spanid;
+    __block BOOL hasTrace = NO;
     self.block = ^(NSURLRequest *request){
         if([request.URL isEqual:url]){
             if(spanid){
-                XCTAssertFalse([spanid isEqualToString:request.allHTTPHeaderFields[@"x-datadog-trace-id"]]);
+                XCTAssertFalse([spanid isEqualToString:request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID]]);
+                hasTrace = YES;
             }else{
-                spanid = request.allHTTPHeaderFields[@"x-datadog-trace-id"];
+                spanid = request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID];
             }
         }
     };
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
     [self.viewController ft_load:url.absoluteString];
-    [tester waitForTimeInterval:10];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
     [self.viewController ft_reload];
-    [tester waitForTimeInterval:5];
-
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTAssertTrue(hasTrace);
+}
+-(void)testSDKShutDownWebViewBridge{
+    [self setsdk];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    [[FTMobileAgent sharedInstance] shutDown];
+    NSInteger oldCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
+    [self.viewController test_addWebViewRumView:^{
+        [jsScript fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSInteger newCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == oldCount);
+}
+-(void)testSDKShutDownWebViewTrace{
+    [self setsdk];
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
+    __block NSString *spanid;
+    __block BOOL reloadSuccess = NO;
+    self.block = ^(NSURLRequest *request){
+        if([request.URL isEqual:url]){
+            if(spanid){
+                XCTAssertTrue([spanid isEqualToString:request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID]]);                reloadSuccess = YES;
+            }else{
+                spanid = request.allHTTPHeaderFields[FT_NETWORK_DDTRACE_TRACEID];
+            }
+        }
+    };
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [self.viewController ft_load:url.absoluteString];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
+    [[FTMobileAgent sharedInstance] shutDown];
+    [self.viewController ft_reload];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    XCTAssertTrue(reloadSuccess);
 }
 -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler{
     if(self.block){
         self.block(navigationAction.request);
     }
     decisionHandler(WKNavigationActionPolicyAllow);
+}
+- (void)webView:(WKWebView *)webView didFinishNavigation:(null_unspecified WKNavigation *)navigation{
+    [self.loadExpect fulfill];
+    self.loadExpect = nil;
 }
 @end

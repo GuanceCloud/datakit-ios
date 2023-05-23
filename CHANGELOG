@@ -1,3 +1,9 @@
+1.4.2-alpha.3
+1.FTSDKCore 基础库支持自定义数据库路径和名称
+---
+1.4.2-alpha.2
+1.删除 dataKitUUID
+---
 1.4.2-alpha.1
 1.解决打包无 module 问题
 2.修复已知 BUG
@@ -10,6 +16,10 @@
 ---
 1.4.1-alpha.1
 1.修复 RUM resource 处理 response header 时未考虑大小写兼容问题
+---
+
+1.4.0-beta.3
+1.新增 SDK 注销 API
 ---
 1.4.0-beta.2
 1.podspec source_files 调整，解决软连接文件导致的 duplicate 警告

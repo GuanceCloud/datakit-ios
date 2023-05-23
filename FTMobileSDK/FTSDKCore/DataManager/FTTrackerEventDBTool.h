@@ -18,7 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 数据库中 logging 类型数据最大数量
 @property (nonatomic, assign) NSInteger dbLoggingMaxCount;
 /// 单例
-+(FTTrackerEventDBTool *)sharedManger;
++ (FTTrackerEventDBTool *)sharedManger;
+/// 单例
+/// @param dbPath 数据库地址
+/// @param dbName 数据库名称
++ (FTTrackerEventDBTool *)shareDatabaseWithPath:(nullable NSString *)dbPath dbName:(nullable NSString *)dbName;
 /**
  * @abstract
  * 向数据库中添加一个对象
