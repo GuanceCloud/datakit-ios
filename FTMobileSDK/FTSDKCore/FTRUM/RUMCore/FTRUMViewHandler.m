@@ -14,7 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;

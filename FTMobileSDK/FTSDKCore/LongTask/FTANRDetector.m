@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTANRDetector.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTCallStack.h"
 #import "FTConstants.h"
 

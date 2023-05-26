@@ -12,7 +12,7 @@
 #import "FTDateUtil.h"
 #import "FTPresetProperty.h"
 #import "FTRecordModel.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
 #import "FTSwizzle.h"

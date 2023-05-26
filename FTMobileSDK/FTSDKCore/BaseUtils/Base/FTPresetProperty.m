@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
 #include <sys/sysctl.h>

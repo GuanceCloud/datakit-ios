@@ -13,7 +13,7 @@
 #import "FTResourceContentModel.h"
 #import "FTURLSessionDelegate.h"
 #import "FTTraceManager.h"
-
+#import "FTLogger.h"
 NS_ASSUME_NONNULL_BEGIN
 
 /// FTMobileSDK

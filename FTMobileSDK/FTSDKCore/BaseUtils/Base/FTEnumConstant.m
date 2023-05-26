@@ -17,7 +17,8 @@ NSString * const FTStatusStringMap[] = {
     [StatusWarning] = @"warning",
     [StatusError] = @"error",
     [StatusCritical] = @"critical",
-    [StatusOk] = @"ok"
+    [StatusOk] = @"ok",
+    [StatusDebug] = @"debug"
 };
 NSString * const FTNetworkTraceStringMap[] = {
     [ZipkinMultiHeader] = @"zipkin",

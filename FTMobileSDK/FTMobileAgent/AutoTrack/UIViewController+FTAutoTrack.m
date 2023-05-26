@@ -12,7 +12,7 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTTrack.h"
 #import "FTDateUtil.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";

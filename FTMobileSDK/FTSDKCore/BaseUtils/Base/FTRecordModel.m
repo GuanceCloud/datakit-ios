@@ -11,7 +11,7 @@
 #import "FTRecordModel.h"
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTConstants.h"
 @implementation FTRecordModel
 -(instancetype)init{

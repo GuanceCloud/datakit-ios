@@ -10,13 +10,13 @@
 #endif
 #define FTLogger(...) NSLog(__VA_ARGS__)
 
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import <os/log.h>
 
 static BOOL _enableLog;
 
 static dispatch_queue_t _loggingQueue;
-@implementation FTLog
+@implementation FTInternalLog
 + (void)initialize {
     _enableLog = NO;
     _loggingQueue = dispatch_queue_create("com.cloudcare.ft.mobile.sdk.log", DISPATCH_QUEUE_SERIAL);
@@ -45,15 +45,15 @@ static dispatch_queue_t _loggingQueue;
       level:(LogStatus)level
    function:(const char *)function
        line:(NSUInteger)line
-     format:(NSString *)format, ... {
-    if (![FTLog isLoggerEnabled]) {
+     format:(NSString *)format, ... NS_FORMAT_FUNCTION(5,6){
+    if (![FTInternalLog isLoggerEnabled]) {
         return;
     }
     @try {
         va_list args;
         va_start(args, format);
         NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-        [self.sharedInstance log:asynchronous message:[NSString stringWithFormat:@"%s [line %lu] %@",function, (unsigned long)line, message] level:level];
+        [self.sharedInstance log:asynchronous message:[NSString stringWithFormat:@"[FTLog][%@] %s [line %lu] %@",[FTStatusStringMap[level] uppercaseString],function, (unsigned long)line, message] level:level];
         va_end(args);
     } @catch(NSException *e) {
        
@@ -69,13 +69,13 @@ static dispatch_queue_t _loggingQueue;
                 case StatusCritical:
                 case StatusOk:
                 case StatusInfo:
-                    os_log_info(OS_LOG_DEFAULT,"%{public}s",[[NSString stringWithFormat:@"[FTLog][%@] %@",[FTStatusStringMap[level] uppercaseString],message] UTF8String]);
+                    os_log_info(OS_LOG_DEFAULT,"%{public}s",[message UTF8String]);
                     break;
                 case StatusError:
-                    os_log_error(OS_LOG_DEFAULT, "%{public}s",[[NSString stringWithFormat:@"[FTLog][ERROR] %@",message] UTF8String]);
+                    os_log_error(OS_LOG_DEFAULT, "%{public}s",[message UTF8String]);
                     break;
                 case StatusDebug:
-                    os_log_debug(OS_LOG_DEFAULT, "%{public}s",[[NSString stringWithFormat:@"[FTLog][DEBUG] %@",message] UTF8String]);
+                    os_log_debug(OS_LOG_DEFAULT, "%{public}s",[message UTF8String]);
                     break;
             }
         });

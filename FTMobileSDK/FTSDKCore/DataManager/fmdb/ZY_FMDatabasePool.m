@@ -14,7 +14,7 @@
 
 #import "ZY_FMDatabasePool.h"
 #import "ZY_FMDatabase.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
     ZY_FMDBTransactionExclusive,
     ZY_FMDBTransactionDeferred,

@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTWKWebViewHandler.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"

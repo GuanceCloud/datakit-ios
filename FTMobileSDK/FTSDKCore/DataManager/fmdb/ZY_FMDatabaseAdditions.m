@@ -9,7 +9,7 @@
 #import "ZY_FMDatabase.h"
 #import "ZY_FMDatabaseAdditions.h"
 #import "TargetConditionals.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else

@@ -8,7 +8,7 @@
 
 #import "NSURLSessionConfiguration+FTSwizzler.h"
 #import "FTURLProtocol.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 @implementation NSURLSessionConfiguration (FTSwizzler)
 + (NSURLSessionConfiguration *)ft_defaultSessionConfiguration{
     NSURLSessionConfiguration* config = [self ft_defaultSessionConfiguration];

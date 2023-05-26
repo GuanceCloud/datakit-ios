@@ -10,7 +10,7 @@
 #import "FTExtensionDataManager.h"
 #import "FTUncaughtExceptionHandler.h"
 #import "FTDateUtil.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
 #import "FTMobileConfig.h"
@@ -45,7 +45,7 @@ static FTExtensionManager *sharedInstance = nil;
     self = [super init];
     if (self) {
         _extensionConfig = extensionConfig;
-        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
+        [FTInternalLog enableLog:extensionConfig.enableSDKDebugLog];
         [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
         [self processingConfigItems];
     }

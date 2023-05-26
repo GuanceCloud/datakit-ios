@@ -34,7 +34,6 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testEnableCustomLog{
@@ -136,10 +135,9 @@
     [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
 
-    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTMobileAgent sharedInstance] shutDown];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
-    [[FTMobileAgent sharedInstance] resetInstance];
     [self setRightSDKConfig];
     
     [loggerConfig enableConsoleLog:YES prefix:@"debug"];

@@ -10,7 +10,7 @@
 #endif
 #import "FTGlobalRumManager.h"
 #import "FTURLProtocol.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
 #import "FTANRDetector.h"
@@ -31,6 +31,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
+#import "FTThreadDispatchManager.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -68,18 +69,14 @@ static dispatch_once_t onceToken;
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (rumConfig.enableTrackAppANR) {
+    if (rumConfig.enableTrackAppANR) {
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
             [FTANRDetector sharedInstance].delegate = self;
             [[FTANRDetector sharedInstance] startDetecting];
-        }else{
-            [[FTANRDetector sharedInstance] stopDetecting];
-        }
-    });
+        }];
+    }
     if (rumConfig.enableTrackAppFreeze) {
         [self startPingThread];
-    }else{
-        [self stopPingThread];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;

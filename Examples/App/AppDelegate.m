@@ -68,7 +68,7 @@
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
-        loggerConfig.enableConsoleLog = YES;
+        loggerConfig.printLogsToConsole = YES;
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.
         FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
         traceConfig.enableLinkRumData = YES;

@@ -8,7 +8,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import "FTSwizzler.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #define DATAFLUX_MIN_ARGS 2
 #define DATAFLUX_MAX_ARGS 5
 #define FT_FIND_SWIZZLE \

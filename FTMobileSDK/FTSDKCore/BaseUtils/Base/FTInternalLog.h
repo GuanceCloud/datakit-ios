@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FTEnumConstant.h"
 #define FTLOG_MACRO(lvl, frmt, ...) \
-[FTLog log : YES                                     \
+[FTInternalLog log : YES                                     \
      level : lvl                                     \
   function : __PRETTY_FUNCTION__                     \
       line : __LINE__                                \
@@ -23,14 +23,14 @@
 
 #define ZYLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
-#define FTCUSTOMLOG(lvl, frmt) \
-[[FTLog sharedInstance] log : YES                                     \
+#define FTCONSOLELOG(lvl, frmt) \
+[[FTInternalLog sharedInstance] log : YES                                     \
    message : frmt                                     \
-     level : lvl  ]
+     level : lvl ]
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTLog : NSObject
+@interface FTInternalLog : NSObject
 
 + (instancetype)sharedInstance;
 + (void)enableLog:(BOOL)enableLog;
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
       level:(LogStatus)level
    function:(const char *)function
        line:(NSUInteger)line
-     format:(NSString *)format, ... ;
+     format:(NSString *)format, ... NS_FORMAT_FUNCTION(5,6);
 - (void)log:(BOOL)asynchronous
     message:(NSString *)message
       level:(LogStatus)level;
