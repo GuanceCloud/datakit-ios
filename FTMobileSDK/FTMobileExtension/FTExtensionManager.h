@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Extension 初始化方法
  *
  * @param extensionConfig extension 配置项
-*/
+ */
 + (void)startWithExtensionConfig:(FTExtensionConfig *)extensionConfig;
 
 + (instancetype)sharedInstance;
@@ -28,6 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param status   事件等级和状态，info：提示，warning：警告，error：错误，critical：严重，ok：恢复，默认：info
  */
 -(void)logging:(NSString *)content status:(FTLogStatus)status;
+/// 添加自定义日志
+/// - Parameters:
+///   - content: 日志内容，可为 json 字符串
+///   - status: 事件等级和状态
+///   - property: 事件自定义属性(可选)
+-(void)logging:(NSString *)content status:(FTLogStatus)status property:(nullable NSDictionary *)property;
 @end
 
 NS_ASSUME_NONNULL_END

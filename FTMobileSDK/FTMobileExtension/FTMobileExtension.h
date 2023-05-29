@@ -15,3 +15,4 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTExtensionDataManager.h"
+#import "FTLogger.h"

@@ -104,6 +104,14 @@ let package = Package(
                    
                 ]
                ),
+        .target(name: "_FTLoggerSwift",
+                dependencies: ["_FTLogger"],
+                path: "FTMobileSDK/FTSDKCore/LoggerSwift",
+                publicHeadersPath: ".",
+                cSettings: [
+                   
+                ]
+               ),
         .target(name: "_FTException",
                 dependencies: ["_FTBaseUtils_Base",
                                "_FTProtocol",
@@ -125,7 +133,6 @@ let package = Package(
                 publicHeadersPath: ".",
                 cSettings: [
                     .headerSearchPath("Swizzle"),
-                    .headerSearchPath("Swizzle/FTfishhook.c")
                 ]),
         .target(name: "_FTBaseUtils_Thread",
                 dependencies: [],
@@ -150,6 +157,7 @@ let package = Package(
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
                                "_FTExternalData",
+                               "_FTLoggerSwift",
                                "_FTConfig"
                               ],
                 path: "FTMobileSDK/FTMobileExtension",
@@ -163,7 +171,7 @@ let package = Package(
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
                                "_FTLongTask",
-                               "_FTLogger"
+                               "_FTLoggerSwift"
                               ],
                 path: "FTMobileSDK/FTSDKCore",
                 sources: ["FTWKWebView","DataManager"],

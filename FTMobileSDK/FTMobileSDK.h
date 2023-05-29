@@ -24,3 +24,4 @@ FOUNDATION_EXPORT const unsigned char FTMobileSDKVersionString[];
 #import "FTURLSessionDelegate.h"
 #import "FTTraceManager.h"
 #import "FTMobileAgent.h"
+#import "FTLogger.h"

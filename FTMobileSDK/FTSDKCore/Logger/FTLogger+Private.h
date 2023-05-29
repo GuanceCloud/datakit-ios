@@ -10,10 +10,9 @@
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-@class FTLoggerConfig;
 
 @interface FTLogger ()
-+ (void)startWithEablePrintLogsToConsole:(BOOL)enable writer:(id<FTLoggerDataWriteProtocol>)writer;
++ (void)startWithEablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer;
 - (void)log:(NSString *)message
      status:(LogStatus)status
    property:(nullable NSDictionary *)property;

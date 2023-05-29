@@ -23,7 +23,7 @@
 #import "FTRUMManager.h"
 #import "FTRUMHandler.h"
 #import "FTUncaughtExceptionHandler.h"
-#import "FTLogHook.h"
+#import "FTLogger.h"
 #import "FTURLSessionAutoInstrumentation.h"
 #import "FTURLSessionDelegate.h"
 #import "FTReadWriteHelper.h"

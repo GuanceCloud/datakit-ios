@@ -41,7 +41,6 @@
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, copy) NSString *netTraceStr;
-@property (nonatomic, strong) NSSet *logLevelFilterSet;
 @end
 @implementation FTMobileAgent
 
@@ -109,10 +108,9 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
-        self.logLevelFilterSet = [NSSet setWithArray:self.loggerConfig.logLevelFilter];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
-        [FTLogger startWithEablePrintLogsToConsole:loggerConfigOptions.printLogsToConsole writer:self];
+        [FTLogger startWithEablePrintLogsToConsole:loggerConfigOptions.printLogsToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -202,18 +200,6 @@ static dispatch_once_t onceToken;
 
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field tm:(long long)tm{
-    if (!self.loggerConfig.enableCustomLog) {
-        ZYLogDebug(@"enableCustomLog 未开启，数据不进行采集");
-        return;
-    }
-    if (![self.logLevelFilterSet containsObject:@(status)]) {
-        ZYLogDebug(@"经过过滤算法判断-此条日志不采集");
-        return;
-    }
-    if (![FTBaseInfoHandler randomSampling:self.loggerConfig.samplerate]){
-        ZYLogDebug(@"经过采集算法判断-此条日志不采集");
-        return;
-    }
     @try {
         dispatch_block_t logBlock = ^{
             NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
