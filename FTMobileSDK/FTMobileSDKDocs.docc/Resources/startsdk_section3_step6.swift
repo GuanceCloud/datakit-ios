@@ -19,9 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         let mobileConfig = FTMobileConfig.init(metricsUrl: "YOUR URL")
         mobileConfig.enableSDKDebugLog = true
-        mobileConfig.xDataKitUUID = "Custom_xDataKitUUID"
         mobileConfig.env = .common
         mobileConfig.globalContext = ["CustomKey":"CustomValue"]
+        mobileConfig.service = "Custom Service Name"
         FTMobileAgent.start(withConfigOptions: mobileConfig)
         
         let rumConfig = FTRumConfig.init(appid: "YOUR APP ID")
@@ -39,15 +39,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
         
         let loggerConfig = FTLoggerConfig.init()
-        loggerConfig.service = "Custom_service"
         loggerConfig.discardType = .discard
         loggerConfig.enableCustomLog = true
-        loggerConfig.enableConsoleLog = true
         loggerConfig.samplerate = 100
         loggerConfig.logLevelFilter = [@(FTLogLevel.info),@(FTLogLevel.warning)]
-        loggerConfig.prefix = "debug"
         loggerConfig.enableLinkRumData = true
         loggerConfig.globalContext = ["Logger_CustomKey":"CustomValue"]
+        loggerConfig.printLogsToConsole = true
+        FTMobileAgent.sharedInstance().startLogger(withConfigOptions: loggerConfig)
 
         return true
     }

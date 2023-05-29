@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         let mobileConfig = FTMobileConfig.init(metricsUrl: "YOUR URL")
         mobileConfig.enableSDKDebugLog = true
-        mobileConfig.xDataKitUUID = "Custom_xDataKitUUID"
+        mobileConfig.env = .common
         return true
     }
 

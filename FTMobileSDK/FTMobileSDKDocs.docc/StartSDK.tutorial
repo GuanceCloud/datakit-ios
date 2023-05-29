@@ -32,21 +32,20 @@
                 }
             }
             @Step {
-                配置请求 HTTP 请求头 X-Datakit-UUID 数据采集端，如果用户不设置会自动配置
-                
-                @Code(name: "AppDelegate.swift", file: startsdk_section1_step3.swift,previousFile:startsdk_section1_step2.swift)
-            }
-            @Step {
                 配置环境字段，默认值为 FTEnvProd
                 
                 查看环境 ``FTMobileSDK/FTEnv``
-                @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step3.swift,previousFile:startsdk_section1_step2.swift)
             }
             @Step {
                 设置 SDK 全局 tag
                
                 保留标签： sdk_package_flutter、sdk_package_react_native
-                
+                @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
+            }
+            @Step {
+                设置 service 所属业务或服务的名称
+                               
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step5.swift,previousFile:startsdk_section1_step4.swift)
             }
             @Step {
@@ -129,34 +128,34 @@
         }
         @Steps {           
           @Step {
-              设置日志所属业务或服务的名称
-              
-              @Code(name: "AppDelegate.swift", file: startsdk_section3_step1.swift,previousFile:startsdk_section2_step8.swift)
-           }
-          @Step {
               设置日志废弃策略
               
               查看废弃策略 ``FTMobileSDK/FTLogCacheDiscard``
-              @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step1.swift,previousFile:startsdk_section2_step8.swift)
            }
           @Step {
-              设置是否采集控制台与自定义日志,默认为 NO
+              设置是否采集自定义日志,默认为 NO
               
               自定义日志使用方法 <doc:CustomLog>
-              @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift,previousFile:startsdk_section3_step2.swift)
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
            }
           @Step {
               设置日志采集条件配置
               
-              @Code(name: "AppDelegate.swift", file: startsdk_section3_step4.swift,previousFile:startsdk_section3_step3.swift)
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step3.swift,previousFile:startsdk_section3_step2.swift)
            }
           @Step {
               设置 logger 数据与 rum 关联
               
-              @Code(name: "AppDelegate.swift", file: startsdk_section3_step5.swift,previousFile:startsdk_section3_step4.swift)
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step4.swift,previousFile:startsdk_section3_step3.swift)
            }
           @Step {
               logger 全局 tag
+              
+              @Code(name: "AppDelegate.swift", file: startsdk_section3_step5.swift,previousFile:startsdk_section3_step4.swift)
+           }
+          @Step {
+              是否将自定义日志在控制台打印
               
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step6.swift,previousFile:startsdk_section3_step5.swift)
            }
