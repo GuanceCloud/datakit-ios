@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let loggerConfig = FTLoggerConfig()
         loggerConfig.enableCustomLog = true
         loggerConfig.enableLinkRumData = true
-        loggerConfig.enableConsoleLog = true
+        loggerConfig.printLogsToConsole = true
         FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
         FTMobileAgent.sharedInstance().startTrace(withConfigOptions: traceConfig)
         FTMobileAgent.sharedInstance().startLogger(withConfigOptions: loggerConfig)

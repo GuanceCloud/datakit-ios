@@ -242,7 +242,6 @@
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
-    logger.enableConsoleLog = YES;
     logger.enableLinkRumData = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
     FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:self.appid];

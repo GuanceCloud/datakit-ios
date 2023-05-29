@@ -40,18 +40,18 @@ class LogViewController: UIViewController,UITableViewDelegate,UITableViewDataSou
         return dataSource.count
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-      
+        let logger = FTLogger.sharedInstance()
         switch indexPath.row {
         case 0:
-            FTMobileAgent.sharedInstance().logging("logging : info", status: .statusInfo, property: ["test_logging":"test"])
+            logger.info("logging : info", property: ["test_logging":"test"])
         case 1:
             FTMobileAgent.sharedInstance().logging("logging : warning", status: .statusWarning)
         case 2:
-            FTMobileAgent.sharedInstance().logging("logging : error", status: .statusError)
+            FTLogError("logging : error")
         case 3:
-            FTMobileAgent.sharedInstance().logging("logging : critical", status: .statusCritical)
+            FTLogCriticalProperty("logging : critical",property: ["key_logging":"test"])
         case 4:
-            FTMobileAgent.sharedInstance().logging("logging : ok", status: .statusOk)
+            FTLogOk("logging : ok")
         default:
             print("default")
         }
