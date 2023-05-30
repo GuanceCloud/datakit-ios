@@ -104,14 +104,6 @@ let package = Package(
                    
                 ]
                ),
-        .target(name: "_FTLoggerSwift",
-                dependencies: ["_FTLogger"],
-                path: "FTMobileSDK/FTSDKCore/LoggerSwift",
-                publicHeadersPath: ".",
-                cSettings: [
-                   
-                ]
-               ),
         .target(name: "_FTException",
                 dependencies: ["_FTBaseUtils_Base",
                                "_FTProtocol",
@@ -157,7 +149,7 @@ let package = Package(
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
                                "_FTExternalData",
-                               "_FTLoggerSwift",
+                               "_FTLogger",
                                "_FTConfig"
                               ],
                 path: "FTMobileSDK/FTMobileExtension",
@@ -171,7 +163,7 @@ let package = Package(
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
                                "_FTLongTask",
-                               "_FTLoggerSwift"
+                               "_FTLogger"
                               ],
                 path: "FTMobileSDK/FTSDKCore",
                 sources: ["FTWKWebView","DataManager"],

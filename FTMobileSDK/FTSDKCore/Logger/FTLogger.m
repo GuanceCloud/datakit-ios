@@ -44,49 +44,6 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
-+ (void)log:(NSInteger)status
-         file:(const char *)file
-     function:(nonnull const char *)function
-         line:(NSUInteger)line
-     property:(nonnull NSDictionary *)property
-       format:(nonnull NSString *)format, ... {
-    @try {
-        va_list args;
-        va_start(args, format);
-        NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-        [[FTLogger sharedInstance] log:message status:status file:file function:function line:line property:property];
-        va_end(args);
-    } @catch(NSException *e) {
-        ZYLogError(@"exception %@",e);
-    }
-}
-+ (void)log:(NSInteger)status
-       file:(const char *)file
-   function:(const char *)function
-       line:(NSUInteger)line
-   property:(NSDictionary *)property
-     format:(NSString *)format
-       args:(va_list)argList{
-    @try {
-        NSString *message = [[NSString alloc] initWithFormat:format arguments:argList];
-        [[FTLogger sharedInstance] log:message status:status file:file function:function line:line property:property];
-    } @catch(NSException *e) {
-        ZYLogError(@"exception %@",e);
-    }
-}
-- (void)log:(NSString *)content
-     status:(LogStatus)status
-       file:(const char *)file
-   function:(const char *)function
-       line:(NSUInteger)line
-   property:(nullable NSDictionary *)property
-{
-    // 如果开启格式，拼接字符串
-    NSString *filePath = [[NSString alloc] initWithUTF8String:file];
-    NSString *name = [filePath componentsSeparatedByString:@"/"].lastObject;
-    NSString *formatMessage = [NSString stringWithFormat:@"%@ [%s] [%lu] %@",name,function, (unsigned long)line, content];
-    [self log:formatMessage status:status property:property];
-}
 - (void)log:(NSString *)message
      status:(LogStatus)status
    property:(nullable NSDictionary *)property
