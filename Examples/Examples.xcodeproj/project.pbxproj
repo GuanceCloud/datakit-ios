@@ -34,13 +34,13 @@
 		1764E41929ACB5BB00E70DBB /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41829ACB5BB00E70DBB /* LogViewController.swift */; };
 		1764E41B29ACB68C00E70DBB /* TraceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41A29ACB68C00E70DBB /* TraceViewController.swift */; };
 		1764E41D29ACB70200E70DBB /* RUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764E41C29ACB70200E70DBB /* RUMViewController.swift */; };
+		176C29912A283EAC003D4493 /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 176C29902A283EAC003D4493 /* CHANGELOG */; };
 		177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892B929A60F2E0007B47F /* PerformanceBaseTest.m */; };
 		177892BD29A60FA10007B47F /* PerformanceRumTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BC29A60FA10007B47F /* PerformanceRumTest.m */; };
 		177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */; };
 		177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 177892C029A60FE90007B47F /* PerformanceTracingTest.m */; };
 		178649292A1CA79100521187 /* FTMobileSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; };
 		1786492A2A1CA79100521187 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1786492F2A1CD44C00521187 /* CHANGELOG in Resources */ = {isa = PBXBuildFile; fileRef = 1786492E2A1CD44C00521187 /* CHANGELOG */; };
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
 		1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11729BAFE94007FDFF1 /* HttpEngine.m */; };
 		1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */; };
@@ -181,12 +181,12 @@
 		1764E41829ACB5BB00E70DBB /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		1764E41A29ACB68C00E70DBB /* TraceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceViewController.swift; sourceTree = "<group>"; };
 		1764E41C29ACB70200E70DBB /* RUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewController.swift; sourceTree = "<group>"; };
+		176C29902A283EAC003D4493 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CHANGELOG; path = ../CHANGELOG; sourceTree = "<group>"; };
 		177892B929A60F2E0007B47F /* PerformanceBaseTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceBaseTest.m; sourceTree = "<group>"; };
 		177892BC29A60FA10007B47F /* PerformanceRumTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceRumTest.m; sourceTree = "<group>"; };
 		177892BE29A60FD00007B47F /* PerformanceLoggingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceLoggingTest.m; sourceTree = "<group>"; };
 		177892C029A60FE90007B47F /* PerformanceTracingTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PerformanceTracingTest.m; sourceTree = "<group>"; };
 		178649282A1CA79100521187 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1786492E2A1CD44C00521187 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CHANGELOG; path = ../../CHANGELOG; sourceTree = "<group>"; };
 		1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HttpEngineTestUtil.m; path = App/HttpEngineTestUtil.m; sourceTree = SOURCE_ROOT; };
 		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
 		1788B11729BAFE94007FDFF1 /* HttpEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HttpEngine.m; sourceTree = "<group>"; };
@@ -422,6 +422,7 @@
 		4A11694D239113B600C0BC4E = {
 			isa = PBXGroup;
 			children = (
+				176C29902A283EAC003D4493 /* CHANGELOG */,
 				4A116958239113B600C0BC4E /* App */,
 				172DD33828F7FC27007AE5E9 /* WidgetDemo */,
 				1764E40029AC9B0500E70DBB /* SwiftApp */,
@@ -494,7 +495,6 @@
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
-				1786492E2A1CD44C00521187 /* CHANGELOG */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -790,7 +790,7 @@
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
-				1786492F2A1CD44C00521187 /* CHANGELOG in Resources */,
+				176C29912A283EAC003D4493 /* CHANGELOG in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
