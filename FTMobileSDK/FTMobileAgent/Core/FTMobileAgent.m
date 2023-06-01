@@ -95,7 +95,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
-    ZYLogInfo(@"SDK RUM APPID:%@",rumConfigOptions.appid);
+    ZYLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
@@ -134,11 +134,11 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     @try {
         if (!self.loggerConfig) {
-            ZYLogError(@"请先设置 FTLoggerConfig");
+            ZYLogError(@"[Logging] 请先设置 FTLoggerConfig");
             return;
         }
         if (!content || content.length == 0 ) {
-            ZYLogError(@"传入的第数据格式有误");
+            ZYLogError(@"[Logging] 传入的第数据格式有误");
             return;
         }
         [[FTLogger sharedInstance] log:content status:(LogStatus)status property:property];
@@ -158,23 +158,14 @@ static dispatch_once_t onceToken;
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:extra];
     }];
-    ZYLogDebug(@"Bind User ID : %@",Id);
-    if (userName) {
-        ZYLogDebug(@"Bind User Name : %@",userName);
-    }
-    if (userEmail) {
-        ZYLogDebug(@"Bind User Email : %@",userEmail);
-    }
-    if (extra) {
-        ZYLogDebug(@"Bind User Extra : %@",extra);
-    }
+    ZYLogDebug(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,extra);
 }
 //用户注销
 - (void)logout{
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value clearUser];
     }];
-    ZYLogDebug(@"User Logout");
+    ZYLogDebug(@"Unbind User");
 }
 #pragma mark ========== private method ==========
 //RUM  ES
@@ -274,6 +265,7 @@ static dispatch_once_t onceToken;
     [FTURLProtocol stopMonitor];
     onceToken = 0;
     sharedInstance =nil;
+    ZYLogInfo(@"[SDK] SHUT DOWN");
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

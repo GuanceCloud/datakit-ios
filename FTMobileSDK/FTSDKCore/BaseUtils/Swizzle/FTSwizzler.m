@@ -172,7 +172,7 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     NSEnumerator *en = [datafluxSwizzles objectEnumerator];
     FTSwizzler *swizzle;
     while ((swizzle = (FTSwizzler *)[en nextObject])) {
-        ZYLogError(@"%@", swizzle);
+        ZYLogDebug(@"%@", swizzle);
     }
 }
 

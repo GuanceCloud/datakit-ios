@@ -59,7 +59,7 @@ static dispatch_once_t onceToken;
      }
     });
     if (![dbTool.db open]) {
-        ZYLogDebug(@"database can not open !");
+        ZYLogError(@"database can not open !");
         return nil;
     };
     return dbTool;
@@ -98,7 +98,6 @@ static dispatch_once_t onceToken;
                    }
                }
                [sql appendString:@")"];
-               ZYLogDebug(@"%@", sql);
              BOOL success =[self.db executeUpdate:sql];
             ZYLogDebug(@"createTable success == %d",success);
            }
@@ -111,7 +110,6 @@ static dispatch_once_t onceToken;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
           success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
-           ZYLogDebug(@"data storage %@",success?@"success":@"fail");
        }];
    }
     return success;

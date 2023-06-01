@@ -181,5 +181,6 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [[FTANRDetector sharedInstance] stopDetecting];
     [self stopMonitor];
+    ZYLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

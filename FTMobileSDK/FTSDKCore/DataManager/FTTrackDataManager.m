@@ -124,7 +124,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             self.isUploading = NO;
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"执行上传操作失败 %@",exception);
+        ZYLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
     }
 }
 -(BOOL)flushWithType:(NSString *)type{
@@ -143,30 +143,30 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
     @try {
-        ZYLogDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
+        ZYLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
       
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                ZYLogError(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                ZYLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;
                 dispatch_semaphore_signal(flushSemaphore);
                 return;
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
-            ZYLogDebug(@"Upload Response statusCode : %ld",(long)statusCode);
+            ZYLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
             if (!success) {
-                ZYLogError(@"服务器异常 稍后再试 response = %@",httpResponse);
+                ZYLogError(@"[NETWORK] 服务器异常 稍后再试 response = %@",httpResponse);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];
         dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
         return success;
     }  @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        ZYLogError(@"[NETWORK] exception %@",exception);
     }
 
     return NO;

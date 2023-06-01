@@ -56,15 +56,15 @@ static dispatch_once_t onceToken;
    // 上传 datakit
     if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:tm:)]){
         if (!self.enableCustomLog) {
-            ZYLogDebug(@"enableCustomLog 未开启，数据不进行采集");
+            ZYLogDebug(@"[Logging] enableCustomLog 未开启，数据不进行采集");
             return;
         }
         if (![self.logLevelFilterSet containsObject:@(status)]) {
-            ZYLogDebug(@"经过过滤算法判断-此条日志不采集");
+            ZYLogDebug(@"[Logging] 经过过滤算法判断-此条日志不采集");
             return;
         }
         if (![FTBaseInfoHandler randomSampling:self.sampletRate]){
-            ZYLogDebug(@"经过采集算法判断-此条日志不采集");
+            ZYLogDebug(@"[Logging] 经过采集算法判断-此条日志不采集");
             return;
         }
         [self.loggerWriter logging:message status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
@@ -88,5 +88,6 @@ static dispatch_once_t onceToken;
 - (void)shutDown{
     onceToken = 0;
     sharedInstance =nil;
+    ZYLogInfo(@"[Logging] SHUT DOWN");
 }
 @end
