@@ -241,7 +241,6 @@
             [self rumTags:tags];
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
             [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 XCTAssertTrue([tags.allKeys containsObject:obj]);
             }];
@@ -412,7 +411,6 @@
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
@@ -470,7 +468,6 @@
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);

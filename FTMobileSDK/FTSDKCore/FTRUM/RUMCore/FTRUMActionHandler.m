@@ -108,6 +108,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         [fields addEntriesFromDictionary:self.actionProperty];
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
+    [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();

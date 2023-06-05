@@ -69,7 +69,6 @@
     if(self.actionHandler){
         context.action_id = self.actionHandler.context.action_id;
         context.action_name = self.actionHandler.context.action_name;
-        context.action_type = self.actionHandler.context.action_type;
     }
     return context;
 }

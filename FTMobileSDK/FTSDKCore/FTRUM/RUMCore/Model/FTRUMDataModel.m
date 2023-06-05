@@ -100,7 +100,6 @@
     FTRUMContext *context = [[[self class] allocWithZone:zone] init];
     context.action_id = self.action_id;
     context.action_name = self.action_name;
-    context.action_type = self.action_type;
     context.session_id = self.session_id;
     context.session_type = self.session_type;
     context.view_id = self.view_id;
@@ -123,7 +122,6 @@
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[self getGlobalSessionViewTags]];
     [dict setValue:self.action_id forKey:FT_KEY_ACTION_ID];
     [dict setValue:self.action_name forKey:FT_KEY_ACTION_NAME];
-    [dict setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     return dict;
 }
 @end
