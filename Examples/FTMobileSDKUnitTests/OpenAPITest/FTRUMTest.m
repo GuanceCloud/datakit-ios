@@ -225,6 +225,7 @@
     ];
     [self setRumConfig];
     [FTModelHelper startView];
+    [FTModelHelper addAction];
     if(lowercase){
         [self addLowercaseResource];
     }else{
@@ -238,6 +239,9 @@
     [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             [self rumTags:tags];
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
             [resourceTag enumerateObjectsUsingBlock:^(NSString   *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 XCTAssertTrue([tags.allKeys containsObject:obj]);
             }];
@@ -398,12 +402,21 @@
 }
 - (void)testAddErrorData{
     [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasErrorData = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasErrorData = YES;
             *stop = YES;
         }
@@ -447,12 +460,21 @@
 }
 - (void)testAddLongTaskData{
     [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasDatas = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_NAME]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_ACTION_TYPE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasDatas = YES;
             *stop = YES;
         }

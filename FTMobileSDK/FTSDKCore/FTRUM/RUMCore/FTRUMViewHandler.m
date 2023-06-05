@@ -66,7 +66,11 @@
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.writer = self.sessionContext.writer;
-    context.action_id = self.actionHandler?self.actionHandler.action_id:nil;
+    if(self.actionHandler){
+        context.action_id = self.actionHandler.context.action_id;
+        context.action_name = self.actionHandler.context.action_name;
+        context.action_type = self.actionHandler.context.action_type;
+    }
     return context;
 }
 - (BOOL)process:(FTRUMDataModel *)model{

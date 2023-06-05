@@ -72,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, copy, nullable) NSString *action_id;
+@property (nonatomic, copy, nullable) NSString *action_name;
+@property (nonatomic, copy, nullable) NSString *action_type;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 -(NSDictionary *)getGlobalSessionViewTags;
 -(NSDictionary *)getGlobalSessionViewActionTags;

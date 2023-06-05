@@ -39,6 +39,9 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.action_name = model.action_name;
         self.action_type = model.action_type;
         self.type = model.type;
+        context.action_id = self.action_id;
+        context.action_name = self.action_name;
+        context.action_type = self.action_type;
         self.context = context;
         self.actionProperty = model.fields;
         self.context.action_id = self.action_id;
@@ -94,12 +97,8 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     if (self.type == FTRUMDataClick) {
         self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondTimeIntervalSinceDate:self.actionStartTime toDate:endDate];
     }
-    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewTags];
+    NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
 
-    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:self.action_id,
-                                 FT_KEY_ACTION_NAME:self.action_name,
-                                 FT_KEY_ACTION_TYPE:self.action_type
-    };
     NSMutableDictionary *fields = @{FT_DURATION:self.duration,
                              FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
                              FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
@@ -108,8 +107,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    [tags addEntriesFromDictionary:actiontags];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
     [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
