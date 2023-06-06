@@ -78,6 +78,15 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm;
 /**
  * @abstract
+ * 根据类型删除已上传的数据
+ *
+ * @param type 数据类型
+ * @param identify 删除在此 _id 之前的数据
+ * @return 删除是否成功
+ */
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify;
+/**
+ * @abstract
  * 删除已上传的数据
  *
  * @param tm 删除在此时间之前的数据
