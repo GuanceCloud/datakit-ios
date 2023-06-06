@@ -1,3 +1,7 @@
+1.4.3-alpha.1
+1.修复 RUM 数据丢失问题
+2.RUM 中 resource、error、long_task 缺失 action 相关字段补充
+---
 1.4.2-alpha.3
 1.FTSDKCore 基础库支持自定义数据库路径和名称
 ---
