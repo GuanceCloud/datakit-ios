@@ -289,10 +289,16 @@
 
 
 #pragma mark - error 、 long_task -
+- (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
+    [self addErrorWithType:type message:message stack:stack property:nil fatal:YES];
+}
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type message:message stack:stack property:nil];
+    [self addErrorWithType:type message:message stack:stack property:nil fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
+    [self addErrorWithType:type message:message stack:stack property:property fatal:NO];
+}
+- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
@@ -311,7 +317,8 @@
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
         [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
+            FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:[NSDate date]];
+            model.fatal = fatal;
             model.tags = errorTag;
             model.fields = field;
             [self process:model];

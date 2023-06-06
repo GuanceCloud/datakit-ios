@@ -381,6 +381,7 @@
     [self addResource];
     [self addLongTaskData:nil];
     [self addErrorData:nil];
+    [FTModelHelper stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasActionData = NO;

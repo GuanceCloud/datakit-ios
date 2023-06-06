@@ -249,8 +249,8 @@ static void previousSignalHandler(int signal, siginfo_t *info, void *context) {
 - (void)handleException:(NSException *)exception {
     NSString *info = [self handleExceptionInfo:exception];
     for (id instance in self.ftSDKInstances) {
-        if ([instance respondsToSelector:@selector(addErrorWithType:message:stack:)]) {
-            [instance addErrorWithType:[exception name] message:[exception reason] stack:info];
+        if ([instance respondsToSelector:@selector(internalErrorWithType:message:stack:)]) {
+            [instance internalErrorWithType:[exception name] message:[exception reason] stack:info];
         }
     }
     NSSetUncaughtExceptionHandler(NULL);

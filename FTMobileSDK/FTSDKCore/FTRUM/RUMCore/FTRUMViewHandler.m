@@ -110,7 +110,6 @@
         case FTRUMDataError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
-                [self.actionHandler writeActionData:[NSDate date]];
                 self.needUpdateView = YES;
             break;
         }

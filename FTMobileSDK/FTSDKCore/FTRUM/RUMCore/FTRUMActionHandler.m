@@ -11,7 +11,7 @@
 #import "FTConstants.h"
 
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
-
+static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
 @property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) FTRUMContext *context;
@@ -41,7 +41,6 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         self.type = model.type;
         context.action_id = self.action_id;
         context.action_name = self.action_name;
-        context.action_type = self.action_type;
         self.context = context;
         self.actionProperty = model.fields;
         self.context.action_id = self.action_id;
@@ -54,16 +53,22 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
         [self writeActionData:model.time];
         return NO;
     }
-    if (model.type ==  FTRUMDataLaunch ||
-        model.type == FTRUMDataClick) {
-        if ([self allResourcesCompletedLoading]) {
-            [self writeActionData:model.time];
-            return NO;
-        }
-    }
+    
     switch (model.type) {
-        case FTRUMDataError:
+        case FTRUMDataClick:
+            if ([self allResourcesCompletedLoading]) {
+                [self writeActionData:model.time];
+                return NO;
+            }
+            break;
+        case FTRUMDataError:{
             self.actionErrorCount++;
+            FTRUMErrorData *error = (FTRUMErrorData *)model;
+            if(error.fatal){
+                [self writeActionData:model.time];
+                return NO;
+            }
+        }
             break;
         case FTRUMDataResourceStart:
             self.activeResourcesCount += 1;
@@ -86,7 +91,7 @@ static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
     NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
-    BOOL expired = sessionDuration >= actionMaxDuration;
+    BOOL expired = sessionDuration >= discreteActionTimeoutDuration;
     return  expired;
 }
 
