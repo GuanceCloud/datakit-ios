@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 数据类型，\RUM\Logging
 @property (nonatomic, strong) NSString *op;
 
+@property (nonatomic, copy) NSString * _id;
+
 /// 初始化方法
 /// - Parameters:
 ///   - source: 数据来源

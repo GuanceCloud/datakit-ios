@@ -51,19 +51,15 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return YES;
     }
     _lastInteractionTime = [NSDate date];
-   
+    BOOL needWriteErrorData = NO;
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
             break;
         case FTRUMDataError:
-            [self writeErrorData:model];
-            break;
         case FTRUMDataLongTask:
-            [self writeErrorData:model];
-            break;
         case FTRUMDataResourceError:
-            [self writeErrorData:model];
+            needWriteErrorData = YES;
             break;
         case FTRUMDataLaunch:
             [self writeLaunchData:(FTRUMLaunchDataModel*)model];
@@ -75,6 +71,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
+    if(needWriteErrorData){
+        [self writeErrorData:model];
+    }
     return  YES;
 }
 -(void)startView:(FTRUMDataModel *)model{
@@ -112,7 +111,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
-    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
+    NSDictionary *sessionViewTag = [self getCurrentErrorSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
@@ -135,6 +134,13 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return view.context.view_id;
     }
     return nil;
+}
+-(NSDictionary *)getCurrentErrorSessionInfo{
+    FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];
+    if (view) {
+        return [view.context getGlobalSessionViewActionTags];
+    }
+    return [self.context getGlobalSessionViewTags];
 }
 -(NSDictionary *)getCurrentSessionInfo{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

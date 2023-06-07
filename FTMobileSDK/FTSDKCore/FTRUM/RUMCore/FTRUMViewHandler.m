@@ -66,7 +66,10 @@
     context.view_id = self.view_id;
     context.view_referrer = self.view_referrer;
     context.writer = self.sessionContext.writer;
-    context.action_id = self.actionHandler?self.actionHandler.action_id:nil;
+    if(self.actionHandler){
+        context.action_id = self.actionHandler.context.action_id;
+        context.action_name = self.actionHandler.context.action_name;
+    }
     return context;
 }
 - (BOOL)process:(FTRUMDataModel *)model{
@@ -107,7 +110,6 @@
         case FTRUMDataError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
-                [self.actionHandler writeActionData:[NSDate date]];
                 self.needUpdateView = YES;
             break;
         }

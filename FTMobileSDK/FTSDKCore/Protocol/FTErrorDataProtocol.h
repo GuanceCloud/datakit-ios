@@ -14,5 +14,5 @@
 ///   - type: error 类型
 ///   - message: error 信息
 ///   - stack: 堆栈信息
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
+- (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack;
 @end

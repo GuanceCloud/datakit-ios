@@ -65,6 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *measurement;
 -(instancetype)initWithMeasurement:(NSString *)measurement tm:(long long )tm;
 @end
+@interface FTRUMErrorData : FTRUMDataModel
+@property (nonatomic, assign) BOOL fatal;
+@end
 @interface FTRUMContext : NSObject
 @property (nonatomic, copy) NSString *session_id;
 @property (nonatomic, copy) NSString *session_type;
@@ -72,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, copy, nullable) NSString *action_id;
+@property (nonatomic, copy, nullable) NSString *action_name;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
 -(NSDictionary *)getGlobalSessionViewTags;
 -(NSDictionary *)getGlobalSessionViewActionTags;

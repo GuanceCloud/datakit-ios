@@ -134,7 +134,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             return NO;
         }
         FTRecordModel *model = [events lastObject];
-        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type tm:model.tm]) {
+        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
             ZYLogError(@"数据库删除已上传数据失败");
             return NO;
         }

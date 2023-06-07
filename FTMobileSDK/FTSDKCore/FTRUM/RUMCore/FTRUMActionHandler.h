@@ -13,7 +13,6 @@ typedef void(^FTActionEventSent)(void);
 
 @interface FTRUMActionHandler : FTRUMHandler
 @property (nonatomic, strong, readonly) FTRUMContext *context;
-@property (nonatomic, copy, readonly) NSString *action_id;
 @property (nonatomic, copy) FTActionEventSent handler;
 
 -(instancetype)initWithModel:(FTRUMActionModel *)model context:(FTRUMContext *)context;

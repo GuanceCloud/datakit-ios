@@ -178,7 +178,7 @@ static dispatch_once_t onceToken;
     if (recordSize == 0) {
         return @[];
     }
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY tm ASC limit %lu  ;",FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY _id ASC limit %lu  ;",FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
 
     return [self getDatasWithFormat:sql];
 }
@@ -195,6 +195,7 @@ static dispatch_once_t onceToken;
                 item.tm = [set longForColumn:@"tm"];
                 item.data= [set stringForColumn:@"data"];
                 item.op = [set stringForColumn:@"op"];
+                item._id = [set stringForColumn:@"_id"];
                 [array addObject:item];
             }
         }];
@@ -235,6 +236,14 @@ static dispatch_once_t onceToken;
     __block BOOL is;
        [self zy_inDatabase:^{
            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACREVENT_TABLE_NAME,type,tm];
+           is = [self.db executeUpdate:sqlStr];
+       }];
+       return is;
+}
+-(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify{
+    __block BOOL is;
+       [self zy_inDatabase:^{
+           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACREVENT_TABLE_NAME,type,identify];
            is = [self.db executeUpdate:sqlStr];
        }];
        return is;
