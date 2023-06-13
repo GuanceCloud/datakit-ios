@@ -17,11 +17,11 @@ FOUNDATION_EXPORT const unsigned char FTMobileSDKVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <FTMobileSDK/PublicHeader.h>
 
 
-#import "FTMobileConfig.h"
-#import "FTExternalDataManager.h"
-#import "FTResourceMetricsModel.h"
-#import "FTResourceContentModel.h"
-#import "FTURLSessionDelegate.h"
-#import "FTTraceManager.h"
-#import "FTMobileAgent.h"
-#import "FTLogger.h"
+#import <FTMobileSDK/FTMobileConfig.h>
+#import <FTMobileSDK/FTExternalDataManager.h>
+#import <FTMobileSDK/FTResourceMetricsModel.h>
+#import <FTMobileSDK/FTResourceContentModel.h>
+#import <FTMobileSDK/FTURLSessionDelegate.h>
+#import <FTMobileSDK/FTTraceManager.h>
+#import <FTMobileSDK/FTMobileAgent.h>
+#import <FTMobileSDK/FTLogger.h>
