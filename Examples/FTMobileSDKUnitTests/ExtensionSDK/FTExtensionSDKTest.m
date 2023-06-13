@@ -201,7 +201,6 @@
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {
         [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
-        [NSThread sleepForTimeInterval:1];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
         XCTAssertTrue(datas.count == events.count);
         XCTAssertTrue(count + datas.count == newCount);

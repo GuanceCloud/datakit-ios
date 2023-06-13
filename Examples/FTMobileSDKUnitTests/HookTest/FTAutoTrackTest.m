@@ -170,6 +170,7 @@
         }
     }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
+    [tester waitForTimeInterval:0.5];
 }
 - (void)testButtonClick{
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
