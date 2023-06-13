@@ -319,9 +319,10 @@
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
         dispatch_sync(self.rumQueue, ^{
-            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataError time:[NSDate date]];
+            FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:[NSDate date]];
             model.tags = errorTag;
             model.fields = field;
+            model.fatal = fatal;
             [self process:model];
         });
     } @catch (NSException *exception) {
