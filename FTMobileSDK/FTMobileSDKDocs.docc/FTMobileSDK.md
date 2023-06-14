@@ -1,4 +1,4 @@
-# ``FTMobileAgent``
+# ``FTMobileSDK``
 用于收集 iOS 应用的指标数据，用于 “观测云” 应用监测功能，以可视化的方式分析各个iOS应用端的性能。
 
 ## Topics
@@ -8,29 +8,29 @@
 - <doc:/tutorials/Meet-FTMobileSDK>
 
 ### Classes
-- ``FTMobileAgent/FTMobileAgent``
-- ``FTMobileAgent/FTMobileConfig``
-- ``FTMobileAgent/FTRumConfig``
-- ``FTMobileAgent/FTTraceConfig``
-- ``FTMobileAgent/FTLoggerConfig``
-- ``FTMobileAgent/FTExternalDataManager``
-- ``FTMobileAgent/FTTraceManager``
-- ``FTMobileAgent/FTURLSessionDelegate``
+- ``FTMobileSDK/FTMobileAgent``
+- ``FTMobileSDK/FTMobileConfig``
+- ``FTMobileSDK/FTRumConfig``
+- ``FTMobileSDK/FTTraceConfig``
+- ``FTMobileSDK/FTLoggerConfig``
+- ``FTMobileSDK/FTExternalDataManager``
+- ``FTMobileSDK/FTTraceManager``
+- ``FTMobileSDK/FTURLSessionDelegate``
 
 ### Enumerations
-- ``FTMobileAgent/FTEnv``
-- ``FTMobileAgent/FTErrorMonitorType``
-- ``FTMobileAgent/FTDeviceMetricsMonitorType``
-- ``FTMobileAgent/FTMonitorFrequency``
-- ``FTMobileAgent/FTLogStatus``
-- ``FTMobileAgent/FTLogCacheDiscard``
-- ``FTMobileAgent/FTNetworkTraceType``
+- ``FTMobileSDK/FTEnv``
+- ``FTMobileSDK/FTErrorMonitorType``
+- ``FTMobileSDK/FTDeviceMetricsMonitorType``
+- ``FTMobileSDK/FTMonitorFrequency``
+- ``FTMobileSDK/FTLogStatus``
+- ``FTMobileSDK/FTLogCacheDiscard``
+- ``FTMobileSDK/FTNetworkTraceType``
 
 ### Model
 
-- ``FTMobileAgent/FTResourceContentModel``
-- ``FTMobileAgent/FTResourceMetricsModel``
+- ``FTMobileSDK/FTResourceContentModel``
+- ``FTMobileSDK/FTResourceMetricsModel``
 
 ### Protocol
-- ``FTMobileAgent/FTURLSessionDelegateProviding``
+- ``FTMobileSDK/FTURLSessionDelegateProviding``
 

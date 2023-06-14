@@ -13,14 +13,7 @@
 
 @implementation UIView (FTAutoTrack)
 -(NSString *)ft_actionName{
-    NSString *viewTitle = @"";
-    if ([self isKindOfClass:UIButton.class]) {
-        UIButton *btn =(UIButton *)self;
-        viewTitle = btn.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",btn.currentTitle]:@"";
-    }
-    NSString *className = NSStringFromClass(self.class);
-    NSString *actionName = [NSString stringWithFormat:@"[%@]%@",className,viewTitle];
-    return actionName;
+    return [NSString stringWithFormat:@"[%@]",NSStringFromClass(self.class)];
 }
 - (BOOL)isAlertView {
     UIResponder *responder = self;
@@ -46,5 +39,63 @@
         return YES;
     }
     return NO;
+}
+@end
+@implementation UIButton (FTAutoTrack)
+-(NSString *)ft_actionName{
+    NSString *title = self.currentTitle.length>0?[NSString stringWithFormat:@"[%@]",self.currentTitle]:@"";
+    return title?[NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title]:super.ft_actionName;
+}
+
+@end
+@implementation UISegmentedControl (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    NSString *title = [self titleForSegmentAtIndex:self.selected];
+    return title?[NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title]:super.ft_actionName;
+}
+@end
+
+@implementation UIStepper (FTAutoTrack)
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+}
+@end
+@implementation UISlider (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+}
+
+@end
+@implementation UIPageControl (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    return [NSString stringWithFormat:@"[%@]%ld",NSStringFromClass(self.class),(long)self.currentPage];
+}
+@end
+@implementation UISwitch (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    NSString *title = self.isOn?@"On":@"Off";
+    return [NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title];
+}
+@end
+@implementation UITableViewCell (FTAutoTrack)
+
+-(NSString *)ft_actionName{
+    if(self.textLabel.text){
+        return [NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),self.textLabel.text];
+    }
+    return super.ft_actionName;
+}
+@end
+
+@implementation UICollectionViewListCell (FTAutoTrack)
+-(NSString *)ft_actionName{
+    if(self.defaultContentConfiguration.text){
+        return [NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),self.defaultContentConfiguration.text];
+    }
+    return super.ft_actionName;
 }
 @end

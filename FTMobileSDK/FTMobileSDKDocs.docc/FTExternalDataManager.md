@@ -1,4 +1,4 @@
-# ``FTMobileAgent/FTExternalDataManager``
+# ``FTMobileSDK/FTExternalDataManager``
 ## Topics
 ### View
 

@@ -1,1 +1,1 @@
-../FTMobileAgent/URLSessionAutoInstrumentation/FTURLSessionDelegate.h
+../FTSDKCore/URLSessionAutoInstrumentation/FTURLSessionDelegate.h

@@ -5,21 +5,28 @@ import PackageDescription
 
 let package = Package(
     name: "FTMobileSDK",
-    platforms: [.iOS(.v10)],
+    platforms: [.iOS(.v10),
+                .macOS(.v10_13)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "FTMobileSDK",
             type: .static,
             targets: [
-                "FTMobileAgent",
+                "FTMobileSDK",
             ]),
         .library(
             name: "FTMobileExtension",
             type: .static,
             targets: [
-                "FTMobileExtension",
-            ]),
+                      "FTMobileExtension",
+                     ]),
+        .library(
+            name: "FTSDKCore",
+            type: .static,
+            targets: [
+                      "FTSDKCore",
+                     ]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -27,18 +34,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "FTMobileAgent",
+            name: "FTMobileSDK",
             dependencies: [
-                "_FTBaseUtils_Network",
-                "_FTRUM",
-                "_FTExtension",
-                "_FTExternalData",
-                "_FTException",
-                "_FTLongTask",
-                "_FTURLSessionAutoInstrumentation",
-                "_FTJSBridge",
-                "_FTLogger"
-            ],
+                           "FTSDKCore",
+                           "_FTExtension",
+                           "_FTExternalData",
+                           "_FTConfig",
+                          ],
             path: "FTMobileSDK",
             sources: ["FTMobileAgent/Core",
                       "FTMobileAgent/AutoTrack"
@@ -48,71 +50,14 @@ let package = Package(
                 .headerSearchPath("FTMobileAgent/AutoTrack")
             ]
         ),
-        
-            .target(name: "FTMobileExtension",
-                    dependencies: [
-                        "_FTExtension",
-                        "_FTRUM",
-                        "_FTURLSessionAutoInstrumentation",
-                        "_FTException",
-                        "_FTExternalData",
-                    ],
-                    path: "FTMobileSDK/FTMobileExtension",
-                    publicHeadersPath: ".",
-                    cSettings: [
-                        
-                    ]),
-        .target(name: "_FTExtension",
+        .target(name: "_FTConfig",
                 dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTMobileAgent/Extension",
-                publicHeadersPath: ".",
+                path: "FTMobileSDK/FTMobileAgent",
+                sources: ["Config"],
+                publicHeadersPath: "Config",
                 cSettings: [
                     
                 ]),
-        
-            .target(name: "_FTBaseUtils_Base",
-                    dependencies: [],
-                    path: "FTMobileSDK/BaseUtils/Base",
-                    publicHeadersPath: ".",
-                    cSettings: [
-                        
-                    ]),
-        .target(name: "_FTBaseUtils_FTDataBase",
-                dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/BaseUtils/FTDataBase",
-                publicHeadersPath: ".",
-                cSettings: [
-                    .headerSearchPath("fmdb"),
-                ]),
-        .target(name: "_FTBaseUtils_Network",
-                dependencies: ["_FTBaseUtils_Base","_FTBaseUtils_FTDataBase","_FTBaseUtils_Thread"],
-                path: "FTMobileSDK/BaseUtils/Network",
-                publicHeadersPath: ".",
-                cSettings: [
-                    
-                ]),
-        .target(name: "_FTBaseUtils_Swizzle",
-                dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/BaseUtils/Swizzle",
-                publicHeadersPath: ".",
-                cSettings: [
-                    .headerSearchPath("Swizzle"),
-                    .headerSearchPath("Swizzle/FTfishhook.c")
-                ]),
-        .target(name: "_FTBaseUtils_Thread",
-                dependencies: [],
-                path: "FTMobileSDK/BaseUtils/Thread",
-                publicHeadersPath: ".",
-                cSettings: [
-                    
-                ]),
-        
-            .target(name: "_FTException",
-                    dependencies: ["_FTBaseUtils_Base",
-                                   "_FTProtocol",
-                                  ],
-                    path: "FTMobileSDK/FTMobileAgent/Exception",
-                    publicHeadersPath: "."),
         .target(name: "_FTExternalData",
                 dependencies: ["_FTProtocol"],
                 path: "FTMobileSDK/FTMobileAgent/ExternalData",
@@ -123,9 +68,10 @@ let package = Package(
         .target(
             name: "_FTProtocol",
             dependencies: [],
-            path: "FTMobileSDK/FTMobileAgent/Protocol",
+            path: "FTMobileSDK/FTSDKCore/Protocol",
             publicHeadersPath: ".",
             cSettings: [
+                .headerSearchPath("FTErrorDataProtocol.h"),
             ]
         ),
         .target(
@@ -133,47 +79,99 @@ let package = Package(
             dependencies: ["_FTBaseUtils_Base",
                            "_FTBaseUtils_Thread",
                            "_FTProtocol"],
-            path: "FTMobileSDK/FTMobileAgent/FTRUM",
+            path: "FTMobileSDK/FTSDKCore/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
-                .headerSearchPath("RUMCore"),
-                .headerSearchPath("RUMCore/Model"),
-                
             ]
         ),
         .target(name: "_FTURLSessionAutoInstrumentation",
                 dependencies: ["_FTProtocol","_FTBaseUtils_Swizzle"],
-                path: "FTMobileSDK/FTMobileAgent/URLSessionAutoInstrumentation",
+                path: "FTMobileSDK/FTSDKCore/URLSessionAutoInstrumentation",
+                publicHeadersPath: ".",
+                cSettings: [
+                ]),
+        .target(name: "_FTLongTask",
+                dependencies: ["_FTBaseUtils_Base"],
+                path: "FTMobileSDK/FTSDKCore/LongTask",
+                publicHeadersPath: "."
+               
+               ),
+        .target(name: "_FTLogger",
+                dependencies: ["_FTBaseUtils_Base"],
+                path: "FTMobileSDK/FTSDKCore/Logger",
+                publicHeadersPath: ".",
+                cSettings: [
+                   
+                ]
+               ),
+        .target(name: "_FTException",
+                dependencies: ["_FTBaseUtils_Base",
+                               "_FTProtocol",
+                              ],
+                path: "FTMobileSDK/FTSDKCore/Exception",
+                publicHeadersPath: "."),
+        
+        // MARK: - BaseUtils
+        .target(name: "_FTBaseUtils_Base",
+                dependencies: [],
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Base",
                 publicHeadersPath: ".",
                 cSettings: [
                     
                 ]),
-        .target(name: "_FTLongTask",
+        .target(name: "_FTBaseUtils_Swizzle",
                 dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTMobileAgent/LongTask",
-                publicHeadersPath: "."
-                
-               ),
-        .target(name: "_FTJSBridge",
-                dependencies: [
-                    "_FTProtocol",
-                    "_FTBaseUtils_Swizzle"
-                ],
-                path: "FTMobileSDK/FTMobileAgent/JSBridge",
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Swizzle",
                 publicHeadersPath: ".",
                 cSettings: [
-                ]
-               ),
-        .target(name: "_FTLogger",
-                dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTMobileAgent/Logger",
+                    .headerSearchPath("Swizzle"),
+                    .headerSearchPath("Swizzle/FTfishhook.c")
+                ]),
+        .target(name: "_FTBaseUtils_Thread",
+                dependencies: [],
+                path: "FTMobileSDK/FTSDKCore/BaseUtils/Thread",
                 publicHeadersPath: ".",
                 cSettings: [
                     
+                ]),
+        
+        // MARK: - FTMobileExtension
+        .target(name: "_FTExtension",
+                dependencies: ["_FTBaseUtils_Base"],
+                path: "FTMobileSDK/FTMobileAgent/Extension",
+                publicHeadersPath: ".",
+                cSettings: [
+                    
+                ]),
+        .target(name: "FTMobileExtension",
+                dependencies: [
+                               "_FTExtension",
+                               "_FTRUM",
+                               "_FTURLSessionAutoInstrumentation",
+                               "_FTException",
+                               "_FTExternalData",
+                               "_FTConfig"
+                              ],
+                path: "FTMobileSDK/FTMobileExtension",
+                publicHeadersPath: ".",
+                cSettings: [
+                    
+                ]),
+        .target(name: "FTSDKCore",
+                dependencies: [
+                               "_FTRUM",
+                               "_FTURLSessionAutoInstrumentation",
+                               "_FTException",
+                               "_FTLongTask",
+                               "_FTLogger"
+                              ],
+                path: "FTMobileSDK/FTSDKCore",
+                sources: ["FTWKWebView","DataManager"],
+                cSettings: [
+                    .headerSearchPath("DataManager/fmdb"),
+                    .headerSearchPath("FTWKWebView/JSBridge"),
+
                 ]
-               ),
-        
-        
-        
+               )
     ]
 )

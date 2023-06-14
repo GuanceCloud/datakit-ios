@@ -9,7 +9,7 @@
     @Section(title: "基础配置") {
         @ContentAndMedia {
             
-            通过 ``FTMobileAgent/FTMobileConfig`` 进行配置。
+            通过 ``FTMobileSDK/FTMobileConfig`` 进行配置。
 
             
             @Image(source: rum_access, alt: "accessible description")
@@ -39,7 +39,7 @@
             @Step {
                 配置环境字段，默认值为 FTEnvProd
                 
-                查看环境 ``FTMobileAgent/FTEnv``
+                查看环境 ``FTMobileSDK/FTEnv``
                 @Code(name: "AppDelegate.swift", file: startsdk_section1_step4.swift,previousFile:startsdk_section1_step3.swift)
             }
             @Step {
@@ -61,7 +61,7 @@
         @ContentAndMedia {
             应用的用户访问监测数据采集到的 “观测云” 后，可以通过 “观测云” 控制台进行自定义配置场景，对应用的用户访问情况数据进行可视化洞察与分析。
    
-            通过 ``FTMobileAgent/FTRumConfig`` 进行配置。
+            通过 ``FTMobileSDK/FTRumConfig`` 进行配置。
 
             开启用户访问监测功能 [前置条件](https://preprod-docs.cloudcare.cn/real-user-monitoring/config-datakit/)
             
@@ -91,7 +91,7 @@
             @Step {
                 设置是否需要采集崩溃日志，以及配置崩溃时监控的设备信息
              
-                查看监控配置 ``FTMobileAgent/FTErrorMonitorType``
+                查看监控配置 ``FTMobileSDK/FTErrorMonitorType``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step4.swift,previousFile:startsdk_section2_step3.swift)
             }
             @Step {
@@ -102,8 +102,8 @@
             @Step {
                 设置监控类型，与监控周期，不设置则不开启监控
              
-                查看监控项类型 ``FTMobileAgent/FTDeviceMetricsMonitorType``
-                监控项周期 ``FTMobileAgent/FTMonitorFrequency``
+                查看监控项类型 ``FTMobileSDK/FTDeviceMetricsMonitorType``
+                监控项周期 ``FTMobileSDK/FTMonitorFrequency``
                 @Code(name: "AppDelegate.swift", file: startsdk_section2_step6.swift,previousFile:startsdk_section2_step5.swift)
             }
             @Step {
@@ -123,7 +123,7 @@
         @ContentAndMedia {
           日志数据采集到 “观测云” 后，您可以在 “观测云” 控制台，通过「日志」查看工作空间内全部的日志内容。
         
-          通过 ``FTMobileAgent/FTLoggerConfig`` 进行配置。            
+          通过 ``FTMobileSDK/FTLoggerConfig`` 进行配置。            
                 
          @Image(source: logger, alt: "logger")
         }
@@ -136,7 +136,7 @@
           @Step {
               设置日志废弃策略
               
-              查看废弃策略 ``FTMobileAgent/FTLogCacheDiscard``
+              查看废弃策略 ``FTMobileSDK/FTLogCacheDiscard``
               @Code(name: "AppDelegate.swift", file: startsdk_section3_step2.swift,previousFile:startsdk_section3_step1.swift)
            }
           @Step {
@@ -171,7 +171,7 @@
         @ContentAndMedia {
          “观测云” 的链路数据采集目前支持使用 Opentracing 协议的采集器，如  DDTrace 、Apache Jaeger 、OpenTelemetry 、Skywalking 、Zipkin 等。
         
-          通过 ``FTMobileAgent/FTTraceConfig`` 进行配置。            
+          通过 ``FTMobileSDK/FTTraceConfig`` 进行配置。            
                 
          @Image(source: trace, alt: "trace")
         }
@@ -189,7 +189,7 @@
           @Step {
               设置网络请求信息采集时使用链路追踪类型
               
-              默认链路追踪类型为 DDtrace ，查看支持追踪的链路类型 ``FTMobileAgent/FTNetworkTraceType``
+              默认链路追踪类型为 DDtrace ，查看支持追踪的链路类型 ``FTMobileSDK/FTNetworkTraceType``
               @Code(name: "AppDelegate.swift", file: startsdk_section4_step3.swift,previousFile:startsdk_section4_step2.swift)
            }
           @Step {

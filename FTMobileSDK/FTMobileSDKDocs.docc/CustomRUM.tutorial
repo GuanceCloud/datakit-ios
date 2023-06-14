@@ -8,7 +8,7 @@
     @Section(title: "自定义 RUM 数据") {
         @ContentAndMedia {
             
-            使用``FTMobileAgent/FTExternalDataManager``类来进行数据添加。
+            使用``FTMobileSDK/FTExternalDataManager``类来进行数据添加。
 
             @Image(source: rum_access, alt: "自定义 RUM 的使用")
         }
@@ -17,39 +17,39 @@
             @Step {
                 View
                 
-                ``FTMobileAgent/FTExternalDataManager/onCreateView:loadTime:``
-                ``FTMobileAgent/FTExternalDataManager/startViewWithName:``
-                ``FTMobileAgent/FTExternalDataManager/stopView``
+                ``FTMobileSDK/FTExternalDataManager/onCreateView:loadTime:``
+                ``FTMobileSDK/FTExternalDataManager/startViewWithName:``
+                ``FTMobileSDK/FTExternalDataManager/stopView``
                 @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData1.swift)
                 }            
             
             @Step {
                 Action
                 
-                ``FTMobileAgent/FTExternalDataManager/addClickActionWithName:``
-                ``FTMobileAgent/FTExternalDataManager/addActionName:actionType:``
+                ``FTMobileSDK/FTExternalDataManager/addClickActionWithName:``
+                ``FTMobileSDK/FTExternalDataManager/addActionName:actionType:``
                 @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData2.swift,previousFile:DemoCustomRumData1.swift)
                 } 
             @Step {
                 Error
                 
-                ``FTMobileAgent/FTExternalDataManager/addErrorWithType:message:stack:``
+                ``FTMobileSDK/FTExternalDataManager/addErrorWithType:message:stack:``
                 @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData3.swift,previousFile:DemoCustomRumData2.swift)
                 }
             @Step {
                 LongTask
                 
-                ``FTMobileAgent/FTExternalDataManager/addLongTaskWithStack:duration:``
+                ``FTMobileSDK/FTExternalDataManager/addLongTaskWithStack:duration:``
                 @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData4.swift,previousFile:DemoCustomRumData3.swift)
                 }
             @Step {
                 Resource
                 
-                ``FTMobileAgent/FTExternalDataManager/startResourceWithKey:``  
-                ``FTMobileAgent/FTExternalDataManager/stopResourceWithKey:``
-                ``FTMobileAgent/FTExternalDataManager/addResourceWithKey:metrics:content:``
-                ``FTMobileAgent/FTResourceContentModel``
-                ``FTMobileAgent/FTResourceMetricsModel``
+                ``FTMobileSDK/FTExternalDataManager/startResourceWithKey:``  
+                ``FTMobileSDK/FTExternalDataManager/stopResourceWithKey:``
+                ``FTMobileSDK/FTExternalDataManager/addResourceWithKey:metrics:content:``
+                ``FTMobileSDK/FTResourceContentModel``
+                ``FTMobileSDK/FTResourceMetricsModel``
                 @Code(name: "DemoCustomRumData.swift", file: DemoCustomRumData5.swift,previousFile:DemoCustomRumData4.swift)
                 }
             

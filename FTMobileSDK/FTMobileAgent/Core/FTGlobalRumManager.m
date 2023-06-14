@@ -57,8 +57,8 @@ static dispatch_once_t onceToken;
 }
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
-    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:rumConfig.deviceMetricsMonitorType frequency:rumConfig.monitorFrequency];
-    self.rumManager = [[FTRUMManager alloc]initWithRumConfig:rumConfig monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
+    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){

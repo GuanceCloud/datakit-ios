@@ -1,1 +1,1 @@
-../BaseUtils/Base/FTMobileConfig.h
+../FTMobileAgent/Config/FTMobileConfig.h
