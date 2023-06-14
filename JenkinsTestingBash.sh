@@ -47,10 +47,10 @@ sed -i '' 's~$ACCESS_SERVER_URL~'"$ACCESS_SERVER_URL"'~' FTMobileSDKUnitTestsFor
 sed -i '' 's/$TRACK_ID/'"$TRACK_ID"'/g' FTMobileSDKUnitTestsForCmd.xcscheme
 sed -i '' 's~$TRACE_URL~'"$TRACE_URL"'~' FTMobileSDKUnitTestsForCmd.xcscheme
 
-cd ../../..
+cd ../../../..
 pod install
 
-xcodebuild test -project Examples.xcodeproj \
+xcodebuild test -workspace FTMobileSDK.xcworkspace \
   -scheme FTMobileSDKUnitTestsForCmd \
   -only-testing FTMobileSDKUnitTests \
   -destination "$DEVICE_DESTINATION"
