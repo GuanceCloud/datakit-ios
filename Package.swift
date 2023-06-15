@@ -11,19 +11,16 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "FTMobileSDK",
-            type: .static,
             targets: [
                 "FTMobileSDK",
             ]),
         .library(
             name: "FTMobileExtension",
-            type: .static,
             targets: [
                       "FTMobileExtension",
                      ]),
         .library(
             name: "FTSDKCore",
-            type: .static,
             targets: [
                       "FTSDKCore",
                      ]),
