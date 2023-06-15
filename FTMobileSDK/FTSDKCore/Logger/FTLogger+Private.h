@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)log:(NSString *)message
      status:(LogStatus)status
    property:(nullable NSDictionary *)property;
+- (void)syncProcess;
 @end
 
 NS_ASSUME_NONNULL_END

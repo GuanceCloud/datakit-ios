@@ -174,6 +174,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
+    [self.rumManager syncProcess];
     onceToken = 0;
     sharedInstance =nil;
     [self stopPingThread];
