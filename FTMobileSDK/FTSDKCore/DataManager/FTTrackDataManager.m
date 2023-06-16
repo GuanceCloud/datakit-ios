@@ -150,7 +150,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
       
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                ZYLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                ZYLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
                 success = NO;
                 dispatch_semaphore_signal(flushSemaphore);
                 return;
