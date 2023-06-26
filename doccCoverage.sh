@@ -56,6 +56,10 @@ changeFileAttributeToPublic
 echo "-----changeFileAttributeToPublic End-----"
 fi
 
+#删除旧工程的影响
+rm -rf App.xcodeproj
+rm -rf App.xcworkspace
+
 echo "-----Coverage Start-----"
 doccCoverage
 echo "-----Coverage End-----"
