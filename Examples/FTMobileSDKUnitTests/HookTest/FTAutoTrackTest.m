@@ -142,7 +142,7 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UILabel]"]);
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UILabel][lable]"]);
             *stop = YES;
         }
     }];
@@ -232,6 +232,34 @@
         }
     }];
     XCTAssertTrue(hasRes);
+}
+- (void)testActionName{
+    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    self.testVC = [[UITestVC alloc] init];
+    
+    self.tabBarController = [[UITabBarController alloc] init];
+    
+    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
+    self.navigationController.tabBarItem.title = @"UITestVC";
+    
+    UITableViewController *firstViewController = [[UITableViewController alloc] init];
+    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
+    
+    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
+    self.window.rootViewController = self.tabBarController;
+    
+    [self.testVC view];
+    [self.testVC viewWillAppear:NO];
+    [self.testVC viewDidAppear:NO];
+   
+    XCTAssertTrue([self.testVC.uiswitch.ft_actionName isEqualToString:@"[UISwitch]Off"]);
+    XCTAssertTrue([self.testVC.firstButton.ft_actionName isEqualToString:@"[UIButton][FirstButton]"]);
+    XCTAssertTrue([self.testVC.stepper.ft_actionName isEqualToString:@"[UIStepper]0.00"]);
+    XCTAssertTrue([self.testVC.label.ft_actionName isEqualToString:@"[UILabel][lable]"]);
+    XCTAssertTrue([self.testVC.segmentedControl.ft_actionName isEqualToString:@"[UISegmentedControl]first"]);
+
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];

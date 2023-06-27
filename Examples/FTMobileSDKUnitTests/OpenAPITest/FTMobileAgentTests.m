@@ -236,6 +236,75 @@
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testSDKConfigCopy{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.globalContext = @{@"aa":@"bb"};
+    config.service = @"testsdk";
+    config.version = @"1.1.1";
+    config.env = FTEnvLocal;
+    FTMobileConfig *copyConfig = [config copy];
+    XCTAssertTrue(copyConfig.enableSDKDebugLog == config.enableSDKDebugLog);
+    XCTAssertTrue(copyConfig.env == config.env);
+    XCTAssertTrue([copyConfig.service isEqualToString:config.service]);
+    XCTAssertTrue([copyConfig.version isEqualToString:config.version]);
+    XCTAssertTrue([copyConfig.globalContext isEqual:config.globalContext]);
+}
+- (void)testRUMConfigCopy{
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"app_id1111"];
+    rumConfig.samplerate = 50;
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTrackAppANR = YES;
+    rumConfig.enableTrackAppCrash = YES;
+    rumConfig.enableTrackAppFreeze = YES;
+    rumConfig.errorMonitorType = FTErrorMonitorMemory;
+    rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorCpu;
+    rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
+    rumConfig.globalContext = @{@"aa":@"bb"};
+    FTRumConfig *copyRumConfig = [rumConfig copy];
+    XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
+    XCTAssertTrue(copyRumConfig.enableTraceUserAction == rumConfig.enableTraceUserAction);
+    XCTAssertTrue(copyRumConfig.enableTraceUserView == rumConfig.enableTraceUserView);
+    XCTAssertTrue(copyRumConfig.enableTraceUserResource == rumConfig.enableTraceUserResource);
+    XCTAssertTrue(copyRumConfig.enableTrackAppANR == rumConfig.enableTrackAppANR);
+    XCTAssertTrue(copyRumConfig.enableTrackAppCrash == rumConfig.enableTrackAppCrash);
+    XCTAssertTrue(copyRumConfig.enableTrackAppFreeze == rumConfig.enableTrackAppFreeze);
+    XCTAssertTrue(copyRumConfig.errorMonitorType == rumConfig.errorMonitorType);
+    XCTAssertTrue(copyRumConfig.deviceMetricsMonitorType == rumConfig.deviceMetricsMonitorType);
+    XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
+    XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
+
+}
+- (void)testTraceConfigCopy{
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTrace = YES;
+    traceConfig.enableLinkRumData = YES;
+    traceConfig.samplerate = 50;
+    traceConfig.networkTraceType = FTNetworkTraceTypeTraceparent;
+    FTTraceConfig *copyTraceConfig = [traceConfig copy];
+    XCTAssertTrue(copyTraceConfig.enableAutoTrace == traceConfig.enableAutoTrace);
+    XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
+    XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.samplerate);
+    XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
+}
+- (void)testLoggerConfigCopy{
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.samplerate = 50;
+    loggerConfig.discardType = FTDiscard;
+    loggerConfig.enableLinkRumData = YES;
+    loggerConfig.logLevelFilter = @[@(FTStatusOk)];
+    loggerConfig.globalContext = @{@"aa":@"bb"};
+    FTLoggerConfig *copyLoggerConfig = [loggerConfig copy];
+    XCTAssertTrue(copyLoggerConfig.enableCustomLog == loggerConfig.enableCustomLog);
+    XCTAssertTrue(copyLoggerConfig.samplerate == loggerConfig.samplerate);
+    XCTAssertTrue(copyLoggerConfig.discardType == loggerConfig.discardType);
+    XCTAssertTrue(copyLoggerConfig.enableLinkRumData == loggerConfig.enableLinkRumData);
+    XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
+    XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
+}
 - (void)testShutDown{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
