@@ -102,11 +102,11 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @property (nonatomic, copy) NSString *service;
 @end
 @implementation FTPresetProperty
-- (instancetype)initWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
     self = [super init];
     if (self){
         _version = version;
-        _env = FTEnvStringMap[env];
+        _env = env;
         _service = service;
         _mobileDevice = [[MobileDevice alloc]init];
         _context = [globalContext copy];
@@ -148,9 +148,9 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
-- (void)resetWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
     self.version = version;
-    self.env = FTEnvStringMap[env];
+    self.env = env;
     self.service = service;
     self.context = [globalContext copy];
 }

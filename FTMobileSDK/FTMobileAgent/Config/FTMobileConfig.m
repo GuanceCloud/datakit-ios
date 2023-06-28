@@ -11,6 +11,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTEnumConstant.h"
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -169,9 +170,20 @@
         _enableSDKDebugLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
-        _env = FTEnvProd;
+        _env = FTEnvStringMap[FTEnvProd];
     }
     return self;
+}
+-(instancetype)init{
+    return [self initWithMetricsUrl:@""];
+}
+- (void)setEnvWithType:(FTEnv)envType{
+    _env = FTEnvStringMap[envType];
+}
+-(void)setEnv:(NSString *)env{
+    if(env!=nil && env.length>0){
+        _env = env;
+    }
 }
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {

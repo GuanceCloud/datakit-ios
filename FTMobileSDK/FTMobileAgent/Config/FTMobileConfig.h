@@ -66,7 +66,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     /// jaeger
     FTNetworkTraceTypeJaeger,
 };
-/// 环境字段。属性值：prod/gray/pre/common/local。
+/// 环境。属性值：prod/gray/pre/common/local。
 typedef NS_ENUM(NSInteger, FTEnv) {
     /// 线上环境
     FTEnvProd         = 0,
@@ -183,8 +183,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
 @property (nonatomic, copy) NSString *metricsUrl;
-/// 环境字段。
-@property (nonatomic, assign) FTEnv env;
+/// 设置自定义环境字段。
+@property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
 /// 应用版本号。
@@ -198,6 +198,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
 @property (nonatomic, strong) NSArray *groupIdentifiers;
+
+/// 根据提供的 FTEnv 类型设置 env
+/// - Parameter envType: 环境
+- (void)setEnvWithType:(FTEnv)envType;
 @end
 
 NS_ASSUME_NONNULL_END

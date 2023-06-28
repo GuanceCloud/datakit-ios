@@ -33,8 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 /// 初始化方法
-/// - Parameter config: SDK 配置项
-- (instancetype)initWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+/// - Parameter version: 版本号
+/// - Parameter env: 环境
+/// - Parameter service: 服务
+/// - Parameter globalContext: 全局自定义属性
+- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -47,9 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - status: 事件等级和状态
 - (NSDictionary *)loggerPropertyWithStatus:(LogStatus)status;
-/// 重新设置
-/// - Parameter config: SDK 配置项
-- (void)resetWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+/// 重新设置 SDK 配置项
+/// - Parameter version: 版本号
+/// - Parameter env: 环境
+/// - Parameter service: 服务
+/// - Parameter globalContext: 全局自定义属性
+- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
 @end
 
 NS_ASSUME_NONNULL_END

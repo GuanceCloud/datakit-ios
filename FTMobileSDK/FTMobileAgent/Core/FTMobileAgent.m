@@ -72,7 +72,7 @@ static dispatch_once_t onceToken;
 
             //开启数据处理管理器
             [FTTrackDataManager sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
             _presetProperty.sdkVersion = SDK_VERSION;
             [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
                 .setSdkVersion(SDK_VERSION);
@@ -86,9 +86,9 @@ static dispatch_once_t onceToken;
 -(void)resetConfig:(FTMobileConfig *)config{
     [FTInternalLog enableLog:config.enableSDKDebugLog];
     if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+        [self.presetProperty resetWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     }else{
-        _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+        _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
