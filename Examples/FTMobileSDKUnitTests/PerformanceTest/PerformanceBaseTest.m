@@ -24,7 +24,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     [self measureBlock:^{
       [presetProperty rumProperty];
     }];
@@ -33,7 +33,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:(Env)config.env service:config.service globalContext:config.globalContext];
+    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     [self measureBlock:^{
          [presetProperty loggerPropertyWithStatus:(LogStatus)FTStatusInfo];
     }];

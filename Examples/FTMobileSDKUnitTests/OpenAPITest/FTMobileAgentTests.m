@@ -183,10 +183,10 @@
     XCTAssertTrue([rumserviceName isEqualToString:@"testSetServiceName"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
-- (void)testEnvProperty{
+- (void)testDefaultEnvProperty{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
-    config.env = FTEnvLocal;
+    config.env = @"";
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
@@ -204,7 +204,7 @@
     NSDictionary *op = dict[FT_OPDATA];
     NSDictionary *tags = op[FT_TAGS];
     NSString *env = [tags valueForKey:@"env"];
-    XCTAssertTrue([env isEqualToString:FTEnvStringMap[FTEnvLocal]]);
+    XCTAssertTrue([env isEqualToString:FTEnvStringMap[FTEnvProd]]);
     [FTModelHelper startView];
     [FTModelHelper startView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -214,7 +214,40 @@
     NSDictionary *rumop = rumdict[FT_OPDATA];
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumEnv = [rumtags valueForKey:@"env"];
-    XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvLocal]]);
+    XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvProd]]);
+}
+- (void)testEnvProperty{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.env = @"testCustomEnv";
+    [FTMobileAgent startWithConfigOptions:config];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testEnvProperty" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [array lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[FT_OPDATA];
+    NSDictionary *tags = op[FT_TAGS];
+    NSString *env = [tags valueForKey:@"env"];
+    XCTAssertTrue([env isEqualToString:@"testCustomEnv"]);
+    [FTModelHelper startView];
+    [FTModelHelper startView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *rumArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *rumModel = [rumArray lastObject];
+    NSDictionary *rumdict = [FTJSONUtil dictionaryWithJsonString:rumModel.data];
+    NSDictionary *rumop = rumdict[FT_OPDATA];
+    NSDictionary *rumtags = rumop[FT_TAGS];
+    NSString *rumEnv = [rumtags valueForKey:@"env"];
+    XCTAssertTrue([rumEnv isEqualToString:@"testCustomEnv"]);
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -242,10 +275,10 @@
     config.globalContext = @{@"aa":@"bb"};
     config.service = @"testsdk";
     config.version = @"1.1.1";
-    config.env = FTEnvLocal;
+    [config setEnvWithType:FTEnvLocal];
     FTMobileConfig *copyConfig = [config copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == config.enableSDKDebugLog);
-    XCTAssertTrue(copyConfig.env == config.env);
+    XCTAssertTrue([copyConfig.env isEqualToString:config.env]);
     XCTAssertTrue([copyConfig.service isEqualToString:config.service]);
     XCTAssertTrue([copyConfig.version isEqualToString:config.version]);
     XCTAssertTrue([copyConfig.globalContext isEqual:config.globalContext]);
