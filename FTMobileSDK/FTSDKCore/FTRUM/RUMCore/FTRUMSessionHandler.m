@@ -11,6 +11,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDateUtil.h"
 #import "FTConstants.h"
+#import "FTInternalLog.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -48,6 +49,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
+        ZYLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
         return YES;
     }
     _lastInteractionTime = [NSDate date];
