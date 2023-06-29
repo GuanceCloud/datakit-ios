@@ -10,6 +10,8 @@
 #import "FTMobileAgent+Private.h"
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTDateUtil.h"
 @interface PerformanceRumTest : XCTestCase
 
 @end
@@ -30,6 +32,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 
 - (void)testAddActionEventPerformance{

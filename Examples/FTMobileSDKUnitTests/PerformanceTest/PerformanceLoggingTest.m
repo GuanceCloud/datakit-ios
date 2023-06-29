@@ -10,6 +10,8 @@
 #import "FTMobileAgent+Private.h"
 #import "FTRUMManager.h"
 #import "FTGlobalRumManager.h"
+#import "FTTrackerEventDBTool.h"
+#import "FTDateUtil.h"
 @interface PerformanceLoggingTest : XCTestCase
 
 @end
@@ -19,6 +21,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTMobileAgent sharedInstance] shutDown];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)initSDK:(BOOL)enableLinkRumData{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
