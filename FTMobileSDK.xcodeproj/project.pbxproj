@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		174D91A32A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
 		174D91A42A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
-		174D91A52A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
+		174D91A52A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		174D91AB2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
 		174D91AC2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
-		174D91AD2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
+		174D91AD2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0729E9422600A7F271 /* FTMobileConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 17678E1829D28BD200C1DA98 /* FTMobileConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBD129CD42E4005C2D99 /* FTExternalDataManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CB0929CD42DA005C2D99 /* FTResourceMetricsModel.h */; settings = {ATTRIBUTES = (Public, ); }; };
