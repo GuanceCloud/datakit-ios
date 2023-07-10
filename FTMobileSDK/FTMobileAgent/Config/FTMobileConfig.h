@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 是否上传自定义 log
 @property (nonatomic, assign) BOOL enableCustomLog;
 /// 是否将自定义日志在控制台打印
-@property (nonatomic, assign) BOOL printLogsToConsole; 
+@property (nonatomic, assign) BOOL printCustomLogToConsole; 
 /// 采集自定义日志的状态数组，默认为全采集
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
