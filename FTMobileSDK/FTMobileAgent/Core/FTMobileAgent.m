@@ -79,7 +79,7 @@ static dispatch_once_t onceToken;
             [[FTURLSessionAutoInstrumentation sharedInstance] setSdkUrlStr:config.metricsUrl];
         }
     }@catch(NSException *exception) {
-        ZYLogError(@"exception: %@",exception);
+        FTInnerLogError(@"exception: %@",exception);
     }
     return self;
 }
@@ -93,7 +93,7 @@ static dispatch_once_t onceToken;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
-    ZYLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
+    FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
     [self.presetProperty setAppid:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
@@ -108,7 +108,7 @@ static dispatch_once_t onceToken;
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
-        [FTLogger startWithEablePrintLogsToConsole:loggerConfigOptions.printLogsToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
+        [FTLogger startWithEablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -132,16 +132,16 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(FTLogStatus)status property:(NSDictionary *)property{
     @try {
         if (!self.loggerConfig) {
-            ZYLogError(@"[Logging] 请先设置 FTLoggerConfig");
+            FTInnerLogError(@"[Logging] 请先设置 FTLoggerConfig");
             return;
         }
         if (!content || content.length == 0 ) {
-            ZYLogError(@"[Logging] 传入的第数据格式有误");
+            FTInnerLogError(@"[Logging] 传入的第数据格式有误");
             return;
         }
         [[FTLogger sharedInstance] log:content status:(LogStatus)status property:property];
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 //用户绑定
@@ -156,14 +156,14 @@ static dispatch_once_t onceToken;
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:extra];
     }];
-    ZYLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,extra);
+    FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,extra);
 }
 //用户注销
 - (void)logout{
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value clearUser];
     }];
-    ZYLogInfo(@"Unbind User");
+    FTInnerLogInfo(@"Unbind User");
 }
 #pragma mark ========== private method ==========
 //RUM  ES
@@ -183,7 +183,7 @@ static dispatch_once_t onceToken;
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 
@@ -210,7 +210,7 @@ static dispatch_once_t onceToken;
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
         [self insertDBWithItemData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)trackEventFromExtensionWithGroupIdentifier:(NSString *)groupIdentifier completion:(void (^)(NSString *groupIdentifier, NSArray *events)) completion{
@@ -238,7 +238,7 @@ static dispatch_once_t onceToken;
             }
         }
     } @catch (NSException *exception) {
-        ZYLogError(@"%@ error: %@", self, exception);
+        FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
@@ -254,7 +254,7 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance =nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    ZYLogInfo(@"[SDK] SHUT DOWN");
+    FTInnerLogInfo(@"[SDK] SHUT DOWN");
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

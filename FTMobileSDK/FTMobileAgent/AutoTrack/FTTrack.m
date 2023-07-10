@@ -45,7 +45,7 @@
             [UIViewController ft_swizzleMethod:@selector(viewDidDisappear:) withMethod:@selector(dataflux_viewDidDisappear:) error:&error];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception: %@", exception);
+        FTInnerLogError(@"exception: %@", exception);
     }
     
 }
@@ -63,7 +63,7 @@
             [UILongPressGestureRecognizer ft_swizzleMethod:@selector(addTarget:action:) withMethod:@selector(dataflux_addTarget:action:) error:&error];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception: %@",exception);
+        FTInnerLogError(@"exception: %@",exception);
     }
    
 }

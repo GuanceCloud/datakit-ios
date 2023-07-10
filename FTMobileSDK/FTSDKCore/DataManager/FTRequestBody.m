@@ -142,11 +142,11 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            ZYLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];
-    ZYLogDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
+    FTInnerLogDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return requestDatas;
 }
 @end

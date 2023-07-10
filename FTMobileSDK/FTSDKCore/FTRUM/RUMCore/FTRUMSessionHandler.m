@@ -49,7 +49,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
-        ZYLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
+        FTInnerLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
         return YES;
     }
     _lastInteractionTime = [NSDate date];

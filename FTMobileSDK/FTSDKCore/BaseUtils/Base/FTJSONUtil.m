@@ -65,7 +65,7 @@
                                                           error:&err];
     if(err)
     {
-        ZYLogError(@"json解析失败：%@",err);
+        FTInnerLogError(@"json解析失败：%@",err);
         return nil;
     }
     return dic;

@@ -19,7 +19,7 @@
     if(kernelReturn == KERN_SUCCESS) {
         memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
     } else {
-        ZYLogError(@"Error with task_info(): %s", mach_error_string(kernelReturn));
+        FTInnerLogError(@"Error with task_info(): %s", mach_error_string(kernelReturn));
     }
     return memoryUsageInByte;
 }

@@ -110,7 +110,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         }
     }
     @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)applicationDidEnterBackground{

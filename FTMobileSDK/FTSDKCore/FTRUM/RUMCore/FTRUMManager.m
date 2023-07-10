@@ -69,7 +69,7 @@
         });
         
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 -(void)stopView{
@@ -94,7 +94,7 @@
         [self process:viewModel];
         
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 #pragma mark - Action -
@@ -119,7 +119,7 @@
             [self process:actionModel];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
@@ -149,7 +149,7 @@
             [self process:launchModel];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)applicationWillTerminate{
@@ -171,7 +171,7 @@
             [self process:resourceStart];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -261,7 +261,7 @@
         });
         
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (NSString *)getResourceStatusGroup:(NSInteger )status{
@@ -285,7 +285,7 @@
             [self process:resource];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 
@@ -326,7 +326,7 @@
             [self process:model];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
@@ -350,7 +350,7 @@
             [self process:model];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
     
 }
@@ -388,7 +388,7 @@
             [self process:webModel];
         });
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 

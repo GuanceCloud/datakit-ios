@@ -71,7 +71,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     self.loggerConfig = loggerConfig;
     self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
-    [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printLogsToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+    [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [[FTURLSessionAutoInstrumentation sharedInstance] setRUMEnableTraceUserResource:rumConfigOptions.enableTraceUserResource];
@@ -113,13 +113,13 @@ static FTExtensionManager *sharedInstance = nil;
             [tagDict addEntriesFromDictionary:rumTag];
         }
         
-        ZYLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
+        FTInnerLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
                              @"tags":tagDict,
                              @"content":newContent
                            });
         [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:newContent tags:tagDict fields:nil tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.extensionConfig.groupIdentifier];
     } @catch (NSException *exception) {
-        ZYLogError(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)rumWrite:(NSString *)type  tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
@@ -133,7 +133,7 @@ static FTExtensionManager *sharedInstance = nil;
     if(tags){
         [newTags addEntriesFromDictionary:tags];
     }
-    ZYLogDebug(@"%@\n",@{@"type":type,
+    FTInnerLogDebug(@"%@\n",@{@"type":type,
                     @"tags":newTags,
                     @"fields":fields});
     [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.extensionConfig.groupIdentifier];

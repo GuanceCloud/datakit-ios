@@ -50,7 +50,7 @@ static dispatch_once_t onceToken;
             dbTool = [[FTTrackerEventDBTool alloc]init];
             dbTool.db = fmdb;
             dbTool.dbPath = path;
-            ZYLogDebug(@"db path:%@",path);
+            FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
             dbTool.dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
         }
@@ -59,7 +59,7 @@ static dispatch_once_t onceToken;
      }
     });
     if (![dbTool.db open]) {
-        ZYLogError(@"database can not open !");
+        FTInnerLogError(@"database can not open !");
         return nil;
     };
     return dbTool;
@@ -68,7 +68,7 @@ static dispatch_once_t onceToken;
     @try {
         [self createEventTable];
     } @catch (NSException *exception) {
-        ZYLogError(@"%@",exception);
+        FTInnerLogError(@"%@",exception);
     }
 }
 -(void)createEventTable
@@ -99,7 +99,7 @@ static dispatch_once_t onceToken;
                }
                [sql appendString:@")"];
              BOOL success =[self.db executeUpdate:sql];
-            ZYLogDebug(@"createTable success == %d",success);
+            FTInnerLogDebug(@"createTable success == %d",success);
            }
     }];
 }

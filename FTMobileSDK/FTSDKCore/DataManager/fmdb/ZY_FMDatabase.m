@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_END
 
     int err = sqlite3_open([self sqlitePath], (sqlite3**)&_db );
     if(err != SQLITE_OK) {
-        ZYLogError(@"error opening!: %d", err);
+        FTInnerLogError(@"error opening!: %d", err);
         return NO;
     }
     
@@ -209,7 +209,7 @@ NS_ASSUME_NONNULL_END
     
     int err = sqlite3_open_v2([self sqlitePath], (sqlite3**)&_db, flags, [vfsName UTF8String]);
     if(err != SQLITE_OK) {
-        ZYLogError(@"error opening!: %d", err);
+        FTInnerLogError(@"error opening!: %d", err);
         return NO;
     }
     
@@ -222,7 +222,7 @@ NS_ASSUME_NONNULL_END
     
     return YES;
 #else
-    ZYLogError(@"openWithFlags requires SQLite 3.5");
+    FTInnerLogError(@"openWithFlags requires SQLite 3.5");
     return NO;
 #endif
 }
@@ -248,14 +248,14 @@ NS_ASSUME_NONNULL_END
                 triedFinalizingOpenStatements = YES;
                 sqlite3_stmt *pStmt;
                 while ((pStmt = sqlite3_next_stmt(_db, nil)) !=0) {
-                    ZYLogDebug(@"Closing leaked statement");
+                    FTInnerLogDebug(@"Closing leaked statement");
                     sqlite3_finalize(pStmt);
                     retry = YES;
                 }
             }
         }
         else if (SQLITE_OK != rc) {
-            ZYLogError(@"error closing!: %d", rc);
+            FTInnerLogError(@"error closing!: %d", rc);
         }
     }
     while (retry);
@@ -292,7 +292,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
         int requestedSleepInMillseconds = (int) arc4random_uniform(50) + 50;
         int actualSleepInMilliseconds = sqlite3_sleep(requestedSleepInMillseconds);
         if (actualSleepInMilliseconds != requestedSleepInMillseconds) {
-            ZYLogWarning(@"WARNING: Requested sleep of %i milliseconds, but SQLite returned %i. Maybe SQLite wasn't built with HAVE_USLEEP=1?", requestedSleepInMillseconds, actualSleepInMilliseconds);
+            FTInnerLogWarning(@"WARNING: Requested sleep of %i milliseconds, but SQLite returned %i. Maybe SQLite wasn't built with HAVE_USLEEP=1?", requestedSleepInMillseconds, actualSleepInMilliseconds);
         }
         return 1;
     }
@@ -326,15 +326,15 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
 // but for folks who don't bother noticing that the interface to FMDatabase changed,
 // we'll still implement the method so they don't get suprise crashes
 - (int)busyRetryTimeout {
-    ZYLogDebug(@"%s:%d", __FUNCTION__, __LINE__);
-    ZYLogDebug(@"FMDB: busyRetryTimeout no longer works, please use maxBusyRetryTimeInterval");
+    FTInnerLogDebug(@"%s:%d", __FUNCTION__, __LINE__);
+    FTInnerLogDebug(@"FMDB: busyRetryTimeout no longer works, please use maxBusyRetryTimeInterval");
     return -1;
 }
 
 - (void)setBusyRetryTimeout:(int)i {
 #pragma unused(i)
-    ZYLogDebug(@"%s:%d", __FUNCTION__, __LINE__);
-    ZYLogDebug(@"FMDB: setBusyRetryTimeout does nothing, please use setMaxBusyRetryTimeInterval:");
+    FTInnerLogDebug(@"%s:%d", __FUNCTION__, __LINE__);
+    FTInnerLogDebug(@"FMDB: setBusyRetryTimeout does nothing, please use setMaxBusyRetryTimeInterval:");
 }
 
 #pragma mark Result set functions
@@ -392,7 +392,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
 - (void)setCachedStatement:(ZY_FMStatement*)statement forQuery:(NSString*)query {
     NSParameterAssert(query);
     if (!query) {
-        ZYLogDebug(@"API misuse, -[ZY_FMDatabase setCachedStatement:forQuery:] query must not be nil");
+        FTInnerLogDebug(@"API misuse, -[ZY_FMDatabase setCachedStatement:forQuery:] query must not be nil");
         return;
     }
     
@@ -428,8 +428,8 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     int rc = sqlite3_rekey(_db, [keyData bytes], (int)[keyData length]);
     
     if (rc != SQLITE_OK) {
-        ZYLogError(@"error on rekey: %d", rc);
-        ZYLogError(@"%@", [self lastErrorMessage]);
+        FTInnerLogError(@"error on rekey: %d", rc);
+        FTInnerLogError(@"%@", [self lastErrorMessage]);
     }
     
     return (rc == SQLITE_OK);
@@ -508,7 +508,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
 }
 
 - (void)warnInUse {
-    ZYLogWarning(@"The FMDatabase %@ is currently in use.", self);
+    FTInnerLogWarning(@"The FMDatabase %@ is currently in use.", self);
     
 #ifndef NS_BLOCK_ASSERTIONS
     if (_crashOnErrors) {
@@ -522,7 +522,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     
     if (!_isOpen) {
         
-        ZYLogDebug(@"The FMDatabase %@ is not open.", self);
+        FTInnerLogDebug(@"The FMDatabase %@ is not open.", self);
         
 #ifndef NS_BLOCK_ASSERTIONS
         if (_crashOnErrors) {
@@ -819,7 +819,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     ZY_FMResultSet *rs         = 0x00;
     
     if (_traceExecution && sql) {
-        ZYLogDebug(@"%@ executeQuery: %@", self, sql);
+        FTInnerLogDebug(@"%@ executeQuery: %@", self, sql);
     }
     
     if (_shouldCacheStatements) {
@@ -834,9 +834,9 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
         
         if (SQLITE_OK != rc) {
             if (_logsErrors) {
-                ZYLogError(@"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
-                ZYLogError(@"DB Query: %@", sql);
-                ZYLogError(@"DB Path: %@", _databasePath);
+                FTInnerLogError(@"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
+                FTInnerLogError(@"DB Query: %@", sql);
+                FTInnerLogError(@"DB Path: %@", _databasePath);
             }
             
             if (_crashOnErrors) {
@@ -863,7 +863,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
             
             if (_traceExecution) {
-                ZYLogDebug(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
+                FTInnerLogDebug(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
             }
             
             // Get the index for the parameter name.
@@ -878,7 +878,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
                 idx++;
             }
             else {
-                ZYLogDebug(@"Could not find index for %@", dictionaryKey);
+                FTInnerLogDebug(@"Could not find index for %@", dictionaryKey);
             }
         }
     }
@@ -899,10 +899,10 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
             
             if (_traceExecution) {
                 if ([obj isKindOfClass:[NSData class]]) {
-                    ZYLogDebug(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
+                    FTInnerLogDebug(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
                 }
                 else {
-                    ZYLogDebug(@"obj: %@", obj);
+                    FTInnerLogDebug(@"obj: %@", obj);
                 }
             }
             
@@ -913,7 +913,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     }
     
     if (idx != queryCount) {
-        ZYLogError(@"Error: the bind count is not correct for the # of variables (executeQuery)");
+        FTInnerLogError(@"Error: the bind count is not correct for the # of variables (executeQuery)");
         sqlite3_finalize(pStmt);
         _isExecutingStatement = NO;
         return nil;
@@ -1005,7 +1005,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     ZY_FMStatement *cachedStmt  = 0x00;
     
     if (_traceExecution && sql) {
-        ZYLogDebug(@"%@ executeUpdate: %@", self, sql);
+        FTInnerLogDebug(@"%@ executeUpdate: %@", self, sql);
     }
     
     if (_shouldCacheStatements) {
@@ -1019,9 +1019,9 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
         
         if (SQLITE_OK != rc) {
             if (_logsErrors) {
-                ZYLogError(@"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
-                ZYLogError(@"DB Query: %@", sql);
-                ZYLogError(@"DB Path: %@", _databasePath);
+                FTInnerLogError(@"DB Error: %d \"%@\"", [self lastErrorCode], [self lastErrorMessage]);
+                FTInnerLogError(@"DB Query: %@", sql);
+                FTInnerLogError(@"DB Path: %@", _databasePath);
             }
             
             if (_crashOnErrors) {
@@ -1053,7 +1053,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
             NSString *parameterName = [[NSString alloc] initWithFormat:@":%@", dictionaryKey];
             
             if (_traceExecution) {
-                ZYLogDebug(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
+                FTInnerLogDebug(@"%@ = %@", parameterName, [dictionaryArgs objectForKey:dictionaryKey]);
             }
             // Get the index for the parameter name.
             int namedIdx = sqlite3_bind_parameter_index(pStmt, [parameterName UTF8String]);
@@ -1071,7 +1071,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
                 NSString *message = [NSString stringWithFormat:@"Could not find index for %@", dictionaryKey];
                 
                 if (_logsErrors) {
-                    ZYLogError(@"%@", message);
+                    FTInnerLogError(@"%@", message);
                 }
                 if (outErr) {
                     *outErr = [self errorWithMessage:message];
@@ -1096,10 +1096,10 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
             
             if (_traceExecution) {
                 if ([obj isKindOfClass:[NSData class]]) {
-                    ZYLogDebug(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
+                    FTInnerLogDebug(@"data: %ld bytes", (unsigned long)[(NSData*)obj length]);
                 }
                 else {
-                    ZYLogDebug(@"obj: %@", obj);
+                    FTInnerLogDebug(@"obj: %@", obj);
                 }
             }
             
@@ -1113,7 +1113,7 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     if (idx != queryCount) {
         NSString *message = [NSString stringWithFormat:@"Error: the bind count (%d) is not correct for the # of variables in the query (%d) (%@) (executeUpdate)", idx, queryCount, sql];
         if (_logsErrors) {
-            ZYLogError(@"%@", message);
+            FTInnerLogError(@"%@", message);
         }
         if (outErr) {
             *outErr = [self errorWithMessage:message];
@@ -1135,15 +1135,15 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     }
     else if (SQLITE_INTERRUPT == rc) {
         if (_logsErrors) {
-            ZYLogError(@"Error calling sqlite3_step. Query was interrupted (%d: %s) SQLITE_INTERRUPT", rc, sqlite3_errmsg(_db));
-            ZYLogError(@"DB Query: %@", sql);
+            FTInnerLogError(@"Error calling sqlite3_step. Query was interrupted (%d: %s) SQLITE_INTERRUPT", rc, sqlite3_errmsg(_db));
+            FTInnerLogError(@"DB Query: %@", sql);
         }
     }
     else if (rc == SQLITE_ROW) {
         NSString *message = [NSString stringWithFormat:@"A executeUpdate is being called with a query string '%@'", sql];
         if (_logsErrors) {
-            ZYLogError(@"%@", message);
-            ZYLogError(@"DB Query: %@", sql);
+            FTInnerLogError(@"%@", message);
+            FTInnerLogError(@"DB Query: %@", sql);
         }
         if (outErr) {
             *outErr = [self errorWithMessage:message];
@@ -1156,22 +1156,22 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
         
         if (SQLITE_ERROR == rc) {
             if (_logsErrors) {
-                ZYLogError(@"Error calling sqlite3_step (%d: %s) SQLITE_ERROR", rc, sqlite3_errmsg(_db));
-                ZYLogError(@"DB Query: %@", sql);
+                FTInnerLogError(@"Error calling sqlite3_step (%d: %s) SQLITE_ERROR", rc, sqlite3_errmsg(_db));
+                FTInnerLogError(@"DB Query: %@", sql);
             }
         }
         else if (SQLITE_MISUSE == rc) {
             // uh oh.
             if (_logsErrors) {
-                ZYLogError(@"Error calling sqlite3_step (%d: %s) SQLITE_MISUSE", rc, sqlite3_errmsg(_db));
-                ZYLogError(@"DB Query: %@", sql);
+                FTInnerLogError(@"Error calling sqlite3_step (%d: %s) SQLITE_MISUSE", rc, sqlite3_errmsg(_db));
+                FTInnerLogError(@"DB Query: %@", sql);
             }
         }
         else {
             // wtf?
             if (_logsErrors) {
-                ZYLogError(@"Unknown error calling sqlite3_step (%d: %s) eu", rc, sqlite3_errmsg(_db));
-                ZYLogError(@"DB Query: %@", sql);
+                FTInnerLogError(@"Unknown error calling sqlite3_step (%d: %s) eu", rc, sqlite3_errmsg(_db));
+                FTInnerLogError(@"DB Query: %@", sql);
             }
         }
     }
@@ -1201,8 +1201,8 @@ static int ZY_FMDBDatabaseBusyHandler(void *f, int count) {
     
     if (closeErrorCode != SQLITE_OK) {
         if (_logsErrors) {
-            ZYLogError(@"Unknown error finalizing or resetting statement (%d: %s)", closeErrorCode, sqlite3_errmsg(_db));
-            ZYLogError(@"DB Query: %@", sql);
+            FTInnerLogError(@"Unknown error finalizing or resetting statement (%d: %s)", closeErrorCode, sqlite3_errmsg(_db));
+            FTInnerLogError(@"DB Query: %@", sql);
         }
     }
     
@@ -1285,7 +1285,7 @@ int ZY_FMDBExecuteBulkSQLCallback(void *theBlockAsVoid, int columns, char **valu
     rc = sqlite3_exec([self sqliteHandle], [sql UTF8String], block ? ZY_FMDBExecuteBulkSQLCallback : nil, (__bridge void *)(block), &errmsg);
     
     if (errmsg && [self logsErrors]) {
-        ZYLogError(@"Error inserting batch: %s", errmsg);
+        FTInnerLogError(@"Error inserting batch: %s", errmsg);
     }
     if (errmsg) {
         sqlite3_free(errmsg);
@@ -1408,7 +1408,7 @@ static NSString *ZY_FMDBEscapeSavePointName(NSString *savepointName) {
     return [self executeUpdate:sql error:outErr withArgumentsInArray:nil orDictionary:nil orVAList:nil];
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (self.logsErrors) ZYLogError(@"%@", errorMessage);
+    if (self.logsErrors) FTInnerLogError(@"%@", errorMessage);
     return NO;
 #endif
 }
@@ -1422,7 +1422,7 @@ static NSString *ZY_FMDBEscapeSavePointName(NSString *savepointName) {
     return [self executeUpdate:sql error:outErr withArgumentsInArray:nil orDictionary:nil orVAList:nil];
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (self.logsErrors) ZYLogError(@"%@", errorMessage);
+    if (self.logsErrors) FTInnerLogError(@"%@", errorMessage);
     return NO;
 #endif
 }
@@ -1436,7 +1436,7 @@ static NSString *ZY_FMDBEscapeSavePointName(NSString *savepointName) {
     return [self executeUpdate:sql error:outErr withArgumentsInArray:nil orDictionary:nil orVAList:nil];
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (self.logsErrors) ZYLogError(@"%@", errorMessage);
+    if (self.logsErrors) FTInnerLogError(@"%@", errorMessage);
     return NO;
 #endif
 }
@@ -1468,7 +1468,7 @@ static NSString *ZY_FMDBEscapeSavePointName(NSString *savepointName) {
     return err;
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (self.logsErrors) ZYLogError(@"%@", errorMessage);
+    if (self.logsErrors) FTInnerLogError(@"%@", errorMessage);
     return [NSError errorWithDomain:@"ZY_FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
 #endif
 }
@@ -1487,14 +1487,14 @@ static NSString *ZY_FMDBEscapeSavePointName(NSString *savepointName) {
 #if SQLITE_VERSION_NUMBER >= 3007006
     int err = sqlite3_wal_checkpoint_v2(_db, dbName, checkpointMode, logFrameCount, checkpointCount);
 #else
-    ZYLogDebug(@"sqlite3_wal_checkpoint_v2 unavailable before sqlite 3.7.6. Ignoring checkpoint mode: %d", mode);
+    FTInnerLogDebug(@"sqlite3_wal_checkpoint_v2 unavailable before sqlite 3.7.6. Ignoring checkpoint mode: %d", mode);
     int err = sqlite3_wal_checkpoint(_db, dbName);
 #endif
     if(err != SQLITE_OK) {
         if (error) {
             *error = [self lastError];
         }
-        if (self.logsErrors) ZYLogError(@"%@", [self lastErrorMessage]);
+        if (self.logsErrors) FTInnerLogError(@"%@", [self lastErrorMessage]);
         if (self.crashOnErrors) {
             NSAssert(false, @"%@", [self lastErrorMessage]);
             abort();

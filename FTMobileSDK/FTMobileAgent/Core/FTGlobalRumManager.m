@@ -121,7 +121,7 @@ static dispatch_once_t onceToken;
     @try {
         NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
-            ZYLogError(@"Message body is formatted failure from JS SDK");
+            FTInnerLogError(@"Message body is formatted failure from JS SDK");
             return;
         }
         NSString *name = messageDic[@"name"];
@@ -139,7 +139,7 @@ static dispatch_once_t onceToken;
             }
         }
     } @catch (NSException *exception) {
-        ZYLogError(@"%@ error: %@", self, exception);
+        FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
@@ -169,7 +169,7 @@ static dispatch_once_t onceToken;
         [self.rumManager stopViewWithProperty:nil];
         [self.rumManager applicationWillTerminate];
     }@catch (NSException *exception) {
-        ZYLogError(@"applicationWillResignActive exception %@",exception);
+        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========
@@ -182,6 +182,6 @@ static dispatch_once_t onceToken;
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [[FTANRDetector sharedInstance] stopDetecting];
     [self stopMonitor];
-    ZYLogInfo(@"[RUM] SHUT DOWN");
+    FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

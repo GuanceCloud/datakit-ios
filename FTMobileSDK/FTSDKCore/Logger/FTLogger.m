@@ -58,20 +58,20 @@ static dispatch_once_t onceToken;
         // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:tm:)]){
             if (!self.enableCustomLog) {
-                ZYLogInfo(@"[Logging] enableCustomLog 未开启，数据不进行采集");
+                FTInnerLogInfo(@"[Logging] enableCustomLog 未开启，数据不进行采集");
                 return;
             }
             if (![self.logLevelFilterSet containsObject:@(status)]) {
-                ZYLogInfo(@"[Logging] 经过过滤算法判断-此条日志不采集");
+                FTInnerLogInfo(@"[Logging] 经过过滤算法判断-此条日志不采集");
                 return;
             }
             if (![FTBaseInfoHandler randomSampling:self.sampletRate]){
-                ZYLogInfo(@"[Logging] 经过采集算法判断-此条日志不采集");
+                FTInnerLogInfo(@"[Logging] 经过采集算法判断-此条日志不采集");
                 return;
             }
             [self.loggerWriter logging:message status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
         }else{
-            ZYLogError(@"SDK 配置异常，无法采集自定义日志");
+            FTInnerLogError(@"SDK 配置异常，无法采集自定义日志");
         }
     };
     if(status == StatusError){
@@ -104,6 +104,6 @@ static dispatch_once_t onceToken;
     [self syncProcess];
     onceToken = 0;
     sharedInstance =nil;
-    ZYLogInfo(@"[Logging] SHUT DOWN");
+    FTInnerLogInfo(@"[Logging] SHUT DOWN");
 }
 @end
