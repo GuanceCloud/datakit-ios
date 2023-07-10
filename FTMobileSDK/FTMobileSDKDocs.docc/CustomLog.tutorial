@@ -7,7 +7,7 @@
     @Section(title: "自定义日志使用") {
         SDK 提供添加自定义日志的方法
         
-        注意：需要在 SDK 启动后使用，且开启 ``FTMobileSDK/FTLoggerConfig/enableCustomLog`` 。开启 ``FTMobileSDK/FTLoggerConfig/printLogsToConsole`` 日志会在 Xcode 控制台中进行打印，也可通过控制台 App 进行查看。
+        注意：需要在 SDK 启动后使用，且开启 ``FTMobileSDK/FTLoggerConfig/enableCustomLog`` 。开启 ``FTMobileSDK/FTLoggerConfig/printCustomLogToConsole`` 日志会在 Xcode 控制台中进行打印，也可通过控制台 App 进行查看。
         @Steps {
             @Step {
                 方法

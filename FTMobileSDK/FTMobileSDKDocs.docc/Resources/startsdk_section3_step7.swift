@@ -45,7 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         loggerConfig.logLevelFilter = [@(FTLogLevel.info),@(FTLogLevel.warning)]
         loggerConfig.enableLinkRumData = true
         loggerConfig.globalContext = ["Logger_CustomKey":"CustomValue"]
-        loggerConfig.printLogsToConsole = true
+        loggerConfig.printCustomLogToConsole = true
         FTMobileAgent.sharedInstance().startLogger(withConfigOptions: loggerConfig)
         
         return true
