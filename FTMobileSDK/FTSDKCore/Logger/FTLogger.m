@@ -14,6 +14,7 @@
 #import "NSString+FTAdd.h"
 #import "FTDateUtil.h"
 #import "FTRecordModel.h"
+#import "FTSDKCompat.h"
 @interface FTLogger ()
 @property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
@@ -52,7 +53,18 @@ static dispatch_once_t onceToken;
 {
     dispatch_block_t logBlock = ^{
         if(self.printLogsToConsole){
-            NSString *consoleMessage = [NSString stringWithFormat:@"[IOS APP] [%@] %@",[FTStatusStringMap[status] uppercaseString],message];
+            NSString *prefix = @"[IOS APP]" ;
+#if FT_MAC
+            prefix = @"[MACOS APP]";
+#endif
+            NSString *consoleMessage = [NSString stringWithFormat:@"%@ [%@] %@",prefix,[FTStatusStringMap[status] uppercaseString],message];
+            NSMutableArray *mutableStrs = [NSMutableArray array];
+            if(property && property.allKeys.count>0){
+                for (NSString *key in property.allKeys) {
+                    [mutableStrs addObject:[NSString stringWithFormat:@"%@=%@",key,property[key]]];
+                }
+                consoleMessage =[consoleMessage stringByAppendingFormat:@" ,{%@}",[mutableStrs componentsJoinedByString:@","]];
+            }
             FTCONSOLELOG(status,consoleMessage);
         }
         // 上传 datakit
