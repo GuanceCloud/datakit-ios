@@ -44,7 +44,6 @@
     NSInteger count = self.applicationDidBecomeActiveCount;
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    ZYLogDebug(@"applicationDidBecomeActiveCount : %d\n",self.applicationWillTerminateCount);
     XCTAssertTrue(self.applicationDidBecomeActiveCount-count > 0);
 }
 

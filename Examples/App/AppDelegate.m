@@ -69,7 +69,7 @@
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
-        loggerConfig.printLogsToConsole = YES;
+        loggerConfig.printCustomLogToConsole = YES;
         loggerConfig.logLevelFilter = @[@(FTStatusError),@(FTStatusCritical)];
         loggerConfig.discardType = FTDiscardOldest;
         loggerConfig.globalContext = @{@"log_id":@"log_id_1"};//eg.

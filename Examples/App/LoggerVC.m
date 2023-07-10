@@ -29,13 +29,23 @@
                        @"Log Status: error",
                        @"Log Status: critical",
                        @"Log Status: ok",
-        ];
-    for (int i=0; i<datas.count;i++) {
-        TableViewCellItem *item = [[TableViewCellItem alloc]initWithTitle:datas[i] handler:^{
-                [[FTMobileAgent sharedInstance] logging:datas[i] status:(FTLogStatus)i];
-            }];
-        [self.dataSource addObject:item];
-    }
+    ];
+    TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:datas[0] handler:^{
+        [[FTMobileAgent sharedInstance] logging:datas[0] status:FTStatusInfo];
+    }];
+    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:datas[1] handler:^{
+        [[FTMobileAgent sharedInstance] logging:datas[1] status:FTStatusWarning];
+    }];
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:datas[2] handler:^{
+        [[FTMobileAgent sharedInstance] logging:datas[2] status:FTStatusWarning];
+    }];
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:datas[3] handler:^{
+        [[FTLogger sharedInstance] critical:datas[3] property:@{@"critical_key":@"critical_value"}];
+    }];
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:datas[4] handler:^{
+        [[FTLogger sharedInstance] ok:datas[4] property:@{@"ok_key":@"ok_value",@"ok_key2":@"ok_value2"}];
+    }];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height-200)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;
