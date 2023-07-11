@@ -5,7 +5,7 @@ while [[ $# -gt 0 ]]; do
   case ${key} in
   -rumid)
     APP_ID="$2"
-    shift # past argumentandroid
+    shift # past argument
     shift # past value
     ;;
   -url)
