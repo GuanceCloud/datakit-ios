@@ -119,7 +119,8 @@ static dispatch_once_t onceToken;
 }
 - (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
     @try {
-        NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
+        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
+        
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
             FTInnerLogError(@"Message body is formatted failure from JS SDK");
             return;
@@ -131,7 +132,7 @@ static dispatch_once_t onceToken;
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
-            time = time>0?:[FTDateUtil currentTimeNanosecond];
+            time = time>0?time:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebviewData:measurement tags:tags fields:fields tm:time];
