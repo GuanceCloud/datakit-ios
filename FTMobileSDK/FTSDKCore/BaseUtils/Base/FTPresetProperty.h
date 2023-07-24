@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取 Rum ES 公共Tag
 - (NSDictionary *)rumProperty;
+- (NSDictionary *)rumDynamicProperty;
 /// 获取 logger 数据公共 Tag
 /// - Parameters:
 ///   - status: 事件等级和状态

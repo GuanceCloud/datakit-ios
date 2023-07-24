@@ -177,9 +177,14 @@ static dispatch_once_t onceToken;
     @try {
         FTAddDataType dataType = [type isEqualToString:FT_RUM_SOURCE_ERROR]?FTAddDataImmediate:FTAddDataNormal;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
-        [baseTags addEntriesFromDictionary:[self.presetProperty rumProperty]];
+        [baseTags addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
+        // webview 打进的数据
+        if([tags.allKeys containsObject:FT_SDK_VERSION]){
+            [baseTags setValue:SDK_VERSION forKey:@"package_native"];
+        }
+        [baseTags addEntriesFromDictionary:[self.presetProperty rumProperty]];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
@@ -196,6 +201,7 @@ static dispatch_once_t onceToken;
             [tagDict addEntriesFromDictionary:tags];
         }
         if (self.loggerConfig.enableLinkRumData) {
+            [tagDict addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
             [tagDict addEntriesFromDictionary:[self.presetProperty rumProperty]];
             if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
                 NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
