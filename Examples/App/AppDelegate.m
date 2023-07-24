@@ -42,7 +42,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    NSString *trackid = [processInfo environment][@"TRACK_ID"]?:@"NULL_VALUE";
+    NSString *trackid = [processInfo environment][@"TRACK_ID"]?:@"N/A";
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( url && !isUnitTests && !isUITests) {
@@ -50,7 +50,7 @@
         config.enableSDKDebugLog = YES;
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
-        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"NULL_VALUE";
+        NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"N/A";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
         rumConfig.samplerate = 80;
