@@ -52,7 +52,6 @@ static NSString * const FT_APPLICATION_UUID = @"application_uuid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
-static NSString * const FT_SDK_NAME = @"sdk_name";
 
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
@@ -152,9 +151,8 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     self.service = service;
     self.context = [globalContext copy];
 }
-- (NSDictionary *)rumProperty{
+- (NSMutableDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-   
     // rum common property tags
     dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
     dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
@@ -164,6 +162,7 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     dict[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_KEY_SERVICE] = self.service;
+    dict[FT_SDK_VERSION] = self.sdkVersion;
 #if FT_MAC
     dict[FT_SDK_NAME] = FT_MACOS_SDK_NAME;
 #else
@@ -186,7 +185,6 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict addEntriesFromDictionary:self.context];
     [dict addEntriesFromDictionary:self.rumContext];
-    dict[FT_SDK_VERSION] = self.sdkVersion;
     return dict;
 }
 - (NSString *)isSigninStr{

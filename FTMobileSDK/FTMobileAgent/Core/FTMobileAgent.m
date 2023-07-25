@@ -180,11 +180,15 @@ static dispatch_once_t onceToken;
         [baseTags addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
+        NSMutableDictionary *rumProperty = [self.presetProperty rumProperty];
         // webview 打进的数据
-        if([tags.allKeys containsObject:FT_SDK_VERSION]){
+        if([tags.allKeys containsObject:FT_IS_WEBVIEW]){
             [baseTags setValue:SDK_VERSION forKey:@"package_native"];
+            [rumProperty removeObjectForKey:FT_KEY_SERVICE];
+            [rumProperty removeObjectForKey:FT_SDK_VERSION];
+            [rumProperty removeObjectForKey:FT_SDK_NAME];
         }
-        [baseTags addEntriesFromDictionary:[self.presetProperty rumProperty]];
+        [baseTags addEntriesFromDictionary:rumProperty];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {

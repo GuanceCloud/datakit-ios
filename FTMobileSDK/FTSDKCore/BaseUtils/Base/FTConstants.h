@@ -33,6 +33,7 @@ extern NSString * const FT_RUM_SOURCE_ACTION ;
 extern NSString * const FT_RUM_SOURCE_LONG_TASK;
 extern NSString * const FT_RUM_SOURCE_VIEW;
 extern NSString * const FT_SDK_VERSION;
+extern NSString * const FT_SDK_NAME;
 
 #pragma mark ========== rum ==========
 extern NSString * const FT_DURATION;

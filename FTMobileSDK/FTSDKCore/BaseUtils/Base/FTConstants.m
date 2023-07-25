@@ -34,7 +34,7 @@ NSString * const FT_IS_WEBVIEW = @"is_web_view";
 NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
 NSString * const FT_SDK_VERSION = @"sdk_version";
-
+NSString * const FT_SDK_NAME = @"sdk_name";
 
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
