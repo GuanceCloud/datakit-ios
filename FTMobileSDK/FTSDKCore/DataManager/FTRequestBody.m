@@ -51,9 +51,13 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
             }else{
                 return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
             }
+        }else if ([self.value isKindOfClass:NSArray.class]){
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonDataWithArray:self.value]]];
+        }else if ([self.value isKindOfClass:NSDictionary.class]){
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonData:self.value]]];
+
         }
         return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
-        
     }
 }
 - (id)replacingSpecialCharacters:(id )str{
@@ -85,7 +89,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         for (id nestedKey in dictionary.allKeys) {
             id nestedValue = dictionary[nestedKey];
             if (nestedValue) {
-                [mutableQueryStringComponents addObjectsFromArray:FTQueryStringPairsFromKeyAndValue( nestedKey, nestedValue,type)];
+                [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:nestedKey value:nestedValue]];
             }
         }
     }else{
