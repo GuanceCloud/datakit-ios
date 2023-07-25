@@ -41,18 +41,19 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],@"NULL"];
+        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
-        if([self.value isKindOfClass:NSString.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
-        }else if([self.value isKindOfClass:NSNumber.class]){
+        if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
             if (strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0)
             {
                 return  [NSString stringWithFormat:@"%@=%.1f", [self replacingSpecialCharacters:self.field], number.floatValue];
+            }else{
+                return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
             }
         }
-        return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
+        
     }
 }
 - (id)replacingSpecialCharacters:(id )str{
