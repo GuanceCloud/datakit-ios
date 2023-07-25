@@ -11,6 +11,7 @@
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
+#import "NSNumber+FTAdd.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeTag      = 1,
     FTParameterTypeField     = 2 ,
@@ -45,12 +46,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }else{
         if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            if (strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0)
-            {
-                return  [NSString stringWithFormat:@"%@=%.1f", [self replacingSpecialCharacters:self.field], number.floatValue];
-            }else{
-                return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
-            }
+            return  [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], number.ft_toFiledString];
         }else if ([self.value isKindOfClass:NSArray.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonDataWithArray:self.value]]];
         }else if ([self.value isKindOfClass:NSDictionary.class]){
