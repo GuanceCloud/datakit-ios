@@ -88,20 +88,30 @@ NSString * FTWebViewJavascriptBridge_js(void) {
                                                              ;(function(window) {
                
         window.FTWebViewJavascriptBridge = {
-        sendEvent: ftCallHandler
+        registerHandler: ftRegisterHandler,
+        callHandler: ftCallHandler,
+        sendEvent: ftSendEvent,
+        _handleMessageFromObjC: _ftHandleMessageFromObjC
         };
         
         var ftSendMessageQueue = [];
+        var ftMessageHandlers = {};
         var ftResponseCallbacks = {};
         var uniqueId = 1;
         
-      
-        function ftCallHandler(data, responseCallback) {
-            if (arguments.length === 1 && typeof data == 'function') {
+        function ftRegisterHandler(handlerName, handler) {
+            ftMessageHandlers[handlerName] = handler;
+        }
+        function ftSendEvent(data, responseCallback){
+            ftCallHandler('sendEvent', data, responseCallback);
+        }
+                                                                 
+        function ftCallHandler(handlerName, data, responseCallback) {
+            if (arguments.length === 2 && typeof data == 'function') {
                 responseCallback = data;
                 data = null;
             }
-            _ftDoSend({ handlerName:'sendEvent', data:data }, responseCallback);
+            _ftDoSend({ handlerName:handlerName, data:data }, responseCallback);
         }
         function _ftDoSend(message, responseCallback) {
             if (responseCallback) {
@@ -113,7 +123,43 @@ NSString * FTWebViewJavascriptBridge_js(void) {
             window.webkit.messageHandlers.ftMobileSdk.postMessage(JSON.stringify(ftSendMessageQueue));
             ftSendMessageQueue = [];
         }
+        
+        function _ftDispatchMessageFromObjC(messageJSON) {
+            _doDispatchMessageFromObjC();
             
+            function _doDispatchMessageFromObjC() {
+                var message = JSON.parse(messageJSON);
+                var messageHandler;
+                var responseCallback;
+                
+                if (message.responseId) {
+                    responseCallback = ftResponseCallbacks[message.responseId];
+                    if (!responseCallback) {
+                       
+                        return;
+                    }
+                    
+                    responseCallback(message.responseData);
+                    delete ftResponseCallbacks[message.responseId];
+                } else {
+                    if (message.callbackId) {
+                        var callbackResponseId = message.callbackId;
+                        responseCallback = function(responseData) {
+                            _doSend({ handlerName:message.handlerName, responseId:callbackResponseId, responseData:responseData });
+                        };
+                    }
+                    var handler = ftMessageHandlers[message.handlerName];
+                    if (!handler) {
+                        console.log("WebViewJavascriptBridge: WARNING: no handler for message from ObjC:", message);
+                    } else {
+                        handler(message.data, responseCallback);
+                    }
+                }
+            }
+        }
+        function _ftHandleMessageFromObjC(messageJSON) {
+            _ftDispatchMessageFromObjC(messageJSON);
+        }
     })(window);
                                                              ); // END preprocessorJSCode
     
