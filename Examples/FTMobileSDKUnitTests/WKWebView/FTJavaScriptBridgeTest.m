@@ -20,6 +20,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
+#import "FTMobileAgentVersion.h"
 typedef void(^FTTraceRequest)(NSURLRequest *);
 @interface FTJavaScriptBridgeTest : KIFTestCase<WKNavigationDelegate>
 @property (nonatomic, strong) TestWKWebViewVC *viewController;
@@ -81,6 +82,22 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
+/// 1.验证有webview传入数据添加
+/// 2.验证数据格式
+///   基础 tags :
+///    与 webview 一致：
+///    sdk_name
+///    sdk_version
+///    service
+///    新增 tag 字段：
+///    package_native
+///    is_web_view
+///   其余与 native SDK 一致
+///
+///   rum 相关调整：
+///   session_id： 与 native SDK 一致
+///   is_active: false
+///   其余与 webview 一致
 - (void)testAddRumViewData{
     [self setsdk];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
@@ -114,11 +131,21 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 NSInteger longTaskCount = [field[FT_KEY_VIEW_LONG_TASK_COUNT] integerValue];
                 NSString *viewName = tags[FT_KEY_VIEW_NAME];
                 NSDictionary *tags = opdata[FT_TAGS];
-                XCTAssertTrue(tags[FT_KEY_IS_ACTIVE] == NO);
                 XCTAssertTrue(errorCount == 0);
                 XCTAssertTrue(longTaskCount == 0);
                 XCTAssertTrue(resourceCount == 0);
                 XCTAssertTrue([viewName isEqualToString:@"testJSBridge"]);
+
+                // rum 相关调整
+                XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
+                XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqualToString:@"false"]);
+
+                // 基础 tags
+                XCTAssertTrue([tags[@"package_native"] isEqualToString:SDK_VERSION]);
+                XCTAssertFalse([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
+                XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
+                XCTAssertTrue([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
+
                 hasViewData = YES;
             }
         }
