@@ -35,7 +35,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=NULL", [self replacingSpecialCharacters:self.field]];
+        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
         return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
