@@ -42,11 +42,8 @@
         double frameDuration = link.timestamp - self.lastFrameTimestamp;
         double currentFPS = 1.0 / frameDuration;
         for (id publisher in self.dataPublisher) {
-            [publisher concurrentWrite:^(id  _Nonnull value) {
-                if([value isKindOfClass: FTMonitorValue.class]){
-                    FTMonitorValue *newValue = value;
-                    [newValue addSample:currentFPS];
-                }
+            [publisher concurrentWrite:^(FTMonitorValue *value) {
+                [value addSample:currentFPS];
             }];
         }
     }
