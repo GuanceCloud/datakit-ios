@@ -14,7 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
@@ -85,9 +85,9 @@
                 }
                 self.didReceiveStartData = YES;
             }else{
-                self.needUpdateView = YES;
                 self.isActiveView = NO;
             }
+            self.needUpdateView = YES;
         }
             break;
         case FTRUMDataViewStop:{
@@ -202,7 +202,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field tm:[FTDateUtil dateTimeNanosecond:self.viewStartTime]];
 }
 
 @end

@@ -37,7 +37,8 @@
     self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];
     [self.view addSubview:self.webView];
 //    NSString *path = [[NSBundle mainBundle]pathForResource:@"sample" ofType:@"html"];
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://10.100.64.165/test/rum/"]];
+    NSString *url = [[NSProcessInfo processInfo] environment][@"WEBVIEW_URL"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
     [self.webView loadRequest:request];
 }
 /*

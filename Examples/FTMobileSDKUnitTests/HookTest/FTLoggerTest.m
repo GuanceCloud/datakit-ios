@@ -16,7 +16,7 @@
 #import "FTRecordModel.h"
 #import "UITestVC.h"
 #import "FTTrackDataManager+Test.h"
-
+#import "FTModelHelper.h"
 @interface FTLoggerTest : KIFTestCase
 
 @property (nonatomic, copy) NSString *url;
@@ -34,8 +34,6 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];
@@ -47,6 +45,8 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount=count+1);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 }
 - (void)testDisbleCustomLog{
     [self setRightSDKConfig];
@@ -58,36 +58,8 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
-}
-- (void)testEnableTraceConsoleLog{
-    [self setRightSDKConfig];
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.enableConsoleLog = YES;
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"TraceConsoleLog"] tap];
-    for (int i = 0; i<19; i++) {
-        NSLog(@"testEnableTraceConsoleLog");
-    }
+    [[FTMobileAgent sharedInstance] shutDown];
 
-    [[FTMobileAgent sharedInstance] syncProcess];
-    NSArray *newCount =  [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    XCTAssertTrue(newCount.count == count+20);
-}
-- (void)testDisableTraceConsoleLog{
-    [self setRightSDKConfig];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.enableConsoleLog = NO;
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    for (int i = 0; i<21; i++) {
-        NSLog(@"testEnableTraceConsoleLog");
-    }
-    [[FTMobileAgent sharedInstance] syncProcess];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == count);
 }
 - (void)testDiscardNew{
     [self setRightSDKConfig];
@@ -106,6 +78,8 @@
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
 
     XCTAssertTrue(newCount == 5000);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 }
 
 - (void)testDiscardOldBulk{
@@ -125,26 +99,7 @@
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
     XCTAssertTrue(newCount == 5000);
-}
-- (void)testPrefix{
-    [self setRightSDKConfig];
-    NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    [loggerConfig enableConsoleLog:YES prefix:@"debug"];
-    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    NSLog(@"debug testDisableTraceConsoleLog");
-    for (int i = 0; i<20; i++) {
-        NSLog(@"testDisableTraceConsoleLog");
-    }
-    [[FTMobileAgent sharedInstance] syncProcess];
-    NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount == count);
-    for (int i = 0; i<20; i++) {
-        NSLog(@"debug testDisableTraceConsoleLog");
-    }
-    [[FTMobileAgent sharedInstance] syncProcess];
-    NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount2 == count+20);
+    [[FTMobileAgent sharedInstance] shutDown];
 
 }
 - (void)testLogLevelFilter{
@@ -155,7 +110,8 @@
     loggerConfig.logLevelFilter = @[@(FTStatusInfo)];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     
-    [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
+    [[FTLogger sharedInstance] info:@"testLoggingMethod" property:nil];
+    
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -165,6 +121,8 @@
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount2 == newCount);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 
 }
 - (void)testEmptyStringMessageLog{
@@ -178,6 +136,8 @@
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 }
 - (void)testNotSetLoggerConfig{
     [self setRightSDKConfig];
@@ -212,6 +172,7 @@
     NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue(serviceName.length>0);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testEnableLinkRumData{
     [self setRightSDKConfig];
@@ -222,8 +183,7 @@
     rumConfig.enableTraceUserView = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[viewTester usingLabel:@"UITEST"] tap];
-
+    [FTModelHelper startView];
     [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
 
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -235,6 +195,8 @@
     NSDictionary *tags =opdata[FT_TAGS];
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 }
 - (void)testDisableLinkRumData{
     [self setRightSDKConfig];
@@ -255,14 +217,13 @@
     NSDictionary *tags =opdata[FT_TAGS];
     XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
     XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
-
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testSampleRate0{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.samplerate = 0;
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
@@ -272,27 +233,27 @@
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
     XCTAssertTrue(oldDatas.count == newDatas.count);
+    [[FTMobileAgent sharedInstance] shutDown];
+
 }
 - (void)testSampleRate100{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
-    NSLog(@"testSampleRate100");
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
-    XCTAssertTrue(oldDatas.count+2 == newDatas.count);
+    XCTAssertTrue(oldDatas.count+1 == newDatas.count);
+    [[FTMobileAgent sharedInstance] shutDown];
 
 }
 - (void)testGlobalContext{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.enableConsoleLog = YES;
     loggerConfig.globalContext = @{@"logger_id":@"logger_id_1"};
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
@@ -304,13 +265,12 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
-
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLoggerProperty{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    loggerConfig.enableConsoleLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testLoggerProperty" status:FTStatusInfo property:@{@"logger_property":@"testLoggerProperty"}];
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -321,5 +281,61 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *fields = op[FT_FIELDS];
     XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testLoggerStatus{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] info:@"testInfo" property:nil];
+    [[FTLogger sharedInstance] error:@"testError" property:nil];
+    [[FTLogger sharedInstance] warning:@"testWarning" property:nil];
+    [[FTLogger sharedInstance] critical:@"testCritical" property:nil];
+    [[FTLogger sharedInstance] ok:@"testOk" property:nil];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    NSInteger count = 0;
+    NSDictionary *logStatus = @{@"testInfo":@"info",
+                                @"testError":@"error",
+                                @"testWarning":@"warning",
+                                @"testCritical":@"critical",
+                                @"testOk":@"ok"
+    };
+    for (FTRecordModel *model in newDatas) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[@"opdata"];
+        NSDictionary *tags = op[FT_TAGS];
+        NSDictionary *fields = op[FT_FIELDS];
+        NSString *message = fields[@"message"];
+        NSString *status = tags[@"status"];
+        if([logStatus.allKeys containsObject:message]){
+            count ++;
+            XCTAssertTrue([status isEqualToString:logStatus[message]]);
+        }
+    }
+    XCTAssertTrue(count == 5);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testSDKShutDown{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    NSInteger oldCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTLogger sharedInstance] info:@"testLoggingMethod" property:nil];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    [[FTMobileAgent sharedInstance] shutDown];
+    XCTAssertTrue(count>oldCount);
+    [[FTLogger sharedInstance] error:@"testSDKShutDown" property:nil];
+    [[FTLogger sharedInstance] warning:@"testSDKShutDown" property:nil];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertNoThrow([[FTLogger sharedInstance] ok:@"testSDKShutDown" property:nil]);
+    XCTAssertTrue(count == newCount);
 }
 @end

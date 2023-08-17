@@ -7,12 +7,10 @@
 //
 
 #import "FTTrackDataManager.h"
-#import "FTThread.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTrackDataManager (Test)
-@property (nonatomic, strong) FTThread *ftThread;
 
 @end
 

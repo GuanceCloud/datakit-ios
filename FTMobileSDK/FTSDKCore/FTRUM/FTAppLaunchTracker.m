@@ -9,7 +9,7 @@
 #import <sys/sysctl.h>
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTDateUtil.h"
 
 
@@ -110,7 +110,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         }
     }
     @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)applicationDidEnterBackground{

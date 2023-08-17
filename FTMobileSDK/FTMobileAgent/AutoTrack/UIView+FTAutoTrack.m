@@ -9,7 +9,6 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "UIView+FTAutoTrack.h"
-#import "FTThreadDispatchManager.h"
 
 @implementation UIView (FTAutoTrack)
 -(NSString *)ft_actionName{
@@ -48,6 +47,13 @@
 }
 
 @end
+@implementation UILabel (FTAutoTrack)
+-(NSString *)ft_actionName{
+    NSString *title = self.text.length>0?[NSString stringWithFormat:@"[%@]",self.text]:@"";
+    return title?[NSString stringWithFormat:@"[%@]%@",NSStringFromClass(self.class),title]:super.ft_actionName;
+}
+@end
+
 @implementation UISegmentedControl (FTAutoTrack)
 
 -(NSString *)ft_actionName{
@@ -58,13 +64,13 @@
 
 @implementation UIStepper (FTAutoTrack)
 -(NSString *)ft_actionName{
-    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+    return [NSString stringWithFormat:@"[%@]%.2f",NSStringFromClass(self.class),self.value];
 }
 @end
 @implementation UISlider (FTAutoTrack)
 
 -(NSString *)ft_actionName{
-    return [NSString stringWithFormat:@"[%@]%f",NSStringFromClass(self.class),self.value];
+    return [NSString stringWithFormat:@"[%@]%.2f",NSStringFromClass(self.class),self.value];
 }
 
 @end

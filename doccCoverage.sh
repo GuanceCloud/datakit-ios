@@ -32,8 +32,11 @@ done
 }
 
 doccCoverage(){
-xcodebuild -target FTMobileSDK DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO
-
+echo '----- 正在清理 -----'
+xcodebuild clean -quiet || exit
+echo '清理完成 -->>> build'
+xcodebuild -target FTMobileSDK DOCC_EXTRACT_SWIFT_INFO_FOR_OBJC_SYMBOLS=NO -quiet || exit
+echo 'build completion -->>> docc'
 xcrun docc convert FTMobileSDK/FTMobileSDKDocs.docc \
 --fallback-display-name FTMobileSDK \
 --fallback-bundle-identifier com.cloudcare.ft.mobile.sdk.FTMobileSDK \
@@ -52,6 +55,10 @@ echo "-----changeFileAttributeToPublic Start-----"
 changeFileAttributeToPublic
 echo "-----changeFileAttributeToPublic End-----"
 fi
+
+#删除旧工程的影响
+rm -rf App.xcodeproj
+rm -rf App.xcworkspace
 
 echo "-----Coverage Start-----"
 doccCoverage

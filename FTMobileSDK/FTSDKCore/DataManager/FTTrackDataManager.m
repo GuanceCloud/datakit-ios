@@ -10,18 +10,17 @@
 #import "FTRecordModel.h"
 #import "FTReachability.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
-#import "FTThread.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
 static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
-@property (nonatomic, strong) FTThread *ftThread;
-@property (nonatomic, assign) BOOL isUploading;
+@property (atomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
+@property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTTrackDataManager{
 }
@@ -36,8 +35,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.ftThread = [[FTThread alloc]init];
-        [self.ftThread start];
+        NSString *serialLabel = @"com.guance.network";
+        _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
@@ -58,7 +57,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         [self uploadTrackData];
     }
     @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 -(void)applicationWillResignActive{
@@ -66,14 +65,14 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
        [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     }
     @catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
 -(void)applicationWillTerminate{
     @try {
         [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)addTrackData:(FTRecordModel *)data type:(FTAddDataType)type{
@@ -110,60 +109,64 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     if(![FTReachability sharedInstance].isReachable){
         return;
     }
-    //常驻线程 进行上传操作
-    [self performSelector:@selector(privateUpload) onThread:self.ftThread withObject:nil waitUntilDone:NO];
+    [self privateUpload];
 }
 - (void)privateUpload{
-    if (self.isUploading) {
-        return;
-    }
-    self.isUploading = YES;
     @try {
-        [self flushWithType:FT_DATA_TYPE_RUM];
-        [self flushWithType:FT_DATA_TYPE_LOGGING];
-        self.isUploading = NO;
+        dispatch_async(self.serialQueue, ^{
+            if (self.isUploading) {
+                return;
+            }
+            self.isUploading = YES;
+            [self flushWithType:FT_DATA_TYPE_RUM];
+            [self flushWithType:FT_DATA_TYPE_LOGGING];
+            
+            self.isUploading = NO;
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"执行上传操作失败 %@",exception);
+        FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
     }
 }
 -(BOOL)flushWithType:(NSString *)type{
-    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
-    if (events.count == 0 || ![self flushWithEvents:events type:type]) {
-        return NO;
-    }
-    FTRecordModel *model = [events lastObject];
-    if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
-        ZYErrorLog(@"数据库删除已上传数据失败");
-        return NO;
+    @autoreleasepool {
+        NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+        if (events.count == 0 || ![self flushWithEvents:events type:type]) {
+            return NO;
+        }
+        FTRecordModel *model = [events lastObject];
+        if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
+            FTInnerLogError(@"数据库删除已上传数据失败");
+            return NO;
+        }
     }
     return [self flushWithType:type];
 }
 -(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
     @try {
-        ZYDebug(@"开始上报事件(本次上报事件数:%lu)", (unsigned long)[events count]);
+        FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
         FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
       
         [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                ZYErrorLog(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                FTInnerLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
                 success = NO;
                 dispatch_semaphore_signal(flushSemaphore);
                 return;
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
-            ZYDebug(@"Upload Response statusCode : %d",statusCode);
+            FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
             if (!success) {
-                ZYErrorLog(@"服务器异常 稍后再试 response = %@",httpResponse);
+                FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 response = %@",httpResponse);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];
         dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
         return success;
     }  @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"[NETWORK] exception %@",exception);
     }
 
     return NO;

@@ -9,8 +9,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "FTMonitorUtils.h"
-#import "FTThreadDispatchManager.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTSDKCompat.h"
@@ -22,6 +21,7 @@
 @property (nonatomic, strong) NSMutableDictionary *preViewDuration;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
+@property (nonatomic, strong) dispatch_queue_t rumQueue;
 @end
 @implementation FTRUMManager
 
@@ -34,6 +34,7 @@
         _preViewDuration = [NSMutableDictionary new];
         _monitor = monitor;
         _writer = writer;
+        _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         self.assistant = self;
     }
     return self;
@@ -58,27 +59,29 @@
         [self.preViewDuration removeObjectForKey:viewName];
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.loading_time = duration?:@0;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;
             self.viewReferrer = viewName;
             [self process:viewModel];
-        }];
+        });
+        
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 -(void)stopView{
-    [FTThreadDispatchManager dispatchInRUMThread:^{
+    dispatch_async(self.rumQueue, ^{
         [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
-    }];
+        
+    });
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
-    [FTThreadDispatchManager dispatchInRUMThread:^{
+    dispatch_async(self.rumQueue, ^{
         [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
-    }];
+    });
 }
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
     if (!viewId) {
@@ -89,8 +92,9 @@
         viewModel.type = FTRUMDataViewStop;
         viewModel.fields = property;
         [self process:viewModel];
+        
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 #pragma mark - Action -
@@ -108,20 +112,20 @@
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.type = FTRUMDataClick;
             actionModel.fields = property;
             [self process:actionModel];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
     self.appState = AppStateRun;
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             NSString *actionName;
             NSString *actionType;
             switch (type) {
@@ -141,17 +145,15 @@
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
             launchModel.action_name = actionName;
             launchModel.action_type = actionType;
-        
+            
             [self process:launchModel];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)applicationWillTerminate{
-    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-        
-    }];
+
 }
 
 #pragma mark - Resource -
@@ -163,13 +165,13 @@
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             resourceStart.fields = property;
             [self process:resourceStart];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -209,13 +211,13 @@
             if (content.responseBody.length>0) {
                 [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
             }
-            [FTThreadDispatchManager dispatchInRUMThread:^{
+            dispatch_async(self.rumQueue, ^{
                 FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:time];
                 resourceError.time = time;
                 resourceError.tags = errorTags;
                 resourceError.fields = errorField;
                 [self process:resourceError];
-            }];
+            });
         }
         [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
         [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
@@ -249,17 +251,17 @@
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
     
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
             resourceSuccess.metrics = metrics;
             resourceSuccess.time = time;
             resourceSuccess.tags = tags;
             resourceSuccess.fields = fields;
             [self process:resourceSuccess];
-        }];
+        });
         
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 - (NSString *)getResourceStatusGroup:(NSInteger )status{
@@ -277,13 +279,13 @@
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMResourceDataModel *resource = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:key];
             resource.fields = property;
             [self process:resource];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 
@@ -316,19 +318,15 @@
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
-        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
+        dispatch_sync(self.rumQueue, ^{
             FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:[NSDate date]];
-            model.fatal = fatal;
             model.tags = errorTag;
             model.fields = field;
+            model.fatal = fatal;
             [self process:model];
-        }];
-        
-        [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-            
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
@@ -339,7 +337,7 @@
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             NSMutableDictionary *fields = @{FT_DURATION:duration,
                                             FT_KEY_LONG_TASK_STACK:stack
             }.mutableCopy;
@@ -350,9 +348,9 @@
             model.tags = @{};
             model.fields = fields;
             [self process:model];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
     
 }
@@ -383,14 +381,14 @@
         return;
     }
     @try {
-        [FTThreadDispatchManager dispatchInRUMThread:^{
+        dispatch_async(self.rumQueue, ^{
             FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
             webModel.tags = tags;
             webModel.fields = fields;
             [self process:webModel];
-        }];
+        });
     } @catch (NSException *exception) {
-        ZYErrorLog(@"exception %@",exception);
+        FTInnerLogError(@"exception %@",exception);
     }
 }
 
@@ -413,16 +411,10 @@
 }
 
 -(NSDictionary *)getCurrentSessionInfo{
-    __block NSDictionary *sessionInfo = nil;
-    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-        sessionInfo = [self.sessionHandler getCurrentSessionInfo];
-    }];
-    return sessionInfo;
+    return [self.sessionHandler getCurrentSessionInfo];
 }
 - (void)syncProcess{
-    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-        
-    }];
+    dispatch_sync(self.rumQueue, ^{});
 }
 @end
 

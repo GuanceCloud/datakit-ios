@@ -68,9 +68,12 @@
 }
 
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request
-         completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,
+         completion:(void(^_Nullable)(NSHTTPURLResponse * _Nullable httpResponse,
                                       NSData * _Nullable data,
                                       NSError * _Nullable error))callback{
-    [self realSendRequest:request completion:callback];
+    NSURLSessionDataTask *task = [self realSendRequest:request completion:callback];
+    if(!task){
+        callback(nil,nil,nil);
+    }
 }
 @end

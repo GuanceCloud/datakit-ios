@@ -23,50 +23,6 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 /**
- * RUM 线程异步执行
- */
--(void)testDispatchInRUMThread{
-    __block NSString *string = @"1";
-    XCTAssertTrue([NSThread currentThread].isMainThread);
-    [FTThreadDispatchManager dispatchInRUMThread:^{
-        XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        [FTThreadDispatchManager dispatchInRUMThread:^{
-            XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-            [NSThread sleepForTimeInterval:0.5];
-            string = [string stringByAppendingString:@"2"];
-        }];
-        string = [string stringByAppendingString:@"3"];
-        XCTAssertFalse([string isEqualToString:@"123"]);
-    }];
-    [FTThreadDispatchManager dispatchInRUMThread:^{
-        XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        string = [string stringByAppendingString:@"4"];
-    }];
-    XCTAssertFalse([string isEqualToString:@"1234"]);
-
-}
-/**
- * RUM 线程同步执行
- */
-- (void)testDispatchSyncInRUMThread{
-    __block NSString *string = @"1";
-    XCTAssertTrue([NSThread currentThread].isMainThread);
-    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-        XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        [NSThread sleepForTimeInterval:0.1];
-        string = [string stringByAppendingString:@"2"];
-        [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-            XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-            string = [string stringByAppendingString:@"3"];
-        }];
-    }];
-    [FTThreadDispatchManager dispatchSyncInRUMThread:^{
-        XCTAssertTrue([[NSThread currentThread].name isEqualToString:@"com.dataflux.rum.thread"]);
-        string = [string stringByAppendingString:@"4"];
-    }];
-    XCTAssertTrue([string isEqualToString:@"1234"]);
-}
-/**
  * 主线程同步执行
  */
 - (void)testPerformBlockDispatchMainSyncSafe{

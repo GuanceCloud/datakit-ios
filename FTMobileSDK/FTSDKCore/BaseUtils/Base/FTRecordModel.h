@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 数据类型，\RUM\Logging
 @property (nonatomic, strong) NSString *op;
 
+/// 存放数据库生成的 primary key
 @property (nonatomic, copy) NSString * _id;
 
 /// 初始化方法

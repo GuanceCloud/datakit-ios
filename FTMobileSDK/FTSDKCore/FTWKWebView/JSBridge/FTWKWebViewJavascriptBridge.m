@@ -90,6 +90,7 @@ NSString * FTWebViewJavascriptBridge_js(void) {
         window.FTWebViewJavascriptBridge = {
         registerHandler: ftRegisterHandler,
         callHandler: ftCallHandler,
+        sendEvent: ftSendEvent,
         _handleMessageFromObjC: _ftHandleMessageFromObjC
         };
         
@@ -101,7 +102,10 @@ NSString * FTWebViewJavascriptBridge_js(void) {
         function ftRegisterHandler(handlerName, handler) {
             ftMessageHandlers[handlerName] = handler;
         }
-        
+        function ftSendEvent(data, responseCallback){
+            ftCallHandler('sendEvent', data, responseCallback);
+        }
+                                                                 
         function ftCallHandler(handlerName, data, responseCallback) {
             if (arguments.length === 2 && typeof data == 'function') {
                 responseCallback = data;

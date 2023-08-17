@@ -12,7 +12,7 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTTrack.h"
 #import "FTDateUtil.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
@@ -50,7 +50,7 @@ static char *viewLoadDuration = "viewLoadDuration";
             blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
             
         } @catch(NSException *exception) {  // json加载和解析可能失败
-            ZYDebug(@"error: %@",exception);
+            FTInnerLogError(@"error: %@",exception);
         }
     });
     

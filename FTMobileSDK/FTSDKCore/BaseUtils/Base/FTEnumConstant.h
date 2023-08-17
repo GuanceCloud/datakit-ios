@@ -30,6 +30,8 @@ typedef NS_ENUM(NSInteger, LogStatus) {
     StatusCritical,
     /// 恢复
     StatusOk,
+    /// 调试，SDK 调试日志
+    StatusDebug,
 };
 typedef NS_OPTIONS(NSUInteger, ErrorMonitorType) {
     /// 开启所有监控： 电池、内存、CPU使用率

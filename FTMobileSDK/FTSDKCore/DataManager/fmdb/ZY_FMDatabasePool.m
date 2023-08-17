@@ -14,7 +14,7 @@
 
 #import "ZY_FMDatabasePool.h"
 #import "ZY_FMDatabase.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
     ZY_FMDBTransactionExclusive,
     ZY_FMDBTransactionDeferred,
@@ -162,7 +162,7 @@ typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
                 NSUInteger currentCount = [self->_databaseOutPool count] + [self->_databaseInPool count];
                 
                 if (currentCount >= self->_maximumNumberOfDatabasesToCreate) {
-                    ZYDebug(@"Maximum number of databases (%ld) has already been reached!", (long)currentCount);
+                    FTInnerLogDebug(@"Maximum number of databases (%ld) has already been reached!", (long)currentCount);
                     return;
                 }
             }
@@ -194,7 +194,7 @@ typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
             }
         }
         else {
-            ZYDebug(@"Could not open up the database at path %@", self->_path);
+            FTInnerLogError(@"Could not open up the database at path %@", self->_path);
             db = 0x00;
         }
     }];
@@ -327,7 +327,7 @@ typedef NS_ENUM(NSInteger, ZY_FMDBTransaction) {
     return err;
 #else
     NSString *errorMessage = NSLocalizedStringFromTable(@"Save point functions require SQLite 3.7", @"ZY_FMDB", nil);
-    if (self.logsErrors) ZYDebug(@"%@", errorMessage);
+    if (self.logsErrors) FTInnerLogError(@"%@", errorMessage);
     return [NSError errorWithDomain:@"ZY_FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
 #endif
 }

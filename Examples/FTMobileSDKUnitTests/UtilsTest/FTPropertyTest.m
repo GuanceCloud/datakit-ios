@@ -57,7 +57,7 @@
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.env = FTEnvPre;
+    [config setEnvWithType:FTEnvPre];
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *env = dict[@"env"];

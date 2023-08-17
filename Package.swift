@@ -11,19 +11,16 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "FTMobileSDK",
-            type: .static,
             targets: [
                 "FTMobileSDK",
             ]),
         .library(
             name: "FTMobileExtension",
-            type: .static,
             targets: [
                       "FTMobileExtension",
                      ]),
         .library(
             name: "FTSDKCore",
-            type: .static,
             targets: [
                       "FTSDKCore",
                      ]),
@@ -125,7 +122,6 @@ let package = Package(
                 publicHeadersPath: ".",
                 cSettings: [
                     .headerSearchPath("Swizzle"),
-                    .headerSearchPath("Swizzle/FTfishhook.c")
                 ]),
         .target(name: "_FTBaseUtils_Thread",
                 dependencies: [],
@@ -150,6 +146,7 @@ let package = Package(
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
                                "_FTExternalData",
+                               "_FTLogger",
                                "_FTConfig"
                               ],
                 path: "FTMobileSDK/FTMobileExtension",

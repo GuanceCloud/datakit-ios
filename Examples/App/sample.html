@@ -13,139 +13,28 @@
 <input type="button" value="testView" onclick="testRumView()">
 <script type="text/javascript">
 
-    /**
-     *
-     * 根据 userAgent 判断手机类型
-     *
-     * @returns {String}
-     */
-    function getPhoneType() {
-        var mobile = "";
-        var userAgent = navigator.userAgent.toLowerCase();
-        var keywords = ["android", "iphone", "ipod", "ipad", "windows phone", "mqqbrowser"];
-        if (userAgent.indexOf('windows nt') < 0 || (userAgent.indexOf('windows nt') >= 0 && userAgent.indexOf('compatible; msie 9.0;') >= 0)) {
-            if (userAgent.indexOf('windows nt') < 0 && userAgent.indexOf('mMacintosh') < 0) {
-                for (var i = 0; i < keywords.length; i++) {
-                    var v = keywords[i];
-                    if (userAgent.indexOf(v) >= 0) {
-                        mobile = v;
-                        break;
-                    }
-                }
-
-            }
-        }
-        return mobile;
-    }
-
-    function isIOS(){
-        var mobile = getPhoneType();
-        if(mobile == 'iphone' || mobile == 'ipod' || mobile == 'ipad'){
-
-            return true
-        }
-        return false
-    }
-
-    var handler = {
-        initBridge: function (callback) {
-            var self = this;
-            // 判断IPhone
-            if (isIOS()) {
-                setupWebViewJavascriptBridge(function(bridge) {
-                    bridge.registerHandler('testJSFunction', function(data, responseCallback) {
-                        alert('JS方法被调用:'+data);
-                        responseCallback('js执行过了');
-                    })
-                    self.bridge = bridge
-                })
-            } else {
-                try {
-                    // Android 对象赋值
-                    self.bridge = WebViewJavascriptBridge;
-                    callback();
-                } catch (e) {
-                    console.log('error', e);
-                }
-
-
-            }
-        }
-
-    };
-
-
-    var webViewCallBackMap = {} //参数调用字典
-
-    function Foo() {
-
-    }
-
-    function baseSend(params, callback) {
-        var tag = "Unique id:"+ new Date().getTime() // 通过 unique 进行回调
-
-        if(isIOS()){
-            if(callback){
-                webViewCallBackMap[tag] = callback
-                params["_tag"] = tag
-                handler.bridge.callHandler('sendEvent', JSON.stringify(params), 'mapWebViewCallBack')
-            }else{
-                handler.bridge.callHandler('sendEvent', JSON.stringify(params))
-            }
-
-
-        }else{
-           if(callback){
-                webViewCallBackMap[tag] = callback
-                params["_tag"] = tag
-                handler.bridge.sendEvent(JSON.stringify(params), "webViewCallBackMap")
-            }else{
-                handler.bridge.sendEvent(JSON.stringify(params))
-            }
-        }
-
-    }
-
-    function baseAddEventListener(params, callback) {
-        var tag = "Unique id:"+ new Date().getTime() // 通过 unique 进行回调
-        webViewCallBackMap[tag] = callback
-        params["_tag"] = tag
-
-        if(isIOS()){
-            handler.bridge.callHandler('addEventListener', JSON.stringify(params), 'mapWebViewCallBack')
-        }else{
-           handler.bridge.addEventListener(JSON.stringify(params), "webViewCallBackMap")
-        }
-    }
-
-    Foo.prototype.sendEvent = baseSend
-    Foo.prototype.addEventListener = baseAddEventListener
-
-    var FT_JS_Bridge = new Foo()
-
-    handler.initBridge(function () {
-
-        var obj = {}
-        obj["name"]= "ready"  //务必在这里调用，通知 Native 页面，如果需要 Native 页面加载完毕去触发一些事件需要用到这个回调
-        FT_JS_Bridge.sendEvent(obj);
-    });
-
     function testRumView() {
 
-        FT_JS_Bridge.sendEvent({})
 
-        FT_JS_Bridge.sendEvent({"name":"rum","data":{
+        FTWebViewJavascriptBridge.sendEvent(JSON.stringify({"name":"rum","data":{
             "measurement":"view",
             "tags":{"view_id":"497E6544-0AD3-4A73-90AA-CB56F2CE5261",
                 "view_name":"testJSBridge",
+                "app_id":"appid_testJSBridge",
+                "service":"browser",
+                "sdk_name":"df_web_rum_sdk",
+                "sdk_version":"3.0.19",
+                "userid":"1111111",
             },"fields":{
-                "loading_time":"2017636060",
-                "time_spent":"1110076",
-                "view_action_count":"0",
-                "view_error_count":"0",
-                "view_long_task_count":"0",
-                "view_resource_count":"0",
-            }}}, function (ret, err) {
+                "loading_time": 2017636060,
+                "time_spent":1110076,
+                "view_action_count":0,
+                "view_error_count":0,
+                "view_long_task_count":0,
+                "view_resource_count":0,
+                "session_id":"12345",
+                "is_active": true,
+            }}}), function (ret, err) {
            console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
         return "success"
@@ -153,35 +42,17 @@
     
     function testWrongRumData() {
 
-        FT_JS_Bridge.sendEvent("aaaaaaaaa", function (ret, err) {
+        FTWebViewJavascriptBridge.sendEvent("aaaaaaaaa", function (ret, err) {
            console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
         return "fail"
     }
     
     function test(){
-        FT_JS_Bridge.sendEvent({})
-        FT_JS_Bridge.addEventListener({}, function (ret, err) {
-           console.log("addEventListener call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
-        })
-    }
-    function testC(value) {
-
-        //返回值可以是很多类型。
-
-        //反馈字符串
-        return value + "value";
-
-        //返回对象,如果需要传递给oc的东西有很多,就可以构造一个这样的对象用来传输。
-        // var finalObj = {"name":"chaman","age":"18","sex":"male"};
-        // return finalObj;
+        FTWebViewJavascriptBridge.sendEvent({})
     }
 
-
-    //这是必须要写的，用来初始化一些设置
-    function setupWebViewJavascriptBridge(callback) {
-        return callback(FTWebViewJavascriptBridge);
-    }
+  
 
 
 

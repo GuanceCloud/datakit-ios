@@ -16,6 +16,7 @@
 - ``FTMobileSDK/FTExternalDataManager``
 - ``FTMobileSDK/FTTraceManager``
 - ``FTMobileSDK/FTURLSessionDelegate``
+- ``FTMobileSDK/FTLogger``
 
 ### Enumerations
 - ``FTMobileSDK/FTEnv``
@@ -33,4 +34,5 @@
 
 ### Protocol
 - ``FTMobileSDK/FTURLSessionDelegateProviding``
+- ``FTMobileSDK/FTLoggerProtocol``
 

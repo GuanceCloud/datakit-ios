@@ -31,6 +31,7 @@ Pod::Spec.new do |s|
 		e.dependency 'FTMobileSDK/FTSDKCore/FTRUM'
 		e.dependency 'FTMobileSDK/FTSDKCore/URLSessionAutoInstrumentation'
 		e.dependency 'FTMobileSDK/FTSDKCore/Exception'
+		e.dependency 'FTMobileSDK/FTSDKCore/Logger'
 	end
 
 
@@ -83,7 +84,7 @@ Pod::Spec.new do |s|
 		end
 
 		c.subspec 'Logger' do |l|
-			l.source_files = 'FTMobileSDK/FTSDKCore/Logger/*{.h,.m,.c}'
+			l.source_files = 'FTMobileSDK/FTSDKCore/Logger/*{.h,.m}'
 			l.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 		end
 

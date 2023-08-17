@@ -12,12 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 线程派发管理类
 @interface FTThreadDispatchManager : NSObject
-/// RUM 线程异步执行
-/// - Parameter block: 代码块
-+ (void)dispatchInRUMThread:(void (^_Nullable)(void))block;
-/// RUM 线程同步执行
-/// - Parameter block: 代码块
-+ (void)dispatchSyncInRUMThread:(void (^_Nullable)(void))block;
 /// 主线程同步执行
 /// - Parameter block: 代码块
 + (void)performBlockDispatchMainSyncSafe:(DISPATCH_NOESCAPE dispatch_block_t)block;

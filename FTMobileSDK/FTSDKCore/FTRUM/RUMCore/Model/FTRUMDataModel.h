@@ -77,7 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
 @property (nonatomic, weak) id<FTRUMDataWriteProtocol> writer;
+/// trace、logger 获取 rum 关联数据
 -(NSDictionary *)getGlobalSessionViewTags;
+/// rum 内部获取相关关联数据
 -(NSDictionary *)getGlobalSessionViewActionTags;
 @end
 NS_ASSUME_NONNULL_END

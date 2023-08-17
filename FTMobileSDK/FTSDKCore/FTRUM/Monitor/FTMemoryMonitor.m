@@ -8,7 +8,7 @@
 
 #import "FTMemoryMonitor.h"
 #import <mach/mach.h>
-#import "FTLog.h"
+#import "FTInternalLog.h"
 
 @implementation FTMemoryMonitor
 - (double)memoryUsage {
@@ -19,7 +19,7 @@
     if(kernelReturn == KERN_SUCCESS) {
         memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
     } else {
-        ZYLog(@"Error with task_info(): %s", mach_error_string(kernelReturn));
+        FTInnerLogError(@"Error with task_info(): %s", mach_error_string(kernelReturn));
     }
     return memoryUsageInByte;
 }

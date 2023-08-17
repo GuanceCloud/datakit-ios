@@ -7,10 +7,11 @@
 //
 
 #import "FTRequestBody.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
+#import "NSNumber+FTAdd.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeTag      = 1,
     FTParameterTypeField     = 2 ,
@@ -34,25 +35,25 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=NULL", [self replacingSpecialCharacters:self.field]];
+        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
         return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],@"NULL"];
+        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
     }else{
-        if([self.value isKindOfClass:NSString.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
-        }else if([self.value isKindOfClass:NSNumber.class]){
+        if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            if (strcmp([number objCType], @encode(float)) == 0||strcmp([number objCType], @encode(double)) == 0)
-            {
-                return  [NSString stringWithFormat:@"%@=%.1f", [self replacingSpecialCharacters:self.field], number.floatValue];
-            }
+            return  [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], number.ft_toFiledString];
+        }else if ([self.value isKindOfClass:NSArray.class]){
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonDataWithArray:self.value]]];
+        }else if ([self.value isKindOfClass:NSDictionary.class]){
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonData:self.value]]];
+
         }
-        return [NSString stringWithFormat:@"%@=%@i", [self replacingSpecialCharacters:self.field], self.value];
+        return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
     }
 }
 - (id)replacingSpecialCharacters:(id )str{
@@ -84,7 +85,7 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSString *key, id value,FTParameterT
         for (id nestedKey in dictionary.allKeys) {
             id nestedValue = dictionary[nestedKey];
             if (nestedValue) {
-                [mutableQueryStringComponents addObjectsFromArray:FTQueryStringPairsFromKeyAndValue( nestedKey, nestedValue,type)];
+                [mutableQueryStringComponents addObject:[[FTQueryStringPair alloc] initWithField:nestedKey value:nestedValue]];
             }
         }
     }else{
@@ -142,11 +143,11 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            ZYErrorLog(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];
-    ZYDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
+    FTInnerLogDebug(@"\nUpload Datas Type:%@\nLine RequestDatas:\n%@",model.op,requestDatas);
     return requestDatas;
 }
 @end

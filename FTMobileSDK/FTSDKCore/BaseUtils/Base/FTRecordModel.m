@@ -11,7 +11,7 @@
 #import "FTRecordModel.h"
 #import "FTDateUtil.h"
 #import "FTJSONUtil.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTConstants.h"
 @implementation FTRecordModel
 -(instancetype)init{
@@ -33,7 +33,7 @@
         NSDictionary *data =@{FT_OP:op,
                               FT_OPDATA:opdata,
         };
-        ZYDebug(@"write data = %@",data);
+        FTInnerLogDebug(@"write data = %@",data);
         _op = op;
         _data =[FTJSONUtil convertToJsonData:data];
         if (tm&&tm>0) {

@@ -33,9 +33,12 @@ NSString * const FT_MACOS_SDK_NAME = @"df_macos_rum_sdk";
 NSString * const FT_IS_WEBVIEW = @"is_web_view";
 NSString * const FT_NULL_VALUE  = @"N/A";
 NSString * const FT_TYPE = @"type";
+NSString * const FT_SDK_VERSION = @"sdk_version";
+NSString * const FT_SDK_NAME = @"sdk_name";
 
 #pragma mark ========== RUM ==========
 NSString * const FT_TERMINAL_APP = @"app";
+NSString * const FT_APP_ID = @"app_id";
 NSString * const FT_DURATION  = @"duration";
 //session tag
 NSString * const FT_RUM_KEY_SESSION_ID = @"session_id";

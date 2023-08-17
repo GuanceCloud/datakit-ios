@@ -7,7 +7,7 @@
 //
 
 #import "UIGestureRecognizer+FTAutoTrack.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTTrack.h"
 @implementation UIGestureRecognizer (FTAutoTrack)
@@ -34,7 +34,7 @@
         }
         
     }@catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
+        FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
 // 查找弹框手势选择所在的 view

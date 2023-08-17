@@ -14,10 +14,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FTRUMDataWriteProtocol.h"
-
+#import "FTLoggerDataWriteProtocol.h"
 @class FTPresetProperty,FTTracer;
 
-@interface FTMobileAgent (Private)<FTRUMDataWriteProtocol>
+@interface FTMobileAgent (Private)<FTRUMDataWriteProtocol,FTLoggerDataWriteProtocol>
 /// 管理预设属性的实例
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 

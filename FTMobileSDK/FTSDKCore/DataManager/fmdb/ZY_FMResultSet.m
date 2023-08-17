@@ -1,7 +1,7 @@
 #import "ZY_FMResultSet.h"
 #import "ZY_FMDatabase.h"
 #import <unistd.h>
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
@@ -119,7 +119,7 @@
         return ZY_FMDBReturnAutoreleased([dict copy]);
     }
     else {
-        ZYDebug(@"Warning: There seem to be no columns in this set.");
+        FTInnerLogWarning(@"Warning: There seem to be no columns in this set.");
     }
     
     return nil;
@@ -147,7 +147,7 @@
         return dict;
     }
     else {
-        ZYDebug(@"Warning: There seem to be no columns in this set.");
+        FTInnerLogWarning(@"Warning: There seem to be no columns in this set.");
     }
     
     return nil;
@@ -165,8 +165,8 @@
     int rc = sqlite3_step([_statement statement]);
     
     if (SQLITE_BUSY == rc || SQLITE_LOCKED == rc) {
-        ZYDebug(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [_parentDB databasePath]);
-        ZYDebug(@"Database busy");
+        FTInnerLogDebug(@"%s:%d Database busy (%@)", __FUNCTION__, __LINE__, [_parentDB databasePath]);
+        FTInnerLogDebug(@"Database busy");
         if (outErr) {
             *outErr = [_parentDB lastError];
         }
@@ -175,14 +175,14 @@
         // all is well, let's return.
     }
     else if (SQLITE_ERROR == rc) {
-        ZYDebug(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
+        FTInnerLogError(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {
             *outErr = [_parentDB lastError];
         }
     }
     else if (SQLITE_MISUSE == rc) {
         // uh oh.
-        ZYDebug(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
+        FTInnerLogError(@"Error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {
             if (_parentDB) {
                 *outErr = [_parentDB lastError];
@@ -198,7 +198,7 @@
     }
     else {
         // wtf?
-        ZYDebug(@"Unknown error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
+        FTInnerLogError(@"Unknown error calling sqlite3_step (%d: %s) rs", rc, sqlite3_errmsg([_parentDB sqliteHandle]));
         if (outErr) {
             *outErr = [_parentDB lastError];
         }
@@ -225,7 +225,7 @@
         return [n intValue];
     }
     
-    ZYDebug(@"Warning: I could not find the column named '%@'.", columnName);
+    FTInnerLogWarning(@"Warning: I could not find the column named '%@'.", columnName);
     
     return -1;
 }

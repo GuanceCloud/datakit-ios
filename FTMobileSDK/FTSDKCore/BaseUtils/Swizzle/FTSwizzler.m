@@ -8,7 +8,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import "FTSwizzler.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #define DATAFLUX_MIN_ARGS 2
 #define DATAFLUX_MAX_ARGS 5
 #define FT_FIND_SWIZZLE \
@@ -169,7 +169,7 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     NSEnumerator *en = [datafluxSwizzles objectEnumerator];
     FTSwizzler *swizzle;
     while ((swizzle = (FTSwizzler *)[en nextObject])) {
-        ZYErrorLog(@"%@", swizzle);
+        FTInnerLogDebug(@"%@", swizzle);
     }
 }
 

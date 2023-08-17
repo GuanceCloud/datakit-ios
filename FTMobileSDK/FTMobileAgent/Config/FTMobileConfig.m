@@ -11,6 +11,7 @@
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTEnumConstant.h"
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -90,25 +91,17 @@
     if (self) {
         _discardType = FTDiscard;
         _samplerate = 100;
-        _enableConsoleLog = NO;
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
-        _prefix = @"";
         _logLevelFilter = @[@0,@1,@2,@3,@4];
     }
     return self;
 }
-- (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix{
-    _enableConsoleLog = enable;
-    _prefix = prefix;
-}
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTLoggerConfig *options = [[[self class] allocWithZone:zone] init];
     options.samplerate = self.samplerate;
-    options.enableConsoleLog = self.enableConsoleLog;
     options.enableLinkRumData = self.enableLinkRumData;
     options.enableCustomLog = self.enableCustomLog;
-    options.prefix = self.prefix;
     options.logLevelFilter = self.logLevelFilter;
     options.discardType = self.discardType;
     options.globalContext = self.globalContext;
@@ -117,10 +110,8 @@
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
     if (self = [super init]) {
         _samplerate = [dict[@"samplerate"] intValue];
-        _enableConsoleLog = [dict[@"enableConsoleLog"] boolValue];
         _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
         _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
-        _prefix = dict[@"prefix"];
         _logLevelFilter = dict[@"logLevelFilter"];
         _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
         _globalContext = dict[@"globalContext"];
@@ -130,10 +121,8 @@
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:@(self.samplerate) forKey:@"samplerate"];
-    [dict setValue:@(self.enableConsoleLog) forKey:@"enableConsoleLog"];
     [dict setValue:@(self.enableLinkRumData) forKey:@"enableLinkRumData"];
     [dict setValue:@(self.enableCustomLog) forKey:@"enableCustomLog"];
-    [dict setValue:self.prefix forKey:@"prefix"];
     [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
     [dict setValue:@(self.discardType) forKey:@"discardType"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
@@ -181,9 +170,20 @@
         _enableSDKDebugLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
-        _env = FTEnvProd;
+        _env = FTEnvStringMap[FTEnvProd];
     }
     return self;
+}
+-(instancetype)init{
+    return [self initWithMetricsUrl:@""];
+}
+- (void)setEnvWithType:(FTEnv)envType{
+    _env = FTEnvStringMap[envType];
+}
+-(void)setEnv:(NSString *)env{
+    if(env!=nil && env.length>0){
+        _env = env;
+    }
 }
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {

@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString *)ft_base64Decode;
 /// utf8 编码模式下 字符串长度. 英文8位（一个字节)、中文24位(三个字节)
 -(NSUInteger)ft_characterNumber;
+/// 按字节数截取字符串
+/// - Parameter length: 字节数
+-(NSString *)ft_subStringWithCharacterLength:(NSUInteger)length;
 /// 清除字符串前后的空格
 -(NSString *)ft_removeFrontBackBlank;
 @end

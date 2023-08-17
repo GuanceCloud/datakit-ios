@@ -10,7 +10,7 @@
 #endif
 #import "FTGlobalRumManager.h"
 #import "FTURLProtocol.h"
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
 #import "FTANRDetector.h"
@@ -31,6 +31,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
+#import "FTThreadDispatchManager.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -68,19 +69,15 @@ static dispatch_once_t onceToken;
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (rumConfig.enableTrackAppFreeze) {
-            [self startPingThread];
-        }else{
-            [self stopPingThread];
-        }
-        if (rumConfig.enableTrackAppANR) {
+    if (rumConfig.enableTrackAppANR) {
+        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
             [FTANRDetector sharedInstance].delegate = self;
             [[FTANRDetector sharedInstance] startDetecting];
-        }else{
-            [[FTANRDetector sharedInstance] stopDetecting];
-        }
-    });
+        }];
+    }
+    if (rumConfig.enableTrackAppFreeze) {
+        [self startPingThread];
+    }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
 }
@@ -122,9 +119,10 @@ static dispatch_once_t onceToken;
 }
 - (void)dealReceiveScriptMessage:(id )message callBack:(WVJBResponseCallback)callBack{
     @try {
-        NSDictionary *messageDic = [FTJSONUtil dictionaryWithJsonString:message];
+        NSDictionary *messageDic = [message isKindOfClass:NSDictionary.class]?message:[FTJSONUtil dictionaryWithJsonString:message];
+        
         if (![messageDic isKindOfClass:[NSDictionary class]]) {
-            ZYErrorLog(@"Message body is formatted failure from JS SDK");
+            FTInnerLogError(@"Message body is formatted failure from JS SDK");
             return;
         }
         NSString *name = messageDic[@"name"];
@@ -134,7 +132,7 @@ static dispatch_once_t onceToken;
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
             long long time = [data[@"time"] longLongValue];
-            time = time>0?:[FTDateUtil currentTimeNanosecond];
+            time = time>0?time:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebviewData:measurement tags:tags fields:fields tm:time];
@@ -142,7 +140,7 @@ static dispatch_once_t onceToken;
             }
         }
     } @catch (NSException *exception) {
-        ZYErrorLog(@"%@ error: %@", self, exception);
+        FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
@@ -172,16 +170,19 @@ static dispatch_once_t onceToken;
         [self.rumManager stopViewWithProperty:nil];
         [self.rumManager applicationWillTerminate];
     }@catch (NSException *exception) {
-        ZYErrorLog(@"applicationWillResignActive exception %@",exception);
+        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========
 - (void)resetInstance{
+    [self.rumManager syncProcess];
     onceToken = 0;
     sharedInstance =nil;
+    [self stopPingThread];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [[FTANRDetector sharedInstance] stopDetecting];
     [self stopMonitor];
+    FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

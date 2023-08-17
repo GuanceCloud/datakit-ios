@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import "FTLog.h"
+#import "FTInternalLog.h"
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
 #include <sys/sysctl.h>
@@ -52,9 +52,6 @@ static NSString * const FT_APPLICATION_UUID = @"application_uuid";
 
 static NSString * const FT_ENV = @"env";
 static NSString * const FT_VERSION = @"version";
-static NSString * const FT_SDK_VERSION = @"sdk_version";
-static NSString * const FT_APP_ID = @"app_id";
-static NSString * const FT_SDK_NAME = @"sdk_name";
 
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
@@ -102,11 +99,11 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
 @property (nonatomic, copy) NSString *service;
 @end
 @implementation FTPresetProperty
-- (instancetype)initWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
     self = [super init];
     if (self){
         _version = version;
-        _env = FTEnvStringMap[env];
+        _env = env;
         _service = service;
         _mobileDevice = [[MobileDevice alloc]init];
         _context = [globalContext copy];
@@ -148,19 +145,14 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
-- (void)resetWithVersion:(NSString *)version env:(Env)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
     self.version = version;
-    self.env = FTEnvStringMap[env];
+    self.env = env;
     self.service = service;
     self.context = [globalContext copy];
 }
-- (NSDictionary *)rumProperty{
+- (NSMutableDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict addEntriesFromDictionary:self.context];
-    [dict addEntriesFromDictionary:self.rumContext];
-    if (self.userHelper.currentValue.extra) {
-        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
-    }
     // rum common property tags
     dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
     dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
@@ -169,21 +161,30 @@ static NSString * const FT_SDK_NAME = @"sdk_name";
     dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
     dict[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
-    dict[FT_SDK_VERSION] = self.sdkVersion;
     dict[FT_KEY_SERVICE] = self.service;
+    dict[FT_SDK_VERSION] = self.sdkVersion;
 #if FT_MAC
     dict[FT_SDK_NAME] = FT_MACOS_SDK_NAME;
 #else
     dict[FT_SDK_NAME] = FT_IOS_SDK_NAME;
 #endif
+    [dict setValue:self.env forKey:FT_ENV];
+    [dict setValue:self.version forKey:FT_VERSION];
+    [dict setValue:self.appid forKey:FT_APP_ID];
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;
     dict[FT_USER_EMAIL] = self.userHelper.currentValue.email;
-    [dict setValue:self.env forKey:FT_ENV];
-    [dict setValue:self.version forKey:FT_VERSION];
-    [dict setValue:self.appid forKey:FT_APP_ID];
     [dict setValue:[self isSigninStr] forKey:FT_IS_SIGNIN];
+    if (self.userHelper.currentValue.extra) {
+        [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
+    }
+    return dict;
+}
+- (NSDictionary *)rumDynamicProperty{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict addEntriesFromDictionary:self.context];
+    [dict addEntriesFromDictionary:self.rumContext];
     return dict;
 }
 - (NSString *)isSigninStr{

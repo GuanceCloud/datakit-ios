@@ -287,7 +287,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
        
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] performSelector:@selector(privateUpload) onThread:[FTTrackDataManager sharedInstance].ftThread withObject:nil waitUntilDone:NO];
+    [[FTTrackDataManager sharedInstance] performSelector:@selector(privateUpload)];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);

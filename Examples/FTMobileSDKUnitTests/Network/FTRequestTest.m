@@ -108,6 +108,6 @@
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
     NSString * str  =[[NSString alloc] initWithData:mRequest.HTTPBody encoding:NSUTF8StringEncoding];
    
-    XCTAssertTrue([str containsString:@"null_value=NULL"]);
+    XCTAssertTrue([str containsString:@"null_value=N/A"]);
 }
 @end

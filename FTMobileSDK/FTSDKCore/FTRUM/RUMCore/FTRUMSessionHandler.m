@@ -11,6 +11,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDateUtil.h"
 #import "FTConstants.h"
+#import "FTInternalLog.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
 static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @interface FTRUMSessionHandler()<FTRUMSessionProtocol>
@@ -48,6 +49,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return NO;
     }
     if (!self.sampling) {
+        FTInnerLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
         return YES;
     }
     _lastInteractionTime = [NSDate date];
@@ -125,8 +127,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
     [tags setValue:[FTBaseInfoHandler boolStr:YES] forKey:FT_IS_WEBVIEW];
-    [data.fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
-    [self.context.writer rumWrite:data.measurement tags:tags fields:data.fields tm:data.tm];
+    NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
+    [fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
+    [self.context.writer rumWrite:data.measurement tags:tags fields:fields tm:data.tm];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

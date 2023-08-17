@@ -3,10 +3,10 @@
 use_frameworks!
 example_project_path = 'Examples/Examples'
 workspace 'FTMobileSDK.xcworkspace'
+project example_project_path
 
 target 'App' do
   # Comment the next line if you don't want to use dynamic frameworks
-  project example_project_path
   # Pods for SampleApp
 
 end

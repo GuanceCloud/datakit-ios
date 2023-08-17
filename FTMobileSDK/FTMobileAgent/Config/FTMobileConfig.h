@@ -66,7 +66,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
     /// jaeger
     FTNetworkTraceTypeJaeger,
 };
-/// 环境字段。属性值：prod/gray/pre/common/local。
+/// 环境。属性值：prod/gray/pre/common/local。
 typedef NS_ENUM(NSInteger, FTEnv) {
     /// 线上环境
     FTEnvProd         = 0,
@@ -97,14 +97,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) FTLogCacheDiscard  discardType;
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
 @property (nonatomic, assign) int samplerate;
-/// 是否需要采集控制台日志 默认为 NO
-@property (nonatomic, assign) BOOL enableConsoleLog;
-/// 采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
-@property (nonatomic, copy) NSString *prefix;
 /// 是否将 logger 数据与 rum 关联
 @property (nonatomic, assign) BOOL enableLinkRumData;
 /// 是否上传自定义 log
 @property (nonatomic, assign) BOOL enableCustomLog;
+/// 是否将自定义日志在控制台打印
+@property (nonatomic, assign) BOOL printCustomLogToConsole; 
 /// 采集自定义日志的状态数组，默认为全采集
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
@@ -113,11 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// logger 全局 tag
 @property (nonatomic, strong) NSDictionary<NSString*,NSString*> *globalContext;
 
-/// 设置控制台日志采集条件
-/// - Parameters:
-///   - enable: 是否上传自定义 log
-///   - prefix: 采集控制台日志过滤字符串 包含该字符串控制台日志会被采集 默认为全采集
-- (void)enableConsoleLog:(BOOL)enable prefix:(NSString *)prefix;
 @end
 
 
@@ -190,8 +183,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
 @property (nonatomic, copy) NSString *metricsUrl;
-/// 环境字段。
-@property (nonatomic, assign) FTEnv env;
+/// 设置自定义环境字段。
+@property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
 /// 应用版本号。
@@ -205,6 +198,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 需要采集的 Extensions 对应的 AppGroups Identifier 数组
 @property (nonatomic, strong) NSArray *groupIdentifiers;
+
+/// 根据提供的 FTEnv 类型设置 env
+/// - Parameter envType: 环境
+- (void)setEnvWithType:(FTEnv)envType;
 @end
 
 NS_ASSUME_NONNULL_END

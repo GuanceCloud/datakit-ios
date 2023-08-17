@@ -32,9 +32,14 @@ extern NSString * const FT_RUM_SOURCE_ERROR;
 extern NSString * const FT_RUM_SOURCE_ACTION ;
 extern NSString * const FT_RUM_SOURCE_LONG_TASK;
 extern NSString * const FT_RUM_SOURCE_VIEW;
+extern NSString * const FT_SDK_VERSION;
+extern NSString * const FT_SDK_NAME;
+
 #pragma mark ========== rum ==========
 extern NSString * const FT_DURATION;
 extern NSString * const FT_TERMINAL_APP;
+extern NSString * const FT_APP_ID;
+
 #pragma mark ---------- session ----------
 // rum global tag
 extern NSString * const FT_RUM_KEY_SESSION_ID;
