@@ -37,7 +37,6 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
     [[FTMobileAgent sharedInstance] shutDown];
 
 }
@@ -145,7 +144,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
         XCTAssertNil(error);
     }];
     [NSThread sleepForTimeInterval:0.5];
-    [[FTGlobalRumManager sharedInstance].rumManager applicationWillTerminate];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
