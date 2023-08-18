@@ -152,9 +152,6 @@
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)applicationWillTerminate{
-
-}
 
 #pragma mark - Resource -
 -(void)startResourceWithKey:(NSString *)key{
