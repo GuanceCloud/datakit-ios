@@ -10,8 +10,7 @@
 #import <FTConstants.h>
 #import <FTDateUtil.h>
 #import <FTEnumConstant.h>
-#import <FTMobileConfig.h>
-#import "FTExternalDataManager.h"
+#import "FTMobileSDK.h"
 #import "FTJSONUtil.h"
 @implementation FTModelHelper
 + (FTRecordModel *)createLogModel{

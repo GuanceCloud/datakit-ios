@@ -422,6 +422,21 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
+- (void)testAddErrorSituation{
+    [self setRumConfig];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"test" situation:AppStateUnknown message:@"message" stack:@"stack" property:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasErrorData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([tags[FT_KEY_ERROR_SITUATION] isEqualToString:@"unknown"]);
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
 - (void)testActionWorngFormat{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -503,7 +518,7 @@
     rumConfig.samplerate = 0;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -547,7 +562,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
     [self addErrorData:nil];
@@ -578,7 +593,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
     [self addErrorData:nil];
@@ -603,7 +618,7 @@
     rumConfig.globalContext = @{FT_RUM_KEY_SESSION_ID:@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     [FTModelHelper startView];
@@ -893,7 +908,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
 }

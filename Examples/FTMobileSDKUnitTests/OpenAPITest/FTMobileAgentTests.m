@@ -50,14 +50,14 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 #pragma mark ========== 用户数据绑定 ==========
 ///
 - (void)testAdaptOldUserSet{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[NSUserDefaults standardUserDefaults] setValue:@"old_user" forKey:@"ft_userid"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -137,7 +137,7 @@
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *userid = dict[FT_USER_ID];
     NSString *userName = dict[FT_USER_NAME];

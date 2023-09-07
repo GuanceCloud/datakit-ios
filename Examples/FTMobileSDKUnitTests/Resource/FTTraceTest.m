@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent.h"
+#import "FTMobileSDK.h"
 #import "FTMobileAgent+Private.h"
 #import "FTGlobalRumManager.h"
 #import "FTConstants.h"
