@@ -14,6 +14,11 @@
 #import "FTResourceMetricsModel.h"
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
+NSString * const AppStateStringMap[] = {
+    [AppStateUnknown] = @"unknown",
+    [AppStateStartUp] = @"startup",
+    [AppStateRun] = @"run",
+};
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
@@ -289,15 +294,18 @@
 
 #pragma mark - error 、 long_task -
 - (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type message:message stack:stack property:nil fatal:YES];
+    [self addErrorWithType:type situation:self.appState message:message stack:stack property:nil fatal:YES];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type message:message stack:stack property:nil fatal:NO];
+    [self addErrorWithType:type situation:self.appState message:message stack:stack property:nil fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type message:message stack:stack property:property fatal:NO];
+    [self addErrorWithType:type situation:self.appState message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
+- (void)addErrorWithType:(nonnull NSString *)type situation:(AppState)situation message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
+    [self addErrorWithType:type situation:situation message:message stack:stack property:property fatal:NO];
+}
+- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
@@ -311,7 +319,7 @@
         NSDictionary *tags = @{
             FT_KEY_ERROR_TYPE:type,
             FT_KEY_ERROR_SOURCE:FT_LOGGER,
-            FT_KEY_ERROR_SITUATION:AppStateStringMap[self.appState]
+            FT_KEY_ERROR_SITUATION:AppStateStringMap[situation]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];

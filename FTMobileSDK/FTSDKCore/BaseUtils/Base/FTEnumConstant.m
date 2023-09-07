@@ -7,11 +7,6 @@
 //
 
 #import "FTEnumConstant.h"
-NSString * const AppStateStringMap[] = {
-    [AppStateUnknown] = @"unknown",
-    [AppStateStartUp] = @"startup",
-    [AppStateRun] = @"run",
-};
 NSString * const FTStatusStringMap[] = {
     [StatusInfo] = @"info",
     [StatusWarning] = @"warning",

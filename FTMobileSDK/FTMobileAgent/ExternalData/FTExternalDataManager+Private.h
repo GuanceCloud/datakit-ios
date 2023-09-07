@@ -21,7 +21,6 @@
 #import "FTExternalDataManager.h"
 #import "FTRumDatasProtocol.h"
 #import "FTExternalResourceProtocol.h"
-#import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTExternalDataManager (Private)<FTRumDatasProtocol,FTExternalResourceProtocol>
