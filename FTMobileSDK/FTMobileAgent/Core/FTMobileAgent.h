@@ -14,6 +14,7 @@
 #import "FTURLSessionDelegate.h"
 #import "FTTraceManager.h"
 #import "FTLogger.h"
+#import "FTRumDatasProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
 /// FTMobileSDK
@@ -89,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName userEmail:(nullable NSString *)userEmail extra:(nullable NSDictionary *)extra;
 
 /// 注销当前用户
-- (void)logout;
+- (void)unbindUser;
 
 /// Track App Extension groupIdentifier 中缓存的数据
 /// - Parameters:
@@ -100,6 +101,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 关闭 SDK 内正在运行对象
 - (void)shutDown;
+#pragma mark ========== DEPRECATED ==========
+/// 注销当前用户
+- (void)logout DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -unbindUser 替换");
 @end
 
 NS_ASSUME_NONNULL_END

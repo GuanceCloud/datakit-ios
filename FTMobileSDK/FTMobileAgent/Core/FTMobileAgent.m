@@ -160,6 +160,9 @@ static dispatch_once_t onceToken;
 }
 //用户注销
 - (void)logout{
+    [self unbindUser];
+}
+- (void)unbindUser{
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value clearUser];
     }];
