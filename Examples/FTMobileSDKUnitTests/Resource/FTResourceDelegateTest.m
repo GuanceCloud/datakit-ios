@@ -54,7 +54,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
 }
@@ -72,7 +72,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     [FTModelHelper startView];
 }

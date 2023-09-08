@@ -8,7 +8,7 @@
 
 #import "ManualRumAndTraceDataAdd.h"
 #import "TableViewCellItem.h"
-#import <FTMobileSDK/FTMobileSDK.h>
+#import <FTMobileSDK/FTMobileAgent.h>
 
 @interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
@@ -50,8 +50,7 @@
         [[FTExternalDataManager sharedManager]  addClickActionWithName:@"UITableViewCell click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:AppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
-        
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:FTAppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
         [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"long task" duration:@1000000000];

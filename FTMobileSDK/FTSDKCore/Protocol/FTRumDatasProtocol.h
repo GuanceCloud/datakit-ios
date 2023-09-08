@@ -9,10 +9,10 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
-typedef NS_ENUM(NSUInteger, AppState) {
-    AppStateUnknown,
-    AppStateStartUp,
-    AppStateRun,
+typedef NS_ENUM(NSUInteger, FTAppState) {
+    FTAppStateUnknown,
+    FTAppStateStartUp,
+    FTAppStateRun,
 };
 /// rum 数据协议
 @protocol FTRumDatasProtocol <NSObject>
@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, AppState) {
 ///   - message: 错误信息
 ///   - stack: 堆栈信息
 ///   - property: 事件自定义属性(可选)
-- (void)addErrorWithType:(NSString *)type state:(AppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
 /// 添加 卡顿 事件
 ///

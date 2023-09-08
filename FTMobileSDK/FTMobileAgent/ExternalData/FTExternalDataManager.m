@@ -78,7 +78,7 @@
         [self.delegate addErrorWithType:type message:message stack:stack property:property];
     }
 }
-- (void)addErrorWithType:(nonnull NSString *)type state:(AppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
+- (void)addErrorWithType:(nonnull NSString *)type state:(FTAppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
     if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:state: message:stack:property:)]){
         [self.delegate addErrorWithType:type state:state message:message stack:stack property:property];
     }

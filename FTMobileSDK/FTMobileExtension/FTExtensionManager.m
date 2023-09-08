@@ -76,7 +76,7 @@ static FTExtensionManager *sharedInstance = nil;
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [[FTURLSessionAutoInstrumentation sharedInstance] setRUMEnableTraceUserResource:rumConfigOptions.enableTraceUserResource];
     self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil wirter:self];
-    self.rumManager.appState = AppStateUnknown;
+    self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;

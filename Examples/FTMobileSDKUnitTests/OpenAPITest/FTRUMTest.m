@@ -424,7 +424,7 @@
 }
 - (void)testAddErrorSituation{
     [self setRumConfig];
-    [[FTExternalDataManager sharedManager] addErrorWithType:@"test" state:AppStateUnknown message:@"message" stack:@"stack" property:nil];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"test" state:FTAppStateUnknown message:@"message" stack:@"stack" property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasErrorData = NO;

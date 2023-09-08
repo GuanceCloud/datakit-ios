@@ -172,7 +172,7 @@ static dispatch_once_t onceToken;
 }
 -(void)applicationWillResignActive{
     @try {
-        self.rumManager.appState = AppStateStartUp;
+        self.rumManager.appState = FTAppStateStartUp;
         [self.rumManager stopViewWithProperty:nil];
     }@catch (NSException *exception) {
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);

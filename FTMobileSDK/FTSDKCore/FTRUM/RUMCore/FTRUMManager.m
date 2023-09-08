@@ -15,9 +15,9 @@
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
 NSString * const AppStateStringMap[] = {
-    [AppStateUnknown] = @"unknown",
-    [AppStateStartUp] = @"startup",
-    [AppStateRun] = @"run",
+    [FTAppStateUnknown] = @"unknown",
+    [FTAppStateStartUp] = @"startup",
+    [FTAppStateRun] = @"run",
 };
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
@@ -35,7 +35,7 @@ NSString * const AppStateStringMap[] = {
     if (self) {
         _sampleRate = sampleRate;
         _errorMonitorType = errorMonitorType;
-        _appState = AppStateStartUp;
+        _appState = FTAppStateStartUp;
         _preViewDuration = [NSMutableDictionary new];
         _monitor = monitor;
         _writer = writer;
@@ -128,7 +128,7 @@ NSString * const AppStateStringMap[] = {
     }
 }
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
-    self.appState = AppStateRun;
+    self.appState = FTAppStateRun;
     @try {
         dispatch_async(self.rumQueue, ^{
             NSString *actionName;
@@ -302,10 +302,10 @@ NSString * const AppStateStringMap[] = {
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
     [self addErrorWithType:type state:self.appState message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(nonnull NSString *)type state:(AppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
+- (void)addErrorWithType:(nonnull NSString *)type state:(FTAppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
     [self addErrorWithType:type state:state message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(NSString *)type state:(AppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }

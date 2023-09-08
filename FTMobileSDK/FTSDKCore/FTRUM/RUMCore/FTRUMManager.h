@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
     FTLaunchWarm
 };
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol>
-@property (nonatomic, assign) AppState appState;
+@property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
