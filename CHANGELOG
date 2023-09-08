@@ -1,3 +1,6 @@
+1.4.6-alpha.6
+1.枚举命名修改
+---
 1.4.6-alpha.5
 1.RUM AddError 方法添加 state 参数
 2.注销用户方法 -unbindUser 替换 -logout
