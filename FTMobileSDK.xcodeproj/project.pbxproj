@@ -13,7 +13,7 @@
 		174D91AB2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
 		174D91AC2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; };
 		174D91AD2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17563F9A2AA9F1B90077C067 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 17563F992AA9F1B80077C067 /* FTMobileSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17563F9C2AAAC4D00077C067 /* FTMobileSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 17563F9B2AAAC4D00077C067 /* FTMobileSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1759510C2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */; };
 		1759510D2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */; };
 		1759510E2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */ = {isa = PBXBuildFile; fileRef = 1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */; };
@@ -449,7 +449,7 @@
 		174D91A22A2083C300D85AAA /* FTLogger+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLogger+Private.h"; sourceTree = "<group>"; };
 		174D91AA2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLoggerDataWriteProtocol.h; sourceTree = "<group>"; };
 		17510EC829C9C24500C8F1E4 /* FTSDKCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FTSDKCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		17563F992AA9F1B80077C067 /* FTMobileSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMobileSDK.h; sourceTree = "<group>"; };
+		17563F9B2AAAC4D00077C067 /* FTMobileSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTMobileSDK.h; path = FTMobileSDK/FTMobileSDK.h; sourceTree = "<group>"; };
 		1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSNumber+FTAdd.h"; sourceTree = "<group>"; };
 		1759510B2A6FE4DE006FAB9D /* NSNumber+FTAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+FTAdd.m"; sourceTree = "<group>"; };
 		1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
@@ -715,7 +715,6 @@
 		17678E1A29D28BD200C1DA98 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				17563F992AA9F1B80077C067 /* FTMobileSDK.h */,
 				17678E1B29D28BD200C1DA98 /* FTMobileAgent.h */,
 				17678E2129D28BD200C1DA98 /* FTMobileAgent.m */,
 				17678E1C29D28BD200C1DA98 /* FTGlobalRumManager.h */,
@@ -767,6 +766,7 @@
 		1777C3E42A36ED2800C0AA45 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				17563F9B2AAAC4D00077C067 /* FTMobileSDK.h */,
 				1777C3E02A36EAD000C0AA45 /* Package.swift */,
 				1777C3DE2A36EAB600C0AA45 /* README.md */,
 				1777C3DC2A36EAAE00C0AA45 /* LICENSE */,
@@ -1270,6 +1270,7 @@
 				17E4CC1E29CD42E4005C2D99 /* FTRumResourceProtocol.h in Headers */,
 				1763BD9429DFF04F009EE026 /* FTRequest.h in Headers */,
 				17AB76DB29D432DE008FBBF5 /* FTMonitorUtils.h in Headers */,
+				17563F9C2AAAC4D00077C067 /* FTMobileSDK.h in Headers */,
 				1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */,
 				175C7D0D29E9434B00A7F271 /* FTResourceMetricsModel.h in Headers */,
 				17E4CBE629CD42E4005C2D99 /* FTURLProtocol.h in Headers */,
@@ -1282,7 +1283,6 @@
 				17E4CBDF29CD42E4005C2D99 /* NSURLSession+FTSwizzler.h in Headers */,
 				17E4CC2229CD42E4005C2D99 /* FTErrorDataProtocol.h in Headers */,
 				17AB76E729D432DE008FBBF5 /* FTRUMSessionHandler.h in Headers */,
-				17563F9A2AA9F1B90077C067 /* FTMobileSDK.h in Headers */,
 				17E4CC3829CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h in Headers */,
 				175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */,
 				17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */,
