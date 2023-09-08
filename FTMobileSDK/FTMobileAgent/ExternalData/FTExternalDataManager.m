@@ -78,9 +78,9 @@
         [self.delegate addErrorWithType:type message:message stack:stack property:property];
     }
 }
-- (void)addErrorWithType:(nonnull NSString *)type situation:(AppState)situation message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:situation: message:stack:property:)]){
-        [self.delegate addErrorWithType:type situation:situation message:message stack:stack property:property];
+- (void)addErrorWithType:(nonnull NSString *)type state:(AppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:state: message:stack:property:)]){
+        [self.delegate addErrorWithType:type state:state message:message stack:stack property:property];
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{

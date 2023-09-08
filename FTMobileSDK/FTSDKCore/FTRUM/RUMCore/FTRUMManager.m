@@ -294,18 +294,18 @@ NSString * const AppStateStringMap[] = {
 
 #pragma mark - error 、 long_task -
 - (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type situation:self.appState message:message stack:stack property:nil fatal:YES];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil fatal:YES];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type situation:self.appState message:message stack:stack property:nil fatal:NO];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type situation:self.appState message:message stack:stack property:property fatal:NO];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(nonnull NSString *)type situation:(AppState)situation message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type situation:situation message:message stack:stack property:property fatal:NO];
+- (void)addErrorWithType:(nonnull NSString *)type state:(AppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
+    [self addErrorWithType:type state:state message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(NSString *)type situation:(AppState)situation message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
+- (void)addErrorWithType:(NSString *)type state:(AppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
@@ -319,7 +319,7 @@ NSString * const AppStateStringMap[] = {
         NSDictionary *tags = @{
             FT_KEY_ERROR_TYPE:type,
             FT_KEY_ERROR_SOURCE:FT_LOGGER,
-            FT_KEY_ERROR_SITUATION:AppStateStringMap[situation]
+            FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];

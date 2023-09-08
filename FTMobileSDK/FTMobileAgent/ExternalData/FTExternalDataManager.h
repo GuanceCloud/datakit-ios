@@ -87,11 +87,11 @@ typedef enum AppState:NSUInteger AppState;
 /// 添加 Error 事件
 /// - Parameters:
 ///   - type: error 类型
-///   - situation: 程序运行状态
+///   - state: 程序运行状态
 ///   - message: 错误信息
 ///   - stack: 堆栈信息
 ///   - property: 事件自定义属性(可选)
-- (void)addErrorWithType:(NSString *)type situation:(AppState)situation  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+- (void)addErrorWithType:(NSString *)type state:(AppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
 /// 添加 卡顿 事件
 ///
