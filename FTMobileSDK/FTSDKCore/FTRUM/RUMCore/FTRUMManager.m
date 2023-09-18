@@ -14,6 +14,11 @@
 #import "FTResourceMetricsModel.h"
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
+NSString * const AppStateStringMap[] = {
+    [FTAppStateUnknown] = @"unknown",
+    [FTAppStateStartUp] = @"startup",
+    [FTAppStateRun] = @"run",
+};
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
@@ -30,7 +35,7 @@
     if (self) {
         _sampleRate = sampleRate;
         _errorMonitorType = errorMonitorType;
-        _appState = AppStateStartUp;
+        _appState = FTAppStateStartUp;
         _preViewDuration = [NSMutableDictionary new];
         _monitor = monitor;
         _writer = writer;
@@ -123,7 +128,7 @@
     }
 }
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
-    self.appState = AppStateRun;
+    self.appState = FTAppStateRun;
     @try {
         dispatch_async(self.rumQueue, ^{
             NSString *actionName;
@@ -151,9 +156,6 @@
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
-}
-- (void)applicationWillTerminate{
-
 }
 
 #pragma mark - Resource -
@@ -292,15 +294,18 @@
 
 #pragma mark - error 、 long_task -
 - (void)internalErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type message:message stack:stack property:nil fatal:YES];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil fatal:YES];
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
-    [self addErrorWithType:type message:message stack:stack property:nil fatal:NO];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:nil fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property{
-    [self addErrorWithType:type message:message stack:stack property:property fatal:NO];
+    [self addErrorWithType:type state:self.appState message:message stack:stack property:property fatal:NO];
 }
-- (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
+- (void)addErrorWithType:(nonnull NSString *)type state:(FTAppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property{
+    [self addErrorWithType:type state:state message:message stack:stack property:property fatal:NO];
+}
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
@@ -314,7 +319,7 @@
         NSDictionary *tags = @{
             FT_KEY_ERROR_TYPE:type,
             FT_KEY_ERROR_SOURCE:FT_LOGGER,
-            FT_KEY_ERROR_SITUATION:AppStateStringMap[self.appState]
+            FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
         };
         NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
         [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];

@@ -1,5 +1,5 @@
 //
-//  FTAddRumDatasProtocol.h
+//  FTRumDatasProtocol.h
 //  FTMobileAgent
 //
 //  Created by hulilei on 2022/6/13.
@@ -9,6 +9,11 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
+typedef NS_ENUM(NSUInteger, FTAppState) {
+    FTAppStateUnknown,
+    FTAppStateStartUp,
+    FTAppStateRun,
+};
 /// rum 数据协议
 @protocol FTRumDatasProtocol <NSObject>
 /// 创建页面
@@ -63,6 +68,15 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - stack: 堆栈信息
 ///   - property: 事件自定义属性(可选)
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+
+/// 添加 Error 事件
+/// - Parameters:
+///   - type: error 类型
+///   - state: 程序运行状态
+///   - message: 错误信息
+///   - stack: 堆栈信息
+///   - property: 事件自定义属性(可选)
+- (void)addErrorWithType:(NSString *)type state:(FTAppState)state  message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
 
 /// 添加 卡顿 事件
 ///

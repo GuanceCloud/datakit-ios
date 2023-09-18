@@ -50,14 +50,14 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 #pragma mark ========== 用户数据绑定 ==========
 ///
 - (void)testAdaptOldUserSet{
     [self setRightSDKConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[NSUserDefaults standardUserDefaults] setValue:@"old_user" forKey:@"ft_userid"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -137,7 +137,7 @@
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] bindUserWithUserID:@"testUserlogout" userName:@"name" userEmail:@"email" extra:@{@"ft_key":@"ft_value"}];
     
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *userid = dict[FT_USER_ID];
     NSString *userName = dict[FT_USER_NAME];
@@ -364,15 +364,21 @@
     [[FTMobileAgent sharedInstance] shutDown];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
+    // 日志不再采集
     for (int i = 0; i<20; i++) {
-        NSLog(@"testConsoleLog");
+        [[FTLogger sharedInstance] info:@"test" property:nil];
+
     }
-    // 控制台日志不再采集
     [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
     // RUM Anctio、View、Resource采集关闭
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:0.5];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"test"];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
+    [[FTExternalDataManager sharedManager] addClickActionWithName:@"testClick"];
+
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios" message:@"testMessage" stack:@"testStack"];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"Network data collection"] tap];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];

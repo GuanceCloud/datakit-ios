@@ -18,6 +18,7 @@
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
+static char *ignoredLoad = "ignoredLoad";
 
 @implementation UIViewController (FTAutoTrack)
 -(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{
@@ -78,7 +79,7 @@ static char *viewLoadDuration = "viewLoadDuration";
                 return;
             }
             [FTTrack sharedInstance].currentController = self;
-            if(self.ft_viewLoadStartTime){
+            if(![self dataflux_ignoreTabBarControlleChildLoadDuration] && self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
@@ -122,4 +123,32 @@ static char *viewLoadDuration = "viewLoadDuration";
     }
     return NO;
 }
-@end
++(void)setIgnoredLoad:(BOOL)ft_ignoredLoad{
+    objc_setAssociatedObject(self, &ignoredLoad, @(ft_ignoredLoad), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+/// UITabBarController 页面加载后，所有子视图页面都会加载
+/// 仅记录第一个展示的子视图的 viewDidLoad 时间
+/// 其他子视图的 viewDidLoad - viewDidDisappear 不能作为页面加载时间
+-(BOOL)dataflux_ignoreTabBarControlleChildLoadDuration{
+    id ignored = objc_getAssociatedObject(self.class, &ignoredLoad);
+    if(ignored == nil){
+        if ([self isKindOfClass:UITabBarController.class]){
+            UITabBarController *tabBar = (UITabBarController *)self;
+            NSArray *array = tabBar.childViewControllers;
+            for (UIViewController *vc in array) {
+                if (tabBar.selectedViewController != vc) {
+                    if([vc isKindOfClass:UINavigationController.class]){
+                        UINavigationController *nav = (UINavigationController *)vc;
+                        [nav.childViewControllers.firstObject.class setIgnoredLoad:YES];
+                    }else{
+                        [vc.class setIgnoredLoad:YES];
+                    }
+                }
+            }
+        }
+        return NO;
+    }else{
+        return [ignored boolValue];
+    }
+}
+    @end

@@ -151,24 +151,29 @@ static dispatch_once_t onceToken;
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
     [self.rumManager addLaunch:FTLaunchHot duration:duration];
-    if (self.rumManager.viewReferrer) {
-        NSString *viewid = [NSUUID UUID].UUIDString;
-        NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
-        NSString *viewReferrer =self.rumManager.viewReferrer;
-        self.rumManager.viewReferrer = @"";
-        [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
-        [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
-    }
 }
 -(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
-- (void)applicationWillTerminate{
+-(void)applicationDidBecomeActive{
     @try {
-        self.rumManager.appState = AppStateStartUp;
+        if (self.rumManager.viewReferrer) {
+            NSString *viewid = [NSUUID UUID].UUIDString;
+            NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
+            NSString *viewReferrer =self.rumManager.viewReferrer;
+            self.rumManager.viewReferrer = @"";
+            [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
+            [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
+        }
+    }@catch (NSException *exception) {
+        FTInnerLogError(@"applicationDidBecomeActive exception %@",exception);
+    }
+}
+-(void)applicationWillResignActive{
+    @try {
+        self.rumManager.appState = FTAppStateStartUp;
         [self.rumManager stopViewWithProperty:nil];
-        [self.rumManager applicationWillTerminate];
     }@catch (NSException *exception) {
         FTInnerLogError(@"applicationWillResignActive exception %@",exception);
     }

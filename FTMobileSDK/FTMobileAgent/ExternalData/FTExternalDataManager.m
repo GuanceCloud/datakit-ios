@@ -12,7 +12,6 @@
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
-@property (nonatomic, weak) id <FTTracerProtocol> traceDelegate;
 @end
 @implementation FTExternalDataManager
 + (instancetype)sharedManager{
@@ -77,6 +76,11 @@
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property{
     if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:message:stack:property:)]){
         [self.delegate addErrorWithType:type message:message stack:stack property:property];
+    }
+}
+- (void)addErrorWithType:(nonnull NSString *)type state:(FTAppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:state: message:stack:property:)]){
+        [self.delegate addErrorWithType:type state:state message:message stack:stack property:property];
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{

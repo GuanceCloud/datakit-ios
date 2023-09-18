@@ -12,11 +12,9 @@
 #import "FTMonitorValue.h"
 #import "FTThreadDispatchManager.h"
 #import "FTSDKCompat.h"
-static double NormalizedRefreshRate = 60.0;
 @interface FTMonitorItem()
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *displayHelper;
-@property (nonatomic, assign) NSInteger maximumRefreshRate;
 @property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *cpuHelper;
 @property (nonatomic, strong) FTReadWriteHelper<FTMonitorValue *> *memoryHelper;
 @property (nonatomic, assign) NSTimeInterval frequency;
@@ -42,18 +40,8 @@ static double NormalizedRefreshRate = 60.0;
         _memoryHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         _displayHelper = [[FTReadWriteHelper alloc]initWithValue:[FTMonitorValue new]];
         [_displayRateMonitor addMonitorItem:_displayHelper];
-        _maximumRefreshRate = 60;
-        if (@available(iOS 10.3, *)) {
-#if FT_IOS
-            _maximumRefreshRate = [UIScreen mainScreen].maximumFramesPerSecond;
-#endif
-        }
     }
     return self;
-}
-- (FTMonitorValue *)refreshDisplay{
-    FTMonitorValue *value = self.displayHelper.currentValue;
-    return [value scaledDown:_maximumRefreshRate/NormalizedRefreshRate];
 }
 - (void)takeMonitorValue{
     [self.cpuHelper concurrentWrite:^(FTMonitorValue * _Nonnull value) {
@@ -62,6 +50,9 @@ static double NormalizedRefreshRate = 60.0;
     [self.memoryHelper concurrentWrite:^(FTMonitorValue * _Nonnull value) {
         [value addSample:[self.memoryMonitor memoryUsage]];
     }];
+}
+- (FTMonitorValue *)refreshDisplay{
+    return self.displayHelper.currentValue;
 }
 -(FTMonitorValue *)cpu{
     return self.cpuHelper.currentValue;

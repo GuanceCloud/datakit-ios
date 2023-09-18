@@ -50,7 +50,7 @@
         [[FTExternalDataManager sharedManager]  addClickActionWithName:@"UITableViewCell click"];
     }];
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"RUM addError" handler:^{
-        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"crash_message" stack:@"crash_stack"];
+        [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" state:FTAppStateUnknown message:@"crash_message" stack:@"crash_stack" property:nil];
     }];
     TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"RUM addLongTask" handler:^{
         [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"long task" duration:@1000000000];

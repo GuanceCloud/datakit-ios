@@ -35,14 +35,14 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 }
 - (NSString *)URLEncodedTagsStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
+        return nil;
     }else{
         return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=\"%@\"",[self replacingSpecialCharacters:self.field],FT_NULL_VALUE];
+        return [NSString stringWithFormat:@"%@=\"\"",[self replacingSpecialCharacters:self.field]];
     }else{
         if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
@@ -99,7 +99,11 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         if (type == FTParameterTypeField) {
             [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
         }else{
-            [mutablePairs addObject:[pair URLEncodedTagsStringValue]];
+            NSString *str = [pair URLEncodedTagsStringValue];
+            if(str){
+                [mutablePairs addObject:str];
+            }
+           
         }
     }
     return [mutablePairs componentsJoinedByString:@","];

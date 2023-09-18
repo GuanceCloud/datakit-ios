@@ -9,7 +9,7 @@
 #import "LoggerVC.h"
 #import "TableViewCellItem.h"
 #import "App-Swift.h"
-#import <FTMobileSDK/FTMobileAgent.h>
+#import <FTMobileSDK/FTMobileSDK.h>
 @interface LoggerVC()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;

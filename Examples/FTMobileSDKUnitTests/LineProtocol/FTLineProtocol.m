@@ -60,6 +60,30 @@
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
+- (void)testNullValue{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"testLineProtocol",@"emptyString":@"",@"null":[NSNull null]},
+        FT_TAGS:@{@"name":@"testLineProtocol",@"emptyString":@"",@"null":[NSNull null]},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@" "];
+    XCTAssertTrue(array.count == 3);
+
+    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
+    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\",null=\"\",emptyString=\"\"");
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
+    XCTAssertEqualObjects([array lastObject],tm);
+}
 - (void)testLogLineProtocol{
     FTRecordModel *model = [FTModelHelper createLogModel:@"testLogLineProtocol"];
     
@@ -83,7 +107,7 @@
     NSDictionary *tags = @{
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
-        FT_KEY_ERROR_SITUATION:AppStateStringMap[AppStateRun],
+        FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
         FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };

@@ -7,11 +7,6 @@
 //
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSUInteger, AppState) {
-    AppStateUnknown,
-    AppStateStartUp,
-    AppStateRun,
-};
 
 typedef NS_ENUM(NSUInteger, FTError) {
   NetWorkException = 101,        //网络问题

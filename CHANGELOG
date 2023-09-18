@@ -1,3 +1,25 @@
+1.4.6-beta.1
+1.同 1.4.6-alpha.6
+---
+1.4.6-alpha.6
+1.枚举命名修改
+---
+1.4.6-alpha.5
+1.RUM AddError 方法添加 state 参数
+2.注销用户方法 -unbindUser 替换 -logout
+---
+1.4.6-alpha.4
+1.app Become、Resign Active 同步 view start、stop
+---
+1.4.6-alpha.3
+1.支持高刷设备的 FPS 计算错误修复
+---
+1.4.6-alpha.2
+1.处理 UITabBarController 子视图加载时间异常问题
+---
+1.4.6-alpha.1
+1.数据上传处理空值数据逻辑修改
+---
 1.4.5-beta.1
 1.修复 RUM View 时间赋值错误问题
 ---

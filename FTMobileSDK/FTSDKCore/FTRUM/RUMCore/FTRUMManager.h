@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
     FTLaunchWarm
 };
 @interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol>
-@property (nonatomic, assign) AppState appState;
+@property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
@@ -125,10 +125,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * @param duration  启动时长
  */
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration;
-/**
- * 应用终止使用
- */
-- (void)applicationWillTerminate;
+
 #pragma mark - Error / Long Task -
 /// 崩溃
 /// @param type 错误类型:java_crash/native_crash/abort/ios_crash
