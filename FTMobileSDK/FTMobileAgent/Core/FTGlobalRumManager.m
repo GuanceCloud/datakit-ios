@@ -156,8 +156,11 @@ static dispatch_once_t onceToken;
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
--(void)applicationDidBecomeActive{
+-(void)applicationWillEnterForeground{
     @try {
+        if(!self.rumConfig.enableTraceUserView){
+            return;
+        }
         if (self.rumManager.viewReferrer) {
             NSString *viewid = [NSUUID UUID].UUIDString;
             NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
@@ -167,15 +170,18 @@ static dispatch_once_t onceToken;
             [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
         }
     }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationDidBecomeActive exception %@",exception);
+        FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
     }
 }
--(void)applicationWillResignActive{
+-(void)applicationDidEnterBackground{
     @try {
         self.rumManager.appState = FTAppStateStartUp;
+        if(!self.rumConfig.enableTraceUserView){
+            return;
+        }
         [self.rumManager stopViewWithProperty:nil];
     }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
+        FTInnerLogError(@"applicationDidEnterBackground exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========
