@@ -13,7 +13,7 @@
 #import <objc/runtime.h>
 
 @interface FTURLSessionInterceptor ()
-@property (nonatomic, strong) NSCache <id,FTTraceHandler *> *traceHandlers;
+@property (nonatomic, strong) NSMutableDictionary <id,FTTraceHandler *> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, assign) BOOL enableLinkRumData;
 @property (nonatomic, assign) BOOL enableTrace;
@@ -29,8 +29,7 @@
     self = [super init];
     if (self) {
         _lock = dispatch_semaphore_create(1);
-        _traceHandlers = [NSCache new];
-        _traceHandlers.countLimit = 1000;
+        _traceHandlers = [NSMutableDictionary new];
         _enableTrace = NO;
         _enableLinkRumData = NO;
     }
