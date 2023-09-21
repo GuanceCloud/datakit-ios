@@ -190,6 +190,62 @@
     XCTAssertTrue(actionCount == trueActionCount);
     [FTModelHelper stopView];
 }
+/// 验证开启enableTraceUserView,应用进入后台前台，view会自动更新
+- (void)testEnableTraceUserViewAppLifeView{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper startView];
+    [self addLongTaskData:nil];
+    [self addResource];
+    [self addErrorData:nil];
+    NSDictionary *dict0 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+
+    NSString *view_id = dict0[FT_KEY_VIEW_ID];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+
+    XCTAssertFalse([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
+    
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSString *view_id2 = dict2[FT_KEY_VIEW_ID];
+    XCTAssertTrue(view_id2);
+    XCTAssertFalse([view_id2 isEqualToString:view_id]);
+    XCTAssertTrue([dict0[FT_KEY_VIEW_NAME] isEqualToString:dict2[FT_KEY_VIEW_NAME]]);
+}
+- (void)testDisableTraceUserViewAppLifeView{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.errorMonitorType = FTErrorMonitorAll;
+    [FTMobileAgent startWithConfigOptions:config];
+    
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] unbindUser];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [FTModelHelper startView];
+    [FTModelHelper startView];
+    [self addLongTaskData:nil];
+    [self addResource];
+    [self addErrorData:nil];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSString *view_id = dict[FT_KEY_VIEW_ID];
+    XCTAssertTrue(view_id);
+    
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
+}
 /**
  * 验证 source：resource 的数据格式
  */
@@ -283,6 +339,30 @@
             *stop = YES;
         }
     }];
+}
+- (void)testStopResourceInBackground{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    NSString *key = [[NSUUID UUID]UUIDString];
+    NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    XCTAssertTrue([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
+
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    XCTAssertFalse([dict2.allKeys containsObject:FT_KEY_VIEW_ID]);
 }
 /**
  * 验证 source：action 的数据格式

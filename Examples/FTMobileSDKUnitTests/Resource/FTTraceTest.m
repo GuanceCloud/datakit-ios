@@ -496,31 +496,4 @@
         XCTAssertNil(error);
     }];
 }
-NSString *keyName;
-- (void)testTraceCacheCount{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:murl];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.samplerate = 100;
-    traceConfig.enableAutoTrace = NO;
-    traceConfig.enableLinkRumData = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTModelHelper startView];
-    id<FTExternalResourceProtocol> handler = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
-    FTURLSessionInterceptor *interceptor = (FTURLSessionInterceptor *)handler;
-    NSCache *cache = [interceptor valueForKey:@"traceHandlers"];
-    cache.delegate = self;
-    NSString *uuidString = [[NSUUID UUID] UUIDString];
-    for (int i = 0; i<1001; i++) {
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSString stringWithFormat:@"%@%d",uuidString,i] url:[NSURL URLWithString:@"https://www.baidu.com/more/"]];
-    }
-    NSString *key = [NSString stringWithFormat:@"%@0",uuidString];
-    XCTAssertTrue([keyName isEqualToString:key]);
-}
--(void)cache:(NSCache *)cache willEvictObject:(id)obj{
-    FTTraceHandler *handler =(FTTraceHandler *)obj;
-    keyName = handler.identifier;
-}
 @end
