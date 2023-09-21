@@ -64,6 +64,11 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
     
     if ([scheme isEqualToString:@"http"] ||
         [scheme isEqualToString:@"https"]) {
+        id<FTURLSessionInterceptorDelegate> strongeDelegate;
+        strongeDelegate = [[self class] delegate];
+        if ([strongeDelegate respondsToSelector:@selector(isTraceUrl:)]) {
+            return  [strongeDelegate isTraceUrl:request.URL];
+        }
         return YES;
     }
     

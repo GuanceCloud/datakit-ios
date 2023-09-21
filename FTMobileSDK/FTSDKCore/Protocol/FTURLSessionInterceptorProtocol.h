@@ -36,7 +36,9 @@ typedef BOOL(^FTIntakeUrl)(NSURL *url);
 @property (nonatomic, weak) id<FTRumResourceProtocol> innerResourceHandeler;
 /// 设置是否支持自动采集 rum resource 数据
 @property (nonatomic, assign) BOOL enableAutoRumTrack;
-
+/// 判断是否采集 url
+/// - Parameter url: url
+- (BOOL)isTraceUrl:(NSURL *)url;
 /// 实现 trace 功能，给 request header 添加 trace 参数
 /// - Parameter request: http 初始请求
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;

@@ -108,7 +108,7 @@
 }
 - (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
     //判断是否开启 trace ，是否是要采集的url
-    if (!self.enableTrace || ![self isTraceUrl:request.URL]) {
+    if (!self.enableTrace) {
         return request;
     }
     NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
@@ -121,9 +121,6 @@
     return mutableReqeust;
 }
 - (void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
-    if (![self isTraceUrl:task.originalRequest.URL] ) {
-        return;
-    }
     FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:task.currentRequest.URL identifier:[NSUUID UUID].UUIDString];
     [self setTraceHandler:handler forKey:task];
     
