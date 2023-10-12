@@ -144,8 +144,6 @@ NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 NSUInteger const FT_DB_CONTENT_MAX_COUNT = 5000;
-NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
-NSUInteger const MXRMonitorRunloopStandstillCount = 5;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 
 

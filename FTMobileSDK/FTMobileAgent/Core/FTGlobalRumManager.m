@@ -13,9 +13,8 @@
 #import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
-#import "FTANRDetector.h"
+#import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"
-#import "FTPingThread.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
@@ -33,11 +32,11 @@
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 @interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
-@property (nonatomic, strong) FTPingThread *pingThread;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
+@property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
 @end
 
 @implementation FTGlobalRumManager
@@ -69,43 +68,12 @@ static dispatch_once_t onceToken;
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
-    if (rumConfig.enableTrackAppANR) {
-        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-            [FTANRDetector sharedInstance].delegate = self;
-            [[FTANRDetector sharedInstance] startDetecting];
-        }];
-    }
-    if (rumConfig.enableTrackAppFreeze) {
-        [self startPingThread];
+    if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
+        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self];
+        [_longTaskDetector startDetecting];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-}
--(FTPingThread *)pingThread{
-    if (!_pingThread || _pingThread.isCancelled) {
-        _pingThread = [[FTPingThread alloc]init];
-        __weak typeof(self) weakSelf = self;
-        _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
-            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanosecondTimeIntervalSinceDate:startDate toDate:endDate]];
-        };
-    }
-    return _pingThread;
-}
--(void)startPingThread{
-    if (!self.pingThread.isExecuting) {
-        [self.pingThread start];
-    }
-}
--(void)stopPingThread{
-    if (_pingThread && _pingThread.isExecuting) {
-        [self.pingThread cancel];
-    }
-}
-- (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManager addLongTaskWithStack:stack duration:duration property:nil];
-}
--(void)stopMonitor{
-    [self stopPingThread];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
@@ -144,9 +112,8 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== FTANRDetectorDelegate ==========
-- (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000] property:nil];
-    
+- (void)onMainThreadSlowStackDetected:(NSString*)slowStack duration:(long long)duration{
+    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
@@ -189,11 +156,9 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     onceToken = 0;
     sharedInstance =nil;
-    [self stopPingThread];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-    [[FTANRDetector sharedInstance] stopDetecting];
-    [self stopMonitor];
+    [_longTaskDetector stopDetecting];
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

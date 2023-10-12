@@ -10,19 +10,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTANRDetectorDelegate <NSObject>
-- (void)onMainThreadSlowStackDetected:(NSString*)slowStack;
+- (void)onMainThreadSlowStackDetected:(NSString*)slowStack duration:(long long)duration;
 @end
-@interface FTANRDetector : NSObject
+@interface FTLongTaskDetector : NSObject
 
-+ (instancetype)sharedInstance;
-/// 超过多少毫秒为一次卡顿 400毫秒
+/// 超过多少毫秒为一次卡顿 默认 250 毫秒
 @property (nonatomic, assign) NSUInteger limitMillisecond;
 
-/// 多少次卡顿纪录为一次有效，默认为5次
-@property (nonatomic, assign) NSUInteger standstillCount;
-
-@property (nonatomic, weak) id<FTANRDetectorDelegate> delegate;
-
+-(instancetype)initWithDelegate:(id<FTANRDetectorDelegate>)delegate;
 
 //must be called from main thread
 - (void)startDetecting;
