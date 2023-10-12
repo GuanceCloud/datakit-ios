@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "TestANRVC.h"
+#import "TestLongTaskVC.h"
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
@@ -46,7 +46,7 @@
     [self initSDKWithEnableTrackAppANR:YES];
     NSInteger lastCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
 
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
 
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -69,7 +69,7 @@
 
 - (void)testNoTrackAnrBlock{
     [self initSDKWithEnableTrackAppANR:NO];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppFreezeAndANR"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
 
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

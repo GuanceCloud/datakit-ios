@@ -10,7 +10,7 @@
 #import "UITestVC.h"
 #import <FTMobileSDK/FTMobileAgent.h>
 //测试崩溃采集
-#import "TestANRVC.h"
+#import "TestLongTaskVC.h"
 #import "TestWKWebViewVC.h"
 #import "CrashVC.h"
 #import "TableViewCellItem.h"
@@ -47,7 +47,7 @@
         [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1" userName:@"用户1" userEmail:@"1@qq.com" extra:@{@"user_age":@21}];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"UserLogout" handler:^{
-        [[FTMobileAgent sharedInstance] logout];
+        [[FTMobileAgent sharedInstance] unbindUser];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"Network data collection" handler:^{
         [weakSelf.navigationController pushViewController:[NetworkTraceVC new] animated:YES];
@@ -59,8 +59,8 @@
         [weakSelf.navigationController pushViewController:[LoggerVC new] animated:YES];
 
     }];
-    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppFreezeAndANR" handler:^{
-        [weakSelf.navigationController pushViewController:[TestANRVC new] animated:YES];
+    TableViewCellItem *item8 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppLongTask" handler:^{
+        [weakSelf.navigationController pushViewController:[TestLongTaskVC new] animated:YES];
     }];
     TableViewCellItem *item9 = [[TableViewCellItem alloc]initWithTitle:@"TrackAppCrash" handler:^{
         [weakSelf.navigationController pushViewController:[CrashVC new] animated:YES];

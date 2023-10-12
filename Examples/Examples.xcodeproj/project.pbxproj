@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -64,7 +64,7 @@
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
 		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
-		4A3931552531C26300BC2134 /* TestANRVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestANRVC.m */; };
+		4A3931552531C26300BC2134 /* TestLongTaskVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestLongTaskVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
 		4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */; };
 		4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85314523AC6B2700B40B5D /* UITestVC.m */; };
@@ -222,8 +222,8 @@
 		4A22527023B5AC7600B0ED41 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A270E9424FF97FE0079F455 /* FTUtilsTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUtilsTest.m; sourceTree = "<group>"; };
 		4A299B932514953300400931 /* FTPropertyTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTPropertyTest.m; sourceTree = "<group>"; };
-		4A3931532531C26300BC2134 /* TestANRVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestANRVC.h; sourceTree = "<group>"; };
-		4A3931542531C26300BC2134 /* TestANRVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestANRVC.m; sourceTree = "<group>"; };
+		4A3931532531C26300BC2134 /* TestLongTaskVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestLongTaskVC.h; sourceTree = "<group>"; };
+		4A3931542531C26300BC2134 /* TestLongTaskVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestLongTaskVC.m; sourceTree = "<group>"; };
 		4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWKWebViewVC.h; sourceTree = "<group>"; };
 		4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestWKWebViewVC.m; sourceTree = "<group>"; };
@@ -470,8 +470,8 @@
 				4A85314523AC6B2700B40B5D /* UITestVC.m */,
 				7C28B870266098B800CECBA6 /* TestJsbridgeData.h */,
 				7C28B871266098B800CECBA6 /* TestJsbridgeData.m */,
-				4A3931532531C26300BC2134 /* TestANRVC.h */,
-				4A3931542531C26300BC2134 /* TestANRVC.m */,
+				4A3931532531C26300BC2134 /* TestLongTaskVC.h */,
+				4A3931542531C26300BC2134 /* TestLongTaskVC.m */,
 				4A49E9322536E5E9009C44AD /* TestWKWebViewVC.h */,
 				4A49E9332536E5E9009C44AD /* TestWKWebViewVC.m */,
 				7CA16CC026B8DF1D0079840D /* TestWKParentVC.h */,
@@ -900,7 +900,7 @@
 				7CA16CC226B8DF1D0079840D /* TestWKParentVC.m in Sources */,
 				1788B11829BAFE94007FDFF1 /* HttpEngine.m in Sources */,
 				7CA16CE326B9110F0079840D /* TestWKProxy.m in Sources */,
-				4A3931552531C26300BC2134 /* TestANRVC.m in Sources */,
+				4A3931552531C26300BC2134 /* TestLongTaskVC.m in Sources */,
 				4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */,
 				172DD35128F7FEDF007AE5E9 /* NetworkTraceVC.m in Sources */,
 				4A1169842391145B00C0BC4E /* DemoViewController.mm in Sources */,

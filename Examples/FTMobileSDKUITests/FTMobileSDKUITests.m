@@ -40,7 +40,7 @@
     
     [tablesQuery/*@START_MENU_TOKEN@*/.staticTexts[@"NetworkTrace_clienthttp"]/*[[".cells[@\"NetworkTrace_clienthttp\"].staticTexts[@\"NetworkTrace_clienthttp\"]",".staticTexts[@\"NetworkTrace_clienthttp\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
     [NSThread sleepForTimeInterval:3];//等待网络请求回来
-    [app.tables/*@START_MENU_TOKEN@*/.staticTexts[@"TrackAppFreezeAndANR"]/*[[".cells[@\"TrackAppFreezeAndANR\"].staticTexts[@\"TrackAppFreezeAndANR\"]",".staticTexts[@\"TrackAppFreezeAndANR\"]"],[[[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/ tap];
+    [app.tables.staticTexts[@"TrackAppLongTask"] tap];
     [NSThread sleepForTimeInterval:10];
 
     [app.navigationBars[@"home"].buttons[@"home"] tap];

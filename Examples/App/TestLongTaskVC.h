@@ -1,5 +1,5 @@
 //
-//  TestANRVC.h
+//  TestLongTaskVC.h
 //  SampleApp
 //
 //  Created by 胡蕾蕾 on 2020/10/10.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TestANRVC : UIViewController
+@interface TestLongTaskVC : UIViewController
 
 @end
 
