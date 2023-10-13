@@ -111,7 +111,8 @@ static BOOL g_bRun;
 - (void)checkLoopDuration{
     struct timeval tvCur;
     gettimeofday(&tvCur, NULL);
-    unsigned long long duration = [self diffTime:&g_tvRun endTime:&tvCur];
+    unsigned long long duration = [self diffTime:&g_tvRun endTime:&tvCur]*1000;
+    // 设置 250 ms 与 Instrument -> Time Profiler -> Hangs 采集基本一致 250ms < Microhang <500ms < Hang
     if ((duration > MXRMonitorRunloopStandstillMillisecond) && (duration < MXRMonitorRunloopMaxtillMillisecond)) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
@@ -123,7 +124,7 @@ static BOOL g_bRun;
     }
 }
 - (unsigned long long)diffTime:(struct timeval *)tvStart endTime:(struct timeval *)tvEnd {
-    return 1000000000 * (tvEnd->tv_sec - tvStart->tv_sec) + tvEnd->tv_usec - tvStart->tv_usec;
+    return 1000000 * (tvEnd->tv_sec - tvStart->tv_sec) + tvEnd->tv_usec - tvStart->tv_usec;
 }
 - (void)stopDetecting{
     CFRunLoopRemoveObserver(CFRunLoopGetMain(), m_runLoopEndObserver, kCFRunLoopCommonModes);
