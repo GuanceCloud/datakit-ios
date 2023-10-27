@@ -9,15 +9,17 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTANRDetectorDelegate <NSObject>
-- (void)onMainThreadSlowStackDetected:(NSString*)slowStack duration:(long long)duration;
+@protocol FTRunloopDetectorDelegate <NSObject>
+@optional
+- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration;
+- (void)anrStackDetected:(NSString*)slowStack;
 @end
 @interface FTLongTaskDetector : NSObject
 
 /// 超过多少毫秒为一次卡顿 默认 250 毫秒
 @property (nonatomic, assign) NSUInteger limitMillisecond;
 
--(instancetype)initWithDelegate:(id<FTANRDetectorDelegate>)delegate;
+-(instancetype)initWithDelegate:(id<FTRunloopDetectorDelegate>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze;
 
 //must be called from main thread
 - (void)startDetecting;
