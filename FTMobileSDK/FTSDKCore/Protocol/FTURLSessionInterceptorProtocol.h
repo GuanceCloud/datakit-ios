@@ -21,33 +21,34 @@
 #ifndef FTURLSessionInterceptorProtocol_h
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
+#import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
+typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 /// session 拦截处理代理
-@protocol FTURLSessionInterceptorDelegate<NSObject>
+@protocol FTURLSessionInterceptorProtocol<NSObject>
 @required
-/// 设置需要屏蔽的内部链接
-@property (nonatomic, copy) NSString *innerUrl;
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
 @optional
 /// 采集的 resource 数据接收对象
-@property (nonatomic, weak) id<FTRumResourceProtocol> innerResourceHandeler;
-/// 设置是否支持自动采集 rum resource 数据
-@property (nonatomic, assign) BOOL enableAutoRumTrack;
+@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
+@property (nonatomic,copy) ResourcePropertyProvider provider;
 /// 判断是否采集 url
 /// - Parameter url: url
 - (BOOL)isTraceUrl:(NSURL *)url;
+
+- (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// 实现 trace 功能，给 request header 添加 trace 参数
 /// - Parameter request: http 初始请求
-- (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request;
+- (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
 /// 请求开始 -startResource
 /// - Parameters:
 ///   - task: 请求任务
 ///   - session: session
-- (void)taskCreated:(NSURLSessionTask *)task  session:(NSURLSession *)session;
+- (void)taskCreated:(NSURLSessionTask *)task;
 
 /// 收集请求的数据信息
 /// - Parameters:

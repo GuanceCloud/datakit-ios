@@ -22,7 +22,7 @@ static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了
 @property (nonatomic, copy) NSString *identifier;
 @end
 @implementation FTURLProtocol
-static id<FTURLSessionInterceptorDelegate> sDelegate;
+static id<FTAutoInterceptorProtocol> sDelegate;
 
 // 开始监听
 + (void)startMonitor {
@@ -41,14 +41,14 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
         [sessionConfiguration unload];
     }
 }
-+ (id<FTURLSessionInterceptorDelegate>)delegate{
-    id<FTURLSessionInterceptorDelegate> result;
++ (id<FTAutoInterceptorProtocol>)delegate{
+    id<FTAutoInterceptorProtocol> result;
     @synchronized (self) {
         result = sDelegate;
     }
     return result;
 }
-+ (void)setDelegate:(id<FTURLSessionInterceptorDelegate>)delegate{
++ (void)setDelegate:(id<FTAutoInterceptorProtocol>)delegate{
     @synchronized (self) {
         sDelegate = delegate;
     }
@@ -64,7 +64,7 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
     
     if ([scheme isEqualToString:@"http"] ||
         [scheme isEqualToString:@"https"]) {
-        id<FTURLSessionInterceptorDelegate> strongeDelegate;
+        id<FTAutoInterceptorProtocol> strongeDelegate;
         strongeDelegate = [[self class] delegate];
         if ([strongeDelegate respondsToSelector:@selector(isTraceUrl:)]) {
             return  [strongeDelegate isTraceUrl:request.URL];
@@ -75,10 +75,10 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    id<FTURLSessionInterceptorDelegate> strongeDelegate;
+    id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if ([strongeDelegate respondsToSelector:@selector(injectTraceHeader:)]) {
-        return [strongeDelegate injectTraceHeader:request];
+    if (strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(interceptRequest:)]) {
+        return [strongeDelegate.interceptor interceptRequest:request];
     }
     return request;
 }
@@ -104,10 +104,10 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
     self.sessionDelegateQueue.name                        = @"com.session.queue";
     self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
-    id<FTURLSessionInterceptorDelegate> strongeDelegate;
+    id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&  [strongeDelegate respondsToSelector:@selector(taskCreated:session:)]) {
-        [strongeDelegate taskCreated:task session:self.session];
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(taskCreated:)]) {
+        [strongeDelegate.interceptor taskCreated:task];
     }
     [task resume];
 }
@@ -125,10 +125,10 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
-    id<FTURLSessionInterceptorDelegate> strongeDelegate;
+    id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if (strongeDelegate && strongeDelegate.enableAutoRumTrack &&[strongeDelegate respondsToSelector:@selector(taskReceivedData:data:)]) {
-        [strongeDelegate taskReceivedData:dataTask data:data];
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor &&[strongeDelegate.interceptor respondsToSelector:@selector(taskReceivedData:data:)]) {
+        [strongeDelegate.interceptor taskReceivedData:dataTask data:data];
     }
     [self.client URLProtocol:self didLoadData:data];
 }
@@ -140,18 +140,18 @@ static id<FTURLSessionInterceptorDelegate> sDelegate;
     } else {
         [self.client URLProtocolDidFinishLoading:self];
     }
-    id<FTURLSessionInterceptorDelegate> strongeDelegate;
+    id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskCompleted:error:)]) {
-        [strongeDelegate taskCompleted:task error:error];
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(taskCompleted:error:)]) {
+        [strongeDelegate.interceptor taskCompleted:task error:error];
     }
     
 }
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics  API_AVAILABLE(ios(10.0)){
-    id<FTURLSessionInterceptorDelegate> strongeDelegate;
+    id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && [strongeDelegate respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
-        [strongeDelegate taskMetricsCollected:task metrics:metrics];
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(taskMetricsCollected:metrics:)]) {
+        [strongeDelegate.interceptor taskMetricsCollected:task metrics:metrics];
     };
 }
 

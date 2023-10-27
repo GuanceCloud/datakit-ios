@@ -26,7 +26,7 @@
 #import "FTResourceMetricsModel.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTModelHelper.h"
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
 #import "FTRequestBody.h"

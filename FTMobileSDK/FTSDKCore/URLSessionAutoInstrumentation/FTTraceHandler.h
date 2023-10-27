@@ -13,21 +13,27 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTraceHandler : NSObject
 /// 唯一标识，用于 rum  处理 resource 数据的标识
 @property (nonatomic, copy, readwrite) NSString *identifier;
+
+/// 在此拦截期间发送的初始请求。它是由`URLSession`发送的请求，而不是用户给出的请求。
+@property (nonatomic, strong) NSURLRequest *request;
+/// 在此拦截期间发送的请求响应。
+@property (nonatomic, strong) NSURLResponse *response;
+///在此拦截期间发生的本地错误。如果任务顺利完成，则返回`nil`。
+@property (nonatomic, strong) NSError *error;
+/// 拦截期间收到的任务数据。如果任务完成时出现错误，则返回`nil`。
+@property (nonatomic, strong) NSMutableData *data;
 /// rum resource 需要的各阶段请求时长（非必须）
 @property (nonatomic, strong) FTResourceMetricsModel *metricsModel;
 /// rum resource 需要的基本数据
 @property (nonatomic, strong) FTResourceContentModel *contentModel;
-/// span_id
+/// trace: span_id 当没有开启 trace 功能或者没关联 rum 则返回`nil`。
 @property (nonatomic, copy) NSString *spanID;
-/// trace_id
+/// trace: trace_id 当没有开启 trace 功能或者没关联 rum 则返回`nil`。
 @property (nonatomic, copy) NSString *traceID;
 
 /// 初始化方法
-/// - Parameters:
-///   - url: 请求 URL
-///   - identifier: 唯一标识，根据标识
--(instancetype)initWithUrl:(NSURL *)url identifier:(NSString *)identifier;
-
+/// - Parameter identifier: 唯一标识，根据标识
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 ///  请求响应数据
 /// - Parameter data: 请求获取的数据
 ///

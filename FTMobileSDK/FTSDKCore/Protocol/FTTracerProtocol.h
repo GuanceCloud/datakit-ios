@@ -26,6 +26,9 @@ typedef void(^UnpackTraceHeaderHandler)(NSString * _Nullable traceId, NSString *
 
 /// trace 功能实现协议
 @protocol FTTracerProtocol<NSObject>
+/// 是否关联 RUM
+@property (nonatomic,assign) BOOL enableLinkRumData;
+
 /// 获取 trace 的请求头
 /// - Parameter url: 请求 URL
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url;

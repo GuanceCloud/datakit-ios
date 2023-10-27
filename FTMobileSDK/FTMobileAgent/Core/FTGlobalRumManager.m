@@ -31,7 +31,7 @@
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
@@ -111,9 +111,12 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-#pragma mark ========== FTANRDetectorDelegate ==========
-- (void)onMainThreadSlowStackDetected:(NSString*)slowStack duration:(long long)duration{
+#pragma mark ========== FTRunloopDetectorDelegate ==========
+- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
+}
+- (void)anrStackDetected:(NSString*)slowStack{
+    [self.rumManager addErrorWithType:@"ios_crash" message:@"ios_anr" stack:slowStack];
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{

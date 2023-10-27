@@ -24,7 +24,7 @@
 #import "FTNetworkManager.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
@@ -45,7 +45,6 @@
 
 - (void)tearDown {
     [[FTMobileAgent sharedInstance] shutDown];
-    self.tracer = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
@@ -58,7 +57,7 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    self.tracer = [[FTTracer alloc]initWithSampleRate:traceConfig.samplerate traceType:(NetworkTraceType)traceConfig.networkTraceType];
+    [[FTTracer shared] startWithSampleRate:traceConfig.samplerate traceType:traceConfig.networkTraceType enableLinkRumData:NO];
 }
 
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
@@ -175,7 +174,7 @@
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [[FTURLSessionAutoInstrumentation sharedInstance] valueForKey:@"tracer"];
+    id<FTTracerProtocol> tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {

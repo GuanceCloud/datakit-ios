@@ -52,7 +52,7 @@ typedef NS_ENUM(NSUInteger, FTMonitorFrequency) {
     FTMonitorFrequencyRare,
 };
 /// 网络链路追踪使用类型
-typedef NS_ENUM(NSInteger, FTNetworkTraceType) {
+typedef NS_ENUM(NSUInteger, FTNetworkTraceType) {
     /// datadog trace
     FTNetworkTraceTypeDDtrace,
     /// zipkin multi header

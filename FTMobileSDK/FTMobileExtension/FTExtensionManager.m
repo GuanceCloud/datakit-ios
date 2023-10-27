@@ -14,7 +14,7 @@
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
 #import "FTMobileConfig.h"
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTTracer.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTBaseInfoHandler.h"
@@ -74,21 +74,21 @@ static FTExtensionManager *sharedInstance = nil;
     [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionAutoInstrumentation sharedInstance] setRUMEnableTraceUserResource:rumConfigOptions.enableTraceUserResource];
+    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource];
     self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil wirter:self];
     self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
-    [[FTURLSessionAutoInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
+    [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }
 
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    [[FTURLSessionAutoInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:(NetworkTraceType)traceConfigOptions.networkTraceType];
+    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
 
 }
 -(void)logging:(NSString *)content status:(FTLogStatus)status{

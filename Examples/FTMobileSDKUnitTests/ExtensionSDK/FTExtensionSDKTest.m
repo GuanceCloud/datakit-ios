@@ -86,6 +86,7 @@
 - (void)testRumResource{
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResource"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
@@ -105,6 +106,7 @@
 - (void)testRumResourceDelegate{
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
@@ -125,6 +127,7 @@
 - (void)testTracer{
     [self saveMobileSdkConfig];
     [self setExtensionSDK];
+    [[FTExternalDataManager sharedManager] startViewWithName:@"testTracer"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
 
     [self networkUpload:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {

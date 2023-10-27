@@ -19,20 +19,19 @@
 
 
 #import "NSURLSession+FTSwizzler.h"
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionDelegate.h"
+#import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptorProtocol.h"
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 @implementation NSURLSession (FTSwizzler)
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
-        FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
         if ([interceptor isTraceUrl:url]){
             NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
             if (@available(iOS 13.0, *)) {
-                [interceptor taskCreated:task session:self];
+                [interceptor taskCreated:task];
             }
             return task;
         }
@@ -42,9 +41,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(CompletionHandler)completionHandler{
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
-        FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
         if ([interceptor isTraceUrl:url]){
             NSURLSessionDataTask *task;
             if (completionHandler) {
@@ -60,34 +57,32 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
                 };
                 task = [self ft_dataTaskWithURL:url completionHandler:newCompletionHandler];
                 taskReference = task;
+            }else{
+                task = [self ft_dataTaskWithURL:url completionHandler:completionHandler];
             }
-            [interceptor taskCreated:task session:self];
+            [interceptor taskCreated:task];
             return task;
         }
     }
-        return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
+    return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request{
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
-        FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
         if ([interceptor isTraceUrl:request.URL]){
-            NSURLRequest *newRequest = [interceptor injectTraceHeader:request];
+            NSURLRequest *newRequest = [interceptor interceptRequest:request];
             NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
             if (@available(iOS 13.0, *)) {
-                [interceptor taskCreated:task session:self];
+                [interceptor taskCreated:task];
             }
             return task;
         }
     }
-        return [self ft_dataTaskWithRequest:request];
+    return [self ft_dataTaskWithRequest:request];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(CompletionHandler)completionHandler{
     if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        id<FTURLSessionDelegateProviding> ftDelegate = (id<FTURLSessionDelegateProviding>)self.delegate;
-        FTURLSessionDelegate *sessionDelegate =  ftDelegate.ftURLSessionDelegate;
-        id<FTURLSessionInterceptorDelegate> interceptor = sessionDelegate.instrumentation.interceptor;
+        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
         if ([interceptor isTraceUrl:request.URL]){
             NSURLSessionDataTask *task;
             if (completionHandler) {
@@ -101,14 +96,16 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
                         [interceptor taskCompleted:taskReference error:error];
                     }
                 };
-                NSURLRequest *newRequest = [interceptor injectTraceHeader:request];
+                NSURLRequest *newRequest = [interceptor interceptRequest:request];
                 task = [self ft_dataTaskWithRequest:newRequest completionHandler:newCompletionHandler];
                 taskReference = task;
+            }else{
+                task = [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
             }
-            [interceptor taskCreated:task session:self];
+            [interceptor taskCreated:task];
             return task;
         }
     }
-        return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
+    return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
 }
 @end
