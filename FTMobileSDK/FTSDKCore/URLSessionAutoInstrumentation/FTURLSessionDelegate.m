@@ -26,13 +26,7 @@
 @property (nonatomic,strong,readwrite) FTURLSessionInstrumentation *instrumentation;
 @end
 @implementation FTURLSessionDelegate
--(instancetype)init{
-    self = [super init];
-    if(self){
-        [[FTURLSessionInstrumentation sharedInstance] swizzleURLSession];
-    }
-    return self;
-}
+
 @synthesize ftURLSessionDelegate;
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
@@ -51,8 +45,5 @@
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error];
-}
--(void)dealloc{
-    [[FTURLSessionInstrumentation sharedInstance] unswizzleURLSession];
 }
 @end

@@ -63,8 +63,6 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 /// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
 
-- (void)swizzleURLSession;
-- (void)unswizzleURLSession;
 /// 注销
 - (void)resetInstance;
 @end

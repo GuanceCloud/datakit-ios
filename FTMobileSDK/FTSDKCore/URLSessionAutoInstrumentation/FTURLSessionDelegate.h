@@ -19,7 +19,7 @@
 
 
 #import <Foundation/Foundation.h>
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
+typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate,FTURLSessionInstrumentation;

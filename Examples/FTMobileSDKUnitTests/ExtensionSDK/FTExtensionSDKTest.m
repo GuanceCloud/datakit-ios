@@ -12,7 +12,7 @@
 #import "FTMobileExtension.h"
 #import "FTExtensionDataManager.h"
 #import "FTMobileConfig+Private.h"
-#import "HttpEngine.h"
+#import "HttpEngineTestUtil.h"
 #import "FTRumManager.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
@@ -109,10 +109,8 @@
     [[FTExternalDataManager sharedManager] startViewWithName:@"testRumResourceDelegate"];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-
-    HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:InstrumentationDirect];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);

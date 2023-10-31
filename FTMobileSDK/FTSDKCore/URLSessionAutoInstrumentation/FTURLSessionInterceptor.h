@@ -46,6 +46,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 ///   - task: 完成数据传输的任务。
 ///   - error: 如果发生错误，则返回一个错误对象，表示传输如何失败，否则返回`nil`。
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

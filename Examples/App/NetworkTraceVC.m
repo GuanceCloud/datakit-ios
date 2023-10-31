@@ -73,6 +73,7 @@
         }];
     }];
     
+    __weak typeof(self) weakSelf = self;
     TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSString *key = [[NSUUID UUID] UUIDString];
@@ -83,10 +84,10 @@
         for (NSString *httpHeaderField in traceHeader.keyEnumerator) {
             [request addValue:traceHeader[httpHeaderField] forHTTPHeaderField:httpHeaderField];
         }
-        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:weakSelf delegateQueue:[NSOperationQueue mainQueue]];
         NSURLSessionTask *task = [session dataTaskWithRequest:request];
         RUMResource *handler = [[RUMResource alloc]initWithKey:key];
-        self.taskHandler[task] = handler;
+        weakSelf.taskHandler[task] = handler;
         [[FTExternalDataManager sharedManager] startResourceWithKey:key];
 
         [task resume];
@@ -154,8 +155,8 @@
     }
     FTResourceContentModel *contentModel = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:response data:handler.data error:error];
     [[FTExternalDataManager sharedManager] addResourceWithKey:handler.key metrics:metricsModel content:contentModel];
+    [session invalidateAndCancel];
 }
-
 /*
 #pragma mark - Navigation
 

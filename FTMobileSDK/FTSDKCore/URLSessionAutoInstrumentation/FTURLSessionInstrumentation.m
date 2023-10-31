@@ -42,6 +42,7 @@ static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
+        [sharedInstance swizzleURLSession];
     });
     return sharedInstance;
 }
@@ -72,6 +73,12 @@ static dispatch_once_t onceToken;
     [[FTURLSessionInterceptor shared] setTracer:_tracer];
     if(enableAutoTrace){
         [self.interceptor setTracer:_tracer];
+        [self startURLProtocolMonitor];
+    }
+}
+-(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
+    _enableAutoRumTrack = enableAutoRumTrack;
+    if(enableAutoRumTrack){
         [self startURLProtocolMonitor];
     }
 }
@@ -120,12 +127,6 @@ static dispatch_once_t onceToken;
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
 #pragma mark ========== FTAutoInterceptorProtocol ==========
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
-    _enableAutoRumTrack = enableAutoRumTrack;
-    if(enableAutoRumTrack){
-        [self startURLProtocolMonitor];
-    }
-}
 -(BOOL)enableAutoRumTrack{
     return _enableAutoRumTrack;
 }
@@ -150,7 +151,9 @@ static dispatch_once_t onceToken;
     return trace;
 }
 - (void)resetInstance{
+    [self unswizzleURLSession];
     [[FTTracer shared] shutDown];
+    [[FTURLSessionInterceptor shared] shutDown];
     onceToken = 0;
     sharedInstance =nil;
 }

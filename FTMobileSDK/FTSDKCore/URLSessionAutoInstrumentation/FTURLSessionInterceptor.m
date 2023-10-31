@@ -38,7 +38,10 @@ static dispatch_once_t onceToken;
     _tracer = tracer;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
-    return self.intakeUrlHandler(url);
+    if(self.intakeUrlHandler){
+        return self.intakeUrlHandler(url);
+    }
+    return YES;
 }
 /**
  * 内部采集以 task 为 key
@@ -194,7 +197,8 @@ static dispatch_once_t onceToken;
         [self.rumResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
-
-
-
+- (void)shutDown{
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end
