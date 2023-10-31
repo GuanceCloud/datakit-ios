@@ -235,14 +235,12 @@ NSString * const AppStateStringMap[] = {
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
                     }else if([lowercasekey isEqualToString:@"content-encoding"]){
                         [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
-                    }else if ([lowercasekey isEqualToString:@"content-length"]){
-                        id size = content.responseHeader[key];
-                        NSNumber *length = @([size integerValue]);
-                        [fields setValue:length forKey:FT_KEY_RESOURCE_SIZE];
                     }
                 }
             }
-            if(![fields.allKeys containsObject:FT_KEY_RESOURCE_SIZE]&&content.responseBody){
+            if(metrics.responseSize){
+                [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
+            }else if(content.responseBody){
                 NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
                 [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
             }

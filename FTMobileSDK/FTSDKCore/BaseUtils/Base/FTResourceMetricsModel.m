@@ -27,6 +27,9 @@
         self.resource_trans =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.requestStartDate toDate:taskMes.responseEndDate];
         self.duration = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.fetchStartDate toDate:taskMes.requestEndDate];
         self.resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMes.domainLookupStartDate toDate:taskMes.responseStartDate];
+        if (@available(iOS 13, *)) {
+            self.responseSize = @( taskMes.countOfResponseBodyBytesAfterDecoding);
+        }
     }
     return self;
 }
