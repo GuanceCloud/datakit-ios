@@ -19,6 +19,7 @@
 
 
 #import <Foundation/Foundation.h>
+/// 自定义 RUM 资源属性 Block
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 NS_ASSUME_NONNULL_BEGIN
