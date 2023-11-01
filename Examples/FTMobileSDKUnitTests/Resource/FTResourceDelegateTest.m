@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
-    traceConfig.enableAutoTrace = YES;
+    traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];

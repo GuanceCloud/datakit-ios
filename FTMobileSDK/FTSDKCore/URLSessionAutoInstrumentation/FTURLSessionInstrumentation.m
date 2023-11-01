@@ -70,9 +70,8 @@ static dispatch_once_t onceToken;
     _enableAutoTrace = enableAutoTrace;
     [[FTTracer shared] startWithSampleRate:sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:enableLinkRumData];
     _tracer = [FTTracer shared];
-    [[FTURLSessionInterceptor shared] setTracer:_tracer];
+    [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){
-        [self.interceptor setTracer:_tracer];
         [self startURLProtocolMonitor];
     }
 }
