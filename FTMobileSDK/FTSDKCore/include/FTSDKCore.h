@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTANRDetector.h"
-#import "FTPingThread.h"
+#import "FTLongTaskDetector.h"
 #import "FTDateUtil.h"
 #import "FTPresetProperty.h"
 #import "FTRecordModel.h"
@@ -26,7 +25,7 @@
 #import "FTLogger.h"
 #import "FTLoggerDataWriteProtocol.h"
 #import "FTLogger+Private.h"
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionDelegate.h"
 #import "FTReadWriteHelper.h"
 #import "FTJSONUtil.h"
