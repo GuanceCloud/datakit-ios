@@ -31,6 +31,8 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
         if ([interceptor isTraceUrl:url]){
             NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
             if (@available(iOS 13.0, *)) {
+                NSURLRequest *interceptedRequest = [interceptor interceptRequest:task.originalRequest];
+                [task setValue:interceptedRequest forKey:@"currentRequest"];
                 [interceptor taskCreated:task];
             }
             return task;
@@ -60,6 +62,8 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             }else{
                 task = [self ft_dataTaskWithURL:url completionHandler:completionHandler];
             }
+            NSURLRequest *interceptedRequest = [interceptor interceptRequest:task.originalRequest];
+            [task setValue:interceptedRequest forKey:@"currentRequest"];
             [interceptor taskCreated:task];
             return task;
         }

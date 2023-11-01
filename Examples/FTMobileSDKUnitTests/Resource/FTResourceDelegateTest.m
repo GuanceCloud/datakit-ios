@@ -164,6 +164,8 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
                 XCTAssertTrue([fields.allKeys containsObject:@"request_body"]);
                 XCTAssertTrue([fields.allKeys containsObject:@"response_body"]);
             }
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
         }
     }];
     XCTAssertTrue(hasResource == has);
