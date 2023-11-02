@@ -33,7 +33,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             if (@available(iOS 13.0, *)) {
                 NSURLRequest *interceptedRequest = [interceptor interceptRequest:task.originalRequest];
                 [task setValue:interceptedRequest forKey:@"currentRequest"];
-                [interceptor taskCreated:task];
+                [interceptor interceptTask:task];
             }
             return task;
         }
@@ -64,7 +64,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             }
             NSURLRequest *interceptedRequest = [interceptor interceptRequest:task.originalRequest];
             [task setValue:interceptedRequest forKey:@"currentRequest"];
-            [interceptor taskCreated:task];
+            [interceptor interceptTask:task];
             return task;
         }
     }
@@ -77,7 +77,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             NSURLRequest *newRequest = [interceptor interceptRequest:request];
             NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
             if (@available(iOS 13.0, *)) {
-                [interceptor taskCreated:task];
+                [interceptor interceptTask:task];
             }
             return task;
         }
@@ -106,7 +106,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             }else{
                 task = [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
             }
-            [interceptor taskCreated:task];
+            [interceptor interceptTask:task];
             return task;
         }
     }

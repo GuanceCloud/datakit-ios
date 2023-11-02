@@ -106,8 +106,8 @@ static id<FTAutoInterceptorProtocol> sDelegate;
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
     id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
-    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(taskCreated:)]) {
-        [strongeDelegate.interceptor taskCreated:task];
+    if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(interceptTask:)]) {
+        [strongeDelegate.interceptor interceptTask:task];
     }
     [task resume];
 }

@@ -48,7 +48,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 /// - Parameters:
 ///   - task: 请求任务
 ///   - session: session
-- (void)taskCreated:(NSURLSessionTask *)task;
+- (void)interceptTask:(NSURLSessionTask *)task;
 
 /// 收集请求的数据信息
 /// - Parameters:

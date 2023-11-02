@@ -10,7 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @class FTResourceContentModel,FTResourceMetricsModel;
 /// 处理单条请求，将单条请求的拦截到的数据绑定处理成 rum 需要的数据
-@interface FTTraceHandler : NSObject
+@interface FTSessionTaskHandler : NSObject
 /// 唯一标识，用于 rum  处理 resource 数据的标识
 @property (nonatomic, copy, readwrite) NSString *identifier;
 

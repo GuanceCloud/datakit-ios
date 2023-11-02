@@ -7,12 +7,12 @@
 //
 
 #import "FTURLSessionInterceptor.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTReadWriteHelper.h"
 @interface FTURLSessionInterceptor ()
-@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTTraceHandler *>*> *traceHandlers;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 @property (nonatomic, weak) id<FTTracerProtocol> tracer;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -50,21 +50,21 @@ static dispatch_once_t onceToken;
  * 内部采集以 task 为 key
  * 外部传传入为 NSString 类型的 key
  */
-- (void)setTraceHandler:(FTTraceHandler *)handler forKey:(id)key{
+- (void)setTraceHandler:(FTSessionTaskHandler *)handler forKey:(id)key{
     if (key == nil) {
         return;
     }
-    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTTraceHandler *> * _Nonnull value) {
+    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
         [value setValue:handler forKey:key];
     }];
 }
 // 因为不涉及 trace 数据写入 调用-getTraceHandler方法的仅是 rum 操作 需要确保 rum 调用此方法
-- (FTTraceHandler *)getTraceHandler:(id)key{
+- (FTSessionTaskHandler *)getTraceHandler:(id)key{
     if (key == nil) {
         return nil;
     }
-    __block FTTraceHandler *handler;
-    [self.traceHandlers concurrentRead:^(NSMutableDictionary<id,FTTraceHandler *> * _Nonnull value) {
+    __block FTSessionTaskHandler *handler;
+    [self.traceHandlers concurrentRead:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
         handler = [value objectForKey:key];
     }];
     return handler;
@@ -73,7 +73,7 @@ static dispatch_once_t onceToken;
     if (key == nil) {
         return;
     }
-    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTTraceHandler *> * _Nonnull value) {
+    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
         [value removeObjectForKey:key];
     }];
 }
@@ -90,11 +90,6 @@ static dispatch_once_t onceToken;
 -(id<FTRumResourceProtocol>)rumResourceHandeler{
     return _rumResourceHandeler;
 }
-- (void)taskCreated:(NSURLSessionTask *)task{
-    FTTraceHandler *handler = [[FTTraceHandler alloc]init];
-    [self setTraceHandler:handler forKey:task];
-    [self startResourceWithKey:handler.identifier];
-}
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
     NSMutableURLRequest *mutableReqeust = [request mutableCopy];
@@ -110,9 +105,9 @@ static dispatch_once_t onceToken;
         if(!task.originalRequest){
             return;
         }
-        FTTraceHandler *handler = [self getTraceHandler:task];
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
-            FTTraceHandler *handler = [[FTTraceHandler alloc]init];
+            FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
             handler.request = task.originalRequest;
             [self setTraceHandler:handler forKey:task];
             [self startResourceWithKey:handler.identifier];
@@ -121,7 +116,7 @@ static dispatch_once_t onceToken;
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
     dispatch_async(self.queue, ^{
-        FTTraceHandler *handler = [self getTraceHandler:task];
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
         }
@@ -130,7 +125,7 @@ static dispatch_once_t onceToken;
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     dispatch_async(self.queue, ^{
-        FTTraceHandler *handler = [self getTraceHandler:task];
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
         }
@@ -139,7 +134,7 @@ static dispatch_once_t onceToken;
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
     dispatch_async(self.queue, ^{
-        FTTraceHandler *handler = [self getTraceHandler:task];
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
         }
@@ -163,7 +158,7 @@ static dispatch_once_t onceToken;
 
 #pragma mark --------- external data ----------
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    __block FTTraceHandler *handler = [[FTTraceHandler alloc]initWithIdentifier:key];
+    __block FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]initWithIdentifier:key];
     NSDictionary *dict = nil;
     if(self.tracer.enableLinkRumData){
        dict = [self.tracer networkTraceHeaderWithUrl:url handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
@@ -198,7 +193,7 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    FTTraceHandler *handler = [self getTraceHandler:key];
+    FTSessionTaskHandler *handler = [self getTraceHandler:key];
     [self removeTraceHandlerWithKey:key];
     [self addResourceWithKey:key metrics:metrics content:content spanID:handler.spanID traceID:handler.traceID];
 }

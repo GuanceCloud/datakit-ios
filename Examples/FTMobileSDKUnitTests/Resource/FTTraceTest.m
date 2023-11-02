@@ -29,7 +29,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTURLSessionInterceptor.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTTracer.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate,NSCacheDelegate>

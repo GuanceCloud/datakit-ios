@@ -23,7 +23,7 @@
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
 #import "FTTracer.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
