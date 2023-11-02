@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170CD0A12AF3422000DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		170CD0A22AF3422000DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; };
+		170CD0A32AF3422100DB248C /* FTAutoInterceptorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */; };
 		174D91A32A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
 		174D91A42A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; };
 		174D91A52A2083C300D85AAA /* FTLogger+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 174D91A22A2083C300D85AAA /* FTLogger+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
