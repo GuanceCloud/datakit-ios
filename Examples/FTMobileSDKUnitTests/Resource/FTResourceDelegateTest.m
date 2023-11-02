@@ -108,11 +108,13 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
 - (void)testResourcePropertyProvider{
     [self sdkNormalSet];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        XCTAssertTrue(request);
         NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
         NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        XCTAssertTrue([body isEqualToString:@"111"]);
         return @{@"request_body":body,@"response_body":responseBody};
     };
-    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES provider:provider];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:provider];
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
     [self sdkNormalSet];

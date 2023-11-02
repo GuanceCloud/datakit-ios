@@ -115,7 +115,9 @@
 - (void)network:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPBody = [@"111" dataUsingEncoding:NSUTF8StringEncoding];
+    request.HTTPMethod = @"POST";
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(completionHandler){
             completionHandler(data,response,error);
