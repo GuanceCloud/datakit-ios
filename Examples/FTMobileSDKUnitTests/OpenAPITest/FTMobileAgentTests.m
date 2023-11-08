@@ -22,6 +22,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
+#import "FTMobileConfig+Private.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -54,7 +55,12 @@
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 #pragma mark ========== 用户数据绑定 ==========
+/// 测试兼容适配 1.3.6 及以下版本旧的用户绑定逻辑
+/// 旧：key:ft_userid
+///    value: user_id
 ///
+/// 新：key：FT_USER_INFO
+///    value: 用户数据字典
 - (void)testAdaptOldUserSet{
     [self setRightSDKConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
@@ -73,7 +79,7 @@
 }
 /**
  * 测试 绑定用户
- * 验证：获取 RUM ES 数据 判断 userid 是否与设置一致
+ * 验证：获取 RUM 数据 判断 userid 是否与设置一致
  */
 - (void)testBindUser{
     [self setRightSDKConfig];
@@ -308,7 +314,22 @@
     XCTAssertTrue(copyRumConfig.deviceMetricsMonitorType == rumConfig.deviceMetricsMonitorType);
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
-
+}
+- (void)testRUMConfigInitWithDict{
+    XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+    NSDictionary *dict = [rumConfig convertToDictionary];
+    FTRumConfig *newRum = [[FTRumConfig alloc]initWithDictionary:dict];
+    XCTAssertTrue(rumConfig.enableTrackAppANR == newRum.enableTrackAppANR);
+    XCTAssertTrue(rumConfig.enableTraceUserView == newRum.enableTraceUserView);
+    XCTAssertTrue(rumConfig.samplerate == newRum.samplerate);
+    XCTAssertTrue(rumConfig.enableTrackAppCrash == newRum.enableTrackAppCrash);
+    XCTAssertTrue(rumConfig.enableTraceUserAction == newRum.enableTraceUserAction);
+    XCTAssertTrue(rumConfig.enableTrackAppFreeze == newRum.enableTrackAppFreeze);
+    XCTAssertTrue(rumConfig.errorMonitorType == newRum.errorMonitorType);
+    XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
+    XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
+    XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -321,6 +342,16 @@
     XCTAssertTrue(copyTraceConfig.enableLinkRumData == traceConfig.enableLinkRumData);
     XCTAssertTrue(copyTraceConfig.samplerate == traceConfig.samplerate);
     XCTAssertTrue(copyTraceConfig.networkTraceType == traceConfig.networkTraceType);
+}
+- (void)testTraceConfigInitWithDict{
+    XCTAssertNil([[FTTraceConfig alloc]initWithDictionary:nil]);
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    NSDictionary *dict = [traceConfig convertToDictionary];
+    FTTraceConfig *newTrace = [[FTTraceConfig alloc]initWithDictionary:dict];
+    XCTAssertTrue(traceConfig.enableAutoTrace == newTrace.enableAutoTrace);
+    XCTAssertTrue(traceConfig.networkTraceType == newTrace.networkTraceType);
+    XCTAssertTrue(traceConfig.samplerate == newTrace.samplerate);
+    XCTAssertTrue(traceConfig.enableLinkRumData == newTrace.enableLinkRumData);
 }
 - (void)testLoggerConfigCopy{
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -337,6 +368,17 @@
     XCTAssertTrue(copyLoggerConfig.enableLinkRumData == loggerConfig.enableLinkRumData);
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
+}
+- (void)testLoggerConfigInitWithDict{
+    XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    NSDictionary *dict = [loggerConfig convertToDictionary];
+    FTLoggerConfig *newLogger = [[FTLoggerConfig alloc]initWithDictionary:dict];
+    XCTAssertTrue(loggerConfig.logLevelFilter == newLogger.logLevelFilter);
+    XCTAssertTrue(loggerConfig.globalContext == newLogger.globalContext);
+    XCTAssertTrue(loggerConfig.samplerate == newLogger.samplerate);
+    XCTAssertTrue(loggerConfig.enableLinkRumData == newLogger.enableLinkRumData);
+    XCTAssertTrue(loggerConfig.printCustomLogToConsole == newLogger.printCustomLogToConsole);
 }
 - (void)testShutDown{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
@@ -367,7 +409,6 @@
     // 日志不再采集
     for (int i = 0; i<20; i++) {
         [[FTLogger sharedInstance] info:@"test" property:nil];
-
     }
     [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
@@ -393,7 +434,6 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
-    [tester waitForTimeInterval:1];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSDictionary *requestHeader ,NSError *error))completionHandler{

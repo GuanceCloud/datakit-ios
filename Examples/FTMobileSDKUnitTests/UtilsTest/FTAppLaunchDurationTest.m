@@ -7,17 +7,13 @@
 //
 
 #import <KIF/KIF.h>
-#import "FTMobileAgent.h"
-#import "FTTrackDataManager+Test.h"
-#import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
-#import "FTRecordModel.h"
-#import "FTJSONUtil.h"
-#import "FTConstants.h"
-#import "FTMobileAgent+Private.h"
-#import "FTGlobalRumManager.h"
+#import "FTAppLaunchTracker.h"
 #import "FTRUMManager.h"
-@interface FTAppLaunchDurationTest : KIFTestCase
+typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
+
+@interface FTAppLaunchDurationTest : KIFTestCase<FTAppLaunchDataDelegate>
+@property (nonatomic, strong) FTAppLaunchTracker *launchtracker;
+@property (nonatomic, copy) LaunchBlock launchBlock;
 @end
 
 @implementation FTAppLaunchDurationTest
@@ -25,72 +21,44 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
-- (void)setSDK{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
-    rumConfig.enableTraceUserAction = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-}
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLaunchCold{
-    [self setSDK];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-selector:@selector(applicationDidBecomeActive:)
-    name:UIApplicationDidBecomeActiveNotification
-object:nil];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
+        XCTAssertTrue(type == FTLaunchCold);
+        [expectation fulfill];
+    };
+    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.launchBlock = nil;
 }
-- (void)applicationDidBecomeActive:(NSNotification *)noti{
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSString *op = dict[@"op"];
-    XCTAssertTrue([op isEqualToString:@"RUM"]);
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *measurement = opdata[@"source"];
-    BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
-        haslaunch = YES;
-        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
-                       isEqualToString:@"launch_cold"]);
-    }
-    XCTAssertTrue(haslaunch);
-}
-- (void)testSetSdkAfterLaunch{
+
+- (void)testStartSdkAfterLaunch{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
+        XCTAssertTrue(type == FTLaunchCold);
+        [expectation fulfill];
+    };
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [self setSDK];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSString *op = dict[@"op"];
-    XCTAssertTrue([op isEqualToString:@"RUM"]);
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *measurement = opdata[@"source"];
-    BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
-        haslaunch = YES;
-        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
-                       isEqualToString:@"launch_cold"]);
-    }
-    XCTAssertTrue(haslaunch);
+    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.launchBlock = nil;
 }
 - (void)testLaunchHot{
-    [self setSDK];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
+        if(type == FTLaunchHot){
+            [expectation fulfill];
+        }
+    };
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -98,22 +66,39 @@ object:nil];
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.launchBlock = nil;
+}
+- (void)testLaunchPrewarm{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
+        if(type == FTLaunchWarm){
+            [expectation fulfill];
+        }
+    };
+    setenv("ActivePrewarm", "1", 1);
+    [NSClassFromString(@"FTAppLaunchTracker") load];
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
 
-    FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSString *op = dict[@"op"];
-    XCTAssertTrue([op isEqualToString:@"RUM"]);
-    NSDictionary *opdata = dict[@"opdata"];
-    NSDictionary *tags = opdata[FT_TAGS];
-    NSString *measurement = opdata[@"source"];
-    BOOL haslaunch = NO;
-    if ([measurement isEqualToString:FT_RUM_SOURCE_ACTION]) {
-        haslaunch = YES;
-        XCTAssertTrue([tags[FT_KEY_ACTION_TYPE]
-                       isEqualToString:@"launch_hot"]);
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    self.launchBlock = nil;
+    setenv("ActivePrewarm", "", 1);
+    [NSClassFromString(@"FTAppLaunchTracker") load];
+}
+- (void)ftAppColdStart:(nonnull NSNumber *)duration isPreWarming:(BOOL)isPreWarming { 
+    if(self.launchBlock){
+        self.launchBlock(duration, isPreWarming?FTLaunchWarm:FTLaunchCold);
     }
-    XCTAssertTrue(haslaunch);
+}
+- (void)ftAppHotStart:(nonnull NSNumber *)duration { 
+    if(self.launchBlock){
+        self.launchBlock(duration, FTLaunchHot);
+    }
 }
 
 @end

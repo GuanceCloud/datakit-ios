@@ -127,10 +127,11 @@
     }];
     [self shutDownSDK];
 }
+
 - (void)testMonitorAll{
     [self setRumMonitorType:FTDeviceMetricsMonitorAll];
     [FTModelHelper startView];
-    [tester waitForTimeInterval:1];
+    [tester waitForTimeInterval:1.5];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
