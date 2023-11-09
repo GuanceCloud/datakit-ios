@@ -9,6 +9,7 @@
 #import "FTExternalDataManager.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
+#import "FTInternalLog.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
@@ -21,6 +22,12 @@
         sharedManager = [[FTExternalDataManager alloc]init];
     });
     return sharedManager;
+}
+-(id<FTRumDatasProtocol>)delegate{
+    if(!_delegate){
+        FTInnerLogError(@"SDK configuration RUM error, RUM is not supported");
+    }
+    return _delegate;
 }
 #pragma mark - Rum -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{

@@ -11,6 +11,7 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTReadWriteHelper.h"
+#import "FTInternalLog.h"
 @interface FTURLSessionInterceptor ()
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
@@ -98,6 +99,9 @@ static dispatch_once_t onceToken;
     _rumResourceHandeler = innerResourceHandeler;
 }
 -(id<FTRumResourceProtocol>)rumResourceHandeler{
+    if(!_rumResourceHandeler){
+        FTInnerLogError(@"SDK configuration RUM error, RUM is not supported");
+    }
     return _rumResourceHandeler;
 }
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
@@ -183,6 +187,10 @@ static dispatch_once_t onceToken;
 
 #pragma mark --------- external data ----------
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+    if(!_tracer){
+        FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
+        return nil;
+    }
     __block FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]initWithIdentifier:key];
     NSDictionary *dict = nil;
     if(self.tracer.enableLinkRumData){
