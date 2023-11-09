@@ -33,6 +33,9 @@ static dispatch_once_t onceToken;
     });
 }
 + (instancetype)sharedInstance {
+    if(!sharedInstance){
+        FTInnerLogError(@"SDK 配置 Logger 异常，无法采集自定义日志");
+    }
     return sharedInstance;
 }
 -(instancetype)initWithEablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer{
