@@ -79,6 +79,7 @@ let package = Package(
             path: "FTMobileSDK/FTSDKCore/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
+                .headerSearchPath("LongTask"),
             ]
         ),
         .target(name: "_FTURLSessionAutoInstrumentation",
@@ -87,12 +88,6 @@ let package = Package(
                 publicHeadersPath: ".",
                 cSettings: [
                 ]),
-        .target(name: "_FTLongTask",
-                dependencies: ["_FTBaseUtils_Base"],
-                path: "FTMobileSDK/FTSDKCore/LongTask",
-                publicHeadersPath: "."
-               
-               ),
         .target(name: "_FTLogger",
                 dependencies: ["_FTBaseUtils_Base"],
                 path: "FTMobileSDK/FTSDKCore/Logger",
@@ -159,7 +154,6 @@ let package = Package(
                                "_FTRUM",
                                "_FTURLSessionAutoInstrumentation",
                                "_FTException",
-                               "_FTLongTask",
                                "_FTLogger"
                               ],
                 path: "FTMobileSDK/FTSDKCore",
