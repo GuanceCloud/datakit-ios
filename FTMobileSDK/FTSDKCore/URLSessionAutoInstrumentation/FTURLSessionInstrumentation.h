@@ -22,10 +22,10 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
-#import "FTEnumConstant.h"
 #import "FTAutoInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
+typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
 @interface FTURLSessionInstrumentation : NSObject<FTAutoInterceptorProtocol>
@@ -48,7 +48,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 ///   - enableLinkRumData: 是否关联 RUM
 ///   - sampleRate: 采样率
 ///   - traceType: 链路类型
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType;
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType;
 /// 设置 sdk 内部的数据上传 url
 /// - Parameter sdkUrlStr: sdk 内部的数据上传 url
 - (void)setSdkUrlStr:(NSString *)sdkUrlStr;

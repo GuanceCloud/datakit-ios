@@ -149,5 +149,7 @@
     [task resume];
 }
 
-
+-(void)dealloc{
+    [_session invalidateAndCancel];
+}
 @end

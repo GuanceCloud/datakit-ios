@@ -14,6 +14,7 @@
 #import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
+#import "FTInternalLog.h"
 static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()
@@ -24,20 +25,16 @@ static NSUInteger SkywalkingSeq = 0.0;
 @property (nonatomic, assign) NetworkTraceType traceType;
 @end
 @implementation FTTracer
-static FTTracer *sharedInstance = nil;
 @synthesize enableLinkRumData = _enableLinkRumData;
-static dispatch_once_t onceToken;
-+ (instancetype)shared{
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-        [sharedInstance startWithSampleRate:100 traceType:(FTNetworkTraceType)DDtrace enableLinkRumData:NO];
-    });
-    return sharedInstance;
-}
-- (void)startWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
-    _sampleRate = sampleRate;
-    _traceType = (NetworkTraceType)traceType;
-    _enableLinkRumData = link;
+
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
+    self = [super init];
+    if(self){
+        _sampleRate = sampleRate;
+        _traceType = (NetworkTraceType)traceType;
+        _enableLinkRumData = link;
+    }
+    return self;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
@@ -299,9 +296,5 @@ static dispatch_once_t onceToken;
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
-}
-- (void)shutDown{
-    onceToken = 0;
-    sharedInstance = nil;
 }
 @end

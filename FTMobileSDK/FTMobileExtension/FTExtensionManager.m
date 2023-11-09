@@ -69,9 +69,11 @@ static FTExtensionManager *sharedInstance = nil;
         traceConfig.enableAutoTrace = self.extensionConfig.enableTracerAutoTrace;
         [self startTraceWithConfigOptions:traceConfig];
     }
-    self.loggerConfig = loggerConfig;
-    self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
-    [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+    if(loggerConfig){
+        self.loggerConfig = loggerConfig;
+        self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
+        [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+    }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource];

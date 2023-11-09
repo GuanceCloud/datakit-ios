@@ -94,7 +94,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
+        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];

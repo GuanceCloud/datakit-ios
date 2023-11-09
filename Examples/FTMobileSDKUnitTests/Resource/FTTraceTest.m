@@ -57,7 +57,6 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTTracer shared] startWithSampleRate:traceConfig.samplerate traceType:traceConfig.networkTraceType enableLinkRumData:NO];
 }
 
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{

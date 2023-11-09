@@ -21,9 +21,10 @@
 #import <Foundation/Foundation.h>
 /// 自定义 RUM 资源属性 Block
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
+typedef NSURLRequest* _Nonnull(^RequestInterceptor)(NSURLRequest* _Nonnull request);
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTURLSessionDelegate,FTURLSessionInstrumentation;
+@class FTURLSessionDelegate;
 
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
 ///
@@ -42,9 +43,14 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
 @interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+
+/// 拦截 Request 修改 request
+@property (nonatomic,copy) RequestInterceptor requestInterceptor;
 /// 告诉拦截器需要自定义 RUM 资源属性。
 @property (nonatomic,copy) ResourcePropertyProvider provider;
 
+- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate;
+- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate requestInterceptor:(nullable RequestInterceptor)requestInterceptor extraProvider:(nullable ResourcePropertyProvider)provider;
 /// 实现拦截 url 请求过程的代理
 - (FTURLSessionDelegate *)ftURLSessionDelegate;
 @end

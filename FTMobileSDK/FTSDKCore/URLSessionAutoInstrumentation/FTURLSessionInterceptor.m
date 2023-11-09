@@ -91,12 +91,18 @@ static dispatch_once_t onceToken;
     return _rumResourceHandeler;
 }
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
+    if(!_tracer){
+        return request;
+    }
     NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
     NSMutableURLRequest *mutableReqeust = [request mutableCopy];
     if (traceHeader && traceHeader.allKeys.count>0) {
         [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
             [mutableReqeust setValue:value forHTTPHeaderField:field];
         }];
+    }
+    if(self.requestInterceptor){
+        return self.requestInterceptor(mutableReqeust)?:mutableReqeust;
     }
     return mutableReqeust;
 }

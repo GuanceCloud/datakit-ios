@@ -48,10 +48,9 @@
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Rum、Trace 开启 Resource 自动采集" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-        
-        [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
-            
-        }];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        NSURLSessionDataTask *task = [session dataTaskWithRequest:request];
+        [task resume];
     }];
     // 避免数据重复请关闭 enableTraceUserResource
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"直接使用 FTURLSessionDelegate" handler:^{

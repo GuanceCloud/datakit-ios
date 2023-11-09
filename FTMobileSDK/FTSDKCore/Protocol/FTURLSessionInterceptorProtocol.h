@@ -25,6 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
+typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *request);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
@@ -34,6 +35,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 @optional
 /// 采集的 resource 数据接收对象
 @property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
+@property (nonatomic,copy) RequestInterceptor requestInterceptor;
 @property (nonatomic,copy) ResourcePropertyProvider provider;
 /// 判断是否采集 url
 /// - Parameter url: url

@@ -33,6 +33,7 @@
 @property (nonatomic, strong) FTTracer *tracer;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) int bindingsCount;
+@property (nonatomic, assign) BOOL autoRegistration;
 @end
 @implementation FTURLSessionInstrumentation
 @synthesize enableAutoRumTrack = _enableAutoRumTrack;
@@ -66,19 +67,18 @@ static dispatch_once_t onceToken;
 -(id<FTTracerProtocol>)tracer{
     return _tracer;
 }
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType{
     _enableAutoTrace = enableAutoTrace;
-    [[FTTracer shared] startWithSampleRate:sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:enableLinkRumData];
-    _tracer = [FTTracer shared];
+    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate traceType:traceType enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){
-        [self startURLProtocolMonitor];
+        [self enableAutomaticRegistration];
     }
 }
 -(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
     _enableAutoRumTrack = enableAutoRumTrack;
     if(enableAutoRumTrack){
-        [self startURLProtocolMonitor];
+        [self enableAutomaticRegistration];
     }
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
@@ -119,12 +119,34 @@ static dispatch_once_t onceToken;
 - (void)_swizzleURLSession{
     NSError *error = NULL;
     if(@available(iOS 13.0, *)){
+        //在 iOS 13 以前 调用 -dataTaskWithURL:/dataTaskWithURL:completionHandler:系统内部会调用 -dataTaskWithRequest:/dataTaskWithRequest:completionHandler:
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
     }
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
+-(void)enableAutomaticRegistration{
+    [self.lock lock];
+    if(self.autoRegistration == NO){
+        self.autoRegistration = YES;
+        [self _swizzleURLSessionInit];
+    }
+    [self.lock unlock];
+}
+-(void)disableAutomaticRegistration{
+    [self.lock lock];
+    if(self.autoRegistration == YES){
+        self.autoRegistration = NO;
+        [self _swizzleURLSessionInit];
+    }
+    [self.lock unlock];
+}
+- (void)_swizzleURLSessionInit{
+    NSError *error = NULL;
+    [NSURLSession ft_swizzleClassMethod:@selector(ft_sessionWithConfiguration:delegate:delegateQueue:) withClassMethod:@selector(sessionWithConfiguration:delegate:delegateQueue:) error:&error];
+}
+
 #pragma mark ========== FTAutoInterceptorProtocol ==========
 -(BOOL)enableAutoRumTrack{
     return _enableAutoRumTrack;
@@ -151,8 +173,8 @@ static dispatch_once_t onceToken;
 }
 - (void)resetInstance{
     [self unswizzleURLSession];
-    [[FTTracer shared] shutDown];
     [[FTURLSessionInterceptor shared] shutDown];
+    [self disableAutomaticRegistration];
     onceToken = 0;
     sharedInstance =nil;
 }

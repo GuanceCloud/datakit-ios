@@ -18,6 +18,7 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "FTTrackerEventDBTool.h"
+#import "FTLogger+Private.h"
 @interface FTExtensionSDKTest : XCTestCase
 
 @end
@@ -111,6 +112,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -157,7 +159,7 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:0.5];
+    [[FTLogger sharedInstance] syncProcess];
     NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(newDatas.count>olddatas.count);
     __block BOOL hasLogger = NO;

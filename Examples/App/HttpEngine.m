@@ -72,7 +72,7 @@
     id<NSURLSessionDelegate> delegate;
     switch (type) {
         case InstrumentationDirect:{
-            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
+            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]initWithRealDelegate:self];
             ftdelegate.provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
                 NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
                 return @{@"request_body":body};
