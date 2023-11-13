@@ -23,6 +23,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 }
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    self.launchtracker = nil;
 }
 - (void)testLaunchCold{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
