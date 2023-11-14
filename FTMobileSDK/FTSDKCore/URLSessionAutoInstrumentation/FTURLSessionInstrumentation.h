@@ -24,7 +24,6 @@
 #import "FTExternalResourceProtocol.h"
 #import "FTAutoInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
@@ -63,6 +62,10 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 /// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
 
+/// 设置 session swizzle
+- (void)enableAutoSwizzleSession;
+///
+- (void)disableAutoSwizzleSession;
 /// 注销
 - (void)resetInstance;
 @end

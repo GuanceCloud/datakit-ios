@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
 ///
 /// 必须确保 `ftURLSessionDelegate` 调用所需的方法
+DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] initWithRealDelegate:] 替换")
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 /// 自动化采集的委托代理对象
 ///
@@ -39,20 +40,39 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 
 @end
-/// `URLSession` 支持自动化采集的代理委托对象。
-///
-/// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+/// 自动化 URLSession 请求跟踪。
+@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate>
+
+/// 告诉拦截器需要自定义 RUM 资源属性。
+@property (nonatomic,copy) ResourcePropertyProvider provider DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [FTURLSessionDelegate propertyProvider:] 替换");
+
+/// 初始化方法，它位于 `URLSession` 和实际的 `URLSessionDelegate` 之间。
+/// 它将记录所有需要的事件并将方法转发给原始委托
+/// - Parameter delegate: "实际的" session delegate。
+- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate;
 
 /// 拦截 Request 修改 request
-@property (nonatomic,copy) RequestInterceptor requestInterceptor;
-/// 告诉拦截器需要自定义 RUM 资源属性。
-@property (nonatomic,copy) ResourcePropertyProvider provider;
++ (void)requestInterceptor:(RequestInterceptor)requestInterceptor;
 
-- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate;
-- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate requestInterceptor:(nullable RequestInterceptor)requestInterceptor extraProvider:(nullable ResourcePropertyProvider)provider;
-/// 实现拦截 url 请求过程的代理
-- (FTURLSessionDelegate *)ftURLSessionDelegate;
+/// 告诉拦截器需要自定义 RUM 资源属性。
++ (void)rumResourcePropertyProvider:(ResourcePropertyProvider)provider;
+
+/// 启用自动注册`FTURLSessionDelegate`。
+/// 在调用这个方法之后，每次您使用`init(configuration:delegate:delegateQueue:)`方法初始化一个`URLSession`时
+/// 委托将自动被替换为`FTURLSessionDelegate`，它将记录所有需要的事件并将方法转发给原始委托。
+/// 
+/// - 注意:不支持 async/await URLSession APIs
+///
+/// 在实例化`URLSession`之前在代码中的任何地方调用它
+/// ```objc
+/// [FTURLSessionDelegate enableAutomaticRegistration];
+/// 
+/// [NSURLSession sessionWithConfiguration:configuration delegate:YourDelegate delegateQueue:nil];
+/// ```
++ (void)enableAutomaticRegistration;
+
+/// 关闭自动注册`FTURLSessionDelegate`。
++ (void)disableAutomaticRegistration;
 @end
 
 

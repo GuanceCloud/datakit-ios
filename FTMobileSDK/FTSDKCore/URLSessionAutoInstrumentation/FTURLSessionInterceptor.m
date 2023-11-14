@@ -95,20 +95,21 @@ static dispatch_once_t onceToken;
     return _rumResourceHandeler;
 }
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
-    if(!_tracer){
-        return request;
-    }
-    NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
-    NSMutableURLRequest *mutableReqeust = [request mutableCopy];
-    if (traceHeader && traceHeader.allKeys.count>0) {
-        [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-            [mutableReqeust setValue:value forHTTPHeaderField:field];
-        }];
+    NSURLRequest *backRequest = request;
+    if(_tracer){
+        NSMutableURLRequest *mutableReqeust = [backRequest mutableCopy];
+        NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
+        if (traceHeader && traceHeader.allKeys.count>0) {
+            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                [mutableReqeust setValue:value forHTTPHeaderField:field];
+            }];
+        }
+        backRequest = mutableReqeust;
     }
     if(self.requestInterceptor){
-        return self.requestInterceptor(mutableReqeust)?:mutableReqeust;
+        return self.requestInterceptor(backRequest)?:backRequest;
     }
-    return mutableReqeust;
+    return backRequest;
 }
 - (void)interceptTask:(NSURLSessionTask *)task{
     dispatch_async(self.queue, ^{
@@ -167,6 +168,7 @@ static dispatch_once_t onceToken;
 }
 
 #pragma mark --------- external data ----------
+// skywalking 需要参数 URL
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");

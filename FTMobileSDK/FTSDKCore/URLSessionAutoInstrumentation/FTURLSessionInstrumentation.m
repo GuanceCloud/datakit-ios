@@ -31,7 +31,7 @@
 @property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, assign) BOOL enableAutoTrace;
 @property (nonatomic, strong) FTTracer *tracer;
-@property (nonatomic, strong) NSLock *lock;
+@property (nonatomic, strong) NSRecursiveLock *lock;
 @property (nonatomic, assign) int bindingsCount;
 @property (nonatomic, assign) BOOL autoRegistration;
 @end
@@ -50,7 +50,7 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _lock = [[NSLock alloc]init];
+        _lock = [[NSRecursiveLock alloc]init];
         _bindingsCount = 0;
     }
     return self;
@@ -72,13 +72,13 @@ static dispatch_once_t onceToken;
     _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate traceType:traceType enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){
-        [self enableAutomaticRegistration];
+        [self startURLProtocolMonitor];
     }
 }
 -(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
     _enableAutoRumTrack = enableAutoRumTrack;
     if(enableAutoRumTrack){
-        [self enableAutomaticRegistration];
+        [self startURLProtocolMonitor];
     }
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
@@ -126,19 +126,21 @@ static dispatch_once_t onceToken;
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
--(void)enableAutomaticRegistration{
+-(void)enableAutoSwizzleSession{
     [self.lock lock];
     if(self.autoRegistration == NO){
         self.autoRegistration = YES;
         [self _swizzleURLSessionInit];
+        [self swizzleURLSession];
     }
     [self.lock unlock];
 }
--(void)disableAutomaticRegistration{
+-(void)disableAutoSwizzleSession{
     [self.lock lock];
     if(self.autoRegistration == YES){
         self.autoRegistration = NO;
         [self _swizzleURLSessionInit];
+        [self unswizzleURLSession];
     }
     [self.lock unlock];
 }
@@ -172,9 +174,9 @@ static dispatch_once_t onceToken;
     return trace;
 }
 - (void)resetInstance{
+    [self disableAutoSwizzleSession];
     [self unswizzleURLSession];
     [[FTURLSessionInterceptor shared] shutDown];
-    [self disableAutomaticRegistration];
     onceToken = 0;
     sharedInstance =nil;
 }

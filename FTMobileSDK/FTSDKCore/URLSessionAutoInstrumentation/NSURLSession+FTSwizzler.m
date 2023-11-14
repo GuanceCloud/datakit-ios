@@ -26,7 +26,7 @@
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 @implementation NSURLSession (FTSwizzler)
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class] || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         FTURLSessionInstrumentation *instrument = [FTURLSessionInstrumentation sharedInstance];
         id<FTURLSessionInterceptorProtocol> interceptor = [instrument interceptor];
         if ([instrument isTraceUrl:url]){
@@ -43,7 +43,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class] || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         FTURLSessionInstrumentation *instrument = [FTURLSessionInstrumentation sharedInstance];
         id<FTURLSessionInterceptorProtocol> interceptor = [instrument interceptor];
         if ([instrument isTraceUrl:url]){
@@ -73,7 +73,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class] || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         FTURLSessionInstrumentation *instrument = [FTURLSessionInstrumentation sharedInstance];
         id<FTURLSessionInterceptorProtocol> interceptor = [instrument interceptor];
         if ([instrument isTraceUrl:request.URL]){
@@ -88,7 +88,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class] || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         FTURLSessionInstrumentation *instrument = [FTURLSessionInstrumentation sharedInstance];
         id<FTURLSessionInterceptorProtocol> interceptor = [instrument interceptor];
         if ([instrument isTraceUrl:request.URL]){
@@ -117,7 +117,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
 }
 +(NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue{
-    FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc] initWithRealDelegate:delegate requestInterceptor:nil extraProvider:nil];
+    FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc] initWithRealDelegate:delegate];
     return [NSURLSession ft_sessionWithConfiguration:configuration delegate:ftDelegate delegateQueue:queue];
 }
 @end
