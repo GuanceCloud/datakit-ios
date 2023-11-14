@@ -228,7 +228,6 @@
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
     [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
-    NSLog(@"testSampleRate0");
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 

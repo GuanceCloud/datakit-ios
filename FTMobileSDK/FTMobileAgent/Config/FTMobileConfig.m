@@ -110,15 +110,19 @@
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
-    if (self = [super init]) {
-        _samplerate = [dict[@"samplerate"] intValue];
-        _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-        _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
-        _logLevelFilter = dict[@"logLevelFilter"];
-        _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
-        _globalContext = dict[@"globalContext"];
+    if(dict){
+        if (self = [super init]) {
+            _samplerate = [dict[@"samplerate"] intValue];
+            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
+            _logLevelFilter = dict[@"logLevelFilter"];
+            _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
+            _globalContext = dict[@"globalContext"];
+        }
+        return self;
+    }else{
+        return nil;
     }
-    return self;
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -149,13 +153,17 @@
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
-    if (self = [super init]) {
-        _samplerate = [dict[@"samplerate"] intValue];
-        _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-        _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
-        _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+    if(dict){
+        if (self = [super init]) {
+            _samplerate = [dict[@"samplerate"] intValue];
+            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
+            _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+        }
+        return self;
+    }else{
+        return nil;
     }
-    return self;
 }
 -(NSDictionary *)convertToDictionary{
     return @{@"samplerate":@(self.samplerate),

@@ -122,7 +122,7 @@ static FTExtensionManager *sharedInstance = nil;
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)rumWrite:(NSString *)type  tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
+- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
     [self rumWrite:type tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{

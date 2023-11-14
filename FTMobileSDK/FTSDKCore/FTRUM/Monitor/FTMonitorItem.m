@@ -27,9 +27,11 @@
         _displayRateMonitor = displayRateMonitor;
         _memoryMonitor = memoryMonitor;
         _frequency = frequency;
-        __weak typeof(self) weakSelf = self;
-        [self takeMonitorValue];
         if (cpuMonitor || memoryMonitor) {
+            __weak typeof(self) weakSelf = self;
+            [[NSRunLoop mainRunLoop] performInModes:@[NSRunLoopCommonModes] block:^{
+                [weakSelf takeMonitorValue];
+            }];
             NSTimer *timer = [NSTimer timerWithTimeInterval:frequency repeats:YES block:^(NSTimer * _Nonnull timer) {
                 [weakSelf takeMonitorValue];
             }];

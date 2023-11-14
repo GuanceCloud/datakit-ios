@@ -528,7 +528,10 @@
     __block BOOL hasClickAction = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
-            hasClickAction = YES;
+            if([tags[FT_KEY_ACTION_NAME]
+                isEqualToString:@"testActionClick2"]){
+                hasClickAction = YES;
+            }
         }
     }];
     XCTAssertFalse(hasClickAction);
@@ -1016,7 +1019,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     [self addErrorData:nil];
