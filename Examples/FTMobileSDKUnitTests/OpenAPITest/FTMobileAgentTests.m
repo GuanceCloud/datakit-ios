@@ -322,6 +322,9 @@
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
+    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+        return NO;
+    };
     NSDictionary *dict = [rumConfig convertToDictionary];
     FTRumConfig *newRum = [[FTRumConfig alloc]initWithDictionary:dict];
     XCTAssertTrue(rumConfig.enableTrackAppANR == newRum.enableTrackAppANR);
@@ -334,6 +337,7 @@
     XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
+    XCTAssertTrue(rumConfig.isExcludedUrl == newRum.isExcludedUrl);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];

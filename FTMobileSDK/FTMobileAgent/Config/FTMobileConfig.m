@@ -84,6 +84,7 @@
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:self.isExcludedUrl forKey:@"isExcludedUrl"];
     return dict;
 }
 @end
