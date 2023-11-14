@@ -301,7 +301,7 @@
     rumConfig.errorMonitorType = FTErrorMonitorMemory;
     rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorCpu;
     rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
-    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
     rumConfig.globalContext = @{@"aa":@"bb"};
@@ -317,12 +317,12 @@
     XCTAssertTrue(copyRumConfig.deviceMetricsMonitorType == rumConfig.deviceMetricsMonitorType);
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
-    XCTAssertTrue([copyRumConfig.isExcludedUrl isEqual:rumConfig.isExcludedUrl]);
+    XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
 }
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
-    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
     NSDictionary *dict = [rumConfig convertToDictionary];
@@ -337,7 +337,7 @@
     XCTAssertTrue(rumConfig.deviceMetricsMonitorType == newRum.deviceMetricsMonitorType);
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
-    XCTAssertTrue(rumConfig.isExcludedUrl == newRum.isExcludedUrl);
+    XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];

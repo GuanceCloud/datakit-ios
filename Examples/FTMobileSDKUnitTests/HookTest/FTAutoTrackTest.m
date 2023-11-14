@@ -199,14 +199,14 @@
     }];
     XCTAssertTrue(hasRes);
 }
-- (void)testExcludedUrlReturnYes{
+- (void)testResourceUrlHandlerReturnYes{
     NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
     rumConfig.enableTrackAppCrash = YES;
-    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         if ([url.host isEqual:rumUrl.host]) {
             return YES;
         }
@@ -233,14 +233,14 @@
     }];
     XCTAssertFalse(hasRes);
 }
-- (void)testExcludedUrlReturnNO{
+- (void)testResourceUrlHandlerReturnNO{
     NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
     rumConfig.enableTrackAppCrash = YES;
-    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return NO;
     };
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];

@@ -24,7 +24,7 @@
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
-typedef BOOL(^FTExcludedUrl)(NSURL *url);
+typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
 
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
@@ -33,7 +33,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 @required
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
-@property (nonatomic, copy ,nullable) FTExcludedUrl excludeUrlHandler;
+@property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
 
 @optional
 /// 采集的 resource 数据接收对象

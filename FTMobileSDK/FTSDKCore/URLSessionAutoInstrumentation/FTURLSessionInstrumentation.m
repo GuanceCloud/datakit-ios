@@ -75,9 +75,9 @@ static dispatch_once_t onceToken;
         [self startURLProtocolMonitor];
     }
 }
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack excludedUrl:(FTExcludedUrl)excludedUrl{
+- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
     _enableAutoRumTrack = enableAutoRumTrack;
-    self.interceptor.excludeUrlHandler = excludedUrl;
+    self.interceptor.resourceUrlHandler = resourceUrlHandler;
     if(enableAutoRumTrack){
         [self startURLProtocolMonitor];
     }

@@ -45,7 +45,7 @@
     options.globalContext = self.globalContext;
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
     options.monitorFrequency = self.monitorFrequency;
-    options.isExcludedUrl = self.isExcludedUrl;
+    options.resourceUrlHandler = self.resourceUrlHandler;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -63,7 +63,7 @@
             _globalContext = dict[@"globalContext"];
             _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
-            _isExcludedUrl = [dict valueForKey:@"isExcludedUrl"];
+            _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
         }
         return self;
     }else{
@@ -84,7 +84,7 @@
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
-    [dict setValue:self.isExcludedUrl forKey:@"isExcludedUrl"];
+    [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
     return dict;
 }
 @end

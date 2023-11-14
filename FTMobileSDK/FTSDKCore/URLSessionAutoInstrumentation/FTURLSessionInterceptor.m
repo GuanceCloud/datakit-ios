@@ -19,7 +19,7 @@
 @end
 @implementation FTURLSessionInterceptor
 @synthesize rumResourceHandeler = _rumResourceHandeler;
-@synthesize excludeUrlHandler = _excludeUrlHandler;
+@synthesize resourceUrlHandler = _resourceUrlHandler;
 @synthesize intakeUrlHandler = _intakeUrlHandler;
 static FTURLSessionInterceptor *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -42,8 +42,8 @@ static dispatch_once_t onceToken;
     _tracer = tracer;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
-    if(self.excludeUrlHandler){
-        return !self.excludeUrlHandler(url);
+    if(self.resourceUrlHandler){
+        return !self.resourceUrlHandler(url);
     }
     if(self.intakeUrlHandler){
         return self.intakeUrlHandler(url);
@@ -88,11 +88,11 @@ static dispatch_once_t onceToken;
 -(FTIntakeUrl)intakeUrlHandler{
     return _intakeUrlHandler;
 }
--(void)setExcludeUrlHandler:(FTExcludedUrl)excludeUrlHandler{
-    _excludeUrlHandler = excludeUrlHandler;
+-(void)setResourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+    _resourceUrlHandler = resourceUrlHandler;
 }
--(FTExcludedUrl)excludeUrlHandler{
-    return _excludeUrlHandler;
+-(FTResourceUrlHandler)resourceUrlHandler{
+    return _resourceUrlHandler;
 }
 -(void)setRumResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
     _rumResourceHandeler = innerResourceHandeler;
