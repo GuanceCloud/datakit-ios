@@ -8,7 +8,6 @@
 
 #import "NetworkTraceVC.h"
 #import "TableViewCellItem.h"
-#import "HttpEngine.h"
 #import <FTMobileSDK/FTMobileSDK.h>
 //仅做示例，可以使用类保存单条 task 的数据
 @interface RUMResource: NSObject
@@ -45,6 +44,9 @@
 }
 - (void)createUI{
     // enableTraceUserResource = YES;
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    __weak typeof(self) weakSelf = self;
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"Rum、Trace 开启 Resource 自动采集" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
@@ -53,27 +55,42 @@
         [task resume];
     }];
     // 避免数据重复请关闭 enableTraceUserResource
-    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"直接使用 FTURLSessionDelegate" handler:^{
-        HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:InstrumentationDirect];
-        [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-            
+    TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"注册 `FTURLSessionDelegate`" subTitle:@"委托替换为`FTURLSessionDelegate`，内部记录所有需要的事件并将方法转发给原始委托" handler:^{
+    
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:[[FTURLSessionDelegate alloc]initWithRealDelegate:weakSelf] delegateQueue:nil];
+
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSURLSessionTask *task = [session dataTaskWithRequest:request];
+       
+        [task resume];
+        
+    }];
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"启用自动注册`FTURLSessionDelegate`" subTitle:@"委托自动替换为`FTURLSessionDelegate`，内部记录所有需要的事件并将方法转发给原始委托"  handler:^{
+        [FTURLSessionDelegate enableAutomaticRegistration];
+        
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:weakSelf delegateQueue:[NSOperationQueue mainQueue]];
+
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+       
+        NSURLSessionTask *task = [session dataTaskWithRequest:request];
+       
+        [task resume];
+    }];
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"拦截 Request 请求，自定义 Trace" handler:^{
+        [FTURLSessionDelegate requestInterceptor:^NSURLRequest * _Nonnull(NSURLRequest * _Nonnull request) {
+            NSMutableURLRequest *newRequest = [request mutableCopy];
+            [newRequest setValue:@"interceptor" forHTTPHeaderField:@"test"];
+            return request;
         }];
     }];
-    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"继承 FTURLSessionDelegate" handler:^{
-        HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:InstrumentationInherit];
-        [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-            
-        }];
-    }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"把 FTURLSessionDelegate 设置为属性" handler:^{
-        HttpEngine *engine = [[HttpEngine alloc]initWithSessionInstrumentationType:InstrumentationProperty];
-        [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-            
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"添加 RUM Resource 额外资源" handler:^{
+        [FTURLSessionDelegate rumResourcePropertyProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+            NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+            return @{@"request_body":body};
         }];
     }];
     
-    __weak typeof(self) weakSelf = self;
-    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
+    TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSString *key = [[NSUUID UUID] UUIDString];
         NSURL *url = [NSURL URLWithString:urlStr];
@@ -92,7 +109,7 @@
         [task resume];
     }];
     
-    self.datas = @[@[item1],@[item2,item3,item4],@[item5]];
+    self.datas = @[@[item1],@[item2,item3,item4,item5],@[item6]];
     self.mTableView.dataSource = self;
     self.mTableView.delegate = self;
     [self.mTableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"UITableViewCell"];
@@ -114,15 +131,24 @@
     if(section == 0){
         return @"Use Autotrace";
     }else if(section == 1){
-        return @"Trace-Autotrace, Rum-Session Auto Instrumentation";
+        return @"URLSession Auto Instrumentation";
     }else{
         return @"Use Manual";
     }
 }
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    TableViewCellItem *item = self.datas[indexPath.section][indexPath.row];
+    if(item.subTitle.length>0){
+        return 75;
+    }
+    return 45;
+}
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UITableViewCell"];
+    UITableViewCell *cell =  [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"UITableViewCell"];
     TableViewCellItem *item = self.datas[indexPath.section][indexPath.row];
     cell.textLabel.text = item.title;
+    cell.detailTextLabel.text = item.subTitle;
+    cell.detailTextLabel.numberOfLines = 0;
     return cell;
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{

@@ -10,12 +10,15 @@
 
 @implementation TableViewCellItem
 -(instancetype)initWithTitle:(NSString *)title handler:(Handler)handler{
+    return [self initWithTitle:title subTitle:@"" handler:handler];
+}
+-(instancetype)initWithTitle:(NSString *)title subTitle:(NSString *)subTitle handler:(Handler)handler{
     self = [super init];
     if (self) {
         self.title = title;
+        self.subTitle = subTitle;
         self.handler = handler;
     }
     return self;
 }
-
 @end

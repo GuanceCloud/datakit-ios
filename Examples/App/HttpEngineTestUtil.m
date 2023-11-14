@@ -70,41 +70,56 @@
 
 @interface HttpEngineTestUtil ()<NSURLSessionDataDelegate>
 @property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong) XCTestExpectation *expectation;
+
 @end
 @implementation HttpEngineTestUtil
 - (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(nonnull XCTestExpectation *)expectation {
-    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil];
+    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil requestInterceptor:nil];
 }
 
--(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider{
+-(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
     self = [super init];
     if(self){
-        [self initSession:type expectation:expectation provider:provider];
+        [self initSession:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
     }
     return self;
 }
-- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider{
+- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
     id<NSURLSessionDelegate> delegate;
+    if(provider){
+        [FTURLSessionDelegate rumResourcePropertyProvider:provider];
+    }
+    if(requestInterceptor){
+        [FTURLSessionDelegate requestInterceptor:requestInterceptor];
+    }
     switch (type) {
         case InstrumentationDirect:{
             FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
-            if(provider){
-                ftdelegate.provider = provider;
-            }
             delegate = ftdelegate;
         }
             break;
             
         case InstrumentationInherit: {
             InstrumentationInheritTestClass *ftdelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
-            ftdelegate.ftURLSessionDelegate.provider = provider;
             delegate = ftdelegate;
             break;
         }
         case InstrumentationProperty: {
             InstrumentationPropertyTestClass *ftdelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
-            ftdelegate.ftURLSessionDelegate.provider = provider;
             delegate = ftdelegate;
+            break;
+        }
+        case InstrumentationProxy:{
+            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]initWithRealDelegate:self];
+            delegate = ftdelegate;
+            self.expectation = expectation;
+            break;
+        }
+        case InstrumentationAuto:{
+            [FTURLSessionDelegate enableAutomaticRegistration];
+            self.expectation = expectation;
+            delegate = self;
             break;
         }
     }
@@ -148,7 +163,9 @@
     NSURLSessionTask *task = [self.session dataTaskWithURL:url];
     [task resume];
 }
-
+-(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
+    [self.expectation fulfill];
+}
 -(void)dealloc{
     [_session invalidateAndCancel];
 }

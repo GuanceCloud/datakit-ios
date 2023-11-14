@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     DataTaskWithURLCompletionHandler,
     DataTaskWithURL,
 };
-@interface FTResourceDelegateTest : XCTestCase
+@interface FTResourceDelegateTest : XCTestCase<NSURLSessionDataDelegate>
 
 @end
 
@@ -105,6 +105,14 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
 }
+- (void)testURLSessionDelegateProxy{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationProxy requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
+}
+- (void)testURLSessionDelegateAuto{
+    [self sdkNormalSet];
+    [self startWithTest:InstrumentationAuto requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
+}
 - (void)testResourcePropertyProvider{
     [self sdkNormalSet];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
@@ -116,6 +124,16 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     };
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:provider];
 }
+- (void)testResourceRequestInterceptor{
+    [self sdkNormalSet];
+    RequestInterceptor interceptor = ^NSURLRequest * _Nullable(NSURLRequest *request) {
+        XCTAssertTrue(request);
+        NSMutableURLRequest *newRequest = [request mutableCopy];
+        [newRequest setValue:@"test_requestInterceptor" forHTTPHeaderField:@"test"];
+        return newRequest;
+    };
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES provider:nil requestInterceptor:interceptor];
+}
 - (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
     [self sdkNormalSet];
     [self startWithTest:type requestMethod:DataTaskWithRequestCompletionHandler hasResource:has];
@@ -124,8 +142,11 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self startWithTest:type requestMethod:requestMethod hasResource:has provider:nil];
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider{
+    [self startWithTest:type requestMethod:requestMethod hasResource:has provider:provider requestInterceptor:nil];
+}
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:provider];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
     switch (requestMethod){
         case DataTaskWithRequestCompletionHandler:
             if(type != InstrumentationDirect){
@@ -165,6 +186,10 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
             if(provider){
                 XCTAssertTrue([fields.allKeys containsObject:@"request_body"]);
                 XCTAssertTrue([fields.allKeys containsObject:@"response_body"]);
+            }
+            if(requestInterceptor){
+                NSString *requestHeaderStr = [fields valueForKey:FT_KEY_REQUEST_HEADER];
+                XCTAssertTrue([requestHeaderStr containsString:@"test:test_requestInterceptor"]);
             }
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
