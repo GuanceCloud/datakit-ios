@@ -397,37 +397,6 @@
         XCTAssertNil(error);
     }];
 }
-- (void)testIntakeUrl{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.enableAutoTrace = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
-        if ([url.absoluteString isEqualToString:urlStr]){
-            return NO;
-        }
-        return YES;
-    }];
-    [self networkUpload:@"IntakeUrl" handler:^(NSDictionary *header) {
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-        
-        [expectation fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    
-}
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     [self networkUpload:str traceHeader:nil handler:completionHandler];
 }

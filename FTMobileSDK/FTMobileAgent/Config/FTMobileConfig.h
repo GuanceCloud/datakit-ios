@@ -86,6 +86,7 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
+typedef BOOL(^FTExcludedUrl)(NSURL *url);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -135,6 +136,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableTraceUserView;
 /// 设置是否追踪用户网络请求  (仅作用于native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
+/// 自定义采集 resource 规则。
+/// 根据请求资源 url 判断是否需要采集对应资源数据，默认都采集。 返回：NO 表示要采集，YES 表示不需要采集。
+@property (nonatomic, copy) FTExcludedUrl isExcludedUrl;
 /// 设置是否需要采集崩溃日志
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿

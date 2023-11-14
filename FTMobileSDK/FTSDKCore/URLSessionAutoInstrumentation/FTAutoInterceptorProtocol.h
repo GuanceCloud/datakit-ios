@@ -19,8 +19,8 @@
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
 /// 判断 URL 是否采集
-/// 是否是 SDK 内部上传链接、用户是否设置回调自定义判断是否采集
+/// 是否是 SDK 内部上传链接
 /// - Parameter url: 需要判断的 URL
-- (BOOL)isTraceUrl:(NSURL *)url;
+- (BOOL)isSDKInsideUrl:(NSURL *)url;
 @end
 #endif /* FTAutoInterceptorProtocol_h */

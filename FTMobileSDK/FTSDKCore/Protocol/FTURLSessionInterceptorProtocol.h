@@ -24,6 +24,8 @@
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
+typedef BOOL(^FTExcludedUrl)(NSURL *url);
+
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 /// session 拦截处理代理
@@ -31,13 +33,12 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 @required
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
+@property (nonatomic, copy ,nullable) FTExcludedUrl excludeUrlHandler;
+
 @optional
 /// 采集的 resource 数据接收对象
 @property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
 @property (nonatomic,copy) ResourcePropertyProvider provider;
-/// 判断是否采集 url
-/// - Parameter url: url
-- (BOOL)isTraceUrl:(NSURL *)url;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// 实现 trace 功能，给 request header 添加 trace 参数

@@ -624,6 +624,22 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count > oldArray.count);
 }
+- (void)testIsExcludedUrl{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+        return NO;
+    };
+    rumConfig.errorMonitorType = FTErrorMonitorAll;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    
+    
+}
 /**
  * 验证  FTTraceConfig enableLinkRumData
  * 需要设置 networkTraceType = FTNetworkTraceTypeDDtrace

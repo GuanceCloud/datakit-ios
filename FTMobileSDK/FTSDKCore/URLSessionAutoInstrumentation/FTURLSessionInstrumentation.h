@@ -40,7 +40,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 
 /// 设置是否自动采集 RUM Resource
 /// - Parameter enableAutoRumTrack: 是否自动采集
-- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack;
+- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack excludedUrl:(FTExcludedUrl)excludedUrl;
 
 /// 设置 trace 配置项，开启 trace
 /// - Parameters:

@@ -61,40 +61,6 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
 }
-///**
-//  测试当前控制器获取是否正确
-//*/
-//- (void)testControllerOfTheView{
-//    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-//    self.window.backgroundColor = [UIColor whiteColor];
-//
-//    self.testVC = [[UITestVC alloc] init];
-//
-//    self.tabBarController = [[UITabBarController alloc] init];
-//
-//    self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.testVC];
-//    self.navigationController.tabBarItem.title = @"UITestVC";
-//
-//    UITableViewController *firstViewController = [[UITableViewController alloc] init];
-//    UINavigationController *firstNavigationController = [[UINavigationController alloc] initWithRootViewController:firstViewController];
-//
-//    self.tabBarController.viewControllers = @[firstNavigationController, self.navigationController];
-//    self.window.rootViewController = self.tabBarController;
-//
-//    [self.testVC view];
-//    [self.testVC viewWillAppear:NO];
-//    [self.testVC viewDidAppear:NO];
-//    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-//    __block UIViewController *currentVC;
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        currentVC = [self.testVC.firstButton ft_currentViewController];
-//        [expect fulfill];
-//    });
-//    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
-//        XCTAssertNil(error);
-//    }];
-//    XCTAssertEqualObjects(self.testVC, currentVC);
-//}
 - (void)testAutoTableViewClick{
     
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
@@ -223,10 +189,77 @@
        }];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block BOOL hasRes = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasRes);
+}
+- (void)testExcludedUrlReturnYes{
+    NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTrackAppCrash = YES;
+    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+        if ([url.host isEqual:rumUrl.host]) {
+            return YES;
+        }
+        return NO;
+    };
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [FTModelHelper startView];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [tester waitForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasRes = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertFalse(hasRes);
+}
+- (void)testExcludedUrlReturnNO{
+    NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTrackAppCrash = YES;
+    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+        return NO;
+    };
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [FTModelHelper startView];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [tester waitForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasRes = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            NSURL *url = [NSURL URLWithString:tags[FT_KEY_RESOURCE_URL]];
+            XCTAssertTrue([url.host isEqual:rumUrl.host]);
             hasRes = YES;
             *stop = YES;
         }

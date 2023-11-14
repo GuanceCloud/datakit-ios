@@ -295,6 +295,9 @@
     rumConfig.errorMonitorType = FTErrorMonitorMemory;
     rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorCpu;
     rumConfig.monitorFrequency = FTMonitorFrequencyFrequent;
+    rumConfig.isExcludedUrl = ^BOOL(NSURL *url) {
+        return NO;
+    };
     rumConfig.globalContext = @{@"aa":@"bb"};
     FTRumConfig *copyRumConfig = [rumConfig copy];
     XCTAssertTrue(copyRumConfig.samplerate == rumConfig.samplerate);
@@ -308,7 +311,7 @@
     XCTAssertTrue(copyRumConfig.deviceMetricsMonitorType == rumConfig.deviceMetricsMonitorType);
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
-
+    XCTAssertTrue([copyRumConfig.isExcludedUrl isEqual:rumConfig.isExcludedUrl]);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];

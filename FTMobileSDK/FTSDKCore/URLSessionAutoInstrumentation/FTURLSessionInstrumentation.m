@@ -75,8 +75,9 @@ static dispatch_once_t onceToken;
         [self startURLProtocolMonitor];
     }
 }
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
+-(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack excludedUrl:(FTExcludedUrl)excludedUrl{
     _enableAutoRumTrack = enableAutoRumTrack;
+    self.interceptor.excludeUrlHandler = excludedUrl;
     if(enableAutoRumTrack){
         [self startURLProtocolMonitor];
     }
@@ -135,16 +136,13 @@ static dispatch_once_t onceToken;
     }
     return [self.interceptor interceptRequest:request];
 }
-- (BOOL)isTraceUrl:(NSURL *)url{
+- (BOOL)isSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;
     if (self.sdkUrlStr) {
         if (url.port) {
             trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
             trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
-        }
-        if(trace){
-            return [self.interceptor isTraceUrl:url];
         }
     }
     return trace;
