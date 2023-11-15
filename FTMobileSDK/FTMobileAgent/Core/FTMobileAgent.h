@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 设置过滤 Resource 域名
 /// - Parameter handler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
-- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler DEPRECATED_MSG_ATTRIBUTE("已废弃，请在配置 FTRumConfig 时设置 `isExcludeUrl` 进行替换");
+- (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler DEPRECATED_MSG_ATTRIBUTE("已废弃，请在配置 FTRumConfig 时设置 `resourceUrlHandler` 进行替换");
 /// 配置 Trace Config 开启 Trace 功能
 ///
 /// - Parameters:
