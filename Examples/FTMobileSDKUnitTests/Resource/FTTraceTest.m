@@ -24,12 +24,12 @@
 #import "FTNetworkManager.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTURLSessionInterceptor.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTTracer.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate,NSCacheDelegate>
@@ -45,7 +45,6 @@
 
 - (void)tearDown {
     [[FTMobileAgent sharedInstance] shutDown];
-    self.tracer = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
@@ -58,7 +57,7 @@
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    self.tracer = [[FTTracer alloc]initWithSampleRate:traceConfig.samplerate traceType:(NetworkTraceType)traceConfig.networkTraceType];
+    [[FTTracer shared] startWithSampleRate:traceConfig.samplerate traceType:traceConfig.networkTraceType enableLinkRumData:NO];
 }
 
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
@@ -175,7 +174,7 @@
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [[FTURLSessionAutoInstrumentation sharedInstance] valueForKey:@"tracer"];
+    id<FTTracerProtocol> tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
     if ([tracer isKindOfClass:FTTracer.class]) {
         FTTracer *tracerInstence = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
@@ -495,32 +494,5 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-}
-NSString *keyName;
-- (void)testTraceCacheCount{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:murl];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.samplerate = 100;
-    traceConfig.enableAutoTrace = NO;
-    traceConfig.enableLinkRumData = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [FTModelHelper startView];
-    id<FTExternalResourceProtocol> handler = [FTURLSessionAutoInstrumentation sharedInstance].externalResourceHandler;
-    FTURLSessionInterceptor *interceptor = (FTURLSessionInterceptor *)handler;
-    NSCache *cache = [interceptor valueForKey:@"traceHandlers"];
-    cache.delegate = self;
-    NSString *uuidString = [[NSUUID UUID] UUIDString];
-    for (int i = 0; i<1001; i++) {
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSString stringWithFormat:@"%@%d",uuidString,i] url:[NSURL URLWithString:@"https://www.baidu.com/more/"]];
-    }
-    NSString *key = [NSString stringWithFormat:@"%@0",uuidString];
-    XCTAssertTrue([keyName isEqualToString:key]);
-}
--(void)cache:(NSCache *)cache willEvictObject:(id)obj{
-    FTTraceHandler *handler =(FTTraceHandler *)obj;
-    keyName = handler.identifier;
 }
 @end

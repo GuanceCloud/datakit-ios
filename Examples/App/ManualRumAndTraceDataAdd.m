@@ -10,7 +10,7 @@
 #import "TableViewCellItem.h"
 #import <FTMobileSDK/FTMobileAgent.h>
 
-@interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionTaskDelegate>
+@interface ManualRumAndTraceDataAdd ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDelegate,NSURLSessionDataDelegate>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
 @property (nonatomic, copy) NSString *rumKey;
@@ -72,7 +72,7 @@
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
 
     NSURL *url = [NSURL URLWithString:urlStr];
-    NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     // 上面方法已废弃，使用下面方法进行替换
     //    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];

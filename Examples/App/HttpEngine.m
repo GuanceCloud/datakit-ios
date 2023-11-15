@@ -72,7 +72,12 @@
     id<NSURLSessionDelegate> delegate;
     switch (type) {
         case InstrumentationDirect:{
-            delegate = [[FTURLSessionDelegate alloc]init];
+            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
+            ftdelegate.provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+                NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+                return @{@"request_body":body};
+            };
+            delegate = ftdelegate;
         }
             break;
             
@@ -99,5 +104,8 @@
         }
     }];
     [task resume];
+}
+-(void)dealloc{
+    [self.session finishTasksAndInvalidate];
 }
 @end

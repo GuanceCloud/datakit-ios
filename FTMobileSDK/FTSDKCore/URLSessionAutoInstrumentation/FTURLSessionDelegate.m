@@ -19,19 +19,23 @@
 
 
 #import "FTURLSessionDelegate.h"
-#import "FTURLSessionAutoInstrumentation.h"
+#import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionInterceptorProtocol.h"
 
 @interface FTURLSessionDelegate()
-@property (nonatomic, strong,readwrite) FTURLSessionAutoInstrumentation *instrumentation;
+@property (nonatomic,strong,readwrite) FTURLSessionInstrumentation *instrumentation;
 @end
 @implementation FTURLSessionDelegate
+
 @synthesize ftURLSessionDelegate;
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
-- (FTURLSessionAutoInstrumentation *)instrumentation{
-    return [FTURLSessionAutoInstrumentation sharedInstance];
+-(void)setProvider:(ResourcePropertyProvider)provider{
+    [self.instrumentation.interceptor setProvider:provider];
+}
+- (FTURLSessionInstrumentation *)instrumentation{
+    return [FTURLSessionInstrumentation sharedInstance];
 }
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
@@ -42,5 +46,4 @@
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error];
 }
-
 @end

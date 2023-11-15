@@ -31,12 +31,13 @@
 }
 - (void)load {
     self.isExchanged=YES;
-    NSError *error = NULL;
-    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(defaultSessionConfiguration) withClassMethod:@selector(ft_defaultSessionConfiguration) error:&error];
-    [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(ephemeralSessionConfiguration) withClassMethod:@selector(ft_ephemeralSessionConfiguration) error:&error];
+    [self swizzle];
 }
 - (void)unload {
     self.isExchanged=NO;
+    [self swizzle];
+}
+- (void)swizzle{
     NSError *error = NULL;
     [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(defaultSessionConfiguration) withClassMethod:@selector(ft_defaultSessionConfiguration) error:&error];
     [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(ephemeralSessionConfiguration) withClassMethod:@selector(ft_ephemeralSessionConfiguration) error:&error];

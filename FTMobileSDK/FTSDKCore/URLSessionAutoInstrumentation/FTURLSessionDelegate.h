@@ -19,9 +19,11 @@
 
 
 #import <Foundation/Foundation.h>
+/// 自定义 RUM 资源属性 Block
+typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTURLSessionDelegate,FTURLSessionAutoInstrumentation;
+@class FTURLSessionDelegate,FTURLSessionInstrumentation;
 
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
 ///
@@ -40,8 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
 @interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
-/// 具体实现 采集 rum 数据 与 trace 功能的类
-@property (nonatomic, strong,readonly) FTURLSessionAutoInstrumentation *instrumentation;
+/// 告诉拦截器需要自定义 RUM 资源属性。
+@property (nonatomic,copy) ResourcePropertyProvider provider;
 
 /// 实现拦截 url 请求过程的代理
 - (FTURLSessionDelegate *)ftURLSessionDelegate;

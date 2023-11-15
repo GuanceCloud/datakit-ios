@@ -16,7 +16,7 @@
 -(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
-        NSURLRequest *newrequest = [[FTWKWebViewHandler sharedInstance].interceptor injectTraceHeader:request];
+        NSURLRequest *newrequest = [[FTWKWebViewHandler sharedInstance].interceptor interceptRequest:request];
         [[FTWKWebViewHandler sharedInstance] addWebView:self request:request];
         return  [self dataflux_loadRequest:newrequest];
     }else{

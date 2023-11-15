@@ -1,3 +1,14 @@
+1.4.7-beta.1
+1.同 1.4.7-alpha.2、1.4.7-alpha.1
+---
+1.4.7-alpha.2
+1.RUM LongTask 采集优化
+2.RUM Resource 支持用户自定义资源属性
+---
+1.4.7-alpha.1
+1.解决 RUM View timeSpend 异常问题
+2.开启 View 自动采集时 app Enter background、foreground 同步 view start、stop
+---
 1.4.6-beta.1
 1.同 1.4.6-alpha.6
 ---

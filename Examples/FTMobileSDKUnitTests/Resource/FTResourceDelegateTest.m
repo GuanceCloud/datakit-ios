@@ -18,6 +18,7 @@
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
+#import "FTURLSessionDelegate.h"
 
 typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     DataTaskWithRequestCompletionHandler,
@@ -50,7 +51,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
-    traceConfig.enableAutoTrace = YES;
+    traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
@@ -88,10 +89,6 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self sdkNormalSet];
     [self startWithTest:InstrumentationProperty hasResource:YES];
 }
-- (void)testInnerURLFilter{
-    [self sdkInnerURLTestSet];
-    [self startWithTest:InstrumentationDirect hasResource:NO];
-}
 - (void)testDataTaskWithRequestCompletionHandler{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES];
@@ -108,13 +105,27 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
 }
+- (void)testResourcePropertyProvider{
+    [self sdkNormalSet];
+    ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
+        XCTAssertTrue(request);
+        NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+        NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        XCTAssertTrue([body isEqualToString:@"111"]);
+        return @{@"request_body":body,@"response_body":responseBody};
+    };
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:provider];
+}
 - (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
     [self sdkNormalSet];
     [self startWithTest:type requestMethod:DataTaskWithRequestCompletionHandler hasResource:has];
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has{
+    [self startWithTest:type requestMethod:requestMethod hasResource:has provider:nil];
+}
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:provider];
     switch (requestMethod){
         case DataTaskWithRequestCompletionHandler:
             if(type != InstrumentationDirect){
@@ -151,6 +162,12 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             hasResource = YES;
             *stop = YES;
+            if(provider){
+                XCTAssertTrue([fields.allKeys containsObject:@"request_body"]);
+                XCTAssertTrue([fields.allKeys containsObject:@"response_body"]);
+            }
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
         }
     }];
     XCTAssertTrue(hasResource == has);

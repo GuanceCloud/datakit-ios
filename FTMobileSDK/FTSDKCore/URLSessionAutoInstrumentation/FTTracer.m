@@ -13,6 +13,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
+#import "FTEnumConstant.h"
 static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()
@@ -20,20 +21,27 @@ static NSUInteger SkywalkingSeq = 0.0;
 @property (nonatomic, copy) NSString *skyTraceId;
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) int sampleRate;
-@property (nonatomic, assign) NetworkTraceType networkTraceType;
+@property (nonatomic, assign) NetworkTraceType traceType;
 @end
 @implementation FTTracer
--(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
-    self = [super init];
-    if (self) {
-        _sampleRate = sampleRate;
-        _networkTraceType = traceType;
-    }
-    return self;
+static FTTracer *sharedInstance = nil;
+@synthesize enableLinkRumData = _enableLinkRumData;
+static dispatch_once_t onceToken;
++ (instancetype)shared{
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+        [sharedInstance startWithSampleRate:100 traceType:(FTNetworkTraceType)DDtrace enableLinkRumData:NO];
+    });
+    return sharedInstance;
+}
+- (void)startWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
+    _sampleRate = sampleRate;
+    _traceType = (NetworkTraceType)traceType;
+    _enableLinkRumData = link;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-    switch (self.networkTraceType) {
+    switch (self.traceType) {
         case Jaeger:
             return [self getJaegerHeader:sampled handler:nil];
         case ZipkinMultiHeader:
@@ -50,7 +58,7 @@ static NSUInteger SkywalkingSeq = 0.0;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-    switch (self.networkTraceType) {
+    switch (self.traceType) {
         case Jaeger:
             return [self getJaegerHeader:sampled handler:handler];
         case ZipkinMultiHeader:
@@ -66,7 +74,7 @@ static NSUInteger SkywalkingSeq = 0.0;
     }
 }
 - (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
-    switch (self.networkTraceType) {
+    switch (self.traceType) {
         case Jaeger:
             return [self unpackJaegerHeader:header handler:handler];
         case ZipkinMultiHeader:
@@ -291,5 +299,9 @@ static NSUInteger SkywalkingSeq = 0.0;
     NSString *uuid = [NSUUID UUID].UUIDString;
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
+}
+- (void)shutDown{
+    onceToken = 0;
+    sharedInstance = nil;
 }
 @end

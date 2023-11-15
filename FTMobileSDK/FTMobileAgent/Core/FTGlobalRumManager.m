@@ -13,9 +13,8 @@
 #import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
-#import "FTANRDetector.h"
+#import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"
-#import "FTPingThread.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
@@ -24,7 +23,7 @@
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
 #import "FTTracer.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTMobileAgent+Private.h"
 #import "FTRUMMonitor.h"
@@ -32,12 +31,12 @@
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
-@interface FTGlobalRumManager ()<FTANRDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
-@property (nonatomic, strong) FTPingThread *pingThread;
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
+@property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
 @end
 
 @implementation FTGlobalRumManager
@@ -69,43 +68,12 @@ static dispatch_once_t onceToken;
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
-    if (rumConfig.enableTrackAppANR) {
-        [FTThreadDispatchManager performBlockDispatchMainSyncSafe:^{
-            [FTANRDetector sharedInstance].delegate = self;
-            [[FTANRDetector sharedInstance] startDetecting];
-        }];
-    }
-    if (rumConfig.enableTrackAppFreeze) {
-        [self startPingThread];
+    if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
+        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
+        [_longTaskDetector startDetecting];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-}
--(FTPingThread *)pingThread{
-    if (!_pingThread || _pingThread.isCancelled) {
-        _pingThread = [[FTPingThread alloc]init];
-        __weak typeof(self) weakSelf = self;
-        _pingThread.block = ^(NSString * _Nonnull stackStr, NSDate * _Nonnull startDate, NSDate * _Nonnull endDate) {
-            [weakSelf trackAppFreeze:stackStr duration:[FTDateUtil nanosecondTimeIntervalSinceDate:startDate toDate:endDate]];
-        };
-    }
-    return _pingThread;
-}
--(void)startPingThread{
-    if (!self.pingThread.isExecuting) {
-        [self.pingThread start];
-    }
-}
--(void)stopPingThread{
-    if (_pingThread && _pingThread.isExecuting) {
-        [self.pingThread cancel];
-    }
-}
-- (void)trackAppFreeze:(NSString *)stack duration:(NSNumber *)duration{
-    [self.rumManager addLongTaskWithStack:stack duration:duration property:nil];
-}
--(void)stopMonitor{
-    [self stopPingThread];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
@@ -143,10 +111,12 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"%@ error: %@", self, exception);
     }
 }
-#pragma mark ========== FTANRDetectorDelegate ==========
-- (void)onMainThreadSlowStackDetected:(NSString*)slowStack{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:MXRMonitorRunloopOneStandstillMillisecond*MXRMonitorRunloopStandstillCount*1000000] property:nil];
-    
+#pragma mark ========== FTRunloopDetectorDelegate ==========
+- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration{
+    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
+}
+- (void)anrStackDetected:(NSString*)slowStack{
+    [self.rumManager addErrorWithType:@"ios_crash" message:@"ios_anr" stack:slowStack];
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSNumber *)duration{
@@ -156,8 +126,11 @@ static dispatch_once_t onceToken;
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
--(void)applicationDidBecomeActive{
+-(void)applicationWillEnterForeground{
     @try {
+        if(!self.rumConfig.enableTraceUserView){
+            return;
+        }
         if (self.rumManager.viewReferrer) {
             NSString *viewid = [NSUUID UUID].UUIDString;
             NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
@@ -167,15 +140,18 @@ static dispatch_once_t onceToken;
             [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
         }
     }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationDidBecomeActive exception %@",exception);
+        FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
     }
 }
--(void)applicationWillResignActive{
+-(void)applicationDidEnterBackground{
     @try {
         self.rumManager.appState = FTAppStateStartUp;
+        if(!self.rumConfig.enableTraceUserView){
+            return;
+        }
         [self.rumManager stopViewWithProperty:nil];
     }@catch (NSException *exception) {
-        FTInnerLogError(@"applicationWillResignActive exception %@",exception);
+        FTInnerLogError(@"applicationDidEnterBackground exception %@",exception);
     }
 }
 #pragma mark ========== 注销 ==========
@@ -183,11 +159,9 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     onceToken = 0;
     sharedInstance =nil;
-    [self stopPingThread];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-    [[FTANRDetector sharedInstance] stopDetecting];
-    [self stopMonitor];
+    [_longTaskDetector stopDetecting];
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

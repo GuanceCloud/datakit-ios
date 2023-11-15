@@ -7,111 +7,90 @@
 //
 
 #import "FTURLSessionInterceptor.h"
-#import "FTTraceHandler.h"
+#import "FTSessionTaskHandler.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
-#import <objc/runtime.h>
-
+#import "FTReadWriteHelper.h"
 @interface FTURLSessionInterceptor ()
-@property (nonatomic, strong) NSCache <id,FTTraceHandler *> *traceHandlers;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
-@property (nonatomic, assign) BOOL enableLinkRumData;
-@property (nonatomic, assign) BOOL enableTrace;
 @property (nonatomic, weak) id<FTTracerProtocol> tracer;
+@property (nonatomic, strong) dispatch_queue_t queue;
 @end
 @implementation FTURLSessionInterceptor
-@synthesize innerResourceHandeler = _innerResourceHandeler;
-@synthesize innerUrl = _innerUrl;
-@synthesize enableAutoRumTrack = _enableAutoRumTrack;
+@synthesize rumResourceHandeler = _rumResourceHandeler;
 @synthesize intakeUrlHandler = _intakeUrlHandler;
-
+static FTURLSessionInterceptor *sharedInstance = nil;
+static dispatch_once_t onceToken;
++ (instancetype)shared{
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+    });
+    return sharedInstance;
+}
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _lock = dispatch_semaphore_create(1);
-        _traceHandlers = [NSCache new];
-        _traceHandlers.countLimit = 1000;
-        _enableTrace = NO;
-        _enableLinkRumData = NO;
+        _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        _queue = dispatch_queue_create("com.network.interceptor", DISPATCH_QUEUE_SERIAL);
+
     }
     return self;
 }
 - (void)setTracer:(id<FTTracerProtocol>)tracer{
     _tracer = tracer;
 }
--(void)enableAutoTrace:(BOOL)enable{
-    self.enableTrace = enable;
-}
--(void)enableLinkRumData:(BOOL)enable{
-    self.enableLinkRumData = enable;
-}
 - (BOOL)isTraceUrl:(NSURL *)url{
-    BOOL trace = YES;
-    if (self.innerUrl) {
-        if (url.port) {
-            trace = !([url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host]&&[url.port isEqual:[NSURL URLWithString:self.innerUrl].port]);
-        }else{
-            trace = ![url.host isEqualToString:[NSURL URLWithString:self.innerUrl].host];
-        }
-        if(trace && self.intakeUrlHandler){
-            return self.intakeUrlHandler(url);
-        }
+    if(self.intakeUrlHandler){
+        return self.intakeUrlHandler(url);
     }
-    return trace;
+    return YES;
 }
 /**
  * 内部采集以 task 为 key
  * 外部传传入为 NSString 类型的 key
  */
-- (void)setTraceHandler:(FTTraceHandler *)handler forKey:(id)key{
+- (void)setTraceHandler:(FTSessionTaskHandler *)handler forKey:(id)key{
     if (key == nil) {
         return;
     }
-    [self.traceHandlers setObject:handler forKey:key];
+    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
+        [value setValue:handler forKey:key];
+    }];
 }
 // 因为不涉及 trace 数据写入 调用-getTraceHandler方法的仅是 rum 操作 需要确保 rum 调用此方法
-- (FTTraceHandler *)getTraceHandler:(id)key{
+- (FTSessionTaskHandler *)getTraceHandler:(id)key{
     if (key == nil) {
         return nil;
     }
-    return [self.traceHandlers objectForKey:key];
+    __block FTSessionTaskHandler *handler;
+    [self.traceHandlers concurrentRead:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
+        handler = [value objectForKey:key];
+    }];
+    return handler;
 }
 -(void)removeTraceHandlerWithKey:(id)key{
     if (key == nil) {
         return;
     }
-    [self.traceHandlers removeObjectForKey:key];
+    [self.traceHandlers concurrentWrite:^(NSMutableDictionary<id,FTSessionTaskHandler *> * _Nonnull value) {
+        [value removeObjectForKey:key];
+    }];
 }
 #pragma mark --------- URLSessionInterceptorType ----------
--(void)setInnerUrl:(NSString *)innerUrl{
-    _innerUrl = innerUrl;
-}
--(NSString *)innerUrl{
-    return _innerUrl;
-}
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
     _intakeUrlHandler = intakeUrlHandler;
 }
 -(FTIntakeUrl)intakeUrlHandler{
     return _intakeUrlHandler;
 }
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
-    _enableAutoRumTrack = enableAutoRumTrack;
+-(void)setRumResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
+    _rumResourceHandeler = innerResourceHandeler;
 }
--(BOOL)enableAutoRumTrack{
-    return _enableAutoRumTrack;
+-(id<FTRumResourceProtocol>)rumResourceHandeler{
+    return _rumResourceHandeler;
 }
--(void)setInnerResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
-    _innerResourceHandeler = innerResourceHandeler;
-}
--(id<FTRumResourceProtocol>)innerResourceHandeler{
-    return _innerResourceHandeler;
-}
-- (NSURLRequest *)injectTraceHeader:(NSURLRequest *)request{
-    //判断是否开启 trace ，是否是要采集的url
-    if (!self.enableTrace || ![self isTraceUrl:request.URL]) {
-        return request;
-    }
+- (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
     NSMutableURLRequest *mutableReqeust = [request mutableCopy];
     if (traceHeader && traceHeader.allKeys.count>0) {
@@ -121,54 +100,68 @@
     }
     return mutableReqeust;
 }
-- (void)taskCreated:(NSURLSessionTask *)task session:(NSURLSession *)session{
-    if (![self isTraceUrl:task.originalRequest.URL] ) {
-        return;
-    }
-    FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:task.currentRequest.URL identifier:[NSUUID UUID].UUIDString];
-    [self setTraceHandler:handler forKey:task];
-    
-    [self startResourceWithKey:handler.identifier];
+- (void)interceptTask:(NSURLSessionTask *)task{
+    dispatch_async(self.queue, ^{
+        if(!task.originalRequest){
+            return;
+        }
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
+        if(!handler){
+            FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
+            handler.request = task.originalRequest;
+            [self setTraceHandler:handler forKey:task];
+            [self startResourceWithKey:handler.identifier];
+        }
+    });
 }
-- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
-    FTTraceHandler *handler = [self getTraceHandler:task];
-    if(!handler){
-        return;
-    }
-    [handler taskReceivedMetrics:metrics];
+- (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
+    dispatch_async(self.queue, ^{
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
+        if(!handler){
+            return;
+        }
+        [handler taskReceivedMetrics:metrics];
+    });
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
-    FTTraceHandler *handler = [self getTraceHandler:task];
-    if(!handler){
-        return;
-    }
-    [handler taskReceivedData:data];
+    dispatch_async(self.queue, ^{
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
+        if(!handler){
+            return;
+        }
+        [handler taskReceivedData:data];
+    });
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
-    FTTraceHandler *handler = [self getTraceHandler:task];
-    if(!handler){
-        return;
-    }
-    [handler taskCompleted:task error:error];
-    [self removeTraceHandlerWithKey:task];
-    [self stopResourceWithKey:handler.identifier];
-    __block NSString *span_id = nil,*trace_id=nil;
-    if (self.enableLinkRumData) {
-        
-        [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
-            span_id = spanID;
-            trace_id = traceId;
-        }];
-    }
-    [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+    dispatch_async(self.queue, ^{
+        FTSessionTaskHandler *handler = [self getTraceHandler:task];
+        if(!handler){
+            return;
+        }
+        [handler taskCompleted:task error:error];
+        [self removeTraceHandlerWithKey:task];
+        NSDictionary *property;
+        if(self.provider){
+            property = self.provider(handler.request, handler.response, handler.data, handler.error);
+        }
+        [self stopResourceWithKey:handler.identifier property:property];
+        __block NSString *span_id = nil,*trace_id=nil;
+        if (self.tracer.enableLinkRumData) {
+            [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+                span_id = spanID;
+                trace_id = traceId;
+            }];
+        }
+        [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+    });
 }
 
 #pragma mark --------- external data ----------
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
-    __block FTTraceHandler *handler = [[FTTraceHandler alloc]initWithUrl:url identifier:key];
+    __block FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]initWithIdentifier:key];
     NSDictionary *dict = nil;
-    if(self.enableLinkRumData){
-       dict  = [self.tracer networkTraceHeaderWithUrl:url handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+    if(self.tracer.enableLinkRumData){
+       dict = [self.tracer networkTraceHeaderWithUrl:url handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
             handler.traceID = traceId;
             handler.spanID = spanID;
         }];
@@ -180,37 +173,39 @@
     return  dict;
 }
 - (void)startResourceWithKey:(NSString *)key{
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(startResourceWithKey:)]) {
-        [self.innerResourceHandeler startResourceWithKey:key];
+    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(startResourceWithKey:)]) {
+        [self.rumResourceHandeler startResourceWithKey:key];
     }
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(startResourceWithKey:property:)]) {
-        [self.innerResourceHandeler startResourceWithKey:key property:property];
+    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(startResourceWithKey:property:)]) {
+        [self.rumResourceHandeler startResourceWithKey:key property:property];
     }
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key{
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(stopResourceWithKey:)]) {
-        [self.innerResourceHandeler stopResourceWithKey:key];
+    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(stopResourceWithKey:)]) {
+        [self.rumResourceHandeler stopResourceWithKey:key];
     }
 }
 -(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
-        [self.innerResourceHandeler stopResourceWithKey:key property:property];
+    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
+        [self.rumResourceHandeler stopResourceWithKey:key property:property];
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
-    FTTraceHandler *handler = [self getTraceHandler:key];
+    FTSessionTaskHandler *handler = [self getTraceHandler:key];
     [self removeTraceHandlerWithKey:key];
     [self addResourceWithKey:key metrics:metrics content:content spanID:handler.spanID traceID:handler.traceID];
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
     [self removeTraceHandlerWithKey:key];
-    if (self.innerResourceHandeler && [self.innerResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
-        [self.innerResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
+    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
+        [self.rumResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
-
-
-
+- (void)shutDown{
+    dispatch_sync(self.queue, ^{});
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end

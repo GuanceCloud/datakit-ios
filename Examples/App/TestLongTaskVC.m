@@ -1,19 +1,19 @@
 //
-//  TestANRVC.m
+//  TestLongTaskVC.m
 //  SampleApp
 //
 //  Created by 胡蕾蕾 on 2020/10/10.
 //  Copyright © 2020 hll. All rights reserved.
 //
 
-#import "TestANRVC.h"
+#import "TestLongTaskVC.h"
 
-@interface TestANRVC ()<UITableViewDelegate,UITableViewDataSource>
+@interface TestLongTaskVC ()<UITableViewDelegate,UITableViewDataSource>
 
 @property (nonatomic, strong) UITableView *myTableView;
 @end
 
-@implementation TestANRVC
+@implementation TestLongTaskVC
 
 
 - (void)viewDidLoad
@@ -64,7 +64,7 @@
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identify];
     }
     if (indexPath.row % 10 == 0) {
-        usleep(1 * 1000 * 1000); // 1秒
+        usleep(250 * 1000); // 250ms
         cell.textLabel.text = @"卡咯";
     }else{
         cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];

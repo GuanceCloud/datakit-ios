@@ -50,14 +50,9 @@
     self = [super init];
     if(self){
         self.expectation = expectation;
-    }
-    return self;
-}
-- (nonnull FTURLSessionDelegate *)ftURLSessionDelegate {
-    if(!_ftURLSessionDelegate){
         _ftURLSessionDelegate = [[FTURLSessionDelegate alloc]init];
     }
-    return _ftURLSessionDelegate;
+    return self;
 }
  
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
@@ -77,27 +72,39 @@
 @property (nonatomic, strong) NSURLSession *session;
 @end
 @implementation HttpEngineTestUtil
--(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation{
+- (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(nonnull XCTestExpectation *)expectation {
+    return [self initWithSessionInstrumentationType:type expectation:expectation provider:nil];
+}
+
+-(instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider{
     self = [super init];
     if(self){
-        [self initSession:type expectation:expectation];
+        [self initSession:type expectation:expectation provider:provider];
     }
     return self;
 }
-- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation{
+- (void)initSession:(TestSessionInstrumentationType)type expectation:( XCTestExpectation *)expectation provider:(ResourcePropertyProvider)provider{
     id<NSURLSessionDelegate> delegate;
     switch (type) {
         case InstrumentationDirect:{
-            delegate = [[FTURLSessionDelegate alloc]init];
+            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
+            if(provider){
+                ftdelegate.provider = provider;
+            }
+            delegate = ftdelegate;
         }
             break;
             
         case InstrumentationInherit: {
-            delegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
+            InstrumentationInheritTestClass *ftdelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
+            ftdelegate.ftURLSessionDelegate.provider = provider;
+            delegate = ftdelegate;
             break;
         }
         case InstrumentationProperty: {
-            delegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
+            InstrumentationPropertyTestClass *ftdelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
+            ftdelegate.ftURLSessionDelegate.provider = provider;
+            delegate = ftdelegate;
             break;
         }
     }
@@ -108,7 +115,9 @@
 - (void)network:(void (^)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error))completionHandler{
     NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSURL *url = [NSURL URLWithString:urlStr];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPBody = [@"111" dataUsingEncoding:NSUTF8StringEncoding];
+    request.HTTPMethod = @"POST";
     NSURLSessionTask *task = [self.session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(completionHandler){
             completionHandler(data,response,error);
@@ -139,4 +148,6 @@
     NSURLSessionTask *task = [self.session dataTaskWithURL:url];
     [task resume];
 }
+
+
 @end

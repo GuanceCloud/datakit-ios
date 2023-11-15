@@ -7,16 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTURLSessionInterceptorProtocol.h"
+#import "FTAutoInterceptorProtocol.h"
 
 @interface FTURLProtocol : NSURLProtocol
 
 /// 设置 url 拦截代理
 /// - Parameter delegate: url 会话拦截代理
-+ (void)setDelegate:(id<FTURLSessionInterceptorDelegate>)delegate;
++ (void)setDelegate:(id<FTAutoInterceptorProtocol>)delegate;
 
 /// url 拦截代理
-+ (id<FTURLSessionInterceptorDelegate>)delegate;
++ (id<FTAutoInterceptorProtocol>)delegate;
 
 /// 开始监控
 + (void)startMonitor;

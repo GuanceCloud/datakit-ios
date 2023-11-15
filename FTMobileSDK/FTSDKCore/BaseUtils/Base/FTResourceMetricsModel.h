@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *resource_first_byte;
 ///资源加载时间 duration(responseEnd-fetchStartDate)
 @property (nonatomic, strong) NSNumber *duration;
+///响应结果大小 response data size
+@property (nonatomic, strong) NSNumber *responseSize;
 /// 初始化方法
 ///
 /// - Parameters:
