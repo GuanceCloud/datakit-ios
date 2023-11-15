@@ -31,11 +31,18 @@
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
--(void)setProvider:(ResourcePropertyProvider)provider{
-    [self.instrumentation.interceptor setProvider:provider];
-}
 - (FTURLSessionInstrumentation *)instrumentation{
     return [FTURLSessionInstrumentation sharedInstance];
+}
+- (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
+    NSURLRequest *interceptedRequest = request;
+    if(self.requestInterceptor){
+        interceptedRequest = self.requestInterceptor(request);
+    }
+    return [self.instrumentation.interceptor interceptRequest:interceptedRequest];
+}
+- (void)interceptTask:(NSURLSessionTask *)task{
+    [self.instrumentation.interceptor interceptTask:task];
 }
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
@@ -44,6 +51,6 @@
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.instrumentation.interceptor taskCompleted:task error:error];
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
 }
 @end

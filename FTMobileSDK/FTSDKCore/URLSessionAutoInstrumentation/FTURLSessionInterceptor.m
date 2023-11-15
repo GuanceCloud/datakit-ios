@@ -151,7 +151,10 @@ static dispatch_once_t onceToken;
         [handler taskReceivedData:data];
     });
 }
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
+    [self taskCompleted:task error:error extraProvider:nil];
+}
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     dispatch_async(self.queue, ^{
         if(![self isTraceUrl:task.originalRequest.URL]){
             return;
@@ -163,8 +166,8 @@ static dispatch_once_t onceToken;
         [handler taskCompleted:task error:error];
         [self removeTraceHandlerWithKey:task];
         NSDictionary *property;
-        if(self.provider){
-            property = self.provider(handler.request, handler.response, handler.data, handler.error);
+        if(extraProvider){
+            property = extraProvider(handler.request, handler.response, handler.data, handler.error);
         }
         [self stopResourceWithKey:handler.identifier property:property];
         __block NSString *span_id = nil,*trace_id=nil;

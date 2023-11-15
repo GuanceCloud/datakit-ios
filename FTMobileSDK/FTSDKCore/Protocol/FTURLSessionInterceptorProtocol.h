@@ -67,8 +67,14 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 ///   - error: error 信息
 ///
 /// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error ;
 
+/// 请求结束 -stopResource
+/// - Parameters:
+///   - task: 请求任务
+///   - error: error 信息
+///   - extraProvider: 用户自定义额外信息
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTURLSessionInterceptorProtocol_h */
