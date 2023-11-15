@@ -235,6 +235,79 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     }];
     XCTAssertTrue(hasResource2);
 }
+- (void)testResourceUrlHandlerReturnYes{
+    [self resourceUrlHandler:YES];
+}
+- (void)testResourceUrlHandlerReturnNO{
+    [self resourceUrlHandler:NO];
+}
+- (void)resourceUrlHandler:(BOOL)excluded{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    config.enableSDKDebugLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
+        return excluded;
+    };
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
+    traceConfig.enableLinkRumData = YES;
+    traceConfig.enableAutoTrace = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] unbindUser];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [FTModelHelper startView];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil];
+    [engine network];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasResource = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasResource = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResource!=excluded);
+}
+- (void)testIntakeUrlReturnYes{
+    [self intakeUrl:YES];
+}
+- (void)testIntakeUrlReturnNO{
+    [self intakeUrl:NO];
+}
+- (void)intakeUrl:(BOOL)trace{
+    [self sdkNormalSet];
+    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
+        return trace;
+    }];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
+    HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil];
+    [engine network];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasResource = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasResource = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResource == trace);
+}
 - (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
     [self sdkNormalSet];
     [self startWithTest:type requestMethod:DataTaskWithRequestCompletionHandler hasResource:has];

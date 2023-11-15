@@ -200,40 +200,12 @@
     XCTAssertTrue(hasRes);
 }
 - (void)testResourceUrlHandlerReturnYes{
-    NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
-    rumConfig.enableTraceUserAction = YES;
-    rumConfig.enableTraceUserView = YES;
-    rumConfig.enableTraceUserResource = YES;
-    rumConfig.enableTrackAppCrash = YES;
-    rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
-        if ([url.host isEqual:rumUrl.host]) {
-            return YES;
-        }
-        return NO;
-    };
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [FTModelHelper startView];
-    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
-    [tester waitForTimeInterval:0.5];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    __block BOOL hasRes = NO;
-    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
-            hasRes = YES;
-            *stop = YES;
-        }
-    }];
-    XCTAssertFalse(hasRes);
+    [self resourceUrlHandler:YES];
 }
 - (void)testResourceUrlHandlerReturnNO{
+    [self resourceUrlHandler:NO];
+}
+- (void)resourceUrlHandler:(BOOL)excluded{
     NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
     rumConfig.enableTraceUserAction = YES;
@@ -241,7 +213,7 @@
     rumConfig.enableTraceUserResource = YES;
     rumConfig.enableTrackAppCrash = YES;
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
-        return NO;
+        return excluded;
     };
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -264,7 +236,37 @@
             *stop = YES;
         }
     }];
-    XCTAssertTrue(hasRes);
+    XCTAssertTrue(hasRes != excluded);
+}
+- (void)testIntakeUrlReturnYes{
+    [self intakeUrl:YES];
+}
+- (void)testIntakeUrlReturnNO{
+    [self intakeUrl:NO];
+}
+- (void)intakeUrl:(BOOL)trace{
+    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
+        return trace;
+    }];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [FTModelHelper startView];
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [tester waitForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasRes = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasRes == trace);
 }
 - (void)testActionName{
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
