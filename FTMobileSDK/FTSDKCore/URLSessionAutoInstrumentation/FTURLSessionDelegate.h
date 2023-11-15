@@ -21,7 +21,8 @@
 #import <Foundation/Foundation.h>
 /// 自定义 RUM 资源属性 Block
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
-typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *request);
+/// 拦截 Request ，返回修改后的 Request，可用于自定义链路追踪
+typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *_Nonnull request);
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate,FTURLSessionInstrumentation;

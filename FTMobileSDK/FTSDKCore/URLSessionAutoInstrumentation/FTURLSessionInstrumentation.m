@@ -68,7 +68,7 @@ static dispatch_once_t onceToken;
 }
 - (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
     _enableAutoTrace = enableAutoTrace;
-    [[FTTracer shared] startWithSampleRate:sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:enableLinkRumData];
+    [[FTTracer shared] startWithSampleRate:sampleRate traceType:traceType enableLinkRumData:enableLinkRumData];
     _tracer = [FTTracer shared];
     [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){

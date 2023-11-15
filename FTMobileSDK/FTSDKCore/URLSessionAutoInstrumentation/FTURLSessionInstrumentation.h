@@ -25,7 +25,6 @@
 #import "FTEnumConstant.h"
 #import "FTAutoInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
 @interface FTURLSessionInstrumentation : NSObject<FTAutoInterceptorProtocol>

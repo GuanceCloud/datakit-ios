@@ -86,9 +86,9 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
-typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
-
 NS_ASSUME_NONNULL_BEGIN
+/// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
+typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 
 /// logger 功能配置项
 @interface FTLoggerConfig : NSObject

@@ -22,11 +22,10 @@
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
+#import "FTURLSessionDelegate.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
 typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
-
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
@@ -38,7 +37,6 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 @optional
 /// 采集的 resource 数据接收对象
 @property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
-@property (nonatomic,copy) ResourcePropertyProvider provider;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// 实现 trace 功能，给 request header 添加 trace 参数

@@ -12,13 +12,9 @@
 #import "FTExternalResourceProtocol.h"
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 /// URL Session 的拦截器，实现 RUM Resource 数据的采集，Trace 链路追踪
 @interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorProtocol,FTExternalResourceProtocol>
-
-/// 告诉拦截器需要自定义添加的 property
-@property (nonatomic,copy) ResourcePropertyProvider provider;
 
 + (instancetype)shared;
 

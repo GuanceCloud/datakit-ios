@@ -30,8 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *spanID;
 /// trace: trace_id 当没有开启 trace 功能或者没关联 rum 则返回`nil`。
 @property (nonatomic, copy) NSString *traceID;
-/// 由`ResourcePropertyProvider`回调，用户额外添加的数据
-@property (nonatomic, strong) NSDictionary *extraData;
+
 /// 初始化方法
 /// - Parameter identifier: 唯一标识，根据标识
 -(instancetype)initWithIdentifier:(NSString *)identifier;

@@ -13,7 +13,6 @@
 #import "FTBaseInfoHandler.h"
 #import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
-#import "FTEnumConstant.h"
 static NSUInteger SkywalkingSeq = 0.0;
 
 @interface FTTracer ()
@@ -30,13 +29,13 @@ static dispatch_once_t onceToken;
 + (instancetype)shared{
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
-        [sharedInstance startWithSampleRate:100 traceType:(FTNetworkTraceType)DDtrace enableLinkRumData:NO];
+        [sharedInstance startWithSampleRate:100 traceType:(NetworkTraceType)DDtrace enableLinkRumData:NO];
     });
     return sharedInstance;
 }
-- (void)startWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
+- (void)startWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableLinkRumData:(BOOL)link{
     _sampleRate = sampleRate;
-    _traceType = (NetworkTraceType)traceType;
+    _traceType = traceType;
     _enableLinkRumData = link;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
