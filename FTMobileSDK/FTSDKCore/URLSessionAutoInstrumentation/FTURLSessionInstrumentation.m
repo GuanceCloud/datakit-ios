@@ -119,7 +119,7 @@ static dispatch_once_t onceToken;
 }
 - (void)_swizzleURLSession{
     NSError *error = NULL;
-    if(@available(iOS 13.0, *)){
+    if(@available(iOS 13.0,macOS 10.15,*)){
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
     }
