@@ -22,10 +22,10 @@
 #define FTURLSessionInterceptorProtocol_h
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
-#import "FTURLSessionDelegate.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
 typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
+typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>

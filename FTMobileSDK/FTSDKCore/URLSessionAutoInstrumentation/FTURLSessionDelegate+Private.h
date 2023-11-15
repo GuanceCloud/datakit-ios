@@ -6,7 +6,7 @@
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
 
-#import <FTMobileSDK/FTMobileSDK.h>
+#import "FTURLSessionDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
