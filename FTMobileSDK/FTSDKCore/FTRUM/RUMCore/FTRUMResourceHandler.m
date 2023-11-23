@@ -33,7 +33,7 @@
 }
 
 - (BOOL)process:(nonnull FTRUMDataModel *)data {
-    if ([data isKindOfClass:FTRUMResourceDataModel.class]) {
+    if ([data isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
@@ -48,6 +48,11 @@
                         [self.resourceProperty addEntriesFromDictionary:data.fields];
                     }
                 }
+                    break;
+                case FTRUMDataResourceError:{
+                    [self writeResourceError:data];
+                }
+                    break;
                 default:
                     break;
             }
@@ -55,6 +60,12 @@
     }
 
     return YES;
+}
+- (void)writeResourceError:(FTRUMDataModel *)model{
+    NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    [tags addEntriesFromDictionary:model.tags];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;

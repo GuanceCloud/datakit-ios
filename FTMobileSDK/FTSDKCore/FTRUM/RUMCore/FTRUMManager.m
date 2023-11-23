@@ -214,7 +214,7 @@ NSString * const AppStateStringMap[] = {
                 [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
             }
             dispatch_async(self.rumQueue, ^{
-                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:time];
+                FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
                 resourceError.time = time;
                 resourceError.tags = errorTags;
                 resourceError.fields = errorField;

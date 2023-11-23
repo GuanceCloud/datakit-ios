@@ -60,7 +60,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
         case FTRUMDataError:
         case FTRUMDataLongTask:
-        case FTRUMDataResourceError:
             needWriteErrorData = YES;
             break;
         case FTRUMDataLaunch:
