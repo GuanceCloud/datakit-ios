@@ -21,7 +21,8 @@
 #import <Foundation/Foundation.h>
 /// 自定义 RUM 资源属性 Block
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
-typedef NSURLRequest* _Nonnull(^RequestInterceptor)(NSURLRequest* _Nonnull request);
+/// 拦截 Request ，返回修改后的 Request，可用于自定义链路追踪
+typedef NSURLRequest*_Nonnull(^RequestInterceptor)(NSURLRequest *_Nonnull request);
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTURLSessionDelegate;
@@ -40,22 +41,21 @@ DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] in
 @property (nonatomic, strong) FTURLSessionDelegate *ftURLSessionDelegate;
 
 @end
-/// 自动化 URLSession 请求跟踪。
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate>
+/// `URLSession` 支持自动化采集的代理委托对象。
+///
+/// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
+@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+
+/// 拦截 Request 返回修改后的 Request，可用于自定义链路追踪
+@property (nonatomic,copy) RequestInterceptor requestInterceptor;
 
 /// 告诉拦截器需要自定义 RUM 资源属性。
-@property (nonatomic,copy) ResourcePropertyProvider provider DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [FTURLSessionDelegate propertyProvider:] 替换");
+@property (nonatomic,copy) ResourcePropertyProvider provider;
 
 /// 初始化方法，它位于 `URLSession` 和实际的 `URLSessionDelegate` 之间。
 /// 它将记录所有需要的事件并将方法转发给原始委托
 /// - Parameter delegate: "实际的" session delegate。
 - (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate;
-
-/// 拦截 Request 修改 request
-+ (void)requestInterceptor:(RequestInterceptor)requestInterceptor;
-
-/// 告诉拦截器需要自定义 RUM 资源属性。
-+ (void)rumResourcePropertyProvider:(ResourcePropertyProvider)provider;
 
 /// 启用自动注册`FTURLSessionDelegate`。
 /// 在调用这个方法之后，每次您使用`init(configuration:delegate:delegateQueue:)`方法初始化一个`URLSession`时

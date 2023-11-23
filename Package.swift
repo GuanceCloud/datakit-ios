@@ -56,7 +56,8 @@ let package = Package(
                     
                 ]),
         .target(name: "_FTExternalData",
-                dependencies: ["_FTProtocol"],
+                dependencies: ["_FTProtocol",
+                               "_FTBaseUtils_Base"],
                 path: "FTMobileSDK/FTMobileAgent/ExternalData",
                 publicHeadersPath: ".",
                 cSettings: [

@@ -96,17 +96,22 @@
     switch (type) {
         case InstrumentationDirect:{
             FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
+            ftdelegate.provider = provider;
+            ftdelegate.requestInterceptor = requestInterceptor;
             delegate = ftdelegate;
         }
             break;
             
         case InstrumentationInherit: {
             InstrumentationInheritTestClass *ftdelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
+
             delegate = ftdelegate;
             break;
         }
         case InstrumentationProperty: {
             InstrumentationPropertyTestClass *ftdelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
+            ftdelegate.ftURLSessionDelegate.provider = provider;
+            ftdelegate.ftURLSessionDelegate.requestInterceptor = requestInterceptor;
             delegate = ftdelegate;
             break;
         }

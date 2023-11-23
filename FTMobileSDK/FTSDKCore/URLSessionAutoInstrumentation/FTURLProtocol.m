@@ -66,8 +66,8 @@ static id<FTAutoInterceptorProtocol> sDelegate;
         [scheme isEqualToString:@"https"]) {
         id<FTAutoInterceptorProtocol> strongeDelegate;
         strongeDelegate = [[self class] delegate];
-        if ([strongeDelegate respondsToSelector:@selector(isTraceUrl:)]) {
-            return  [strongeDelegate isTraceUrl:request.URL];
+        if ([strongeDelegate respondsToSelector:@selector(isSDKInsideUrl:)]) {
+            return  [strongeDelegate isSDKInsideUrl:request.URL];
         }
         return YES;
     }

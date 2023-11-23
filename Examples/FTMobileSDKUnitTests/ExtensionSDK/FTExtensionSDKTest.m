@@ -55,6 +55,7 @@
         config.memoryMaxCount = 100;
         [FTExtensionManager startWithExtensionConfig:config];
     });
+    [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 }
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.

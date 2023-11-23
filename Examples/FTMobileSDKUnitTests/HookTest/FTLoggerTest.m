@@ -40,6 +40,7 @@
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
+    loggerConfig.printCustomLogToConsole = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
@@ -52,9 +53,9 @@
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
-    loggerConfig.enableCustomLog = NO
-    ;
+    loggerConfig.enableCustomLog = NO;
     [[FTMobileAgent sharedInstance] logging:@"testLoggingMethod" status:FTStatusInfo];
+    [[FTLogger sharedInstance] info:@"testLoggingMethod" property:nil];
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
@@ -228,7 +229,6 @@
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
     [[FTMobileAgent sharedInstance] logging:@"testSampleRate0" status:FTStatusInfo];
-    NSLog(@"testSampleRate0");
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 

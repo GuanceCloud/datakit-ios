@@ -17,11 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// URL Session 的拦截器，实现 RUM Resource 数据的采集，Trace 链路追踪
 @interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorProtocol,FTExternalResourceProtocol>
 
-@property (nonatomic,copy) RequestInterceptor requestInterceptor;
-
-/// 告诉拦截器需要自定义添加的 property
-@property (nonatomic,copy) ResourcePropertyProvider provider;
-
 + (instancetype)shared;
 
 /// 告诉拦截器修改URL请求
@@ -47,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - task: 完成数据传输的任务。
 ///   - error: 如果发生错误，则返回一个错误对象，表示传输如何失败，否则返回`nil`。
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 - (void)shutDown;
 @end
 

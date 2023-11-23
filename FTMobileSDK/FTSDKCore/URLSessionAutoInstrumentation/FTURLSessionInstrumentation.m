@@ -75,8 +75,9 @@ static dispatch_once_t onceToken;
         [self startURLProtocolMonitor];
     }
 }
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
+- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
     _enableAutoRumTrack = enableAutoRumTrack;
+    self.interceptor.resourceUrlHandler = resourceUrlHandler;
     if(enableAutoRumTrack){
         [self startURLProtocolMonitor];
     }
@@ -118,8 +119,7 @@ static dispatch_once_t onceToken;
 }
 - (void)_swizzleURLSession{
     NSError *error = NULL;
-    if(@available(iOS 13.0, *)){
-        //在 iOS 13 以前 调用 -dataTaskWithURL:/dataTaskWithURL:completionHandler:系统内部会调用 -dataTaskWithRequest:/dataTaskWithRequest:completionHandler:
+    if(@available(iOS 13.0,macOS 10.15,*)){
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
     }
@@ -159,16 +159,13 @@ static dispatch_once_t onceToken;
     }
     return [self.interceptor interceptRequest:request];
 }
-- (BOOL)isTraceUrl:(NSURL *)url{
+- (BOOL)isSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;
     if (self.sdkUrlStr) {
         if (url.port) {
             trace = !([url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host]&&[url.port isEqual:[NSURL URLWithString:self.sdkUrlStr].port]);
         }else{
             trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
-        }
-        if(trace){
-            return [self.interceptor isTraceUrl:url];
         }
     }
     return trace;

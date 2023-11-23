@@ -210,7 +210,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSError *errors;
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+        [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
         [expectation fulfill];
     }];

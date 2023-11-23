@@ -20,6 +20,7 @@
 @end
 @implementation FTURLSessionInterceptor
 @synthesize rumResourceHandeler = _rumResourceHandeler;
+@synthesize resourceUrlHandler = _resourceUrlHandler;
 @synthesize intakeUrlHandler = _intakeUrlHandler;
 static FTURLSessionInterceptor *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -42,6 +43,9 @@ static dispatch_once_t onceToken;
     _tracer = tracer;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
+    if(self.resourceUrlHandler){
+        return !self.resourceUrlHandler(url);
+    }
     if(self.intakeUrlHandler){
         return self.intakeUrlHandler(url);
     }
@@ -85,6 +89,12 @@ static dispatch_once_t onceToken;
 -(FTIntakeUrl)intakeUrlHandler{
     return _intakeUrlHandler;
 }
+-(void)setResourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+    _resourceUrlHandler = resourceUrlHandler;
+}
+-(FTResourceUrlHandler)resourceUrlHandler{
+    return _resourceUrlHandler;
+}
 -(void)setRumResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
     _rumResourceHandeler = innerResourceHandeler;
 }
@@ -116,6 +126,9 @@ static dispatch_once_t onceToken;
         if(!task.originalRequest){
             return;
         }
+        if(![self isTraceUrl:task.originalRequest.URL]){
+            return;
+        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
@@ -127,6 +140,9 @@ static dispatch_once_t onceToken;
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
     dispatch_async(self.queue, ^{
+        if(![self isTraceUrl:task.originalRequest.URL]){
+            return;
+        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
@@ -136,6 +152,9 @@ static dispatch_once_t onceToken;
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     dispatch_async(self.queue, ^{
+        if(![self isTraceUrl:task.originalRequest.URL]){
+            return;
+        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
@@ -143,8 +162,14 @@ static dispatch_once_t onceToken;
         [handler taskReceivedData:data];
     });
 }
-- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
+    [self taskCompleted:task error:error extraProvider:nil];
+}
+- (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     dispatch_async(self.queue, ^{
+        if(![self isTraceUrl:task.originalRequest.URL]){
+            return;
+        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
@@ -152,8 +177,8 @@ static dispatch_once_t onceToken;
         [handler taskCompleted:task error:error];
         [self removeTraceHandlerWithKey:task];
         NSDictionary *property;
-        if(self.provider){
-            property = self.provider(handler.request, handler.response, handler.data, handler.error);
+        if(extraProvider){
+            property = extraProvider(handler.request, handler.response, handler.data, handler.error);
         }
         [self stopResourceWithKey:handler.identifier property:property];
         __block NSString *span_id = nil,*trace_id=nil;
