@@ -24,7 +24,6 @@
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTJSONUtil.h"
-#import "FTURLProtocol.h"
 #import "FTUserInfo.h"
 #import "FTExtensionDataManager.h"
 #import "FTExternalDataManager+Private.h"
@@ -263,7 +262,6 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance] resetInstance];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] resetInstance];
-    [FTURLProtocol stopMonitor];
     onceToken = 0;
     sharedInstance =nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];

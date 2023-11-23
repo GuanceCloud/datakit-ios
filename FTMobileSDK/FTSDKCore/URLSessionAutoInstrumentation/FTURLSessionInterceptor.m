@@ -7,6 +7,7 @@
 //
 
 #import "FTURLSessionInterceptor.h"
+#import "FTURLSessionInterceptor+Private.h"
 #import "FTSessionTaskHandler.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
@@ -115,9 +116,6 @@ static dispatch_once_t onceToken;
             }];
         }
         backRequest = mutableReqeust;
-    }
-    if(self.requestInterceptor){
-        return self.requestInterceptor(backRequest)?:backRequest;
     }
     return backRequest;
 }

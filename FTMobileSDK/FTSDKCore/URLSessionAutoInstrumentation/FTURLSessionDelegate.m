@@ -20,6 +20,7 @@
 
 #import "FTURLSessionDelegate.h"
 #import "FTURLSessionInstrumentation.h"
+#import "FTURLSessionInterceptor+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
@@ -30,7 +31,10 @@
 @property (nonatomic,weak) id<NSURLSessionTaskDelegate> taskDelegate;
 @end
 @implementation FTURLSessionDelegate
-
+@synthesize ftURLSessionDelegate;
+-(instancetype)init{
+    return [self initWithRealDelegate:nil];
+}
 - (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate{
     self = [super init];
     if (self) {
@@ -38,6 +42,9 @@
         _taskDelegate = (id<NSURLSessionTaskDelegate>)delegate;
         _interceptedSelectors = [[NSSet alloc]initWithArray:@[NSStringFromSelector(@selector(URLSession:dataTask:didReceiveData:)),NSStringFromSelector(@selector(URLSession:task:didCompleteWithError:)),NSStringFromSelector(@selector(URLSession:task:didFinishCollectingMetrics:))]];
     }
+    return self;
+}
+-(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
 - (FTURLSessionInstrumentation *)instrumentation{
@@ -66,7 +73,7 @@
     }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.instrumentation.interceptor taskCompleted:task error:error];
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
     if(self.actualDelegate && [self.actualDelegate respondsToSelector:@selector(URLSession:task:didCompleteWithError:)]){
         [self.taskDelegate URLSession:session task:task didCompleteWithError:error];
     }
@@ -83,18 +90,12 @@
 }
 #pragma mark ========== interceptor ==========
 /// 拦截 Request 修改 request
-+ (void)requestInterceptor:(RequestInterceptor)requestInterceptor{
-    [[FTURLSessionInstrumentation sharedInstance].interceptor setRequestInterceptor:requestInterceptor];
-}
+//+ (void)requestInterceptor:(RequestInterceptor)requestInterceptor{
+//    [[FTURLSessionInstrumentation sharedInstance].interceptor setRequestInterceptor:requestInterceptor];
+//}
 /// 告诉拦截器需要自定义 RUM 资源属性。
-+ (void)rumResourcePropertyProvider:(ResourcePropertyProvider)provider{
-    [[FTURLSessionInstrumentation sharedInstance].interceptor setProvider:provider];
-}
-#pragma mark ========== auto ==========
-+ (void)enableAutomaticRegistration{
-    [[FTURLSessionInstrumentation sharedInstance] enableAutoSwizzleSession];
-}
-+ (void)disableAutomaticRegistration{
-    [[FTURLSessionInstrumentation sharedInstance] disableAutoSwizzleSession];
-}
+//+ (void)rumResourcePropertyProvider:(ResourcePropertyProvider)provider{
+//    [[FTURLSessionInstrumentation sharedInstance].interceptor setProvider:provider];
+//}
+
 @end

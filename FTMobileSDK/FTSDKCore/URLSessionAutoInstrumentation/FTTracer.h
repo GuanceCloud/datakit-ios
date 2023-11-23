@@ -18,8 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - sampleRate: 采样率
 ///   - traceType: 链路追踪类型
 ///   - link: 是否关联 rum
-- (void)startWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableLinkRumData:(BOOL)link;
-- (void)shutDown;
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableLinkRumData:(BOOL)link;
 #if FTSDKUNITTEST
 -(NSUInteger)getSkywalkingSeq;
 #endif

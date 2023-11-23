@@ -21,6 +21,6 @@
 /// 判断 URL 是否采集
 /// 是否是 SDK 内部上传链接
 /// - Parameter url: 需要判断的 URL
-- (BOOL)isSDKInsideUrl:(NSURL *)url;
+- (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 @end
 #endif /* FTAutoInterceptorProtocol_h */

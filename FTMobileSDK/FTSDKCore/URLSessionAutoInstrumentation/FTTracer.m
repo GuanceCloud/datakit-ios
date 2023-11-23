@@ -11,7 +11,6 @@
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
 #import "FTInternalLog.h"
@@ -27,11 +26,11 @@ static NSUInteger SkywalkingSeq = 0.0;
 @implementation FTTracer
 @synthesize enableLinkRumData = _enableLinkRumData;
 
--(instancetype)initWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableLinkRumData:(BOOL)link{
     self = [super init];
     if(self){
         _sampleRate = sampleRate;
-        _traceType = (NetworkTraceType)traceType;
+        _traceType = traceType;
         _enableLinkRumData = link;
     }
     return self;
