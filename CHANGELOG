@@ -1,3 +1,9 @@
+1.4.8-alpha.2
+1.修复 APP 进入后台 HTTP 请求悬挂导致的 RUM-View 持续时间过长问题
+2.自动采集 HTTP Resource 逻辑修改
+3.新增自定义采集 HTTP Resource 功能
+4.优化 RUM-ResourceError 错误信息描述
+---
 1.4.8-alpha.1
 1.新增自定义 TraceHeader 功能
 2.配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
