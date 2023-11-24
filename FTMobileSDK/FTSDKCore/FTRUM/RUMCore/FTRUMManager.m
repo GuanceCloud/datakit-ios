@@ -201,11 +201,14 @@ NSString * const AppStateStringMap[] = {
         [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
         
         if (content.error || content.httpStatusCode>=400) {
-            NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
             NSString *run = AppStateStringMap[self.appState];
             NSMutableDictionary *errorField = [NSMutableDictionary new];
             NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-            [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+            if(content.error){
+                [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+            }else{
+                [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+            }
             [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
             [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_TYPE];
             [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
