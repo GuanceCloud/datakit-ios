@@ -27,10 +27,12 @@
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 @implementation NSURLSession (FTSwizzler)
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class]|| [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
-            id <FTURLSessionDelegateProviding> realDelegate = (id <FTURLSessionDelegateProviding>) self.delegate;
-            FTURLSessionDelegate *sessionDelegate = realDelegate.ftURLSessionDelegate;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            FTURLSessionDelegate *sessionDelegate = [self.delegate isKindOfClass:FTURLSessionDelegate.class]?(FTURLSessionDelegate *)self.delegate:((id <FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
+#pragma clang diagnostic pop
             NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
             if (@available(iOS 13.0, *)) {
                 NSURLRequest *interceptedRequest = [sessionDelegate interceptRequest:task.originalRequest];
@@ -43,10 +45,12 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithURL:url];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class]|| [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
-            id <FTURLSessionDelegateProviding> realDelegate = (id <FTURLSessionDelegateProviding>) self.delegate;
-            FTURLSessionDelegate *sessionDelegate = realDelegate.ftURLSessionDelegate;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            FTURLSessionDelegate *sessionDelegate = [self.delegate isKindOfClass:FTURLSessionDelegate.class]?(FTURLSessionDelegate *)self.delegate:((id <FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
+#pragma clang diagnostic pop
             NSURLSessionDataTask *task;
             if (completionHandler) {
                 __block NSURLSessionDataTask *taskReference;
@@ -73,10 +77,12 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class]|| [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
-            id <FTURLSessionDelegateProviding> realDelegate = (id <FTURLSessionDelegateProviding>) self.delegate;
-            FTURLSessionDelegate *sessionDelegate = realDelegate.ftURLSessionDelegate;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            FTURLSessionDelegate *sessionDelegate = [self.delegate isKindOfClass:FTURLSessionDelegate.class]?(FTURLSessionDelegate *)self.delegate:((id <FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
+#pragma clang diagnostic pop
             NSURLRequest *newRequest = [sessionDelegate interceptRequest:request];
             NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
             if (@available(iOS 13.0, *)) {
@@ -88,10 +94,12 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class]|| [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            FTURLSessionDelegate *sessionDelegate = [self.delegate isKindOfClass:FTURLSessionDelegate.class]?(FTURLSessionDelegate *)self.delegate:((id <FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
+#pragma clang diagnostic pop
         if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
-            id <FTURLSessionDelegateProviding> realDelegate = (id <FTURLSessionDelegateProviding>) self.delegate;
-            FTURLSessionDelegate *sessionDelegate = realDelegate.ftURLSessionDelegate;
             NSURLSessionDataTask *task;
             if (completionHandler) {
                 __block NSURLSessionDataTask *taskReference;

@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
 ///
 /// 必须确保 `ftURLSessionDelegate` 调用所需的方法
-//DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] initWithRealDelegate:] 替换")
+DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] initWithRealDelegate:] 替换")
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 /// 自动化采集的委托代理对象
 ///
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// `URLSession` 支持自动化采集的代理委托对象。
 ///
 /// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
+@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate>
 
 /// 拦截 Request 返回修改后的 Request，可用于自定义链路追踪
 @property (nonatomic,copy) RequestInterceptor requestInterceptor;

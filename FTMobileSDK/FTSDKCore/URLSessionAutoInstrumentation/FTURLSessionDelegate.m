@@ -31,7 +31,6 @@
 @property (nonatomic,weak) id<NSURLSessionTaskDelegate> taskDelegate;
 @end
 @implementation FTURLSessionDelegate
-@synthesize ftURLSessionDelegate;
 -(instancetype)init{
     return [self initWithRealDelegate:nil];
 }
@@ -44,9 +43,7 @@
     }
     return self;
 }
--(FTURLSessionDelegate *)ftURLSessionDelegate{
-    return self;
-}
+
 - (FTURLSessionInstrumentation *)instrumentation{
     return [FTURLSessionInstrumentation sharedInstance];
 }
