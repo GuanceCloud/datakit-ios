@@ -21,11 +21,6 @@
 @property (nonatomic, strong) FTRUMContext *sessionContext;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
-@property (nonatomic, copy) NSString *view_id;
-@property (nonatomic, copy) NSString *view_name;
-@property (nonatomic, copy) NSString *view_referrer;
-@property (nonatomic, strong) NSNumber *loading_time;
-@property (nonatomic, assign,readwrite) BOOL isActiveView;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
 @property (nonatomic, assign) NSInteger viewErrorCount;

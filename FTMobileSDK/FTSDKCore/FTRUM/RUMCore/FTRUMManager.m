@@ -401,7 +401,8 @@ NSString * const AppStateStringMap[] = {
     if (current) {
         if ([self manage:self.sessionHandler byPropagatingData:model] == nil) {
             //刷新
-            [self.sessionHandler refreshWithDate:model.time];
+            FTRUMSessionHandler *sessionHandler = [[FTRUMSessionHandler alloc]initWithExpiredSession:self.sessionHandler time:model.time];
+            self.sessionHandler = sessionHandler;
             [self.sessionHandler.assistant process:model];
         }
     }else{

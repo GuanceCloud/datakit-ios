@@ -38,11 +38,28 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     }
     return  self;
 }
--(void)refreshWithDate:(NSDate *)date{
-    self.context.session_id = [NSUUID UUID].UUIDString;
-    self.sessionStartTime = date;
-    self.lastInteractionTime = date;
-    self.sampling = [FTBaseInfoHandler randomSampling:self.sampleRate];
+-(instancetype)initWithExpiredSession:(FTRUMSessionHandler *)expiredSession time:(NSDate *)time{
+    self = [super init];
+    if (self) {
+        self.assistant = self;
+        self.sampleRate = expiredSession.sampleRate;
+        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.sampleRate];
+        self.sessionStartTime = time;
+        self.context = [FTRUMContext new];
+        self.context.writer = expiredSession.context.writer;
+        self.monitor = expiredSession.monitor;
+        self.viewHandlers = [NSMutableArray new];
+        for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
+            if(viewHandler.isActiveView){
+                FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[NSUUID UUID].UUIDString
+                                                                    viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
+                viewModel.loading_time = viewHandler.loading_time;
+                FTRUMViewHandler *newViewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context monitor:self.monitor];
+                [self.viewHandlers addObject:newViewHandler];
+            }
+        }
+    }
+    return  self;
 }
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
