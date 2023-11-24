@@ -50,6 +50,9 @@
                 }
                     break;
                 case FTRUMDataResourceError:{
+                    if(self.errorHandler){
+                        self.errorHandler();
+                    }
                     [self writeResourceError:data];
                 }
                     break;

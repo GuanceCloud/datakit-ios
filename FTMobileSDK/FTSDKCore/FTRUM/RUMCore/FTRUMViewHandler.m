@@ -108,12 +108,6 @@
                 self.needUpdateView = YES;
             break;
         }
-        case FTRUMDataResourceError:
-            if (self.isActiveView) {
-                self.viewErrorCount++;
-                self.needUpdateView = YES;
-            }
-            break;
         case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceDataModel *)model];
@@ -159,6 +153,10 @@
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context];
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
+        weakSelf.needUpdateView = YES;
+    };
+    resourceHandler.errorHandler = ^{
+        weakSelf.viewErrorCount+=1;
         weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;

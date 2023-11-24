@@ -10,7 +10,7 @@
 @class FTRUMViewHandler;
 NS_ASSUME_NONNULL_BEGIN
 typedef void(^FTResourceEventSent)(void);
-//typedef void(^FTErrorEventSent)(void);
+typedef void(^FTErrorEventSent)(void);
 
 /// RUM Resource 数据处理者
 @interface FTRUMResourceHandler : FTRUMHandler
@@ -20,7 +20,8 @@ typedef void(^FTResourceEventSent)(void);
 @property (nonatomic, strong) FTRUMContext *context;
 /// resource 数据处理完毕回调
 @property (nonatomic, copy) FTResourceEventSent resourceHandler;
-//@property (nonatomic, copy) FTErrorEventSent errorHandler;
+/// resource error 处理完毕回调
+@property (nonatomic, copy) FTErrorEventSent errorHandler;
 /// 初始化方法
 /// - Parameters:
 ///   - model: rum数据模型
