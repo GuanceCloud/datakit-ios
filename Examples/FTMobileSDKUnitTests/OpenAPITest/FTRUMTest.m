@@ -62,25 +62,31 @@
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
 }
 /**
- * 验证： session持续15m 无新数据写入 session更新
+ * 验证： session持续 15m 无新数据写入 session更新
  */
 - (void)testSessionTimeElapse{
     [self setRumConfig];
     [self addErrorData:nil];
-    
+    [FTModelHelper startViewWithName:@"FirstView"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
     FTRecordModel *oldModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
     //把session上次记录数据改为15分钟前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"lastInteractionTime"];
-    
     [self addLongTaskData:nil];
-    
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *newViewHandlers = [newSession valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
+    FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)[viewHandlers lastObject];
+    FTRUMViewHandler *newViewHandler = (FTRUMViewHandler *)[newViewHandlers lastObject];
+    XCTAssertTrue([viewHandler.view_name isEqualToString:newViewHandler.view_name]);
+    XCTAssertFalse([viewHandler.view_id isEqualToString:newViewHandler.view_id]);
     FTRecordModel *newModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:oldModel.data];
     NSDictionary *opdata = dict[FT_OPDATA];
@@ -124,6 +130,49 @@
     XCTAssertTrue(oldSessionId);
     XCTAssertTrue(newSessionId);
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
+}
+- (void)testSessionTimeOutViewUpdate{
+    NSString *key = [[NSUUID UUID] UUIDString];
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"FirstView"];
+    [FTModelHelper addAction];
+    [FTModelHelper startResource:key];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *viewHandlers = [session valueForKey:@"viewHandlers"];
+
+    //把session开始时间改为四小时前 模拟session过期
+    NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
+    [session setValue:newDate forKey:@"sessionStartTime"];
+    
+    [self addLongTaskData:nil];
+    [FTModelHelper stopErrorResource:key];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *newViewHandlers = [newSession valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
+    FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)[viewHandlers lastObject];
+    FTRUMViewHandler *newViewHandler = (FTRUMViewHandler *)[newViewHandlers lastObject];
+    NSInteger viewResourceCount = [[viewHandler valueForKey:@"viewResourceCount"] integerValue];
+    NSInteger viewErrorCount = [[viewHandler valueForKey:@"viewErrorCount"] integerValue];
+    NSInteger viewActionCount = [[viewHandler valueForKey:@"viewActionCount"] integerValue];
+    NSInteger viewLongTaskCount = [[viewHandler valueForKey:@"viewLongTaskCount"] integerValue];
+
+    NSInteger nVewResourceCount = [[newViewHandler valueForKey:@"viewResourceCount"] integerValue];
+    NSInteger nViewErrorCount = [[newViewHandler valueForKey:@"viewErrorCount"] integerValue];
+    NSInteger nViewActionCount = [[newViewHandler valueForKey:@"viewActionCount"] integerValue];
+    NSInteger nViewLongTaskCount = [[newViewHandler valueForKey:@"viewLongTaskCount"] integerValue];
+    XCTAssertTrue(viewResourceCount == 0 );
+    XCTAssertTrue(viewErrorCount == 0 );
+    XCTAssertTrue(viewActionCount == 0 );
+    XCTAssertTrue(viewLongTaskCount == 0 );
+    
+    XCTAssertTrue(nVewResourceCount == nViewErrorCount == nViewActionCount == 0 );
+    XCTAssertTrue(nViewLongTaskCount == 1);
+    XCTAssertTrue([viewHandler.view_name isEqualToString:newViewHandler.view_name]);
+    XCTAssertFalse([viewHandler.view_id isEqualToString:newViewHandler.view_id]);
 }
 /**
  * 验证 source：view 的数据格式
@@ -254,6 +303,34 @@
 }
 -(void)testLowercaseResponseHeader{
     [self resourceDataAndFormatChecks:YES];
+}
+-(void)testErrorResourceBindView{
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"FirstView"];
+    [FTModelHelper addAction];
+    NSString *key = [[NSUUID UUID]UUIDString];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    [FTModelHelper stopView];
+    [FTModelHelper startView];
+    [FTModelHelper stopView];
+    [FTModelHelper startView];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasResource = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"FirstView"]);
+            hasResource = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResource);
 }
 -(void)resourceDataAndFormatChecks:(BOOL)lowercase{
     NSArray *resourceTag = @[FT_KEY_RESOURCE_URL,

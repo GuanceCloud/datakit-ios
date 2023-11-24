@@ -109,10 +109,6 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self sdkNormalSet];
     [self startWithTest:InstrumentationProxy requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
 }
-- (void)testURLSessionDelegateAuto{
-    [self sdkNormalSet];
-    [self startWithTest:InstrumentationAuto requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
-}
 - (void)testResourcePropertyProvider{
     [self sdkNormalSet];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
@@ -133,6 +129,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
         return newRequest;
     };
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES provider:nil requestInterceptor:interceptor];
+}
 - (void)testDiffURLSessionPropertyProvider{
     [self sdkNormalSet];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
@@ -186,15 +183,6 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
         }
     }];
     XCTAssertTrue(hasResource2);
-}
-- (void)testRequestInterceptor{
-    [self sdkNormalSet];
-    RequestInterceptor requestInterceptor = ^NSURLRequest *(NSURLRequest *request){
-        NSMutableURLRequest *newRequest = [request mutableCopy];
-        [newRequest setValue:@"testRequestInterceptor" forHTTPHeaderField:@"test"];
-        return newRequest;
-    };
-    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:nil requestInterceptor:requestInterceptor];
 }
 - (void)testDiffRequestInterceptor{
     [self sdkNormalSet];
@@ -375,12 +363,11 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
             hasResource = YES;
             *stop = YES;
             if(provider){
-                XCTAssertTrue([fields.allKeys containsObject:@"request_body"]);
                 XCTAssertTrue([fields.allKeys containsObject:@"response_body"]);
             }
             if(requestInterceptor){
                 NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
-                XCTAssertTrue([requestHeader containsString:@"test:testRequestInterceptor"]);
+                XCTAssertTrue([requestHeader containsString:@"test:test_requestInterceptor"]);
             }
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);

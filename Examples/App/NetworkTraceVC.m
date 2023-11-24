@@ -51,8 +51,11 @@
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-        NSURLSessionDataTask *task = [session dataTaskWithRequest:request];
+        NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            
+        }];
         [task resume];
+        [session finishTasksAndInvalidate];
     }];
     // 避免数据重复请关闭 enableTraceUserResource
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"注册 `FTURLSessionDelegate`" subTitle:@"委托替换为`FTURLSessionDelegate`，内部记录所有需要的事件并将方法转发给原始委托" handler:^{
@@ -60,56 +63,57 @@
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:[[FTURLSessionDelegate alloc]initWithRealDelegate:weakSelf] delegateQueue:nil];
 
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        NSURLSessionTask *task = [session dataTaskWithRequest:request];
-       
+        NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            
+        }];
         [task resume];
-        
+        [session finishTasksAndInvalidate];
     }];
-    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"启用自动注册`FTURLSessionDelegate`" subTitle:@"委托自动替换为`FTURLSessionDelegate`，内部记录所有需要的事件并将方法转发给原始委托"  handler:^{
-        [FTURLSessionDelegate enableAutomaticRegistration];
-        
-        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:weakSelf delegateQueue:[NSOperationQueue mainQueue]];
-
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-       
-        NSURLSessionTask *task = [session dataTaskWithRequest:request];
-       
-        [task resume];
-    }];
-    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"拦截 Request 请求，自定义 Trace" handler:^{
-        [FTURLSessionDelegate requestInterceptor:^NSURLRequest * _Nonnull(NSURLRequest * _Nonnull request) {
+    TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:@"拦截 Request 请求，自定义 Trace" handler:^{
+        FTURLSessionDelegate *delegateProxy = [[FTURLSessionDelegate alloc]initWithRealDelegate:weakSelf];
+        delegateProxy.requestInterceptor = ^NSURLRequest * _Nonnull(NSURLRequest * _Nonnull request) {
             NSMutableURLRequest *newRequest = [request mutableCopy];
             [newRequest setValue:@"interceptor" forHTTPHeaderField:@"test"];
-            return request;
+            return newRequest;
+        };
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegateProxy delegateQueue:nil];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            
         }];
+       
+        [task resume];
+        [session finishTasksAndInvalidate];
     }];
-    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"添加 RUM Resource 额外资源" handler:^{
-        [FTURLSessionDelegate rumResourcePropertyProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+    TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"添加 RUM Resource 额外资源" handler:^{
+        FTURLSessionDelegate *delegateProxy = [[FTURLSessionDelegate alloc]initWithRealDelegate:weakSelf];
+        delegateProxy.provider = ^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
             return @{@"request_body":body};
+        };
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegateProxy delegateQueue:nil];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            
         }];
+       
+        [task resume];
+        [session finishTasksAndInvalidate];
     }];
     
-    TableViewCellItem *item6 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
+    TableViewCellItem *item5 = [[TableViewCellItem alloc]initWithTitle:@"手动操作:使用 open api 操作" handler:^{
         NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-        NSString *key = [[NSUUID UUID] UUIDString];
         NSURL *url = [NSURL URLWithString:urlStr];
-        // 获取 trace（链路追踪）需要添加的请求头
-        NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        for (NSString *httpHeaderField in traceHeader.keyEnumerator) {
-            [request addValue:traceHeader[httpHeaderField] forHTTPHeaderField:httpHeaderField];
-        }
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        NSURLRequest *addTraceRequest = [[FTURLSessionInterceptor shared] interceptRequest:request];
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:weakSelf delegateQueue:[NSOperationQueue mainQueue]];
         NSURLSessionTask *task = [session dataTaskWithRequest:request];
-        RUMResource *handler = [[RUMResource alloc]initWithKey:key];
-        weakSelf.taskHandler[task] = handler;
-        [[FTExternalDataManager sharedManager] startResourceWithKey:key];
-
+        [[FTURLSessionInterceptor shared] interceptTask:task];
         [task resume];
+        [session finishTasksAndInvalidate];
     }];
     
-    self.datas = @[@[item1],@[item2,item3,item4,item5],@[item6]];
+    self.datas = @[@[item1],@[item2,item3,item4],@[item5]];
     self.mTableView.dataSource = self;
     self.mTableView.delegate = self;
     [self.mTableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"UITableViewCell"];
@@ -160,27 +164,14 @@
 #pragma mark --------- NSURLSessionDataDelegate ----------
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(macosx(10.12), ios(10.0), watchos(3.0), tvos(10.0)){
-    RUMResource *handler =  self.taskHandler[task];
-    handler.metrics = metrics;
+    [[FTURLSessionInterceptor shared] taskMetricsCollected:task metrics:metrics];
 }
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data{
-    RUMResource *handler =  self.taskHandler[dataTask];
-    handler.data = data;
-
+    [[FTURLSessionInterceptor shared] taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    RUMResource *handler =  self.taskHandler[task];
-    NSHTTPURLResponse *response = (NSHTTPURLResponse *)task.response;
-    [[FTExternalDataManager sharedManager] stopResourceWithKey:handler.key];
-    FTResourceMetricsModel *metricsModel;
-    if(handler.metrics){
-        metricsModel  = [[FTResourceMetricsModel alloc]initWithTaskMetrics:
-                         handler.metrics];
-    }
-    FTResourceContentModel *contentModel = [[FTResourceContentModel alloc]initWithRequest:task.currentRequest response:response data:handler.data error:error];
-    [[FTExternalDataManager sharedManager] addResourceWithKey:handler.key metrics:metricsModel content:contentModel];
-    [session invalidateAndCancel];
+    [[FTURLSessionInterceptor shared] taskCompleted:task error:error extraProvider:nil];
 }
 /*
 #pragma mark - Navigation

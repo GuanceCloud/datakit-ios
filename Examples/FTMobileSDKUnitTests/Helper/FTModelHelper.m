@@ -52,6 +52,10 @@
 + (void)startView{
     [FTModelHelper startView:nil];
 }
++ (void)startViewWithName:(NSString *)name{
+    [[FTExternalDataManager sharedManager] onCreateView:name loadTime:@1000000000];
+    [[FTExternalDataManager sharedManager] startViewWithName:name];
+}
 + (void)startView:(NSDictionary *)context{
     NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
     [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
@@ -63,6 +67,17 @@
 }
 + (void)stopView:(NSDictionary *)context{
     [[FTExternalDataManager sharedManager] stopViewWithProperty:context];
+}
++ (void)startResource:(NSString *)key{
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+}
++ (void)stopErrorResource:(NSString *)key{
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
 }
 + (void)addAction{
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"testActionClick" property:nil];

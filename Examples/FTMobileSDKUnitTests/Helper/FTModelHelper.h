@@ -17,9 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (FTRecordModel *)createRumModel;
 + (FTRecordModel *)createWrongFormatRumModel;
 + (void)startView;
++ (void)startViewWithName:(NSString *)name;
 + (void)startView:(NSDictionary *)context;
 + (void)stopView;
 + (void)stopView:(NSDictionary *)context;
++ (void)startResource:(NSString *)key;
++ (void)stopErrorResource:(NSString *)key;
 + (void)addAction;
 + (void)addActionWithType:(NSString *)type;
 + (void)addActionWithContext:(NSDictionary *)context;
