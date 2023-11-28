@@ -35,7 +35,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)tearDown {
@@ -51,9 +51,9 @@ selector:@selector(applicationDidBecomeActive:)
     name:UIApplicationDidBecomeActiveNotification
 object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 - (void)applicationDidBecomeActive:(NSNotification *)noti{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];

@@ -26,6 +26,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
+#import "FTSessionConfiguration.h"
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -50,6 +51,9 @@
     rumConfig.enableTraceUserResource = YES;
     rumConfig.enableTrackAppCrash = YES;
     [FTMobileAgent startWithConfigOptions:config];
+    FTTraceConfig *trace = [[FTTraceConfig alloc]init];
+    trace.enableAutoTrace = YES;
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     // Put setup code here. This method is called before the invocation of each
@@ -223,7 +227,7 @@
        }];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
     __block BOOL hasRes = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
@@ -232,6 +236,30 @@
         }
     }];
     XCTAssertTrue(hasRes);
+}
+- (void)testShouldNotInterceptAutoTrackResource{
+    [[FTSessionConfiguration defaultConfiguration] stopMonitor];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+ 
+    [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+           XCTAssertNil(error);
+       }];
+    [tester waitForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasRes = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertFalse(hasRes);
 }
 - (void)testActionName{
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
