@@ -18,11 +18,6 @@
 /// url 拦截代理
 + (id<FTAutoInterceptorProtocol>)delegate;
 
-/// 开始监控
-+ (void)startMonitor;
-
-/// 停止监控
-+ (void)stopMonitor;
 @end
 
 

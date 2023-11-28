@@ -10,37 +10,14 @@
 #endif
 #import "FTURLProtocol.h"
 #import "FTSessionConfiguration.h"
-static NSString *const URLProtocolHandledKey = @"URLProtocolHandledKey";//为了避免死循环
+static NSString *const URLProtocolHandledKey = @"FTURLProtocolHandledKey";//为了避免死循环
 
-@interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionTaskDelegate>
-@property (nonatomic, strong) NSURLSession *session;
-@property (nonatomic, strong) NSData *data;
-@property (nonatomic, strong) NSOperationQueue* sessionDelegateQueue;
-@property (nonatomic, strong) NSURLSessionTaskMetrics *metrics API_AVAILABLE(ios(10.0));
-
-@property (nonatomic, assign) BOOL trackUrl;
-@property (nonatomic, copy) NSString *identifier;
+@interface FTURLProtocol ()<NSURLSessionDelegate,NSURLSessionDataDelegate>
+@property (atomic, strong, readwrite) NSURLSessionDataTask *task;
 @end
 @implementation FTURLProtocol
 static id<FTAutoInterceptorProtocol> sDelegate;
 
-// 开始监听
-+ (void)startMonitor {
-    FTSessionConfiguration *sessionConfiguration = [FTSessionConfiguration defaultConfiguration];
-    [NSURLProtocol registerClass:[FTURLProtocol class]];
-    if (![sessionConfiguration isExchanged]) {
-        [sessionConfiguration load];
-    }
-}
-
-// 停止监听
-+ (void)stopMonitor {
-    FTSessionConfiguration *sessionConfiguration = [FTSessionConfiguration defaultConfiguration];
-    [NSURLProtocol unregisterClass:[FTURLProtocol class]];
-    if ([sessionConfiguration isExchanged]) {
-        [sessionConfiguration unload];
-    }
-}
 + (id<FTAutoInterceptorProtocol>)delegate{
     id<FTAutoInterceptorProtocol> result;
     @synchronized (self) {
@@ -53,6 +30,10 @@ static id<FTAutoInterceptorProtocol> sDelegate;
         sDelegate = delegate;
     }
 }
++ (BOOL)canInitWithTask:(NSURLSessionTask *)task {
+    NSURLRequest *request = task.currentRequest;
+    return request == nil ? NO : [self canInitWithRequest:request];
+}
 + (BOOL)canInitWithRequest:(NSURLRequest *)request {
     
     NSString * scheme = [[request.URL scheme] lowercaseString];
@@ -61,9 +42,15 @@ static id<FTAutoInterceptorProtocol> sDelegate;
     if ([NSURLProtocol propertyForKey: URLProtocolHandledKey inRequest:request]) {
         return NO;
     }
-    
+    if (![FTSessionConfiguration defaultConfiguration].shouldIntercept) {
+        return NO;
+    }
     if ([scheme isEqualToString:@"http"] ||
         [scheme isEqualToString:@"https"]) {
+        NSString *contentType = [request valueForHTTPHeaderField:@"Content-Type"];
+        if (contentType && [contentType containsString:@"multipart/form-data"]) {
+            return NO;
+        }
         id<FTAutoInterceptorProtocol> strongeDelegate;
         strongeDelegate = [[self class] delegate];
         if ([strongeDelegate respondsToSelector:@selector(isTraceUrl:)]) {
@@ -75,12 +62,15 @@ static id<FTAutoInterceptorProtocol> sDelegate;
     return NO;
 }
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
+    NSMutableURLRequest *mutableReqeust = [request mutableCopy];
+    //标示该request已经处理过了，防止无限循环
+    [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
     id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(interceptRequest:)]) {
-        return [strongeDelegate.interceptor interceptRequest:request];
+        return [strongeDelegate.interceptor interceptRequest:mutableReqeust];
     }
-    return request;
+    return mutableReqeust;
 }
 
 + (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b {
@@ -92,30 +82,29 @@ static id<FTAutoInterceptorProtocol> sDelegate;
 }
 
 //开始请求
-- (void)startLoading
-{
-    NSMutableURLRequest *mutableReqeust = [[self request] mutableCopy];
-    //标示该request已经处理过了，防止无限循环
-    [NSURLProtocol setProperty:@(YES) forKey:URLProtocolHandledKey inRequest:mutableReqeust];
-    //使用NSURLSession继续把request发送出去
-    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    self.sessionDelegateQueue                             = [[NSOperationQueue alloc] init];
-    self.sessionDelegateQueue.maxConcurrentOperationCount = 1;
-    self.sessionDelegateQueue.name                        = @"com.session.queue";
-    self.session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:self.sessionDelegateQueue];
-    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:mutableReqeust];
+- (void)startLoading{
+    NSMutableArray *        calculatedModes;
+    NSString *              currentMode;
+    calculatedModes = [NSMutableArray array];
+    [calculatedModes addObject:NSDefaultRunLoopMode];
+    currentMode = [[NSRunLoop currentRunLoop] currentMode];
+    if ( (currentMode != nil) && ! [currentMode isEqual:NSDefaultRunLoopMode] ) {
+        [calculatedModes addObject:currentMode];
+    }
+    self.task = [[FTSessionConfiguration defaultConfiguration] dataTaskWithRequest:self.request delegate:self modes:calculatedModes];
     id<FTAutoInterceptorProtocol> strongeDelegate;
     strongeDelegate = [[self class] delegate];
     if (strongeDelegate && strongeDelegate.enableAutoRumTrack && strongeDelegate.interceptor && [strongeDelegate.interceptor respondsToSelector:@selector(interceptTask:)]) {
-        [strongeDelegate.interceptor interceptTask:task];
+        [strongeDelegate.interceptor interceptTask:self.task];
     }
-    [task resume];
+    [self.task resume];
 }
-
 //结束请求
 - (void)stopLoading {
-    [self.session invalidateAndCancel];
-    self.session = nil;
+    if (self.task != nil) {
+        [self.task cancel];
+        self.task = nil;
+    }
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler

@@ -11,7 +11,6 @@
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTURLProtocol.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
 static NSUInteger SkywalkingSeq = 0.0;
