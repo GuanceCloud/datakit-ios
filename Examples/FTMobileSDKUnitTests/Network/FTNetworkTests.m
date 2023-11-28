@@ -46,28 +46,6 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
-    switch (type) {
-        case FTNetworkTest:
-            break;
-        case FTNetworkTestBad:
-            urlStr = [urlStr stringByAppendingString:@"TestBad"];
-            break;
-        case FTNetworkTestNoJsonResponse:
-            urlStr = [urlStr stringByAppendingString:@"TestNoJsonResponse"];
-            break;
-        case FTNetworkTestWrongJsonResponse:
-            urlStr = [urlStr stringByAppendingString:@"TestWrongJsonResponse"];
-            break;
-        case FTNetworkTestEmptyResponseData:
-            urlStr = [urlStr stringByAppendingString:@"TestEmptyResponseData"];
-            break;
-        case FTNetworkTestErrorResponse:
-            urlStr = [urlStr stringByAppendingString:@"TestErrorResponse"];
-            break;
-        case FTNetworkTestErrorNet:
-            urlStr = [urlStr stringByAppendingString:@"TestErrorNet"];
-            break;
-    }
     NSString *logUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
     NSString *rumUrl = [urlStr stringByAppendingString:@"/v1/write/rum"];
     NSString *traceUrl = [urlStr stringByAppendingString:@"/v1/write/tracing"];
