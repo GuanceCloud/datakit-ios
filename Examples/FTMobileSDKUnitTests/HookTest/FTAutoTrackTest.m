@@ -60,7 +60,7 @@
    
 }
 - (void)tearDown {
-//    [[FTMobileAgent sharedInstance] resetInstance];
+    //    [[FTMobileAgent sharedInstance] resetInstance];
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
@@ -135,14 +135,14 @@
     
 }
 - (void)testTapGes{
-   
+    
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"LABLE_CLICK"] tap];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-
+    
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
@@ -154,7 +154,7 @@
     XCTAssertTrue(newArray.count>0);
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
-
+    
 }
 - (void)testLongPressGes{
     
@@ -163,7 +163,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointZero duration:1];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
-
+    
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -181,7 +181,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
-
+    
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
@@ -191,14 +191,14 @@
         }
     }];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-
+    
 }
 
 - (void)testCollectionViewCellClick{
-
+    
     [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
-
+    
     [[tester waitForViewWithAccessibilityLabel:@"cell: 1"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"cell: 2"] tap];
     
@@ -218,13 +218,13 @@
     [FTModelHelper startView];
     [FTModelHelper addAction];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
- 
+    
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
+        XCTAssertNil(error);
+    }];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -237,18 +237,42 @@
     }];
     XCTAssertTrue(hasRes);
 }
+- (void)testURLSessionCreateBeforeSDKInit{
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [self networkUpload:session handler:^(NSURLResponse *response, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [tester waitForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasRes = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasRes = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasRes);
+    
+}
 - (void)testShouldNotInterceptAutoTrackResource{
     [[FTSessionConfiguration defaultConfiguration] stopMonitor];
     [FTModelHelper startView];
     [FTModelHelper addAction];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
- 
+    
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-           XCTAssertNil(error);
-       }];
+        XCTAssertNil(error);
+    }];
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
@@ -281,24 +305,28 @@
     [self.testVC view];
     [self.testVC viewWillAppear:NO];
     [self.testVC viewDidAppear:NO];
-   
+    
     XCTAssertTrue([self.testVC.uiswitch.ft_actionName isEqualToString:@"[UISwitch]Off"]);
     XCTAssertTrue([self.testVC.firstButton.ft_actionName isEqualToString:@"[UIButton][FirstButton]"]);
     XCTAssertTrue([self.testVC.stepper.ft_actionName isEqualToString:@"[UIStepper]0.00"]);
     XCTAssertTrue([self.testVC.label.ft_actionName isEqualToString:@"[UILabel][lable]"]);
     XCTAssertTrue([self.testVC.segmentedControl.ft_actionName isEqualToString:@"[UISegmentedControl]first"]);
-
+    
 }
 - (void)networkUploadHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    [self networkUpload:session handler:completionHandler];
+}
+- (void)networkUpload:(NSURLSession *)session handler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
+    
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
-
+    
     __block NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         completionHandler?completionHandler(response,error):nil;
     }];
-
+    
     [task resume];
 }
 @end
