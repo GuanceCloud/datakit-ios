@@ -34,7 +34,7 @@ static dispatch_once_t onceToken;
 }
 + (instancetype)sharedInstance {
     if(!sharedInstance){
-        FTInnerLogError(@"SDK 配置 Logger 异常，无法采集自定义日志");
+        FTInnerLogError(@"SDK configuration `Logger` error, unable to collect custom logs");
     }
     return sharedInstance;
 }
@@ -73,20 +73,20 @@ static dispatch_once_t onceToken;
         // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:tm:)]){
             if (!self.enableCustomLog) {
-                FTInnerLogInfo(@"[Logging] enableCustomLog 未开启，数据不进行采集");
+                FTInnerLogInfo(@"[Logging] Based on the `enableCustomLog` setting, `%@` will not be collected",message);
                 return;
             }
             if (![self.logLevelFilterSet containsObject:@(status)]) {
-                FTInnerLogInfo(@"[Logging] 经过过滤算法判断-此条日志不采集");
+                FTInnerLogInfo(@"[Logging] Based on the `logLevelFilter` setting, `%@` will not be collected",message);
                 return;
             }
             if (![FTBaseInfoHandler randomSampling:self.sampletRate]){
-                FTInnerLogInfo(@"[Logging] 经过采集算法判断-此条日志不采集");
+                FTInnerLogInfo(@"[Logging] Based on the `sampletrate` setting, `%@` will not be collected",message);
                 return;
             }
             [self.loggerWriter logging:message status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
         }else{
-            FTInnerLogError(@"SDK 配置异常，无法采集自定义日志");
+            FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }
     };
     if(status == StatusError){

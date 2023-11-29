@@ -61,12 +61,17 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     }
     return  self;
 }
+-(void)setSampling:(BOOL)sampling{
+    _sampling = sampling;
+    if(!sampling){
+        FTInnerLogInfo(@"[RUM] Based on the `sampletrate` setting, current `Session` will not be collected");
+    }
+}
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
     }
     if (!self.sampling) {
-        FTInnerLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
         return YES;
     }
     _lastInteractionTime = [NSDate date];

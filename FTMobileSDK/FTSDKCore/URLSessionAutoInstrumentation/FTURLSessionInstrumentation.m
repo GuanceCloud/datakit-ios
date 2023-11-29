@@ -122,13 +122,6 @@ static dispatch_once_t onceToken;
 /// 委托将自动被替换为`FTURLSessionDelegate`，它将记录所有需要的事件并将方法转发给原始委托。
 ///
 /// - 注意:不支持 async/await URLSession APIs
-///
-/// 在实例化`URLSession`之前在代码中的任何地方调用它
-/// ```objc
-/// [FTURLSessionDelegate enableAutomaticRegistration];
-///
-/// [NSURLSession sessionWithConfiguration:configuration delegate:YourDelegate delegateQueue:nil];
-/// ```
 - (void)enableAutomaticRegistration{
     self.shouldInterceptor = YES;
 }
