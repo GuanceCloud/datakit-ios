@@ -11,14 +11,16 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSessionConfiguration : NSObject
-/// 是否交换方法
-@property (nonatomic,assign) BOOL isExchanged;
+/// 是否允许拦截 （开启自动采集时允许）
+@property (atomic,assign,readonly) BOOL shouldIntercept;
 
 + (FTSessionConfiguration *)defaultConfiguration;
-/// 交换掉NSURLSessionConfiguration的 protocolClasses方法
-- (void)load;
-/// 还原初始化
-- (void)unload;
+/// 开始 URLProtocol 监控
+- (void)startMonitor;
+/// 停止 URLProtocol 监控
+- (void)stopMonitor;
+- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request delegate:(id<NSURLSessionDataDelegate>)delegate modes:(NSArray *)modes;
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

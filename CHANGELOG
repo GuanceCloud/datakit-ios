@@ -1,3 +1,6 @@
+1.4.7-beta.2
+1.解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
+---
 1.4.7-beta.1
 1.同 1.4.7-alpha.2、1.4.7-alpha.1
 ---

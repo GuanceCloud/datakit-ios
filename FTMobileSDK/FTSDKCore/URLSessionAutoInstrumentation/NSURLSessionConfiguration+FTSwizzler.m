@@ -9,7 +9,16 @@
 #import "NSURLSessionConfiguration+FTSwizzler.h"
 #import "FTURLProtocol.h"
 #import "FTInternalLog.h"
+#import "FTSwizzle.h"
 @implementation NSURLSessionConfiguration (FTSwizzler)
++(void)load{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = NULL;
+        [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(defaultSessionConfiguration) withClassMethod:@selector(ft_defaultSessionConfiguration) error:&error];
+        [NSURLSessionConfiguration ft_swizzleClassMethod:@selector(ephemeralSessionConfiguration) withClassMethod:@selector(ft_ephemeralSessionConfiguration) error:&error];
+    });
+}
 + (NSURLSessionConfiguration *)ft_defaultSessionConfiguration{
     NSURLSessionConfiguration* config = [self ft_defaultSessionConfiguration];
     [config ft_protocolClasses];

@@ -18,6 +18,7 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "FTTrackerEventDBTool.h"
+#import "FTLogger+Private.h"
 @interface FTExtensionSDKTest : XCTestCase
 
 @end
@@ -54,6 +55,7 @@
         config.memoryMaxCount = 100;
         [FTExtensionManager startWithExtensionConfig:config];
     });
+    [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 }
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
@@ -157,7 +159,8 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
-    [NSThread sleepForTimeInterval:0.5];
+    [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
+    [[FTLogger sharedInstance] syncProcess];
     NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(newDatas.count>olddatas.count);
     __block BOOL hasLogger = NO;

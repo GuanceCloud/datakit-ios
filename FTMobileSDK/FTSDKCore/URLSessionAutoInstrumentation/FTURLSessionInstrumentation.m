@@ -26,6 +26,8 @@
 #import "FTURLProtocol.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
+#import "FTSessionConfiguration.h"
+
 @interface FTURLSessionInstrumentation()
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
@@ -89,13 +91,13 @@ static dispatch_once_t onceToken;
 }
 - (void)startURLProtocolMonitor{
     [self.lock lock];
-    [FTURLProtocol startMonitor];
+    [[FTSessionConfiguration defaultConfiguration] startMonitor];
     [FTURLProtocol setDelegate:self];
     [self.lock unlock];
 }
 - (void)stopURLProtocolMonitor{
     [self.lock lock];
-    [FTURLProtocol stopMonitor];
+    [[FTSessionConfiguration defaultConfiguration] stopMonitor];
     [self.lock unlock];
 }
 #pragma mark ========== swizzle ==========
@@ -151,6 +153,7 @@ static dispatch_once_t onceToken;
 }
 - (void)resetInstance{
     [self unswizzleURLSession];
+    [[FTSessionConfiguration defaultConfiguration] shutDown];
     [[FTTracer shared] shutDown];
     [[FTURLSessionInterceptor shared] shutDown];
     onceToken = 0;
