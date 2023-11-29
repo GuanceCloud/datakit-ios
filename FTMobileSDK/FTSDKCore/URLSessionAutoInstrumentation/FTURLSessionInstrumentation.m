@@ -30,9 +30,11 @@
 @property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, assign) BOOL enableAutoTrace;
 @property (nonatomic, strong) FTTracer *tracer;
-@property (nonatomic, strong) NSRecursiveLock *lock;
+@property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) int bindingsCount;
 @property (nonatomic, assign) BOOL autoRegistration;
+@property (atomic, assign, readwrite) BOOL shouldInterceptor;
+
 @end
 @implementation FTURLSessionInstrumentation
 @synthesize enableAutoRumTrack = _enableAutoRumTrack;
@@ -49,8 +51,9 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _lock = [[NSRecursiveLock alloc]init];
+        _lock = [[NSLock alloc]init];
         _bindingsCount = 0;
+        _shouldInterceptor = NO;
     }
     return self;
 }
@@ -127,29 +130,12 @@ static dispatch_once_t onceToken;
 /// [NSURLSession sessionWithConfiguration:configuration delegate:YourDelegate delegateQueue:nil];
 /// ```
 - (void)enableAutomaticRegistration{
-    [self.lock lock];
-    if(self.autoRegistration == NO){
-        self.autoRegistration = YES;
-        [self _swizzleURLSessionInit];
-        [self swizzleURLSession];
-    }
-    [self.lock unlock];
+    self.shouldInterceptor = YES;
 }
 /// 关闭自动注册`FTURLSessionDelegate`。
 - (void)disableAutomaticRegistration{
-    [self.lock lock];
-    if(self.autoRegistration == YES){
-        self.autoRegistration = NO;
-        [self _swizzleURLSessionInit];
-        [self unswizzleURLSession];
-    }
-    [self.lock unlock];
+    self.shouldInterceptor = NO;
 }
-- (void)_swizzleURLSessionInit{
-    NSError *error = NULL;
-    [NSURLSession ft_swizzleClassMethod:@selector(ft_sessionWithConfiguration:delegate:delegateQueue:) withClassMethod:@selector(sessionWithConfiguration:delegate:delegateQueue:) error:&error];
-}
-
 #pragma mark ========== FTAutoInterceptorProtocol ==========
 -(BOOL)enableAutoRumTrack{
     return _enableAutoRumTrack;

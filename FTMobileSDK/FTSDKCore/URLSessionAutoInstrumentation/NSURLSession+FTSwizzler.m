@@ -24,8 +24,16 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTURLSessionDelegate+Private.h"
+#import "FTSwizzle.h"
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 @implementation NSURLSession (FTSwizzler)
++(void)load{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = NULL;
+        [NSURLSession ft_swizzleClassMethod:@selector(ft_sessionWithConfiguration:delegate:delegateQueue:) withClassMethod:@selector(sessionWithConfiguration:delegate:delegateQueue:) error:&error];
+    });
+}
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
     if (self.delegate && ([self.delegate isKindOfClass:FTURLSessionDelegate.class]|| [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)])){
         if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
@@ -125,7 +133,10 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
 }
 +(NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue{
-    FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc] initWithRealDelegate:delegate];
-    return [NSURLSession ft_sessionWithConfiguration:configuration delegate:ftDelegate delegateQueue:queue];
+    id<NSURLSessionDelegate> proxyDelegate = delegate;
+    if([FTURLSessionInstrumentation sharedInstance].shouldInterceptor){
+        proxyDelegate = [[FTURLSessionDelegate alloc] initWithRealDelegate:delegate];
+    }
+    return [NSURLSession ft_sessionWithConfiguration:configuration delegate:proxyDelegate delegateQueue:queue];
 }
 @end

@@ -33,6 +33,7 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 /// 向外部提供处理用户自定义 resource 数据的对象
 @property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
+@property (atomic, assign, readonly) BOOL shouldInterceptor;
 /// 单例
 + (instancetype)sharedInstance;
 
