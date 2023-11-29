@@ -44,8 +44,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *urlStr = @"http://www.test.com/some/url/string";
     NSString *logUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
     NSString *rumUrl = [urlStr stringByAppendingString:@"/v1/write/rum"];
     NSString *traceUrl = [urlStr stringByAppendingString:@"/v1/write/tracing"];
