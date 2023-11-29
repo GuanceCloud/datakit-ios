@@ -82,7 +82,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "ACCESS_SERVER_URL"
-            value = "$$ACCESS_SERVER_URL"
+            value = "$ACCESS_SERVER_URL"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

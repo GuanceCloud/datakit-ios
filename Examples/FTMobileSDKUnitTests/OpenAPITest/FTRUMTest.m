@@ -203,9 +203,16 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTModelHelper stopView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    
-    XCTAssertTrue(newCount == 0);
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasLaunchData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            if([tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"]){
+                hasLaunchData = YES;
+            }
+        }
+    }];
+    XCTAssertTrue(newArray.count == hasLaunchData?1:0);
 }
 /**
  * 验证 resource，action,error,long_task数据 是否同步到view中
@@ -484,8 +491,10 @@
     __block BOOL hasDatas = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
-            hasDatas = YES;
-            *stop = YES;
+            if(![tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"])
+            {   hasDatas = YES;
+                *stop = YES;
+            }
         }
     }];
     XCTAssertFalse(hasDatas);
@@ -605,8 +614,7 @@
     __block BOOL hasClickAction = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
-            if([tags[FT_KEY_ACTION_NAME]
-                isEqualToString:@"testActionClick2"]){
+            if(![tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"]){
                 hasClickAction = YES;
             }
         }

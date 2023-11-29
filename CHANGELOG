@@ -9,6 +9,10 @@
 2.配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
 3.修复多个 URLSession resource 自定义数据覆盖问题
 ---
+1.4.7-beta.2
+1.解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
+
+---
 1.4.7-beta.1
 1.同 1.4.7-alpha.2、1.4.7-alpha.1
 ---
