@@ -100,7 +100,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         
     }];
     if (urlStr) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];

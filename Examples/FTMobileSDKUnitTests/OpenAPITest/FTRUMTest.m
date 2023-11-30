@@ -225,7 +225,7 @@
     XCTAssertTrue([dict0[FT_KEY_VIEW_NAME] isEqualToString:dict2[FT_KEY_VIEW_NAME]]);
 }
 - (void)testDisableTraceUserViewAppLifeView{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserResource = YES;
@@ -603,7 +603,7 @@
     XCTAssertFalse(hasDatas);
 }
 - (void)testSampleRate0{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.samplerate = 0;
@@ -640,7 +640,7 @@
  * 需要设置 networkTraceType = FTNetworkTraceTypeDDtrace
  */
 - (void)testTraceLinkRumData{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -672,7 +672,7 @@
     XCTAssertTrue(hasResourceData == YES);
 }
 - (void)testNotTraceLinkRumData{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -703,7 +703,7 @@
     XCTAssertTrue(hasResourceData == YES);
 }
 - (void)testRUMGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.globalContext = @{FT_RUM_KEY_SESSION_ID:@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
@@ -990,7 +990,7 @@
 }
 
 - (void)setRumConfig{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
@@ -1004,14 +1004,14 @@
     
 }
 - (void)testGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     NSString *trackId = self.track_id?:@"unitTests";
     rumConfig.globalContext = @{@"track_id":trackId};
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
+    [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
     [self addErrorData:nil];

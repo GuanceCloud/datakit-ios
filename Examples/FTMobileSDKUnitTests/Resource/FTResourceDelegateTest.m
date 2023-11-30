@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -63,7 +63,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"TRACE_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];

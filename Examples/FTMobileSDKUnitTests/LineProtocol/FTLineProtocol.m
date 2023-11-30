@@ -155,7 +155,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];

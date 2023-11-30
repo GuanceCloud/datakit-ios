@@ -47,7 +47,7 @@
     [super tearDown];
 }
 - (void)setRightSDKConfig{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
@@ -62,7 +62,7 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     [FTMobileAgent startWithConfigOptions:config];
    
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
@@ -150,7 +150,7 @@
     [[FTMobileAgent sharedInstance] shutDown];
 }
 -(void)testServiceName{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.service = @"testSetServiceName";
     [FTMobileAgent startWithConfigOptions:config];
@@ -184,7 +184,7 @@
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testDefaultEnvProperty{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.env = @"";
     [FTMobileAgent startWithConfigOptions:config];
@@ -217,7 +217,7 @@
     XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvProd]]);
 }
 - (void)testEnvProperty{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.env = @"testCustomEnv";
     [FTMobileAgent startWithConfigOptions:config];
@@ -250,7 +250,7 @@
     XCTAssertTrue([rumEnv isEqualToString:@"testCustomEnv"]);
 }
 - (void)testGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
     [FTMobileAgent startWithConfigOptions:config];
@@ -270,18 +270,23 @@
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testSDKConfigCopy{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    config.enableSDKDebugLog = YES;
-    config.globalContext = @{@"aa":@"bb"};
-    config.service = @"testsdk";
-    config.version = @"1.1.1";
-    [config setEnvWithType:FTEnvLocal];
-    FTMobileConfig *copyConfig = [config copy];
-    XCTAssertTrue(copyConfig.enableSDKDebugLog == config.enableSDKDebugLog);
-    XCTAssertTrue([copyConfig.env isEqualToString:config.env]);
-    XCTAssertTrue([copyConfig.service isEqualToString:config.service]);
-    XCTAssertTrue([copyConfig.version isEqualToString:config.version]);
-    XCTAssertTrue([copyConfig.globalContext isEqual:config.globalContext]);
+    FTMobileConfig *datakitConfig = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    datakitConfig.enableSDKDebugLog = YES;
+    datakitConfig.globalContext = @{@"aa":@"bb"};
+    datakitConfig.service = @"testsdk";
+    datakitConfig.version = @"1.1.1";
+    [datakitConfig setEnvWithType:FTEnvLocal];
+    FTMobileConfig *copyConfig = [datakitConfig copy];
+    XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
+    XCTAssertTrue([copyConfig.datakitUrl isEqualToString:datakitConfig.datakitUrl]);
+    XCTAssertTrue([copyConfig.env isEqualToString:datakitConfig.env]);
+    XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
+    XCTAssertTrue([copyConfig.version isEqualToString:datakitConfig.version]);
+    XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
+    FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
+    FTMobileConfig *copy = [datawayConfig copy];
+    XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
+    XCTAssertTrue([copy.clientToken isEqualToString:datawayConfig.clientToken]);
 }
 - (void)testRUMConfigCopy{
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"app_id1111"];
@@ -339,7 +344,7 @@
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
 }
 - (void)testShutDown{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
