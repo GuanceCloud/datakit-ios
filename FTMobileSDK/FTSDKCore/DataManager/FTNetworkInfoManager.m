@@ -21,10 +21,10 @@
     return sharedInstance;
 }
 
-- (FTNetworkInfoManager *(^)(NSString *value))setMetricsUrl {
+- (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl {
     return ^(NSString *value) {
-        self->_metricsUrl = value;
-        FTInnerLogInfo(@"SDK 数据采集地址：%@",value);
+        self->_datakitUrl = value;
+        FTInnerLogInfo(@"SDK Datakit URL：%@",value);
         return self;
     };
 }
@@ -32,6 +32,23 @@
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion{
     return ^(NSString *value) {
         self->_sdkVersion = value;
+        return self;
+    };
+}
+
+- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setDatawayUrl {
+    return ^(NSString *value) {
+        self->_datawayUrl = value;
+        FTInnerLogInfo(@"SDK Dataway URL：%@",value);
+        return self;
+    };
+}
+
+
+- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setClientoken {
+    return ^(NSString *value) {
+        self->_clientToken = value;
+        FTInnerLogInfo(@"SDK Dataway Client Token：%@",value);
         return self;
     };
 }

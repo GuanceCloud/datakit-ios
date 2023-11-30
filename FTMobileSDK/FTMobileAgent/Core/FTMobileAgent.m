@@ -48,7 +48,7 @@ static dispatch_once_t onceToken;
 + (void)startWithConfigOptions:(FTMobileConfig *)configOptions{
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
     
-    NSAssert((configOptions.metricsUrl.length!=0 ), @"请设置 datakit metrics 写入地址");
+    NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"请正确配置 datakit  或 dataway 写入地址");
     if (sharedInstance) {
         [[FTMobileAgent sharedInstance] resetConfig:configOptions];
     }
@@ -73,9 +73,12 @@ static dispatch_once_t onceToken;
             [FTTrackDataManager sharedInstance];
             _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
             _presetProperty.sdkVersion = SDK_VERSION;
-            [FTNetworkInfoManager sharedInstance].setMetricsUrl(config.metricsUrl)
+            [FTNetworkInfoManager sharedInstance]
+                .setDatakitUrl(config.datakitUrl)
+                .setDatawayUrl(config.datawayUrl)
+                .setClientoken(config.clientToken)
                 .setSdkVersion(SDK_VERSION);
-            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.metricsUrl];
+            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl];
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
