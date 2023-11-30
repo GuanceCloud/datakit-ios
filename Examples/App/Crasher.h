@@ -24,8 +24,6 @@
 
 - (void) doDiv0;
 
-- (void) doIllegalInstruction;
-
 - (void) accessDeallocatedObject;
 
 - (void) accessDeallocatedPtrProxy;
