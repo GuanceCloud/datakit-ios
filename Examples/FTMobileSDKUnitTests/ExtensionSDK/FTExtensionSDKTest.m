@@ -160,6 +160,7 @@
     [self setExtensionSDK];
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
+    [[FTExtensionManager sharedInstance] logging:@"testCustomLogger" status:FTStatusInfo];
     [[FTLogger sharedInstance] syncProcess];
     NSArray *newDatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     XCTAssertTrue(newDatas.count>olddatas.count);

@@ -28,8 +28,7 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [self mockHttp];
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *urlStr = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *urlStr = @"http://www.test.com/some/url/string";
     FTNetworkInfoManager *manager = [FTNetworkInfoManager sharedInstance];
     manager.setMetricsUrl(urlStr)
         .setSdkVersion(@"RequestTest");
