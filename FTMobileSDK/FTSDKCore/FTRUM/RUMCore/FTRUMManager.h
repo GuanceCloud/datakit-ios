@@ -94,7 +94,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * 离开页面
  * @param viewId         页面id
  */
--(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
+-(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
 /**
  * 离开页面
  */

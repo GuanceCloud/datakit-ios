@@ -64,8 +64,10 @@ NSString * const AppStateStringMap[] = {
         [self.preViewDuration removeObjectForKey:viewName];
     }
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
+            viewModel.time = time;
             viewModel.loading_time = duration?:@0;
             viewModel.type = FTRUMDataViewStart;
             viewModel.fields = property;
@@ -78,26 +80,25 @@ NSString * const AppStateStringMap[] = {
     }
 }
 -(void)stopView{
-    dispatch_async(self.rumQueue, ^{
-        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:nil];
-        
-    });
+    [self stopViewWithViewID:nil property:nil];
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
-    dispatch_async(self.rumQueue, ^{
-        [self stopViewWithViewID:[self.sessionHandler getCurrentViewID] property:property];
-    });
+    [self stopViewWithViewID:nil property:property];
 }
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
-    if (!viewId) {
-        return;
-    }
     @try {
-        FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:@"" viewReferrer:@""];
-        viewModel.type = FTRUMDataViewStop;
-        viewModel.fields = property;
-        [self process:viewModel];
-        
+        NSDate *time = [NSDate date];
+        dispatch_async(self.rumQueue, ^{
+            NSString *stopViewId = viewId?viewId:[self.sessionHandler getCurrentViewID];
+            if(!stopViewId){
+                return;
+            }
+            FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:stopViewId viewName:@"" viewReferrer:@""];
+            viewModel.time = time;
+            viewModel.type = FTRUMDataViewStop;
+            viewModel.fields = property;
+            [self process:viewModel];
+        });
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -117,8 +118,10 @@ NSString * const AppStateStringMap[] = {
         return;
     }
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
+            actionModel.time = time;
             actionModel.type = FTRUMDataClick;
             actionModel.fields = property;
             [self process:actionModel];
@@ -130,6 +133,7 @@ NSString * const AppStateStringMap[] = {
 - (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
     self.appState = FTAppStateRun;
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             NSString *actionName;
             NSString *actionType;
@@ -148,6 +152,7 @@ NSString * const AppStateStringMap[] = {
                     break;
             }
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
+            launchModel.time = time;
             launchModel.action_name = actionName;
             launchModel.action_type = actionType;
             
@@ -167,8 +172,10 @@ NSString * const AppStateStringMap[] = {
         return;
     }
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
+            resourceStart.time = time;
             resourceStart.fields = property;
             [self process:resourceStart];
         });
@@ -186,75 +193,73 @@ NSString * const AppStateStringMap[] = {
     }
     @try {
         NSDate *time = [NSDate date];
-        NSMutableDictionary *tags = [NSMutableDictionary new];
-        NSMutableDictionary *fields = [NSMutableDictionary new];
-        NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
-        [tags setValue:content.url.absoluteString forKey:FT_KEY_RESOURCE_URL];
-        [tags setValue:content.httpMethod forKey:FT_KEY_RESOURCE_METHOD];
-        [tags setValue:content.url.host forKey:FT_KEY_RESOURCE_URL_HOST];
-        if(content.url.path.length>0){
-            [tags setValue:content.url.path forKey:FT_KEY_RESOURCE_URL_PATH];
-        }
-        if(url_path_group.length>0){
-            [tags setValue:url_path_group forKey:FT_KEY_RESOURCE_URL_PATH_GROUP];
-        }
-        [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
-        
-        if (content.error || content.httpStatusCode>=400) {
-            NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
-            NSString *run = AppStateStringMap[self.appState];
-            NSMutableDictionary *errorField = [NSMutableDictionary new];
-            NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-            [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
-            [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
-            [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_TYPE];
-            [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
-            [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
-            if (content.responseBody.length>0) {
-                [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
+        dispatch_async(self.rumQueue, ^{
+            NSMutableDictionary *tags = [NSMutableDictionary new];
+            NSMutableDictionary *fields = [NSMutableDictionary new];
+            NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
+            [tags setValue:content.url.absoluteString forKey:FT_KEY_RESOURCE_URL];
+            [tags setValue:content.httpMethod forKey:FT_KEY_RESOURCE_METHOD];
+            [tags setValue:content.url.host forKey:FT_KEY_RESOURCE_URL_HOST];
+            if(content.url.path.length>0){
+                [tags setValue:content.url.path forKey:FT_KEY_RESOURCE_URL_PATH];
             }
-            dispatch_async(self.rumQueue, ^{
-                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:time];
-                resourceError.time = time;
+            if(url_path_group.length>0){
+                [tags setValue:url_path_group forKey:FT_KEY_RESOURCE_URL_PATH_GROUP];
+            }
+            [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
+            
+            if (content.error || content.httpStatusCode>=400) {
+                NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
+                NSString *run = AppStateStringMap[self.appState];
+                NSMutableDictionary *errorField = [NSMutableDictionary new];
+                NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+                [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",(long)code,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
+                [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_TYPE];
+                [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
+                [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
+                if (content.responseBody.length>0) {
+                    [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
+                }
+                
+                FTRUMDataModel *resourceError = [[FTRUMDataModel alloc]initWithType:FTRUMDataResourceError time:[NSDate date]];
                 resourceError.tags = errorTags;
                 resourceError.fields = errorField;
                 [self process:resourceError];
-            });
-        }
-        [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
-        [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
-
-        if(content.responseHeader){
-            [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
-            for (id key in content.responseHeader.allKeys) {
-                if([key isKindOfClass:NSString.class]){
-                    NSString *lowercasekey = [(NSString *)key lowercaseString];
-                    if([lowercasekey isEqualToString:@"connection"]){
-                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
-                    }else if ([lowercasekey isEqualToString:@"content-type"]){
-                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
-                    }else if([lowercasekey isEqualToString:@"content-encoding"]){
-                        [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                
+            }
+            [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
+            [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
+            
+            if(content.responseHeader){
+                [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
+                for (id key in content.responseHeader.allKeys) {
+                    if([key isKindOfClass:NSString.class]){
+                        NSString *lowercasekey = [(NSString *)key lowercaseString];
+                        if([lowercasekey isEqualToString:@"connection"]){
+                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
+                        }else if ([lowercasekey isEqualToString:@"content-type"]){
+                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
+                        }else if([lowercasekey isEqualToString:@"content-encoding"]){
+                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                        }
                     }
                 }
+                if(metrics.responseSize){
+                    [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                }else if(content.responseBody){
+                    NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+                    [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
+                }
+                [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
             }
-            if(metrics.responseSize){
-                [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
-            }else if(content.responseBody){
-                NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-                [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
-            }
-            [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
-        }
-        [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
-        //add trace info
+            [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
+            //add trace info
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];
-    
-        dispatch_async(self.rumQueue, ^{
+            
             FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
             resourceSuccess.metrics = metrics;
-            resourceSuccess.time = time;
             resourceSuccess.tags = tags;
             resourceSuccess.fields = fields;
             [self process:resourceSuccess];
@@ -279,8 +284,10 @@ NSString * const AppStateStringMap[] = {
         return;
     }
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             FTRUMResourceDataModel *resource = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:key];
+            resource.time = time;
             resource.fields = property;
             [self process:resource];
         });
@@ -308,21 +315,22 @@ NSString * const AppStateStringMap[] = {
         return;
     }
     @try {
-        NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
-                                        FT_KEY_ERROR_STACK:stack,
-        }.mutableCopy;
-        if(property && property.allKeys.count>0){
-            [field addEntriesFromDictionary:property];
-        }
-        NSDictionary *tags = @{
-            FT_KEY_ERROR_TYPE:type,
-            FT_KEY_ERROR_SOURCE:FT_LOGGER,
-            FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
-        };
-        NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-        [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
+        NSDate *time = [NSDate date];
         dispatch_sync(self.rumQueue, ^{
-            FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:[NSDate date]];
+            NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
+                                            FT_KEY_ERROR_STACK:stack,
+            }.mutableCopy;
+            if(property && property.allKeys.count>0){
+                [field addEntriesFromDictionary:property];
+            }
+            NSDictionary *tags = @{
+                FT_KEY_ERROR_TYPE:type,
+                FT_KEY_ERROR_SOURCE:FT_LOGGER,
+                FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
+            };
+            NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
+            [errorTag addEntriesFromDictionary:[self errorMonitorInfo]];
+            FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
             model.tags = errorTag;
             model.fields = field;
             model.fatal = fatal;
@@ -340,6 +348,7 @@ NSString * const AppStateStringMap[] = {
         return;
     }
     @try {
+        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             NSMutableDictionary *fields = @{FT_DURATION:duration,
                                             FT_KEY_LONG_TASK_STACK:stack
@@ -347,7 +356,7 @@ NSString * const AppStateStringMap[] = {
             if(property && property.allKeys.count>0){
                 [fields addEntriesFromDictionary:property];
             }
-            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:[NSDate date]];
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:time];
             model.tags = @{};
             model.fields = fields;
             [self process:model];

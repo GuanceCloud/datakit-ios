@@ -371,6 +371,35 @@
     NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
     XCTAssertFalse([dict2.allKeys containsObject:FT_KEY_VIEW_ID]);
 }
+- (void)testErrorDurationResource{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    NSString *key = [[NSUUID UUID]UUIDString];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+    NSString *key2 = [[NSUUID UUID]UUIDString];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key2];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [[FTExternalDataManager sharedManager] stopResourceWithKey:key2];
+        [[FTExternalDataManager sharedManager] addResourceWithKey:key2 metrics:nil content:model];
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation]];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            NSNumber *duration = [fields valueForKey:FT_DURATION];
+            XCTAssertTrue(duration.integerValue>0);
+        }
+    }];
+}
 /**
  * 验证 source：action 的数据格式
  */

@@ -70,7 +70,7 @@
         [fields setValue:model.metrics.resource_tcp forKey:FT_KEY_RESOURCE_TCP];
         [fields setValue:model.metrics.resource_dns forKey:FT_KEY_RESOURCE_DNS];
         [fields setValue:model.metrics.resource_first_byte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        if ([model.metrics.duration intValue]>0) {
+        if ([model.metrics.duration longLongValue]>0) {
             [fields setValue:model.metrics.duration forKey:FT_DURATION];
         }
         [fields setValue:model.metrics.resource_trans forKey:FT_KEY_RESOURCE_TRANS];
