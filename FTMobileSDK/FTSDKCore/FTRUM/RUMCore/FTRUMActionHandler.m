@@ -114,7 +114,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }

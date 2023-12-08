@@ -57,7 +57,7 @@ static dispatch_once_t onceToken;
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
-    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
+    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor writer:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
@@ -102,7 +102,7 @@ static dispatch_once_t onceToken;
             time = time>0?time:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    [self.rumManager addWebviewData:measurement tags:tags fields:fields tm:time];
+                    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
                 }
             }
         }
@@ -131,12 +131,12 @@ static dispatch_once_t onceToken;
             return;
         }
         if (self.rumManager.viewReferrer) {
-            NSString *viewid = [NSUUID UUID].UUIDString;
+            NSString *viewID = [NSUUID UUID].UUIDString;
             NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
             NSString *viewReferrer =self.rumManager.viewReferrer;
             self.rumManager.viewReferrer = @"";
             [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
-            [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
+            [self.rumManager startViewWithViewID:viewID viewName:viewReferrer property:nil];
         }
     }@catch (NSException *exception) {
         FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);

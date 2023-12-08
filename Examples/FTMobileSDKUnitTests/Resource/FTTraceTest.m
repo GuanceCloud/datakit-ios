@@ -175,9 +175,9 @@
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     id<FTTracerProtocol> tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
     if ([tracer isKindOfClass:FTTracer.class]) {
-        FTTracer *tracerInstence = (FTTracer *)tracer;
+        FTTracer *tracerInstance = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
-            if( [tracerInstence getSkywalkingSeq] == 9998){
+            if( [tracerInstance getSkyWalkingSequence] == 9998){
                 break;;
             }
         }

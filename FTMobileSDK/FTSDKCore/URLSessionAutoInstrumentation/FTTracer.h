@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - link: 是否关联 rum
 -(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:(BOOL)trace enableLinkRumData:(BOOL)link;
 #if FTSDKUNITTEST
--(NSUInteger)getSkywalkingSeq;
+-(NSUInteger)getSkyWalkingSequence;
 #endif
 
 @end

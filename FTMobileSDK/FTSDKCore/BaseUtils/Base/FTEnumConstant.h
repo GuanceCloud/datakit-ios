@@ -69,7 +69,7 @@ typedef NS_ENUM(NSInteger, NetworkTraceType) {
     /// w3c traceparent
     Traceparent,
     /// skywalking 8.0+
-    Skywalking,
+    SkyWalking,
     /// jaeger
     Jaeger,
 };

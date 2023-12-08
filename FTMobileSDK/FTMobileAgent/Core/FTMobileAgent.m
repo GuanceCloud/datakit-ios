@@ -107,7 +107,7 @@ static dispatch_once_t onceToken;
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
-        [FTLogger startWithEablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
+        [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -119,7 +119,7 @@ static dispatch_once_t onceToken;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 
 }
-#pragma mark ========== publick method ==========
+#pragma mark ========== public method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
     if(handler){
         [[FTURLSessionInstrumentation sharedInstance] setIntakeUrlHandler:handler];
@@ -170,9 +170,9 @@ static dispatch_once_t onceToken;
 #pragma mark ========== private method ==========
 //RUM  ES
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
+    [self rumWrite:type tags:tags fields:fields time:[FTDateUtil currentTimeNanosecond]];
 }
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![type isKindOfClass:NSString.class] || type.length == 0) {
         return;
     }
@@ -183,7 +183,7 @@ static dispatch_once_t onceToken;
         baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
         NSMutableDictionary *rumProperty = [self.presetProperty rumProperty];
-        // webview 打进的数据
+        // webView 打进的数据
         if([tags.allKeys containsObject:FT_IS_WEBVIEW]){
             [baseTags setValue:SDK_VERSION forKey:@"package_native"];
             [rumProperty removeObjectForKey:FT_KEY_SERVICE];
@@ -191,7 +191,7 @@ static dispatch_once_t onceToken;
             [rumProperty removeObjectForKey:FT_SDK_NAME];
         }
         [baseTags addEntriesFromDictionary:rumProperty];
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
         [self insertDBWithItemData:model type:dataType];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
@@ -199,7 +199,7 @@ static dispatch_once_t onceToken;
 }
 
 // FT_DATA_TYPE_LOGGING
--(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field tm:(long long)tm{
+-(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
         NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
@@ -219,7 +219,7 @@ static dispatch_once_t onceToken;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
         }
-        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:tm];
+        FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:time];
         [self insertDBWithItemData:model type:FTAddDataLogging];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
@@ -234,13 +234,13 @@ static dispatch_once_t onceToken;
         if (eventArray) {
             for (NSDictionary *dict in eventArray) {
                 NSString *dataType = dict[@"dataType"];
-                NSNumber *tm = dict[@"tm"];
+                NSNumber *time = dict[@"tm"];
                 if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
                     LogStatus status = [dict[@"status"] intValue];
-                    [self logging:dict[@"content"] status:status tags:dict[@"tags"] field:dict[@"fields"] tm:tm.longLongValue];
+                    [self logging:dict[@"content"] status:status tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] tm:tm.longLongValue];
+                    [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
                 }
                
             }

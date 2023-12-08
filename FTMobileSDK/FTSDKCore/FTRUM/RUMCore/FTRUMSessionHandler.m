@@ -64,7 +64,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)setSampling:(BOOL)sampling{
     _sampling = sampling;
     if(!sampling){
-        FTInnerLogInfo(@"[RUM] Based on the `sampletrate` setting, current `Session` will not be collected");
+        FTInnerLogInfo(@"[RUM] Based on the `sampleRate` setting, current `Session` will not be collected");
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model {
@@ -130,7 +130,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
     [tags addEntriesFromDictionary:actiontags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
@@ -150,7 +150,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags setValue:[FTBaseInfoHandler boolStr:YES] forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
-    [self.context.writer rumWrite:data.measurement tags:tags fields:fields tm:data.tm];
+    [self.context.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

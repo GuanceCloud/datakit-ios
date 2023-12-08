@@ -23,7 +23,7 @@
 
 #define FTInnerLogWarning(frmt,...) FTLOG_MACRO(StatusWarning,(frmt), ## __VA_ARGS__)
 
-#define FTCONSOLELOG(lvl, frmt) \
+#define FT_CONSOLE_LOG(lvl, frmt) \
 [[FTInternalLog sharedInstance] log : YES                                     \
    message : frmt                                     \
      level : lvl ]

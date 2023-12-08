@@ -72,12 +72,12 @@ static FTExtensionManager *sharedInstance = nil;
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
         self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
-        [FTLogger startWithEablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+        [FTLogger startWithEnablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource];
-    self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil wirter:self];
+    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource resourceUrlHandler:nil];
+    self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil writer:self];
     self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
@@ -102,7 +102,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
     [[FTLogger sharedInstance] log:content status:(LogStatus)status property:property];
 }
--(void)logging:(NSString *)content status:(LogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field tm:(long long)tm{
+-(void)logging:(NSString *)content status:(LogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time{
     @try {
         NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
         NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
@@ -119,25 +119,25 @@ static FTExtensionManager *sharedInstance = nil;
                              @"tags":tagDict,
                              @"content":newContent
                            });
-        [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:newContent tags:tagDict fields:nil tm:[FTDateUtil currentTimeNanosecond] groupIdentifier:self.extensionConfig.groupIdentifier];
+        [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:newContent tags:tagDict fields:nil tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
 }
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type tags:tags fields:fields tm:[FTDateUtil currentTimeNanosecond]];
+    [self rumWrite:type tags:tags fields:fields time:[FTDateUtil currentTimeNanosecond]];
 }
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
     NSMutableDictionary *newTags = @{
-          @"extension_identifier":bundleIdentifier,
+        @"extension_identifier":bundleIdentifier,
     }.mutableCopy;
     if(tags){
         [newTags addEntriesFromDictionary:tags];
     }
     FTInnerLogDebug(@"%@\n",@{@"type":type,
-                    @"tags":newTags,
-                    @"fields":fields});
-    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:tm groupIdentifier:self.extensionConfig.groupIdentifier];
+                              @"tags":newTags,
+                              @"fields":fields});
+    [[FTExtensionDataManager sharedInstance] writeRumEventType:type tags:newTags fields:fields tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
 }
 @end

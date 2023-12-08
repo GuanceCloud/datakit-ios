@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - filter: 日志过滤规则
 ///   - sampletRate: 采集率
 ///   - writer: 数据写入对象
-+ (void)startWithEablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer;
++ (void)startWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer;
 
 /// 日志传入
 /// - Parameters:

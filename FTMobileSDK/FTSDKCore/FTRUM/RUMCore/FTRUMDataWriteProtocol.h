@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - tags: 属性
 ///   - fields: 指标
 ///   - tm: 数据产生时间戳(ns)
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTRUMDataWriteProtocol_h */

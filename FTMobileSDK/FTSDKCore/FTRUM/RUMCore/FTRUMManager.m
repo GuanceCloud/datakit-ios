@@ -30,7 +30,7 @@ NSString * const AppStateStringMap[] = {
 @end
 @implementation FTRUMManager
 
--(instancetype)initWithRumSampleRate:(int)sampleRate errorMonitorType:(ErrorMonitorType)errorMonitorType monitor:(nullable FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer{
+-(instancetype)initWithRumSampleRate:(int)sampleRate errorMonitorType:(ErrorMonitorType)errorMonitorType monitor:(nullable FTRUMMonitor *)monitor writer:(id<FTRUMDataWriteProtocol>)writer{
     self = [super init];
     if (self) {
         _sampleRate = sampleRate;
@@ -382,7 +382,7 @@ NSString * const AppStateStringMap[] = {
 }
 #pragma mark - webview js -
 
-- (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
+- (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm{
     if (!measurement) {
         return;
     }
