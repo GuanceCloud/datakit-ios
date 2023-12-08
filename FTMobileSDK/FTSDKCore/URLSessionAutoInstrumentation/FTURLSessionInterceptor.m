@@ -20,7 +20,7 @@
 @property (nonatomic, strong) dispatch_queue_t queue;
 @end
 @implementation FTURLSessionInterceptor
-@synthesize rumResourceHandeler = _rumResourceHandeler;
+@synthesize rumResourceHandler = _rumResourceHandler;
 @synthesize resourceUrlHandler = _resourceUrlHandler;
 @synthesize intakeUrlHandler = _intakeUrlHandler;
 static FTURLSessionInterceptor *sharedInstance = nil;
@@ -96,26 +96,26 @@ static dispatch_once_t onceToken;
 -(FTResourceUrlHandler)resourceUrlHandler{
     return _resourceUrlHandler;
 }
--(void)setRumResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandeler{
-    _rumResourceHandeler = innerResourceHandeler;
+-(void)setRumResourceHandeler:(id<FTRumResourceProtocol>)innerResourceHandler{
+    _rumResourceHandler = innerResourceHandler;
 }
--(id<FTRumResourceProtocol>)rumResourceHandeler{
-    if(!_rumResourceHandeler){
+-(id<FTRumResourceProtocol>)rumResourceHandler{
+    if(!_rumResourceHandler){
         FTInnerLogError(@"SDK configuration RUM error, RUM is not supported");
     }
-    return _rumResourceHandeler;
+    return _rumResourceHandler;
 }
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSURLRequest *backRequest = request;
-    if(_tracer){
-        NSMutableURLRequest *mutableReqeust = [backRequest mutableCopy];
+    if(_tracer&&_tracer.enableAutoTrace){
+        NSMutableURLRequest *mutableRequest = [backRequest mutableCopy];
         NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
         if (traceHeader && traceHeader.allKeys.count>0) {
             [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-                [mutableReqeust setValue:value forHTTPHeaderField:field];
+                [mutableRequest setValue:value forHTTPHeaderField:field];
             }];
         }
-        backRequest = mutableReqeust;
+        backRequest = mutableRequest;
     }
     return backRequest;
 }
@@ -191,7 +191,7 @@ static dispatch_once_t onceToken;
 }
 
 #pragma mark --------- external data ----------
-// skywalking 需要参数 URL
+// `SkyWalking` 需要参数 URL
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
@@ -212,23 +212,23 @@ static dispatch_once_t onceToken;
     return  dict;
 }
 - (void)startResourceWithKey:(NSString *)key{
-    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(startResourceWithKey:)]) {
-        [self.rumResourceHandeler startResourceWithKey:key];
+    if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:)]) {
+        [self.rumResourceHandler startResourceWithKey:key];
     }
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
-    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(startResourceWithKey:property:)]) {
-        [self.rumResourceHandeler startResourceWithKey:key property:property];
+    if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(startResourceWithKey:property:)]) {
+        [self.rumResourceHandler startResourceWithKey:key property:property];
     }
 }
 - (void)stopResourceWithKey:(nonnull NSString *)key{
-    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(stopResourceWithKey:)]) {
-        [self.rumResourceHandeler stopResourceWithKey:key];
+    if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(stopResourceWithKey:)]) {
+        [self.rumResourceHandler stopResourceWithKey:key];
     }
 }
 -(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
-    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
-        [self.rumResourceHandeler stopResourceWithKey:key property:property];
+    if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(stopResourceWithKey:property:)]) {
+        [self.rumResourceHandler stopResourceWithKey:key property:property];
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -238,8 +238,8 @@ static dispatch_once_t onceToken;
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
     [self removeTraceHandlerWithKey:key];
-    if (self.rumResourceHandeler && [self.rumResourceHandeler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
-        [self.rumResourceHandeler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
+    if (self.rumResourceHandler && [self.rumResourceHandler respondsToSelector:@selector(addResourceWithKey:metrics:content:spanID:traceID:)]) {
+        [self.rumResourceHandler addResourceWithKey:key metrics:metrics content:content spanID:spanID traceID:traceID];
     }
 }
 - (void)shutDown{

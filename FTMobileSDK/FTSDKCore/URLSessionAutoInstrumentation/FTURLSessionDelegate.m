@@ -18,32 +18,20 @@
 //  limitations under the License.
 
 
-#import "FTURLSessionDelegate.h"
+#import "FTURLSessionDelegate+Private.h"
 #import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzle.h"
-@interface FTURLSessionDelegate()
+@interface FTURLSessionDelegate()<FTURLSessionInterceptorProtocol>
 @property (nonatomic,strong,readwrite) FTURLSessionInstrumentation *instrumentation;
-@property (nonatomic,strong) NSSet *interceptedSelectors;
-@property (nonatomic,strong) id<NSURLSessionDelegate> actualDelegate;
-@property (nonatomic,weak) id<NSURLSessionTaskDelegate> taskDelegate;
 @end
 @implementation FTURLSessionDelegate
--(instancetype)init{
-    return [self initWithRealDelegate:nil];
-}
-- (instancetype)initWithRealDelegate:(id<NSURLSessionDelegate>)delegate{
-    self = [super init];
-    if (self) {
-        _actualDelegate = delegate;
-        _taskDelegate = (id<NSURLSessionTaskDelegate>)delegate;
-        _interceptedSelectors = [[NSSet alloc]initWithArray:@[NSStringFromSelector(@selector(URLSession:dataTask:didReceiveData:)),NSStringFromSelector(@selector(URLSession:task:didCompleteWithError:)),NSStringFromSelector(@selector(URLSession:task:didFinishCollectingMetrics:))]];
-    }
+@synthesize ftURLSessionDelegate;
+-(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
-
 - (FTURLSessionInstrumentation *)instrumentation{
     return [FTURLSessionInstrumentation sharedInstance];
 }
@@ -59,40 +47,17 @@
 }
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
-    if(self.actualDelegate && [self.actualDelegate respondsToSelector:@selector(URLSession:dataTask:didReceiveData:)]){
-        [(id<NSURLSessionDataDelegate>)self.actualDelegate URLSession:session dataTask:dataTask didReceiveData:data];
-    }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics];
-    if(self.actualDelegate && [self.actualDelegate respondsToSelector:@selector(URLSession:task:didFinishCollectingMetrics:)]){
-        [self.taskDelegate URLSession:session task:task didFinishCollectingMetrics:metrics];
-    }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
-    if(self.actualDelegate && [self.actualDelegate respondsToSelector:@selector(URLSession:task:didCompleteWithError:)]){
-        [self.taskDelegate URLSession:session task:task didCompleteWithError:error];
-    }
 }
-#pragma mark ========== Proxy ==========
--(BOOL)respondsToSelector:(SEL)aSelector{
-    if([self.interceptedSelectors containsObject:NSStringFromSelector(aSelector)]){
-        return YES;
-    }
-    return (self.actualDelegate?[self.actualDelegate respondsToSelector:aSelector]:NO)||[super respondsToSelector:aSelector];
+-(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
+    [self.instrumentation.interceptor taskReceivedData:task data:data];
 }
-- (id)forwardingTargetForSelector:(SEL)aSelector{
-    return [self.interceptedSelectors containsObject:NSStringFromSelector(aSelector)]?nil:self.actualDelegate;
+-(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
 }
-#pragma mark ========== interceptor ==========
-/// 拦截 Request 修改 request
-//+ (void)requestInterceptor:(RequestInterceptor)requestInterceptor{
-//    [[FTURLSessionInstrumentation sharedInstance].interceptor setRequestInterceptor:requestInterceptor];
-//}
-/// 告诉拦截器需要自定义 RUM 资源属性。
-//+ (void)rumResourcePropertyProvider:(ResourcePropertyProvider)provider{
-//    [[FTURLSessionInstrumentation sharedInstance].interceptor setProvider:provider];
-//}
-
 @end

@@ -20,7 +20,7 @@
 #import "FTRecordModel.h"
 #import "FTURLSessionDelegate.h"
 
-typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
+typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithRequestCompletionHandler,
     DataTaskWithRequest,
     DataTaskWithURLCompletionHandler,
@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
-    traceConfig.enableAutoTrace = NO;
+    traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
@@ -104,10 +104,6 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
 - (void)testDataTaskWithURL{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
-}
-- (void)testURLSessionDelegateProxy{
-    [self sdkNormalSet];
-    [self startWithTest:InstrumentationProxy requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
 }
 - (void)testResourcePropertyProvider{
     [self sdkNormalSet];
@@ -317,13 +313,13 @@ typedef NS_ENUM(NSUInteger,TestSessionResquestMethod){
     [self sdkNormalSet];
     [self startWithTest:type requestMethod:DataTaskWithRequestCompletionHandler hasResource:has];
 }
-- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has{
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionRequestMethod)requestMethod hasResource:(BOOL)has{
     [self startWithTest:type requestMethod:requestMethod hasResource:has provider:nil];
 }
-- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider{
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionRequestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider{
     [self startWithTest:type requestMethod:requestMethod hasResource:has provider:provider requestInterceptor:nil];
 }
-- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionResquestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
+- (void)startWithTest:(TestSessionInstrumentationType)type requestMethod:(TestSessionRequestMethod)requestMethod hasResource:(BOOL)has provider:(ResourcePropertyProvider)provider requestInterceptor:(RequestInterceptor)requestInterceptor{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:type expectation:expectation provider:provider requestInterceptor:requestInterceptor];
     switch (requestMethod){

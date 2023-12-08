@@ -29,14 +29,14 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nul
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
-@required
+@optional
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
 @property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
 
-@optional
+
 /// 采集的 resource 数据接收对象
-@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
+@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// 实现 trace 功能，给 request header 添加 trace 参数

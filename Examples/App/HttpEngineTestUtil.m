@@ -90,33 +90,25 @@
 
     switch (type) {
         case InstrumentationDirect:{
-            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]init];
-            ftdelegate.provider = provider;
-            ftdelegate.requestInterceptor = requestInterceptor;
-            delegate = ftdelegate;
+            FTURLSessionDelegate *ftDelegate = [[FTURLSessionDelegate alloc]init];
+            ftDelegate.provider = provider;
+            ftDelegate.requestInterceptor = requestInterceptor;
+            delegate = ftDelegate;
         }
             break;
             
         case InstrumentationInherit: {
-            InstrumentationInheritTestClass *ftdelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
-            ftdelegate.provider = provider;
-            ftdelegate.requestInterceptor = requestInterceptor;
-            delegate = ftdelegate;
+            InstrumentationInheritTestClass *ftDelegate = [[InstrumentationInheritTestClass alloc]initWithExpectation:expectation];
+            ftDelegate.provider = provider;
+            ftDelegate.requestInterceptor = requestInterceptor;
+            delegate = ftDelegate;
             break;
         }
         case InstrumentationProperty: {
-            InstrumentationPropertyTestClass *ftdelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
-            ftdelegate.ftURLSessionDelegate.provider = provider;
-            ftdelegate.ftURLSessionDelegate.requestInterceptor = requestInterceptor;
-            delegate = ftdelegate;
-            break;
-        }
-        case InstrumentationProxy:{
-            FTURLSessionDelegate *ftdelegate = [[FTURLSessionDelegate alloc]initWithRealDelegate:self];
-            ftdelegate.provider = provider;
-            ftdelegate.requestInterceptor = requestInterceptor;
-            delegate = ftdelegate;
-            self.expectation = expectation;
+            InstrumentationPropertyTestClass *ftDelegate = [[InstrumentationPropertyTestClass alloc]initWithExpectation:expectation];
+            ftDelegate.ftURLSessionDelegate.provider = provider;
+            ftDelegate.ftURLSessionDelegate.requestInterceptor = requestInterceptor;
+            delegate = ftDelegate;
             break;
         }
     }

@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 转发 'URLSessionDelegate' 调用到 'ftURLSessionDelegate'的接口协议。
 ///
 /// 必须确保 `ftURLSessionDelegate` 调用所需的方法
-DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] initWithRealDelegate:] 替换")
 @protocol FTURLSessionDelegateProviding <NSURLSessionDelegate>
 /// 自动化采集的委托代理对象
 ///
@@ -44,7 +43,7 @@ DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] in
 /// `URLSession` 支持自动化采集的代理委托对象。
 ///
 /// 所有使用这个委托对象的 'URLSession' 所发出的请求都将被 SDK 拦截。
-@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate>
+@interface FTURLSessionDelegate : NSObject <NSURLSessionTaskDelegate,NSURLSessionDataDelegate,FTURLSessionDelegateProviding>
 
 /// 拦截 Request 返回修改后的 Request，可用于自定义链路追踪
 @property (nonatomic,copy) RequestInterceptor requestInterceptor;
@@ -52,11 +51,8 @@ DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 [[FTURLSessionDelegate alloc] in
 /// 告诉拦截器需要自定义 RUM 资源属性。
 @property (nonatomic,copy) ResourcePropertyProvider provider;
 
-/// 初始化方法，它位于 `URLSession` 和实际的 `URLSessionDelegate` 之间。
-/// 它将记录所有需要的事件并将方法转发给原始委托
-/// - Parameter delegate: "实际的" session delegate。
-- (instancetype)initWithRealDelegate:(nullable id<NSURLSessionDelegate>)delegate;
-
+/// 实现拦截 url 请求过程的代理
+- (FTURLSessionDelegate *)ftURLSessionDelegate;
 @end
 
 

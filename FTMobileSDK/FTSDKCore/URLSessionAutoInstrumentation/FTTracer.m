@@ -25,13 +25,15 @@ static NSUInteger SkywalkingSeq = 0.0;
 @end
 @implementation FTTracer
 @synthesize enableLinkRumData = _enableLinkRumData;
+@synthesize enableAutoTrace = _enableAutoTrace;
 
--(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableLinkRumData:(BOOL)link{
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:(BOOL)trace enableLinkRumData:(BOOL)link{
     self = [super init];
     if(self){
         _sampleRate = sampleRate;
         _traceType = traceType;
         _enableLinkRumData = link;
+        _enableAutoTrace = trace;
     }
     return self;
 }

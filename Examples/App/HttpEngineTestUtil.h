@@ -20,7 +20,6 @@ typedef NS_ENUM(NSUInteger,TestSessionInstrumentationType){
     InstrumentationDirect,
     InstrumentationInherit,
     InstrumentationProperty,
-    InstrumentationProxy,
 };
 @interface HttpEngineTestUtil : NSObject
 - (instancetype)initWithSessionInstrumentationType:(TestSessionInstrumentationType)type expectation:(XCTestExpectation *)expectation;

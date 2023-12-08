@@ -7,12 +7,10 @@
 //
 
 #import "FTURLSessionDelegate.h"
-
+#import "FTURLSessionInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTURLSessionDelegate ()
-- (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
-- (void)interceptTask:(NSURLSessionTask *)task;
+@interface FTURLSessionDelegate ()<FTURLSessionInterceptorProtocol>
 @end
 
 NS_ASSUME_NONNULL_END

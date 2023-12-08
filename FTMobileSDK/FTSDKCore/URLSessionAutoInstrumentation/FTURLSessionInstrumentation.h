@@ -22,11 +22,10 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
-#import "FTAutoInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
-@interface FTURLSessionInstrumentation : NSObject<FTAutoInterceptorProtocol>
+@interface FTURLSessionInstrumentation : NSObject
 
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
 @property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
@@ -34,6 +33,8 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 @property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
 @property (atomic, assign, readonly) BOOL shouldInterceptor;
+
+- (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 /// 单例
 + (instancetype)sharedInstance;
 
@@ -61,6 +62,8 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 /// 设置 URL 过滤
 /// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
+
+- (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate;
 
 /// 注销
 - (void)resetInstance;
