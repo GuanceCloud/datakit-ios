@@ -79,7 +79,7 @@ static dispatch_once_t onceToken;
                 return;
             }
             if (![FTBaseInfoHandler randomSampling:self.sampleRate]){
-                FTInnerLogInfo(@"[Logging] Based on the `samplerate` setting, `%@` will not be collected",message);
+                FTInnerLogInfo(@"[Logging][Not Sampled] %@",message);
                 return;
             }
             [self.loggerWriter logging:message status:status tags:nil field:property time:[FTDateUtil currentTimeNanosecond]];
