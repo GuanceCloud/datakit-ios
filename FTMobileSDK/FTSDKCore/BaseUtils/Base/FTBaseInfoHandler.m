@@ -68,6 +68,11 @@
     }
     return YES;
 }
++ (NSString *)randomUUID{
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    return uuid.lowercaseString;
+}
 #if FT_IOS
 +(NSString *)telephonyCarrier
 {

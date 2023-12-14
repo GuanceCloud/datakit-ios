@@ -12,6 +12,7 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "NSNumber+FTAdd.h"
+#import "FTBaseInfoHandler.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeTag      = 1,
     FTParameterTypeField     = 2 ,
@@ -135,19 +136,25 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         if (!source) {
             source =[FTRequestBody replacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
         }
-        NSDictionary *tagDict = opdata[FT_TAGS];
-        NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypeTag):nil;
+        NSMutableDictionary *tagDict = @{@"sdk_data_id":[FTBaseInfoHandler randomUUID]}.mutableCopy;
+        NSDictionary *tag = opdata[FT_TAGS];
+        
+        if(tag.allKeys.count>0){
+            [tagDict addEntriesFromDictionary:tag];
+        }
+        NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag);
+
         if ([[opdata allKeys] containsObject:FT_FIELDS]) {
             NSString *field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
             
-            NSString *requestStr = tagsStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagsStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
+            NSString *requestStr = tagStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
             if (idx==0) {
                 [requestDatas appendString:requestStr];
             }else{
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagsStr,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagStr,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];

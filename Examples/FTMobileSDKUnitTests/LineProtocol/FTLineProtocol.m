@@ -60,6 +60,27 @@
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
+- (void)testDataUUID{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"testLineProtocol"},
+        FT_TAGS:@{@"name":@"testLineProtocol"},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr2 = [line getRequestBodyWithEventArray:@[model]];
+    XCTAssertFalse([lineStr isEqualToString:lineStr2]);
+    XCTAssertTrue([lineStr containsString:@"sdk_data_id"]);
+    XCTAssertTrue([lineStr2 containsString:@"sdk_data_id"]);
+}
 - (void)testNullValue{
     NSDictionary *dict = @{
         FT_MEASUREMENT:@"iOSTest",

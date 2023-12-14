@@ -108,6 +108,11 @@
     XCTAssertTrue([ary containsObject:@(1)]);
     XCTAssertTrue([ary containsObject:@(0)]);
 }
+- (void)testRandomUUID{
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
+    XCTAssertFalse([uuid containsString:@"-"]);
+    XCTAssertTrue([[uuid lowercaseString] isEqualToString:uuid]);
+}
 #pragma mark FTReadWriteHelper
 - (void)testReadWriteHelper{
     NSMutableArray *array = @[@"a",@"b",@"c",@"d"].mutableCopy;
