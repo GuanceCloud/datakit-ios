@@ -43,7 +43,7 @@
     XCTAssertTrue([path containsString:self.dbName]);
 }
 -(void)testCreateTable{
-    BOOL  track = [[FTTrackerEventDBTool sharedManger] zy_isExistTable:FT_DB_TRACREVENT_TABLE_NAME];
+    BOOL  track = [[FTTrackerEventDBTool sharedManger] zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME];
     XCTAssertTrue(track);
 }
 - (void)testInsertSingle{

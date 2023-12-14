@@ -73,7 +73,7 @@ static dispatch_once_t onceToken;
 }
 -(void)createEventTable
 {
-    if ([self zy_isExistTable:FT_DB_TRACREVENT_TABLE_NAME]) {
+    if ([self zy_isExistTable:FT_DB_TRACE_EVENT_TABLE_NAME]) {
         return;
     }
       [self zy_inTransaction:^(BOOL *rollback) {
@@ -82,8 +82,8 @@ static dispatch_once_t onceToken;
                                    @"data":@"TEXT",
                                    @"op":@"TEXT",
         };
-        if ([self isOpenDatabese:self.db]) {
-               NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACREVENT_TABLE_NAME]];
+        if ([self isOpenDatabase:self.db]) {
+               NSMutableString *sql = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (",FT_DB_TRACE_EVENT_TABLE_NAME]];
                int count = 0;
                for (NSString *key in keyTypes) {
                    count++;
@@ -106,9 +106,9 @@ static dispatch_once_t onceToken;
 
 -(BOOL)insertItem:(FTRecordModel *)item{
     __block BOOL success = NO;
-   if([self isOpenDatabese:self.db]) {
+   if([self isOpenDatabase:self.db]) {
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
+           NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data' ,'op') VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
           success=  [self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op];
        }];
    }
@@ -140,21 +140,21 @@ static dispatch_once_t onceToken;
 
 }
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
-    __block BOOL needRoolback = NO;
-    if([self isOpenDatabese:self.db]) {
+    __block BOOL needRollback = NO;
+    if([self isOpenDatabase:self.db]) {
         [self zy_inTransaction:^(BOOL *rollback) {
             [items enumerateObjectsUsingBlock:^(FTRecordModel *item, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data','op') VALUES (  ? , ? , ? );",FT_DB_TRACREVENT_TABLE_NAME];
+                NSString *sqlStr = [NSString stringWithFormat:@"INSERT INTO '%@' ( 'tm' , 'data','op') VALUES (  ? , ? , ? );",FT_DB_TRACE_EVENT_TABLE_NAME];
                 if(![self.db executeUpdate:sqlStr,@(item.tm),item.data,item.op]){
                     *stop = YES;
-                    needRoolback = YES;
+                    needRollback = YES;
                 }
             }];
-            *rollback = needRoolback;
+            *rollback = needRollback;
         }];
         
     }
-    return !needRoolback;
+    return !needRollback;
 }
 -(void)insertCacheToDB{
     pthread_mutex_lock(&_lock);
@@ -168,7 +168,7 @@ static dispatch_once_t onceToken;
     }
 }
 -(NSArray *)getAllDatas{
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACREVENT_TABLE_NAME];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACE_EVENT_TABLE_NAME];
 
     return [self getDatasWithFormat:sql];
 
@@ -178,13 +178,13 @@ static dispatch_once_t onceToken;
     if (recordSize == 0) {
         return @[];
     }
-    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY _id ASC limit %lu  ;",FT_DB_TRACREVENT_TABLE_NAME,type,(unsigned long)recordSize];
+    NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' WHERE op = '%@' ORDER BY _id ASC limit %lu  ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,(unsigned long)recordSize];
 
     return [self getDatasWithFormat:sql];
 }
 
 -(NSArray *)getDatasWithFormat:(NSString *)format{
-    if([self isOpenDatabese:self.db]) {
+    if([self isOpenDatabase:self.db]) {
         __block  NSMutableArray *array = [NSMutableArray new];
         [self zy_inDatabase:^{
             //ORDER BY ID DESC --根据ID降序查找:ORDER BY ID ASC --根据ID升序序查找
@@ -208,8 +208,8 @@ static dispatch_once_t onceToken;
 {
     __block NSInteger count =0;
     [self zy_inDatabase:^{
-        NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", FT_DB_TRACREVENT_TABLE_NAME];
-          ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
+        NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@", FT_DB_TRACE_EVENT_TABLE_NAME];
+          ZY_FMResultSet *set = [self.db executeQuery:sqlStr];
 
           while ([set next]) {
               count= [set intForColumn:@"count"];
@@ -221,8 +221,8 @@ static dispatch_once_t onceToken;
 - (NSInteger)getDatasCountWithType:(NSString *)op{
     __block NSInteger count =0;
        [self zy_inDatabase:^{
-           NSString *sqlstr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACREVENT_TABLE_NAME,op];
-             ZY_FMResultSet *set = [self.db executeQuery:sqlstr];
+           NSString *sqlStr = [NSString stringWithFormat:@"SELECT count(*) as 'count' FROM %@ WHERE op = '%@'", FT_DB_TRACE_EVENT_TABLE_NAME,op];
+             ZY_FMResultSet *set = [self.db executeQuery:sqlStr];
 
              while ([set next]) {
                  count= [set intForColumn:@"count"];
@@ -235,7 +235,7 @@ static dispatch_once_t onceToken;
 -(BOOL)deleteItemWithType:(NSString *)type tm:(long long)tm{
     __block BOOL is;
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACREVENT_TABLE_NAME,type,tm];
+           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,tm];
            is = [self.db executeUpdate:sqlStr];
        }];
        return is;
@@ -243,7 +243,7 @@ static dispatch_once_t onceToken;
 -(BOOL)deleteItemWithType:(NSString *)type identify:(NSString *)identify{
     __block BOOL is;
        [self zy_inDatabase:^{
-           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACREVENT_TABLE_NAME,type,identify];
+           NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND _id <= %@ ;",FT_DB_TRACE_EVENT_TABLE_NAME,type,identify];
            is = [self.db executeUpdate:sqlStr];
        }];
        return is;
@@ -251,7 +251,7 @@ static dispatch_once_t onceToken;
 -(BOOL)deleteLoggingItem:(NSInteger)count{
     __block BOOL is;
         [self zy_inDatabase:^{
-            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACREVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DB_TRACREVENT_TABLE_NAME,(long)count,FT_DB_TRACREVENT_TABLE_NAME,(long)count];
+            NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE op = '%@' AND (select count(_id) FROM '%@')> %ld AND _id IN (select _id FROM '%@' ORDER BY _id ASC limit %ld) ;",FT_DB_TRACE_EVENT_TABLE_NAME,FT_DATA_TYPE_LOGGING,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count,FT_DB_TRACE_EVENT_TABLE_NAME,(long)count];
             is = [self.db executeUpdate:sqlStr];
         }];
         return is;
@@ -259,7 +259,7 @@ static dispatch_once_t onceToken;
 -(BOOL)deleteItemWithTm:(long long)tm
 {   __block BOOL is;
     [self zy_inDatabase:^{
-        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %lld ;",FT_DB_TRACREVENT_TABLE_NAME,tm];
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE tm <= %lld ;",FT_DB_TRACE_EVENT_TABLE_NAME,tm];
         is = [self.db executeUpdate:sqlStr];
     }];
     return is;
@@ -267,7 +267,7 @@ static dispatch_once_t onceToken;
 //-(BOOL)deleteItemWithId:(long )Id
 //{   __block BOOL is;
 //    [self zy_inDatabase:^{
-//     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACREVENT_TABLE_NAME,Id];
+//     NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@' WHERE _id <= %ld ;",FT_DB_TRACE_EVENT_TABLE_NAME,Id];
 //        is = [self.db executeUpdate:sqlStr];
 //    }];
 //    return is;
@@ -276,7 +276,7 @@ static dispatch_once_t onceToken;
 {
     [_db close];
 }
--(BOOL)isOpenDatabese:(ZY_FMDatabase *)db{
+-(BOOL)isOpenDatabase:(ZY_FMDatabase *)db{
     if (![db open]) {
         [db open];
     }

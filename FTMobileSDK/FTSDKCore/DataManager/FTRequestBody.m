@@ -112,7 +112,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 
 @implementation FTRequestBody : NSObject
 
-+ (id )repleacingSpecialCharactersMeasurement:(NSString *)str{
++ (id )replacingSpecialCharactersMeasurement:(NSString *)str{
     if ([str isKindOfClass:NSString.class]) {
         NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
         reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
@@ -131,9 +131,9 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata =item[FT_OPDATA];
         
-        NSString *source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_KEY_SOURCE]];
+        NSString *source =[FTRequestBody replacingSpecialCharactersMeasurement:[opdata valueForKey:FT_KEY_SOURCE]];
         if (!source) {
-            source =[FTRequestBody repleacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
+            source =[FTRequestBody replacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
         }
         NSDictionary *tagDict = opdata[FT_TAGS];
         NSString *tagsStr = tagDict.allKeys.count>0 ? FTQueryStringFromParameters(tagDict,FTParameterTypeTag):nil;
