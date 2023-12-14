@@ -179,7 +179,6 @@ static volatile int counter = 0; // To prevent recursion optimization
     
 }
 
-
 - (void) accessDeallocatedObject
 {
 //    NSArray* array = [[NSArray alloc] initWithObjects:@"", nil];

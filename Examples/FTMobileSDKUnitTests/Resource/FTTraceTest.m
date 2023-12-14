@@ -51,7 +51,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;
@@ -232,7 +232,7 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 0;
     traceConfig.enableAutoTrace = YES;
@@ -254,7 +254,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
     traceConfig.enableAutoTrace = YES;
@@ -277,7 +277,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:murl];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:murl];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
     traceConfig.enableAutoTrace = NO;
@@ -342,7 +342,7 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -363,7 +363,7 @@
 - (void)testUnenabledTrace{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
@@ -375,7 +375,7 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];

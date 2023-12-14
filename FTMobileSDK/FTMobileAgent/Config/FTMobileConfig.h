@@ -178,7 +178,16 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @interface FTMobileConfig : NSObject
 /// 指定初始化方法，设置 metricsUrl
 /// - Parameter metricsUrl: 数据上报地址
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
+- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -initWithDatakitUrl: 替换");
+
+/// 本地环境部署，设置 datakitUrl
+/// - Parameter datakitUrl: datakit 数据上报地址
+- (instancetype)initWithDatakitUrl:(NSString *)datakitUrl;
+
+/// 使用公网 DataWay 部署，设置 datawayUrl 与 clientToken
+/// - Parameter datawayUrl: datawayUrl 数据上报地址
+/// - Parameter clientToken: dataway token
+- (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -186,7 +195,13 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
-@property (nonatomic, copy) NSString *metricsUrl;
+@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 datakitUrl 替换");
+/// 数据上报 datakit 地址
+@property (nonatomic, copy) NSString *datakitUrl;
+/// 数据上报 dataway 地址
+@property (nonatomic, copy) NSString *datawayUrl;
+/// dataway token
+@property (nonatomic, copy) NSString *clientToken;
 /// 设置自定义环境字段。
 @property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。

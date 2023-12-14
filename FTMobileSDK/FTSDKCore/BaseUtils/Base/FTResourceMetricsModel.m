@@ -20,15 +20,19 @@
             }
         }];
         NSURLSessionTaskTransactionMetrics *taskMetrics = [transactionMetrics lastObject];
-        self.resource_dns = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.domainLookupEndDate];
-        self.resource_tcp = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.connectStartDate toDate:taskMetrics.connectEndDate];
-        self.resource_ssl = taskMetrics.secureConnectionStartDate!=nil ? [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.secureConnectionStartDate toDate:taskMetrics.connectEndDate]:@0;
-        self.resource_ttfb = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseStartDate];
-        self.resource_trans =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseEndDate];
-        self.duration = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.fetchStartDate toDate:taskMetrics.requestEndDate];
-        self.resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.responseStartDate];
+        _resource_dns = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.domainLookupEndDate];
+        _resource_tcp = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.connectStartDate toDate:taskMetrics.connectEndDate];
+        _resource_ssl = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.secureConnectionStartDate toDate:taskMetrics.connectEndDate];
+        _resource_ttfb = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseStartDate];
+        _resource_trans =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseEndDate];
+        _duration = [FTDateUtil nanosecondTimeIntervalSinceDate:metrics.taskInterval.startDate toDate:metrics.taskInterval.endDate];
+        if(taskMetrics.domainLookupStartDate){
+            _resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.responseStartDate];
+        }else{
+            _resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.fetchStartDate toDate:taskMetrics.responseStartDate];
+        }
         if (@available(iOS 13,macOS 10.15, *)) {
-            self.responseSize = @( taskMetrics.countOfResponseBodyBytesAfterDecoding);
+            _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
         }
     }
     return self;

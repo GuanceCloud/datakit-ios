@@ -195,7 +195,7 @@
     [NSThread sleepForTimeInterval:0.5];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"test"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"test"];
     config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;

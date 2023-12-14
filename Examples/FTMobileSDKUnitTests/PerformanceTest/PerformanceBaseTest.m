@@ -23,7 +23,7 @@
 - (void)testGetRumPropertyPerformance {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     [self measureBlock:^{
       [presetProperty rumProperty];
@@ -32,7 +32,7 @@
 - (void)testGetLoggerPropertyPerformance {
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     [self measureBlock:^{
          [presetProperty loggerPropertyWithStatus:(LogStatus)FTStatusInfo];
@@ -44,7 +44,7 @@
     NSString *appid = [processInfo environment][@"APP_ID"];
     [self measureMetrics:[self class].defaultPerformanceMetrics automaticallyStartMeasuring:NO forBlock:^{
         [self startMeasuring];
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
