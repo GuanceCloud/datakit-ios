@@ -179,17 +179,6 @@ static volatile int counter = 0; // To prevent recursion optimization
     
 }
 
-- (void) doIllegalInstruction
-{
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            unsigned int data[] = {0x11111111, 0x11111111};
-            void (*funcptr)() = (void (*)())data;
-            funcptr();
-
-        });
-    
-    
-}
 
 - (void) accessDeallocatedObject
 {

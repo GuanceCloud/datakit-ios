@@ -37,7 +37,7 @@
         [[FTMobileAgent sharedInstance] logging:datas[1] status:FTStatusWarning];
     }];
     TableViewCellItem *item3 = [[TableViewCellItem alloc]initWithTitle:datas[2] handler:^{
-        [[FTMobileAgent sharedInstance] logging:datas[2] status:FTStatusWarning];
+        [[FTMobileAgent sharedInstance] logging:datas[2] status:FTStatusError];
     }];
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:datas[3] handler:^{
         [[FTLogger sharedInstance] critical:datas[3] property:@{@"critical_key":@"critical_value"}];
