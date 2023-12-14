@@ -54,9 +54,10 @@
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
-
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
-    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
+    NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
+    XCTAssertTrue(tags.count == 3);
+    XCTAssertEqualObjects([tags firstObject], @"iOSTest");
+    XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);    
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
@@ -99,8 +100,10 @@
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
-
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
+    NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
+    XCTAssertTrue(tags.count == 3);
+    XCTAssertEqualObjects([tags firstObject], @"iOSTest");
+    XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);
     XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\",null=\"\",emptyString=\"\"");
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
