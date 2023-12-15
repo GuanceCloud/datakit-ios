@@ -1,706 +1,882 @@
-1.4.8-alpha.2
-1.修复 APP 进入后台 HTTP 请求悬挂导致的 RUM-View 持续时间过长问题
-2.自动采集 HTTP Resource 逻辑修改
-3.新增自定义采集 HTTP Resource 功能
-4.优化 RUM-ResourceError 错误信息描述
----
-1.4.8-alpha.1
-1.新增自定义 TraceHeader 功能
-2.配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
-3.修复多个 URLSession resource 自定义数据覆盖问题
----
-1.4.7-beta.2
-1.解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
+# 1.4.8-alpha.3
+1. 新增 dataway 公网上传数据逻辑
+2. 添加上传数据唯一标识
+3. RUM Session 过期逻辑修改，同步重置 view
+4. 修复 resource duration 负值问题、resource_first_byte 计算逻辑修改
+5. 自动采集 HTTP Resource 逻辑修改
+___
+# 1.4.8-alpha.2
+1. 修复 APP 进入后台 HTTP 请求悬挂导致的 RUM-View 持续时间过长问题
+2. 自动采集 HTTP Resource 逻辑修改
+3. 新增自定义采集 HTTP Resource 功能
+4. 优化 RUM-ResourceError 错误信息描述
 
 ---
-1.4.7-beta.1
-1.同 1.4.7-alpha.2、1.4.7-alpha.1
+# 1.4.8-alpha.1
+1. 新增自定义 TraceHeader 功能
+2. 配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
+3. 修复多个 URLSession resource 自定义数据覆盖问题
+
+___
+# 1.4.7-beta.2
+1. 解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
+
 ---
-1.4.7-alpha.2
-1.RUM LongTask 采集优化
-2.RUM Resource 支持用户自定义资源属性
+# 1.4.7-beta.1
+1. 同 1.4.7-alpha.2、1.4.7-alpha.1
+
 ---
-1.4.7-alpha.1
-1.解决 RUM View timeSpend 异常问题
-2.开启 View 自动采集时 app Enter background、foreground 同步 view start、stop
+# 1.4.7-alpha.2
+1. RUM LongTask 采集优化
+2. RUM Resource 支持用户自定义资源属性
+
 ---
-1.4.6-beta.1
-1.同 1.4.6-alpha.6
+# 1.4.7-alpha.1
+1. 解决 RUM View timeSpend 异常问题
+2. 开启 View 自动采集时 app Enter background、foreground 同步 view start、stop
+
 ---
-1.4.6-alpha.6
-1.枚举命名修改
+# 1.4.6-beta.1
+1. 同 1.4.6-alpha.6
+
 ---
-1.4.6-alpha.5
-1.RUM AddError 方法添加 state 参数
-2.注销用户方法 -unbindUser 替换 -logout
+# 1.4.6-alpha.6
+1. 枚举命名修改
+
 ---
-1.4.6-alpha.4
-1.app Become、Resign Active 同步 view start、stop
+# 1.4.6-alpha.5
+1. RUM AddError 方法添加 state 参数
+2. 注销用户方法 -unbindUser 替换 -logout
+
 ---
-1.4.6-alpha.3
-1.支持高刷设备的 FPS 计算错误修复
----
-1.4.6-alpha.2
-1.处理 UITabBarController 子视图加载时间异常问题
----
-1.4.6-alpha.1
-1.数据上传处理空值数据逻辑修改
----
-1.4.5-beta.1
-1.修复 RUM View 时间赋值错误问题
----
-1.4.5-alpha.1
-1.Webview RUM 接入数据格式调整
----
-1.4.4-beta.1
-1.自定义日志打印控制台格式调整
----
-1.4.4-alpha.1
-1.移除日志自动采集功能，添加自定义日志打印在控制台开关
-2.添加自定义 env
----
-1.4.3-beta.1
-1.同 1.4.3-alpha.1
----
-1.4.3-alpha.1
-1.修复 RUM 数据丢失问题
-2.RUM 中 resource、error、long_task 缺失 action 相关字段补充
----
-1.4.2-alpha.3
-1.FTSDKCore 基础库支持自定义数据库路径和名称
----
-1.4.2-alpha.2
-1.删除 dataKitUUID
----
-1.4.2-alpha.1
-1.解决打包无 module 问题
-2.修复已知 BUG
----
-1.4.1-alpha.3
-1.修复 RUM resource 数据格式错误问题
----
-1.4.1-alpha.2
-1.RUM resource 中 resource_type 赋值修改
----
-1.4.1-alpha.1
-1.修复 RUM resource 处理 response header 时未考虑大小写兼容问题
+# 1.4.6-alpha.4
+1. app Become、Resign Active 同步 view start、stop
+
 ---
 
-1.4.0-beta.3
-1.新增 SDK 注销 API
+# 1.4.6-alpha.3
+1. 支持高刷设备的 FPS 计算错误修复
+
 ---
-1.4.0-beta.2
-1.podspec source_files 调整，解决软连接文件导致的 duplicate 警告
+# 1.4.6-alpha.2
+1. 处理 UITabBarController 子视图加载时间异常问题
+
+---
+# 1.4.6-alpha.1
+1. 数据上传处理空值数据逻辑修改
+
+---
+# 1.4.5-beta.1
+1. 修复 RUM View 时间赋值错误问题
+
+---
+# 1.4.5-alpha.1
+
+1. Webview RUM 接入数据格式调整
+
+---
+# 1.4.4-beta.1
+1. 自定义日志打印控制台格式调整
+
+---
+# 1.4.4-alpha.1
+1. 移除日志自动采集功能，添加自定义日志打印在控制台开关
+2. 添加自定义 env
+
+---
+# 1.4.3-beta.1
+1. 同 1.4.3-alpha.1
+
 ---
 
-1.4.0-beta.1
-1.新增 Widget Extension 数据采集功能
-2.网络链路追踪自动追踪优化
-3.添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
-4.修复已知 BUG
----
-1.3.12-alpha.4
-1.macos error监控项支持采集设备电量使用率
+# 1.4.3-alpha.1
+1. 修复 RUM 数据丢失问题
+2. RUM 中 resource、error、long_task 缺失 action 相关字段补充
+
 ---
 
-1.3.12-alpha.3
-1.项目结构调整, FTSDKCore 支持macOS
+# 1.4.2-alpha.3
+1. FTSDKCore 基础库支持自定义数据库路径和名称
+
 ---
-1.3.12-alpha.2
-1.包结构调整,sdk 支持 platform 版本修改
+# 1.4.2-alpha.2
+1. 删除 dataKitUUID
+
 ---
-1.3.12-alpha.1
-1.包结构调整,基础功能支持macOS
+# 1.4.2-alpha.1
+1. 解决打包无 module 问题
+2. 修复已知 BUG
+
 ---
-1.3.11-alpha.1
-1.修复已知 BUG
-2.NSURLProtocol protocolClasses 设置优化
-3.添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
+# 1.4.1-alpha.3
+1. 修复 RUM resource 数据格式错误问题
+
+---
+# 1.4.1-alpha.2
+1. RUM resource 中 resource_type 赋值修改
+
+---
+# 1.4.1-alpha.1
+1. 修复 RUM resource 处理 response header 时未考虑大小写兼容问题
+
 ---
 
-1.3.10-beta.3
-1.修复内存泄漏问题
-2.修复其他已知 BUG
+# 1.4.0-beta.3
+1. 新增 SDK 注销 API
+
 ---
-1.3.10-alpha.7
-1.修复多线程数组copy导致的内存泄漏
-2.修复已知 BUG
+# 1.4.0-beta.2
+1. podspec source_files 调整，解决软连接文件导致的 duplicate 警告
+
 ---
-1.3.10-alpha.6
-1.修复日志采集时产生的内存泄漏
-3.SDK 支持版本修改，iOS 支持10.0及以上，macOS支持10.13及以上
+# 1.4.0-beta.1
+1. 新增 Widget Extension 数据采集功能
+2. 网络链路追踪自动追踪优化
+3. 添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
+4. 修复已知 BUG
+
 ---
-1.3.10-beta.2
-1.修复 Error 监控采集属性字段错误问题
+# 1.3.12-alpha.4
+1. macos error监控项支持采集设备电量使用率
+
+---
+# 1.3.12-alpha.3
+1. 项目结构调整, FTSDKCore 支持macOS
+
+---
+# 1.3.12-alpha.2
+1. 包结构调整,sdk 支持 platform 版本修改
+
+---
+# 1.3.12-alpha.1
+1. 包结构调整,基础功能支持macOS
+
+---
+# 1.3.11-alpha.1
+1. 修复已知 BUG
+2. NSURLProtocol protocolClasses 设置优化
+3. 添加 SPM 支持，添加支持 carthage 打包 FTMobileExtension
+
+---
+# 1.3.10-beta.3
+1. 修复内存泄漏问题
+2. 修复其他已知 BUG
+
+---
+# 1.3.10-alpha.7
+1. 修复多线程数组copy导致的内存泄漏
+2. 修复已知 BUG
+
+---
+# 1.3.10-alpha.6
+1. 修复日志采集时产生的内存泄漏
+2. SDK 支持版本修改，iOS 支持10.0及以上，macOS支持10.13及以上
+
+---
+# 1.3.10-beta.2
+1. 修复 Error 监控采集属性字段错误问题
+
 ---
 
-1.3.10-beta.1
-1.添加 intakeUrl 采集 Resource 过滤方法
-2.Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
-3.config 配置 service 参数调整
-4.修复已知 BUG
+# 1.3.10-beta.1
+1. 添加 intakeUrl 采集 Resource 过滤方法
+2. Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
+3. config 配置 service 参数调整
+4. 修复已知 BUG
+
 ---
 
-1.3.10-alpha.3
-1.config 配置 service 参数调整
-2.修复从应用切换器进入 APP 导致的启动时长统计异常问题
-3.Action Type 新增 launch_warm 适配 iOS15 后 APP 启动前进行了预热
-4.修复 dispatch_semaphore_t 优先级反转问题
+# 1.3.10-alpha.3
+1. config 配置 service 参数调整
+2. 修复从应用切换器进入 APP 导致的启动时长统计异常问题
+3. Action Type 新增 launch_warm 适配 iOS15 后 APP 启动前进行了预热
+4. 修复 dispatch_semaphore_t 优先级反转问题
+
 ---
-1.3.10-alpha.1
-1.添加 intakeUrl 采集 Resource 过滤方法
-2.Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
+# 1.3.10-alpha.1
+1. 添加 intakeUrl 采集 Resource 过滤方法
+2. Resource,Action,View,Error,LongTask,Logger 支持添加扩展参数
+
 ---
-1.3.8-beta.4
-1.修改 DDtrace Header Propagation 规则
+# 1.3.8-beta.4
+1. 修改 DDtrace Header Propagation 规则
+
 ---
 
-1.3.8-beta.3
-1.文件引用格式修复
+# 1.3.8-beta.3
+1. 文件引用格式修复
+
 ---
 
-1.3.8-beta.2
-1.修复获取 GMT 时间时修改了全局 timezone 问题
-2.内部数据上传 URLSession 使用自定义 session 替换 sharedSession
----
+# 1.3.8-beta.2
+1. 修复获取 GMT 时间时修改了全局 timezone 问题
+2. 内部数据上传 URLSession 使用自定义 session 替换 sharedSession
 
-1.3.8-beta.1
+---
+# 1.3.8-beta.1
 1. 外部接入 RUM 补充自定义 actionType 方法
 2. 添加 iPhone14 设备信息适配
 3. 添加 active_pre_warm 判断启动是否进行了预热
+
 ---
-1.3.8-alpha.3
+# 1.3.8-alpha.3
 1. 测试用例修改
 ---
 
-1.3.8-alpha.2
+# 1.3.8-alpha.2
 1. 添加 iPhone14 设备信息适配
 2. 添加 active_pre_warm 判断启动是否进行了预热
 
 ---
 
-1.3.8-alpha.1
+# 1.3.8-alpha.1
 1. 外部接入 RUM 补充自定义 actionType 方法
+
 ---
 
-1.3.7-beta.1
+# 1.3.7-beta.1
 1. 用户绑定数据扩展
 2. 崩溃日志符号化
+
 ---
 
-1.3.7-alpha.4
+# 1.3.7-alpha.4
 1. FTDeviceMetricsMonitorType type值适配
+
 ---
 
-1.3.7-alpha.4
+# 1.3.7-alpha.4
 1. userLogout 用户email缓存清理
+
 ---
-1.3.7-alpha.3
+# 1.3.7-alpha.3
 1. 解决可能遗漏冷启动事件的问题
+
 ---
 
-1.3.7-alpha.2
+# 1.3.7-alpha.2
 1. 用户绑定数据扩展
 2. import 引用方式错误调整
+
 ---
-1.3.7-alpha.1
+# 1.3.7-alpha.1
 1. 用户绑定数据扩展
+
 ---
-1.3.6-beta.2
+# 1.3.6-beta.2
 1. 解决潜在遗漏启动时部分数据的问题
+
 ---
-1.3.6-beta.1
+# 1.3.6-beta.1
 1. 配置监控项，采集 fps、memory、cpu 相关数据
 2. 崩溃日志、卡顿日志采集内容格式调整
+
 ---
 
 # 1.3.6-alpha.4
 1. 公开的头文件补充
+
 ---
 
 # 1.3.6-alpha.3
 1. cpu 采集字段名称修改、cpu数据赋值错误修改
+
 ---
 
 # 1.3.6-alpha.2
-1.cpu 采集规则修改
+1. cpu 采集规则修改
+
 ---
 
 # 1.3.6-alpha.1
 1. 配置监控项，采集fps、memory、cpu相关数据
 2. 崩溃日志、卡顿日志格式调整，符号化缺失信息补充
+
 ---
 
 # 1.3.5-beta.4
 1. 解决 resource error 导致的 action 重复写入问题。
+
 ---
 
 # 1.3.5-beta.3
 1. 解决数据中空字符串导致上传失败问题。
+
 ---
 
 # 1.3.5-beta.2
 1. 解决在 flutter、reactNative 中启动事件采集错误的问题。
+
 ---
 
 # 1.3.5-beta.1
 1. 修正使用 kvo 导致 hook 失败影响项目正常流程的问题。
 2. 过滤格式错误的数据。
 3. SDK 内部 URL 过滤 bug 修改。
+
 ---
 
 # 1.3.5-alpha.4
 1. SDK 内部 URL 过滤 bug 修改。
+
 ---
 # 1.3.5-alpha.3
 1. 过滤格式错误的数据。
 2. SDK 内部日志使用 os_log 替换 NSLog。
+
 ---
 # 1.3.5-alpha.2
 1. SDK 内部 NSLog 删除。
+
 ___
 # 1.3.5-alpha.1
 1. 解决使用 kvo 导致 hook 失败影响项目正常流程的问题。
+
 ___
 # 1.3.4-beta.2
 1. 静态库公开头文件缺失补充
 2. FTMobileSDK scheme shared
+
 ___
 
 # 1.3.4-beta.1
 1. 提升测试用例覆盖率
+
 ---
 
 # 1.3.4-alpha.3
-1.添加onCreateView方法记录view加载时长
+1. 添加onCreateView方法记录view加载时长
+
 ___
 # 1.3.4-alpha.2
-1.启动事件计算规则修改
-2.RUM 页面 viewReferrer 记录规则修改
+1. 启动事件计算规则修改
+
+2. RUM 页面 viewReferrer 记录规则修改
+
 ___
 # 1.3.4-alpha.1
-1.启动事件计算规则修改
-2.RUM 页面 viewReferrer 记录规则修改
+1. 启动事件计算规则修改
+
+2. RUM 页面 viewReferrer 记录规则修改
+
 ___
 # 1.3.3-alpha.5
-1.trace enableAutoTrace 错误修改
+1. trace enableAutoTrace 错误修改
+
 ___
 # 1.3.3-alpha.4
-1.DDtrace header 修改
+1. DDtrace header 修改
+
 ___
 # 1.3.3-alpha.3
-1.NetworkTraceType 默认为 DDtrace,DDtrace traceid 算法修改
-2.外部接入 rum api 调整
+1. NetworkTraceType 默认为 DDtrace,DDtrace traceid 算法修改
+
+2. 外部接入 rum api 调整
+
 ___
 # 1.3.3-alpha.2
-1.支持 Skywalking 、W3c TraceParent、
-2.Zipkin 添加 single header 支持
-3.外部接入 rum api 调整
+1. 支持 Skywalking 、W3c TraceParent、
+
+2. Zipkin 添加 single header 支持
+
+3. 外部接入 rum api 调整
+
 ___
 
 # 1.3.3-alpha.1
-1.支持 Skywalking 、W3c TraceParent、
-2.Zipkin 添加 single header 支持
+1. 支持 Skywalking 、W3c TraceParent、
+
+2. Zipkin 添加 single header 支持
+
 ___
 
 # 1.3.2-alpha.1
-1.添加设置全局 tag 方法。
+1. 添加设置全局 tag 方法。
+
 ___
 
 # 1.3.1-alpha.11
-1.修复获取公共属性多线程访问时产生的 bug
+1. 修复获取公共属性多线程访问时产生的 bug
+
 ___
 # 1.3.1-alpha.10
 1. 修改 RUM 传入字符串数据长度为0时的错误
 2. rum 常量使用调整
+
 ___
 # 1.3.1-alpha.9
 1. RUM、Trace 数据整理，提供对外调用 API
 2. 解决 RUM 数据错误问题
+
 ---
 
 # 1.3.1-alpha.8
 1. RUM、Trace 数据整理，提供对外调用 API
+
 ---
 # 1.3.1-alpha.7
 1. RUM、Trace 数据整理，提供对外调用 API
 2. RUM Config 添加 enableTraceUserResource 方法
+
 ---
 # 1.3.1-alpha.6
 1. RUM、Trace 数据整理，提供对外调用 API
+
 ---
 # 1.2.8-alpha.7
-1.unused code整理
-2.RUM 、Trace 数据处理方法调整
+1. unused code整理
+
+2. RUM 、Trace 数据处理方法调整
+
 ---
 # 1.2.8-alpha.4
-1.unused code整理
-2.RUM 、Trace 数据处理方法调整
+1. unused code整理
+
+2. RUM 、Trace 数据处理方法调整
+
 ---
 # 1.2.8-alpha.3
-1.unused code整理
-2.RUM 、Trace 数据处理方法调整
+1. unused code整理
+
+2. RUM 、Trace 数据处理方法调整
+
 ---
 # 1.2.8-alpha.2
-1.unused code整理
-2.RUM 数据处理方法调整
+1. unused code整理
+
+2. RUM 数据处理方法调整
+
 ---
 # 1.2.8-alpha.1
-1.unused code整理
-2.RUM 数据处理方法调整
+1. unused code整理
+
+2. RUM 数据处理方法调整
+
 ---
 # 1.2.7-alpha.3
-1.RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
-2.追踪 ID 算法修正
+1. RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+
+2. 追踪 ID 算法修正
+
 ---
 # 1.2.7-alpha.1
-1.RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+1. RUM view 数据采集，参数 viewController 传入为 nil 导致的 bug 修改
+
 ---
 # 1.2.6-alpha.2
-1.RUM 用户自设全局 tag 功能添加
-2.获取 IP address bug 修改
+1. RUM 用户自设全局 tag 功能添加
+
+2. 获取 IP address bug 修改
+
 ---
 # 1.2.6-alpha.1
-1.RUM 用户自设全局 tag 功能添加
+1. RUM 用户自设全局 tag 功能添加
+
 ---
 # 1.2.5-alpha.2
-1.日志废弃策略添加
-2.APP 生命周期监控优化
-3.UISegmentedControl 点击事件采集 bug 修改
-4.页面 load 时长 bug 修改
-5.获取 IP address bug 修改
+1. 日志废弃策略添加
+
+2. APP 生命周期监控优化
+
+3. UISegmentedControl 点击事件采集 bug 修改
+
+4. 页面 load 时长 bug 修改
+
+5. 获取 IP address bug 修改
+
 ---
 # 1.2.5-alpha.1
-1.日志废弃策略添加
-2.APP 生命周期监控优化
-3.UISegmentedControl 点击事件采集bug修改
-4.页面 load 时长 bug 修改
+1. 日志废弃策略添加
+
+2. APP 生命周期监控优化
+
+3. UISegmentedControl 点击事件采集bug修改
+
+4. 页面 load 时长 bug 修改
+
 ---
 # 1.2.4-alpha.2
-1.解决 fishhook 在 iOS14.5 及以上设备上出现的崩溃问题
+1. 解决 fishhook 在 iOS14.5 及以上设备上出现的崩溃问题
+
 ---
 # 1.2.3-alpha.1
-1.多线程懒加载导致的 BUG 修改
+1. 多线程懒加载导致的 BUG 修改
+
 ---
 # 1.2.2-alpha.1
-1.logger 添加过滤条件
+1. logger 添加过滤条件
+
 ---
 # 1.2.1-alpha.7
-1.抽出公共方法，设置子包
+1. 抽出公共方法，设置子包
+
 2. podspec 修改兼容osx，头文件引用修改
+
 ---
 # 1.2.1-alpha.6
-1.抽出公共方法，设置子包
+1. 抽出公共方法，设置子包
+
 2. podspec 修改兼容osx，头文件引用修改
+
 ---
 # 1.2.1-alpha.5
-1.抽出公共方法，设置子包
+1. 抽出公共方法，设置子包
+
 2. podspec 语法错误修改，子包移除引用主包的头文件
+
 ---
 # 1.2.1-alpha.4
 1.抽出公共方法，设置子包
 2. podspec 语法错误修改，子包移除引用主包的头文件
+
 ---
 # 1.2.1-alpha.3
-1.抽出公共方法，设置子包
+1. 抽出公共方法，设置子包
 2. podspec 语法错误修改
+
 ---
 # 1.2.1-alpha.2
-1.抽出公共方法，设置子包
+1. 抽出公共方法，设置子包
+
 ---
 # 1.2.1-alpha.1
-1.swizzle 方法修改
+1. swizzle 方法修改
+
 ---
 
 # 1.2.0-alpha.5
-1.Config 配置修改
-2.Logger 与 Trace 数据支持绑定 RUM
+1. Config 配置修改
+
+2. Logger 与 Trace 数据支持绑定 RUM
+
 ---
 # 1.2.0-alpha.4
-1.Config 配置修改
-2.Logger 与 Trace 数据支持绑定 RUM
+1. Config 配置修改
+
+2. Logger 与 Trace 数据支持绑定 RUM
+
 ---
 # 1.2.0-alpha.3
-1.Config 配置修改
-2.Logger 与 Trace 数据支持绑定 RUM
+1. Config 配置修改
+
+2. Logger 与 Trace 数据支持绑定 RUM
+
 ---
 # 1.2.0-alpha.2
-1.Config 配置修改
-2.Logger 与 Trace 数据支持绑定 RUM
+1. Config 配置修改
+2. Logger 与 Trace 数据支持绑定 RUM
+
 ---
 # 1.2.0-alpha.1
-1.Config 配置修改
-2.Logger 与 Trace 数据支持绑定 RUM
+1. Config 配置修改
+2. Logger 与 Trace 数据支持绑定 RUM
+
 ---
 
 # 1.1.0-alpha.10
-1.RUM 数据调整
-2.测试用例添加
+1. RUM 数据调整
+2. 测试用例添加
+
 ---
 # 1.1.0-alpha.9
-1.RUM 数据调整
-2.测试用例添加
+1. RUM 数据调整
+2. 测试用例添加
+
 ---
 # 1.1.0-alpha.8
-1.RUM 数据调整
-2.测试用例添加
+1. RUM 数据调整
+2. 测试用例添加
+
 ---
 # 1.1.0-alpha.7
-1.RUM 数据调整
-2.测试用例添加
+1. RUM 数据调整
+2. 测试用例添加
+
 ---
 # 1.1.0-alpha.6
-1.RUM 数据调整
-2.resource_size添加响应头大小
+1. RUM 数据调整
+2. resource_size添加响应头大小
+
 ---
 # 1.1.0-alpha.5
-1.RUM 数据调整
+1. RUM 数据调整
+
 ---
 # 1.1.0-alpha.4
-1.RUM 数据调整
+1. RUM 数据调整
+
 ---
 # 1.1.0-alpha.3
-1.RUM 数据调整
+1. RUM 数据调整
+
 ---
 # 1.1.0-alpha.2
-1.RUM 数据调整
+1. RUM 数据调整
+
 ---
 # 1.1.0-alpha.1
-1.RUM 数据调整
+1. RUM 数据调整
+
 ---
 
 # 1.0.4-alpha.12
-1.子线程ping 检测卡顿，进行 freeze 采集
-2.config 采集卡顿配置项改为 enableTrackAppFreeze
+1. 子线程ping 检测卡顿，进行 freeze 采集
+2. config 采集卡顿配置项改为 enableTrackAppFreeze
+
 ---
 # 1.0.4-alpha.11
-1.tag app_identified 改为 app_identifiedid
-2.freeze 采集，避免一次卡顿多次写入
+1. tag app_identified 改为 app_identifiedid
+2. freeze 采集，避免一次卡顿多次写入
+
 ---
 
 # 1.0.4-alpha.10
-1.tag、filed keys调整
+1. tag、filed keys调整
+
 ---
 
 # 1.0.4-alpha.9
-1.tag、field、measurement值 添加转译字符处理
+1. tag、field、measurement值 添加转译字符处理
 
 ---
 # 1.0.4-alpha.8
-1.时间单位微秒、纳秒使用错误修改
-2.int越界修改
+1. 时间单位微秒、纳秒使用错误修改
+2. int越界修改
 
 ---
 # 1.0.4-alpha.7
-1.时间单位微秒、纳秒使用错误修改
+1. 时间单位微秒、纳秒使用错误修改
 
 ---
 # 1.0.4-alpha.6
-1.网络链路数据采集上报
+1. 网络链路数据采集上报
 
 ---
 
 # 1.0.4-alpha.5
-1.RUM 数据采集
-2.卡顿、ANR采集
+1. RUM 数据采集
+2. 卡顿、ANR采集
+
 ---
 # 1.0.4-alpha.4
-1.RUM 数据采集
-2.卡顿、ANR采集
+1. RUM 数据采集
+2. 卡顿、ANR采集
+
 ---
 
 # 1.0.4-alpha.3
-1.RUM 数据采集
-2.卡顿、ANR采集
-3.config 配置是否开启采集UIBlock、ANR
+1. RUM 数据采集
+2. 卡顿、ANR采集
+3. config 配置是否开启采集UIBlock、ANR
+
 ---
 
 # 1.0.4-alpha.2
-1.网络错误率、时间开销采集
-2.卡顿、ANR采集
-3.config 配置是否开启采集UIBlock、ANR
+1. 网络错误率、时间开销采集
+2. 卡顿、ANR采集
+3. config 配置是否开启采集UIBlock、ANR
+
 ---
 # 1.0.4-alpha.1
-1.网络错误率、时间开销采集
-2.卡顿、ANR采集
+1. 网络错误率、时间开销采集
+2. 卡顿、ANR采集
 
 ---
 # 1.0.3-beta.2
-1.修正若干错误问题，发布稳定版本
+1. 修正若干错误问题，发布稳定版本
+
 ---
 
 # 1.0.3-beta.1
 1. 修正错误，提升性能
+
 ---
 
 # 1.0.3-alpha.11
-1.日志批量写入数据库
-2.日志__content 大小限制
+1. 日志批量写入数据库
+2. 日志__content 大小限制
+
 ---
 
 # 1.0.3-alpha.10
-1.采样率调整为网络请求信息采集采样率
-2.使用 XML 文件设置页面描述与视图树描述
+1. 采样率调整为网络请求信息采集采样率
+2. 使用 XML 文件设置页面描述与视图树描述
+
 ---
 
 # 1.0.3-alpha.9
-1.response解析修改
-2.logging类型添加新字段
+1. response解析修改
+2. logging类型添加新字段
 
 ---
 
 # 1.0.3-alpha.8
-1.根据content-type 处理 body 内容
-2.网络追踪 __content 大小限制
-3.bug修改
+1. 根据content-type 处理 body 内容
+2. 网络追踪 __content 大小限制
+3. bug修改
+
 ---
 # 1.0.3-alpha.7
-1.根据content-type 处理 body 内容
-2.网络追踪 __content 大小限制
-3.bug修改
+1. 根据content-type 处理 body 内容
+2. 网络追踪 __content 大小限制
+3. bug修改
+
 ---
 
 # 1.0.3-alpha.6
-1.object __name拼接应用bundleID
-2.网络追踪spanID改为UUID
----
+1. object __name拼接应用bundleID
+2. 网络追踪spanID改为UUID
 
+---
 # 1.0.3-alpha.5
-1.logging、object、keyevent上报类型添加
-2.增加网络信息采集链路追踪、日志采集、事件日志采集
-3.设置NSLog release下不打印，避免数据库在主线程写入,验证token请求结果处理逻辑修改
----
+1. logging、object、keyevent上报类型添加
+2. 增加网络信息采集链路追踪、日志采集、事件日志采集
+3. 设置NSLog release下不打印，避免数据库在主线程写入,验证token请求结果处理逻辑修改
 
+---
 # 1.0.3-alpha.4
-1.logging、object、keyevent上报类型添加
-2.增加网络信息采集链路追踪、日志采集、事件日志采集
-3.dSYMUUID获取方法修改
-4.SDK 内部log循环 bug 修改
+1. logging、object、keyevent上报类型添加
+2. 增加网络信息采集链路追踪、日志采集、事件日志采集
+3. dSYMUUID获取方法修改
+4. SDK 内部log循环 bug 修改
 
 ---
 # 1.0.3-alpha.2
-1.logging、object、keyevent上报类型添加
-2.增加网络信息采集链路追踪、日志采集、事件日志采集
-3.dSYMUUID获取方法修改
+1. logging、object、keyevent上报类型添加
+2. 增加网络信息采集链路追踪、日志采集、事件日志采集
+3. dSYMUUID获取方法修改
+
 ---
 # 1.0.3-alpha.1
-1.logging、object、keyevent上报类型添加
-2.增加网络信息采集链路追踪、日志采集、事件日志采集
+1. logging、object、keyevent上报类型添加
+2. 增加网络信息采集链路追踪、日志采集、事件日志采集
+
 ---
 # 1.0.2-alpha.26
-1.采集率添加
-2.获取崩溃日志方法添加
-3.object、keyevent、logging上传方法添加
+1. 采集率添加
+2. 获取崩溃日志方法添加
+3. object、keyevent、logging上传方法添加
+
 ---
 # 1.0.2-alpha.25
-1.获取蓝牙设备已连接列表修改
+1. 获取蓝牙设备已连接列表修改
+
 ---
 
 # 1.0.2-alpha.24
-1.添加拦截https请求
-2.已连蓝牙设备key修改
+1. 添加拦截https请求
+2. 已连蓝牙设备key修改
+
 ---
 
 # 1.0.2-alpha.23
-1.网络速率获取优化
-2.监控项上传开启未设置监控类型不上传
-2.距离传感器距离状态获取修改
+1. 网络速率获取优化
+2. 监控项上传开启未设置监控类型不上传
+3. 距离传感器距离状态获取修改
+
 ---
 
 # 1.0.2-alpha.22
-1.流程图 duration 拼接i处理
-2.page_desc默认赋值N/A修改
----
+1. 流程图 duration 拼接i处理
+2. page_desc默认赋值N/A修改
 
+---
 # 1.0.2-alpha.21
-1.增加UIView分类，添加可设置是否在vtp拼接点击NSIndexPath的属性、添加描述Vtp属性
-2.添加开关判断是否替换添加描述
-3.添加描述日志开关
----
+1. 增加UIView分类，添加可设置是否在vtp拼接点击NSIndexPath的属性、添加描述Vtp属性
+2. 添加开关判断是否替换添加描述
+3. 添加描述日志开关
 
+---
 # 1.0.2-alpha.19
-1.vtp_desc、page_desc field字段添加
-2.添加addVtpDescDict、addPageDescDict方法
-3.引用头文件错误修改
----
+1. vtp_desc、page_desc field字段添加
+2. 添加addVtpDescDict、addPageDescDict方法
+3. 引用头文件错误修改
 
+---
 # 1.0.2-alpha.17
 1. vtp改为tag vtp_id改为field
 2. UITabBar的点击事件无vtp调整
----
 
+---
 # 1.0.2-alpha.16
-1.添加vtp_id tag
----
+1. 添加vtp_id tag
 
+---
 # 1.0.2-alpha.15
-1.网络请求错误率获取失败修改
+1. 网络请求错误率获取失败修改
 
 ---
-
 # 1.0.2-alpha.12
-1.监控项周期上传方法添加设置监控项类型方法
-2.autotrack抓取点击事件过滤方法修改
+1. 监控项周期上传方法添加设置监控项类型方法
+2. autotrack抓取点击事件过滤方法修改
 
 ---
 
 # 1.0.2-alpha.11
-1.product移除
-2.event_id由field改为tag
-3.一些tag的名称调整
+1. product移除
+2. event_id由field改为tag
+3. 一些tag的名称调整
+
 ---
 
 # 1.0.2-alpha.5
-1.latitude、longitude 由tag改为filed
-2.设置location更新距离为200米
+1. latitude、longitude 由tag改为filed
+2. 设置location更新距离为200米
 
 ---
 
 # 1.0.2-alpha.4
-1.vtp 由tag改为filed
-2.增加event_id
-3.流程图flowId初始化bug修改
+1. vtp 由tag改为filed
+2. 增加event_id
+3. 流程图flowId初始化bug修改
 
 ---
 # 1.0.2-alpha.1
-1.监控项拓展
-2.product设置，对应全埋点、流程图、监控项上传指标名
+1. 监控项拓展
+2. product设置，对应全埋点、流程图、监控项上传指标名
+
 ---
 # 1.0.1-alpha.22
-1.方法名拼写错误修改
-2.黑白名单判断逻辑修改
+1. 方法名拼写错误修改
+2. 黑白名单判断逻辑修改
+
 ---
 # 1.0.1-alpha.21
-1.trackImmediate与trackImmediateList方法主线程回调
-2.CLLocationManagerDelegate回调逻辑处理
+1. trackImmediate与trackImmediateList方法主线程回调
+2. CLLocationManagerDelegate回调逻辑处理
+
 ---
 # 1.0.1-alpha.20
-1.数据存储结构优化，网络上传模块优化
-2.日志打印优化，全埋点优化
-3.Agent添加startLocation方法
+1. 数据存储结构优化，网络上传模块优化
+2. 日志打印优化，全埋点优化
+3. Agent添加startLocation方法
 
 ---
 # 1.0.1-alpha.19
-1.页面流程图指标集名称校验修改
-2.位置信息-直辖市省市一致
+1. 页面流程图指标集名称校验修改
+2. 位置信息-直辖市省市一致
+
 ---
 # 1.0.1-alpha.18
-1.页面流程图指标集名称添加校验
-2.错误码拼写错误修改
-3.上传时参数拼接bug修改
+1. 页面流程图指标集名称添加校验
+2. 错误码拼写错误修改
+3. 上传时参数拼接bug修改
+
 ---
 # 1.0.1-alpha.17
-1.获取应用名bug修改
+1. 获取应用名bug修改
+
 ---
 # 1.0.1-alpha.16
-1.解决SDK获取不到版本号问题
-2.实时获取的监控项由tag转变为field,流程图设备tag数据移除
+1. 解决SDK获取不到版本号问题
+2. 实时获取的监控项由tag转变为field,流程图设备tag数据移除
+
 ---
 
 # 1.0.1-alpha.15
-1.网络框架parameters拼接方法优化
-2.网速获取bug修改
-3.Location添加国家
+1. 网络框架parameters拼接方法优化
+2. 网速获取bug修改
+3. Location添加国家
 
 ---
 # 1.0.1
@@ -708,7 +884,7 @@ ___
 
 ---
 # 1.0.0
+
 1.用户自定义埋点
 2.FT Gateway 数据同步
-
 
