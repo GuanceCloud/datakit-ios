@@ -64,7 +64,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)setSampling:(BOOL)sampling{
     _sampling = sampling;
     if(!sampling){
-        FTInnerLogInfo(@"[RUM] Based on the `sampleRate` setting, current `Session` will not be collected");
+        FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
     }
 }
 - (BOOL)process:(FTRUMDataModel *)model {
