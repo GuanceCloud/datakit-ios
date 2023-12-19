@@ -10,6 +10,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTDateUtil.h"
+#import "FTBaseInfoHandler.h"
 @interface PerformanceTracingTest : XCTestCase
 
 @end
@@ -37,7 +38,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testZipkinMultiHeaderGetTraceHeaderPerformance{
@@ -45,7 +46,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinMultiHeader];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testZipkinSingleHeaderGetTraceHeaderPerformance{
@@ -53,7 +54,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinSingleHeader];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testTraceparentGetTraceHeaderPerformance{
@@ -61,7 +62,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeTraceparent];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testSkywalkingGetTraceHeaderPerformance{
@@ -69,7 +70,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testJaegerGetTraceHeaderPerformance{
@@ -77,7 +78,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 

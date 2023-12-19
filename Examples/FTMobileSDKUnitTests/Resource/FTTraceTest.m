@@ -289,7 +289,7 @@
     
     [FTModelHelper startView];
     
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
@@ -367,7 +367,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
-    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:urlStr]];
     XCTAssertNil(header);
 }
 - (void)testCustomTrace{
@@ -382,7 +382,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:urlStr]];
     
     [self networkUpload:@"DisableAutoTrace" traceHeader:traceHeader handler:^(NSDictionary *header) {
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_TRACEID] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_TRACEID]]);

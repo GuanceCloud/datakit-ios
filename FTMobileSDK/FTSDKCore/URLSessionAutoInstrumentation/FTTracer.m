@@ -289,12 +289,12 @@ static NSUInteger SkyWalkingSequence = 0.0;
 }
 #pragma mark --------- traceID、spanID ----------
 - (NSString *)networkTraceID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [uuid lowercaseString];
 }
 - (NSString *)networkSpanID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
 }

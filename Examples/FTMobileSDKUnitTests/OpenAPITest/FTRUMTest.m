@@ -132,7 +132,7 @@
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
 }
 - (void)testSessionTimeOutViewUpdate{
-    NSString *key = [[NSUUID UUID] UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"FirstView"];
     [FTModelHelper addAction];
@@ -315,7 +315,7 @@
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"FirstView"];
     [FTModelHelper addAction];
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     [FTModelHelper stopView];
     [FTModelHelper startView];
@@ -428,7 +428,7 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper addAction];
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
@@ -451,7 +451,7 @@
 - (void)testErrorDurationResource{
     [self setRumConfig];
     [FTModelHelper startView];
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
@@ -459,7 +459,7 @@
     model.httpMethod = @"GET";
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
-    NSString *key2 = [[NSUUID UUID]UUIDString];
+    NSString *key2 = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key2];
     XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -999,7 +999,7 @@
     [self addResource:nil endContext:nil];
 }
 - (void)addResource:(NSDictionary *)startContext endContext:(NSDictionary *)endContext{
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key property:startContext];
@@ -1030,7 +1030,7 @@
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
 }
 - (void)addLowercaseResource{
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
@@ -1062,7 +1062,7 @@
 }
 - (void)addErrorResource{
     
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];

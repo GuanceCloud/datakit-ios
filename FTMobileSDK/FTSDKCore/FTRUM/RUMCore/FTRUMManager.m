@@ -52,7 +52,7 @@ NSString * const AppStateStringMap[] = {
     [self startViewWithName:viewName property:nil];
 }
 -(void)startViewWithName:(NSString *)viewName property:(nullable NSDictionary *)property{
-    [self startViewWithViewID:[NSUUID UUID].UUIDString viewName:viewName property:property];
+    [self startViewWithViewID:[FTBaseInfoHandler randomUUID] viewName:viewName property:property];
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
     NSNumber *duration = @0;

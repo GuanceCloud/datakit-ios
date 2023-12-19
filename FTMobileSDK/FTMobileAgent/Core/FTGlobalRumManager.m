@@ -30,6 +30,7 @@
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
+#import "FTBaseInfoHandler.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
@@ -131,7 +132,7 @@ static dispatch_once_t onceToken;
             return;
         }
         if (self.rumManager.viewReferrer) {
-            NSString *viewID = [NSUUID UUID].UUIDString;
+            NSString *viewID = [FTBaseInfoHandler randomUUID];
             NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
             NSString *viewReferrer =self.rumManager.viewReferrer;
             self.rumManager.viewReferrer = @"";

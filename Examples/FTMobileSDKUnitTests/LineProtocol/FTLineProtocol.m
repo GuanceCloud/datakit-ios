@@ -132,7 +132,7 @@
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
         FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
-        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     long long time = [FTDateUtil currentTimeNanosecond];

@@ -12,6 +12,7 @@
 #import <FTEnumConstant.h>
 #import "FTMobileSDK.h"
 #import "FTJSONUtil.h"
+#import "FTBaseInfoHandler.h"
 @implementation FTModelHelper
 + (FTRecordModel *)createLogModel{
     return  [FTModelHelper createLogModel:[FTDateUtil currentTimeGMT]];
@@ -32,7 +33,7 @@
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
         FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
-        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[FTDateUtil currentTimeNanosecond]];
@@ -43,7 +44,7 @@
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
         FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
-        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[FTDateUtil currentTimeNanosecond]];
@@ -57,7 +58,7 @@
     [[FTExternalDataManager sharedManager] startViewWithName:name];
 }
 + (void)startView:(NSDictionary *)context{
-    NSString *viewName = [NSString stringWithFormat:@"view%@",[NSUUID UUID].UUIDString];
+    NSString *viewName = [NSString stringWithFormat:@"view%@",[FTBaseInfoHandler randomUUID]];
     [[FTExternalDataManager sharedManager] onCreateView:viewName loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:viewName property:context];
 }

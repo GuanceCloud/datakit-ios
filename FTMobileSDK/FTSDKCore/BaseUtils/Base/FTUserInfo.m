@@ -8,6 +8,7 @@
 
 #import "FTUserInfo.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 @interface FTUserInfo()
 @property (nonatomic, copy, readwrite) NSString *userId;
 @property (nonatomic, copy, readwrite) NSString *name;
@@ -68,12 +69,12 @@
 }
 //userID 用户未设置时的默认值
 + (NSString *)userSessionId{
-    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
-    if (!sessionid) {
-        sessionid = [[NSUUID UUID] UUIDString];
-        [[NSUserDefaults standardUserDefaults] setValue:sessionid forKey:@"ft_sessionid"];
+    NSString  *sessionId =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
+    if (!sessionId) {
+        sessionId = [FTBaseInfoHandler randomUUID];
+        [[NSUserDefaults standardUserDefaults] setValue:sessionId forKey:@"ft_sessionid"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
-    return sessionid;
+    return sessionId;
 }
 @end

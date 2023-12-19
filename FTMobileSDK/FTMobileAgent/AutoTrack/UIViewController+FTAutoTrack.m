@@ -15,6 +15,7 @@
 #import "FTInternalLog.h"
 #import "FTTrack.h"
 #import "FTDateUtil.h"
+#import "FTBaseInfoHandler.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
@@ -87,7 +88,7 @@ static char *ignoredLoad = "ignoredLoad";
                 NSNumber *loadTime = @0;
                 self.ft_loadDuration = loadTime;
             }
-            self.ft_viewUUID = [NSUUID UUID].UUIDString;
+            self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
             if([FTTrack sharedInstance].addRumDatasDelegate){
                 if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:)]){
                     [[FTTrack sharedInstance].addRumDatasDelegate onCreateView:self.ft_viewControllerName loadTime:self.ft_loadDuration];

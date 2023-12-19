@@ -8,6 +8,7 @@
 
 #import "FTRUMDataModel.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 @interface FTRUMDataModel()
 @end
 @implementation FTRUMDataModel
@@ -92,7 +93,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        self.session_id = [NSUUID UUID].UUIDString;
+        self.session_id = [FTBaseInfoHandler randomUUID];
         self.session_type = @"user";
     }
     return self;
