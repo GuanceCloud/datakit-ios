@@ -129,35 +129,36 @@ static dispatch_once_t onceToken;
     SEL receiveDataSelector = @selector(URLSession:dataTask:didReceiveData:);
     SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
     SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
-    Class class = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
+    Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
+    Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
+    Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
 
-    if(![FTSwizzler realDelegateClass:class respondsToSelector:receiveDataSelector]){
-        void (^receiveDataBlock)(id, SEL, id, id, id) = ^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data) {
+    if(![FTSwizzler realDelegateClass:receiveDataClass respondsToSelector:receiveDataSelector]){
+        void (^receiveDataBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSData *data) {
         };
         IMP receiveDataIMP = imp_implementationWithBlock(receiveDataBlock);
-        class_addMethod(class, receiveDataSelector, receiveDataIMP, "v@:@@@");
+        class_addMethod(receiveDataClass, receiveDataSelector, receiveDataIMP, "v@:@@@");
     }
-    if(![FTSwizzler realDelegateClass:class respondsToSelector:completeSelector]){
-        void (^completeBlock)(id, SEL, id, id, id) = ^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error) {
+    if(![FTSwizzler realDelegateClass:completeClass respondsToSelector:completeSelector]){
+        void (^completeBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSError *error) {
         };
         IMP completeIMP = imp_implementationWithBlock(completeBlock);
-        class_addMethod(class, completeSelector, completeIMP, "v@:@@@");
+        class_addMethod(completeClass, completeSelector, completeIMP, "v@:@@@");
     }
-    if(![FTSwizzler realDelegateClass:class respondsToSelector:collectMetricsSelector]){
-        void (^collectMetricsBlock)(id, SEL, id, id, id) = ^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics) {
+    if(![FTSwizzler realDelegateClass:collectMetricsClass respondsToSelector:collectMetricsSelector]){
+        void (^collectMetricsBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics) {
         };
         IMP collectMetricsIMP = imp_implementationWithBlock(collectMetricsBlock);
-        class_addMethod(class, collectMetricsSelector, collectMetricsIMP, "v@:@@@");
+        class_addMethod(collectMetricsClass, collectMetricsSelector, collectMetricsIMP, "v@:@@@");
     }
     __weak typeof(self) weakSelf = self;
-    [FTSwizzler swizzleSelector:receiveDataSelector onClass:class withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data){
+    [FTSwizzler swizzleSelector:receiveDataSelector onClass:receiveDataClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data){
         [weakSelf.interceptor taskReceivedData:task data:data];
     } named:@"receiveDataSelector"];
-    [FTSwizzler swizzleSelector:completeSelector onClass:class withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error){
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
+    [FTSwizzler swizzleSelector:completeSelector onClass:completeClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error){
         [weakSelf.interceptor taskCompleted:task error:error];
     } named:@"completeSelector"];
-    [FTSwizzler swizzleSelector:collectMetricsSelector onClass:class withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics){
+    [FTSwizzler swizzleSelector:collectMetricsSelector onClass:collectMetricsClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics){
         [weakSelf.interceptor taskMetricsCollected:task metrics:metrics];
     } named:@"collectMetricsSelector"];
 }
