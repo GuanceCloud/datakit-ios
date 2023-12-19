@@ -209,7 +209,6 @@ NSString * const AppStateStringMap[] = {
             [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
             
             if (content.error || content.httpStatusCode>=400) {
-                NSInteger code = content.httpStatusCode >=400?content.httpStatusCode:content.error.code;
                 NSString *run = AppStateStringMap[self.appState];
                 NSMutableDictionary *errorField = [NSMutableDictionary new];
                 NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
