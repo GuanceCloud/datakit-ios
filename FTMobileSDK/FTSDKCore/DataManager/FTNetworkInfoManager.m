@@ -24,7 +24,9 @@
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl {
     return ^(NSString *value) {
         self->_datakitUrl = value;
-        FTInnerLogInfo(@"SDK Datakit URL：%@",value);
+        if(value && value.length>0){
+            FTInnerLogInfo(@"SDK Datakit URL：%@",value);
+        }
         return self;
     };
 }
@@ -39,7 +41,9 @@
 - (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setDatawayUrl {
     return ^(NSString *value) {
         self->_datawayUrl = value;
-        FTInnerLogInfo(@"SDK Dataway URL：%@",value);
+        if(value && value.length>0){
+            FTInnerLogInfo(@"SDK Dataway URL：%@",value);
+        }
         return self;
     };
 }
@@ -48,7 +52,9 @@
 - (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setClientToken {
     return ^(NSString *value) {
         self->_clientToken = value;
-        FTInnerLogInfo(@"SDK Dataway Client Token：%@",value);
+        if(value && value.length>0){
+            FTInnerLogInfo(@"SDK Dataway Client Token：%@",value);
+        }
         return self;
     };
 }
