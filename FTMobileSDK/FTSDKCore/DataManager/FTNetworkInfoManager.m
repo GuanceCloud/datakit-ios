@@ -45,7 +45,7 @@
 }
 
 
-- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setClientoken {
+- (nonnull FTNetworkInfoManager * _Nonnull (^)(NSString * _Nonnull __strong))setClientToken {
     return ^(NSString *value) {
         self->_clientToken = value;
         FTInnerLogInfo(@"SDK Dataway Client Token：%@",value);

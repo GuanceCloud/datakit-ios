@@ -21,7 +21,7 @@ NSString * const FTNetworkTraceStringMap[] = {
     [Jaeger] = @"jaeger",
     [DDtrace] = @"ddtrace",
     [SkyWalking] = @"skywalking",
-    [Traceparent] = @"traceparent",
+    [TraceParent] = @"traceparent",
 };
 NSString * const FTEnvStringMap[] = {
     [Prod] = @"prod",

@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl;
 - (FTNetworkInfoManager *(^)(NSString *value))setDatawayUrl;
-- (FTNetworkInfoManager *(^)(NSString *value))setClientoken;
+- (FTNetworkInfoManager *(^)(NSString *value))setClientToken;
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 
 @end

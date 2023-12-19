@@ -170,12 +170,12 @@ static NSString * const FT_VERSION = @"version";
 #endif
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
-    [dict setValue:self.appid forKey:FT_APP_ID];
+    [dict setValue:self.appID forKey:FT_APP_ID];
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;
     dict[FT_USER_EMAIL] = self.userHelper.currentValue.email;
-    [dict setValue:[self isSigninStr] forKey:FT_IS_SIGNIN];
+    [dict setValue:[self isSignInStr] forKey:FT_IS_SIGNIN];
     if (self.userHelper.currentValue.extra) {
         [dict addEntriesFromDictionary:self.userHelper.currentValue.extra];
     }
@@ -187,8 +187,8 @@ static NSString * const FT_VERSION = @"version";
     [dict addEntriesFromDictionary:self.rumContext];
     return dict;
 }
-- (NSString *)isSigninStr{
-    return self.userHelper.currentValue.isSignin?@"T":@"F";
+- (NSString *)isSignInStr{
+    return self.userHelper.currentValue.isSignIn?@"T":@"F";
 }
 - (NSString *)getApplicationUUID{
     // 获取 image 的 index

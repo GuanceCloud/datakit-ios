@@ -76,7 +76,7 @@ static dispatch_once_t onceToken;
             [FTNetworkInfoManager sharedInstance]
                 .setDatakitUrl(config.datakitUrl)
                 .setDatawayUrl(config.datawayUrl)
-                .setClientoken(config.clientToken)
+                .setClientToken(config.clientToken)
                 .setSdkVersion(SDK_VERSION);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl];
         }
@@ -96,7 +96,7 @@ static dispatch_once_t onceToken;
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
     FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
-    [self.presetProperty setAppid:rumConfigOptions.appid];
+    [self.presetProperty setAppID:rumConfigOptions.appid];
     self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
     [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
     [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];

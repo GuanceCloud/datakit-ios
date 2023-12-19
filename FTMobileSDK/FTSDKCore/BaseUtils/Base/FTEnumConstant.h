@@ -67,7 +67,7 @@ typedef NS_ENUM(NSInteger, NetworkTraceType) {
     /// zipkin single header
     ZipkinSingleHeader,
     /// w3c traceparent
-    Traceparent,
+    TraceParent,
     /// skywalking 8.0+
     SkyWalking,
     /// jaeger

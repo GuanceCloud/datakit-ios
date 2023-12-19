@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 额外信息
 @property (nonatomic, strong, readonly) NSDictionary *extra;
 /// 是否设置用户信息
-@property (nonatomic, assign, readonly) BOOL isSignin;
+@property (nonatomic, assign, readonly) BOOL isSignIn;
 
 /// 更新本地保存的用户信息
 /// - Parameters:

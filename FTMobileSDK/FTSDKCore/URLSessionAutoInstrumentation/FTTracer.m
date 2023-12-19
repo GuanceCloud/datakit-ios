@@ -50,8 +50,8 @@ static NSUInteger SkyWalkingSequence = 0.0;
             return [self getZipkinSingleHeader:sampled handler:nil];
         case SkyWalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:nil];
-        case Traceparent:
-            return [self getTraceparentHeader:sampled handler:nil];
+        case TraceParent:
+            return [self getTraceParentHeader:sampled handler:nil];
     }
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
@@ -67,8 +67,8 @@ static NSUInteger SkyWalkingSequence = 0.0;
             return [self getZipkinSingleHeader:sampled handler:handler];
         case SkyWalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:handler];
-        case Traceparent:
-            return [self getTraceparentHeader:sampled handler:handler];
+        case TraceParent:
+            return [self getTraceParentHeader:sampled handler:handler];
     }
 }
 - (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
@@ -83,8 +83,8 @@ static NSUInteger SkyWalkingSequence = 0.0;
             return [self unpackZipkinSingleHeader:header handler:handler];
         case SkyWalking:
             return [self unpackSkyWalking_V3Header:header handler:handler];
-        case Traceparent:
-            return [self unpackTraceparentHeader:header handler:handler];
+        case TraceParent:
+            return [self unpackTraceParentHeader:header handler:handler];
     }
 }
 #pragma mark --------- Jaeger ----------
@@ -265,7 +265,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 }
 #pragma mark --------- traceParent ----------
 
-- (NSDictionary *)getTraceparentHeader:(BOOL)sample handler:(UnpackTraceHeaderHandler)handler{
+- (NSDictionary *)getTraceParentHeader:(BOOL)sample handler:(UnpackTraceHeaderHandler)handler{
     NSString *sampleStr = sample? @"01":@"00";
     NSString *spanID = [self networkSpanID];
     NSString *traceID = [self networkTraceID];
@@ -274,7 +274,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
     }
     return @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",traceID,spanID,sampleStr]};
 }
--(void)unpackTraceparentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+-(void)unpackTraceParentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
     if([headerFields.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]){
         NSString *traceStr =headerFields[FT_NETWORK_TRACEPARENT_KEY];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];

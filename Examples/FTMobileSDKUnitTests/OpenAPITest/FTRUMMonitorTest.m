@@ -93,16 +93,16 @@
     double memoryUsage = [memoryMonitor memoryUsage];
     __weak typeof(self) weakSelf = self;
     __block double heavyMemoryUsage;
-    XCTestExpectation *expectataion = [[XCTestExpectation alloc]initWithDescription:@"Memory Test"];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"Memory Test"];
     NSThread *thread = [[NSThread alloc]initWithBlock:^{
         [weakSelf heavyWork];
         NSData *data = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"]];
         heavyMemoryUsage = [memoryMonitor memoryUsage];
         data = nil;
-        [expectataion fulfill];
+        [expectation fulfill];
     }];
     [thread start];
-    [self waitForExpectations:@[expectataion] timeout:10];
+    [self waitForExpectations:@[expectation] timeout:10];
     [thread cancel];
     double deallocMemoryUsage = [memoryMonitor memoryUsage];
     XCTAssertGreaterThan(heavyMemoryUsage, memoryUsage);

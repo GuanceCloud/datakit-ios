@@ -76,7 +76,7 @@ static FTExtensionManager *sharedInstance = nil;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource resourceUrlHandler:nil];
+    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
     self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil writer:self];
     self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
