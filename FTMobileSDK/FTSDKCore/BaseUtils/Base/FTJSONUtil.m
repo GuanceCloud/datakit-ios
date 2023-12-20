@@ -74,8 +74,12 @@
     if (array == nil) {
         return nil;
     }
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:0 error:nil];
-    NSString *strJson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    return strJson;
+    NSError *err;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:0 error:&err];
+    if(err){
+        FTInnerLogError(@"json解析失败：%@",err);
+        return @"";
+    }
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 @end

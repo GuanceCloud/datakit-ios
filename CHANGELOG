@@ -18,6 +18,10 @@ ___
 3. 修复多个 URLSession resource 自定义数据覆盖问题
 
 ___
+# 1.4.7-beta.3
+1. 数据上传逻辑优化，防止递归导致栈溢出崩溃
+
+___
 # 1.4.7-beta.2
 1. 解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
 

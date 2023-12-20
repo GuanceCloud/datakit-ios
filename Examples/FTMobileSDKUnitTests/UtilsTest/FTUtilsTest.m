@@ -22,6 +22,8 @@
 #import "FTRequestBody.h"
 #import "FTModelHelper.h"
 #import "FTReadWriteHelper.h"
+#import "NSNumber+FTAdd.h"
+
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -141,5 +143,35 @@
     [helper concurrentRead:^(NSMutableArray *value) {
         XCTAssertTrue([value.lastObject isEqualToString:@"e"]);
     }];    
+}
+#pragma mark ==========  NSNumber ==========
+- (void)testLineProtocolDealNumber{
+    NSNumber *trueNum = [NSNumber numberWithBool:YES];
+    XCTAssertEqualObjects([trueNum ft_toFiledString], @"\"true\"");
+    
+    NSNumber *falseNum = [NSNumber numberWithBool:NO];
+    XCTAssertEqualObjects([falseNum ft_toFiledString], @"\"false\"");
+    
+    NSNumber *floatNum = [NSNumber numberWithFloat:1234567.12];
+    XCTAssertEqualObjects([floatNum ft_toFiledString], @"1234567.1");
+   
+    NSNumber *doubleNum = [NSNumber numberWithDouble:123456789012345.12345];
+    XCTAssertEqualObjects([doubleNum ft_toFiledString], @"123456789012345.1");
+    
+    NSNumber *intNum = [NSNumber numberWithInt:2147483647];
+    XCTAssertEqualObjects([intNum ft_toFiledString], @"2147483647i");
+    
+    NSNumber *longNum = [NSNumber numberWithLong:9223372036854775807];
+    XCTAssertEqualObjects([longNum ft_toFiledString], @"9223372036854775807i");
+    
+    NSNumber *unsignedLongNum = [NSNumber numberWithUnsignedLong:9223372036854775807];
+    XCTAssertEqualObjects([unsignedLongNum ft_toFiledString], @"9223372036854775807i");
+   
+    NSNumber *longlongNum = [NSNumber numberWithLongLong:9223372036854775807];
+    XCTAssertEqualObjects([longlongNum ft_toFiledString], @"9223372036854775807i");
+    
+    NSNumber *unsignedLongLongNum = [NSNumber numberWithUnsignedLongLong:9223372036854775807];
+    XCTAssertEqualObjects([unsignedLongLongNum ft_toFiledString], @"9223372036854775807i");
+
 }
 @end
