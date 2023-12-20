@@ -129,7 +129,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 }
 -(void)flushWithType:(NSString *)type{
     NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
-    while (events.count == kOnceUploadDefaultCount) {
+    while (events.count > 0) {
         if(![self flushWithEvents:events type:type]){
             break;
         }
@@ -137,7 +137,11 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
         }
-        events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+        if(events.count < kOnceUploadDefaultCount){
+            break;
+        }else{
+            events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+        }
     }
 }
 -(BOOL)flushWithEvents:(NSArray *)events type:(NSString *)type{
