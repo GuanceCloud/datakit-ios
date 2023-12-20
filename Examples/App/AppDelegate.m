@@ -41,17 +41,17 @@
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *datawayUrl = [processInfo environment][@"ACCESS_DATAWAY_URL"];
-    NSString *clientToken = [processInfo environment][@"CLIENT_TOKEN"];
+//    NSString *datawayUrl = [processInfo environment][@"ACCESS_DATAWAY_URL"];
+//    NSString *clientToken = [processInfo environment][@"CLIENT_TOKEN"];
     NSString *rumAppid = [processInfo environment][@"APP_ID"];
     NSString *trackid = [processInfo environment][@"TRACK_ID"]?:@"N/A";
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( !isUnitTests && !isUITests) {
         // 本地环境部署
-//        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
         // 使用公网 DataWay 部署
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
+//        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
         config.enableSDKDebugLog = YES;
         [config setEnvWithType:FTEnvPre];
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
