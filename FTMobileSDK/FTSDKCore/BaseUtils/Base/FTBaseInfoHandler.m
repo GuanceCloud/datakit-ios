@@ -63,7 +63,7 @@
         return NO;
     }
     if(sampling<100){
-        int x = arc4random() % 100;
+        int x = arc4random_uniform(100)+1;
         return x <= sampling ? YES:NO;
     }
     return YES;
