@@ -17,10 +17,10 @@
 - (NSString *)ft_toFiledString{
     if ([self isBool]) {
         return [self boolValue] ? @"\"true\"": @"\"false\"";
-    }
-    if (strcmp([self objCType], @encode(float)) == 0||strcmp([self objCType], @encode(double)) == 0)
-    {
-        return  [NSString stringWithFormat:@"%.1f",self.floatValue];
+    }if (strcmp([self objCType], @encode(float)) == 0){
+        return [NSString stringWithFormat:@"%.1f",self.floatValue];
+    }else if(strcmp([self objCType], @encode(double)) == 0){
+        return [NSString stringWithFormat:@"%.1f",self.doubleValue];
     }else{
         return [NSString stringWithFormat:@"%@i", self];
     }
