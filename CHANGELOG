@@ -17,6 +17,10 @@ ___
 2. 配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
 3. 修复多个 URLSession resource 自定义数据覆盖问题
 
+---
+# 1.4.7-beta.4
+1. 数据上传逻辑优化
+
 ___
 # 1.4.7-beta.3
 1. 数据上传逻辑优化，防止递归导致栈溢出崩溃

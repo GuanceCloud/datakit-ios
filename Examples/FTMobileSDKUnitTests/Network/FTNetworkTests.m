@@ -259,8 +259,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
         [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
     }
+    FTRecordModel *rumModel = [FTModelHelper createRumModel];
+    [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(count == 20);
+    XCTAssertTrue(count == 21);
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
        
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
