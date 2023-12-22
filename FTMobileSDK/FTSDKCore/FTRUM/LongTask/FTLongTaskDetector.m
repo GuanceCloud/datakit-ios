@@ -14,9 +14,9 @@
 #import "FTConstants.h"
 #import <sys/time.h>
 //250ms  （纳秒）
-static const NSInteger MXRMonitorRunloopStandstillMillisecond = 250000000;
+static const NSInteger kMonitorRunloopStandstillMillisecond = 250000000;
 //60s    （纳秒）
-static const NSInteger MXRMonitorRunloopMaxtillMillisecond = 60000000000;
+static const NSInteger kMonitorRunloopMaxTillMillisecond = 60000000000;
 static struct timeval g_tvRun;
 static BOOL g_bRun;
 
@@ -41,7 +41,7 @@ static BOOL g_bRun;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
         _semaphore = dispatch_semaphore_create(0);
-        _limitMillisecond = MXRMonitorRunloopStandstillMillisecond;
+        _limitMillisecond = kMonitorRunloopStandstillMillisecond;
         _limitANRMillisecond = MXRMonitorRunloopOneStandstillMillisecond;
         _standstillCount  = MXRMonitorRunloopStandstillCount;
     }
@@ -159,8 +159,8 @@ static BOOL g_bRun;
     struct timeval tvCur;
     gettimeofday(&tvCur, NULL);
     unsigned long long duration = [self diffTime:&g_tvRun endTime:&tvCur]*1000;
-    // 设置 250 ms 与 Instrument -> Time Profiler -> Hangs 采集基本一致 250ms < Microhang <500ms < Hang
-    if ((duration > self.limitMillisecond) && (duration < MXRMonitorRunloopMaxtillMillisecond)) {
+    // 设置 250 ms 与 Instrument -> Time Profiler -> Hangs 采集基本一致 250ms < MicroHang <500ms < Hang
+    if ((duration > self.limitMillisecond) && (duration < kMonitorRunloopMaxTillMillisecond)) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
             id<FTRunloopDetectorDelegate> del = self.delegate;

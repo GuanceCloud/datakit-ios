@@ -79,10 +79,11 @@
                     self.isActiveView = NO;
                 }
                 self.didReceiveStartData = YES;
-            }else{
+                self.needUpdateView = YES;
+            }else if(self.isActiveView == YES){
                 self.isActiveView = NO;
+                self.needUpdateView = YES;
             }
-            self.needUpdateView = YES;
         }
             break;
         case FTRUMDataViewStop:{
@@ -96,29 +97,27 @@
             }
         }
             break;
-        case FTRUMDataClick:{
+        case FTRUMDataClick:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
             }
-        }
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
+            }
             break;
-        }
         case FTRUMDataResourceStart:
             if (self.isActiveView) {
                 [self startResource:(FTRUMResourceDataModel *)model];
             }
             break;
-        case FTRUMDataLongTask:{
+        case FTRUMDataLongTask:
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
             }
-        }
             break;
         default:
             break;

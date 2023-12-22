@@ -29,10 +29,10 @@
 }
 @end
 @implementation FTRUMViewModel
--(instancetype)initWithViewID:(NSString *)viewid viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
+-(instancetype)initWithViewID:(NSString *)viewID viewName:(NSString *)viewName viewReferrer:(NSString *)viewReferrer{
     self = [super init];
     if (self) {
-        self.view_id = viewid;
+        self.view_id = viewID;
         self.view_name = viewName;
         self.view_referrer = viewReferrer;
     }

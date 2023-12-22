@@ -113,4 +113,16 @@
         }
     }];
 }
++ (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,stop,obj._id);
+        }
+    }];
+}
 @end
