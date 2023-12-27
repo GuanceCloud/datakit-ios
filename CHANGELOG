@@ -1,6 +1,6 @@
 # 1.4.8-alpha.5
 1. 修复 `RUM-view.duration` 时间过长问题
-2. RUM-ResourceError `error_type` 调整为 `network_error`
+2. RUM-ResourceError `error_type` 对应值调整为 `network_error`
 
 ---
 # 1.4.8-alpha.4
