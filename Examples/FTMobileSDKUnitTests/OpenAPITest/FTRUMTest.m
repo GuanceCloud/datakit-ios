@@ -337,6 +337,7 @@
     __block BOOL hasResource = NO;
     [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([tags[FT_KEY_ERROR_TYPE] isEqualToString:FT_NETWORK_ERROR]);
             XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"FirstView"]);
             hasResource = YES;
             *stop = YES;

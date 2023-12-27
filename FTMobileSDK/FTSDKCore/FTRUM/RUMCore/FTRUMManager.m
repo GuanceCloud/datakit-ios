@@ -218,7 +218,7 @@ NSString * const AppStateStringMap[] = {
                    [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }
                 [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
-                [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_TYPE];
+                [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
                 [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
                 [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
                 if (content.responseBody.length>0) {
