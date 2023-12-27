@@ -9,27 +9,10 @@
 #import "NetworkTraceVC.h"
 #import "TableViewCellItem.h"
 #import <FTMobileSDK/FTMobileSDK.h>
-//仅做示例，可以使用类保存单条 task 的数据
-@interface RUMResource: NSObject
-@property (nonatomic,copy) NSString *key;
-@property (nonatomic,strong,nullable) NSData *data;
-@property (nonatomic,strong,nullable) NSURLSessionTaskMetrics *metrics;
-@end
-@implementation RUMResource
 
--(instancetype)initWithKey:(NSString *)key{
-    self = [super init];
-    if(self){
-        _key = key;
-    }
-    return self;
-}
-
-@end
 @interface NetworkTraceVC ()<UITableViewDelegate,UITableViewDataSource,NSURLSessionDataDelegate>
 @property (nonatomic, strong) UITableView *mTableView;
 @property (nonatomic, strong) NSArray<NSArray*> *datas;
-@property (nonatomic, strong) NSMutableDictionary <NSURLSessionTask  *,RUMResource*>*taskHandler;
 
 @end
 
@@ -39,7 +22,6 @@
     [super viewDidLoad];
     self.title = @"network data collection";
     self.view.backgroundColor = [UIColor whiteColor];
-    self.taskHandler = [NSMutableDictionary new];
     [self createUI];
 }
 - (void)createUI{
