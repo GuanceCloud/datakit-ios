@@ -28,7 +28,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
 
--(instancetype)initWithRumSampleRate:(int)sampleRate errorMonitorType:(ErrorMonitorType)errorMonitorType monitor:(nullable FTRUMMonitor *)monitor wirter:(id<FTRUMDataWriteProtocol>)writer;
+-(instancetype)initWithRumSampleRate:(int)sampleRate errorMonitorType:(ErrorMonitorType)errorMonitorType monitor:(nullable FTRUMMonitor *)monitor writer:(id<FTRUMDataWriteProtocol>)writer;
 
 #pragma mark - resource -
 /// HTTP 请求开始
@@ -59,15 +59,15 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 ///   - key: 请求标识
 ///   - property: 事件自定义属性(可选)
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
-#pragma mark - webview js -
+#pragma mark - webView js -
 
-/// 添加 Webview 数据
+/// 添加 WebView 数据
 /// - Parameters:
 ///   - measurement: measurement description
 ///   - tags: tags description
 ///   - fields: fields description
 ///   - tm: tm description
-- (void)addWebviewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
+- (void)addWebViewData:(NSString *)measurement tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm;
 #pragma mark - view -
 /**
  * 创建页面
@@ -94,7 +94,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * 离开页面
  * @param viewId         页面id
  */
--(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property;
+-(void)stopViewWithViewID:(nullable NSString *)viewId property:(nullable NSDictionary *)property;
 /**
  * 离开页面
  */

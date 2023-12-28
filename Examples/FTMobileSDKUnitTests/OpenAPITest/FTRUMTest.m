@@ -47,6 +47,7 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
 }
+#pragma mark ========== Session ==========
 
 - (void)testSessionIdChecks{
     [self setRumConfig];
@@ -62,25 +63,31 @@
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
 }
 /**
- * 验证： session持续15m 无新数据写入 session更新
+ * 验证： session持续 15m 无新数据写入 session更新
  */
 - (void)testSessionTimeElapse{
     [self setRumConfig];
     [self addErrorData:nil];
-    
+    [FTModelHelper startViewWithName:@"FirstView"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     
     FTRecordModel *oldModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray<FTRUMHandler*> *viewHandlers = [session valueForKey:@"viewHandlers"];
     //把session上次记录数据改为15分钟前 模拟session过期
     NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 60 * 15;
     NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
     [session setValue:newDate forKey:@"lastInteractionTime"];
-    
     [self addLongTaskData:nil];
-    
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *newViewHandlers = [newSession valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
+    FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)[viewHandlers lastObject];
+    FTRUMViewHandler *newViewHandler = (FTRUMViewHandler *)[newViewHandlers lastObject];
+    XCTAssertTrue([viewHandler.view_name isEqualToString:newViewHandler.view_name]);
+    XCTAssertFalse([viewHandler.view_id isEqualToString:newViewHandler.view_id]);
     FTRecordModel *newModel = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM] lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:oldModel.data];
     NSDictionary *opdata = dict[FT_OPDATA];
@@ -125,6 +132,51 @@
     XCTAssertTrue(newSessionId);
     XCTAssertFalse([oldSessionId isEqualToString:newSessionId]);
 }
+- (void)testSessionTimeOutViewUpdate{
+    NSString *key = [FTBaseInfoHandler randomUUID];
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"FirstView"];
+    [FTModelHelper addAction];
+    [FTModelHelper startResource:key];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
+    FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *viewHandlers = [session valueForKey:@"viewHandlers"];
+
+    //把session开始时间改为四小时前 模拟session过期
+    NSTimeInterval aTimeInterval = [[NSDate date] timeIntervalSinceReferenceDate] + 3600 * 4;
+    NSDate *newDate = [NSDate dateWithTimeIntervalSinceReferenceDate:-aTimeInterval];
+    [session setValue:newDate forKey:@"sessionStartTime"];
+    
+    [self addLongTaskData:nil];
+    [FTModelHelper stopErrorResource:key];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    FTRUMSessionHandler *newSession = [rum valueForKey:@"sessionHandler"];
+    NSMutableArray *newViewHandlers = [newSession valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count == newViewHandlers.count == 1);
+    FTRUMViewHandler *viewHandler = (FTRUMViewHandler *)[viewHandlers lastObject];
+    FTRUMViewHandler *newViewHandler = (FTRUMViewHandler *)[newViewHandlers lastObject];
+    NSInteger viewResourceCount = [[viewHandler valueForKey:@"viewResourceCount"] integerValue];
+    NSInteger viewErrorCount = [[viewHandler valueForKey:@"viewErrorCount"] integerValue];
+    NSInteger viewActionCount = [[viewHandler valueForKey:@"viewActionCount"] integerValue];
+    NSInteger viewLongTaskCount = [[viewHandler valueForKey:@"viewLongTaskCount"] integerValue];
+
+    NSInteger nViewResourceCount = [[newViewHandler valueForKey:@"viewResourceCount"] integerValue];
+    NSInteger nViewErrorCount = [[newViewHandler valueForKey:@"viewErrorCount"] integerValue];
+    NSInteger nViewActionCount = [[newViewHandler valueForKey:@"viewActionCount"] integerValue];
+    NSInteger nViewLongTaskCount = [[newViewHandler valueForKey:@"viewLongTaskCount"] integerValue];
+    XCTAssertTrue(viewResourceCount == 0 );
+    XCTAssertTrue(viewErrorCount == 0 );
+    XCTAssertTrue(viewActionCount == 0 );
+    XCTAssertTrue(viewLongTaskCount == 0 );
+    
+    XCTAssertTrue(nViewResourceCount == nViewErrorCount == nViewActionCount == 0 );
+    XCTAssertTrue(nViewLongTaskCount == 1);
+    XCTAssertTrue([viewHandler.view_name isEqualToString:newViewHandler.view_name]);
+    XCTAssertFalse([viewHandler.view_id isEqualToString:newViewHandler.view_id]);
+}
+#pragma mark ========== View ==========
+
 /**
  * 验证 source：view 的数据格式
  */
@@ -146,7 +198,7 @@
     }];
     XCTAssertTrue(hasView);
 }
-- (void)testWorngFormatViewName{
+- (void)testWrongFormatViewName{
     [self setRumConfig];
     [[FTExternalDataManager sharedManager] onCreateView:@"view1" loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:@""];
@@ -198,7 +250,7 @@
     [FTModelHelper stopView];
 }
 /// 验证开启enableTraceUserView,应用进入后台前台，view会自动更新
-- (void)testEnableTraceUserViewAppLifeView{
+- (void)testEnableTraceUserView_whenAppWillEnterForeground{
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper startView];
@@ -224,8 +276,8 @@
     XCTAssertFalse([view_id2 isEqualToString:view_id]);
     XCTAssertTrue([dict0[FT_KEY_VIEW_NAME] isEqualToString:dict2[FT_KEY_VIEW_NAME]]);
 }
-- (void)testDisableTraceUserViewAppLifeView{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+- (void)testDisableTraceUserView_whenAppWillEnterForeground{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserResource = YES;
@@ -253,6 +305,8 @@
     NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
     XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
 }
+#pragma mark ========== Resource ==========
+
 /**
  * 验证 source：resource 的数据格式
  */
@@ -261,6 +315,35 @@
 }
 -(void)testLowercaseResponseHeader{
     [self resourceDataAndFormatChecks:YES];
+}
+-(void)testErrorResourceBindView{
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"FirstView"];
+    [FTModelHelper addAction];
+    NSString *key = [FTBaseInfoHandler randomUUID];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    [FTModelHelper stopView];
+    [FTModelHelper startView];
+    [FTModelHelper stopView];
+    [FTModelHelper startView];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block BOOL hasResource = NO;
+    [FTModelHelper resolveModelArray:array idxCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSUInteger idx) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([tags[FT_KEY_ERROR_TYPE] isEqualToString:FT_NETWORK_ERROR]);
+            XCTAssertTrue([tags[FT_KEY_VIEW_NAME] isEqualToString:@"FirstView"]);
+            hasResource = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResource);
 }
 -(void)resourceDataAndFormatChecks:(BOOL)lowercase{
     NSArray *resourceTag = @[FT_KEY_RESOURCE_URL,
@@ -351,7 +434,7 @@
     [self setRumConfig];
     [FTModelHelper startView];
     [FTModelHelper addAction];
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
@@ -371,6 +454,71 @@
     NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
     XCTAssertFalse([dict2.allKeys containsObject:FT_KEY_VIEW_ID]);
 }
+// 当下一个 View Start，不再更新当前 View 的 duration（不再有新的 View 数据，直至 resource 结束）
+- (void)testGivenViewUnfinishedResource{
+    [self setRumConfig];
+    [FTModelHelper startViewWithName:@"TestDuration"];
+    NSString *key = [FTBaseInfoHandler randomUUID];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    [FTModelHelper stopView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block NSString *modelId,*viewId;
+    [FTModelHelper resolveModelArray:array modelIdCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSString *modelID) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
+            if([tags[FT_KEY_VIEW_NAME] isEqualToString:@"TestDuration"]){
+                modelId = modelID;
+                viewId = tags[FT_KEY_VIEW_ID];
+                *stop = YES;
+            }
+        }
+    }];
+    [FTModelHelper startViewWithName:@"NextView"];
+    [FTModelHelper stopView];
+    [FTModelHelper startViewWithName:@"NextView"];
+    [FTModelHelper stopView];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    XCTAssertTrue(newArray.count>array.count);
+    [FTModelHelper resolveModelArray:newArray modelIdCallBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop, NSString *modelID) {
+        if ([tags[FT_KEY_VIEW_ID] isEqualToString:viewId]) {
+            XCTAssertTrue([modelID isEqualToString:modelId]);
+            *stop = YES;
+        }
+    }];
+}
+- (void)testErrorDurationResource{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    NSString *key = [FTBaseInfoHandler randomUUID];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key];
+    FTResourceContentModel *model = [FTResourceContentModel new];
+    model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
+    model.httpStatusCode = 404;
+    model.httpMethod = @"GET";
+    [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
+    [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
+    NSString *key2 = [FTBaseInfoHandler randomUUID];
+    [[FTExternalDataManager sharedManager] startResourceWithKey:key2];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"expectation"];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [[FTExternalDataManager sharedManager] stopResourceWithKey:key2];
+        [[FTExternalDataManager sharedManager] addResourceWithKey:key2 metrics:nil content:model];
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation]];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    [FTModelHelper resolveModelArray:datas callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            NSNumber *duration = [fields valueForKey:FT_DURATION];
+            XCTAssertTrue(duration.integerValue>0);
+        }
+    }];
+}
+#pragma mark ========== Action ==========
+
 /**
  * 验证 source：action 的数据格式
  */
@@ -489,6 +637,27 @@
     XCTAssertTrue(hasActionData);
     [FTModelHelper stopView];
 }
+- (void)testActionWrongFormat{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    [FTModelHelper addActionWithType:@""];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    [self addErrorData:nil];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
+    __block BOOL hasClickAction = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            if(![tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"]){
+                hasClickAction = YES;
+            }
+        }
+    }];
+    XCTAssertFalse(hasClickAction);
+    [FTModelHelper stopView];
+}
+#pragma mark ========== Error ==========
+
 - (void)testAddErrorData{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -526,31 +695,11 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
-- (void)testActionWorngFormat{
+- (void)testWrongFormatErrorData{
     [self setRumConfig];
-    [FTModelHelper startView];
-    [FTModelHelper addActionWithType:@""];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [self addErrorData:nil];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:50 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasClickAction = NO;
-    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
-            if(![tags[FT_KEY_ACTION_NAME] isEqualToString:@"app_cold_start"]){
-                hasClickAction = YES;
-            }
-        }
-    }];
-    XCTAssertFalse(hasClickAction);
-    [FTModelHelper stopView];
-}
-
-- (void)testWorngFormatErrorData{
-    [self setRumConfig];
-    [[FTExternalDataManager sharedManager] addErrorWithType:@"" message:@"testWorngError" stack:@"error testWorngError"];
-    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"" stack:@"error testWorngError"];
-    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testWorngError" stack:@""];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"" message:@"testWrongError" stack:@"error testWrongError"];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"" stack:@"error testWrongError"];
+    [[FTExternalDataManager sharedManager] addErrorWithType:@"ios_crash" message:@"testWrongError" stack:@""];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -563,6 +712,8 @@
     }];
     XCTAssertFalse(hasDatas);
 }
+#pragma mark ========== Long Task ==========
+
 - (void)testAddLongTaskData{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -585,7 +736,7 @@
     }];
     XCTAssertTrue(hasDatas);
 }
-- (void)testWorngFormatLongTaskData{
+- (void)testWrongFormatLongTaskData{
     [self setRumConfig];
     [[FTExternalDataManager sharedManager] onCreateView:@"LongTask" loadTime:@1000000000];
     [[FTExternalDataManager sharedManager] startViewWithName:@"LongTask"];
@@ -602,8 +753,9 @@
     }];
     XCTAssertFalse(hasDatas);
 }
+#pragma mark ========== RUM Config ==========
 - (void)testSampleRate0{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.samplerate = 0;
@@ -640,7 +792,7 @@
  * 需要设置 networkTraceType = FTNetworkTraceTypeDDtrace
  */
 - (void)testTraceLinkRumData{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -672,7 +824,7 @@
     XCTAssertTrue(hasResourceData == YES);
 }
 - (void)testNotTraceLinkRumData{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
@@ -703,7 +855,7 @@
     XCTAssertTrue(hasResourceData == YES);
 }
 - (void)testRUMGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.globalContext = @{FT_RUM_KEY_SESSION_ID:@"testRUMGlobalContext",@"track_id":@"testGlobalTrack"};
@@ -726,6 +878,7 @@
     XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
+#pragma mark ========== Property ==========
 - (void)testActionProperty{
     [self setRumConfig];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -875,6 +1028,8 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
+#pragma mark ========== Mock Data ==========
+
 - (void)addErrorData:(NSDictionary *)property{
     NSString *error_message = @"-[__NSSingleObjectArrayI objectForKey:]: unrecognized selector sent to instance 0x600002ac5270";
     NSString *error_stack = @"Slide_Address:74940416\nException Stack:\n0   CoreFoundation                      0x00007fff20421af6 __exceptionPreprocess + 242\n1   libobjc.A.dylib                     0x00007fff20177e78 objc_exception_throw + 48\n2   CoreFoundation                      0x00007fff204306f7 +[NSObject(NSObject) instanceMethodSignatureForSelector:] + 0\n3   CoreFoundation                      0x00007fff20426036 ___forwarding___ + 1489\n4   CoreFoundation                      0x00007fff20428068 _CF_forwarding_prep_0 + 120\n5   SampleApp                           0x000000010477fb06 __35-[Crasher throwUncaughtNSException]_block_invoke + 86\n6   libdispatch.dylib                   0x000000010561f7ec _dispatch_call_block_and_release + 12\n7   libdispatch.dylib                   0x00000001056209c8 _dispatch_client_callout + 8\n8   libdispatch.dylib                   0x0000000105622e46 _dispatch_queue_override_invoke + 1032\n9   libdispatch.dylib                   0x0000000105632508 _dispatch_root_queue_drain + 351\n10  libdispatch.dylib                   0x0000000105632e6d _dispatch_worker_thread2 + 135\n11  libsystem_pthread.dylib             0x00007fff611639f7 _pthread_wqthread + 220\n12  libsystem_pthread.dylib             0x00007fff61162b77 start_wqthread + 15";
@@ -893,7 +1048,7 @@
     [self addResource:nil endContext:nil];
 }
 - (void)addResource:(NSDictionary *)startContext endContext:(NSDictionary *)endContext{
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key property:startContext];
@@ -924,7 +1079,7 @@
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:metrics content:model];
 }
 - (void)addLowercaseResource{
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
@@ -956,7 +1111,7 @@
 }
 - (void)addErrorResource{
     
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
@@ -990,7 +1145,7 @@
 }
 
 - (void)setRumConfig{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
@@ -1002,28 +1157,6 @@
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
     
-}
-- (void)testGlobalContext{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
-    NSString *trackId = self.track_id?:@"unitTests";
-    rumConfig.globalContext = @{@"track_id":trackId};
-    [FTMobileAgent startWithConfigOptions:config];
-    
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] logout];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    
-    [self addErrorData:nil];
-    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    
-    FTRecordModel *model = [newDatas lastObject];
-    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
-    NSDictionary *op = dict[@"opdata"];
-    NSDictionary *tags = op[FT_TAGS];
-    XCTAssertTrue([tags[@"track_id"] isEqualToString:trackId]);
-    XCTAssertTrue([tags[@"custom_keys"] isEqualToString:@"[\"track_id\"]"]);
 }
 
 @end

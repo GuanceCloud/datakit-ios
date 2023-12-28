@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Returns: 是否进行采样
 + (BOOL)randomSampling:(int)sampling;
 
+/// 获取随机 uuid 字符串（无`-`、全小写）
++ (NSString *)randomUUID;
 #if FT_IOS
 /// 电话运营商
 +(NSString *)telephonyCarrier;

@@ -18,7 +18,7 @@ static dispatch_queue_t _loggingQueue;
 @implementation FTInternalLog
 + (void)initialize {
     _enableLog = NO;
-    _loggingQueue = dispatch_queue_create("com.cloudcare.ft.mobile.sdk.log", DISPATCH_QUEUE_SERIAL);
+    _loggingQueue = dispatch_queue_create("com.guance.ft.mobile.sdk.log", DISPATCH_QUEUE_SERIAL);
 }
 + (instancetype)sharedInstance {
     static id sharedInstance = nil;

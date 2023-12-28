@@ -101,6 +101,9 @@ NSString * const FT_KEY_LOCALE = @"locale";
 //error source value
 NSString * const FT_NETWORK = @"network";
 NSString * const FT_LOGGER = @"logger";
+//error type
+NSString * const FT_NETWORK_ERROR = @"network_error";
+
 //long task field
 NSString * const FT_KEY_LONG_TASK_STACK = @"long_task_stack";
 

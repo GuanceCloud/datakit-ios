@@ -24,20 +24,19 @@
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 typedef BOOL(^FTIntakeUrl)(NSURL *url);
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
+typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
+typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 /// session 拦截处理代理
 @protocol FTURLSessionInterceptorProtocol<NSObject>
-@required
+@optional
 /// 用户采集过滤回调
 @property (nonatomic, copy ,nullable) FTIntakeUrl intakeUrlHandler;
-@optional
+@property (nonatomic, copy ,nullable) FTResourceUrlHandler resourceUrlHandler;
+
+
 /// 采集的 resource 数据接收对象
-@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandeler;
-@property (nonatomic,copy) ResourcePropertyProvider provider;
-/// 判断是否采集 url
-/// - Parameter url: url
-- (BOOL)isTraceUrl:(NSURL *)url;
+@property (nonatomic, weak) id<FTRumResourceProtocol> rumResourceHandler;
 
 - (void)setTracer:(id<FTTracerProtocol>)tracer;
 /// 实现 trace 功能，给 request header 添加 trace 参数
@@ -66,8 +65,14 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 ///   - error: error 信息
 ///
 /// 传入 rum 时，先调用 -stopResource，再调用 -addResourceWithKey
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error ;
 
+/// 请求结束 -stopResource
+/// - Parameters:
+///   - task: 请求任务
+///   - error: error 信息
+///   - extraProvider: 用户自定义额外信息
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 @end
 NS_ASSUME_NONNULL_END
 #endif /* FTURLSessionInterceptorProtocol_h */

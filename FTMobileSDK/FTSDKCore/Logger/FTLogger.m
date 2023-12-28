@@ -18,7 +18,7 @@
 @interface FTLogger ()
 @property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
-@property (nonatomic, assign) int sampletRate;
+@property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @property (nonatomic, assign) BOOL enableCustomLog;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
@@ -27,20 +27,23 @@
 @implementation FTLogger
 static FTLogger *sharedInstance = nil;
 static dispatch_once_t onceToken;
-+ (void)startWithEablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer{
++ (void)startWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTLogger alloc] initWithEablePrintLogsToConsole:enable enableCustomLog:enableCustomLog logLevelFilter:filter sampleRate:sampletRate writer:writer];
+        sharedInstance = [[FTLogger alloc] initWithEnablePrintLogsToConsole:enable enableCustomLog:enableCustomLog logLevelFilter:filter sampleRate:sampleRate writer:writer];
     });
 }
 + (instancetype)sharedInstance {
+    if(!sharedInstance){
+        FTInnerLogError(@"SDK configuration `Logger` error, unable to collect custom logs");
+    }
     return sharedInstance;
 }
--(instancetype)initWithEablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer{
+-(instancetype)initWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
     self = [super init];
     if(self){
         _printLogsToConsole = enable;
         _loggerWriter = writer;
-        _sampletRate = sampletRate;
+        _sampleRate = sampleRate;
         _logLevelFilterSet = [NSSet setWithArray:filter];
         _enableCustomLog = enableCustomLog;
         _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
@@ -65,25 +68,23 @@ static dispatch_once_t onceToken;
                 }
                 consoleMessage =[consoleMessage stringByAppendingFormat:@" ,{%@}",[mutableStrs componentsJoinedByString:@","]];
             }
-            FTCONSOLELOG(status,consoleMessage);
+            FT_CONSOLE_LOG(status,consoleMessage);
         }
         // 上传 datakit
-        if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:tm:)]){
+        if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
             if (!self.enableCustomLog) {
-                FTInnerLogInfo(@"[Logging] enableCustomLog 未开启，数据不进行采集");
                 return;
             }
             if (![self.logLevelFilterSet containsObject:@(status)]) {
-                FTInnerLogInfo(@"[Logging] 经过过滤算法判断-此条日志不采集");
                 return;
             }
-            if (![FTBaseInfoHandler randomSampling:self.sampletRate]){
-                FTInnerLogInfo(@"[Logging] 经过采集算法判断-此条日志不采集");
+            if (![FTBaseInfoHandler randomSampling:self.sampleRate]){
+                FTInnerLogInfo(@"[Logging][Not Sampled] %@",message);
                 return;
             }
-            [self.loggerWriter logging:message status:status tags:nil field:property tm:[FTDateUtil currentTimeNanosecond]];
+            [self.loggerWriter logging:message status:status tags:nil field:property time:[FTDateUtil currentTimeNanosecond]];
         }else{
-            FTInnerLogError(@"SDK 配置异常，无法采集自定义日志");
+            FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }
     };
     if(status == StatusError){

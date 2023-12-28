@@ -26,6 +26,9 @@ typedef void(^UnpackTraceHeaderHandler)(NSString * _Nullable traceId, NSString *
 
 /// trace 功能实现协议
 @protocol FTTracerProtocol<NSObject>
+
+@property (nonatomic,assign) BOOL enableAutoTrace;
+
 /// 是否关联 RUM
 @property (nonatomic,assign) BOOL enableLinkRumData;
 

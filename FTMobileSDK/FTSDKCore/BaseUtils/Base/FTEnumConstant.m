@@ -20,8 +20,8 @@ NSString * const FTNetworkTraceStringMap[] = {
     [ZipkinSingleHeader] = @"zipkin",
     [Jaeger] = @"jaeger",
     [DDtrace] = @"ddtrace",
-    [Skywalking] = @"skywalking",
-    [Traceparent] = @"traceparent",
+    [SkyWalking] = @"skywalking",
+    [TraceParent] = @"traceparent",
 };
 NSString * const FTEnvStringMap[] = {
     [Prod] = @"prod",

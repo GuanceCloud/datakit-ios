@@ -48,7 +48,7 @@
 }
 
 - (void)testSetEmptyEnv{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *env = dict[@"env"];
@@ -56,7 +56,7 @@
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testSetEnv{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     [config setEnvWithType:FTEnvPre];
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
@@ -69,13 +69,13 @@
  * 验证标准：url为空字符串时 FTMobileAgent 调用  - startWithConfigOptions： 会崩溃 为 true
  */
 - (void)testSetEmptyUrl{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@""];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@""];
     
     XCTAssertThrows([FTMobileAgent startWithConfigOptions:config]);
 }
 - (void)testIllegalUrl{
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"111"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"111"];
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
@@ -101,7 +101,7 @@
  * 验证： Rum 数据能正常写入
  */
 - (void)testSetAppid{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
@@ -119,7 +119,7 @@
  * 验证： Rum 数据不能正常写入
  */
 -(void)testSetEmptyAppid{
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:self.url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];

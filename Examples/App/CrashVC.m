@@ -47,8 +47,6 @@
         [crasher doAbort];
     }],[[TableViewCellItem alloc]initWithTitle:@"doDiv0" handler:^{
         [crasher doDiv0];
-    }],[[TableViewCellItem alloc]initWithTitle:@"doIllegalInstruction" handler:^{
-        [crasher doIllegalInstruction];
     }],[[TableViewCellItem alloc]initWithTitle:@"accessDeallocatedObject" handler:^{
         [crasher accessDeallocatedObject];
     }],[[TableViewCellItem alloc]initWithTitle:@"zombieNSException" handler:^{

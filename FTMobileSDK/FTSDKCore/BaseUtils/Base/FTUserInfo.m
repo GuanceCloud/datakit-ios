@@ -8,12 +8,13 @@
 
 #import "FTUserInfo.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 @interface FTUserInfo()
 @property (nonatomic, copy, readwrite) NSString *userId;
 @property (nonatomic, copy, readwrite) NSString *name;
 @property (nonatomic, copy, readwrite) NSString *email;
 @property (nonatomic, strong, readwrite) NSDictionary *extra;
-@property (nonatomic, assign, readwrite) BOOL isSignin;
+@property (nonatomic, assign, readwrite) BOOL isSignIn;
 @end
 @implementation FTUserInfo
 -(instancetype)init{
@@ -25,14 +26,14 @@
             self.name = [dict valueForKey:FT_USER_NAME];
             self.extra = [dict valueForKey:FT_USER_EXTRA];
             self.email = [dict valueForKey:FT_USER_EMAIL];
-            self.isSignin = YES;
+            self.isSignIn = YES;
         }else{
             NSString *user = [FTUserInfo userId];
             if (user) {
                 [self updateUser:user name:nil email:nil extra:nil];
             }else{
                 self.userId = [FTUserInfo userSessionId];
-                self.isSignin = NO;
+                self.isSignIn = NO;
             }
         }
     }
@@ -50,7 +51,7 @@
     self.name = name;
     self.extra = extra;
     self.email = email;
-    self.isSignin = YES;
+    self.isSignIn = YES;
 }
 -(void)clearUser{
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:FT_USER_INFO];
@@ -59,7 +60,7 @@
     self.name = nil;
     self.extra = nil;
     self.email = nil;
-    self.isSignin = NO;
+    self.isSignIn = NO;
 }
 //适配 1.3.6 及以下版本
 + (NSString *)userId{
@@ -68,12 +69,12 @@
 }
 //userID 用户未设置时的默认值
 + (NSString *)userSessionId{
-    NSString  *sessionid =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
-    if (!sessionid) {
-        sessionid = [[NSUUID UUID] UUIDString];
-        [[NSUserDefaults standardUserDefaults] setValue:sessionid forKey:@"ft_sessionid"];
+    NSString  *sessionId =[[NSUserDefaults standardUserDefaults] valueForKey:@"ft_sessionid"];
+    if (!sessionId) {
+        sessionId = [FTBaseInfoHandler randomUUID];
+        [[NSUserDefaults standardUserDefaults] setValue:sessionId forKey:@"ft_sessionid"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
-    return sessionid;
+    return sessionId;
 }
 @end

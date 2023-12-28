@@ -18,24 +18,32 @@
 //  limitations under the License.
 
 
-#import "FTURLSessionDelegate.h"
+#import "FTURLSessionDelegate+Private.h"
 #import "FTURLSessionInstrumentation.h"
+#import "FTURLSessionInterceptor+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-
-@interface FTURLSessionDelegate()
+#import "NSURLSession+FTSwizzler.h"
+#import "FTSwizzle.h"
+@interface FTURLSessionDelegate()<FTURLSessionInterceptorProtocol>
 @property (nonatomic,strong,readwrite) FTURLSessionInstrumentation *instrumentation;
 @end
 @implementation FTURLSessionDelegate
-
 @synthesize ftURLSessionDelegate;
 -(FTURLSessionDelegate *)ftURLSessionDelegate{
     return self;
 }
--(void)setProvider:(ResourcePropertyProvider)provider{
-    [self.instrumentation.interceptor setProvider:provider];
-}
 - (FTURLSessionInstrumentation *)instrumentation{
     return [FTURLSessionInstrumentation sharedInstance];
+}
+- (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
+    NSURLRequest *interceptedRequest = request;
+    if(self.requestInterceptor){
+        interceptedRequest = self.requestInterceptor(request);
+    }
+    return [self.instrumentation.interceptor interceptRequest:interceptedRequest];
+}
+- (void)interceptTask:(NSURLSessionTask *)task{
+    [self.instrumentation.interceptor interceptTask:task];
 }
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
@@ -44,6 +52,12 @@
     [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
-    [self.instrumentation.interceptor taskCompleted:task error:error];
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
+}
+-(void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
+    [self.instrumentation.interceptor taskReceivedData:task data:data];
+}
+-(void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error{
+    [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];
 }
 @end

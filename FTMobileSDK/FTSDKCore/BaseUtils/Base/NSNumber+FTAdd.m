@@ -10,12 +10,12 @@
 
 @implementation NSNumber (FTAdd)
 
-- (bool)isBool {
+- (BOOL)ft_isBool {
     return [self isKindOfClass:NSClassFromString(@"__NSCFBoolean")];
 }
 
 - (NSString *)ft_toFiledString{
-    if ([self isBool]) {
+    if ([self ft_isBool]) {
         return [self boolValue] ? @"\"true\"": @"\"false\"";
     }if (strcmp([self objCType], @encode(float)) == 0){
         return [NSString stringWithFormat:@"%.1f",self.floatValue];

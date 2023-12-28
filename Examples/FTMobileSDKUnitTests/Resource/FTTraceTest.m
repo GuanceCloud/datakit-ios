@@ -51,13 +51,12 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    [[FTTracer shared] startWithSampleRate:traceConfig.samplerate traceType:traceConfig.networkTraceType enableLinkRumData:NO];
 }
 
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
@@ -176,9 +175,9 @@
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
     id<FTTracerProtocol> tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
     if ([tracer isKindOfClass:FTTracer.class]) {
-        FTTracer *tracerInstence = (FTTracer *)tracer;
+        FTTracer *tracerInstance = (FTTracer *)tracer;
         for (int i = 0; i<5000; i++) {
-            if( [tracerInstence getSkywalkingSeq] == 9998){
+            if( [tracerInstance getSkyWalkingSequence] == 9998){
                 break;;
             }
         }
@@ -233,7 +232,7 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 0;
     traceConfig.enableAutoTrace = YES;
@@ -255,7 +254,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
     traceConfig.enableAutoTrace = YES;
@@ -278,7 +277,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:murl];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:murl];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.samplerate = 100;
     traceConfig.enableAutoTrace = NO;
@@ -290,7 +289,7 @@
     
     [FTModelHelper startView];
     
-    NSString *key = [[NSUUID UUID]UUIDString];
+    NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     
     NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:key url:url];
@@ -343,7 +342,7 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
@@ -364,11 +363,11 @@
 - (void)testUnenabledTrace{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     [FTMobileAgent startWithConfigOptions:config];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
-    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:urlStr]];
     XCTAssertNil(header);
 }
 - (void)testCustomTrace{
@@ -376,14 +375,14 @@
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
-    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[NSUUID UUID].UUIDString url:[NSURL URLWithString:urlStr]];
+    NSDictionary *traceHeader = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:urlStr]];
     
     [self networkUpload:@"DisableAutoTrace" traceHeader:traceHeader handler:^(NSDictionary *header) {
         XCTAssertTrue([header[FT_NETWORK_DDTRACE_TRACEID] isEqualToString:traceHeader[FT_NETWORK_DDTRACE_TRACEID]]);
@@ -396,37 +395,6 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-}
-- (void)testIntakeUrl{
-    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
-    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
-    traceConfig.enableAutoTrace = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
-    NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
-    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
-        if ([url.absoluteString isEqualToString:urlStr]){
-            return NO;
-        }
-        return YES;
-    }];
-    [self networkUpload:@"IntakeUrl" handler:^(NSDictionary *header) {
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
-        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
-        
-        [expectation fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    
 }
 - (void)networkUpload:(NSString *)str handler:(void (^)(NSDictionary *header))completionHandler{
     [self networkUpload:str traceHeader:nil handler:completionHandler];

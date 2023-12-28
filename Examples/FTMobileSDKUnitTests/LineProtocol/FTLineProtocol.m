@@ -54,11 +54,33 @@
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
-
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
-    XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\"");
+    NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
+    XCTAssertTrue(tags.count == 3);
+    XCTAssertEqualObjects([tags firstObject], @"iOSTest");
+    XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);    
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
+}
+- (void)testDataUUID{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"testLineProtocol"},
+        FT_TAGS:@{@"name":@"testLineProtocol"},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr2 = [line getRequestBodyWithEventArray:@[model]];
+    XCTAssertFalse([lineStr isEqualToString:lineStr2]);
+    XCTAssertTrue([lineStr containsString:@"sdk_data_id"]);
+    XCTAssertTrue([lineStr2 containsString:@"sdk_data_id"]);
 }
 - (void)testNullValue{
     NSDictionary *dict = @{
@@ -78,8 +100,10 @@
     NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
-
-    XCTAssertEqualObjects([array firstObject], @"iOSTest,name=testLineProtocol");
+    NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
+    XCTAssertTrue(tags.count == 3);
+    XCTAssertEqualObjects([tags firstObject], @"iOSTest");
+    XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);
     XCTAssertEqualObjects(array[1], @"event=\"testLineProtocol\",null=\"\",emptyString=\"\"");
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
@@ -108,7 +132,7 @@
         FT_KEY_ERROR_TYPE:@"ios_crash",
         FT_KEY_ERROR_SOURCE:@"logger",
         FT_KEY_ERROR_SITUATION:AppStateStringMap[FTAppStateRun],
-        FT_RUM_KEY_SESSION_ID:[NSUUID UUID].UUIDString,
+        FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
     long long time = [FTDateUtil currentTimeNanosecond];
@@ -155,7 +179,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];

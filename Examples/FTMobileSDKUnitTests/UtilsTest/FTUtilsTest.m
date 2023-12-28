@@ -92,6 +92,13 @@
 - (void)testConvertToJsonDataWithNilArray{
     XCTAssertNil([FTJSONUtil convertToJsonDataWithArray:nil]);
 }
+- (void)testConvertToJsonDataWithObjectDict{
+    UIView *view = [[UIView alloc]init];
+    view.backgroundColor = [UIColor redColor];
+    NSDictionary *dict = @{@"view":view};
+    NSString *str = [FTJSONUtil convertToJsonData:dict];
+    XCTAssertTrue([str isEqualToString:@""]);
+}
 #pragma mark FTBaseInfoHandler
 - (void)testReplaceUrlGroupNumberChar{
     NSString *urlStr = @"http://www.weather.com.cn/data/sk/101010100.html";
@@ -109,6 +116,11 @@
     }
     XCTAssertTrue([ary containsObject:@(1)]);
     XCTAssertTrue([ary containsObject:@(0)]);
+}
+- (void)testRandomUUID{
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
+    XCTAssertFalse([uuid containsString:@"-"]);
+    XCTAssertTrue([[uuid lowercaseString] isEqualToString:uuid]);
 }
 #pragma mark FTReadWriteHelper
 - (void)testReadWriteHelper{

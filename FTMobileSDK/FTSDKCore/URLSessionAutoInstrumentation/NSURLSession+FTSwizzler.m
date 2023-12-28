@@ -20,15 +20,25 @@
 
 #import "NSURLSession+FTSwizzler.h"
 #import "FTURLSessionInstrumentation.h"
-#import "FTURLSessionDelegate.h"
-#import "FTURLSessionInterceptor.h"
+#import "FTURLSessionDelegate+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
+#import "FTURLSessionDelegate+Private.h"
+#import "FTSwizzle.h"
+#import "FTSwizzler.h"
+#import <objc/runtime.h>
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
 @implementation NSURLSession (FTSwizzler)
++(void)load{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = NULL;
+        [NSURLSession ft_swizzleClassMethod:@selector(ft_sessionWithConfiguration:delegate:delegateQueue:) withClassMethod:@selector(sessionWithConfiguration:delegate:delegateQueue:) error:&error];
+    });
+}
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
-        if ([interceptor isTraceUrl:url]){
+    if ([FTURLSessionInstrumentation sharedInstance].shouldInterceptor || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
+            id<FTURLSessionInterceptorProtocol> interceptor = [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]?((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate: [FTURLSessionInstrumentation sharedInstance].interceptor;
             NSURLSessionDataTask *task = [self ft_dataTaskWithURL:url];
             if (@available(iOS 13.0, *)) {
                 NSURLRequest *interceptedRequest = [interceptor interceptRequest:task.originalRequest];
@@ -38,13 +48,12 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
             return task;
         }
     }
-        return [self ft_dataTaskWithURL:url];
-    
+    return [self ft_dataTaskWithURL:url];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
-        if ([interceptor isTraceUrl:url]){
+    if ([FTURLSessionInstrumentation sharedInstance].shouldInterceptor || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:url]){
+            id<FTURLSessionInterceptorProtocol> interceptor = [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]?((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate: [FTURLSessionInstrumentation sharedInstance].interceptor;
             NSURLSessionDataTask *task;
             if (completionHandler) {
                 __block NSURLSessionDataTask *taskReference;
@@ -71,9 +80,9 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithURL:url completionHandler:completionHandler];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
-        if ([interceptor isTraceUrl:request.URL]){
+    if ([FTURLSessionInstrumentation sharedInstance].shouldInterceptor || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
+            id<FTURLSessionInterceptorProtocol> interceptor = [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]?((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate: [FTURLSessionInstrumentation sharedInstance].interceptor;
             NSURLRequest *newRequest = [interceptor interceptRequest:request];
             NSURLSessionDataTask *task = [self ft_dataTaskWithRequest:newRequest];
             if (@available(iOS 13.0, *)) {
@@ -85,10 +94,9 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request];
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithRequest:(NSURLRequest *)request completionHandler:(CompletionHandler)completionHandler{
-    if (self.delegate && [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
-        FTURLSessionInterceptor *interceptor = [FTURLSessionInterceptor shared];
-        if ([interceptor isTraceUrl:request.URL]){
-            NSURLSessionDataTask *task;
+    if ([FTURLSessionInstrumentation sharedInstance].shouldInterceptor || [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+        if([[FTURLSessionInstrumentation sharedInstance] isNotSDKInsideUrl:request.URL]){
+            id<FTURLSessionInterceptorProtocol> interceptor = [self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]?((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate: [FTURLSessionInstrumentation sharedInstance].interceptor;            NSURLSessionDataTask *task;
             if (completionHandler) {
                 __block NSURLSessionDataTask *taskReference;
                 CompletionHandler newCompletionHandler = ^(NSData * data, NSURLResponse * response, NSError * error){
@@ -111,5 +119,14 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
         }
     }
     return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
+}
++(NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue{
+    id<NSURLSessionDelegate> realDelegate = delegate;
+    if (delegate == nil) {
+        realDelegate = [[FTURLSessionDelegate alloc]init];
+    }else{
+        [[FTURLSessionInstrumentation sharedInstance] enableSessionDelegate:delegate];
+    }
+    return [NSURLSession ft_sessionWithConfiguration:configuration delegate:realDelegate delegateQueue:queue];
 }
 @end

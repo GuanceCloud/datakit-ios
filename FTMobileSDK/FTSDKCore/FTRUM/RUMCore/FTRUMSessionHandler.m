@@ -38,18 +38,40 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     }
     return  self;
 }
--(void)refreshWithDate:(NSDate *)date{
-    self.context.session_id = [NSUUID UUID].UUIDString;
-    self.sessionStartTime = date;
-    self.lastInteractionTime = date;
-    self.sampling = [FTBaseInfoHandler randomSampling:self.sampleRate];
+-(instancetype)initWithExpiredSession:(FTRUMSessionHandler *)expiredSession time:(NSDate *)time{
+    self = [super init];
+    if (self) {
+        self.assistant = self;
+        self.sampleRate = expiredSession.sampleRate;
+        self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.sampleRate];
+        self.sessionStartTime = time;
+        self.context = [FTRUMContext new];
+        self.context.writer = expiredSession.context.writer;
+        self.monitor = expiredSession.monitor;
+        self.viewHandlers = [NSMutableArray new];
+        for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
+            if(viewHandler.isActiveView){
+                FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:[FTBaseInfoHandler randomUUID]
+                                                                    viewName:viewHandler.view_name viewReferrer:viewHandler.view_referrer];
+                viewModel.loading_time = viewHandler.loading_time;
+                FTRUMViewHandler *newViewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context monitor:self.monitor];
+                [self.viewHandlers addObject:newViewHandler];
+            }
+        }
+    }
+    return  self;
+}
+-(void)setSampling:(BOOL)sampling{
+    _sampling = sampling;
+    if(!sampling){
+        FTInnerLogInfo(@"[RUM] The current 'Session' is not sampled.");
+    }
 }
 - (BOOL)process:(FTRUMDataModel *)model {
     if ([self timedOutOrExpired:[NSDate date]]) {
         return NO;
     }
     if (!self.sampling) {
-        FTInnerLogInfo(@"[RUM] 经过过滤算法判断-当前 Session 不采集");
         return YES;
     }
     _lastInteractionTime = [NSDate date];
@@ -60,7 +82,6 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
         case FTRUMDataError:
         case FTRUMDataLongTask:
-        case FTRUMDataResourceError:
             needWriteErrorData = YES;
             break;
         case FTRUMDataLaunch:
@@ -99,7 +120,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:[NSUUID UUID].UUIDString,
+    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
                                  FT_KEY_ACTION_NAME:model.action_name,
                                  FT_KEY_ACTION_TYPE:model.action_type
     };
@@ -109,7 +130,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
     [tags addEntriesFromDictionary:actiontags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:model.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
@@ -129,7 +150,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [tags setValue:[FTBaseInfoHandler boolStr:YES] forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
     [fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
-    [self.context.writer rumWrite:data.measurement tags:tags fields:fields tm:data.tm];
+    [self.context.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
 }
 -(NSString *)getCurrentViewID{
     FTRUMViewHandler *view = (FTRUMViewHandler *)[self.viewHandlers lastObject];

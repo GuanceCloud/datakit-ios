@@ -86,8 +86,9 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
-
 NS_ASSUME_NONNULL_BEGIN
+/// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
+typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 
 /// logger 功能配置项
 @interface FTLoggerConfig : NSObject
@@ -135,6 +136,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL enableTraceUserView;
 /// 设置是否追踪用户网络请求  (仅作用于native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
+/// 自定义采集 resource 规则。
+/// 根据请求资源 url 判断是否需要采集对应资源数据，默认都采集。 返回：NO 表示要采集，YES 表示不需要采集。
+@property (nonatomic, copy) FTResourceUrlHandler resourceUrlHandler;
 /// 设置是否需要采集崩溃日志
 @property (nonatomic, assign) BOOL enableTrackAppCrash;
 /// 设置是否需要采集卡顿
@@ -174,7 +178,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTMobileConfig : NSObject
 /// 指定初始化方法，设置 metricsUrl
 /// - Parameter metricsUrl: 数据上报地址
-- (instancetype)initWithMetricsUrl:(nonnull NSString *)metricsUrl;
+- (instancetype)initWithMetricsUrl:(NSString *)metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -initWithDatakitUrl: 替换");
+
+/// 本地环境部署，设置 datakitUrl
+/// - Parameter datakitUrl: datakit 数据上报地址
+- (instancetype)initWithDatakitUrl:(NSString *)datakitUrl;
+
+/// 使用公网 DataWay 部署，设置 datawayUrl 与 clientToken
+/// - Parameter datawayUrl: datawayUrl 数据上报地址
+/// - Parameter clientToken: dataway token
+- (instancetype)initWithDatawayUrl:(NSString *)datawayUrl clientToken:(NSString *)clientToken;
 
 /// 禁用 init 初始化
 - (instancetype)init NS_UNAVAILABLE;
@@ -182,7 +195,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// 禁用 new 初始化
 + (instancetype)new NS_UNAVAILABLE;
 /// 数据上报地址
-@property (nonatomic, copy) NSString *metricsUrl;
+@property (nonatomic, copy) NSString *metricsUrl DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 datakitUrl 替换");
+/// 数据上报 datakit 地址
+@property (nonatomic, copy) NSString *datakitUrl;
+/// 数据上报 dataway 地址
+@property (nonatomic, copy) NSString *datawayUrl;
+/// dataway token
+@property (nonatomic, copy) NSString *clientToken;
 /// 设置自定义环境字段。
 @property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。

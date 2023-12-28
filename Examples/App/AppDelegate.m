@@ -40,19 +40,25 @@
      isUITests = 1;
      */
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
+    NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
+//    NSString *datawayUrl = [processInfo environment][@"ACCESS_DATAWAY_URL"];
+//    NSString *clientToken = [processInfo environment][@"CLIENT_TOKEN"];
+    NSString *rumAppid = [processInfo environment][@"APP_ID"];
     NSString *trackid = [processInfo environment][@"TRACK_ID"]?:@"N/A";
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
-    if ( url && !isUnitTests && !isUITests) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    if ( !isUnitTests && !isUITests) {
+        // 本地环境部署
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
+        // 使用公网 DataWay 部署
+//        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatawayUrl:datawayUrl clientToken:clientToken];
         config.enableSDKDebugLog = YES;
+        [config setEnvWithType:FTEnvPre];
         config.globalContext = @{@"example_id":@"example_id_1"};//eg.
         config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"N/A";
         //开启 rum
-        FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+        FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:rumAppid];
         rumConfig.samplerate = 80;
         rumConfig.enableTrackAppCrash = YES;
         rumConfig.enableTrackAppANR = YES;
@@ -60,6 +66,9 @@
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
         rumConfig.enableTraceUserResource = YES;
+//        rumConfig.resourceUrlHandler = ^(NSURL *url){
+//            return NO;
+//        };
         rumConfig.errorMonitorType = FTErrorMonitorAll;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.monitorFrequency = FTMonitorFrequencyRare;

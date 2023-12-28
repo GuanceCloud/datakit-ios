@@ -9,7 +9,6 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTGlobalRumManager.h"
-#import "FTURLProtocol.h"
 #import "FTInternalLog.h"
 #import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
@@ -31,6 +30,7 @@
 #import "FTEnumConstant.h"
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
+#import "FTBaseInfoHandler.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
@@ -58,7 +58,7 @@ static dispatch_once_t onceToken;
 -(void)setRumConfig:(FTRumConfig *)rumConfig{
     _rumConfig = rumConfig;
     self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
-    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor wirter:[FTMobileAgent sharedInstance]];
+    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor writer:[FTMobileAgent sharedInstance]];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
@@ -94,7 +94,7 @@ static dispatch_once_t onceToken;
             return;
         }
         NSString *name = messageDic[@"name"];
-        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"track"]||[name isEqualToString:@"log"]||[name isEqualToString:@"trace"]) {
+        if ([name isEqualToString:@"rum"]||[name isEqualToString:@"log"]) {
             NSDictionary *data = messageDic[@"data"];
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];
@@ -103,7 +103,7 @@ static dispatch_once_t onceToken;
             time = time>0?time:[FTDateUtil currentTimeNanosecond];
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
-                    [self.rumManager addWebviewData:measurement tags:tags fields:fields tm:time];
+                    [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
                 }
             }
         }
@@ -132,12 +132,12 @@ static dispatch_once_t onceToken;
             return;
         }
         if (self.rumManager.viewReferrer) {
-            NSString *viewid = [NSUUID UUID].UUIDString;
+            NSString *viewID = [FTBaseInfoHandler randomUUID];
             NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
             NSString *viewReferrer =self.rumManager.viewReferrer;
             self.rumManager.viewReferrer = @"";
             [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
-            [self.rumManager startViewWithViewID:viewid viewName:viewReferrer property:nil];
+            [self.rumManager startViewWithViewID:viewID viewName:viewReferrer property:nil];
         }
     }@catch (NSException *exception) {
         FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);

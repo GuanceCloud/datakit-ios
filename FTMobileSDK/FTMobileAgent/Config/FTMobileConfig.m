@@ -45,6 +45,7 @@
     options.globalContext = self.globalContext;
     options.deviceMetricsMonitorType = self.deviceMetricsMonitorType;
     options.monitorFrequency = self.monitorFrequency;
+    options.resourceUrlHandler = self.resourceUrlHandler;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -62,6 +63,7 @@
             _globalContext = dict[@"globalContext"];
             _deviceMetricsMonitorType = (FTDeviceMetricsMonitorType)[dict[@"deviceMetricsMonitorType"] intValue];
             _monitorFrequency = (FTMonitorFrequency)[dict[@"monitorFrequency"] intValue];
+            _resourceUrlHandler = [dict valueForKey:@"resourceUrlHandler"];
         }
         return self;
     }else{
@@ -82,6 +84,7 @@
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
     [dict setValue:@(self.monitorFrequency) forKey:@"monitorFrequency"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:self.resourceUrlHandler forKey:@"resourceUrlHandler"];
     return dict;
 }
 @end
@@ -108,15 +111,19 @@
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
-    if (self = [super init]) {
-        _samplerate = [dict[@"samplerate"] intValue];
-        _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-        _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
-        _logLevelFilter = dict[@"logLevelFilter"];
-        _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
-        _globalContext = dict[@"globalContext"];
+    if(dict){
+        if (self = [super init]) {
+            _samplerate = [dict[@"samplerate"] intValue];
+            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            _enableCustomLog = [dict[@"enableCustomLog"] boolValue];
+            _logLevelFilter = dict[@"logLevelFilter"];
+            _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
+            _globalContext = dict[@"globalContext"];
+        }
+        return self;
+    }else{
+        return nil;
     }
-    return self;
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -147,13 +154,17 @@
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
-    if (self = [super init]) {
-        _samplerate = [dict[@"samplerate"] intValue];
-        _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
-        _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
-        _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+    if(dict){
+        if (self = [super init]) {
+            _samplerate = [dict[@"samplerate"] intValue];
+            _enableLinkRumData = [dict[@"enableLinkRumData"] boolValue];
+            _networkTraceType =(FTNetworkTraceType)[dict[@"networkTraceType"] intValue];
+            _enableAutoTrace = [dict[@"enableAutoTrace"] boolValue];
+        }
+        return self;
+    }else{
+        return nil;
     }
-    return self;
 }
 -(NSDictionary *)convertToDictionary{
     return @{@"samplerate":@(self.samplerate),
@@ -165,8 +176,24 @@
 @end
 @implementation FTMobileConfig
 -(instancetype)initWithMetricsUrl:(NSString *)metricsUrl{
+    self = [self initWithDatakitUrl:metricsUrl];
+    self->_metricsUrl = metricsUrl;
+    return self;
+}
+-(instancetype)initWithDatakitUrl:(NSString *)datakitUrl{
     if (self = [super init]) {
-        _metricsUrl = metricsUrl;
+        _datakitUrl = datakitUrl;
+        _enableSDKDebugLog = NO;
+        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        _service = FT_DEFAULT_SERVICE_NAME;
+        _env = FTEnvStringMap[FTEnvProd];
+    }
+    return self;
+}
+- (nonnull instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl clientToken:(nonnull NSString *)clientToken{
+    if (self = [super init]) {
+        _datawayUrl = datawayUrl;
+        _clientToken = clientToken;
         _enableSDKDebugLog = NO;
         _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
@@ -188,7 +215,9 @@
 #pragma mark NSCopying
 - (id)copyWithZone:(nullable NSZone *)zone {
     FTMobileConfig *options = [[[self class] allocWithZone:zone] init];
-    options.metricsUrl = self.metricsUrl;
+    options.datakitUrl = self.datakitUrl;
+    options.datawayUrl = self.datawayUrl;
+    options.clientToken = self.clientToken;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.env = self.env;
     options.version = self.version;

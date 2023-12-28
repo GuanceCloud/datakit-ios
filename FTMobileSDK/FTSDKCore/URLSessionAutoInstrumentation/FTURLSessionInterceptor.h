@@ -7,22 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTURLSessionInterceptorProtocol.h"
-#import "FTTracerProtocol.h"
-#import "FTExternalResourceProtocol.h"
-#import "FTTracerProtocol.h"
+#import "FTURLSessionDelegate.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
 
 /// URL Session 的拦截器，实现 RUM Resource 数据的采集，Trace 链路追踪
-@interface FTURLSessionInterceptor : NSObject<FTURLSessionInterceptorProtocol,FTExternalResourceProtocol>
+@interface FTURLSessionInterceptor : NSObject
 
-/// 告诉拦截器需要自定义添加的 property
-@property (nonatomic,copy) ResourcePropertyProvider provider;
-
+/// 单例
 + (instancetype)shared;
 
-/// 告诉拦截器修改URL请求
+/// 告诉拦截器修改 URL 请求，开启自动链路追踪时，调用此方法会在请求头添加链路信息，
+/// 若未开启，则直接返回传入 request
 /// - Parameter request: 初始请求
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request;
 
@@ -44,9 +39,9 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 /// 告诉拦截器任务已经完成
 /// - Parameters:
 ///   - task: 完成数据传输的任务。
-///   - error: 如果发生错误，则返回一个错误对象，表示传输如何失败，否则返回`nil`。
-- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
-- (void)shutDown;
+///   - error:  如果发生错误，则返回一个错误对象，表示传输如何失败，否则返回`nil`。
+///   - extraProvider: 额外添加的自定义 RUM 资源属性
+- (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider;
 @end
 
 NS_ASSUME_NONNULL_END

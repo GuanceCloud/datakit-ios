@@ -22,7 +22,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
 //    config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:appid];

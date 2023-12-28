@@ -22,25 +22,25 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTTracerProtocol.h"
 #import "FTExternalResourceProtocol.h"
-#import "FTEnumConstant.h"
-#import "FTAutoInterceptorProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *request, NSURLResponse *response,NSData *data, NSError * error);
-
+typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
-@interface FTURLSessionInstrumentation : NSObject<FTAutoInterceptorProtocol>
+@interface FTURLSessionInstrumentation : NSObject
 
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
 @property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
 /// 向外部提供处理用户自定义 resource 数据的对象
 @property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
+@property (atomic, assign, readonly) BOOL shouldInterceptor;
+
+- (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 /// 单例
 + (instancetype)sharedInstance;
 
 /// 设置是否自动采集 RUM Resource
 /// - Parameter enableAutoRumTrack: 是否自动采集
-- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack;
+- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler;
 
 /// 设置 trace 配置项，开启 trace
 /// - Parameters:
@@ -48,7 +48,7 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 ///   - enableLinkRumData: 是否关联 RUM
 ///   - sampleRate: 采样率
 ///   - traceType: 链路类型
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType;
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType;
 /// 设置 sdk 内部的数据上传 url
 /// - Parameter sdkUrlStr: sdk 内部的数据上传 url
 - (void)setSdkUrlStr:(NSString *)sdkUrlStr;
@@ -62,6 +62,8 @@ typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest *reque
 /// 设置 URL 过滤
 /// - Parameter intakeUrlHandler: 判断是否采集回调，返回 YES 采集， NO 过滤掉
 - (void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler;
+
+- (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate;
 
 /// 注销
 - (void)resetInstance;

@@ -16,7 +16,7 @@
     self = [super init];
     if (self) {
         _value = value;
-        _concurrentQueue = dispatch_queue_create([[NSString stringWithFormat:@"com.ft.value.readwrite.%@",_value] UTF8String], DISPATCH_QUEUE_CONCURRENT);
+        _concurrentQueue = dispatch_queue_create([[NSString stringWithFormat:@"com.guance.value.readwrite.%@",_value] UTF8String], DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }

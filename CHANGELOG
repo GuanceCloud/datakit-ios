@@ -1,11 +1,46 @@
+# 1.4.8-beta.1
+1. 同 1.4.8-alpha.5、 调试日志输出调整
+
+---
+# 1.4.8-alpha.5
+1. 修复 `RUM-view.duration` 时间过长问题
+2. RUM-ResourceError `error_type` 对应值调整为 `network_error`
+
+---
+# 1.4.8-alpha.4
+1. 修复由 block 创建 IMP 时添加多余参数 SEL 导致的崩溃问题
+2. 修复采样率算法
+3. 优化调试日志输出、UUID String 格式更改
+
+---
+# 1.4.8-alpha.3
+1. 新增 dataway 公网上传数据逻辑
+2. 添加上传数据唯一标识
+3. 修复 resource duration 负值问题、resource_first_byte 计算逻辑修改
+4. 自动采集 HTTP Resource 逻辑修改
+
+---
+# 1.4.8-alpha.2
+1. RUM Session 过期逻辑修改，同步重置 view，修复 APP 进入后台 HTTP 请求悬挂导致的 RUM-View 持续时间过长问题
+2. 自动采集 HTTP Resource 逻辑修改
+3. 新增自定义采集 HTTP Resource 功能
+4. 优化 RUM-ResourceError 错误信息描述
+
+---
+# 1.4.8-alpha.1
+1. 新增自定义 TraceHeader 功能
+2. 配置 FTRumConfig 时设置 `resourceUrlHandler` 替换 FTMobileAgent `-isIntakeUrl:` 方法
+3. 修复多个 URLSession resource 自定义数据覆盖问题
+
+---
 # 1.4.7-beta.4
 1. 数据上传逻辑优化
 
-___
+---
 # 1.4.7-beta.3
 1. 数据上传逻辑优化，防止递归导致栈溢出崩溃
 
-___
+---
 # 1.4.7-beta.2
 1. 解决 URLSession 创建在 SDK 之前时该 URLSession 请求无法采集问题
 

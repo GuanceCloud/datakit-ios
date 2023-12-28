@@ -13,30 +13,29 @@
 #import "FTBaseInfoHandler.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
-static NSUInteger SkywalkingSeq = 0.0;
+#import "FTInternalLog.h"
+static NSUInteger SkyWalkingSequence = 0.0;
 
 @interface FTTracer ()
 @property (nonatomic, strong) NSLock *lock;
-@property (nonatomic, copy) NSString *skyTraceId;
+@property (nonatomic, copy) NSString *skyTraceID;
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) NetworkTraceType traceType;
 @end
 @implementation FTTracer
-static FTTracer *sharedInstance = nil;
 @synthesize enableLinkRumData = _enableLinkRumData;
-static dispatch_once_t onceToken;
-+ (instancetype)shared{
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-        [sharedInstance startWithSampleRate:100 traceType:(FTNetworkTraceType)DDtrace enableLinkRumData:NO];
-    });
-    return sharedInstance;
-}
-- (void)startWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link{
-    _sampleRate = sampleRate;
-    _traceType = (NetworkTraceType)traceType;
-    _enableLinkRumData = link;
+@synthesize enableAutoTrace = _enableAutoTrace;
+
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:(BOOL)trace enableLinkRumData:(BOOL)link{
+    self = [super init];
+    if(self){
+        _sampleRate = sampleRate;
+        _traceType = traceType;
+        _enableLinkRumData = link;
+        _enableAutoTrace = trace;
+    }
+    return self;
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url{
     BOOL sampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
@@ -46,13 +45,13 @@ static dispatch_once_t onceToken;
         case ZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled handler:nil];
         case DDtrace:
-            return [self getDDTRACEHeader:sampled handler:nil];
+            return [self getDDTraceHeader:sampled handler:nil];
         case ZipkinSingleHeader:
             return [self getZipkinSingleHeader:sampled handler:nil];
-        case Skywalking:
+        case SkyWalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:nil];
-        case Traceparent:
-            return [self getTraceparentHeader:sampled handler:nil];
+        case TraceParent:
+            return [self getTraceParentHeader:sampled handler:nil];
     }
 }
 - (NSDictionary *)networkTraceHeaderWithUrl:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
@@ -63,13 +62,13 @@ static dispatch_once_t onceToken;
         case ZipkinMultiHeader:
             return [self getZipkinMultiHeader:sampled handler:handler];
         case DDtrace:
-            return [self getDDTRACEHeader:sampled handler:handler];
+            return [self getDDTraceHeader:sampled handler:handler];
         case ZipkinSingleHeader:
             return [self getZipkinSingleHeader:sampled handler:handler];
-        case Skywalking:
+        case SkyWalking:
             return [self getSkyWalking_V3Header:sampled url:url handler:handler];
-        case Traceparent:
-            return [self getTraceparentHeader:sampled handler:handler];
+        case TraceParent:
+            return [self getTraceParentHeader:sampled handler:handler];
     }
 }
 - (void)unpackTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
@@ -79,23 +78,23 @@ static dispatch_once_t onceToken;
         case ZipkinMultiHeader:
             return [self unpackZipkinMultiHeader:header handler:handler];
         case DDtrace:
-            return [self unpackDDTRACEHeader:header handler:handler];
+            return [self unpackDDTraceHeader:header handler:handler];
         case ZipkinSingleHeader:
             return [self unpackZipkinSingleHeader:header handler:handler];
-        case Skywalking:
+        case SkyWalking:
             return [self unpackSkyWalking_V3Header:header handler:handler];
-        case Traceparent:
-            return [self unpackTraceparentHeader:header handler:handler];
+        case TraceParent:
+            return [self unpackTraceParentHeader:header handler:handler];
     }
 }
 #pragma mark --------- Jaeger ----------
 - (NSDictionary *)getJaegerHeader:(BOOL)sampled handler:(UnpackTraceHeaderHandler)handler{
-    NSString *traceid = [self networkTraceID];
-    NSString *spanid = [self networkSpanID];
+    NSString *traceID = [self networkTraceID];
+    NSString *spanID = [self networkSpanID];
     if(handler){
-        handler(traceid,spanid);
+        handler(traceID,spanID);
     }
-    return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",traceid,spanid,@(sampled)]};
+    return @{FT_NETWORK_JAEGER_TRACEID:[NSString stringWithFormat:@"%@:%@:0:%@",traceID,spanID,@(sampled)]};
 }
 -(void)unpackJaegerHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
     if([[header allKeys] containsObject:FT_NETWORK_JAEGER_TRACEID]) {
@@ -110,23 +109,23 @@ static dispatch_once_t onceToken;
 }
 #pragma mark --------- Zipkin ----------
 - (NSDictionary *)getZipkinMultiHeader:(BOOL)sampled handler:(UnpackTraceHeaderHandler)handler{
-    NSString *traceid = [self networkTraceID];
-    NSString *spanid = [self networkSpanID];
+    NSString *traceID = [self networkTraceID];
+    NSString *spanID = [self networkSpanID];
     if(handler){
-        handler(traceid,spanid);
+        handler(traceID,spanID);
     }
     return @{FT_NETWORK_ZIPKIN_SAMPLED:[NSString stringWithFormat:@"%d",sampled],
-             FT_NETWORK_ZIPKIN_SPANID:spanid,
-             FT_NETWORK_ZIPKIN_TRACEID:traceid,
+             FT_NETWORK_ZIPKIN_SPANID:spanID,
+             FT_NETWORK_ZIPKIN_TRACEID:traceID,
     };
 }
 - (NSDictionary *)getZipkinSingleHeader:(BOOL)sampled handler:(UnpackTraceHeaderHandler)handler{
-    NSString *traceid = [self networkTraceID];
-    NSString *spanid = [self networkSpanID];
+    NSString *traceID = [self networkTraceID];
+    NSString *spanID = [self networkSpanID];
     if(handler){
-        handler(traceid,spanid);
+        handler(traceID,spanID);
     }
-    return @{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceid,spanid,[NSString stringWithFormat:@"%d",sampled]]};
+    return @{FT_NETWORK_ZIPKIN_SINGLE_KEY:[NSString stringWithFormat:@"%@-%@-%@",traceID,spanID,[NSString stringWithFormat:@"%d",sampled]]};
 }
 -(void)unpackZipkinMultiHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
     if ([[header allKeys]containsObject:FT_NETWORK_ZIPKIN_TRACEID]&&[[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SPANID]&&[[header allKeys]containsObject:FT_NETWORK_ZIPKIN_SAMPLED]) {
@@ -150,20 +149,20 @@ static dispatch_once_t onceToken;
     handler(nil,nil);
 }
 #pragma mark --------- DDTRACE ----------
-- (NSDictionary *)getDDTRACEHeader:(BOOL)sampled handler:(UnpackTraceHeaderHandler)handler{
-    NSString *traceid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
-    NSString *spanid = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
+- (NSDictionary *)getDDTraceHeader:(BOOL)sampled handler:(UnpackTraceHeaderHandler)handler{
+    NSString *traceId = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
+    NSString *spanId = [NSString stringWithFormat:@"%llu",[self generateUniqueID]];
     NSString *samplingPriority = sampled? @"2":@"-1";
     if(handler){
-        handler(traceid,spanid);
+        handler(traceId,spanId);
     }
     return @{FT_NETWORK_DDTRACE_ORIGIN:@"rum",
-             FT_NETWORK_DDTRACE_SPANID:spanid,
-             FT_NETWORK_DDTRACE_TRACEID:traceid,
+             FT_NETWORK_DDTRACE_SPANID:spanId,
+             FT_NETWORK_DDTRACE_TRACEID:traceId,
              FT_NETWORK_DDTRACE_SAMPLING_PRIORITY:samplingPriority
     };
 }
--(void)unpackDDTRACEHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
+-(void)unpackDDTraceHeader:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
     if ([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID] &&
         [header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]) {
         NSString *trace = [header valueForKey:FT_NETWORK_DDTRACE_TRACEID];
@@ -196,19 +195,19 @@ static dispatch_once_t onceToken;
 //    traceHeader(trace,span,header);
 //}
 - (NSDictionary *)getSkyWalking_V3Header:(BOOL)sampled url:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
-    NSString *basetraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceId,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
+    NSString *baseTraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceID,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
     NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.skyParentInstance,[FTBaseInfoHandler cellularIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port!=nil ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";
     urlPath = [urlPath ft_base64Encode];
     urlStr = [urlStr ft_base64Encode];
-    NSUInteger seq = [self getSkywalkingSeq];
-    NSString *spanid = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq];
-    NSString *parentTraceId =[spanid ft_base64Encode];
-    NSString *trace = [basetraceId stringByAppendingFormat:@"%04lu",(unsigned long)seq+1];
+    NSUInteger sequence = [self getSkyWalkingSequence];
+    NSString *spanId = [baseTraceId stringByAppendingFormat:@"%04lu",(unsigned long)sequence];
+    NSString *parentTraceId =[spanId ft_base64Encode];
+    NSString *trace = [baseTraceId stringByAppendingFormat:@"%04lu",(unsigned long)sequence+1];
     NSString *traceId =[trace ft_base64Encode];
     if(handler){
-        handler(traceId,spanid);
+        handler(traceId,spanId);
     }
     return @{FT_NETWORK_SKYWALKING_V3:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,[FT_DEFAULT_SERVICE_NAME ft_base64Encode],parentServiceInstance,urlPath,urlStr]};
 }
@@ -226,15 +225,15 @@ static dispatch_once_t onceToken;
     }
     handler(nil,nil);
 }
--(NSUInteger)getSkywalkingSeq{
+-(NSUInteger)getSkyWalkingSequence{
     [self.lock lock];
-    NSUInteger seq =  SkywalkingSeq;
-    SkywalkingSeq += 2 ;
-    if (SkywalkingSeq > 9999) {
-        SkywalkingSeq = 0;
+    NSUInteger sequence =  SkyWalkingSequence;
+    SkyWalkingSequence += 2 ;
+    if (SkyWalkingSequence > 9999) {
+        SkyWalkingSequence = 0;
     }
     [self.lock unlock];
-    return seq;
+    return sequence;
 }
 -(NSString *)getThreadNumber{
     NSString *str = [NSThread currentThread].description;
@@ -252,11 +251,11 @@ static dispatch_once_t onceToken;
     return [chooseStr ft_removeFrontBackBlank];
 }
 
--(NSString *)skyTraceId{
-    if (!_skyTraceId) {
-        _skyTraceId = [self networkTraceID];
+-(NSString *)skyTraceID{
+    if (!_skyTraceID) {
+        _skyTraceID = [self networkTraceID];
     }
-    return _skyTraceId;
+    return _skyTraceID;
 }
 -(NSString *)skyParentInstance{
     if (!_skyParentInstance) {
@@ -264,18 +263,18 @@ static dispatch_once_t onceToken;
     }
     return _skyParentInstance;
 }
-#pragma mark --------- traceparent ----------
+#pragma mark --------- traceParent ----------
 
-- (NSDictionary *)getTraceparentHeader:(BOOL)sample handler:(UnpackTraceHeaderHandler)handler{
-    NSString *sampleDescion = sample? @"01":@"00";
-    NSString *spanid = [self networkSpanID];
+- (NSDictionary *)getTraceParentHeader:(BOOL)sample handler:(UnpackTraceHeaderHandler)handler{
+    NSString *sampleStr = sample? @"01":@"00";
+    NSString *spanID = [self networkSpanID];
     NSString *traceID = [self networkTraceID];
     if(handler){
-        handler(traceID,spanid);
+        handler(traceID,spanID);
     }
-    return @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",traceID,spanid,sampleDescion]};
+    return @{FT_NETWORK_TRACEPARENT_KEY:[NSString stringWithFormat:@"%@-%@-%@-%@",@"00",traceID,spanID,sampleStr]};
 }
--(void)unpackTraceparentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
+-(void)unpackTraceParentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
     if([headerFields.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]){
         NSString *traceStr =headerFields[FT_NETWORK_TRACEPARENT_KEY];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
@@ -288,19 +287,16 @@ static dispatch_once_t onceToken;
     }
     handler(nil,nil);
 }
-#pragma mark --------- traceid、spanid ----------
+#pragma mark --------- traceID、spanID ----------
 - (NSString *)networkTraceID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [uuid lowercaseString];
 }
 - (NSString *)networkSpanID{
-    NSString *uuid = [NSUUID UUID].UUIDString;
+    NSString *uuid = [FTBaseInfoHandler randomUUID];
     uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [[uuid lowercaseString] ft_md5HashToLower16Bit];
 }
-- (void)shutDown{
-    onceToken = 0;
-    sharedInstance = nil;
-}
+
 @end

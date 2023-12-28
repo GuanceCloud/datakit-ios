@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-#define FT_DB_TRACREVENT_TABLE_NAME @"trace_event"
+#define FT_DB_TRACE_EVENT_TABLE_NAME @"trace_event"
 @class FTRecordModel;
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject

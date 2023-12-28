@@ -32,11 +32,13 @@
     return self;
 }
 -(NSURL *)absoluteURL{
-    if (!FTNetworkInfoManager.sharedInstance.metricsUrl) {
-        return nil;
+    if (FTNetworkInfoManager.sharedInstance.datakitUrl) {
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
     }
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",FTNetworkInfoManager.sharedInstance.metricsUrl,self.path]];
-    return url;
+    if(FTNetworkInfoManager.sharedInstance.datawayUrl&&FTNetworkInfoManager.sharedInstance.clientToken){
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
+    }
+    return nil;
 }
 -(NSString *)contentType{
     return @"text/plain";

@@ -22,22 +22,20 @@
 #import "NSURLSession+FTSwizzler.h"
 #import "FTSwizzler.h"
 #import "FTSwizzle.h"
-#import "FTURLSessionInterceptor.h"
-#import "FTURLProtocol.h"
+#import "FTURLSessionInterceptor+Private.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
-#import "FTSessionConfiguration.h"
-
 @interface FTURLSessionInstrumentation()
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
-@property (nonatomic, assign) BOOL enableAutoTrace;
 @property (nonatomic, strong) FTTracer *tracer;
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) int bindingsCount;
+@property (nonatomic, assign) BOOL autoRegistration;
+@property (atomic, assign, readwrite) BOOL shouldInterceptor;
+
 @end
 @implementation FTURLSessionInstrumentation
-@synthesize enableAutoRumTrack = _enableAutoRumTrack;
 
 static FTURLSessionInstrumentation *sharedInstance = nil;
 static dispatch_once_t onceToken;
@@ -53,6 +51,7 @@ static dispatch_once_t onceToken;
     if(self){
         _lock = [[NSLock alloc]init];
         _bindingsCount = 0;
+        _shouldInterceptor = NO;
     }
     return self;
 }
@@ -68,37 +67,24 @@ static dispatch_once_t onceToken;
 -(id<FTTracerProtocol>)tracer{
     return _tracer;
 }
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType{
-    _enableAutoTrace = enableAutoTrace;
-    [[FTTracer shared] startWithSampleRate:sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:enableLinkRumData];
-    _tracer = [FTTracer shared];
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType{
+    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:enableAutoTrace enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){
-        [self startURLProtocolMonitor];
+        [self enableAutomaticRegistration];
     }
 }
--(void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack{
-    _enableAutoRumTrack = enableAutoRumTrack;
+- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+    self.interceptor.resourceUrlHandler = resourceUrlHandler;
     if(enableAutoRumTrack){
-        [self startURLProtocolMonitor];
+        [self enableAutomaticRegistration];
     }
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
-    self.interceptor.rumResourceHandeler = handler;
+    self.interceptor.rumResourceHandler = handler;
 }
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
     self.interceptor.intakeUrlHandler = intakeUrlHandler;
-}
-- (void)startURLProtocolMonitor{
-    [self.lock lock];
-    [[FTSessionConfiguration defaultConfiguration] startMonitor];
-    [FTURLProtocol setDelegate:self];
-    [self.lock unlock];
-}
-- (void)stopURLProtocolMonitor{
-    [self.lock lock];
-    [[FTSessionConfiguration defaultConfiguration] stopMonitor];
-    [self.lock unlock];
 }
 #pragma mark ========== swizzle ==========
 - (void)swizzleURLSession{
@@ -109,7 +95,7 @@ static dispatch_once_t onceToken;
     self.bindingsCount++;
     [self.lock unlock];
 }
-- (void)unswizzleURLSession{
+- (void)unSwizzleURLSession{
     [self.lock lock];
     if(self.bindingsCount > 1){
         self.bindingsCount--;
@@ -120,24 +106,63 @@ static dispatch_once_t onceToken;
 }
 - (void)_swizzleURLSession{
     NSError *error = NULL;
-    if(@available(iOS 13.0, *)){
+    if(@available(iOS 13.0,macOS 10.15,*)){
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
         [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
     }
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
-#pragma mark ========== FTAutoInterceptorProtocol ==========
--(BOOL)enableAutoRumTrack{
-    return _enableAutoRumTrack;
+/// - 注意:不支持 async/await URLSession APIs
+///       不支持 [NSURLSession sharedSession]
+- (void)enableAutomaticRegistration{
+    self.shouldInterceptor = YES;
 }
--(NSURLRequest *)interceptRequest:(NSURLRequest *)request{
-    if(!self.enableAutoTrace){
-        return request;
+/// 关闭自动采集
+- (void)disableAutomaticRegistration{
+    self.shouldInterceptor = NO;
+}
+- (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate{
+    if (!self.shouldInterceptor) {
+        return;
     }
-    return [self.interceptor interceptRequest:request];
+    SEL receiveDataSelector = @selector(URLSession:dataTask:didReceiveData:);
+    SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
+    SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
+    Class receiveDataClass = [FTSwizzler realDelegateClassFromSelector:receiveDataSelector proxy:delegate];
+    Class completeClass = [FTSwizzler realDelegateClassFromSelector:completeSelector proxy:delegate];
+    Class collectMetricsClass = [FTSwizzler realDelegateClassFromSelector:collectMetricsSelector proxy:delegate];
+
+    if(![FTSwizzler realDelegateClass:receiveDataClass respondsToSelector:receiveDataSelector]){
+        void (^receiveDataBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSData *data) {
+        };
+        IMP receiveDataIMP = imp_implementationWithBlock(receiveDataBlock);
+        class_addMethod(receiveDataClass, receiveDataSelector, receiveDataIMP, "v@:@@@");
+    }
+    if(![FTSwizzler realDelegateClass:completeClass respondsToSelector:completeSelector]){
+        void (^completeBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSError *error) {
+        };
+        IMP completeIMP = imp_implementationWithBlock(completeBlock);
+        class_addMethod(completeClass, completeSelector, completeIMP, "v@:@@@");
+    }
+    if(![FTSwizzler realDelegateClass:collectMetricsClass respondsToSelector:collectMetricsSelector]){
+        void (^collectMetricsBlock)(id, id, id, id) = ^(id delegate, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics) {
+        };
+        IMP collectMetricsIMP = imp_implementationWithBlock(collectMetricsBlock);
+        class_addMethod(collectMetricsClass, collectMetricsSelector, collectMetricsIMP, "v@:@@@");
+    }
+    __weak typeof(self) weakSelf = self;
+    [FTSwizzler swizzleSelector:receiveDataSelector onClass:receiveDataClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data){
+        [weakSelf.interceptor taskReceivedData:task data:data];
+    } named:@"receiveDataSelector"];
+    [FTSwizzler swizzleSelector:completeSelector onClass:completeClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error){
+        [weakSelf.interceptor taskCompleted:task error:error];
+    } named:@"completeSelector"];
+    [FTSwizzler swizzleSelector:collectMetricsSelector onClass:collectMetricsClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics){
+        [weakSelf.interceptor taskMetricsCollected:task metrics:metrics];
+    } named:@"collectMetricsSelector"];
 }
-- (BOOL)isTraceUrl:(NSURL *)url{
+- (BOOL)isNotSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;
     if (self.sdkUrlStr) {
         if (url.port) {
@@ -145,16 +170,12 @@ static dispatch_once_t onceToken;
         }else{
             trace = ![url.host isEqualToString:[NSURL URLWithString:self.sdkUrlStr].host];
         }
-        if(trace){
-            return [self.interceptor isTraceUrl:url];
-        }
     }
     return trace;
 }
 - (void)resetInstance{
-    [self unswizzleURLSession];
-    [[FTSessionConfiguration defaultConfiguration] shutDown];
-    [[FTTracer shared] shutDown];
+    [self disableAutomaticRegistration];
+    [self unSwizzleURLSession];
     [[FTURLSessionInterceptor shared] shutDown];
     onceToken = 0;
     sharedInstance =nil;

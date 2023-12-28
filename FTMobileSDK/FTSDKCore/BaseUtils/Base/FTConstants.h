@@ -119,6 +119,7 @@ extern NSString * const FT_KEY_LOCALE;
 // error source value
 extern NSString * const FT_LOGGER;
 extern NSString * const FT_NETWORK;
+extern NSString * const FT_NETWORK_ERROR;
 #pragma mark ---------- long task ----------
 extern NSString * const FT_KEY_LONG_TASK_STACK;
 #pragma mark ---------- action ----------

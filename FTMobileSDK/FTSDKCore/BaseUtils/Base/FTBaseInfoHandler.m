@@ -63,10 +63,15 @@
         return NO;
     }
     if(sampling<100){
-        int x = arc4random() % 100;
+        int x = arc4random_uniform(100)+1;
         return x <= sampling ? YES:NO;
     }
     return YES;
+}
++ (NSString *)randomUUID{
+    NSString *uuid = [NSUUID UUID].UUIDString;
+    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    return uuid.lowercaseString;
 }
 #if FT_IOS
 +(NSString *)telephonyCarrier

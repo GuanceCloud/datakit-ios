@@ -11,11 +11,12 @@
 #import "FTTracerProtocol.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
+#import "FTBaseInfoHandler.h"
 @interface FTSessionTaskHandler ()
 @end
 @implementation FTSessionTaskHandler
 -(instancetype)init{
-    return [self initWithIdentifier:[NSUUID UUID].UUIDString];
+    return [self initWithIdentifier:[FTBaseInfoHandler randomUUID]];
 }
 -(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];

@@ -33,7 +33,7 @@
 }
 
 - (BOOL)process:(nonnull FTRUMDataModel *)data {
-    if ([data isKindOfClass:FTRUMResourceDataModel.class]) {
+    if ([data isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
@@ -48,6 +48,14 @@
                         [self.resourceProperty addEntriesFromDictionary:data.fields];
                     }
                 }
+                    break;
+                case FTRUMDataResourceError:{
+                    if(self.errorHandler){
+                        self.errorHandler();
+                    }
+                    [self writeResourceError:data];
+                }
+                    break;
                 default:
                     break;
             }
@@ -55,6 +63,12 @@
     }
 
     return YES;
+}
+- (void)writeResourceError:(FTRUMDataModel *)model{
+    NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    [tags addEntriesFromDictionary:model.tags];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
@@ -70,7 +84,7 @@
         [fields setValue:model.metrics.resource_tcp forKey:FT_KEY_RESOURCE_TCP];
         [fields setValue:model.metrics.resource_dns forKey:FT_KEY_RESOURCE_DNS];
         [fields setValue:model.metrics.resource_first_byte forKey:FT_KEY_RESOURCE_FIRST_BYTE];
-        if ([model.metrics.duration intValue]>0) {
+        if ([model.metrics.duration longLongValue]>0) {
             [fields setValue:model.metrics.duration forKey:FT_DURATION];
         }
         [fields setValue:model.metrics.resource_trans forKey:FT_KEY_RESOURCE_TRANS];
@@ -78,6 +92,6 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:self.time]];
 }
 @end

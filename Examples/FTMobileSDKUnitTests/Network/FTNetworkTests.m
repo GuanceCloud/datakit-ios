@@ -100,7 +100,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
         
     }];
     if (urlStr) {
-        FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:urlStr];
+        FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];
@@ -187,7 +187,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSError *errors;
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
+        [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
         [expectation fulfill];
     }];

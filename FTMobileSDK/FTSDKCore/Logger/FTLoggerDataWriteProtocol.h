@@ -19,8 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: 日志状态
 ///   - tags: 属性
 ///   - field: 指标
-///   - tm: 数据产生时间戳(ns)
--(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field tm:(long long)tm;
+///   - time: 数据产生时间戳(ns)
+-(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time;
 @end
 NS_ASSUME_NONNULL_END
 

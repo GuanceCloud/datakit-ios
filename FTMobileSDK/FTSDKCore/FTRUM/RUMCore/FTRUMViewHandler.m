@@ -21,11 +21,6 @@
 @property (nonatomic, strong) FTRUMContext *sessionContext;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
-@property (nonatomic, copy) NSString *view_id;
-@property (nonatomic, copy) NSString *view_name;
-@property (nonatomic, copy) NSString *view_referrer;
-@property (nonatomic, strong) NSNumber *loading_time;
-@property (nonatomic, assign,readwrite) BOOL isActiveView;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
 @property (nonatomic, assign) NSInteger viewErrorCount;
@@ -84,10 +79,11 @@
                     self.isActiveView = NO;
                 }
                 self.didReceiveStartData = YES;
-            }else{
+                self.needUpdateView = YES;
+            }else if(self.isActiveView == YES){
                 self.isActiveView = NO;
+                self.needUpdateView = YES;
             }
-            self.needUpdateView = YES;
         }
             break;
         case FTRUMDataViewStop:{
@@ -101,19 +97,12 @@
             }
         }
             break;
-        case FTRUMDataClick:{
+        case FTRUMDataClick:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
             }
-        }
             break;
         case FTRUMDataError:
-            if (self.isActiveView) {
-                self.viewErrorCount++;
-                self.needUpdateView = YES;
-            break;
-        }
-        case FTRUMDataResourceError:
             if (self.isActiveView) {
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
@@ -124,17 +113,16 @@
                 [self startResource:(FTRUMResourceDataModel *)model];
             }
             break;
-        case FTRUMDataLongTask:{
+        case FTRUMDataLongTask:
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
             }
-        }
             break;
         default:
             break;
     }
-    if (model.type == FTRUMDataResourceStop || model.type == FTRUMDataResourceComplete) {
+    if ([model isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
         self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model];
@@ -164,6 +152,10 @@
     FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context];
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
+        weakSelf.needUpdateView = YES;
+    };
+    resourceHandler.errorHandler = ^{
+        weakSelf.viewErrorCount+=1;
         weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
@@ -202,7 +194,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field tm:[FTDateUtil dateTimeNanosecond:self.viewStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[FTDateUtil dateTimeNanosecond:self.viewStartTime]];
 }
 
 @end

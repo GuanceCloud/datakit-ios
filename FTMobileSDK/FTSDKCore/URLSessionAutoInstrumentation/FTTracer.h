@@ -8,23 +8,19 @@
 
 #import <Foundation/Foundation.h>
 #import "FTTracerProtocol.h"
+#import "FTEnumConstant.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 /// 具体实现 trace 功能，请求头添加参数实现
 @interface FTTracer : NSObject<FTTracerProtocol>
-/// 单例
-/// 默认配置（sampleRate：100,traceType:FTNetworkTraceTypeDDtrace,link:NO）
-+ (instancetype)shared;
 /// 设置 trace 配置
 /// - Parameters:
 ///   - sampleRate: 采样率
 ///   - traceType: 链路追踪类型
 ///   - link: 是否关联 rum
-- (void)startWithSampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType enableLinkRumData:(BOOL)link;
-- (void)shutDown;
+-(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:(BOOL)trace enableLinkRumData:(BOOL)link;
 #if FTSDKUNITTEST
--(NSUInteger)getSkywalkingSeq;
+-(NSUInteger)getSkyWalkingSequence;
 #endif
 
 @end

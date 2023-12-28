@@ -15,6 +15,7 @@
 #import "FTInternalLog.h"
 #import "FTTrack.h"
 #import "FTDateUtil.h"
+#import "FTBaseInfoHandler.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
@@ -79,7 +80,7 @@ static char *ignoredLoad = "ignoredLoad";
                 return;
             }
             [FTTrack sharedInstance].currentController = self;
-            if(![self dataflux_ignoreTabBarControlleChildLoadDuration] && self.ft_viewLoadStartTime){
+            if(![self dataflux_ignoreTabBarControllerChildLoadDuration] && self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
@@ -87,7 +88,7 @@ static char *ignoredLoad = "ignoredLoad";
                 NSNumber *loadTime = @0;
                 self.ft_loadDuration = loadTime;
             }
-            self.ft_viewUUID = [NSUUID UUID].UUIDString;
+            self.ft_viewUUID = [FTBaseInfoHandler randomUUID];
             if([FTTrack sharedInstance].addRumDatasDelegate){
                 if([[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(onCreateView:loadTime:)]){
                     [[FTTrack sharedInstance].addRumDatasDelegate onCreateView:self.ft_viewControllerName loadTime:self.ft_loadDuration];
@@ -129,7 +130,7 @@ static char *ignoredLoad = "ignoredLoad";
 /// UITabBarController 页面加载后，所有子视图页面都会加载
 /// 仅记录第一个展示的子视图的 viewDidLoad 时间
 /// 其他子视图的 viewDidLoad - viewDidDisappear 不能作为页面加载时间
--(BOOL)dataflux_ignoreTabBarControlleChildLoadDuration{
+-(BOOL)dataflux_ignoreTabBarControllerChildLoadDuration{
     id ignored = objc_getAssociatedObject(self.class, &ignoredLoad);
     if(ignored == nil){
         if ([self isKindOfClass:UITabBarController.class]){

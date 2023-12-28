@@ -113,6 +113,7 @@
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation];
     [engine network:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        
     }];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -194,7 +195,7 @@
     [NSThread sleepForTimeInterval:0.5];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
 
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:@"test"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"test"];
     config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;

@@ -43,13 +43,9 @@
     CGPoint point = [gesture locationInView:gestureView];
 
     UIView *view = [gestureView.subviews lastObject];
-    UIView *sequeceView = [view.subviews lastObject];
-    UIView *reparatableVequeceView = [sequeceView.subviews firstObject];
-    UIView *stackView = [reparatableVequeceView.subviews firstObject];
-    if ([NSStringFromClass(gestureView.class) isEqualToString:@"_UIAlertControllerView"]) {
-        // iOS9 上，为 UICollectionView
-        stackView = [reparatableVequeceView.subviews lastObject];
-    }
+    UIView *sequenceView = [view.subviews lastObject];
+    UIView *separableSequenceView = [sequenceView.subviews firstObject];
+    UIView *stackView = [separableSequenceView.subviews firstObject];
     for (UIView *subView in stackView.subviews) {
         CGRect rect = [subView convertRect:subView.bounds toView:gestureView];
         if (CGRectContainsPoint(rect, point)) {

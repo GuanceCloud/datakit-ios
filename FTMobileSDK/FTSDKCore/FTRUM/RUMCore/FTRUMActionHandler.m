@@ -9,7 +9,7 @@
 #import "FTRUMActionHandler.h"
 #import "FTDateUtil.h"
 #import "FTConstants.h"
-
+#import "FTBaseInfoHandler.h"
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
@@ -35,7 +35,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if (self) {
         self.assistant = self;
         self.actionStartTime = model.time;
-        self.action_id = [NSUUID UUID].UUIDString;
+        self.action_id = [FTBaseInfoHandler randomUUID];
         self.action_name = model.action_name;
         self.action_type = model.action_type;
         self.type = model.type;
@@ -114,7 +114,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields tm:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
     if (self.handler) {
         self.handler();
     }
