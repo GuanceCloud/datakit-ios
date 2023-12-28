@@ -53,7 +53,7 @@
     return ^(NSString *value) {
         self->_clientToken = value;
         if(value && value.length>0){
-            FTInnerLogInfo(@"SDK Dataway Client Token：%@",value);
+            FTInnerLogInfo(@"SDK Dataway Client Token：%@*****",[value substringWithRange:NSMakeRange(0, value.length/2)]);
         }
         return self;
     };
