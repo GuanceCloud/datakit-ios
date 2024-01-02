@@ -68,6 +68,7 @@
 #define POINTER_SHORT_FMT "0x%lx"
 #define FT_NLIST struct nlist
 #endif
+#define FTPACStrippingMask_ARM64e 0x0000000fffffffff
 
 typedef struct FTStackFrameEntry{
     const struct FTStackFrameEntry *const previous;///前一个栈帧地址
@@ -153,7 +154,7 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
     }
     //遍历StackFrameEntry获取所有栈帧及对应的函数地址
     for(; i < 50; i++) {
-        backtraceBuffer[i] = frame.return_address;
+        backtraceBuffer[i] = frame.return_address & FTPACStrippingMask_ARM64e;
         if(backtraceBuffer[i] == 0 ||
            frame.previous == 0 ||
            ft_mach_copyMem(frame.previous, &frame, sizeof(frame)) != KERN_SUCCESS) {
