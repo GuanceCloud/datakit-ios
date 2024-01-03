@@ -42,13 +42,6 @@
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-    }
-    return self;
-}
 + (instancetype)sharedInstance {
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
@@ -64,6 +57,7 @@ static dispatch_once_t onceToken;
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
         [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
     }
@@ -119,15 +113,16 @@ static dispatch_once_t onceToken;
     [self.rumManager addErrorWithType:@"ios_crash" message:@"ios_anr" stack:slowStack];
 }
 #pragma mark ========== APP LAUNCH ==========
--(void)ftAppHotStart:(NSNumber *)duration{
-    [self.rumManager addLaunch:FTLaunchHot duration:duration];
+-(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
+    [self.rumManager addLaunch:FTLaunchHot launchTime:launchTime duration:duration];
 }
--(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
+    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 -(void)applicationWillEnterForeground{
     @try {
+        self.rumManager.appState = FTAppStateStartUp;
         if(!self.rumConfig.enableTraceUserView){
             return;
         }
@@ -143,9 +138,12 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
     }
 }
+-(void)applicationDidBecomeActive{
+    self.rumManager.appState = FTAppStateRun;
+}
 -(void)applicationDidEnterBackground{
     @try {
-        self.rumManager.appState = FTAppStateStartUp;
+        self.rumManager.appState = FTAppStateUnknown;
         if(!self.rumConfig.enableTraceUserView){
             return;
         }

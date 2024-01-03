@@ -124,7 +124,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * @param type      启动类型
  * @param duration  启动时长
  */
-- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration;
+- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate*)time duration:(NSNumber *)duration;
 
 #pragma mark - Error / Long Task -
 /// 崩溃

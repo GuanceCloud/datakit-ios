@@ -116,6 +116,9 @@ NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";
 NSString * const FT_KEY_ACTION_TYPE = @"action_type";
 NSString * const FT_KEY_ACTION_TYPE_CLICK = @"click";
+NSString * const FT_LAUNCH_HOT = @"launch_hot";
+NSString * const FT_LAUNCH_COLD = @"launch_cold";
+NSString * const FT_LAUNCH_WARM = @"launch_warm";
 
 #pragma mark ========== error monitor ==========
 NSString * const FT_MEMORY_TOTAL  = @"memory_total";

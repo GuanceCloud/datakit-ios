@@ -128,6 +128,10 @@ extern NSString * const FT_KEY_ACTION_ID;
 extern NSString * const FT_KEY_ACTION_NAME;
 extern NSString * const FT_KEY_ACTION_TYPE;
 extern NSString * const FT_KEY_ACTION_TYPE_CLICK;
+extern NSString * const FT_LAUNCH_HOT;
+extern NSString * const FT_LAUNCH_COLD;
+extern NSString * const FT_LAUNCH_WARM;
+
 #pragma mark --- field
 extern NSString * const FT_KEY_ACTION_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_ACTION_RESOURCE_COUNT;
