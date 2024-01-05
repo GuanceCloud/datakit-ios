@@ -16,9 +16,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import <sys/utsname.h>
-#if __has_include(<UIKit/UIKit.h>)
-#import <UIKit/UIKit.h>
-#endif
+#import "FTSDKCompat.h"
 
 #pragma -mark DEFINE MACRO FOR DIFFERENT CPU ARCHITECTURE
 #if defined(__arm64__)
@@ -93,63 +91,34 @@ static mach_port_t main_thread_id;
     return _ft_backtraceOfThread(ft_machThreadFromNSThread(thread));
 }
 
-//+ (NSString *)ft_backtraceOfCurrentThread {
-//    return [self ft_backtraceOfNSThread:[NSThread currentThread]];
-//}
 
 + (NSString *)ft_backtraceOfMainThread {
     return [self ft_backtraceOfNSThread:[NSThread mainThread]];
 }
 
-//+ (NSString *)ft_backtraceOfAllThread {
-//    thread_act_array_t threads;
-//    mach_msg_type_number_t thread_count = 0;
-//    const task_t this_task = mach_task_self();//获得任务的端口，带有发送权限的名称
-//
-//    kern_return_t kr = task_threads(this_task, &threads, &thread_count);//将target_task 任务中的所有线程枚举保存在act_list 中
-//    if(kr != KERN_SUCCESS) {
-//        return @"Fail to get information of all threads";
-//    }
-//
-//    NSMutableString *resultString = [NSMutableString stringWithFormat:@"Call Backtrace of %u threads:\n", thread_count];
-//    for(int i = 0; i < thread_count; i++) {
-//        [resultString appendString:_ft_backtraceOfThread(threads[i])];
-//    }
-//    return [resultString copy];
-//}
-
-#pragma -mark Get call backtrace of a mach_thread
-NSString *_ft_backtraceOfThread(thread_t thread) {
+uintptr_t* ft_backtrace(mcontext_t const machineContext,int* count){
     uintptr_t backtraceBuffer[50];
     int i = 0;
-    NSMutableString *header = [[NSMutableString alloc]initWithString:[FTCallStack ft_crashReportHeader]];
-    NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Last Exception Backtrace %u:\n", thread];
-    NSMutableString *binaryImagesString = [[NSMutableString alloc] initWithString:@"Binary Images:\n"];
-    //线程上下文信息
-    _STRUCT_MCONTEXT machineContext;
-    if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
-        return [NSString stringWithFormat:@"Fail to get information about thread: %u", thread];
-    }
     //.获取指针栈帧结构体_STRUCT_CONTEXT._ss，解析得到对应指令指针_STRUCT_CONTEXT._ss.ip;首次个栈帧指针_STRUCT_CONTEXT._ss.bp；栈顶指针_STRUCT_CONTEXT._ss.sp
-    const uintptr_t instructionAddress = ft_mach_instructionAddress(&machineContext);
+    const uintptr_t instructionAddress = ft_mach_instructionAddress(machineContext);
     backtraceBuffer[i] = instructionAddress;
     ++i;
     
-    uintptr_t linkRegister = ft_mach_linkRegister(&machineContext);
+    uintptr_t linkRegister = ft_mach_linkRegister(machineContext);
     if (linkRegister) {
         backtraceBuffer[i] = linkRegister;
         i++;
     }
     
     if(instructionAddress == 0) {
-        return @"Fail to get instruction address";
+        return NULL;
     }
     
     FTStackFrameEntry frame = {0};
-    const uintptr_t framePtr = ft_mach_framePointer(&machineContext);
+    const uintptr_t framePtr = ft_mach_framePointer(machineContext);
     if(framePtr == 0 ||
        ft_mach_copyMem((void *)framePtr, &frame, sizeof(frame)) != KERN_SUCCESS) {
-        return @"Fail to get frame pointer";
+        return NULL;
     }
     //遍历StackFrameEntry获取所有栈帧及对应的函数地址
     for(; i < 50; i++) {
@@ -160,11 +129,35 @@ NSString *_ft_backtraceOfThread(thread_t thread) {
             break;
         }
     }
+    *count = i;
+    uintptr_t* backtrace = backtraceBuffer;
+    return backtrace;
+}
+
+#pragma -mark Get call backtrace of a mach_thread
+NSString *_ft_backtraceOfThread(thread_t thread) {
+    
+    //线程上下文信息
+    _STRUCT_MCONTEXT machineContext;
+    if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
+        return [NSString stringWithFormat:@"Fail to get information about thread: %u", thread];
+    }
+    int count = 0;
+    uintptr_t* backtraceBuffer = ft_backtrace(&machineContext,&count);
+    if(backtraceBuffer == NULL){
+        return @"Fail to get instruction address";
+    }
+    return ft_backtraceOfThread(thread,backtraceBuffer,count);
+}
+NSString *ft_backtraceOfThread(thread_t thread,const uintptr_t* const backtraceBuffer,int count){
     //获得函数的实现地址，由于函数地址无法进行阅读，需要通过符号表（nlist）来解析为函数名，从而进行程序定位。
-    int backtraceLength = i;
+    int backtraceLength = count;
     Dl_info symbolicated[backtraceLength];
     FTMachoImage binaryImages[backtraceLength];
     ft_symbolicate(backtraceBuffer, symbolicated, backtraceLength, 0,binaryImages);
+    NSMutableString *header = [[NSMutableString alloc]initWithString:[FTCallStack ft_crashReportHeader]];
+    NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Last Exception Backtrace %u:\n", thread];
+    NSMutableString *binaryImagesString = [[NSMutableString alloc] initWithString:@"Binary Images:\n"];
     NSMutableSet *imageSet = [NSMutableSet new];
     FTMachoImage *image = &binaryImages[0];
     [header appendFormat:@"Code Type:   %@\n",[FTCallStack getMachine:image->cpuType]];

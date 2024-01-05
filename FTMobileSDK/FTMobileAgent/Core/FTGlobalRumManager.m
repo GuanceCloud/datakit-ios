@@ -17,7 +17,6 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
-#import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
@@ -31,6 +30,7 @@
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"
+#import "FTCrashMonitor.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
@@ -65,7 +65,7 @@ static dispatch_once_t onceToken;
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
+        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {

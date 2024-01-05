@@ -8,7 +8,7 @@
 
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
-#import "FTUncaughtExceptionHandler.h"
+#import "FTCrashMonitor.h"
 #import "FTDateUtil.h"
 #import "FTInternalLog.h"
 #import "FTRUMManager.h"
@@ -83,7 +83,7 @@ static FTExtensionManager *sharedInstance = nil;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
+        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
     }
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }

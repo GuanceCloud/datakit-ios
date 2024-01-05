@@ -1,5 +1,5 @@
 //
-//  FTUncaughtExceptionHandler.h
+//  FTCrashMonitor.h
 //  FTAutoTrack
 //
 //  Created by 胡蕾蕾 on 2020/1/6.
@@ -11,10 +11,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// 崩溃采集工具
-@interface FTUncaughtExceptionHandler : NSObject
+@interface FTCrashMonitor : NSObject
 
 /// 单例
-+ (instancetype)sharedHandler;
++ (instancetype)shared;
 /// 添加处理 error data 的代理对象
 /// - Parameter delegate: 代理对象
 - (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)delegate;
