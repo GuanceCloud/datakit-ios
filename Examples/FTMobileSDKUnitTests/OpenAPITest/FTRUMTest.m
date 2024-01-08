@@ -190,8 +190,8 @@
     [FTModelHelper resolveModelArray:array callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_VIEW]) {
             [self rumTags:tags];
-            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_IS_ACTIVE]&&[tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
+            XCTAssertTrue([fields.allKeys containsObject:FT_KEY_VIEW_RESOURCE_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ACTION_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_LONG_TASK_COUNT]&&[fields.allKeys containsObject:FT_KEY_VIEW_ERROR_COUNT]&&[fields.allKeys containsObject:FT_KEY_IS_ACTIVE]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]&&[tags.allKeys containsObject:FT_KEY_VIEW_NAME]);
             hasView = YES;
             *stop = YES;
         }

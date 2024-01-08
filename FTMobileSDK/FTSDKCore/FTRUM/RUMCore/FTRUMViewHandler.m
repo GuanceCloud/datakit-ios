@@ -163,7 +163,6 @@
 - (void)writeViewData:(FTRUMDataModel *)model{
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
-    [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:FT_KEY_IS_ACTIVE];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
@@ -174,6 +173,7 @@
                                    FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
                                    FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
                                    FT_KEY_TIME_SPEND:timeSpend,
+                                   FT_KEY_IS_ACTIVE:[FTBaseInfoHandler boolStr:self.isActiveView],
                                    
     }.mutableCopy;
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
