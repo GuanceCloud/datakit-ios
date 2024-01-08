@@ -1,3 +1,7 @@
+# 1.4.9-alpha.3
+1. `RUM-View.is_active` 页面活跃状态修改为指标
+
+---
 # 1.4.9-alpha.2
 1. `RUM-Action` 中启动事件时间赋值错误修复
 
