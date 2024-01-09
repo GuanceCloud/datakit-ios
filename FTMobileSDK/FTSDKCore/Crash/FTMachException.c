@@ -11,6 +11,8 @@
 #include <mach/mach.h>
 #include <pthread.h>
 #include <unistd.h>
+static FTCrashNotifyCallback g_onCrashNotify;
+
 static mach_port_t ft_exceptionPort = MACH_PORT_NULL;
 
 //监听异常端口的主要线程
@@ -20,6 +22,8 @@ static pthread_t ft_secondaryPThread;
 static thread_t ft_secondaryMachThread;
 
 static const char* kThreadPrimary = "Exception Handler (Primary)";
+static const char* kThreadSecondary = "Exception Handler (Secondary)";
+
 static bool ft_isHandlingCrash = false;
 
 static struct
@@ -208,7 +212,10 @@ static void* handleExceptions(void* const userData){
     pthread_setname_np(threadName);
     ft_mach_exception_message message = {{0}};
     ft_mach_replay_message replyMessage = {{0}};
-
+    if(threadName == kThreadSecondary)
+    {
+        thread_suspend((thread_t)mach_thread_self());
+    }
     while (1) {
         
         mach_msg_return_t r;
@@ -221,10 +228,20 @@ static void* handleExceptions(void* const userData){
     thread_t crashThread = (thread_t)message.task.name;
     thread_suspend(crashThread);
     ft_isHandlingCrash = true;
-    
     // crash reason:
-    
-    
+    if (g_onCrashNotify != NULL) {
+        thread_t thread_self = mach_thread_self();
+        _STRUCT_MCONTEXT machineContext;
+        if(ft_fillThreadStateIntoMachineContext(thread_self, &machineContext)) {
+            int count = 0;
+            uintptr_t* backtraceBuffer = ft_backtrace(&machineContext,&count);
+            uintptr_t backtrace[count];
+            for(int i = 0; i <= count; i++){
+                backtrace[i] = backtraceBuffer[i];
+            }
+            g_onCrashNotify(thread_self,backtrace,count,"reason");
+        }
+    }
     
     ft_isHandlingCrash = false;
     thread_resume(crashThread);
@@ -267,7 +284,8 @@ void uninstallMachException(void){
     ft_exceptionPort = MACH_PORT_NULL;
 }
 
-void installMachException(void){
+void installMachException(const FTCrashNotifyCallback onCrashNotify){
+    g_onCrashNotify = onCrashNotify;
     bool attributes_created = false;
     pthread_attr_t attr;
     if(pthread_attr_init(&attr) != 0)

@@ -13,8 +13,9 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <mach/mach.h>
+#include "FTStackInfo.h"
 
-typedef void (*FTCrashNotifyCallback)(thread_t thread,uintptr_t*   backtrace,int count, const char *  crashMessage);
+
 
 // TODO: 命名优化，避免函数命名冲突
 void installSignalException(const FTCrashNotifyCallback onCrashNotify);

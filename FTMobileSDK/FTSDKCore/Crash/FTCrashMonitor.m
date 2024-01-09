@@ -20,15 +20,14 @@
 @end
 @implementation FTCrashMonitor
 void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const char *crashMessage){
-    NSString *stackInfo = ft_backtraceOfThread(thread, backtrace,count);
+    uninstallSignalException();
+    uninstallUncaughtExceptionHandler();
+    NSString *stackInfo = [FTCallStack ft_reportOfThread:thread backtrace:backtrace count:count];
     for (id instance in FTCrashMonitor.shared.ftSDKInstances) {
         if ([instance respondsToSelector:@selector(internalErrorWithType:message:stack:)]) {
             [instance internalErrorWithType:@"ios_crash" message:[NSString stringWithCString:crashMessage encoding:NSUTF8StringEncoding] stack:stackInfo];
         }
     }
-    uninstallMachException();
-    uninstallSignalException();
-    uninstallUncaughtExceptionHandler();
 }
 + (instancetype)shared {
     static FTCrashMonitor *sharedHandler = nil;
@@ -45,7 +44,6 @@ void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const cha
         // Install our handler
         installUncaughtExceptionHandler(crashNotifyCallback);
         installSignalException(crashNotifyCallback);
-//        installMachException(crashNotifyCallback);
     }
     return self;
 }

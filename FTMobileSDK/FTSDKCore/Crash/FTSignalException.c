@@ -9,6 +9,7 @@
 #include "FTSignalException.h"
 #include <signal.h>
 #include <stdlib.h>
+#include "FTStackInfo.h"
 
 static FTCrashNotifyCallback g_onCrashNotify;
 static stack_t g_signalStack = {0};
@@ -85,7 +86,14 @@ static struct signal_code signal_codes[] = {
     { SIGSEGV,  SEGV_ACCERR,    "SEGV_ACCERR" },
     { 0, 0, NULL }
 };
-
+#ifdef _KSCRASH_CONTEXT_64
+#define UC_MCONTEXT uc_mcontext64
+typedef ucontext64_t SignalUserContext;
+#undef _KSCRASH_CONTEXT_64
+#else
+#define UC_MCONTEXT uc_mcontext
+typedef ucontext_t SignalUserContext;
+#endif
 const char *ft_async_signal_sigcode (int signal, int si_code) {
     for (int i = 0; signal_codes[i].name != NULL; i++) {
         /* Check for match */
@@ -108,15 +116,41 @@ const char *ft_async_signal_signame (int signal) {
     return NULL;
 }
 
-static void signalHandler(int signal, siginfo_t* info, void* context) {
+static void signalHandler(int signal, siginfo_t* info, void* signalUserContext) {
+
+    _STRUCT_MCONTEXT* sourceContext = ((SignalUserContext*)signalUserContext)->UC_MCONTEXT;
+    _STRUCT_MCONTEXT64 context;
+    memcpy(&context, sourceContext, sizeof(context));
     
-    _STRUCT_MCONTEXT* sourceContext = ((_STRUCT_UCONTEXT64 *)context)->uc_mcontext64;
-//    uintptr_t* callStack = ft_backtrace(sourceContext);
-    if (g_onCrashNotify != NULL) {
-        thread_t thread_self = mach_thread_self();
-//        g_onCrashNotify(thread_self,callStack,"aa");
+    int count = 0;
+    char name_buf[10];
+    const char *name;
+    if ((name = ft_async_signal_signame(info->si_signo)) == NULL) {
+        snprintf(name_buf, sizeof(name_buf), "#%d", info->si_signo);
+        name = name_buf;
     }
     
+    /* Fetch the signal code string */
+    char code_buf[10];
+    const char *code;
+    if ((code = ft_async_signal_sigcode(info->si_signo, info->si_code)) == NULL) {
+        snprintf(code_buf, sizeof(code_buf), "#%d", info->si_code);
+        code = code_buf;
+    }
+
+    char reason[50] = "Signal Name:";
+    strcat(reason, name);
+    strcat(reason, ", Signal Code:");
+    strcat(reason, code);
+    uintptr_t* callStack = ft_backtrace(&context,&count);
+    uintptr_t backtrace[count];
+    for(int i = 0; i <= count; i++){
+        backtrace[i] = callStack[i];
+    }
+    if (g_onCrashNotify != NULL) {
+        thread_t thread_self = mach_thread_self();
+        g_onCrashNotify(thread_self,backtrace,count,reason);
+    }
     raise(signal);
 }
 
@@ -130,8 +164,17 @@ void installSignalException(const FTCrashNotifyCallback onCrashNotify){
     if(sigaltstack(&g_signalStack, NULL) != 0){
         return;
     }
-    const int* signals = g_fatalSignals;
-    int fatalSignalsCount = sizeof(&signals)/sizeof(int);
+    int signals[] = {
+        SIGABRT,
+        SIGBUS,
+        SIGFPE,
+        SIGILL,
+        SIGPIPE,
+        SIGSEGV,
+        SIGSYS,
+        SIGTRAP,
+    };
+    int fatalSignalsCount = sizeof(signals)/sizeof(int);
 
     if(g_previousSignalHandlers == NULL){
         g_previousSignalHandlers = malloc(sizeof(*g_previousSignalHandlers)
@@ -139,7 +182,9 @@ void installSignalException(const FTCrashNotifyCallback onCrashNotify){
     }
     struct sigaction action = {{0}};
     action.sa_flags = SA_SIGINFO | SA_ONSTACK;
+#if defined(__LP64__)
     action.sa_flags |= SA_64REGSET;
+#endif
     sigemptyset(&action.sa_mask);
     action.sa_sigaction = &signalHandler;
     for(int i = 0; i < fatalSignalsCount; i++){
@@ -155,13 +200,24 @@ void installSignalException(const FTCrashNotifyCallback onCrashNotify){
 
 void uninstallSignalException(void){
     g_onCrashNotify = NULL;
-    const int* signals = g_fatalSignals;
+    int signals[] = {
+        SIGABRT,
+        SIGBUS,
+        SIGFPE,
+        SIGILL,
+        SIGPIPE,
+        SIGSEGV,
+        SIGSYS,
+        SIGTRAP,
+    };
+    int fatalSignalsCount = sizeof(signals)/sizeof(int);
 
-    for(int i = 0; i < sizeof(&signals)/sizeof(int); i++)
+    for(int i = 0; i < fatalSignalsCount; i++)
     {
         sigaction(signals[i], &g_previousSignalHandlers[i], NULL);
     }
     
     g_signalStack = (stack_t){0};
+
 }
 

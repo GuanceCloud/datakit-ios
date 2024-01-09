@@ -8,11 +8,12 @@
 
 #ifndef FTNSException_h
 #define FTNSException_h
-#import "FTSignalException.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "FTStackInfo.h"
 
 void installUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify);
 

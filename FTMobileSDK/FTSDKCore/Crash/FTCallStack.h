@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-NSString *ft_backtraceOfThread(thread_t thread,const uintptr_t* const backtraceBuffer,int count);
 NS_ASSUME_NONNULL_BEGIN
 @interface FTCallStack : NSObject
-
++ (NSString *)ft_reportOfThread:(thread_t)thread backtrace:(uintptr_t*)backtraceBuffer count:(int)count;
 + (NSString *)ft_backtraceOfMainThread;
 + (NSString *)ft_backtraceOfNSThread:(NSThread *)thread;
 + (NSString *)ft_crashReportHeader;
