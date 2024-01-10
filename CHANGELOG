@@ -1,3 +1,7 @@
+# 1.4.9-alpha.4
+1. `RUM-View` 新增指标 `view_update_time`
+
+---
 # 1.4.9-alpha.3
 1. `RUM-View.is_active` 页面活跃状态修改为指标
 
