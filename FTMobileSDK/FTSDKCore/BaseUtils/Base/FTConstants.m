@@ -50,7 +50,8 @@ NSString * const FT_KEY_VIEW_REFERRER = @"view_referrer";
 NSString * const FT_KEY_VIEW_NAME = @"view_name";
 //view field
 NSString * const FT_KEY_LOADING_TIME = @"loading_time";
-NSString * const FT_KEY_TIME_SPEND = @"time_spent";
+NSString * const FT_KEY_TIME_SPENT = @"time_spent";
+NSString * const FT_KEY_VIEW_UPDATE_TIME = @"view_update_time";
 NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";
 NSString * const FT_KEY_VIEW_RESOURCE_COUNT = @"view_resource_count";
 NSString * const FT_KEY_VIEW_LONG_TASK_COUNT = @"view_long_task_count";
