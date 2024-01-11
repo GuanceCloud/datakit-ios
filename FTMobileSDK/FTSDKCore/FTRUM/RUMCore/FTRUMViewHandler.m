@@ -179,7 +179,7 @@
                                    FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
                                    FT_KEY_TIME_SPENT:nTimeSpent,
                                    FT_KEY_VIEW_UPDATE_TIME:@(self.updateTime),
-                                   FT_KEY_IS_ACTIVE:[FTBaseInfoHandler boolStr:self.isActiveView],
+                                   FT_KEY_IS_ACTIVE:[NSNumber numberWithBool:self.isActiveView],
     }.mutableCopy;
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];

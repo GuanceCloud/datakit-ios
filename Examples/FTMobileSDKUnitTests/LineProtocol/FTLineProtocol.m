@@ -175,6 +175,44 @@
     }
     
 }
+- (void)testLineProtocolValueFormat{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_TAGS:@{@"string":@"stringValue",
+                  @"boolNumber":@(YES),
+                  @"null":[NSNull null]
+        },
+        FT_FIELDS:@{@"string":@"stringValue",
+                  @"intNumber":@(1),
+                  @"floatNumber":@(1.23456789),
+                  @"boolNumber":@(NO),
+                  @"array":@[@"1",@"2"],
+                  @"null":[NSNull null]},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    
+    NSRange range = [lineStr rangeOfString:@" "];
+    NSString *tagStr = [lineStr substringToIndex:range.location];
+    NSString *fieldStr = [lineStr substringFromIndex:range.location+1];
+    
+    XCTAssertTrue([tagStr containsString:@"string=stringValue"]);
+    XCTAssertTrue([tagStr containsString:@"boolNumber=true"]);
+    
+    XCTAssertTrue([fieldStr containsString:@"string=\"stringValue\""]);
+    XCTAssertTrue([fieldStr containsString:@"floatNumber=1.2"]);
+    XCTAssertTrue([fieldStr containsString:@"intNumber=1i"]);
+    XCTAssertTrue([fieldStr containsString:@"boolNumber=false"]);
+    XCTAssertTrue([fieldStr containsString:@"array=\"[\\\"1\\\",\\\"2\\\"]\""]);
+    
+}
 - (void)transliteration:(NSString *)str expect:(NSString *)expect{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];

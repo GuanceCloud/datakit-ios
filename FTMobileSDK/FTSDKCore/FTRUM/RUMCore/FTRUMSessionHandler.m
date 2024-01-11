@@ -148,9 +148,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
-    [tags setValue:[FTBaseInfoHandler boolStr:YES] forKey:FT_IS_WEBVIEW];
+    [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
-    [fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
+    [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
     [self.context.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
 }
 -(NSString *)getCurrentViewID{
