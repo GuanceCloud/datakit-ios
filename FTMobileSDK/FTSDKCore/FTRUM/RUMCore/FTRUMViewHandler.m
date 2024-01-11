@@ -106,6 +106,10 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
+                FTRUMErrorData *error = (FTRUMErrorData *)model;
+                if(error.fatal){
+                    self.isActiveView = NO;
+                }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
             }
