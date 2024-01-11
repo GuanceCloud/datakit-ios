@@ -360,7 +360,7 @@
         XCTAssertNil(error);
     }];
 }
-- (void)testUnenabledTrace{
+- (void)testDisabledTrace{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];

@@ -125,7 +125,13 @@
         [self.resourceDelegate stopResourceWithKey:key property:property];
     }
 }
-- (NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
+- (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url{
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(getTraceHeaderWithKey:url:)]){
+        return [self.resourceDelegate getTraceHeaderWithUrl:url];
+    }
+    return nil;
+}
+- (nullable NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(getTraceHeaderWithKey:url:)]){
         return [self.resourceDelegate getTraceHeaderWithKey:key url:url];
     }
