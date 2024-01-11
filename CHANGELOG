@@ -1,3 +1,8 @@
+# 1.4.9-alpha.5
+1. 新增不关联 RUM 时获取 Trace 链路请求头的方法
+2. 数据上传时 BOOL 类型数据格式处理修改
+
+---
 # 1.4.9-alpha.4
 1. `RUM-View` 新增指标 `view_update_time`
 
