@@ -18,11 +18,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let dic = ProcessInfo().environment
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
-        let config = FTMobileConfig(metricsUrl: url!)
+        let config = FTMobileConfig(datakitUrl: url!)
         config.enableSDKDebugLog = true
         FTMobileAgent.start(withConfigOptions: config)
         let rumConfig = FTRumConfig(appid: appid!)
         rumConfig.enableTraceUserAction = true
+//        rumConfig.resourceUrlHandler =  { (url) -> Bool in
+//            return false
+//        }
         rumConfig.enableTrackAppANR = true
         rumConfig.enableTraceUserView = true
         rumConfig.enableTraceUserResource = true

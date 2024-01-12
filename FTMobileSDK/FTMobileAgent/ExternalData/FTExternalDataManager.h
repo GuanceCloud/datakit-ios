@@ -137,8 +137,11 @@ typedef enum FTAppState:NSUInteger FTAppState;
 - (void)stopResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property;
 
 #pragma mark --------- Trace ----------
-
 /// 获取 trace（链路追踪）需要添加的请求头
+/// - Parameters:
+///   - url: 请求 URL
+- (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
+/// 开启 `enableLinkRUMData` 时，获取 trace（链路追踪）需要添加的请求头，
 /// - Parameters:
 ///   - key: 请求标识
 ///   - url: 请求 URL

@@ -1,3 +1,33 @@
+# 1.4.9-alpha.5
+1. 新增不关联 RUM 时获取 Trace 链路请求头的方法
+2. 数据上传时 BOOL 类型数据格式处理修改
+
+---
+# 1.4.9-alpha.4
+1. `RUM-View` 新增指标 `view_update_time`
+
+---
+# 1.4.9-alpha.3
+1. `RUM-View.is_active` 页面活跃状态修改为指标
+
+---
+# 1.4.9-alpha.2
+1. `RUM-Action` 中启动事件时间赋值错误修复
+
+---
+# 1.4.9-alpha.1
+1. 修复 arm64e 符号翻译失败问题
+
+---
+# 1.4.8-beta.1
+1. 同 1.4.8-alpha.5、 调试日志输出调整
+
+---
+# 1.4.8-alpha.5
+1. 修复 `RUM-view.duration` 时间过长问题
+2. RUM-ResourceError `error_type` 对应值调整为 `network_error`
+
+---
 # 1.4.8-alpha.4
 1. 修复由 block 创建 IMP 时添加多余参数 SEL 导致的崩溃问题
 2. 修复采样率算法

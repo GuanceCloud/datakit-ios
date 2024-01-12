@@ -66,6 +66,9 @@
         rumConfig.enableTraceUserAction = YES;
         rumConfig.enableTraceUserView = YES;
         rumConfig.enableTraceUserResource = YES;
+//        rumConfig.resourceUrlHandler = ^(NSURL *url){
+//            return NO;
+//        };
         rumConfig.errorMonitorType = FTErrorMonitorAll;
         rumConfig.deviceMetricsMonitorType = FTDeviceMetricsMonitorAll;
         rumConfig.monitorFrequency = FTMonitorFrequencyRare;

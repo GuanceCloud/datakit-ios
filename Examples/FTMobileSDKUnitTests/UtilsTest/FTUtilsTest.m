@@ -147,10 +147,10 @@
 #pragma mark ==========  NSNumber ==========
 - (void)testLineProtocolDealNumber{
     NSNumber *trueNum = [NSNumber numberWithBool:YES];
-    XCTAssertEqualObjects([trueNum ft_toFiledString], @"\"true\"");
+    XCTAssertEqualObjects([trueNum ft_toFiledString], @"true");
     
     NSNumber *falseNum = [NSNumber numberWithBool:NO];
-    XCTAssertEqualObjects([falseNum ft_toFiledString], @"\"false\"");
+    XCTAssertEqualObjects([falseNum ft_toFiledString], @"false");
     
     NSNumber *floatNum = [NSNumber numberWithFloat:1234567.12];
     XCTAssertEqualObjects([floatNum ft_toFiledString], @"1234567.1");

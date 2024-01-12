@@ -130,25 +130,23 @@ NSString * const AppStateStringMap[] = {
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
-    self.appState = FTAppStateRun;
+- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate *)time duration:(NSNumber *)duration{
     @try {
-        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             NSString *actionName;
             NSString *actionType;
             switch (type) {
                 case FTLaunchHot:
                     actionName = @"app_hot_start";
-                    actionType = @"launch_hot";
+                    actionType = FT_LAUNCH_HOT;
                     break;
                 case FTLaunchCold:
                     actionName = @"app_cold_start";
-                    actionType = @"launch_cold";
+                    actionType = FT_LAUNCH_COLD;
                     break;
                 case FTLaunchWarm:
                     actionName = @"app_warm_start";
-                    actionType = @"launch_warm";
+                    actionType = FT_LAUNCH_WARM;
                     break;
             }
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
@@ -213,12 +211,12 @@ NSString * const AppStateStringMap[] = {
                 NSMutableDictionary *errorField = [NSMutableDictionary new];
                 NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
                 if(content.error){
-                   [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }else{
-                   [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }
                 [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
-                [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_TYPE];
+                [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
                 [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
                 [errorTags addEntriesFromDictionary:[self errorMonitorInfo]];
                 if (content.responseBody.length>0) {

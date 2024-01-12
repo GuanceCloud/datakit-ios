@@ -14,13 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// app 热启动
 /// - Parameter duration: 启动时长
--(void)ftAppHotStart:(NSNumber *)duration;
+-(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration ;
 
 /// app 冷启动
 /// - Parameters:
 ///   - duration: 启动时长
 ///   - isPreWarming: 是否产生了预热
--(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming;
 @end
 @interface FTAppLaunchTracker : NSObject
 @property (nonatomic,weak) id<FTAppLaunchDataDelegate> delegate;

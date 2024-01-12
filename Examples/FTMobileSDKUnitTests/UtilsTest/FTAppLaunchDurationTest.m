@@ -9,11 +9,17 @@
 #import <KIF/KIF.h>
 #import "FTAppLaunchTracker.h"
 #import "FTRUMManager.h"
+#import "FTDateUtil.h"
+#import "FTMobileConfig.h"
+#import "FTConstants.h"
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
+typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionary *fields);
 
-@interface FTAppLaunchDurationTest : KIFTestCase<FTAppLaunchDataDelegate>
-@property (nonatomic, strong) FTAppLaunchTracker *launchtracker;
+@interface FTAppLaunchDurationTest : KIFTestCase<FTAppLaunchDataDelegate,FTRUMDataWriteProtocol>
+@property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, copy) LaunchBlock launchBlock;
+@property (nonatomic, copy) LaunchDataBlock launchDataBlock;
+
 @end
 
 @implementation FTAppLaunchDurationTest
@@ -23,7 +29,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 }
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    self.launchtracker = nil;
+    self.launchTracker = nil;
 }
 - (void)testLaunchCold{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
@@ -31,7 +37,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
         XCTAssertTrue(type == FTLaunchCold);
         [expectation fulfill];
     };
-    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -46,7 +52,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
         [expectation fulfill];
     };
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -54,7 +60,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
 }
 - (void)testLaunchHot{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     self.launchBlock = ^(NSNumber * _Nullable duration, FTLaunchType type) {
         if(type == FTLaunchHot){
             [expectation fulfill];
@@ -82,7 +88,7 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
     setenv("ActivePrewarm", "1", 1);
     [NSClassFromString(@"FTAppLaunchTracker") load];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
-    self.launchtracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
+    self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
@@ -91,15 +97,69 @@ typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
     setenv("ActivePrewarm", "", 1);
     [NSClassFromString(@"FTAppLaunchTracker") load];
 }
-- (void)ftAppColdStart:(nonnull NSNumber *)duration isPreWarming:(BOOL)isPreWarming { 
+- (void)testLaunchColdDataNotHasViewData{
+    [self launchData:FTLaunchCold];
+}
+- (void)testLaunchWarmDataNotHasViewData{
+    [self launchData:FTLaunchWarm];
+}
+- (void)testLaunchHotData{
+    [self launchData:FTLaunchHot];
+}
+- (void)launchData:(FTLaunchType)type{
+    FTRUMManager *manager = [[FTRUMManager alloc]initWithRumSampleRate:100 errorMonitorType:ErrorMonitorAll monitor:nil writer:self];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
+        if([source isEqualToString:FT_RUM_SOURCE_ACTION]){
+            switch (type) {
+                case FTLaunchHot:
+                    XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_HOT]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    break;
+                case FTLaunchWarm:
+                    XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_WARM]);
+                    XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    break;
+                case FTLaunchCold:
+                    XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_COLD]);
+                    XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    break;
+            }
+            [expectation fulfill];
+        }
+    };
+    [manager startViewWithName:@"Test"];
+    [manager addLaunch:type launchTime:[NSDate date] duration:@123];
+    [manager syncProcess];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming {
+    NSNumber *maxDuration = [FTDateUtil nanosecondTimeIntervalSinceDate:launchTime toDate:[NSDate date]];
+    XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     if(self.launchBlock){
         self.launchBlock(duration, isPreWarming?FTLaunchWarm:FTLaunchCold);
     }
 }
-- (void)ftAppHotStart:(nonnull NSNumber *)duration { 
+- (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{ 
+    NSNumber *maxDuration = [FTDateUtil nanosecondTimeIntervalSinceDate:launchTime toDate:[NSDate date]];
+    XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     if(self.launchBlock){
         self.launchBlock(duration, FTLaunchHot);
     }
 }
+- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
+    if(self.launchDataBlock){
+        self.launchDataBlock(source, tags, fields);
+    }
+}
+    
+- (void)rumWrite:(nonnull NSString *)source tags:(nonnull NSDictionary *)tags fields:(nonnull NSDictionary *)fields {
+    if(self.launchDataBlock){
+        self.launchDataBlock(source, tags, fields);
+    }
+}
+    
 
 @end

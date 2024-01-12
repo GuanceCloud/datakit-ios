@@ -124,9 +124,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  * 实际意义上 与 click action 不同，action附加resource、error、long task不进行统计
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
-    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
+    
+    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
-    NSDictionary *actiontags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
+    NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
                                  FT_KEY_ACTION_NAME:model.action_name,
                                  FT_KEY_ACTION_TYPE:model.action_type
     };
@@ -135,7 +136,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_RESOURCE_COUNT:@(0),
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
-    [tags addEntriesFromDictionary:actiontags];
+    [tags addEntriesFromDictionary:actionTags];
     [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:model.time]];
 
 }
@@ -152,9 +153,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];
-    [tags setValue:[FTBaseInfoHandler boolStr:YES] forKey:FT_IS_WEBVIEW];
+    [tags setValue:@(YES) forKey:FT_IS_WEBVIEW];
     NSMutableDictionary *fields = [[NSMutableDictionary alloc]initWithDictionary:data.fields];
-    [fields setValue:[FTBaseInfoHandler boolStr:NO] forKey:FT_KEY_IS_ACTIVE];
+    [fields setValue:@(NO) forKey:FT_KEY_IS_ACTIVE];
     [self.context.writer rumWrite:data.measurement tags:tags fields:fields time:data.tm];
 }
 -(NSString *)getCurrentViewID{
