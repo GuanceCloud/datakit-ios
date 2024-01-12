@@ -104,8 +104,13 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
+                FTRUMErrorData *error = (FTRUMErrorData *)model;
+                if(error.fatal){
+                    self.isActiveView = NO;
+                }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
+                [self writeErrorData:model];
             }
             break;
         case FTRUMDataResourceStart:
@@ -117,6 +122,7 @@
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
+                [self writeErrorData:model];
             }
             break;
         default:
@@ -159,6 +165,16 @@
         weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
+}
+- (void)writeErrorData:(FTRUMDataModel *)model{
+    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    [tags addEntriesFromDictionary:model.tags];
+    NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
+    [self.context.writer rumWrite:error tags:tags fields:model.fields];
+    if(self.errorHandled){
+        self.errorHandled();
+    }
 }
 - (void)writeViewData:(FTRUMDataModel *)model{
     NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];

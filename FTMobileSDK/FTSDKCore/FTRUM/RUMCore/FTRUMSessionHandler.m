@@ -21,6 +21,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 @property (nonatomic, strong) NSMutableArray<FTRUMHandler*> *viewHandlers;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) BOOL sampling;
+@property (nonatomic, assign) BOOL needWriteErrorData;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @end
 @implementation FTRUMSessionHandler
@@ -75,14 +76,14 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         return YES;
     }
     _lastInteractionTime = [NSDate date];
-    BOOL needWriteErrorData = NO;
+    self.needWriteErrorData = NO;
     switch (model.type) {
         case FTRUMDataViewStart:
             [self startView:model];
             break;
         case FTRUMDataError:
         case FTRUMDataLongTask:
-            needWriteErrorData = YES;
+            self.needWriteErrorData = YES;
             break;
         case FTRUMDataLaunch:
             [self writeLaunchData:(FTRUMLaunchDataModel*)model];
@@ -94,7 +95,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
-    if(needWriteErrorData){
+    // 没有 view 能处理 error\longTask 则由 session 处理写入
+    if(self.needWriteErrorData){
         [self writeErrorData:model];
     }
     return  YES;
@@ -102,6 +104,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 -(void)startView:(FTRUMDataModel *)model{
     
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context monitor:self.monitor];
+    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    viewHandler.errorHandled = ^{
+        self.needWriteErrorData = NO;
+    };
     [self.viewHandlers addObject:viewHandler];
 }
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
@@ -134,11 +140,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
-    NSDictionary *sessionViewTag = [self getCurrentErrorSessionInfo];
+    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    
     [self.context.writer rumWrite:error tags:tags fields:model.fields];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
