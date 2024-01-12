@@ -19,6 +19,8 @@
 #define DETAG_INSTRUCTION_ADDRESS(A) ((A) & ~(3UL))
 #define FT_THREAD_STATE_COUNT ARM_THREAD_STATE64_COUNT
 #define FT_THREAD_STATE ARM_THREAD_STATE64
+#define FT_EXCEPTION_STATE_COUNT ARM_EXCEPTION_STATE64_COUNT
+#define FT_EXCEPTION_STATE  ARM_EXCEPTION_STATE64
 #define FT_FRAME_POINTER __fp
 #define FT_STACK_POINTER __sp
 #define FT_INSTRUCTION_ADDRESS __pc
@@ -27,6 +29,8 @@
 #define DETAG_INSTRUCTION_ADDRESS(A) ((A) & ~(1UL))
 #define FT_THREAD_STATE_COUNT ARM_THREAD_STATE_COUNT
 #define FT_THREAD_STATE ARM_THREAD_STATE
+#define FT_EXCEPTION_STATE_COUNT ARM_EXCEPTION_STATE_COUNT
+#define FT_EXCEPTION_STATE  ARM_EXCEPTION_STATE
 #define FT_FRAME_POINTER __r[7]
 #define FT_STACK_POINTER __sp
 #define FT_INSTRUCTION_ADDRESS __pc
@@ -35,6 +39,8 @@
 #define DETAG_INSTRUCTION_ADDRESS(A) (A)
 #define FT_THREAD_STATE_COUNT x86_THREAD_STATE64_COUNT
 #define FT_THREAD_STATE x86_THREAD_STATE64
+#define FT_EXCEPTION_STATE_COUNT x86_EXCEPTION_STATE64_COUNT
+#define FT_EXCEPTION_STATE  x86_EXCEPTION_STATE64
 #define FT_FRAME_POINTER __rbp
 #define FT_STACK_POINTER __rsp
 #define FT_INSTRUCTION_ADDRESS __rip
@@ -43,6 +49,8 @@
 #define DETAG_INSTRUCTION_ADDRESS(A) (A)
 #define FT_THREAD_STATE_COUNT x86_THREAD_STATE32_COUNT
 #define FT_THREAD_STATE x86_THREAD_STATE32
+#define FT_EXCEPTION_STATE_COUNT x86_EXCEPTION_STATE32_COUNT
+#define FT_EXCEPTION_STATE  x86_EXCEPTION_STATE32
 #define FT_FRAME_POINTER __ebp
 #define FT_STACK_POINTER __esp
 #define FT_INSTRUCTION_ADDRESS __eip
@@ -53,6 +61,13 @@ kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size
     vm_size_t bytesCopied = 0;
     ///   调用api函数，根据栈帧指针获取该栈帧对应的函数地址
     return vm_read_overwrite(mach_task_self(), (vm_address_t)src, (vm_size_t)numBytes, (vm_address_t)dst, &bytesCopied);
+}
+uintptr_t ft_faultAddress(mcontext_t const machineContext){
+#if defined(__i386__) || defined(__x86_64__)
+    return 0;
+#else
+    return machineContext->__es.__far;
+#endif
 }
 uintptr_t ft_mach_instructionAddress(mcontext_t const machineContext){
     return machineContext->__ss.FT_INSTRUCTION_ADDRESS; ///rip 指令指针
@@ -68,46 +83,45 @@ uintptr_t ft_mach_framePointer(mcontext_t const machineContext){
     return machineContext->__ss.FT_FRAME_POINTER; ///rbp 栈帧指针
 }
 
-uintptr_t* ft_backtrace(mcontext_t const machineContext,int* count){
-    uintptr_t backtraceBuffer[50];
+void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* count){
     int i = 0;
     //.获取指针栈帧结构体_STRUCT_CONTEXT._ss，解析得到对应指令指针_STRUCT_CONTEXT._ss.ip;首次个栈帧指针_STRUCT_CONTEXT._ss.bp；栈顶指针_STRUCT_CONTEXT._ss.sp
     const uintptr_t instructionAddress = ft_mach_instructionAddress(machineContext);
-    backtraceBuffer[i] = instructionAddress;
+    *backtrace = instructionAddress & 0x0000000FFFFFFFFF ;
     ++i;
-    
+
     uintptr_t linkRegister = ft_mach_linkRegister(machineContext);
     if (linkRegister) {
-        backtraceBuffer[i] = linkRegister;
+        *(backtrace+i) = linkRegister & 0x0000000FFFFFFFFF;
         i++;
     }
     
     if(instructionAddress == 0) {
-        return NULL;
+        return;
     }
-    
     FTStackFrameEntry frame = {0};
     const uintptr_t framePtr = ft_mach_framePointer(machineContext);
     if(framePtr == 0 ||
        ft_mach_copyMem((void *)framePtr, &frame, sizeof(frame)) != KERN_SUCCESS) {
-        return NULL;
+        return;
     }
     //遍历StackFrameEntry获取所有栈帧及对应的函数地址
     for(; i < 50; i++) {
-        backtraceBuffer[i] = frame.return_address & 0x0000000FFFFFFFFF;
-        if(backtraceBuffer[i] == 0 ||
+        *(backtrace+i) = frame.return_address & 0x0000000FFFFFFFFF;
+        if(backtrace[i] == 0 ||
            frame.previous == 0 ||
            ft_mach_copyMem(frame.previous, &frame, sizeof(frame)) != KERN_SUCCESS) {
             break;
         }
     }
-    *count = i+1;
-    uintptr_t* backtrace = &backtraceBuffer[0];
-    return backtrace;
+    *count = i;
 }
 bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *machineContext) {
     mach_msg_type_number_t state_count = FT_THREAD_STATE_COUNT;
+    mach_msg_type_number_t exception_state_count = FT_EXCEPTION_STATE_COUNT;
+
     kern_return_t kr = thread_get_state(thread, FT_THREAD_STATE, (thread_state_t)&machineContext->__ss, &state_count);//获得线程上下文
+    thread_get_state(thread, FT_EXCEPTION_STATE, (thread_state_t)&machineContext->__es, &exception_state_count);
     return (kr == KERN_SUCCESS);
 }
 #pragma -mark Symbolicate

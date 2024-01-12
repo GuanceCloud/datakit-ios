@@ -38,22 +38,18 @@ static mach_port_t main_thread_id;
 }
 #pragma -mark Get call backtrace of a mach_thread
 NSString *_ft_backtraceOfThread(thread_t thread) {
-    
     //线程上下文信息
     _STRUCT_MCONTEXT machineContext;
     if(!ft_fillThreadStateIntoMachineContext(thread, &machineContext)) {
         return [NSString stringWithFormat:@"Fail to get information about thread: %u", thread];
     }
     int count = 0;
-    uintptr_t* backtraceBuffer = ft_backtrace(&machineContext,&count);
-    uintptr_t backtrace[count];
-    for(int i = 0; i <= count; i++){
-        backtrace[i] = backtraceBuffer[i];
-    }
-    if(backtraceBuffer == NULL){
+    uintptr_t backtraceBuffer[50];
+    ft_backtrace(&machineContext,backtraceBuffer,&count);
+    if(backtraceBuffer[0] == 0){
         return @"Fail to get instruction address";
     }
-    return ft_backtraceOfThread(thread,backtrace,count);
+    return ft_backtraceOfThread(thread,backtraceBuffer,count);
 }
 NSString *ft_backtraceOfThread(thread_t thread,const uintptr_t* const backtraceBuffer,int count){
     NSMutableString *resultString = [[NSMutableString alloc] initWithFormat:@"Thread %d:\n", ft_crashThreadNumber(thread)];
@@ -167,7 +163,7 @@ NSString* ft_logBinaryImage(const FTMachoImage* const image) {
 }
 const char* ft_lastPathEntry(const char* const path) {
     if(path == NULL) {
-        return NULL;
+        return "???";
     }
     
     char* lastFile = strrchr(path, '/');

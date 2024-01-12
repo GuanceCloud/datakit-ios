@@ -34,28 +34,28 @@ extern "C" {
     #define STRUCT_MCONTEXT_L _STRUCT_MCONTEXT
 #endif
 typedef void (*FTCrashNotifyCallback)(thread_t thread,uintptr_t*   backtrace,int count, const char *  crashMessage);
-typedef struct FTCrashContext{
-    struct
-    {
-        /** User context information. */
-        const void* userContext;
-        int signum;
-        int sigcode;
-    } signal;
-    
-    struct
-    {
-        /** The exception name. */
-        const char* name;
-        const char* reason;
-        /** The exception userInfo. */
-        const char* userInfo;
-    } NSException;
-    
-    uintptr_t faultAddress;
-    bool isSignalException;
-    STRUCT_MCONTEXT_L machineContext;
-} FTCrashContext;
+//typedef struct FTCrashContext{
+//    struct
+//    {
+//        /** User context information. */
+//        const void* userContext;
+//        int signum;
+//        int sigcode;
+//    } signal;
+//    
+//    struct
+//    {
+//        /** The exception name. */
+//        const char* name;
+//        const char* reason;
+//        /** The exception userInfo. */
+//        const char* userInfo;
+//    } NSException;
+//    const uintptr_t* backtrace;
+//    uintptr_t faultAddress;
+//    bool isSignalException;
+//    STRUCT_MCONTEXT_L machineContext;
+//} FTCrashContext;
 typedef struct FTStackFrameEntry{
     const struct FTStackFrameEntry *const previous;///前一个栈帧地址
     const uintptr_t return_address;///栈帧的函数返回地址
@@ -68,10 +68,12 @@ typedef struct FTMachoImage {
         uint8_t    uuid[16];
         uint32_t   cpuType;
 } FTMachoImage;
+uintptr_t ft_faultAddress(mcontext_t const machineContext);
+uintptr_t ft_mach_instructionAddress(mcontext_t const machineContext);
+bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *machineContext);
 
-bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *machineContext);
-uintptr_t* ft_backtrace(mcontext_t const machineContext,int* count);
-bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *machineContext);
+void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* count);
+
 void ft_symbolicate(const uintptr_t* const backtraceBuffer,
                     Dl_info* const symbolsBuffer,
                     const int numEntries,

@@ -11,17 +11,17 @@
 #import "FTCrashMonitor.h"
 #import "FTCallStack.h"
 #import "FTNSException.h"
-#include "FTMachException.h"
 #include "FTSignalException.h"
-
+#include "FTMachException.h"
 
 @interface FTCrashMonitor()
 @property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
 @implementation FTCrashMonitor
 void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const char *crashMessage){
-    uninstallSignalException();
-    uninstallUncaughtExceptionHandler();
+    FTUninstallSignalException();
+    FTUninstallUncaughtExceptionHandler();
+    FTUninstallMachException();
     NSString *stackInfo = [FTCallStack ft_reportOfThread:thread backtrace:backtrace count:count];
     for (id instance in FTCrashMonitor.shared.ftSDKInstances) {
         if ([instance respondsToSelector:@selector(internalErrorWithType:message:stack:)]) {
@@ -42,8 +42,9 @@ void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const cha
     if (self) {
         _ftSDKInstances = [NSHashTable weakObjectsHashTable];
         // Install our handler
-        installUncaughtExceptionHandler(crashNotifyCallback);
-        installSignalException(crashNotifyCallback);
+        FTInstallUncaughtExceptionHandler(crashNotifyCallback);
+        FTInstallSignalException(crashNotifyCallback);
+        FTInstallMachException(crashNotifyCallback);
     }
     return self;
 }

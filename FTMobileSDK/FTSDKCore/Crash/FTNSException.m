@@ -15,15 +15,15 @@ static NSUncaughtExceptionHandler *previousUncaughtExceptionHandler;
 
 static void handleException(NSException *exception) {
     if (g_onCrashNotify != NULL) {
-        thread_t thread_self = mach_thread_self();
         NSArray* addresses = [exception callStackReturnAddresses];
         NSUInteger numFrames = addresses.count;
         uintptr_t* callStack = malloc(numFrames * sizeof(*callStack));
-        NSString *message = [NSString stringWithFormat:@"*** Terminating app due to uncaught exception '%@', reason: '%@'\n",
+        NSString *message = [NSString stringWithFormat:@"*** Terminating app due to uncaught exception '%@', reason: '%@'",
                              [exception name], [exception reason]];
         for(NSUInteger i = 0; i < numFrames; i++){
             callStack[i] = (uintptr_t)[addresses[i] unsignedLongLongValue];
         }
+        thread_t thread_self = mach_thread_self();
         g_onCrashNotify(thread_self,callStack,(int)numFrames,[message cStringUsingEncoding:NSASCIIStringEncoding]);
     }
     
@@ -31,11 +31,11 @@ static void handleException(NSException *exception) {
         previousUncaughtExceptionHandler(exception);
     }
 }
-void installUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify){
+void FTInstallUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify){
     g_onCrashNotify = onCrashNotify;
     NSSetUncaughtExceptionHandler(&handleException);
 }
 
-void uninstallUncaughtExceptionHandler(void){
+void FTUninstallUncaughtExceptionHandler(void){
     NSSetUncaughtExceptionHandler(previousUncaughtExceptionHandler);
 }

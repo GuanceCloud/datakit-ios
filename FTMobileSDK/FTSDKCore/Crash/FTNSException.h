@@ -15,9 +15,9 @@ extern "C" {
 #endif
 #include "FTStackInfo.h"
 
-void installUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify);
+void FTInstallUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify);
 
-void uninstallUncaughtExceptionHandler(void);
+void FTUninstallUncaughtExceptionHandler(void);
 
 
 #ifdef __cplusplus

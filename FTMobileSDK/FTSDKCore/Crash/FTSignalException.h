@@ -16,11 +16,9 @@ extern "C" {
 #include "FTStackInfo.h"
 
 
+void FTInstallSignalException(const FTCrashNotifyCallback onCrashNotify);
 
-// TODO: 命名优化，避免函数命名冲突
-void installSignalException(const FTCrashNotifyCallback onCrashNotify);
-
-void uninstallSignalException(void);
+void FTUninstallSignalException(void);
 
 #ifdef __cplusplus
 }
