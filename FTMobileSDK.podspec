@@ -30,7 +30,7 @@ Pod::Spec.new do |s|
 		e.source_files = 'FTMobileSDK/FTMobileExtension/*{.h,.m}','FTMobileSDK/FTMobileAgent/Config/*.{h,m}','FTMobileSDK/FTMobileAgent/ExternalData/*{.h,.m}','FTMobileSDK/FTMobileAgent/Extension/*{.h,.m}'
 		e.dependency 'FTMobileSDK/FTSDKCore/FTRUM'
 		e.dependency 'FTMobileSDK/FTSDKCore/URLSessionAutoInstrumentation'
-		e.dependency 'FTMobileSDK/FTSDKCore/Exception'
+		e.dependency 'FTMobileSDK/FTSDKCore/Crash'
 		e.dependency 'FTMobileSDK/FTSDKCore/Logger'
 	end
 
@@ -40,7 +40,7 @@ Pod::Spec.new do |s|
 		c.osx.deployment_target = '10.13'
 		c.subspec 'FTRUM' do |r|
 			core_path='FTMobileSDK/FTSDKCore/FTRUM/'
-			r.source_files = core_path+'RUMCore/**/*{.h,.m}',core_path+'Monitor/*{.h,.m}',core_path+'FTAppLaunchTracker.{h,m}',core_path+'LongTask/*{.h,.m}'
+			r.source_files = core_path+'RUMCore/**/*{.h,.m}',core_path+'Monitor/*{.h,.m}',core_path+'FTAppLaunchTracker.{h,m}'
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			r.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			r.dependency 'FTMobileSDK/FTSDKCore/Protocol'
@@ -52,8 +52,8 @@ Pod::Spec.new do |s|
 			a.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Swizzle'
 		end
 
-		c.subspec 'Exception' do |e|
-			e.source_files = 'FTMobileSDK/FTSDKCore/Exception/*{.h,.m}'
+		c.subspec 'Crash' do |e|
+			e.source_files = 'FTMobileSDK/FTSDKCore/Crash/**/*{.h,.m,.c}'
 			e.dependency 'FTMobileSDK/FTSDKCore/Protocol'
 			e.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 		end

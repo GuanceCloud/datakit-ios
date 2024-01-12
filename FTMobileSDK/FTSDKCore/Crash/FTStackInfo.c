@@ -56,6 +56,7 @@
 #define FT_INSTRUCTION_ADDRESS __eip
 
 #endif
+#define FTPACStrippingMask_ARM64e 0x0000000fffffffff
 
 kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size_t numBytes){
     vm_size_t bytesCopied = 0;
@@ -87,12 +88,12 @@ void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* coun
     int i = 0;
     //.获取指针栈帧结构体_STRUCT_CONTEXT._ss，解析得到对应指令指针_STRUCT_CONTEXT._ss.ip;首次个栈帧指针_STRUCT_CONTEXT._ss.bp；栈顶指针_STRUCT_CONTEXT._ss.sp
     const uintptr_t instructionAddress = ft_mach_instructionAddress(machineContext);
-    *backtrace = instructionAddress & 0x0000000FFFFFFFFF ;
+    *backtrace = instructionAddress & FTPACStrippingMask_ARM64e;
     ++i;
 
     uintptr_t linkRegister = ft_mach_linkRegister(machineContext);
     if (linkRegister) {
-        *(backtrace+i) = linkRegister & 0x0000000FFFFFFFFF;
+        *(backtrace+i) = linkRegister & FTPACStrippingMask_ARM64e;
         i++;
     }
     
@@ -107,7 +108,7 @@ void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* coun
     }
     //遍历StackFrameEntry获取所有栈帧及对应的函数地址
     for(; i < 50; i++) {
-        *(backtrace+i) = frame.return_address & 0x0000000FFFFFFFFF;
+        *(backtrace+i) = frame.return_address & FTPACStrippingMask_ARM64e;
         if(backtrace[i] == 0 ||
            frame.previous == 0 ||
            ft_mach_copyMem(frame.previous, &frame, sizeof(frame)) != KERN_SUCCESS) {
