@@ -110,7 +110,7 @@ static dispatch_once_t onceToken;
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
 }
 - (void)anrStackDetected:(NSString*)slowStack{
-    [self.rumManager addErrorWithType:@"ios_crash" message:@"ios_anr" stack:slowStack];
+    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack];
 }
 #pragma mark ========== APP LAUNCH ==========
 -(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
