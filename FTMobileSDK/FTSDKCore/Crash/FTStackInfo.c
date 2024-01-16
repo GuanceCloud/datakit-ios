@@ -11,7 +11,6 @@
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#import <os/log.h>
 #include <mach-o/nlist.h>
 
 #pragma -mark DEFINE MACRO FOR DIFFERENT CPU ARCHITECTURE
@@ -108,10 +107,13 @@ void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* coun
     }
     //遍历StackFrameEntry获取所有栈帧及对应的函数地址
     for(; i < 50; i++) {
+        if(frame.return_address == 0 ){
+            break;
+        }
         *(backtrace+i) = frame.return_address & FTPACStrippingMask_ARM64e;
-        if(backtrace[i] == 0 ||
-           frame.previous == 0 ||
+        if(frame.previous == 0 ||
            ft_mach_copyMem(frame.previous, &frame, sizeof(frame)) != KERN_SUCCESS) {
+            i++;
             break;
         }
     }
@@ -215,6 +217,7 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const 
     info->dli_saddr = NULL;
     binaryImages->name = NULL;
     binaryImages->cpuType = 0;
+    binaryImages->cpuSubType = 0;
     binaryImages->loadEndAddress = 0;
     const uint32_t idx = ft_imageIndexContainingAddress(address);
     if(idx == UINT_MAX) {
@@ -227,11 +230,12 @@ bool ft_dladdr(const uintptr_t address, Dl_info* const info,FTMachoImage* const 
     if(segmentBase == 0) {
         return false;
     }
-    info->dli_fname = _dyld_get_image_name(idx);
+    info->dli_fname = _dyld_get_image_name((unsigned)idx);
     info->dli_fbase = (void*)header;
     binaryImages->loadAddress = (uintptr_t)(void*)header;
     binaryImages->name = info->dli_fname;
     binaryImages->cpuType = header->cputype;
+    binaryImages->cpuSubType = header->cpusubtype;
     binaryImages->loadEndAddress = binaryImages->loadEndAddress+binaryImages->loadAddress-1;
     // Find symbol tables and get whichever symbol is closest to the address.
     const FT_NLIST* bestMatch = NULL;

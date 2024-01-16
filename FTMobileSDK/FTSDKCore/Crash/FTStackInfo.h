@@ -66,7 +66,8 @@ typedef struct FTMachoImage {
         uint64_t loadAddress;
         uint64_t loadEndAddress;
         uint8_t    uuid[16];
-        uint32_t   cpuType;
+        int cpuType;
+        int cpuSubType;
 } FTMachoImage;
 uintptr_t ft_faultAddress(mcontext_t const machineContext);
 uintptr_t ft_mach_instructionAddress(mcontext_t const machineContext);

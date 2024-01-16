@@ -79,7 +79,6 @@ public:
 }
 
 int* g_crasher_null_ptr = NULL;
-int g_crasher_denominator = 0;
 
 - (void)throwUncaughtNSException
 {
@@ -153,7 +152,7 @@ static volatile int counter = 0; // To prevent recursion optimization
 {
     abort();
 }
-
+int g_crasher_denominator = 0;
 - (void) doDiv0
 {
     int value = 10;
@@ -173,7 +172,10 @@ static volatile int counter = 0; // To prevent recursion optimization
     RefHolder* ref = [RefHolder new];
     ref.ref = [NSArray arrayWithObjects:@"test1", @"test2", nil];
     
-    NSLog(@"Object = %@", [ref.ref objectAtIndex:1]);
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+                       NSLog(@"Object = %@", [ref.ref objectAtIndex:1]);
+                   });
     
 }
 
@@ -181,7 +183,10 @@ static volatile int counter = 0; // To prevent recursion optimization
     RefHolder* ref = [RefHolder new];
     ref.ref = [MyProxy alloc];
     
-    NSLog(@"Object = %@", ref.ref);
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+                       NSLog(@"Object = %@", ref.ref);
+                   });
 }
 
 - (void)zombieNSException
@@ -196,7 +201,10 @@ static volatile int counter = 0; // To prevent recursion optimization
     {
         RefHolder* ref = [RefHolder new];
         ref.ref = exception;
-        NSLog(@"Exception = %@", ref.ref);
+        dispatch_async(dispatch_get_main_queue(), ^
+                       {
+                           NSLog(@"Exception = %@", ref.ref);
+                       });
     }
 }
 
@@ -215,7 +223,10 @@ static volatile int counter = 0; // To prevent recursion optimization
 {
     [self.lock lock];
     [NSThread sleepForTimeInterval:0.2f];
-    [self.lock lock];
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+                       [self.lock lock];
+                   });
 }
 
 - (void)pthreadAPICrash

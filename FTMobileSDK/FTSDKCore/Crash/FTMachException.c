@@ -10,8 +10,8 @@
 #include <errno.h>
 #include <mach/mach.h>
 #include <pthread.h>
-#include <unistd.h>
 #include <sys/sysctl.h>
+#include <os/log.h>
 #if __LP64__
 #define MACH_ERROR_CODE_MASK 0xFFFFFFFFFFFFFFFF
 #else
@@ -101,7 +101,7 @@ typedef struct
 #define EXC_UNIX_BAD_PIPE    0x10001 /* SIGPIPE */
 #define EXC_UNIX_ABORT       0x10002 /* SIGABRT */
 
-void FTMachExceptionNameLookup(exception_type_t exception,
+static void FTMachExceptionNameLookup(exception_type_t exception,
                                mach_exception_data_type_t code,
                                const char** name,
                                const char** codeName,
@@ -260,7 +260,7 @@ void FTMachExceptionNameLookup(exception_type_t exception,
             break;
     }
 }
-bool ftdebug_isBeingTraced(void)
+static bool ftdebug_isBeingTraced(void)
 {
     struct kinfo_proc procInfo;
     size_t structSize = sizeof(procInfo);
@@ -325,6 +325,7 @@ static void* handleExceptions(void* const userData){
         if(mach_thread_self() == g_primaryMachThread)
         {
             restoreExceptionPorts();
+            thread_resume(g_secondaryMachThread);
         }
         thread_t crashThread = exceptionMessage.thread.name;
         thread_suspend(crashThread);
@@ -370,12 +371,45 @@ static void* handleExceptions(void* const userData){
     return NULL;
 }
 #pragma mark ========== API ==========
-
-bool FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
-    if(ftdebug_isBeingTraced()){
-        return false;
+static void uninstallMachException(void){
+    // NOTE: Do not deallocate the exception port. If a secondary crash occurs
+    // it will hang the process.
+    
+    restoreExceptionPorts();
+    
+    thread_t thread_self = (thread_t)mach_thread_self();
+    
+    if(g_primaryPThread != 0 && g_primaryMachThread != thread_self)
+    {
+        if(g_isHandlingCrash)
+        {
+            thread_terminate(g_primaryMachThread);
+        }
+        else
+        {
+            pthread_cancel(g_primaryPThread);
+        }
+        g_primaryMachThread = 0;
+        g_primaryPThread = 0;
     }
-    g_onCrashNotify = onCrashNotify;
+    if(g_secondaryPThread != 0 && g_secondaryMachThread != thread_self)
+    {
+        if(g_isHandlingCrash)
+        {
+            thread_terminate(g_secondaryMachThread);
+        }
+        else
+        {
+            pthread_cancel(g_secondaryPThread);
+        }
+        g_secondaryMachThread = 0;
+        g_secondaryPThread = 0;
+    }
+    
+    g_exceptionPort = MACH_PORT_NULL;
+}
+
+static bool installMachException(void){
     bool attributes_created = false;
     pthread_attr_t attr;
     kern_return_t kr;
@@ -458,47 +492,16 @@ failed:
     {
         pthread_attr_destroy(&attr);
     }
-    FTUninstallMachException();
+    uninstallMachException();
     return false;
 }
-
-
 void FTUninstallMachException(void){
+    uninstallMachException();
+}
+bool FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
     if(ftdebug_isBeingTraced()){
-        return;
+        return false;
     }
-    // NOTE: Do not deallocate the exception port. If a secondary crash occurs
-    // it will hang the process.
-    restoreExceptionPorts();
-    
-    thread_t thread_self = (thread_t)mach_thread_self();
-    
-    if(g_primaryPThread != 0 && g_primaryMachThread != thread_self)
-    {
-        if(g_isHandlingCrash)
-        {
-            thread_terminate(g_primaryMachThread);
-        }
-        else
-        {
-            pthread_cancel(g_primaryPThread);
-        }
-        g_primaryMachThread = 0;
-        g_primaryPThread = 0;
-    }
-    if(g_secondaryPThread != 0 && g_secondaryMachThread != thread_self)
-    {
-        if(g_isHandlingCrash)
-        {
-            thread_terminate(g_secondaryMachThread);
-        }
-        else
-        {
-            pthread_cancel(g_secondaryPThread);
-        }
-        g_secondaryMachThread = 0;
-        g_secondaryPThread = 0;
-    }
-    
-    g_exceptionPort = MACH_PORT_NULL;
+    g_onCrashNotify = onCrashNotify;
+    return installMachException();
 }
