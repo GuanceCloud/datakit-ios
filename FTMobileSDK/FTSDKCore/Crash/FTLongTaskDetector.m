@@ -64,20 +64,17 @@ static BOOL g_bRun;
                 long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
                 if(st!=0){
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
-                        if (++strongSelf.countTime != strongSelf.standstillCount){
-                            continue;
-                        }
-                        if(strongSelf.countTime == strongSelf.standstillCount){
+                        if(++strongSelf.countTime == strongSelf.standstillCount){
                             NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
                             if (strongSelf.delegate != nil && [strongSelf.delegate  respondsToSelector:@selector(anrStackDetected:)]) {
                                 [strongSelf.delegate anrStackDetected:backtrace];
                             }
                         }
+                        continue;
                     }
-                }else{// end semaphore wait
-                    strongSelf.countTime = 0;
-                }
-                
+                    
+                }// end semaphore wait
+                strongSelf.countTime = 0;
             }
         });
     }

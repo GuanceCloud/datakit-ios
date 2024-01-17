@@ -496,12 +496,15 @@ failed:
     return false;
 }
 void FTUninstallMachException(void){
+    if(ftdebug_isBeingTraced()){
+        return;
+    }
     uninstallMachException();
 }
-bool FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
+void FTInstallMachException(const FTCrashNotifyCallback onCrashNotify){
     if(ftdebug_isBeingTraced()){
-        return false;
+        return;
     }
     g_onCrashNotify = onCrashNotify;
-    return installMachException();
+    installMachException();
 }
