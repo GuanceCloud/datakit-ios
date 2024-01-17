@@ -93,8 +93,8 @@ static dispatch_once_t onceToken;
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
-            long long time = [data[@"time"] longLongValue];
-            time = time>0?time:[FTDateUtil currentTimeNanosecond];
+            // web 端 time 数据以微秒为单位，native 需要纳秒，需要转换单位
+            long long time = [data[@"time"] longLongValue] * 1000;
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
