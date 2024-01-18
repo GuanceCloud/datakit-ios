@@ -48,10 +48,15 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 ///   - enableLinkRumData: 是否关联 RUM
 ///   - sampleRate: 采样率
 ///   - traceType: 链路类型
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType;
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
+              enableLinkRumData:(BOOL)enableLinkRumData
+                     sampleRate:(int)sampleRate
+                      traceType:(FTNetworkTraceType)traceType;
 /// 设置 sdk 内部的数据上传 url
-/// - Parameter sdkUrlStr: sdk 内部的数据上传 url
-- (void)setSdkUrlStr:(NSString *)sdkUrlStr;
+/// - Parameters
+///   - sdkUrlStr: sdk 内部的数据上传 url
+///   - serviceName:
+- (void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName;
 
 /// 设置遵循 FTRumResourceProtocol 的 rum resource 数据处理对象
 ///

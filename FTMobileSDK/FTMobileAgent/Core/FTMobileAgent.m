@@ -68,17 +68,21 @@ static dispatch_once_t onceToken;
             //基础类型的记录
             [FTInternalLog enableLog:config.enableSDKDebugLog];
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-
+            
             //开启数据处理管理器
             [FTTrackDataManager sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
+            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version 
+                                                                    env:config.env
+                                                                service:config.service
+                                                          globalContext:config.globalContext];
             _presetProperty.sdkVersion = SDK_VERSION;
             [FTNetworkInfoManager sharedInstance]
                 .setDatakitUrl(config.datakitUrl)
                 .setDatawayUrl(config.datawayUrl)
                 .setClientToken(config.clientToken)
                 .setSdkVersion(SDK_VERSION);
-            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl];
+            [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
+                                                           serviceName:config.service];
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);
@@ -110,14 +114,19 @@ static dispatch_once_t onceToken;
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
         [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
-        [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole enableCustomLog:loggerConfigOptions.enableCustomLog logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
+        [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole
+                                    enableCustomLog:loggerConfigOptions.enableCustomLog
+                                     logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
     _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
     [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
     [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionInstrumentation sharedInstance].interceptor;
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace enableLinkRumData:traceConfigOptions.enableLinkRumData sampleRate:traceConfigOptions.samplerate traceType:traceConfigOptions.networkTraceType];
+    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace
+                                                        enableLinkRumData:traceConfigOptions.enableLinkRumData
+                                                               sampleRate:traceConfigOptions.samplerate
+                                                                traceType:traceConfigOptions.networkTraceType];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
 

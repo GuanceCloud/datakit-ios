@@ -33,7 +33,7 @@
 #import "FTTracer.h"
 #define FT_SDK_COMPILED_FOR_TESTING
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate,NSCacheDelegate>
-@property (nonatomic, strong) FTTracer *tracer;
+@property (nonatomic, strong) id<FTTracerProtocol> tracer;
 @end
 
 @implementation FTTraceTest
@@ -48,21 +48,38 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
+    [self setNetworkTraceType:type serviceName:FT_DEFAULT_SERVICE_NAME];
+}
+- (void)setNetworkTraceType:(FTNetworkTraceType)type serviceName:(NSString *)serviceName{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.service = serviceName;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    self.tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
+    XCTAssertNotNil(self.tracer);
 }
-
+// traceID: uuid lowercaseString
+// spanID: uuid-16位 lowercaseString
 - (void)testFTNetworkTrackTypeZipkinMultiHeader{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinMultiHeader];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+        XCTAssertTrue(testSpan.length == 16);
+    }];
     [self networkUpload:@"ZipkinMultiHeader" handler:^(NSDictionary *header) {
         NSString *traceId = [header valueForKey:FT_NETWORK_ZIPKIN_TRACEID];
         NSString *spanID = [header valueForKey:FT_NETWORK_ZIPKIN_SPANID];
@@ -81,10 +98,22 @@
         XCTAssertNil(error);
     }];
 }
+// traceID: uuid lowercaseString
+// spanID: uuid-16位 lowercaseString
 - (void)testFTNetworkTrackTypeZipkinSingleHeader{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeZipkinSingleHeader];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+        XCTAssertTrue(testSpan.length == 16);
+    }];
     [self networkUpload:@"ZipkinSingleHeader" handler:^(NSDictionary *header) {
         NSString *key = [header valueForKey:FT_NETWORK_ZIPKIN_SINGLE_KEY];
         NSArray *traceAry = [key componentsSeparatedByString:@"-"];
@@ -102,10 +131,22 @@
         XCTAssertNil(error);
     }];
 }
+// traceID: uuid lowercaseString
+// spanID: uuid-16位 lowercaseString
 - (void)testFTNetworkTrackTypeJaeger{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeJaeger];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+        XCTAssertTrue(testSpan.length == 16);
+    }];
     [self networkUpload:@"Jaeger" handler:^(NSDictionary *header) {
         NSString *traceStr =header[FT_NETWORK_JAEGER_TRACEID];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@":"];
@@ -125,10 +166,21 @@
         XCTAssertNil(error);
     }];
 }
+// traceID: 64位数字
+// spanID: 64位数字
 - (void)testFTNetworkTrackTypeDDtrace{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+    }];
     [self networkUpload:@"DDtrace" handler:^(NSDictionary *header) {
         
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
@@ -145,10 +197,20 @@
         XCTAssertNil(error);
     }];
 }
+// 
 - (void)testFTNetworkTrackTypeSkywalking_v3{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+    }];
     [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
         XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
         NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
@@ -159,6 +221,8 @@
         NSString *trace = [traceAry[1] ft_base64Decode];
         NSString *parentTraceID=[traceAry[2] ft_base64Decode];
         NSString *span = [parentTraceID stringByAppendingString:@"0"];
+        NSString *serviceName = [traceAry[4] ft_base64Decode];
+        XCTAssertEqualObjects(serviceName, FT_DEFAULT_SERVICE_NAME);
         XCTAssertTrue(trace && span && sampling);
         [self.tracer unpackTraceHeader:header handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
             XCTAssertTrue([trace isEqualToString:traceId]);
@@ -170,12 +234,29 @@
         XCTAssertNil(error);
     }];
 }
+- (void)testFTNetworkTrackTypeSkywalking_v3_ServiceName{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *testServiceName = @"TestServiceName";
+    [self setNetworkTraceType:FTNetworkTraceTypeSkywalking serviceName:testServiceName];
+    [self networkUpload:@"Skywalking_v3" handler:^(NSDictionary *header) {
+        XCTAssertTrue(([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]));
+        NSString *traceStr =header[FT_NETWORK_SKYWALKING_V3];
+        NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
+        XCTAssertTrue(traceAry.count == 8);
+    
+        NSString *serviceName = [traceAry[4] ft_base64Decode];
+        XCTAssertEqualObjects(serviceName, testServiceName);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
 - (void)testFTNetworkTrackTypeSkywalking_v3SeqOver9999{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     [self setNetworkTraceType:FTNetworkTraceTypeSkywalking];
-    id<FTTracerProtocol> tracer = [[FTURLSessionInstrumentation sharedInstance] valueForKey:@"tracer"];
-    if ([tracer isKindOfClass:FTTracer.class]) {
-        FTTracer *tracerInstance = (FTTracer *)tracer;
+    if ([self.tracer isKindOfClass:FTTracer.class]) {
+        FTTracer *tracerInstance = (FTTracer *)self.tracer;
         for (int i = 0; i<5000; i++) {
             if( [tracerInstance getSkyWalkingSequence] == 9998){
                 break;;
@@ -203,10 +284,22 @@
     
     
 }
+// traceID: uuid lowercaseString
+// spanID: uuid-16位 lowercaseString
 - (void)testFTNetworkTrackTypeTraceparent{
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     
     [self setNetworkTraceType:FTNetworkTraceTypeTraceparent];
+    __block NSString *testTrace,*testSpan;
+    NSDictionary *dict = [self.tracer networkTraceHeaderWithUrl:[NSURL URLWithString:@"http://www.test.com/some/url/string"] handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        testTrace = traceId;
+        testSpan = spanID;
+    }];
+    [self.tracer unpackTraceHeader:dict handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+        XCTAssertTrue([testTrace isEqualToString:traceId]);
+        XCTAssertTrue([testSpan isEqualToString:spanID]);
+        XCTAssertTrue(testSpan.length == 16);
+    }];
     [self networkUpload:@"Traceparent" handler:^(NSDictionary *header) {
         XCTAssertTrue([header.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]);
         NSString *traceStr =header[FT_NETWORK_TRACEPARENT_KEY];

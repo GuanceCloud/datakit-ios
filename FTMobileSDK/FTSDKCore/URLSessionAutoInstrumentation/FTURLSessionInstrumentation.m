@@ -33,7 +33,7 @@
 @property (nonatomic, assign) int bindingsCount;
 @property (nonatomic, assign) BOOL autoRegistration;
 @property (atomic, assign, readwrite) BOOL shouldInterceptor;
-
+@property (nonatomic, assign) NSString *serviceName;
 @end
 @implementation FTURLSessionInstrumentation
 
@@ -58,8 +58,9 @@ static dispatch_once_t onceToken;
 -(id<FTURLSessionInterceptorProtocol>)interceptor{
     return [FTURLSessionInterceptor shared];
 }
--(void)setSdkUrlStr:(NSString *)sdkUrlStr{
+-(void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName{
     _sdkUrlStr = sdkUrlStr;
+    _serviceName = serviceName;
 }
 -(id<FTExternalResourceProtocol>)externalResourceHandler{
     return [FTURLSessionInterceptor shared];
@@ -67,8 +68,15 @@ static dispatch_once_t onceToken;
 -(id<FTTracerProtocol>)tracer{
     return _tracer;
 }
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType{
-    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:enableAutoTrace enableLinkRumData:enableLinkRumData];
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
+              enableLinkRumData:(BOOL)enableLinkRumData
+                     sampleRate:(int)sampleRate
+                      traceType:(FTNetworkTraceType)traceType{
+    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
+                                         traceType:(NetworkTraceType)traceType
+                                       serviceName:self.serviceName
+                                   enableAutoTrace:enableAutoTrace
+                                 enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
     if(enableAutoTrace){
         [self enableAutomaticRegistration];
