@@ -9,6 +9,7 @@
 #import "FTRUMDataModel.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTDateUtil.h"
 @interface FTRUMDataModel()
 @end
 @implementation FTRUMDataModel
@@ -26,6 +27,12 @@
         self.type = type;
     }
     return self;
+}
+-(long long)tm{
+    if(_tm>0){
+        return _tm;
+    }
+    return [FTDateUtil dateTimeNanosecond:self.time];
 }
 @end
 @implementation FTRUMViewModel

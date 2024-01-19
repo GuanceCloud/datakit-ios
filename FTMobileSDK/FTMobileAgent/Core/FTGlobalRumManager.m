@@ -106,8 +106,8 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== FTRunloopDetectorDelegate ==========
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
+- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
+    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
 - (void)anrStackDetected:(NSString*)slowStack{
     [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack];

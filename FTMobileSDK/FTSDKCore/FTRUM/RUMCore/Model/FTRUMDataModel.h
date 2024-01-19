@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) NSDictionary *tags;
 @property (nonatomic, strong) NSDictionary *fields;
-
+@property (nonatomic, assign) long long tm;
 -(instancetype)initWithType:(FTRUMDataType)type time:(NSDate *)time;
 @end
 /// 处理 Action 事件的数据模型

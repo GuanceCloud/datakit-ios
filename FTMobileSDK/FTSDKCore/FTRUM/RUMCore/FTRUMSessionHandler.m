@@ -141,11 +141,12 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{
+    FTRUMErrorData *data = (FTRUMErrorData *)model;
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.context.writer rumWrite:error tags:tags fields:model.fields];
+    [self.context.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
     NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,

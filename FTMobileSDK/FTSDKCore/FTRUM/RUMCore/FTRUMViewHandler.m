@@ -173,7 +173,7 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.context.writer rumWrite:error tags:tags fields:model.fields];
+    [self.context.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
     if(self.errorHandled){
         self.errorHandled();
     }

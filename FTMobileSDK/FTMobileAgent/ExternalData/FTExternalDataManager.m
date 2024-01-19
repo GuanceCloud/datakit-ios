@@ -10,6 +10,7 @@
 #import "FTExternalDataManager+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTInternalLog.h"
+#import "FTDateUtil.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
@@ -91,13 +92,15 @@
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
+    long long startTime = [FTDateUtil currentTimeNanosecond] - [duration longLongValue];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:)]){
-        [self.delegate addLongTaskWithStack:stack duration:duration];
+        [self.delegate addLongTaskWithStack:stack duration:duration startTime:startTime];
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(NSDictionary *)property{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:property:)]){
-        [self.delegate addLongTaskWithStack:stack duration:duration property:property];
+    long long startTime = [FTDateUtil currentTimeNanosecond] - [duration longLongValue];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:startTime:property:)]){
+        [self.delegate addLongTaskWithStack:stack duration:duration startTime:startTime  property:property];
     }
 }
 - (void)startResourceWithKey:(NSString *)key{
