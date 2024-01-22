@@ -32,6 +32,8 @@
 
 - (void) corruptMemory;
 
+- (void) anr;
+
 - (void) deadlock;
 
 - (void) pthreadAPICrash;

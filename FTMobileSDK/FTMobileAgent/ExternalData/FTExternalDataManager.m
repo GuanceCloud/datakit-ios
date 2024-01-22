@@ -93,7 +93,7 @@
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
     long long startTime = [FTDateUtil currentTimeNanosecond] - [duration longLongValue];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:)]){
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:startTime:)]){
         [self.delegate addLongTaskWithStack:stack duration:duration startTime:startTime];
     }
 }

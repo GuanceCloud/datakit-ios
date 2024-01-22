@@ -55,6 +55,8 @@
         [crasher zombieNSException];
     }],[[TableViewCellItem alloc]initWithTitle:@"corruptMemory" handler:^{
         [crasher corruptMemory];
+    }],[[TableViewCellItem alloc]initWithTitle:@"anr" handler:^{
+        [crasher anr];
     }],[[TableViewCellItem alloc]initWithTitle:@"deadlock" handler:^{
         [crasher deadlock];
     }],[[TableViewCellItem alloc]initWithTitle:@"pthreadAPICrash" handler:^{

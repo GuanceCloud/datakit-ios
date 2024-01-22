@@ -219,6 +219,22 @@ int g_crasher_denominator = 0;
     memset(ptr, 0xa1, 500);
 }
 // ANR
+- (void)anr{
+    [self.lock lock];
+    [NSThread sleepForTimeInterval:0.2f];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [NSThread sleepForTimeInterval:6];
+        [self.lock unlock];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+        [self.lock lock];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+        [self.lock unlock];
+    });
+}
 - (void)deadlock
 {
     [self.lock lock];
