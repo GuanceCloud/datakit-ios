@@ -275,7 +275,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 }
 -(void)unpackTraceParentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
     if([headerFields.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]){
-        NSString *traceStr =headerFields[FT_NETWORK_TRACEPARENT_KEY];
+        NSString *traceStr = headerFields[FT_NETWORK_TRACEPARENT_KEY];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 4) {
             NSString *trace = traceAry[1];

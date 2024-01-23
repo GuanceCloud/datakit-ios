@@ -124,7 +124,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     id<NSURLSessionDelegate> realDelegate = delegate;
     if (delegate == nil) {
         realDelegate = [[FTURLSessionDelegate alloc]init];
-    }else{
+    }else if(![delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         [[FTURLSessionInstrumentation sharedInstance] enableSessionDelegate:delegate];
     }
     return [NSURLSession ft_sessionWithConfiguration:configuration delegate:realDelegate delegateQueue:queue];

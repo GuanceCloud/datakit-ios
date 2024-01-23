@@ -19,7 +19,7 @@
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
 #import "FTURLSessionDelegate.h"
-
+#import "FTURLSessionInterceptor.h"
 typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithRequestCompletionHandler,
     DataTaskWithRequest,
@@ -42,12 +42,16 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     
 }
 - (void)sdkNormalSet{
+    [self sdkEnableRUMAutoTrace:NO];
+}
+- (void)sdkEnableRUMAutoTrace:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceUserResource = enable;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = FTNetworkTraceTypeDDtrace;
     traceConfig.enableLinkRumData = YES;
@@ -81,32 +85,66 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self sdkNormalSet];
     [self startWithTest:InstrumentationDirect hasResource:YES];
 }
+- (void)testUseDelegateDirect_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
+    [self startWithTest:InstrumentationDirect hasResource:YES];
+}
 - (void)testUseDelegateInherit{
     [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit hasResource:YES];
+}
+- (void)testUseDelegateInherit_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
     [self startWithTest:InstrumentationInherit hasResource:YES];
 }
 - (void)testUseDelegateProperty{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationProperty hasResource:YES];
 }
+- (void)testUseDelegateProperty_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
+    [self startWithTest:InstrumentationProperty hasResource:YES];
+}
 - (void)testDataTaskWithRequestCompletionHandler{
     [self sdkNormalSet];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES];
+}
+- (void)testDataTaskWithRequestCompletionHandler_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES];
 }
 - (void)testDataTaskWithRequest{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES];
 }
+- (void)testDataTaskWithRequest_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES];
+}
 - (void)testDataTaskWithURLCompletionHandler{
     [self sdkNormalSet];
+    [self startWithTest:InstrumentationProperty requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
+}
+- (void)testDataTaskWithURLCompletionHandler_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
     [self startWithTest:InstrumentationProperty requestMethod:DataTaskWithURLCompletionHandler hasResource:YES];
 }
 - (void)testDataTaskWithURL{
     [self sdkNormalSet];
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
 }
+- (void)testDataTaskWithURL_enableRUMAutoTrace{
+    [self sdkEnableRUMAutoTrace:YES];
+    [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithURL hasResource:YES];
+}
 - (void)testResourcePropertyProvider{
-    [self sdkNormalSet];
+    [self resourcePropertyProviderEnableRUMAutoTrace:NO];
+}
+- (void)testResourcePropertyProvider_enableRUMAutoTrace{
+    [self resourcePropertyProviderEnableRUMAutoTrace:YES];
+}
+- (void)resourcePropertyProviderEnableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
         XCTAssertTrue(request);
         NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
@@ -117,7 +155,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequestCompletionHandler hasResource:YES provider:provider];
 }
 - (void)testResourceRequestInterceptor{
-    [self sdkNormalSet];
+    [self resourceRequestInterceptorEnableRUMAutoTrace:NO];
+}
+- (void)testResourceRequestInterceptor_enableRUMAutoTrace{
+    [self resourceRequestInterceptorEnableRUMAutoTrace:YES];
+}
+-(void)resourceRequestInterceptorEnableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
     RequestInterceptor interceptor = ^NSURLRequest * _Nullable(NSURLRequest *request) {
         XCTAssertTrue(request);
         NSMutableURLRequest *newRequest = [request mutableCopy];
@@ -127,7 +171,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [self startWithTest:InstrumentationInherit requestMethod:DataTaskWithRequest hasResource:YES provider:nil requestInterceptor:interceptor];
 }
 - (void)testDiffURLSessionPropertyProvider{
-    [self sdkNormalSet];
+    [self diffURLSessionPropertyProviderEnableRUMAutoTrace:NO];
+}
+- (void)testDiffURLSessionPropertyProvider_enableRUMAutoTrace{
+    [self diffURLSessionPropertyProviderEnableRUMAutoTrace:YES];
+}
+- (void)diffURLSessionPropertyProviderEnableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
     ResourcePropertyProvider provider = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
         XCTAssertTrue(request);
         NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -181,7 +231,13 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     XCTAssertTrue(hasResource2);
 }
 - (void)testDiffRequestInterceptor{
-    [self sdkNormalSet];
+    [self diffRequestInterceptorEnableRUMAutoTrace:NO];
+}
+- (void)testDiffRequestInterceptor_enableRUMAutoTrace{
+    [self diffRequestInterceptorEnableRUMAutoTrace:YES];
+}
+- (void)diffRequestInterceptorEnableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
     XCTestExpectation *expectation= [self expectationWithDescription:@"FirstRequestInterceptor"];
 
     RequestInterceptor requestInterceptor = ^NSURLRequest *(NSURLRequest *request){
@@ -237,18 +293,25 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     XCTAssertTrue(hasResource2);
 }
 - (void)testResourceUrlHandlerReturnYes{
-    [self resourceUrlHandler:YES];
+    [self resourceUrlHandler:YES enableRUMAutoTrace:NO];
 }
 - (void)testResourceUrlHandlerReturnNO{
-    [self resourceUrlHandler:NO];
+    [self resourceUrlHandler:NO enableRUMAutoTrace:NO];
 }
-- (void)resourceUrlHandler:(BOOL)excluded{
+- (void)testResourceUrlHandlerReturnYes_enableRUMAutoTrace{
+    [self resourceUrlHandler:YES enableRUMAutoTrace:YES];
+}
+- (void)testResourceUrlHandlerReturnNO_enableRUMAutoTrace{
+    [self resourceUrlHandler:YES enableRUMAutoTrace:YES];
+}
+- (void)resourceUrlHandler:(BOOL)excluded enableRUMAutoTrace:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithMetricsUrl:url];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceUserResource = enable;
     rumConfig.resourceUrlHandler = ^BOOL(NSURL *url) {
         return excluded;
     };
@@ -281,13 +344,19 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     XCTAssertTrue(hasResource!=excluded);
 }
 - (void)testIntakeUrlReturnYes{
-    [self intakeUrl:YES];
+    [self intakeUrl:YES enableRUMAutoTrace:NO];
 }
 - (void)testIntakeUrlReturnNO{
-    [self intakeUrl:NO];
+    [self intakeUrl:NO enableRUMAutoTrace:NO];
 }
-- (void)intakeUrl:(BOOL)trace{
-    [self sdkNormalSet];
+- (void)testIntakeUrlReturnYes_enableRUMAutoTrace{
+    [self intakeUrl:YES enableRUMAutoTrace:YES];
+}
+- (void)testIntakeUrlReturnNO_enableRUMAutoTrace{
+    [self intakeUrl:NO enableRUMAutoTrace:YES];
+}
+- (void)intakeUrl:(BOOL)trace enableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
         return trace;
     }];
@@ -308,6 +377,58 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         }
     }];
     XCTAssertTrue(hasResource == trace);
+}
+- (void)testUseURLSessionInterceptorTraceResource{
+    [self URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:NO];
+}
+// 使用 `FTURLSessionInterceptor` 自定义添加resource，同时开启 RUMAutoTrace，使用 FTURLSessionDelegate 自定义采集，不影响 resource 正确采集。
+// 始终只采集 一条 resource 数据
+// 可能会多次添加 trace ，后面添加的覆盖前面的 （最后一次生效）
+// extraProvider 的添加，第一次添加后 resource 采集就会结束，后续的添加无效。（第一次生效）
+- (void)testUseURLSessionInterceptorTraceResource_enableRUMAutoTrace{
+    [self URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:YES];
+}
+- (void)URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:(BOOL)enable{
+    [self sdkEnableRUMAutoTrace:enable];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    NSString *urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    [[FTURLSessionInterceptor shared] interceptRequest:request];
+    __block NSURLSessionTask *task = [[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        [[FTURLSessionInterceptor shared] taskReceivedData:task data:data];
+        [[FTURLSessionInterceptor shared] taskCompleted:task error:error extraProvider:^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+            return @{@"ft_test":@"1"};
+        }];
+        [expectation fulfill];
+    }];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
+    [task resume];
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    [NSThread sleepForTimeInterval:0.5];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
+    __block NSInteger hasResourceCount = 0;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            hasResourceCount += 1;
+            XCTAssertTrue([fields.allKeys containsObject:@"ft_test"]);
+            NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
+            NSDictionary *header = [FTJSONUtil dictionaryWithJsonString:requestHeader];
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            NSString *span = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_SPANID,tags[FT_KEY_SPANID]];
+            XCTAssertTrue([requestHeader containsString:span]);
+            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
+            NSString *trace = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_TRACEID,tags[FT_KEY_TRACEID]];
+            XCTAssertTrue([requestHeader containsString:trace]);
+        }
+    }];
+    XCTAssertTrue(hasResourceCount == 1);
+}
+-(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
+    [[FTURLSessionInterceptor shared] taskMetricsCollected:task metrics:metrics];
 }
 - (void)startWithTest:(TestSessionInstrumentationType)type hasResource:(BOOL)has{
     [self sdkNormalSet];
@@ -353,22 +474,26 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [NSThread sleepForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    __block BOOL hasResource = NO;
+    __block NSInteger hasResourceCount = 0;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
-            hasResource = YES;
-            *stop = YES;
+            hasResourceCount += 1;
             if(provider){
                 XCTAssertTrue([fields.allKeys containsObject:@"response_body"]);
             }
+            NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
             if(requestInterceptor){
-                NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
                 XCTAssertTrue([requestHeader containsString:@"test:test_requestInterceptor"]);
             }
+            NSDictionary *header = [FTJSONUtil dictionaryWithJsonString:requestHeader];
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+            NSString *span = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_SPANID,tags[FT_KEY_SPANID]];
+            XCTAssertTrue([requestHeader containsString:span]);
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
+            NSString *trace = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_TRACEID,tags[FT_KEY_TRACEID]];
+            XCTAssertTrue([requestHeader containsString:trace]);
         }
     }];
-    XCTAssertTrue(hasResource == has);
+    XCTAssertTrue(hasResourceCount == 1);
 }
 @end
