@@ -1,3 +1,9 @@
+# 1.4.9-beta.1
+1. 同 1.4.9-alpha.1 - 1.4.9-alpha.6
+2. longtask、anr 发生时间赋值错误修复
+3. RUM-Resource 自动采集与使用`FTURLSessionDelegate`自定义采集兼容处理
+
+---
 # 1.4.9-alpha.6
 1. WebView 传入数据时间精度适配
 2. SkyWalking propagation header service 参数调整
