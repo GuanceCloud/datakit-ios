@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack;
-
++ (void)resolveModelArray:(NSArray *)modelArray timeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,long long time,BOOL *stop))callBack;
 @end
 
 NS_ASSUME_NONNULL_END

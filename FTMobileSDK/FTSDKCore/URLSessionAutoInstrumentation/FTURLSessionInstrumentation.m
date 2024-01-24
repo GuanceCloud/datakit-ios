@@ -32,8 +32,9 @@
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, assign) int bindingsCount;
 @property (nonatomic, assign) BOOL autoRegistration;
-@property (atomic, assign, readwrite) BOOL shouldInterceptor;
-
+@property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
+@property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
+@property (nonatomic, assign) NSString *serviceName;
 @end
 @implementation FTURLSessionInstrumentation
 
@@ -51,15 +52,17 @@ static dispatch_once_t onceToken;
     if(self){
         _lock = [[NSLock alloc]init];
         _bindingsCount = 0;
-        _shouldInterceptor = NO;
+        _shouldRUMInterceptor = NO;
+        _shouldTraceInterceptor = NO;
     }
     return self;
 }
 -(id<FTURLSessionInterceptorProtocol>)interceptor{
     return [FTURLSessionInterceptor shared];
 }
--(void)setSdkUrlStr:(NSString *)sdkUrlStr{
+-(void)setSdkUrlStr:(NSString *)sdkUrlStr serviceName:(NSString *)serviceName{
     _sdkUrlStr = sdkUrlStr;
+    _serviceName = serviceName;
 }
 -(id<FTExternalResourceProtocol>)externalResourceHandler{
     return [FTURLSessionInterceptor shared];
@@ -67,18 +70,21 @@ static dispatch_once_t onceToken;
 -(id<FTTracerProtocol>)tracer{
     return _tracer;
 }
-- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace enableLinkRumData:(BOOL)enableLinkRumData sampleRate:(int)sampleRate traceType:(FTNetworkTraceType)traceType{
-    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:enableAutoTrace enableLinkRumData:enableLinkRumData];
+- (void)setTraceEnableAutoTrace:(BOOL)enableAutoTrace
+              enableLinkRumData:(BOOL)enableLinkRumData
+                     sampleRate:(int)sampleRate
+                      traceType:(FTNetworkTraceType)traceType{
+    _tracer = [[FTTracer alloc] initWithSampleRate:sampleRate
+                                         traceType:(NetworkTraceType)traceType
+                                       serviceName:self.serviceName
+                                   enableAutoTrace:enableAutoTrace
+                                 enableLinkRumData:enableLinkRumData];
     [self.interceptor setTracer:_tracer];
-    if(enableAutoTrace){
-        [self enableAutomaticRegistration];
-    }
+    self.shouldTraceInterceptor = enableAutoTrace;
 }
-- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
+- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler{
     self.interceptor.resourceUrlHandler = resourceUrlHandler;
-    if(enableAutoRumTrack){
-        [self enableAutomaticRegistration];
-    }
+    self.shouldRUMInterceptor = enableAutoRumTrack;
 }
 - (void)setRumResourceHandler:(id<FTRumResourceProtocol>)handler{
     self.interceptor.rumResourceHandler = handler;
@@ -113,19 +119,12 @@ static dispatch_once_t onceToken;
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
     [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
-/// - 注意:不支持 async/await URLSession APIs
-///       不支持 [NSURLSession sharedSession]
-- (void)enableAutomaticRegistration{
-    self.shouldInterceptor = YES;
-}
 /// 关闭自动采集
 - (void)disableAutomaticRegistration{
-    self.shouldInterceptor = NO;
+    self.shouldRUMInterceptor = NO;
+    self.shouldTraceInterceptor = NO;
 }
 - (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate{
-    if (!self.shouldInterceptor) {
-        return;
-    }
     SEL receiveDataSelector = @selector(URLSession:dataTask:didReceiveData:);
     SEL completeSelector = @selector(URLSession:task:didCompleteWithError:);
     SEL collectMetricsSelector = @selector(URLSession:task:didFinishCollectingMetrics:);
@@ -153,13 +152,19 @@ static dispatch_once_t onceToken;
     }
     __weak typeof(self) weakSelf = self;
     [FTSwizzler swizzleSelector:receiveDataSelector onClass:receiveDataClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data){
-        [weakSelf.interceptor taskReceivedData:task data:data];
+        if(weakSelf.shouldRUMInterceptor){
+            [weakSelf.interceptor taskReceivedData:task data:data];
+        }
     } named:@"receiveDataSelector"];
     [FTSwizzler swizzleSelector:completeSelector onClass:completeClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error){
-        [weakSelf.interceptor taskCompleted:task error:error];
+        if(weakSelf.shouldRUMInterceptor){
+            [weakSelf.interceptor taskCompleted:task error:error];
+        }
     } named:@"completeSelector"];
     [FTSwizzler swizzleSelector:collectMetricsSelector onClass:collectMetricsClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics){
-        [weakSelf.interceptor taskMetricsCollected:task metrics:metrics];
+        if(weakSelf.shouldRUMInterceptor){
+            [weakSelf.interceptor taskMetricsCollected:task metrics:metrics];
+        }
     } named:@"collectMetricsSelector"];
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{

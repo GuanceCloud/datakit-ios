@@ -138,7 +138,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
                 // rum 相关调整
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
-                XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqualToString:@"false"]);
+                XCTAssertTrue(field[FT_KEY_IS_ACTIVE] == @(NO));
 
                 // 基础 tags
                 XCTAssertTrue([tags[@"package_native"] isEqualToString:SDK_VERSION]);

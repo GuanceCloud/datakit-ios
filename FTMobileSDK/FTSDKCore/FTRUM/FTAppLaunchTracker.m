@@ -87,9 +87,10 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         launchEnd = CFAbsoluteTimeGetCurrent();
     }
     NSNumber *duration = [NSNumber numberWithLongLong:(launchEnd-FTLoadDate)*1000000000];
-    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:isPreWarming:)]) {
+    NSDate *launchDate = [NSDate dateWithTimeIntervalSinceReferenceDate:FTLoadDate];
+    if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppColdStart:duration:isPreWarming:)]) {
         BOOL isPreWarming = [self isActivePrewarmAvailable] && isActivePrewarm;
-        [self.delegate ftAppColdStart:duration isPreWarming:isPreWarming];
+        [self.delegate ftAppColdStart:launchDate duration:duration isPreWarming:isPreWarming];
     }
 }
 - (void)applicationWillEnterForeground{
@@ -103,8 +104,8 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
             [self appColdStartEvent];
         }else if (_applicationDidEnterBackground) {
             NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]];
-            if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:)]) {
-                [self.delegate ftAppHotStart:duration];
+            if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:duration:)]) {
+                [self.delegate ftAppHotStart:self.launchTime duration:duration];
             }
             _applicationDidEnterBackground = NO;
         }

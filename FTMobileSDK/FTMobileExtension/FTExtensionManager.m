@@ -8,7 +8,7 @@
 
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
-#import "FTUncaughtExceptionHandler.h"
+#import "FTCrashMonitor.h"
 #import "FTDateUtil.h"
 #import "FTInternalLog.h"
 #import "FTRUMManager.h"
@@ -76,14 +76,14 @@ static FTExtensionManager *sharedInstance = nil;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrack:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
+    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
     self.rumManager = [[FTRUMManager alloc] initWithRumSampleRate:rumConfigOptions.samplerate errorMonitorType:(ErrorMonitorType)rumConfigOptions.errorMonitorType monitor:nil writer:self];
     self.rumManager.appState = FTAppStateUnknown;
     id <FTRumDatasProtocol> rum = self.rumManager;
     [[FTExternalDataManager sharedManager] setDelegate:rum];
     [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
     if (rumConfigOptions.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
+        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
     }
     [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:self.rumManager];
 }

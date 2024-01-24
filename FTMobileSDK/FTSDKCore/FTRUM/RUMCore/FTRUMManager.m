@@ -130,25 +130,23 @@ NSString * const AppStateStringMap[] = {
         FTInnerLogError(@"exception %@",exception);
     }
 }
-- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration{
-    self.appState = FTAppStateRun;
+- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate *)time duration:(NSNumber *)duration{
     @try {
-        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             NSString *actionName;
             NSString *actionType;
             switch (type) {
                 case FTLaunchHot:
                     actionName = @"app_hot_start";
-                    actionType = @"launch_hot";
+                    actionType = FT_LAUNCH_HOT;
                     break;
                 case FTLaunchCold:
                     actionName = @"app_cold_start";
-                    actionType = @"launch_cold";
+                    actionType = FT_LAUNCH_COLD;
                     break;
                 case FTLaunchWarm:
                     actionName = @"app_warm_start";
-                    actionType = @"launch_warm";
+                    actionType = FT_LAUNCH_WARM;
                     break;
             }
             FTRUMLaunchDataModel *launchModel = [[FTRUMLaunchDataModel alloc]initWithDuration:duration];
@@ -213,9 +211,9 @@ NSString * const AppStateStringMap[] = {
                 NSMutableDictionary *errorField = [NSMutableDictionary new];
                 NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
                 if(content.error){
-                   [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }else{
-                   [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }
                 [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
                 [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
@@ -321,6 +319,9 @@ NSString * const AppStateStringMap[] = {
     }
     @try {
         NSDate *time = [NSDate date];
+        if([type isEqualToString:@"anr_error"]){
+            time = [time dateByAddingTimeInterval:-5];
+        }
         dispatch_sync(self.rumQueue, ^{
             NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
                                             FT_KEY_ERROR_STACK:stack,
@@ -345,15 +346,14 @@ NSString * const AppStateStringMap[] = {
         FTInnerLogError(@"exception %@",exception);
     }
 }
--(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
-    [self addLongTaskWithStack:stack duration:duration property:nil];
+-(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time{
+    [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
 }
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property{
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
     if (!stack || stack.length == 0 || (duration == nil)) {
         return;
     }
     @try {
-        NSDate *time = [NSDate date];
         dispatch_async(self.rumQueue, ^{
             NSMutableDictionary *fields = @{FT_DURATION:duration,
                                             FT_KEY_LONG_TASK_STACK:stack
@@ -361,9 +361,11 @@ NSString * const AppStateStringMap[] = {
             if(property && property.allKeys.count>0){
                 [fields addEntriesFromDictionary:property];
             }
-            FTRUMDataModel *model = [[FTRUMDataModel alloc]initWithType:FTRUMDataLongTask time:time];
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
+            model.type = FTRUMDataLongTask;
             model.tags = @{};
             model.fields = fields;
+            model.tm = time;
             [self process:model];
         });
     } @catch (NSException *exception) {

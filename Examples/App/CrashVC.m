@@ -49,10 +49,14 @@
         [crasher doDiv0];
     }],[[TableViewCellItem alloc]initWithTitle:@"accessDeallocatedObject" handler:^{
         [crasher accessDeallocatedObject];
+    }],[[TableViewCellItem alloc]initWithTitle:@"accessDeallocatedPtrProxy" handler:^{
+        [crasher accessDeallocatedPtrProxy];
     }],[[TableViewCellItem alloc]initWithTitle:@"zombieNSException" handler:^{
         [crasher zombieNSException];
     }],[[TableViewCellItem alloc]initWithTitle:@"corruptMemory" handler:^{
         [crasher corruptMemory];
+    }],[[TableViewCellItem alloc]initWithTitle:@"anr" handler:^{
+        [crasher anr];
     }],[[TableViewCellItem alloc]initWithTitle:@"deadlock" handler:^{
         [crasher deadlock];
     }],[[TableViewCellItem alloc]initWithTitle:@"pthreadAPICrash" handler:^{

@@ -79,136 +79,117 @@ public:
 }
 
 int* g_crasher_null_ptr = NULL;
-int g_crasher_denominator = 0;
 
-- (void) throwUncaughtNSException
+- (void)throwUncaughtNSException
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        id data = [NSArray arrayWithObject:@"Hello World"];
-        [(NSDictionary*)data objectForKey:@""];
-    });
-   
+    
+    id data = [NSArray arrayWithObject:@"Hello World"];
+    [(NSDictionary*)data objectForKey:@""];
+    
 }
 
-- (void) dereferenceBadPointer
-{
- 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+- (void)dereferenceBadPointer{
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
         char* ptr = (char*)-1;
         *ptr = 1;
     });
-   
+    
 }
 
-- (void) dereferenceNullPointer
+- (void)dereferenceNullPointer
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        *g_crasher_null_ptr = 1;
-    });
+    *g_crasher_null_ptr = 1;
 }
 
-- (void) useCorruptObject
+- (void)useCorruptObject
 {
-   
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            void* pointers[] = {NULL, NULL, NULL};
-            void* randomData[] = {
-                (void*)"a",
-                (void*)"b",
-                (void*)pointers,
-                (void*)"d",
-                (void*)"e",
-                (void*)"f"};
-            
-            // A corrupted/under-retained/re-used piece of memory
-            struct {void* isa;} corruptObj = {randomData};
-            
-            // Message an invalid/corrupt object.
-            // This will deadlock if called in a crash handler.
-            [(__bridge id)&corruptObj class];
-
-        });
+    
+    void* pointers[] = {NULL, NULL, NULL};
+    void* randomData[] = {
+        (void*)"a",
+        (void*)"b",
+        (void*)pointers,
+        (void*)"d",
+        (void*)"e",
+        (void*)"f"};
+    
+    // A corrupted/under-retained/re-used piece of memory
+    struct {void* isa;} corruptObj = {randomData};
+    
+    // Message an invalid/corrupt object.
+    // This will deadlock if called in a crash handler.
+    [(__bridge id)&corruptObj class];
+    
+    
     // From http://landonf.bikemonkey.org/2011/09/14
     
     // Random data
-   
+    
 }
 
-- (void) spinRunloop
+- (void)spinRunloop
 {
     // From http://landonf.bikemonkey.org/2011/09/14
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            dispatch_async(dispatch_get_main_queue(), ^
-            {
-                NSLog(@"ERROR: Run loop should be dead but isn't!");
-            });
-            *g_crasher_null_ptr = 1;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(dispatch_get_main_queue(), ^
+                       {
+            NSLog(@"ERROR: Run loop should be dead but isn't!");
         });
-   
+        *g_crasher_null_ptr = 1;
+    });
+    
 }
 
 static volatile int counter = 0; // To prevent recursion optimization
 
-- (void) causeStackOverflow
+- (void)causeStackOverflow
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self causeStackOverflow];
-        counter++;
-    });
-    
+    [self causeStackOverflow];
+    counter++;
 }
 
-- (void) doAbort
+- (void)doAbort
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        abort();
-
-    });
-    
+    abort();
 }
-
+int g_crasher_denominator = 0;
 - (void) doDiv0
 {
-    
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            int value = 10;
-            value /= g_crasher_denominator;
-            NSLog(@"%d", value);
-
-        });
-    
+    int value = 10;
+    value /= g_crasher_denominator;
+    NSLog(@"%d", value);
 }
 
-- (void) accessDeallocatedObject
+- (void)accessDeallocatedObject
 {
-//    NSArray* array = [[NSArray alloc] initWithObjects:@"", nil];
-//    [array release];
-//    void* ptr = array;
-//    memset(ptr, 0xe1, 16);
-//    [array objectAtIndex:10];
-//    return;
-
+    //    NSArray* array = [[NSArray alloc] initWithObjects:@"", nil];
+    //    [array release];
+    //    void* ptr = array;
+    //    memset(ptr, 0xe1, 16);
+    //    [array objectAtIndex:10];
+    //    return;
+    
     RefHolder* ref = [RefHolder new];
     ref.ref = [NSArray arrayWithObjects:@"test1", @"test2", nil];
-
+    
     dispatch_async(dispatch_get_main_queue(), ^
                    {
                        NSLog(@"Object = %@", [ref.ref objectAtIndex:1]);
                    });
+    
 }
 
-- (void) accessDeallocatedPtrProxy
-{
+- (void)accessDeallocatedPtrProxy{
     RefHolder* ref = [RefHolder new];
     ref.ref = [MyProxy alloc];
-
+    
     dispatch_async(dispatch_get_main_queue(), ^
                    {
                        NSLog(@"Object = %@", ref.ref);
                    });
 }
 
-- (void) zombieNSException
+- (void)zombieNSException
 {
     @try
     {
@@ -220,7 +201,6 @@ static volatile int counter = 0; // To prevent recursion optimization
     {
         RefHolder* ref = [RefHolder new];
         ref.ref = exception;
-
         dispatch_async(dispatch_get_main_queue(), ^
                        {
                            NSLog(@"Exception = %@", ref.ref);
@@ -228,52 +208,54 @@ static volatile int counter = 0; // To prevent recursion optimization
     }
 }
 
-- (void) corruptMemory
+- (void)corruptMemory
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        size_t stringsize = sizeof(uintptr_t) * 2 + 2;
-        NSString* string = [NSString stringWithFormat:@"%d", 1];
-        NSLog(@"%@", string);
-        void* cast = (__bridge void*)string;
-        uintptr_t address = (uintptr_t)cast;
-        void* ptr = (char*)address + stringsize;
-        memset(ptr, 0xa1, 500);
-
-    });
-    
+    size_t stringsize = sizeof(uintptr_t) * 2 + 2;
+    NSString* string = [NSString stringWithFormat:@"%d", 1];
+    NSLog(@"%@", string);
+    void* cast = (__bridge void*)string;
+    uintptr_t address = (uintptr_t)cast;
+    void* ptr = (char*)address + stringsize;
+    memset(ptr, 0xa1, 500);
 }
 // ANR
-- (void) deadlock
-{
+- (void)anr{
+    [self.lock lock];
+    [NSThread sleepForTimeInterval:0.2f];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [NSThread sleepForTimeInterval:6];
+        [self.lock unlock];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
         [self.lock lock];
-        [NSThread sleepForTimeInterval:0.2f];
-        dispatch_async(dispatch_get_main_queue(), ^
-                       {
-                           [self.lock lock];
-                       });
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+        [self.lock unlock];
+    });
+}
+- (void)deadlock
+{
+    [self.lock lock];
+    [NSThread sleepForTimeInterval:0.2f];
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+                       [self.lock lock];
+                   });
 }
 
-- (void) pthreadAPICrash
+- (void)pthreadAPICrash
 {
     // http://landonf.bikemonkey.org/code/crashreporting
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            pthread_getname_np(pthread_self(), (char*)0x1, 1);
-
-
-        });
+    pthread_getname_np(pthread_self(), (char*)0x1, 1);
 }
 
 
-
-
-- (void) throwUncaughtCPPException
+- (void)throwUncaughtCPPException
 {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            MyCPPClass instance;
-            instance.throwAnException();
-
-        });
-   
+    MyCPPClass instance;
+    instance.throwAnException();
 }
 
 @end

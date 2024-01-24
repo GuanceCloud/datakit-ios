@@ -124,7 +124,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * @param type      启动类型
  * @param duration  启动时长
  */
-- (void)addLaunch:(FTLaunchType)type duration:(NSNumber *)duration;
+- (void)addLaunch:(FTLaunchType)type launchTime:(NSDate*)time duration:(NSNumber *)duration;
 
 #pragma mark - Error / Long Task -
 /// 崩溃
@@ -143,14 +143,14 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 /// 卡顿
 /// @param stack 卡顿堆栈
 /// @param duration 卡顿时长
-- (void)addLongTaskWithStack:(nonnull NSString *)stack duration:(nonnull NSNumber *)duration;
+- (void)addLongTaskWithStack:(nonnull NSString *)stack duration:(nonnull NSNumber *)duration startTime:(long long)time;
 /**
  * 卡顿
  * @param stack      卡顿堆栈
  * @param duration   卡顿时长
  * @param property   事件属性(可选)
  */
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(nullable NSDictionary *)property;
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
 
 /// 当 FTTraceConfig、FTLoggerConfig 开启 enableLinkRumData 时 获取 rum 信息

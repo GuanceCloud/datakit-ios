@@ -50,7 +50,8 @@ NSString * const FT_KEY_VIEW_REFERRER = @"view_referrer";
 NSString * const FT_KEY_VIEW_NAME = @"view_name";
 //view field
 NSString * const FT_KEY_LOADING_TIME = @"loading_time";
-NSString * const FT_KEY_TIME_SPEND = @"time_spent";
+NSString * const FT_KEY_TIME_SPENT = @"time_spent";
+NSString * const FT_KEY_VIEW_UPDATE_TIME = @"view_update_time";
 NSString * const FT_KEY_VIEW_ERROR_COUNT = @"view_error_count";
 NSString * const FT_KEY_VIEW_RESOURCE_COUNT = @"view_resource_count";
 NSString * const FT_KEY_VIEW_LONG_TASK_COUNT = @"view_long_task_count";
@@ -116,6 +117,9 @@ NSString * const FT_KEY_ACTION_ID = @"action_id";
 NSString * const FT_KEY_ACTION_NAME = @"action_name";
 NSString * const FT_KEY_ACTION_TYPE = @"action_type";
 NSString * const FT_KEY_ACTION_TYPE_CLICK = @"click";
+NSString * const FT_LAUNCH_HOT = @"launch_hot";
+NSString * const FT_LAUNCH_COLD = @"launch_cold";
+NSString * const FT_LAUNCH_WARM = @"launch_warm";
 
 #pragma mark ========== error monitor ==========
 NSString * const FT_MEMORY_TOTAL  = @"memory_total";

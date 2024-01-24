@@ -17,7 +17,6 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
 #import "UIViewController+FTAutoTrack.h"
-#import "FTUncaughtExceptionHandler.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
@@ -31,6 +30,7 @@
 #import "FTConstants.h"
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"
+#import "FTCrashMonitor.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
@@ -42,13 +42,6 @@
 @implementation FTGlobalRumManager
 static FTGlobalRumManager *sharedInstance = nil;
 static dispatch_once_t onceToken;
--(instancetype)init{
-    self = [super init];
-    if (self) {
-        [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-    }
-    return self;
-}
 + (instancetype)sharedInstance {
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:NULL] init];
@@ -64,8 +57,9 @@ static dispatch_once_t onceToken;
     if(rumConfig.enableTraceUserAction){
         self.launchTracker = [[FTAppLaunchTracker alloc]initWithDelegate:self];
     }
+    [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(rumConfig.enableTrackAppCrash){
-        [[FTUncaughtExceptionHandler sharedHandler] addErrorDataDelegate:self.rumManager];
+        [[FTCrashMonitor shared] addErrorDataDelegate:self.rumManager];
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
@@ -99,8 +93,8 @@ static dispatch_once_t onceToken;
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
-            long long time = [data[@"time"] longLongValue];
-            time = time>0?time:[FTDateUtil currentTimeNanosecond];
+            // web 端 time 数据以微秒为单位，native 需要纳秒，需要转换单位
+            long long time = [data[@"time"] longLongValue] * 1000;
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
@@ -112,22 +106,23 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== FTRunloopDetectorDelegate ==========
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration{
-    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration]];
+- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
+    [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
 - (void)anrStackDetected:(NSString*)slowStack{
-    [self.rumManager addErrorWithType:@"ios_crash" message:@"ios_anr" stack:slowStack];
+    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack];
 }
 #pragma mark ========== APP LAUNCH ==========
--(void)ftAppHotStart:(NSNumber *)duration{
-    [self.rumManager addLaunch:FTLaunchHot duration:duration];
+-(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
+    [self.rumManager addLaunch:FTLaunchHot launchTime:launchTime duration:duration];
 }
--(void)ftAppColdStart:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
-    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold duration:duration];
+-(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
+    [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
 }
 #pragma mark ========== AUTO TRACK ==========
 -(void)applicationWillEnterForeground{
     @try {
+        self.rumManager.appState = FTAppStateStartUp;
         if(!self.rumConfig.enableTraceUserView){
             return;
         }
@@ -143,9 +138,12 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"applicationWillEnterForeground exception %@",exception);
     }
 }
+-(void)applicationDidBecomeActive{
+    self.rumManager.appState = FTAppStateRun;
+}
 -(void)applicationDidEnterBackground{
     @try {
-        self.rumManager.appState = FTAppStateStartUp;
+        self.rumManager.appState = FTAppStateUnknown;
         if(!self.rumConfig.enableTraceUserView){
             return;
         }

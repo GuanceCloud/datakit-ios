@@ -53,8 +53,9 @@ extern NSString * const FT_KEY_VIEW_REFERRER;
 extern NSString * const FT_KEY_VIEW_NAME;
 #pragma mark --- field
 extern NSString * const FT_KEY_LOADING_TIME;
-extern NSString * const FT_KEY_TIME_SPEND;
+extern NSString * const FT_KEY_TIME_SPENT;
 extern NSString * const FT_KEY_VIEW_ERROR_COUNT;
+extern NSString * const FT_KEY_VIEW_UPDATE_TIME;
 extern NSString * const FT_KEY_VIEW_RESOURCE_COUNT;
 extern NSString * const FT_KEY_VIEW_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_VIEW_ACTION_COUNT;
@@ -128,6 +129,10 @@ extern NSString * const FT_KEY_ACTION_ID;
 extern NSString * const FT_KEY_ACTION_NAME;
 extern NSString * const FT_KEY_ACTION_TYPE;
 extern NSString * const FT_KEY_ACTION_TYPE_CLICK;
+extern NSString * const FT_LAUNCH_HOT;
+extern NSString * const FT_LAUNCH_COLD;
+extern NSString * const FT_LAUNCH_WARM;
+
 #pragma mark --- field
 extern NSString * const FT_KEY_ACTION_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_ACTION_RESOURCE_COUNT;

@@ -200,7 +200,7 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, copy) NSString *datakitUrl;
 /// 数据上报 dataway 地址
 @property (nonatomic, copy) NSString *datawayUrl;
-/// dataway token
+/// client token
 @property (nonatomic, copy) NSString *clientToken;
 /// 设置自定义环境字段。
 @property (nonatomic, copy) NSString *env;

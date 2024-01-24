@@ -14,6 +14,7 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
 #import "FTInternalLog.h"
+#include <pthread.h>
 static NSUInteger SkyWalkingSequence = 0.0;
 
 @interface FTTracer ()
@@ -22,18 +23,25 @@ static NSUInteger SkyWalkingSequence = 0.0;
 @property (nonatomic, copy) NSString *skyParentInstance;
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) NetworkTraceType traceType;
+@property (nonatomic, copy) NSString *serviceName;
+
 @end
 @implementation FTTracer
 @synthesize enableLinkRumData = _enableLinkRumData;
 @synthesize enableAutoTrace = _enableAutoTrace;
 
--(instancetype)initWithSampleRate:(int)sampleRate traceType:(NetworkTraceType)traceType enableAutoTrace:(BOOL)trace enableLinkRumData:(BOOL)link{
+- (instancetype)initWithSampleRate:(int)sampleRate
+                                 traceType:(NetworkTraceType)traceType
+                               serviceName:(nonnull NSString *)serviceName
+                           enableAutoTrace:(BOOL)trace
+                         enableLinkRumData:(BOOL)link{
     self = [super init];
     if(self){
         _sampleRate = sampleRate;
         _traceType = traceType;
         _enableLinkRumData = link;
         _enableAutoTrace = trace;
+        _serviceName = serviceName;
     }
     return self;
 }
@@ -206,10 +214,11 @@ static NSUInteger SkyWalkingSequence = 0.0;
     NSString *parentTraceId =[spanId ft_base64Encode];
     NSString *trace = [baseTraceId stringByAppendingFormat:@"%04lu",(unsigned long)sequence+1];
     NSString *traceId =[trace ft_base64Encode];
+    NSString *parentService = [self.serviceName ft_base64Encode];
     if(handler){
-        handler(traceId,spanId);
+        handler(trace,[spanId stringByAppendingString:@"0"]);
     }
-    return @{FT_NETWORK_SKYWALKING_V3:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,[FT_DEFAULT_SERVICE_NAME ft_base64Encode],parentServiceInstance,urlPath,urlStr]};
+    return @{FT_NETWORK_SKYWALKING_V3:[NSString stringWithFormat:@"%@-%@-%@-0-%@-%@-%@-%@",@(sampled),traceId,parentTraceId,parentService,parentServiceInstance,urlPath,urlStr]};
 }
 -(void)unpackSkyWalking_V3Header:(NSDictionary *)header handler:(UnpackTraceHeaderHandler)handler{
     if([header.allKeys containsObject:FT_NETWORK_SKYWALKING_V3]){
@@ -236,19 +245,9 @@ static NSUInteger SkyWalkingSequence = 0.0;
     return sequence;
 }
 -(NSString *)getThreadNumber{
-    NSString *str = [NSThread currentThread].description;
-    NSString *chooseStr = @"2";
-    while ([str containsString:@"="]) {
-        NSRange range = [str rangeOfString:@"="];
-        NSRange range1 = [str rangeOfString:@","];
-        if (range.location != NSNotFound) {
-            NSInteger loc = range.location+1;
-            NSInteger len = range1.location - loc;
-            chooseStr = [str substringWithRange:NSMakeRange(loc, len )];
-            break;
-        }
-    }
-    return [chooseStr ft_removeFrontBackBlank];
+    uint64_t threadID;
+    pthread_threadid_np(NULL, &threadID);
+    return [NSString stringWithFormat:@"%llu",threadID];
 }
 
 -(NSString *)skyTraceID{
@@ -276,7 +275,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 }
 -(void)unpackTraceParentHeader:(NSDictionary *)headerFields handler:(UnpackTraceHeaderHandler)handler{
     if([headerFields.allKeys containsObject:FT_NETWORK_TRACEPARENT_KEY]){
-        NSString *traceStr =headerFields[FT_NETWORK_TRACEPARENT_KEY];
+        NSString *traceStr = headerFields[FT_NETWORK_TRACEPARENT_KEY];
         NSArray *traceAry = [traceStr componentsSeparatedByString:@"-"];
         if (traceAry.count == 4) {
             NSString *trace = traceAry[1];
@@ -289,14 +288,11 @@ static NSUInteger SkyWalkingSequence = 0.0;
 }
 #pragma mark --------- traceID、spanID ----------
 - (NSString *)networkTraceID{
-    NSString *uuid = [FTBaseInfoHandler randomUUID];
-    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    return [uuid lowercaseString];
+    return [FTBaseInfoHandler randomUUID];
 }
 - (NSString *)networkSpanID{
     NSString *uuid = [FTBaseInfoHandler randomUUID];
-    uuid = [uuid stringByReplacingOccurrencesOfString:@"-" withString:@""];
-    return [[uuid lowercaseString] ft_md5HashToLower16Bit];
+    return [uuid ft_md5HashToLower16Bit];
 }
 
 @end

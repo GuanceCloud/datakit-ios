@@ -38,7 +38,7 @@
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSURLRequest *interceptedRequest = request;
     if(self.requestInterceptor){
-        interceptedRequest = self.requestInterceptor(request);
+        return interceptedRequest = self.requestInterceptor(request);
     }
     return [self.instrumentation.interceptor interceptRequest:interceptedRequest];
 }

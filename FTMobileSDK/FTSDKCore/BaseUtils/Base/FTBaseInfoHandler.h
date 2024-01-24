@@ -22,10 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter url: URL
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url;
 
-/// bool 值转换字符串
-/// - Parameter isTrue: bool 值
-+ (NSString *)boolStr:(BOOL)isTrue;
-
 /// 采样率判断
 /// - Parameter sampling: 用户设置的采样率
 /// - Returns: 是否进行采样

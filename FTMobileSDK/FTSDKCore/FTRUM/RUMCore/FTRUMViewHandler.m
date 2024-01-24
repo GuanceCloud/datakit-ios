@@ -31,6 +31,7 @@
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
 @property (nonatomic, strong) NSMutableDictionary *viewProperty;//存储在field中
+@property (nonatomic, assign) uint64_t updateTime;
 @end
 @implementation FTRUMViewHandler
 -(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context monitor:(FTRUMMonitor *)monitor{
@@ -38,6 +39,7 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
+        self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;
         self.view_referrer = model.view_referrer;
@@ -104,8 +106,13 @@
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
+                FTRUMErrorData *error = (FTRUMErrorData *)model;
+                if(error.fatal){
+                    self.isActiveView = NO;
+                }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
+                [self writeErrorData:model];
             }
             break;
         case FTRUMDataResourceStart:
@@ -117,6 +124,7 @@
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
+                [self writeErrorData:model];
             }
             break;
         default:
@@ -160,28 +168,43 @@
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
+- (void)writeErrorData:(FTRUMDataModel *)model{
+    NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    [tags addEntriesFromDictionary:model.tags];
+    NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
+    [self.context.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
+    if(self.errorHandled){
+        self.errorHandled();
+    }
+}
 - (void)writeViewData:(FTRUMDataModel *)model{
-    NSNumber *timeSpend = [FTDateUtil nanosecondTimeIntervalSinceDate:self.viewStartTime toDate:[NSDate date]];
+    self.updateTime+=1;
+    //秒级
+    NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);
+    //纳秒级
+    NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
+
     NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
-    [sessionViewTag setValue:[FTBaseInfoHandler boolStr:self.isActiveView] forKey:FT_KEY_IS_ACTIVE];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
-    NSTimeInterval timeSpent = [model.time timeIntervalSinceDate:self.viewStartTime];
-
     NSMutableDictionary *field = @{FT_KEY_VIEW_ERROR_COUNT:@(self.viewErrorCount),
                                    FT_KEY_VIEW_RESOURCE_COUNT:@(self.viewResourceCount),
                                    FT_KEY_VIEW_LONG_TASK_COUNT:@(self.viewLongTaskCount),
                                    FT_KEY_VIEW_ACTION_COUNT:@(self.viewActionCount),
-                                   FT_KEY_TIME_SPEND:timeSpend,
-                                   
+                                   FT_KEY_TIME_SPENT:nTimeSpent,
+                                   FT_KEY_VIEW_UPDATE_TIME:@(self.updateTime),
+                                   FT_KEY_IS_ACTIVE:[NSNumber numberWithBool:self.isActiveView],
     }.mutableCopy;
     if(self.viewProperty && self.viewProperty.allKeys.count>0){
         [field addEntriesFromDictionary:self.viewProperty];
     }
     if (cpu && cpu.greatestDiff>0) {
         [field setValue:@(cpu.greatestDiff) forKey:FT_CPU_TICK_COUNT];
-        [field setValue:@(cpu.greatestDiff/timeSpent) forKey:FT_CPU_TICK_COUNT_PER_SECOND];
+        if(sTimeSpent>1.0){
+            [field setValue:@(cpu.greatestDiff/sTimeSpent) forKey:FT_CPU_TICK_COUNT_PER_SECOND];
+        }
     }
     if (memory && memory.maxValue>0) {
         [field setValue:@(memory.meanValue) forKey:FT_MEMORY_AVG];

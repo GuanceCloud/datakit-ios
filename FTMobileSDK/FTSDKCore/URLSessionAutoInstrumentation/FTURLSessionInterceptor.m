@@ -191,15 +191,22 @@ static dispatch_once_t onceToken;
 }
 
 #pragma mark --------- external data ----------
+-(NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url{
+    if(!_tracer){
+        FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
+        return nil;
+    }
+    return [self.tracer networkTraceHeaderWithUrl:url];
+}
 // `SkyWalking` 需要参数 URL
 -(NSDictionary *)getTraceHeaderWithKey:(NSString *)key url:(NSURL *)url{
     if(!_tracer){
         FTInnerLogError(@"SDK configuration Trace error, trace is not supported");
         return nil;
     }
-    __block FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]initWithIdentifier:key];
     NSDictionary *dict = nil;
     if(self.tracer.enableLinkRumData){
+        __block FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]initWithIdentifier:key];
        dict = [self.tracer networkTraceHeaderWithUrl:url handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
             handler.traceID = traceId;
             handler.spanID = spanID;

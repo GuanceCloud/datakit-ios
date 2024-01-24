@@ -69,8 +69,15 @@
     TableViewCellItem *item4 = [[TableViewCellItem alloc]initWithTitle:@"添加 RUM Resource 额外资源" handler:^{
         FTURLSessionDelegate *delegateProxy = [[FTURLSessionDelegate alloc]init];
         delegateProxy.provider = ^NSDictionary * _Nullable(NSURLRequest * _Nullable request, NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
-            NSString *body = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
-            return @{@"request_body":body};
+            NSString *body = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+            if(body&&body.length>0){
+                [dict setValue:body forKey:@"df_data"];
+            }
+            if(error){
+                [dict setValue:error.description forKey:@"df_error"];
+            }
+            return dict;
         };
         NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegateProxy delegateQueue:nil];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];

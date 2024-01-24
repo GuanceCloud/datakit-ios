@@ -12,6 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 处理用户自定义处理 HTTP Resource 数据的协议
 @protocol FTExternalResourceProtocol <NSObject,FTRumResourceProtocol>
+/// 获取 trace 需要添加的请求头
+/// - Parameters:
+///   - key: 请求标识
+///   - url: 请求 URL
+- (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url;
 
 /// 获取 trace 需要添加的请求头
 /// - Parameters:

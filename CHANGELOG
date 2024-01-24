@@ -1,3 +1,41 @@
+# 1.4.9-beta.2
+1. 优化 RUM-Resource 自动采集逻辑，修复一些场景下采集异常问题
+2. 通过 `FTURLSessionDelegate` 自定义链路追踪时,自定义优先级高于自动追踪
+
+---
+# 1.4.9-beta.1
+1. 同 1.4.9-alpha.1 - 1.4.9-alpha.6
+2. longtask、anr 发生时间赋值错误修复
+3. RUM-Resource 自动采集与使用`FTURLSessionDelegate`自定义采集兼容处理
+
+---
+# 1.4.9-alpha.6
+1. WebView 传入数据时间精度适配
+2. SkyWalking propagation header service 参数调整
+2. 修复 ANR 重复采集、优化 Error 错误信息、线程回溯
+
+---
+# 1.4.9-alpha.5
+1. 新增不关联 RUM 时获取 Trace 链路请求头的方法
+2. 数据上传时 BOOL 类型数据格式处理修改
+
+---
+# 1.4.9-alpha.4
+1. `RUM-View` 新增指标 `view_update_time`
+
+---
+# 1.4.9-alpha.3
+1. `RUM-View.is_active` 页面活跃状态修改为指标
+
+---
+# 1.4.9-alpha.2
+1. `RUM-Action` 中启动事件时间赋值错误修复
+
+---
+# 1.4.9-alpha.1
+1. 修复 arm64e 符号翻译失败问题
+
+---
 # 1.4.8-beta.1
 1. 同 1.4.8-alpha.5、 调试日志输出调整
 

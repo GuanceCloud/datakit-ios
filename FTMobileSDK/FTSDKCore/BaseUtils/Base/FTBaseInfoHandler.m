@@ -54,10 +54,6 @@
        
        return string;
 }
-
-+ (NSString *)boolStr:(BOOL)isTrue{
-    return isTrue?@"true":@"false";
-}
 + (BOOL)randomSampling:(int)sampling{
     if(sampling<=0){
         return NO;

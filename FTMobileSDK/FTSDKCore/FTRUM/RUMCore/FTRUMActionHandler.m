@@ -63,11 +63,6 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
             break;
         case FTRUMDataError:{
             self.actionErrorCount++;
-            FTRUMErrorData *error = (FTRUMErrorData *)model;
-            if(error.fatal){
-                [self writeActionData:model.time];
-                return NO;
-            }
         }
             break;
         case FTRUMDataResourceStart:

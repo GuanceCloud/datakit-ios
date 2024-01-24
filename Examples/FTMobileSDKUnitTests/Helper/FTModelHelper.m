@@ -101,6 +101,18 @@
         }
     }];
 }
++ (void)resolveModelArray:(NSArray *)modelArray timeCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,long long time,BOOL *stop))callBack{
+    [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
+        NSDictionary *opdata = dict[@"opdata"];
+        NSString *source = opdata[@"source"];
+        NSDictionary *tags = opdata[FT_TAGS];
+        NSDictionary *fields = opdata[FT_FIELDS];
+        if(callBack){
+            callBack(source,tags,fields,obj.tm,stop);
+        }
+    }];
+}
 + (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack{
     [modelArray enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:obj.data];
