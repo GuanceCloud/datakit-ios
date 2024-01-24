@@ -365,7 +365,7 @@
     }];
     
 }
-- (void)testUnableAutoTraceLinkRumExternalAdd{
+- (void)testDisableAutoTrace_enableLinkRumData{
     
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *murl = [processInfo environment][@"ACCESS_SERVER_URL"];
@@ -453,7 +453,34 @@
         XCTAssertNil(error);
     }];
 }
-- (void)testDisabledTrace{
+- (void)testDisableAutoTrace_enableRumAutoTraceResource{
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
+    traceConfig.enableAutoTrace = NO;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"test"];
+    rumConfig.enableTraceUserResource = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [FTModelHelper startView];
+    [self networkUpload:@"DisableAutoTrace" handler:^(NSDictionary *header) {
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_TRACEID]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SAMPLED]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_SPANID]);
+        XCTAssertFalse([header.allKeys containsObject:FT_NETWORK_DDTRACE_ORIGIN]&&[header[FT_NETWORK_DDTRACE_ORIGIN] isEqualToString:@"rum"]);
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)testDisabledInitTraceConfig{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];

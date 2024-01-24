@@ -25,14 +25,19 @@
 NS_ASSUME_NONNULL_BEGIN
 typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 ///  url session 自动化 采集 rum 数据，实现 trace 功能的对象
-@interface FTURLSessionInstrumentation : NSObject
+@interface FTURLSessionInstrumentation : NSObject<NSURLSessionDelegate>
 
 /// session 拦截处理对象 处理 resource 的链路追踪（trace）rum resource数据采集
 @property (nonatomic, weak ,readonly) id<FTURLSessionInterceptorProtocol> interceptor;
 /// 向外部提供处理用户自定义 resource 数据的对象
 @property (nonatomic, weak ,readonly) id<FTExternalResourceProtocol> externalResourceHandler;
 
-@property (atomic, assign, readonly) BOOL shouldInterceptor;
+/// 判断是否允许自动链路追踪
+@property (atomic, assign, readonly) BOOL shouldTraceInterceptor;
+
+/// 判断是否允许自动采集 RUM
+@property (atomic, assign, readonly) BOOL shouldRUMInterceptor;
+
 
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url;
 /// 单例
@@ -40,7 +45,7 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 
 /// 设置是否自动采集 RUM Resource
 /// - Parameter enableAutoRumTrack: 是否自动采集
-- (void)setEnableAutoRumTrack:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler;
+- (void)setEnableAutoRumTrace:(BOOL)enableAutoRumTrack resourceUrlHandler:(FTResourceUrlHandler)resourceUrlHandler;
 
 /// 设置 trace 配置项，开启 trace
 /// - Parameters:
