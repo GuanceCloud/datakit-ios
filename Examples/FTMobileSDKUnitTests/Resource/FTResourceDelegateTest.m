@@ -484,14 +484,16 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
             if(requestInterceptor){
                 XCTAssertTrue([requestHeader containsString:@"test:test_requestInterceptor"]);
+                XCTAssertFalse([tags.allKeys containsObject:FT_KEY_SPANID]);
+                XCTAssertFalse([tags.allKeys containsObject:FT_KEY_TRACEID]);
+            }else{
+                XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
+                NSString *span = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_SPANID,tags[FT_KEY_SPANID]];
+                XCTAssertTrue([requestHeader containsString:span]);
+                XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
+                NSString *trace = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_TRACEID,tags[FT_KEY_TRACEID]];
+                XCTAssertTrue([requestHeader containsString:trace]);
             }
-            NSDictionary *header = [FTJSONUtil dictionaryWithJsonString:requestHeader];
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
-            NSString *span = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_SPANID,tags[FT_KEY_SPANID]];
-            XCTAssertTrue([requestHeader containsString:span]);
-            XCTAssertTrue([tags.allKeys containsObject:FT_KEY_TRACEID]);
-            NSString *trace = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_TRACEID,tags[FT_KEY_TRACEID]];
-            XCTAssertTrue([requestHeader containsString:trace]);
         }
     }];
     XCTAssertTrue(hasResourceCount == 1);
