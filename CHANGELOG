@@ -1,3 +1,8 @@
+# 1.4.9-beta.2
+1. 优化 RUM-Resource 自动采集逻辑，修复一些场景下采集异常问题
+2. 通过 `FTURLSessionDelegate` 自定义链路追踪时,自定义优先级高于自动追踪
+
+---
 # 1.4.9-beta.1
 1. 同 1.4.9-alpha.1 - 1.4.9-alpha.6
 2. longtask、anr 发生时间赋值错误修复
