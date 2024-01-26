@@ -20,6 +20,7 @@
 #import "FTRecordModel.h"
 #import "FTURLSessionDelegate.h"
 #import "FTURLSessionInterceptor.h"
+#import "FTURLSessionInterceptor+Private.h"
 typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     DataTaskWithRequestCompletionHandler,
     DataTaskWithRequest,
@@ -355,6 +356,34 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 - (void)testIntakeUrlReturnNO_enableRUMAutoTrace{
     [self intakeUrl:NO enableRUMAutoTrace:YES];
 }
+- (void)testIntakeUrlReturnNO_nullUrl{
+    [self sdkEnableRUMAutoTrace:NO];
+    __block BOOL hasUrl = NO;
+    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
+        hasUrl = YES;
+        return YES;
+    }];
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.test.com/some/url/string1"]]];
+    [task setValue:nil forKey:@"originalRequest"];
+    [task setValue:nil forKey:@"currentRequest"];
+    [NSThread sleepForTimeInterval:0.2];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
+    [[FTURLSessionInterceptor shared] shutDown];
+    XCTAssertTrue(hasUrl == NO);
+}
+- (void)testIntakeUrlReturnNO_Url{
+    [self sdkEnableRUMAutoTrace:NO];
+    __block BOOL hasUrl = NO;
+
+    [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
+        hasUrl = YES;
+        return YES;
+    }];
+    NSURLSessionTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.test.com/some/url/string"]]];
+    [[FTURLSessionInterceptor shared] interceptTask:task];
+    [[FTURLSessionInterceptor shared] shutDown];
+    XCTAssertTrue(hasUrl == YES);
+}
 - (void)intakeUrl:(BOOL)trace enableRUMAutoTrace:(BOOL)enable{
     [self sdkEnableRUMAutoTrace:enable];
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
@@ -378,6 +407,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     XCTAssertTrue(hasResource == trace);
 }
+
 - (void)testUseURLSessionInterceptorTraceResource{
     [self URLSessionInterceptorTraceResourceWithEnableRUMAutoTrace:NO];
 }
