@@ -1,3 +1,7 @@
+# 1.4.9-alpha.7
+1. 补充缺失的头文件，修复编译失败问题
+
+---
 # 1.4.9-beta.3
 1. 拦截 URLSession 采集数据时使用 `currentRequest` 替换 `originalRequest`，修复一些场景下用户自定义采集 `RUM-resource` 规则时数据类型转换失败问题
 
