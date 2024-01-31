@@ -7,11 +7,14 @@
 //
 
 #include "FTMachException.h"
+#include <stdio.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <mach/mach.h>
 #include <pthread.h>
 #include <sys/sysctl.h>
-#include <os/log.h>
+#include <unistd.h>
+
 #if __LP64__
 #define MACH_ERROR_CODE_MASK 0xFFFFFFFFFFFFFFFF
 #else
