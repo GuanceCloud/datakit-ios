@@ -11,7 +11,10 @@
 #include <dlfcn.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
-#include <mach-o/nlist.h>
+#include <limits.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
 
 #pragma -mark DEFINE MACRO FOR DIFFERENT CPU ARCHITECTURE
 #if defined(__arm64__)
