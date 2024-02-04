@@ -36,7 +36,6 @@ static dispatch_once_t onceToken;
     if (self) {
         _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
         _queue = dispatch_queue_create("com.network.interceptor", DISPATCH_QUEUE_SERIAL);
-
     }
     return self;
 }
@@ -44,11 +43,16 @@ static dispatch_once_t onceToken;
     _tracer = tracer;
 }
 - (BOOL)isTraceUrl:(NSURL *)url{
-    if(self.resourceUrlHandler){
-        return !self.resourceUrlHandler(url);
-    }
-    if(self.intakeUrlHandler){
-        return self.intakeUrlHandler(url);
+    if(self.resourceUrlHandler||self.intakeUrlHandler){
+        if(!url){
+            return NO;
+        }
+        if(self.resourceUrlHandler){
+            return !self.resourceUrlHandler(url);
+        }
+        if(self.intakeUrlHandler){
+            return self.intakeUrlHandler(url);
+        }
     }
     return YES;
 }
@@ -121,16 +125,16 @@ static dispatch_once_t onceToken;
 }
 - (void)interceptTask:(NSURLSessionTask *)task{
     dispatch_async(self.queue, ^{
-        if(!task.originalRequest){
+        if(!task.currentRequest){
             return;
         }
-        if(![self isTraceUrl:task.originalRequest.URL]){
+        if(![self isTraceUrl:task.currentRequest.URL]){
             return;
         }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
-            handler.request = task.originalRequest;
+            handler.request = task.currentRequest;
             [self setTraceHandler:handler forKey:task];
             [self startResourceWithKey:handler.identifier];
         }
@@ -138,9 +142,6 @@ static dispatch_once_t onceToken;
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
     dispatch_async(self.queue, ^{
-        if(![self isTraceUrl:task.originalRequest.URL]){
-            return;
-        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
@@ -150,9 +151,6 @@ static dispatch_once_t onceToken;
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     dispatch_async(self.queue, ^{
-        if(![self isTraceUrl:task.originalRequest.URL]){
-            return;
-        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
@@ -165,9 +163,6 @@ static dispatch_once_t onceToken;
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     dispatch_async(self.queue, ^{
-        if(![self isTraceUrl:task.originalRequest.URL]){
-            return;
-        }
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;

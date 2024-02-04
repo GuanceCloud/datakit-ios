@@ -7,23 +7,24 @@
 //
 
 #include "FTSignalException.h"
+#include <stdio.h>
+#include <mach/mach.h>
 #include <signal.h>
 #include <stdlib.h>
 #include "FTStackInfo.h"
-
+#include <string.h>
+#include <TargetConditionals.h>
 static FTCrashNotifyCallback g_onCrashNotify;
 static stack_t g_signalStack = {0};
 static struct sigaction* g_previousSignalHandlers = NULL;
-
-#ifdef _KSCRASH_CONTEXT_64
-#define UC_MCONTEXT uc_mcontext64
+ 
+#if TARGET_OS_OSX
 typedef ucontext64_t SignalUserContext;
-#undef _KSCRASH_CONTEXT_64
+#define UC_MCONTEXT uc_mcontext64
 #else
-#define UC_MCONTEXT uc_mcontext
 typedef ucontext_t SignalUserContext;
+#define UC_MCONTEXT uc_mcontext
 #endif
-
 
 void FTSignalMachExceptionNameLookup(int sigNum,
                                      int sigCode,
@@ -179,7 +180,7 @@ void FTSignalMachExceptionNameLookup(int sigNum,
 static void signalHandler(int signal, siginfo_t* info, void* signalUserContext) {
     if (g_onCrashNotify != NULL) {
         _STRUCT_MCONTEXT* sourceContext = ((SignalUserContext*)signalUserContext)->UC_MCONTEXT;
-        _STRUCT_MCONTEXT64 context;
+        _STRUCT_MCONTEXT context;
         memcpy(&context, sourceContext, sizeof(context));
         
        

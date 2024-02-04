@@ -23,8 +23,8 @@
 #import "FTRumResourceProtocol.h"
 #import "FTTracerProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
-typedef BOOL(^FTIntakeUrl)(NSURL *url);
-typedef BOOL(^FTResourceUrlHandler)(NSURL *url);
+typedef BOOL(^FTIntakeUrl)( NSURL * _Nonnull url);
+typedef BOOL(^FTResourceUrlHandler)( NSURL * _Nonnull url);
 typedef NSDictionary* _Nullable (^ResourcePropertyProvider)( NSURLRequest * _Nullable request, NSURLResponse * _Nullable response,NSData *_Nullable data, NSError *_Nullable error);
 
 /// session 拦截处理代理

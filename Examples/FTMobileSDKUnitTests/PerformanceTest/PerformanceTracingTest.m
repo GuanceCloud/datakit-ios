@@ -38,7 +38,7 @@
     [self setNetworkTraceType:FTNetworkTraceTypeDDtrace];
     
     [self measureBlock:^{
-        [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:@"https://www.baidu.com"]];
+        [[FTExternalDataManager sharedManager] getTraceHeaderWithUrl:[NSURL URLWithString:@"https://www.baidu.com"]];
     }];
 }
 - (void)testZipkinMultiHeaderGetTraceHeaderPerformance{

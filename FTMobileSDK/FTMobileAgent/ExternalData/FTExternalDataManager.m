@@ -129,7 +129,7 @@
     }
 }
 - (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url{
-    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(getTraceHeaderWithKey:url:)]){
+    if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(getTraceHeaderWithUrl:)]){
         return [self.resourceDelegate getTraceHeaderWithUrl:url];
     }
     return nil;

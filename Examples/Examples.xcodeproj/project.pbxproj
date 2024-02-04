@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */; };
 		1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
+		1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */; };
 		172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3570280E7D5F002D139E /* FTSwizzleTest.m */; };
 		172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172C3594280FAC16002D139E /* FTSwizzlerTest.m */; };
 		172DD33528F7FC27007AE5E9 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 172DD33428F7FC27007AE5E9 /* WidgetKit.framework */; };
@@ -148,6 +149,8 @@
 		1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceAutoTrace.m; sourceTree = "<group>"; };
 		1712C5F52B60F0B100C4BD38 /* TestSessionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestSessionDelegate.h; sourceTree = "<group>"; };
 		1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSessionDelegate.m; sourceTree = "<group>"; };
+		1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTTestInteraction.swift; sourceTree = "<group>"; };
+		1712C5FA2B63B1BB00C4BD38 /* FTMobileSDKUnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileSDKUnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		172C3570280E7D5F002D139E /* FTSwizzleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzleTest.m; sourceTree = "<group>"; };
 		172C3594280FAC16002D139E /* FTSwizzlerTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerTest.m; sourceTree = "<group>"; };
 		172DD33328F7FC27007AE5E9 /* WidgetDemoExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetDemoExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -558,6 +561,8 @@
 				172C356D280D8885002D139E /* UtilsTest */,
 				4A2C825F24EFC9AB006D4FC6 /* HookTest */,
 				4A85313A23AB85FC00B40B5D /* Info.plist */,
+				1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */,
+				1712C5FA2B63B1BB00C4BD38 /* FTMobileSDKUnitTests-Bridging-Header.h */,
 			);
 			path = FTMobileSDKUnitTests;
 			sourceTree = "<group>";
@@ -918,6 +923,7 @@
 				1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
 				7C57E8BE26D3A40F002DA85B /* FTTrackDataManager+Test.m in Sources */,
+				1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */,
 				17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */,
@@ -1330,7 +1336,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/AgentTest/FTMobileSDKUnitTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/FTMobileSDKUnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1615,7 +1621,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/AgentTest/FTMobileSDKUnitTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/FTMobileSDKUnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1650,7 +1656,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/AgentTest/FTMobileSDKUnitTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "FTMobileSDKUnitTests/FTMobileSDKUnitTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";

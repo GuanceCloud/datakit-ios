@@ -9,13 +9,14 @@
 #ifndef FTStackInfo_h
 #define FTStackInfo_h
 
-#include <stdio.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdio.h>
 #include <stdbool.h>
 #include <mach/mach.h>
 #include <dlfcn.h>
+
 #ifdef __LP64__
 #define TRACE_FMT         "%-4d%-31s 0x%016lx %s + %lu"
 #define POINTER_FMT       "0x%016lx"
@@ -28,34 +29,9 @@ extern "C" {
 #define FT_NLIST struct nlist
 #endif
 #define CALL_INSTRUCTION_FROM_RETURN_ADDRESS(A) (DETAG_INSTRUCTION_ADDRESS((A)) - 1)
-#ifdef __arm64__
-    #define STRUCT_MCONTEXT_L _STRUCT_MCONTEXT64
-#else
-    #define STRUCT_MCONTEXT_L _STRUCT_MCONTEXT
-#endif
+
 typedef void (*FTCrashNotifyCallback)(thread_t thread,uintptr_t*   backtrace,int count, const char *  crashMessage);
-//typedef struct FTCrashContext{
-//    struct
-//    {
-//        /** User context information. */
-//        const void* userContext;
-//        int signum;
-//        int sigcode;
-//    } signal;
-//    
-//    struct
-//    {
-//        /** The exception name. */
-//        const char* name;
-//        const char* reason;
-//        /** The exception userInfo. */
-//        const char* userInfo;
-//    } NSException;
-//    const uintptr_t* backtrace;
-//    uintptr_t faultAddress;
-//    bool isSignalException;
-//    STRUCT_MCONTEXT_L machineContext;
-//} FTCrashContext;
+
 typedef struct FTStackFrameEntry{
     const struct FTStackFrameEntry *const previous;///前一个栈帧地址
     const uintptr_t return_address;///栈帧的函数返回地址

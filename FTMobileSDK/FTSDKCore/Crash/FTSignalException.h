@@ -11,8 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stdio.h>
-#include <mach/mach.h>
+
 #include "FTStackInfo.h"
 
 

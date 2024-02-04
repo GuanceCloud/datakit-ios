@@ -487,7 +487,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     
-    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithKey:[FTBaseInfoHandler randomUUID] url:[NSURL URLWithString:urlStr]];
+    NSDictionary *header = [[FTExternalDataManager sharedManager] getTraceHeaderWithUrl:[NSURL URLWithString:urlStr]];
     XCTAssertNil(header);
 }
 - (void)testCustomTrace{

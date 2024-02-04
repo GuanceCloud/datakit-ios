@@ -1,3 +1,15 @@
+# 1.4.9-beta.4
+1. 同 1.4.9-alpha.7 ，.c文件头文件引用调整
+
+---
+# 1.4.9-alpha.7
+1. 补充缺失的头文件，修复编译失败问题
+
+---
+# 1.4.9-beta.3
+1. 拦截 URLSession 采集数据时使用 `currentRequest` 替换 `originalRequest`，修复一些场景下用户自定义采集 `RUM-resource` 规则时数据类型转换失败问题
+
+---
 # 1.4.9-beta.2
 1. 优化 RUM-Resource 自动采集逻辑，修复一些场景下采集异常问题
 2. 通过 `FTURLSessionDelegate` 自定义链路追踪时,自定义优先级高于自动追踪
