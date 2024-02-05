@@ -14,8 +14,7 @@
 <script type="text/javascript">
 
     function testRumView() {
-
-
+        const timestamp = Date.now();
         FTWebViewJavascriptBridge.sendEvent(JSON.stringify({"name":"rum","data":{
             "measurement":"view",
             "tags":{"view_id":"497E6544-0AD3-4A73-90AA-CB56F2CE5261",
@@ -34,7 +33,37 @@
                 "view_resource_count":0,
                 "session_id":"12345",
                 "is_active": true,
-            }}}), function (ret, err) {
+            },
+             "time":timestamp,
+        }}), function (ret, err) {
+           console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
+        })
+        return "success"
+    }
+    
+    function testOldRumView() {
+        const timestamp = Date.now() * 1000000;
+        FTWebViewJavascriptBridge.sendEvent(JSON.stringify({"name":"rum","data":{
+            "measurement":"view",
+            "tags":{"view_id":"497E6544-0AD3-4A73-90AA-CB56F2CE5261",
+                "view_name":"testJSBridge",
+                "app_id":"appid_testJSBridge",
+                "service":"browser",
+                "sdk_name":"df_web_rum_sdk",
+                "sdk_version":"3.0.19",
+                "userid":"1111111",
+            },"fields":{
+                "loading_time": 2017636060,
+                "time_spent":1110076,
+                "view_action_count":0,
+                "view_error_count":0,
+                "view_long_task_count":0,
+                "view_resource_count":0,
+                "session_id":"12345",
+                "is_active": true,
+            },
+             "time":timestamp,
+        }}), function (ret, err) {
            console.log("sendEvent call back:" + JSON.stringify(ret) + "，" + JSON.stringify(err))
         })
         return "success"
@@ -58,5 +87,5 @@
 
 
 </script>
-</body>
-</html>
+  </body>
+  </html>

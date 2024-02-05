@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)ft_testNextLink;
 - (void)ft_stopLoading;
 - (void)test_addWebViewRumView:(void(^)(void))complete;
+- (void)test_addWebViewRumViewNano:(void(^)(void))complete;
 @end
 
 NS_ASSUME_NONNULL_END
