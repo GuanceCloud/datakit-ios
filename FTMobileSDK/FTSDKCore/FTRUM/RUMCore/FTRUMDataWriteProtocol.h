@@ -23,12 +23,6 @@
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 数据写入接口
 @protocol FTRUMDataWriteProtocol <NSObject>
-/// rum 数据写入
-/// - Parameters:
-///   - source: 数据来源 view|action|resource|error
-///   - tags:  属性
-///   - fields:  指标
-- (void)rumWrite:(NSString *)source tags:(NSDictionary *)tags fields:(NSDictionary *)fields;
 
 /// rum 数据写入
 /// - Parameters:

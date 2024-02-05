@@ -68,7 +68,7 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;

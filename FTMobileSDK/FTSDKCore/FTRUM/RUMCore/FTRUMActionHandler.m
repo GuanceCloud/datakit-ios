@@ -85,8 +85,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 }
 
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
-    NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
-    BOOL expired = sessionDuration >= discreteActionTimeoutDuration;
+    NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
+    BOOL expired = actionDuration >= discreteActionTimeoutDuration;
     return  expired;
 }
 
