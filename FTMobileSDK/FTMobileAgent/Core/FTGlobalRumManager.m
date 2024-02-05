@@ -93,8 +93,13 @@ static dispatch_once_t onceToken;
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
-            // web 端 time 数据以微秒为单位，native 需要纳秒，需要转换单位
-            long long time = [data[@"time"] longLongValue] * 1000;
+            long long time = [data[@"time"] longLongValue];
+            long long fixTime = time * 1000000;
+            // web 端 time 数据以毫秒为单位，native 需要纳秒，需要转换单位
+            // 判断是否越界
+            if (time == fixTime/1000000) {
+                time = fixTime;
+            }
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
