@@ -16,6 +16,9 @@ Pod::Spec.new do |s|
 	#$JENKINS_DYNAMIC_VERSION 替换成 "#{s.version}" 会在 pod valid 阶段报错
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
+    s.resource_bundle = {
+      "FTSDKPrivacyInfo" => "FTMobileSDK/FTSDKCore/Resources/PrivacyInfo.xcprivacy"
+    }
 
 	s.subspec  'FTMobileAgent' do | agent |
 		agent.platform = :ios, '10.0'
