@@ -21,7 +21,9 @@
 #import "FTExtensionDataManager.h"
 #import "FTConstants.h"
 void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
-
+NSString * const FT_RUM_CONFIG = @"RUM_CONFIG";
+NSString * const FT_TRACE_CONFIG = @"TRACE_CONFIG";
+NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
 @interface FTExtensionDataManager()
 @property (nonatomic, strong) dispatch_queue_t appExtensionQueue;
 @property (nonatomic, strong) NSMutableDictionary *filePaths;
@@ -73,58 +75,49 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 }
 -(void)writeRumConfig:(NSDictionary *)rumConfig{
     @try {
-        dispatch_block_t block = ^() {
-            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
-                [userDefaults setObject:rumConfig forKey:@"RUM_CONFIG"];
-                [userDefaults synchronize];
-            }];
-        };
-        
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
+        [self writeConfig:rumConfig forKey:FT_RUM_CONFIG];
     } @catch (NSException *exception) {
         
     }
 }
 -(void)writeTraceConfig:(NSDictionary *)traceConfig{
     @try {
-        dispatch_block_t block = ^() {
-            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
-                [userDefaults setObject:traceConfig forKey:@"TRACE_CONFIG"];
-                [userDefaults synchronize];
-            }];
-        };
-        
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
+        [self writeConfig:traceConfig forKey:FT_TRACE_CONFIG];
     } @catch (NSException *exception) {
         
     }
 }
 -(void)writeLoggerConfig:(NSDictionary *)loggerConfig{
     @try {
-        dispatch_block_t block = ^() {
-            [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:obj];
-                [userDefaults setObject:loggerConfig forKey:@"LOGGER_CONFIG"];
-                [userDefaults synchronize];
-            }];
-        };
-        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
-            block();
-        } else {
-            dispatch_sync(self.appExtensionQueue, block);
-        }
+        [self writeConfig:loggerConfig forKey:FT_LOGGER_CONFIG];
     } @catch (NSException *exception) {
         
+    }
+}
+-(void)writeConfig:(NSDictionary *)config forKey:(NSString *)key{
+    dispatch_block_t block = ^() {
+        [self.groupIdentifierArray enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:obj];
+            NSMutableDictionary *configDict = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
+            if (configDict.allKeys.count) {
+                [configDict setObject:config forKey:key];
+            } else {
+                configDict = [NSMutableDictionary dictionaryWithDictionary:@{key:config}];
+            }
+            NSError *err = NULL;
+            NSData *data= [NSPropertyListSerialization dataWithPropertyList:configDict
+                                                                     format:NSPropertyListBinaryFormat_v1_0
+                                                                    options:0
+                                                                      error:&err];
+            if (path.length && data.length) {
+                [data  writeToFile:path options:NSDataWritingAtomic error:nil];
+            }
+        }];
+    };
+    if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+        block();
+    } else {
+        dispatch_sync(self.appExtensionQueue, block);
     }
 }
 -(NSDictionary *)getRumConfigWithGroupIdentifier:(NSString *)groupIdentifier{
@@ -132,8 +125,9 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         __block NSDictionary *config = nil;
 
         dispatch_block_t block = ^() {
-            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
-            config = [userDefaults valueForKey:@"RUM_CONFIG"];
+            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
+            NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
+            config = [configDict valueForKey:FT_RUM_CONFIG];
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();
@@ -150,8 +144,9 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         __block NSDictionary *config = nil;
 
         dispatch_block_t block = ^() {
-            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
-            config = [userDefaults valueForKey:@"TRACE_CONFIG"];
+            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
+            NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
+            config = [configDict valueForKey:FT_TRACE_CONFIG];
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();
@@ -166,10 +161,10 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
 -(NSDictionary *)getLoggerConfigWithGroupIdentifier:(NSString *)groupIdentifier{
     @try {
         __block NSDictionary *config = nil;
-
         dispatch_block_t block = ^() {
-            NSUserDefaults *userDefaults = [[NSUserDefaults alloc]initWithSuiteName:groupIdentifier];
-            config = [userDefaults valueForKey:@"LOGGER_CONFIG"];
+            NSString *path = [self filePathForConfigWithApplicationGroupIdentifier:groupIdentifier];
+            NSDictionary *configDict = [[NSDictionary alloc] initWithContentsOfFile:path];
+            config = [configDict valueForKey:FT_LOGGER_CONFIG];
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();
@@ -186,7 +181,6 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
             return 0;
         }
-        
         __block NSUInteger count = 0;
         dispatch_block_t block = ^() {
             NSString *path = [self filePathForApplicationGroupIdentifier:groupIdentifier];
@@ -212,6 +206,34 @@ void *FTAppExtensionQueueTag = &FTAppExtensionQueueTag;
         dispatch_block_t block = ^() {
             NSURL *pathUrl = [[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_event_data.plist"];
             filePath = pathUrl.path;
+        };
+        if (dispatch_get_specific(FTAppExtensionQueueTag)) {
+            block();
+        } else {
+            dispatch_sync(self.appExtensionQueue, block);
+        }
+        return filePath;
+    } @catch (NSException *exception) {
+        return nil;
+    }
+}
+- (NSString *)filePathForConfigWithApplicationGroupIdentifier:(NSString *)groupIdentifier {
+    @try {
+        if (![groupIdentifier isKindOfClass:NSString.class] || !groupIdentifier.length) {
+            return nil;
+        }
+        __block NSString *filePath = nil;
+        dispatch_block_t block = ^() {
+            NSString *fileKey = [@"config_" stringByAppendingString:groupIdentifier];
+            filePath = [self.filePaths objectForKey:fileKey];
+            if(!filePath){
+                NSURL *pathUrl = [[[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:groupIdentifier] URLByAppendingPathComponent:@"ft_config.plist"];
+                filePath = pathUrl.path;
+                if(![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+                    [[NSFileManager defaultManager] createFileAtPath:filePath contents:nil attributes:nil];
+                }
+                [self.filePaths setValue:filePath forKey:fileKey];
+            }
         };
         if (dispatch_get_specific(FTAppExtensionQueueTag)) {
             block();
