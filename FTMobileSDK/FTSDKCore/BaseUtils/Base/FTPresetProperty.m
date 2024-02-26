@@ -14,10 +14,10 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import "FTInternalLog.h"
-#import "FTCallStack.h"
+#include <mach-o/arch.h>
+#include <sys/sysctl.h>
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
-#include <sys/sysctl.h>
 #endif
 //设备对象 __class 值
 static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
@@ -89,7 +89,7 @@ static NSString * const FT_VERSION = @"version";
         CGFloat scale = [[UIScreen mainScreen] scale];
         CGRect rect = [[UIScreen mainScreen] bounds];
         _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
-        _cpuArch = [FTCallStack cpuArch];
+        _cpuArch = [FTPresetProperty cpuArch];
 #endif
     }
     return self;
@@ -250,6 +250,68 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
             // Header is corrupt
             return 0;
     }
+}
++ (NSString *)cpuArch{
+    int32_t cpuType = 0;
+    size_t size = sizeof(cpuType);
+    
+    int res = sysctlbyname("hw.cputype", &cpuType, &size, NULL, 0);
+    if(res != 0){
+        cpuType = 0;
+    }
+    int32_t cpuSubType = 0;
+    size_t subSize = sizeof(cpuSubType);
+    res = sysctlbyname("hw.cpusubtype", &cpuSubType, &subSize, NULL, 0);
+    if(res != 0){
+        cpuSubType = 0;
+    }
+    return [FTPresetProperty CPUArchForMajor:cpuType minor:cpuSubType];
+}
++ (NSString*)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode{
+#ifdef __APPLE__
+    // In Apple platforms we can use this function to get the name of a particular architecture
+    const NXArchInfo* info = NXGetArchInfoFromCpuType(majorCode, minorCode);
+    if (info && info->name) {
+        return [[NSString alloc] initWithUTF8String: info->name];
+    }
+#endif
+
+    switch(majorCode)
+    {
+        case CPU_TYPE_ARM:
+        {
+            switch (minorCode)
+            {
+                case CPU_SUBTYPE_ARM_V6:
+                    return @"armv6";
+                case CPU_SUBTYPE_ARM_V7:
+                    return @"armv7";
+                case CPU_SUBTYPE_ARM_V7F:
+                    return @"armv7f";
+                case CPU_SUBTYPE_ARM_V7K:
+                    return @"armv7k";
+#ifdef CPU_SUBTYPE_ARM_V7S
+                case CPU_SUBTYPE_ARM_V7S:
+                    return @"armv7s";
+#endif
+            }
+            return @"arm";
+        }
+        case CPU_TYPE_ARM64:
+        {
+            switch (minorCode)
+            {
+                case CPU_SUBTYPE_ARM64E:
+                    return @"arm64e";
+            }
+            return @"arm64";
+        }
+        case CPU_TYPE_X86:
+            return @"i386";
+        case CPU_TYPE_X86_64:
+            return @"x86_64";
+    }
+    return [NSString stringWithFormat:@"unknown(%d,%d)", majorCode, minorCode];
 }
 + (NSString *)deviceInfo{
     struct utsname systemInfo;
