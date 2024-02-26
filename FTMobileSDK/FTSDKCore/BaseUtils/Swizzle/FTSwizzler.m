@@ -82,12 +82,14 @@ static void ft_swizzledMethod_2(id self, SEL _cmd)
 {
     FT_FIND_SWIZZLE
     if (swizzle) {
-        NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-        void (^block)(id self, SEL _cmd);
-        while ((block = [blocks nextObject])) {
-            block(self, _cmd);
+        @synchronized (swizzle) {
+            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
+            void (^block)(id self, SEL _cmd);
+            while ((block = [blocks nextObject])) {
+                block(self, _cmd);
+            }
+            ((void(*)(id, SEL))swizzle.originalMethod)(self, _cmd);
         }
-        ((void(*)(id, SEL))swizzle.originalMethod)(self, _cmd);
         FT_REMOVE_SELECTOR
     }
 }
@@ -96,12 +98,14 @@ static void ft_swizzledMethod_3(id self, SEL _cmd, id arg)
 {
     FT_FIND_SWIZZLE
     if (swizzle) {
-        NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-        void (^block)(id self, SEL _cmd, id arg);
-        while ((block = [blocks nextObject])) {
-            block(self, _cmd, arg);
+        @synchronized (swizzle) {
+            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
+            void (^block)(id self, SEL _cmd, id arg);
+            while ((block = [blocks nextObject])) {
+                block(self, _cmd, arg);
+            }
+            ((void(*)(id, SEL, id))swizzle.originalMethod)(self, _cmd, arg);
         }
-        ((void(*)(id, SEL, id))swizzle.originalMethod)(self, _cmd, arg);
         FT_REMOVE_SELECTOR
     }
 }
@@ -110,12 +114,14 @@ static void ft_swizzledMethod_4(id self, SEL _cmd, id arg, id arg2)
 {
     FT_FIND_SWIZZLE
     if (swizzle) {
-        NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-        void (^block)(id self, SEL _cmd, id arg, id arg2);
-        while ((block = [blocks nextObject])) {
-            block(self, _cmd, arg, arg2);
+        @synchronized (swizzle) {
+            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
+            void (^block)(id self, SEL _cmd, id arg, id arg2);
+            while ((block = [blocks nextObject])) {
+                block(self, _cmd, arg, arg2);
+            }
+            ((void(*)(id, SEL, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2);
         }
-        ((void(*)(id, SEL, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2);
         FT_REMOVE_SELECTOR
     }
 }
@@ -124,12 +130,14 @@ static void ft_swizzledMethod_5(id self, SEL _cmd, id arg, id arg2, id arg3)
 {
     FT_FIND_SWIZZLE
     if (swizzle) {
-        ((void(*)(id, SEL, id, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2, arg3);
-        
-        NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-        void (^block)(id self, SEL _cmd, id arg, id arg2, id arg3);
-        while ((block = [blocks nextObject])) {
-            block(self, _cmd, arg, arg2, arg3);
+        @synchronized (swizzle) {
+            ((void(*)(id, SEL, id, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2, arg3);
+            
+            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
+            void (^block)(id self, SEL _cmd, id arg, id arg2, id arg3);
+            while ((block = [blocks nextObject])) {
+                block(self, _cmd, arg, arg2, arg3);
+            }
         }
         FT_REMOVE_SELECTOR
     }
@@ -138,12 +146,14 @@ static void ft_swizzleMethod_3_io(id self, SEL _cmd, BOOL arg)
 {
     FT_FIND_SWIZZLE;
     if (swizzle) {
-        ((void (*)(id, SEL, BOOL))swizzle.originalMethod)(self, _cmd, arg);
-        
-        NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-        void (^block)(id self, SEL _cmd, BOOL arg);
-        while ((block = [blocks nextObject])) {
-            block(self, _cmd, arg);
+        @synchronized (swizzle) {
+            ((void (*)(id, SEL, BOOL))swizzle.originalMethod)(self, _cmd, arg);
+            
+            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
+            void (^block)(id self, SEL _cmd, BOOL arg);
+            while ((block = [blocks nextObject])) {
+                block(self, _cmd, arg);
+            }
         }
         FT_REMOVE_SELECTOR;
     }
@@ -173,19 +183,24 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     }
 }
 
-+ (FTSwizzleEntity *)swizzleForMethod:(Method)aMethod
-{
-    return (FTSwizzleEntity *)[datafluxSwizzles objectForKey:MAPTABLE_ID(aMethod)];
++ (FTSwizzleEntity *)swizzleForMethod:(Method)aMethod{
+    FTSwizzleEntity *entity = nil;
+    @synchronized (self) {
+        entity = (FTSwizzleEntity *)[datafluxSwizzles objectForKey:MAPTABLE_ID(aMethod)];
+    }
+    return entity;
 }
 
-+ (void)removeSwizzleForMethod:(Method)aMethod
-{
-    [datafluxSwizzles removeObjectForKey:MAPTABLE_ID(aMethod)];
++ (void)removeSwizzleForMethod:(Method)aMethod{
+    @synchronized (self) {
+        [datafluxSwizzles removeObjectForKey:MAPTABLE_ID(aMethod)];
+    }
 }
 
-+ (void)setSwizzle:(FTSwizzleEntity *)swizzle forMethod:(Method)aMethod
-{
-    [datafluxSwizzles setObject:swizzle forKey:MAPTABLE_ID(aMethod)];
++ (void)setSwizzle:(FTSwizzleEntity *)swizzle forMethod:(Method)aMethod{
+    @synchronized (self) {
+        [datafluxSwizzles setObject:swizzle forKey:MAPTABLE_ID(aMethod)];
+    }
 }
 
 + (BOOL)isLocallyDefinedMethod:(Method)aMethod onClass:(Class)aClass
@@ -235,7 +250,9 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
                     [FTSwizzler setSwizzle:swizzle forMethod:aMethod];
                     
                 } else {
-                    [swizzle.blocks setObject:aBlock forKey:aName];
+                    @synchronized (swizzle) {
+                        [swizzle.blocks setObject:aBlock forKey:aName];
+                    }
                 }
             } else {
                 IMP originalMethod = swizzle ? swizzle.originalMethod : method_getImplementation(aMethod);
@@ -268,8 +285,10 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     Method aMethod = class_getInstanceMethod(aClass, aSelector);
     FTSwizzleEntity *swizzle = [self swizzleForMethod:aMethod];
     if (swizzle) {
-        method_setImplementation(aMethod, swizzle.originalMethod);
-        [self removeSwizzleForMethod:aMethod];
+        @synchronized (swizzle) {
+            method_setImplementation(aMethod, swizzle.originalMethod);
+            [self removeSwizzleForMethod:aMethod];
+        }
     }
 }
 
@@ -282,12 +301,14 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     Method aMethod = class_getInstanceMethod(aClass, aSelector);
     FTSwizzleEntity *swizzle = [self swizzleForMethod:aMethod];
     if (swizzle) {
-        if (aName) {
-            [swizzle.blocks removeObjectForKey:aName];
-        }
-        if (!aName || swizzle.blocks.count == 0) {
-            method_setImplementation(aMethod, swizzle.originalMethod);
-            [self removeSwizzleForMethod:aMethod];
+        @synchronized (swizzle) {
+            if (aName) {
+                [swizzle.blocks removeObjectForKey:aName];
+            }
+            if (!aName || swizzle.blocks.count == 0) {
+                method_setImplementation(aMethod, swizzle.originalMethod);
+                [self removeSwizzleForMethod:aMethod];
+            }
         }
     }
 }
