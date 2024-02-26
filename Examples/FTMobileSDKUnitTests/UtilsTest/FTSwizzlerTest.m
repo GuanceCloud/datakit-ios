@@ -230,4 +230,59 @@
     [self.sub baseSring:@"first"];
     XCTAssertTrue(times == 0);
 }
+- (void)testSwizzleAsync{
+    SEL selector = @selector(noArgument);
+    BaseSwizzlerClass *base = [[BaseSwizzlerClass alloc]init];
+    __block NSInteger times = 0;
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    for (int i = 0; i<1000; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            XCTAssertNoThrow([FTSwizzler swizzleSelector:selector
+                                onClass:BaseSwizzlerClass.class
+                              withBlock:^{
+                times += 1;
+                [exception fulfill];
+            }
+                                                   named:@"testSwizzleAsync"]);
+        });
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [base noArgument];
+        });
+    }
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(times > 0);
+}
+
+- (void)testRemoveSwizzleAsync{
+    SEL selector = @selector(threeArgument:second:third:);
+    BaseSwizzlerClass *base = [[BaseSwizzlerClass alloc]init];
+    __block NSInteger times = 0;
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            XCTAssertNoThrow([FTSwizzler swizzleSelector:selector
+                                                 onClass:BaseSwizzlerClass.class
+                                               withBlock:^{
+                times += 1;
+            }
+                                                   named:@"testRemoveSwizzleAsync"]);
+            dispatch_group_leave(group);
+            
+        });
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            XCTAssertNoThrow([FTSwizzler unswizzleSelector:selector onClass:BaseSwizzlerClass.class]);
+            dispatch_group_leave(group);
+        });
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertNoThrow([FTSwizzler unswizzleSelector:selector onClass:BaseSwizzlerClass.class]);
+    [base threeArgument:@"a" second:@"b" third:@"c"];
+    XCTAssertTrue(times == 0);
+}
 @end

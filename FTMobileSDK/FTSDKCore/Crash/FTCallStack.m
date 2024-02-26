@@ -39,6 +39,22 @@ static mach_port_t main_thread_id;
 + (NSString *)ft_reportOfThread:(thread_t)thread backtrace:(uintptr_t*)backtraceBuffer count:(int)count{
     return ft_backtraceOfThread(thread, backtraceBuffer, count);
 }
++ (NSString *)cpuArch{
+    int32_t cpuType = 0;
+    size_t size = sizeof(cpuType);
+    
+    int res = sysctlbyname("hw.cputype", &cpuType, &size, NULL, 0);
+    if(res != 0){
+        cpuType = 0;
+    }
+    int32_t cpuSubType = 0;
+    size_t subSize = sizeof(cpuSubType);
+    res = sysctlbyname("hw.cpusubtype", &cpuSubType, &subSize, NULL, 0);
+    if(res != 0){
+        cpuSubType = 0;
+    }
+    return [FTCallStack CPUArchForMajor:cpuType minor:cpuSubType];
+}
 #pragma -mark Get call backtrace of a mach_thread
 NSString *_ft_backtraceOfThread(thread_t thread) {
     //线程上下文信息
@@ -93,20 +109,7 @@ int ft_crashThreadNumber(thread_t thread){
     return -1;
 }
 NSString* getCurrentCPUArch(void){
-    int32_t cpuType = 0;
-    size_t size = sizeof(cpuType);
-
-    int res = sysctlbyname("hw.cputype", &cpuType, &size, NULL, 0);
-    if(res != 0){
-        cpuType = 0;
-    }
-    int32_t cpuSubType = 0;
-    size_t subSize = sizeof(cpuSubType);
-    res = sysctlbyname("hw.cpusubtype", &cpuSubType, &subSize, NULL, 0);
-    if(res != 0){
-        cpuSubType = 0;
-    }
-    NSString *arch = [FTCallStack CPUArchForMajor:cpuType minor:cpuSubType];
+    NSString *arch = [FTCallStack cpuArch];
     return [FTCallStack CPUType:arch isSystemInfoHeader:YES];
 }
 #pragma -mark Convert NSThread to Mach thread

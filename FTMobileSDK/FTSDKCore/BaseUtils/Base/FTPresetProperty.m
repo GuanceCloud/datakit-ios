@@ -14,6 +14,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 #import "FTInternalLog.h"
+#import "FTCallStack.h"
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
 #include <sys/sysctl.h>
@@ -45,6 +46,9 @@ static NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
 static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"model";
 //屏幕宽度
 static NSString * const FT_SCREEN_SIZE = @"screen_size";
+//CPU ARCH
+static NSString * const FT_CPU_ARCH = @"arch";
+
 //设备 UUID
 static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
 //应用 ID
@@ -61,6 +65,7 @@ static NSString * const FT_VERSION = @"version";
 @property (nonatomic,copy,readonly) NSString *osVersion;
 @property (nonatomic,copy,readonly) NSString *osVersionMajor;
 @property (nonatomic,copy,readonly) NSString *screenSize;
+@property (nonatomic,copy,readonly) NSString *cpuArch;
 @end
 @implementation MobileDevice
 -(instancetype)init{
@@ -84,6 +89,7 @@ static NSString * const FT_VERSION = @"version";
         CGFloat scale = [[UIScreen mainScreen] scale];
         CGRect rect = [[UIScreen mainScreen] bounds];
         _screenSize =[[NSString alloc] initWithFormat:@"%.f*%.f",rect.size.height*scale,rect.size.width*scale];
+        _cpuArch = [FTCallStack cpuArch];
 #endif
     }
     return self;
@@ -163,6 +169,7 @@ static NSString * const FT_VERSION = @"version";
     dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
     dict[FT_KEY_SERVICE] = self.service;
     dict[FT_SDK_VERSION] = self.sdkVersion;
+    dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
 #if FT_MAC
     dict[FT_SDK_NAME] = FT_MACOS_SDK_NAME;
 #else

@@ -80,4 +80,22 @@
     NSString *string = [self stringByTrimmingCharactersInSet:set];
     return string;
 }
+- (NSString *)ft_replacingMeasurementSpecialCharacters{
+    NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+    reStr = [reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ " options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+    return reStr;
+}
+- (NSString *)ft_replacingSpecialCharacters{
+    NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
+    reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
+    reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ " options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
+    return reStr;
+}
+- (NSString *)ft_replacingFieldSpecialCharacters{
+    NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    reStr = [reStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+    return reStr;
+}
 @end

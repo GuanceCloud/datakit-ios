@@ -12,6 +12,7 @@
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
 #import "NSNumber+FTAdd.h"
+#import "NSString+FTAdd.h"
 #import "FTBaseInfoHandler.h"
 typedef NS_OPTIONS(NSInteger, FTParameterType) {
     FTParameterTypeTag      = 1,
@@ -39,48 +40,29 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         return nil;
     }else if([self.value isKindOfClass:NSNumber.class]){
         NSNumber *number = self.value;
-        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:number.ft_toTagFormat]];
+        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], number.ft_toTagFormat];
+    }else if([self.value isKindOfClass:NSString.class]){
+        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingSpecialCharacters]];
     }else{
-        return [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharacters:self.value]];
+        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], self.value];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
-        return [NSString stringWithFormat:@"%@=\"\"",[self replacingSpecialCharacters:self.field]];
+        return [NSString stringWithFormat:@"%@=\"\"",[self.field ft_replacingSpecialCharacters]];
     }else{
         if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            return  [NSString stringWithFormat:@"%@=%@", [self replacingSpecialCharacters:self.field], number.ft_toFiledString];
+            return  [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], number.ft_toFiledString];
         }else if ([self.value isKindOfClass:NSArray.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonDataWithArray:self.value]]];
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithArray:self.value] ft_replacingFieldSpecialCharacters]];
         }else if ([self.value isKindOfClass:NSDictionary.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:[FTJSONUtil convertToJsonData:self.value]]];
-
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters],[[FTJSONUtil convertToJsonData:self.value] ft_replacingFieldSpecialCharacters]];
+        }else if ([self.value isKindOfClass:NSString.class]){
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingSpecialCharacters]];
         }
-        return [NSString stringWithFormat:@"%@=\"%@\"", [self replacingSpecialCharacters:self.field], [self replacingSpecialCharactersField:self.value]];
+        return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], self.value];
     }
-}
-- (id)replacingSpecialCharacters:(id )str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        return reStr;
-    }else{
-        return str;
-    }
-    
-}
-- (id)replacingSpecialCharactersField:(id )str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr = [reStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-        return reStr;
-    }else{
-        return str;
-    }
-    
 }
 NSArray * FTQueryStringPairsFromKeyAndValue(NSDictionary *value) {
     NSMutableArray *mutableQueryStringComponents = [NSMutableArray array];
@@ -114,17 +96,6 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 
 @implementation FTRequestBody : NSObject
 
-+ (id )replacingSpecialCharactersMeasurement:(NSString *)str{
-    if ([str isKindOfClass:NSString.class]) {
-        NSString *reStr = [str stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-        reStr = [reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
-        reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ "];
-        return reStr;
-    }else{
-        return str;
-    }
-}
-
 @end
 @implementation FTRequestLineBody
 - (NSString *)getRequestBodyWithEventArray:(NSArray *)events{
@@ -133,9 +104,10 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata =item[FT_OPDATA];
         
-        NSString *source =[FTRequestBody replacingSpecialCharactersMeasurement:[opdata valueForKey:FT_KEY_SOURCE]];
+        NSString *source =[[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
+       
         if (!source) {
-            source =[FTRequestBody replacingSpecialCharactersMeasurement:[opdata valueForKey:FT_MEASUREMENT]];
+            source =[[opdata valueForKey:FT_MEASUREMENT] ft_replacingMeasurementSpecialCharacters];
         }
         NSMutableDictionary *tagDict = @{@"sdk_data_id":[FTBaseInfoHandler randomUUID]}.mutableCopy;
         NSDictionary *tag = opdata[FT_TAGS];
