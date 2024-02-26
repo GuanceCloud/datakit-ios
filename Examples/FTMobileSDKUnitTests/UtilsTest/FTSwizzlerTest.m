@@ -263,20 +263,19 @@
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             XCTAssertNoThrow([FTSwizzler swizzleSelector:selector
-                                onClass:BaseSwizzlerClass.class
-                              withBlock:^{
+                                                 onClass:BaseSwizzlerClass.class
+                                               withBlock:^{
                 times += 1;
-               
             }
                                                    named:@"testRemoveSwizzleAsync"]);
+            dispatch_group_leave(group);
+            
         });
-        dispatch_group_leave(group);
-
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             XCTAssertNoThrow([FTSwizzler unswizzleSelector:selector onClass:BaseSwizzlerClass.class]);
+            dispatch_group_leave(group);
         });
-        dispatch_group_leave(group);
     }
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
         [exception fulfill];
