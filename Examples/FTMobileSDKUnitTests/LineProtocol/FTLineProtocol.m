@@ -61,6 +61,14 @@
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
 }
+- (void)testStringReplacingBlank{
+    NSString *str = @"a b c";
+    str = [str ft_replacingSpecialCharacters];
+    XCTAssertTrue([str isEqualToString:@"a\\ b\\ c"]);
+    NSString *str2 = @"⍣ ₂₈.₂₃ᴀͤꜱᷟ ⷨꜱᷛᴮᴀᷟꜱͤı ⷨɴ";
+    str2 = [str2 ft_replacingMeasurementSpecialCharacters];
+    XCTAssertTrue([str2 isEqualToString:@"⍣\\ ₂₈.₂₃ᴀͤꜱᷟ\\ ⷨꜱᷛᴮᴀᷟꜱͤı\\ ⷨɴ"]);
+}
 - (void)testDataUUID{
     NSDictionary *dict = @{
         FT_MEASUREMENT:@"iOSTest",
