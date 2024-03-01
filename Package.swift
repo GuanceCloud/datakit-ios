@@ -148,8 +148,11 @@ let package = Package(
                                "_FTLogger",
                                "_FTConfig"
                               ],
-                path: "FTMobileSDK/FTMobileExtension",
-                publicHeadersPath: ".",
+                path: "FTMobileSDK",
+                sources: ["FTMobileExtension"],
+                resources: [
+                    .copy("Resources/PrivacyInfo.xcprivacy")],
+                publicHeadersPath: "FTMobileExtension/include",
                 cSettings: [
                     
                 ]),
@@ -160,13 +163,14 @@ let package = Package(
                                "_FTCrash",
                                "_FTLogger"
                               ],
-                path: "FTMobileSDK/FTSDKCore",
-                sources: ["FTWKWebView","DataManager"],
+                path: "FTMobileSDK",
+                sources: ["FTSDKCore/FTWKWebView","FTSDKCore/DataManager"],
                 resources: [
                     .copy("Resources/PrivacyInfo.xcprivacy")],
+                publicHeadersPath: "FTSDKCore/include",
                 cSettings: [
-                    .headerSearchPath("DataManager/fmdb"),
-                    .headerSearchPath("FTWKWebView/JSBridge"),
+                    .headerSearchPath("FTSDKCore/DataManager/fmdb"),
+                    .headerSearchPath("FTSDKCore/FTWKWebView/JSBridge"),
 
                 ]
                )

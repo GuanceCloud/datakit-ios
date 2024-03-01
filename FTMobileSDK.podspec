@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
     s.resource_bundle = {
-      "FTSDKPrivacyInfo" => "FTMobileSDK/FTSDKCore/Resources/PrivacyInfo.xcprivacy"
+      "FTSDKPrivacyInfo" => "FTMobileSDK/Resources/PrivacyInfo.xcprivacy"
     }
 
 	s.subspec  'FTMobileAgent' do | agent |
