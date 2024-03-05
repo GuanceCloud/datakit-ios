@@ -76,7 +76,7 @@ typedef enum FTNetworkTraceType:NSUInteger FTNetworkTraceType;
 - (void)enableSessionDelegate:(id <NSURLSessionDelegate>)delegate;
 
 /// 注销
-- (void)resetInstance;
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

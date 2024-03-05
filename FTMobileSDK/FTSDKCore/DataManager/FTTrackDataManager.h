@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 上传数据
 - (void)uploadTrackData;
+
+/// 关闭单例
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

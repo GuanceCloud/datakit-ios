@@ -71,5 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param type 数据类型
 - (NSInteger)getDatasCountWithType:(NSString *)type;
 
+/// 关闭单例
+- (void)shutDown;
 @end
 NS_ASSUME_NONNULL_END

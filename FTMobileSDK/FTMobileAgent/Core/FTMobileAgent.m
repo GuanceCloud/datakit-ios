@@ -270,12 +270,12 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    [[FTGlobalRumManager sharedInstance] resetInstance];
+    [[FTTrackDataManager sharedInstance] shutDown];
+    [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
-    [[FTURLSessionInstrumentation sharedInstance] resetInstance];
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
     onceToken = 0;
-    sharedInstance =nil;
+    sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
 }

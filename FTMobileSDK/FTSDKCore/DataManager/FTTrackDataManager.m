@@ -176,4 +176,9 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 
     return NO;
 }
+- (void)shutDown{
+    [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    [[FTTrackerEventDBTool sharedManger] shutDown];
+    onceToken = 0;
+}
 @end

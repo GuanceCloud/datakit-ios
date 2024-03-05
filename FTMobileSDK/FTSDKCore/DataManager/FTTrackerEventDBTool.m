@@ -318,8 +318,9 @@ static dispatch_once_t onceToken;
     }
     return _messageCaches;
 }
-- (void)resetInstance{
+- (void)shutDown{
+    [self insertCacheToDB];
     onceToken = 0;
-    dbTool =nil;
+    dbTool = nil;
 }
 @end
