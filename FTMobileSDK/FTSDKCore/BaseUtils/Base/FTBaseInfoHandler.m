@@ -45,14 +45,17 @@
 + (NSString *)replaceNumberCharByUrl:(NSURL *)url{
     NSString *relativePath = [url path];
     if (relativePath.length==0 || !relativePath) {
-           return @"";
-       }
-       NSError *error = nil;
-       NSString *pattern = @"\\/([^\\/]*)\\d([^\\/]*)";
-       NSRegularExpression *regularExpress = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
-       NSString *string = [regularExpress stringByReplacingMatchesInString:relativePath options:0 range:NSMakeRange(0, [relativePath length]) withTemplate:@"/?"];
-       
-       return string;
+        return @"";
+    }
+    static NSRegularExpression *regularExpress = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError *error = nil;
+        NSString *pattern = @"\\/([^\\/]*)\\d([^\\/]*)";
+        regularExpress = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
+    });
+    NSString *string = [regularExpress stringByReplacingMatchesInString:relativePath options:0 range:NSMakeRange(0, [relativePath length]) withTemplate:@"/?"];
+    return string;
 }
 + (BOOL)randomSampling:(int)sampling{
     if(sampling<=0){
