@@ -12,7 +12,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "NSString+FTAdd.h"
@@ -32,7 +32,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 #pragma mark NSString+FTAdd
 - (void)testStringRemoveFrontBackBlank{

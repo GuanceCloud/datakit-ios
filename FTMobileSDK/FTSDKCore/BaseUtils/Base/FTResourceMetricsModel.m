@@ -7,7 +7,7 @@
 //
 
 #import "FTResourceMetricsModel.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 @implementation FTResourceMetricsModel
 
 -(instancetype)initWithTaskMetrics:(NSURLSessionTaskMetrics *)metrics API_AVAILABLE(ios(10.0)){
@@ -20,16 +20,16 @@
             }
         }];
         NSURLSessionTaskTransactionMetrics *taskMetrics = [transactionMetrics lastObject];
-        _resource_dns = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.domainLookupEndDate];
-        _resource_tcp = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.connectStartDate toDate:taskMetrics.connectEndDate];
-        _resource_ssl = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.secureConnectionStartDate toDate:taskMetrics.connectEndDate];
-        _resource_ttfb = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseStartDate];
-        _resource_trans =[FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.requestStartDate toDate:taskMetrics.responseEndDate];
-        _duration = [FTDateUtil nanosecondTimeIntervalSinceDate:metrics.taskInterval.startDate toDate:metrics.taskInterval.endDate];
+        _resource_dns = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.domainLookupEndDate];
+        _resource_tcp = [taskMetrics.connectStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
+        _resource_ssl = [taskMetrics.secureConnectionStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
+        _resource_ttfb = [taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
+        _resource_trans =[taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseEndDate];
+        _duration = [metrics.taskInterval.startDate ft_nanosecondTimeIntervalToDate:metrics.taskInterval.endDate];
         if(taskMetrics.domainLookupStartDate){
-            _resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.domainLookupStartDate toDate:taskMetrics.responseStartDate];
+            _resource_first_byte = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
         }else{
-            _resource_first_byte = [FTDateUtil nanosecondTimeIntervalSinceDate:taskMetrics.fetchStartDate toDate:taskMetrics.responseStartDate];
+            _resource_first_byte = [taskMetrics.fetchStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
         }
         if (@available(iOS 13,macOS 10.15, *)) {
             _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);

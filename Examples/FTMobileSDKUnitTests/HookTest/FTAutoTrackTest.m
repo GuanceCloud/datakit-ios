@@ -19,7 +19,7 @@
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTTrackDataManager+Test.h"
 #import "DemoViewController.h"
 #import "FTConstants.h"
@@ -55,7 +55,7 @@
     trace.enableAutoTrace = YES;
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     // Put setup code here. This method is called before the invocation of each
    
 }

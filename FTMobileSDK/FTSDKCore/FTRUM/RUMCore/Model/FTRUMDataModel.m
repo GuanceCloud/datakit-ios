@@ -9,7 +9,7 @@
 #import "FTRUMDataModel.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 @interface FTRUMDataModel()
 @end
 @implementation FTRUMDataModel
@@ -32,7 +32,7 @@
     if(_tm>0){
         return _tm;
     }
-    return [FTDateUtil dateTimeNanosecond:self.time];
+    return [self.time ft_nanosecondTimeStamp];
 }
 @end
 @implementation FTRUMViewModel

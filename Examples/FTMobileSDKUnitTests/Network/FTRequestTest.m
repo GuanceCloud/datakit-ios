@@ -12,7 +12,6 @@
 #import "FTRecordModel.h"
 #import "OHHTTPStubs.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"

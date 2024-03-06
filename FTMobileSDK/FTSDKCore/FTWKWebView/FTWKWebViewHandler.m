@@ -10,7 +10,6 @@
 #endif
 #import "FTWKWebViewHandler.h"
 #import "FTInternalLog.h"
-#import "FTDateUtil.h"
 #import "WKWebView+FTAutoTrack.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTSwizzler.h"

@@ -10,7 +10,7 @@
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
 #import "FTInternalLog.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 
 
 static CFTimeInterval FTLoadDate = 0.0;
@@ -103,7 +103,7 @@ static CFTimeInterval processStartTime(NSTimeInterval now) {
         if(!AppRelaunched){
             [self appColdStartEvent];
         }else if (_applicationDidEnterBackground) {
-            NSNumber *duration = [FTDateUtil nanosecondTimeIntervalSinceDate:self.launchTime toDate:[NSDate date]];
+            NSNumber *duration = [self.launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
             if (self.delegate&&[self.delegate respondsToSelector:@selector(ftAppHotStart:duration:)]) {
                 [self.delegate ftAppHotStart:self.launchTime duration:duration];
             }

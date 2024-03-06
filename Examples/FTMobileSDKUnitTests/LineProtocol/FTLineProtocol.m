@@ -12,7 +12,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "NSString+FTAdd.h"
@@ -143,7 +143,7 @@
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    long long time = [FTDateUtil currentTimeNanosecond];
+    long long time = [NSDate ft_currentNanosecondTimeStamp];
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:time];
     
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
@@ -224,7 +224,7 @@
 - (void)transliteration:(NSString *)str expect:(NSString *)expect{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;

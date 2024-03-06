@@ -11,7 +11,7 @@
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
@@ -38,7 +38,7 @@
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)testTrackLongTask{
     [self initSDKWithEnableTrackAppANR:NO longTask:YES];
@@ -95,7 +95,7 @@
 - (void)testTrackAnrAndAnrStartTime{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
-    long long startTime = [FTDateUtil currentTimeNanosecond];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     
@@ -146,7 +146,7 @@
 }
 - (void)testLongTaskStartTime{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    long long startTime = [FTDateUtil currentTimeNanosecond]-1000000;
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000;
     [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000)];
     
     [[FTMobileAgent sharedInstance] syncProcess];

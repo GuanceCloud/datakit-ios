@@ -10,7 +10,7 @@
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent+Private.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
@@ -154,7 +154,7 @@
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 -(void)testSetEmptyLoggerServiceName{
     [self setRightSDKConfig];

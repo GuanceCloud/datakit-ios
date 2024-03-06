@@ -17,7 +17,6 @@
 #import "FTMobileAgent+Private.h"
 #import "FTInternalLog.h"
 #import "NSString+FTAdd.h"
-#import "FTDateUtil.h"
 #import "FTPresetProperty.h"
 #import "FTReachability.h"
 #import "FTTrackDataManager.h"
@@ -180,10 +179,6 @@ static dispatch_once_t onceToken;
     FTInnerLogInfo(@"Unbind User");
 }
 #pragma mark ========== private method ==========
-//RUM  ES
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type tags:tags fields:fields time:[FTDateUtil currentTimeNanosecond]];
-}
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![type isKindOfClass:NSString.class] || type.length == 0) {
         return;

@@ -10,7 +10,6 @@
 #endif
 #import "FTGlobalRumManager.h"
 #import "FTInternalLog.h"
-#import "FTDateUtil.h"
 #import "FTWKWebViewHandler.h"
 #import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"

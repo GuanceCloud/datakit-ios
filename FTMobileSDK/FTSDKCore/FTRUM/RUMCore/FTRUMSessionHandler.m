@@ -9,7 +9,7 @@
 #import "FTRUMSessionHandler.h"
 #import "FTRUMViewHandler.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTInternalLog.h"
 static const NSTimeInterval sessionTimeoutDuration = 15 * 60; // 15 minutes
@@ -137,7 +137,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
     [tags addEntriesFromDictionary:actionTags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:model.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 
 }
 - (void)writeErrorData:(FTRUMDataModel *)model{

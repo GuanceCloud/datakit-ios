@@ -12,7 +12,7 @@
 #import "FTRecordModel.h"
 #import "OHHTTPStubs.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[FTDateUtil currentTimeNanosecond];
+    long  tm =[NSDate ft_currentNanosecondTimeStamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
 }
 - (void)tearDown{

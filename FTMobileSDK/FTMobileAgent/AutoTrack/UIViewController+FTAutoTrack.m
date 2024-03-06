@@ -12,9 +12,9 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
-#import "FTInternalLog.h"
+#import "FTLog.h"
 #import "FTTrack.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
@@ -81,7 +81,7 @@ static char *ignoredLoad = "ignoredLoad";
             }
             [FTTrack sharedInstance].currentController = self;
             if(![self dataflux_ignoreTabBarControllerChildLoadDuration] && self.ft_viewLoadStartTime){
-                NSNumber *loadTime = [FTDateUtil nanosecondTimeIntervalSinceDate:self.ft_viewLoadStartTime toDate:[NSDate date]];
+                NSNumber *loadTime = [self.ft_viewLoadStartTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
             }else{

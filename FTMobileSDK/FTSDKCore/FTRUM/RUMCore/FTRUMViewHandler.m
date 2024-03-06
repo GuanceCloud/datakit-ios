@@ -10,7 +10,7 @@
 #import "FTRUMActionHandler.h"
 #import "FTRUMResourceHandler.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
@@ -215,7 +215,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[FTDateUtil dateTimeNanosecond:self.viewStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[self.viewStartTime ft_nanosecondTimeStamp]];
 }
 
 @end

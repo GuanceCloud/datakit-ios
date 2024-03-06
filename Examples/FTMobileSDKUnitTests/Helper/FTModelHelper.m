@@ -8,21 +8,21 @@
 
 #import "FTModelHelper.h"
 #import <FTConstants.h>
-#import <FTDateUtil.h>
+#import "NSDate+FTUtil.h"
 #import <FTEnumConstant.h>
 #import "FTMobileSDK.h"
 #import "FTJSONUtil.h"
 #import "FTBaseInfoHandler.h"
 @implementation FTModelHelper
 + (FTRecordModel *)createLogModel{
-    return  [FTModelHelper createLogModel:[FTDateUtil currentTimeGMT]];
+    return  [FTModelHelper createLogModel:[[NSDate date] ft_stringWithGMTFormat]];
 }
 + (FTRecordModel *)createLogModel:(NSString *)message{
     NSDictionary *filedDict = @{FT_KEY_MESSAGE:message,
     };
     NSDictionary *tagDict = @{FT_KEY_STATUS:FTStatusStringMap[FTStatusInfo]};
 
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_LOGGER_SOURCE op:FT_DATA_TYPE_LOGGING tags:tagDict fields:filedDict tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
 + (FTRecordModel *)createRumModel{
@@ -36,7 +36,7 @@
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
 + (FTRecordModel *)createWrongFormatRumModel{
@@ -47,7 +47,7 @@
         FT_RUM_KEY_SESSION_ID:[FTBaseInfoHandler randomUUID],
         FT_RUM_KEY_SESSION_TYPE:@"user",
     };
-    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[FTDateUtil currentTimeNanosecond]];
+    FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:nil tm:[NSDate ft_currentNanosecondTimeStamp]];
     return model;
 }
 + (void)startView{

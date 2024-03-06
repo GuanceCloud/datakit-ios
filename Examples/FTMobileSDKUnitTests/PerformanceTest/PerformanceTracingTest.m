@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 @interface PerformanceTracingTest : XCTestCase
 
@@ -21,7 +21,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTMobileAgent sharedInstance] shutDown];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)setNetworkTraceType:(FTNetworkTraceType)type{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

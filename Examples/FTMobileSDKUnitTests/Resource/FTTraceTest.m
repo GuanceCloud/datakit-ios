@@ -17,7 +17,7 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
@@ -40,7 +40,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 
 - (void)tearDown {

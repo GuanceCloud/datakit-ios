@@ -13,7 +13,7 @@
 #import "FTCallStack.h"
 #import "FTConstants.h"
 #import <sys/time.h>
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 //250ms  （纳秒）
 static const NSInteger kMonitorRunloopStandstillMillisecond = 250000000;
 //60s    （纳秒）
@@ -168,7 +168,7 @@ static BOOL g_bRun;
             NSTimeInterval start = (NSTimeInterval)g_tvRun.tv_sec + (double)((g_tvRun.tv_usec) / 1e6);
             NSDate *startDate = [NSDate dateWithTimeIntervalSince1970:start];
             if (del != nil && [del respondsToSelector:@selector(longTaskStackDetected:duration:time:)]) {
-                [del longTaskStackDetected:backtrace duration:duration time:[FTDateUtil dateTimeNanosecond:startDate]];
+                [del longTaskStackDetected:backtrace duration:duration time:[startDate ft_nanosecondTimeStamp]];
             }
         });
     }

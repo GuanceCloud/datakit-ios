@@ -16,7 +16,7 @@
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
 #import "FTTrackDataManager+Test.h"

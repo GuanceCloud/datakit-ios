@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTRecordModel.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTInternalLog.h"
 #import "FTConstants.h"
@@ -17,7 +17,7 @@
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _tm = [FTDateUtil currentTimeNanosecond];
+        _tm = [NSDate ft_currentNanosecondTimeStamp];
         _op = @"";
     }
     return self;
@@ -38,7 +38,7 @@
         if (tm&&tm>0) {
             _tm = tm;
         }else{
-            _tm = [FTDateUtil currentTimeNanosecond];
+            _tm = [NSDate ft_currentNanosecondTimeStamp];
         }
         FTInnerLogDebug(@"write data = %@",@{@"time":@(_tm),
                                              @"data":data

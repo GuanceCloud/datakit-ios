@@ -12,7 +12,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "NSString+FTAdd.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTSDKCompat.h"
 @interface FTLogger ()
@@ -82,7 +82,7 @@ static dispatch_once_t onceToken;
                 FTInnerLogInfo(@"[Logging][Not Sampled] %@",message);
                 return;
             }
-            [self.loggerWriter logging:message status:status tags:nil field:property time:[FTDateUtil currentTimeNanosecond]];
+            [self.loggerWriter logging:message status:status tags:nil field:property time:[NSDate ft_currentNanosecondTimeStamp]];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }

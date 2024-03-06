@@ -13,7 +13,7 @@
 #import "FTConstants.h"
 #import "FTTrackDataManager+Test.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
@@ -80,7 +80,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 /// 1.验证有webview传入数据添加
 /// 2.验证数据格式
@@ -107,7 +107,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 }
 - (void)addRumViewData:(BOOL)nano{
     [self setsdk];
-    long long smallTime = [FTDateUtil currentTimeNanosecond];
+    long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -160,7 +160,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
                 XCTAssertFalse([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
                 XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
                 XCTAssertTrue([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
-                XCTAssertTrue(obj.tm>smallTime && obj.tm < [FTDateUtil currentTimeNanosecond]);
+                XCTAssertTrue(obj.tm>smallTime && obj.tm < [NSDate ft_currentNanosecondTimeStamp]);
                 hasViewData = YES;
             }
         }
