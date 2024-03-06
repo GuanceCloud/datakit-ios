@@ -14,9 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
 /// logging 类型数据超过最大值后是否废弃最新数据
-@property (nonatomic, assign) BOOL discardNew;
+@property (atomic, assign) BOOL discardNew;
 /// 数据库中 logging 类型数据最大数量
-@property (nonatomic, assign) NSInteger dbLoggingMaxCount;
+@property (atomic, assign) int logCacheLimitCount;
 /// 单例
 + (FTTrackerEventDBTool *)sharedManger;
 /// 单例

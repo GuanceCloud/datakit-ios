@@ -168,7 +168,7 @@ extern NSString * const FT_USER_EXTRA;
 
 #pragma mark ========== inner use ==========
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
-extern NSUInteger const FT_DB_CONTENT_MAX_COUNT;
+extern int const FT_DB_CONTENT_MAX_COUNT;
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
 
 /// 超过多少毫秒为一次卡顿,default 5s 记录一次ANR

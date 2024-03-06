@@ -9,7 +9,6 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileAgent.h"
-#import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTGlobalRumManager.h"
@@ -65,12 +64,14 @@ static dispatch_once_t onceToken;
         self = [super init];
         if (self) {
             //基础类型的记录
-            [FTInternalLog enableLog:config.enableSDKDebugLog];
+            [FTLog enableLog:config.enableSDKDebugLog];
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-            
             //开启数据处理管理器
-            [FTTrackDataManager sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version 
+            [FTTrackDataManager sharedInstance]
+                .setAutoSync(config.autoSync)
+                .setSyncPageSize(config.syncPageSize)
+                .setSyncSleepTime(config.syncSleepTime);
+            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version
                                                                     env:config.env
                                                                 service:config.service
                                                           globalContext:config.globalContext];
@@ -111,7 +112,9 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
-        [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
+        [FTTrackDataManager sharedInstance]
+            .setLogCacheLimitCount(loggerConfigOptions.logCacheLimitCount)
+            .setLogDiscardNew((loggerConfigOptions.discardType == FTDiscard));
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole
                                     enableCustomLog:loggerConfigOptions.enableCustomLog

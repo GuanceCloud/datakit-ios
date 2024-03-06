@@ -1,5 +1,5 @@
 //
-//  FTTrackDataManger.h
+//  FTTrackDataManager.h
 //  FTMacOSSDK
 //
 //  Created by 胡蕾蕾 on 2021/8/4.
@@ -22,6 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTTrackDataManager : NSObject
 /// 单例
 +(instancetype)sharedInstance;
+
+- (FTTrackDataManager *(^)(BOOL))setAutoSync;
+- (FTTrackDataManager *(^)(int))setSyncPageSize;
+- (FTTrackDataManager *(^)(int))setSyncSleepTime;
+- (FTTrackDataManager *(^)(int))setLogCacheLimitCount;
+- (FTTrackDataManager *(^)(BOOL))setLogDiscardNew;
+
 /// 数据写入
 /// - Parameters:
 ///   - data: 数据

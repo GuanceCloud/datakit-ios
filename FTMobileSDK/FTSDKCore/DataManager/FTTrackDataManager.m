@@ -1,5 +1,5 @@
 //
-//  FTTrackDataManger.m
+//  FTTrackDataManager.m
 //  FTMacOSSDK
 //
 //  Created by 胡蕾蕾 on 2021/8/4.
@@ -15,18 +15,24 @@
 #import "FTNetworkManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
-static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数量
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isUploading;
 @property (nonatomic, strong) NSDate *lastAddDBDate;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
+/// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
+@property (atomic, assign) BOOL autoSync;
+/// 一次上传数据数量
+@property (atomic, assign) int uploadPageSize;
+@property (atomic, assign) int syncSleepTime;
+@property (atomic, assign) int logCacheLimitCount;
 @end
 @implementation FTTrackDataManager{
 }
+static dispatch_once_t onceToken;
+
 +(instancetype)sharedInstance{
     static  FTTrackDataManager *sharedInstance;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super allocWithZone:nil] init];
     });
@@ -37,6 +43,8 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     if (self) {
         NSString *serialLabel = @"com.guance.network";
         _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0));
+        _autoSync = YES;
+        _uploadPageSize = 10;
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
@@ -44,17 +52,53 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
 //监听网络状态 网络连接成功 触发一次上传操作
 - (void)listenNetworkChangeAndAppLifeCycle{
     [[FTReachability sharedInstance] startNotifier];
-    __weak typeof(self) weakSelf = self;
-    [FTReachability sharedInstance].networkChanged = ^(){
-        if([FTReachability sharedInstance].isReachable){
-            [weakSelf uploadTrackData];
-        }
-    };
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
+}
+- (FTTrackDataManager *(^)(BOOL))setAutoSync{
+    return ^(BOOL value) {
+        self->_autoSync = value;
+        if(value){
+            __weak typeof(self) weakSelf = self;
+            [FTReachability sharedInstance].networkChanged = ^(){
+                if([FTReachability sharedInstance].isReachable){
+                    [weakSelf uploadTrackData];
+                }
+            };
+        }else{
+            [FTReachability sharedInstance].networkChanged = nil;
+        }
+        return self;
+    };
+}
+- (FTTrackDataManager *(^)(int))setSyncPageSize{
+    return ^(int value) {
+        self->_uploadPageSize = value;
+        return self;
+    };
+}
+- (FTTrackDataManager *(^)(int))setSyncSleepTime{
+    return ^(int value) {
+        self->_syncSleepTime = value;
+        return self;
+    };
+}
+- (FTTrackDataManager *(^)(int))setLogCacheLimitCount{
+    return ^(int value) {
+        [FTTrackerEventDBTool sharedManger].logCacheLimitCount = value;
+        return self;
+    };
+}
+- (FTTrackDataManager *(^)(BOOL))setLogDiscardNew{
+    return ^(BOOL value) {
+        [FTTrackerEventDBTool sharedManger].discardNew = value;
+        return self;
+    };
 }
 -(void)applicationDidBecomeActive{
     @try {
-        [self uploadTrackData];
+        if(self.autoSync){
+            [self uploadTrackData];
+        }
     }
     @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
@@ -92,21 +136,24 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
             [[FTTrackerEventDBTool sharedManger] insertItem:data];
             break;
     }
-    if (self.lastAddDBDate) {
-        NSDate *now = [NSDate date];
-        NSTimeInterval time = [now timeIntervalSinceDate:self.lastAddDBDate];
-        if (time>10) {
+    if(self.autoSync){
+        if (self.lastAddDBDate) {
+            NSDate *now = [NSDate date];
+            NSTimeInterval time = [now timeIntervalSinceDate:self.lastAddDBDate];
+            if (time>10) {
+                self.lastAddDBDate = [NSDate date];
+                [self uploadTrackData];
+            }
+        }else{
             self.lastAddDBDate = [NSDate date];
-            [self uploadTrackData];
         }
-    }else{
-        self.lastAddDBDate = [NSDate date];
     }
 }
 
 - (void)uploadTrackData{
     //无网 返回
     if(![FTReachability sharedInstance].isReachable){
+        FTInnerLogError(@"[NETWORK] Network unreachable, cancel upload");
         return;
     }
     [self privateUpload];
@@ -128,7 +175,7 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
     }
 }
 -(void)flushWithType:(NSString *)type{
-    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+    NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
     while (events.count > 0) {
         if(![self flushWithEvents:events type:type]){
             break;
@@ -137,10 +184,14 @@ static const NSUInteger kOnceUploadDefaultCount = 10; // 一次上传数据数�
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
         }
-        if(events.count < kOnceUploadDefaultCount){
+        if(events.count < self.uploadPageSize){
             break;
         }else{
-            events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:kOnceUploadDefaultCount withType:type];
+            // 减缓同步速率降低CPU使用率
+            if(self.syncSleepTime>0){
+                [NSThread sleepForTimeInterval:self.syncSleepTime/1000.0];
+            }
+            events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
         }
     }
 }
