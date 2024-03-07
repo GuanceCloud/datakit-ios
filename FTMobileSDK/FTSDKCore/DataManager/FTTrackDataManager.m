@@ -10,7 +10,7 @@
 #import "FTRecordModel.h"
 #import "FTReachability.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTAppLifeCycle.h"

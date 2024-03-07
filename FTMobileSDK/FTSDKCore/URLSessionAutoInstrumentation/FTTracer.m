@@ -13,7 +13,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
-#import "FTInternalLog.h"
+#import "FTLog.h"
 #include <pthread.h>
 static NSUInteger SkyWalkingSequence = 0.0;
 

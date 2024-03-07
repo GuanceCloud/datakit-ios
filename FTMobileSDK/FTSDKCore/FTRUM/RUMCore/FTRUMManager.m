@@ -9,7 +9,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "FTMonitorUtils.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTSDKCompat.h"

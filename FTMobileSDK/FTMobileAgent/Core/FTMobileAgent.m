@@ -14,7 +14,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
 #import "FTReachability.h"

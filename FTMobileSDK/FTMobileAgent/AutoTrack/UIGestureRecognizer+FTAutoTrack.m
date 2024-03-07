@@ -7,7 +7,7 @@
 //
 
 #import "UIGestureRecognizer+FTAutoTrack.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTTrack.h"
 @implementation UIGestureRecognizer (FTAutoTrack)

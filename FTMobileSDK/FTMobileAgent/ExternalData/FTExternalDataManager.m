@@ -9,7 +9,7 @@
 #import "FTExternalDataManager.h"
 #import "FTExternalDataManager+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;

@@ -5,10 +5,8 @@
 //  Created by hulilei on 2023/5/24.
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
-
-#import "FTLogger.h"
 #import "FTLogger+Private.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "NSString+FTAdd.h"
@@ -56,19 +54,7 @@ static dispatch_once_t onceToken;
 {
     dispatch_block_t logBlock = ^{
         if(self.printLogsToConsole){
-            NSString *prefix = @"[IOS APP]" ;
-#if FT_MAC
-            prefix = @"[MACOS APP]";
-#endif
-            NSString *consoleMessage = [NSString stringWithFormat:@"%@ [%@] %@",prefix,[FTStatusStringMap[status] uppercaseString],message];
-            NSMutableArray *mutableStrs = [NSMutableArray array];
-            if(property && property.allKeys.count>0){
-                for (NSString *key in property.allKeys) {
-                    [mutableStrs addObject:[NSString stringWithFormat:@"%@=%@",key,property[key]]];
-                }
-                consoleMessage =[consoleMessage stringByAppendingFormat:@" ,{%@}",[mutableStrs componentsJoinedByString:@","]];
-            }
-            FT_CONSOLE_LOG(status,consoleMessage);
+            FT_CONSOLE_LOG(status,message,property);
         }
         // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){

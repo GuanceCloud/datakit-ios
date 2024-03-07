@@ -9,7 +9,7 @@
 #import <sys/sysctl.h>
 #import "FTAppLaunchTracker.h"
 #import "FTAppLifeCycle.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
 
 

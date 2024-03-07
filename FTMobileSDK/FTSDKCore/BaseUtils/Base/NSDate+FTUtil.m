@@ -24,7 +24,7 @@
     static NSDateFormatter *formatter = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSDateFormatter *formatter=[[NSDateFormatter alloc]init];
+        formatter = [[NSDateFormatter alloc]init];
         [formatter setLocale:[NSLocale currentLocale]];
         formatter.dateFormat=@"yyyy-MM-dd HH:mm:ss:SSS";
     });
@@ -35,7 +35,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSTimeZone *tzGMT = [NSTimeZone timeZoneWithName:@"GMT"];
-        NSDateFormatter *formatter=[[NSDateFormatter alloc]init];
+        formatter=[[NSDateFormatter alloc]init];
         formatter.dateFormat=@"EEE, dd MMM yyyy HH:mm:ss 'GMT'";
         formatter.locale=[[NSLocale alloc]initWithLocaleIdentifier:@"en_US"];
         formatter.timeZone = tzGMT;

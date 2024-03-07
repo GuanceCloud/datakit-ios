@@ -12,7 +12,7 @@
 #import <objc/runtime.h>
 #import "FTConstants.h"
 #import "BlacklistedVCClassNames.h"
-#import "FTLog.h"
+#import "FTLog+Private.h"
 #import "FTTrack.h"
 #import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"

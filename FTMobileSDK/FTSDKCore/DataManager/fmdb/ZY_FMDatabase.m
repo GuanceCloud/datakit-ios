@@ -1,7 +1,7 @@
 #import "ZY_FMDatabase.h"
 #import <unistd.h>
 #import <objc/runtime.h>
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #if ZY_FMDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
