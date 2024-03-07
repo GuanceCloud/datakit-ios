@@ -47,9 +47,6 @@ static dispatch_once_t onceToken;
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
     
     NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"请正确配置 datakit  或 dataway 写入地址");
-    if (sharedInstance) {
-        [[FTMobileAgent sharedInstance] resetConfig:configOptions];
-    }
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
@@ -88,14 +85,6 @@ static dispatch_once_t onceToken;
         FTInnerLogError(@"exception: %@",exception);
     }
     return self;
-}
--(void)resetConfig:(FTMobileConfig *)config{
-    [FTInternalLog enableLog:config.enableSDKDebugLog];
-    if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
-    }else{
-        _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
-    }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
@@ -268,7 +257,6 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
-    [[FTTrackDataManager sharedInstance] shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
@@ -276,6 +264,8 @@ static dispatch_once_t onceToken;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+    [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
