@@ -8,7 +8,6 @@
 
 #import <KIF/KIF.h>
 #import "FTMobileAgent+Private.h"
-#import "FTTrackDataManager+Test.h"
 #import "NSDate+FTUtil.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTModelHelper.h"
@@ -198,6 +197,7 @@
 }
 - (void)setRumMonitorNone{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
@@ -210,6 +210,7 @@
 }
 - (void)setRumMonitorType:(FTDeviceMetricsMonitorType)type{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;

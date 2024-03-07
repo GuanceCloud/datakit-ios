@@ -18,7 +18,6 @@
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"
@@ -49,6 +48,7 @@
 
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *env = dict[@"env"];
@@ -57,6 +57,7 @@
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     [config setEnvWithType:FTEnvPre];
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
@@ -76,6 +77,7 @@
 - (void)testIllegalUrl{
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"111"];
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
@@ -102,6 +104,7 @@
  */
 - (void)testSetAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
@@ -120,6 +123,7 @@
  */
 -(void)testSetEmptyAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];

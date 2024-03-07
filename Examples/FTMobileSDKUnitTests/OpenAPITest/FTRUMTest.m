@@ -19,7 +19,6 @@
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"
 #import "FTGlobalRumManager.h"
-#import "FTTrackDataManager+Test.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceContentModel.h"
@@ -242,7 +241,7 @@
             XCTAssertTrue(errorCount == 1);
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == 1);
-            XCTAssertTrue(updateTime == 4);
+            XCTAssertTrue(updateTime == 3);
         }else if([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]){
             trueActionCount ++;
         }
@@ -1148,6 +1147,7 @@
 
 - (void)setRumConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;

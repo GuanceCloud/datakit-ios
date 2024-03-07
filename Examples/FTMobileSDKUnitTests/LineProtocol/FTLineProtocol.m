@@ -17,7 +17,6 @@
 #import "FTJSONUtil.h"
 #import "NSString+FTAdd.h"
 //#import "FTBaseInfoHander.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTRequestBody.h"
@@ -226,6 +225,7 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];

@@ -15,7 +15,7 @@
 #import "FTJSONUtil.h"
 #import "FTRecordModel.h"
 #import "UITestVC.h"
-#import "FTTrackDataManager+Test.h"
+#import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 @interface FTLoggerTest : KIFTestCase
 
@@ -152,16 +152,15 @@
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 -(void)testSetEmptyLoggerServiceName{
     [self setRightSDKConfig];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
-    [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];

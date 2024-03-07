@@ -197,6 +197,7 @@
 
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"test"];
     config.groupIdentifiers = @[@"group.com.ft.widget.demo"];
+    config.autoSync = NO;
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
     [FTMobileAgent startWithConfigOptions:config];

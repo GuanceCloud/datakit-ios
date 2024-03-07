@@ -20,7 +20,6 @@
 #import "FTJSONUtil.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
-#import "FTTrackDataManager+Test.h"
 #import "DemoViewController.h"
 #import "FTConstants.h"
 #import "FTGlobalRumManager.h"
@@ -45,6 +44,7 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;

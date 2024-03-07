@@ -101,6 +101,7 @@ final class FTTestInteraction: XCTestCase {
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
         let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
+        config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
         
         if(enableTrace == nil || enableTrace == true){
@@ -134,6 +135,7 @@ final class FTTestInteraction: XCTestCase {
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
         let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
+        config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
     
         
@@ -145,6 +147,7 @@ final class FTTestInteraction: XCTestCase {
         rumConfig.enableTrackAppFreeze = true
         rumConfig.deviceMetricsMonitorType = .all
         FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
+        FTExternalDataManager.shared().startView(withName: "testSessionInterceptor")
         if let url = dic["TRACE_URL"] {
             let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: nil)
             let dataTask = urlSession.dataTask(with: URL(string: url)!) { data, response, error in
@@ -156,9 +159,10 @@ final class FTTestInteraction: XCTestCase {
             let value = dataTask.currentRequest?.allHTTPHeaderFields?["test"]
             XCTAssertTrue(value == "test")
         }
+        FTMobileAgent.sharedInstance().shutDown()
     }
     func testSessionInterceptor_resourceProvider() throws {
-        let time = NSDate.ft_currentMillisecondTimeStamp()
+        let time = NSDate.ft_currentNanosecondTimeStamp()
         FTTrackerEventDBTool.sharedManger().deleteItem(withTm: time)
         let expectation = XCTestExpectation.init()
 
@@ -175,8 +179,8 @@ final class FTTestInteraction: XCTestCase {
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
         let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
+        config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
-    
         
         let rumConfig = FTRumConfig(appid: appid!)
         rumConfig.enableTraceUserAction = true
@@ -186,6 +190,8 @@ final class FTTestInteraction: XCTestCase {
         rumConfig.enableTrackAppFreeze = true
         rumConfig.deviceMetricsMonitorType = .all
         FTMobileAgent.sharedInstance().startRum(withConfigOptions: rumConfig)
+        
+        FTExternalDataManager.shared().startView(withName: "testSessionInterceptor")
         if let url = dic["TRACE_URL"] {
             let urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: delegate, delegateQueue: nil)
             let dataTask = urlSession.dataTask(with: URL(string: url)!) { data, response, error in
@@ -196,7 +202,6 @@ final class FTTestInteraction: XCTestCase {
             wait(for: [expectation])
             Thread.sleep(forTimeInterval: 0.5)
             FTGlobalRumManager.sharedInstance().rumManager.syncProcess()
-            
             let newArray = FTTrackerEventDBTool.sharedManger().getAllDatas();
             for data in newArray {
                 let model:FTRecordModel = data as! FTRecordModel
@@ -205,11 +210,13 @@ final class FTTestInteraction: XCTestCase {
                 let source = opdata["source"] as! String
                 let fields = opdata[FT_FIELDS] as! [String:Any]
                 if(source == FT_RUM_SOURCE_RESOURCE){
+                    XCTAssertNoThrow(fields["test"] as! String)
                     XCTAssertTrue(fields["test"] as! String == "test")
+                    break;
                 }
             }
         }
-        
+        FTMobileAgent.sharedInstance().shutDown()
     }
     // MARK: - RUM - Resource filter
     func testResourceFilter_intakeUrlHandler() throws {
@@ -230,6 +237,7 @@ final class FTTestInteraction: XCTestCase {
         let url = dic["ACCESS_SERVER_URL"]
         let appid = dic["APP_ID"]
         let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
+        config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
     
         var hasResourceFilter = false

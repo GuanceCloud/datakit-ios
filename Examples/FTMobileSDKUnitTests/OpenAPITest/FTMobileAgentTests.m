@@ -50,6 +50,7 @@
 - (void)setRightSDKConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
@@ -69,6 +70,7 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
    
     NSDictionary *dict  = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
@@ -158,6 +160,7 @@
 -(void)testServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     config.service = @"testSetServiceName";
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
@@ -191,6 +194,7 @@
 }
 - (void)testDefaultEnvProperty{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     config.enableSDKDebugLog = YES;
     config.env = @"";
     [FTMobileAgent startWithConfigOptions:config];
@@ -221,10 +225,12 @@
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumEnv = [rumtags valueForKey:@"env"];
     XCTAssertTrue([rumEnv isEqualToString:FTEnvStringMap[FTEnvProd]]);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testEnvProperty{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     config.env = @"testCustomEnv";
     [FTMobileAgent startWithConfigOptions:config];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
@@ -254,10 +260,12 @@
     NSDictionary *rumtags = rumop[FT_TAGS];
     NSString *rumEnv = [rumtags valueForKey:@"env"];
     XCTAssertTrue([rumEnv isEqualToString:@"testCustomEnv"]);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testGlobalContext{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
     [FTMobileAgent startWithConfigOptions:config];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
@@ -396,6 +404,7 @@
 - (void)testShutDown{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;

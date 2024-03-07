@@ -24,7 +24,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] resetInstance];
+    [[FTTrackerEventDBTool sharedManger] shutDown];
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[FTBaseInfoHandler randomUUID]];
     [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
@@ -32,7 +32,7 @@
 }
 
 - (void)tearDown {
-    [[FTTrackerEventDBTool sharedManger] resetInstance];
+    [[FTTrackerEventDBTool sharedManger] shutDown];
     NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:self.name];
     NSError *errpr;
     [[NSFileManager defaultManager] removeItemAtPath:path error:&errpr];

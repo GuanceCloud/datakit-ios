@@ -17,7 +17,7 @@
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"
-#import "FTTrackDataManager+Test.h"
+#import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -101,6 +101,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
+        config.autoSync = NO;
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];

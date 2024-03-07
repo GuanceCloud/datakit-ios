@@ -19,7 +19,6 @@
 #import "FTBaseInfoHandler.h"
 #import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTTracer.h"
@@ -56,6 +55,7 @@
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.service = serviceName;
+    config.autoSync = NO;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;

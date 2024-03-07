@@ -11,7 +11,6 @@
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTConstants.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
@@ -74,6 +73,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
