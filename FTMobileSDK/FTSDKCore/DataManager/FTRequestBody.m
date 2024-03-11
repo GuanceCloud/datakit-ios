@@ -44,7 +44,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }else if([self.value isKindOfClass:NSString.class]){
         return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingSpecialCharacters]];
     }else{
-        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], self.value];
+        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingSpecialCharacters]];
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
@@ -54,14 +54,11 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
             return  [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], number.ft_toFiledString];
-        }else if ([self.value isKindOfClass:NSArray.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithArray:self.value] ft_replacingFieldSpecialCharacters]];
-        }else if ([self.value isKindOfClass:NSDictionary.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters],[[FTJSONUtil convertToJsonData:self.value] ft_replacingFieldSpecialCharacters]];
         }else if ([self.value isKindOfClass:NSString.class]){
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingSpecialCharacters]];
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingFieldSpecialCharacters]];
+        }else{
+            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingFieldSpecialCharacters]];
         }
-        return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], self.value];
     }
 }
 NSArray * FTQueryStringPairsFromKeyAndValue(NSDictionary *value) {

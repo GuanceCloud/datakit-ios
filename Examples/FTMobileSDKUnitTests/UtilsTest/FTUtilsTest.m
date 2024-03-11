@@ -85,11 +85,11 @@
     XCTAssertNil([FTJSONUtil dictionaryWithJsonString:@"a:b"]);
 }
 - (void)testConvertToJsonDataWithArray{
-    NSString *str = [FTJSONUtil convertToJsonDataWithArray:@[@"A",@"B",@"C"]];
+    NSString *str = [FTJSONUtil convertToJsonDataWithObject:@[@"A",@"B",@"C"]];
     XCTAssertTrue([str isEqualToString:@"[\"A\",\"B\",\"C\"]"]);
 }
 - (void)testConvertToJsonDataWithNilArray{
-    XCTAssertNil([FTJSONUtil convertToJsonDataWithArray:nil]);
+    XCTAssertNil([FTJSONUtil convertToJsonDataWithObject:nil]);
 }
 - (void)testConvertToJsonDataWithObjectDict{
     UIView *view = [[UIView alloc]init];

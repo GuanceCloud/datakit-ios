@@ -35,11 +35,15 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-- (void)testLineProtocol{
+/**
+    tag： "=" —> "\\="
+    field: "=" -> "="
+ */
+- (void)testLineProtocol_EqualsSign{
     NSDictionary *dict = @{
         FT_MEASUREMENT:@"iOSTest",
-        FT_FIELDS:@{@"event":@"testLineProtocol"},
-        FT_TAGS:@{@"name":@"testLineProtocol"},
+        FT_FIELDS:@{@"event":@"test=lineProtocol"},
+        FT_TAGS:@{@"name":@"test=lineProtocol"},
     };
     NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
                           FT_OPDATA:dict,
@@ -54,11 +58,102 @@
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
     NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
+    NSString *field = array[1];
     XCTAssertTrue(tags.count == 3);
     XCTAssertEqualObjects([tags firstObject], @"iOSTest");
-    XCTAssertTrue([tags[1] isEqualToString:@"name=testLineProtocol"]||[tags[2] isEqualToString:@"name=testLineProtocol"]);    
+    XCTAssertTrue([tags[1] isEqualToString:@"name=test\\=lineProtocol"]||[tags[2] isEqualToString:@"name=test\\=lineProtocol"]);
+    XCTAssertTrue([tags[1] isEqualToString:@"name=test\\=lineProtocol"]||[tags[2] isEqualToString:@"name=test\\=lineProtocol"]);
+    XCTAssertTrue([field isEqualToString:@"event=\"test=lineProtocol\""]);
     NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
     XCTAssertEqualObjects([array lastObject],tm);
+}
+/**
+    tag： " " —> "\\ "
+    field: " " -> " "
+ */
+- (void)testLineProtocol_Blank{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"test lineProtocol"},
+        FT_TAGS:@{@"name":@"test lineProtocol"},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@"event"];
+    NSArray *tags = [[[array firstObject] ft_removeFrontBackBlank]componentsSeparatedByString:@","];
+    NSString *field = [lineStr stringByReplacingOccurrencesOfString:[array firstObject] withString:@""];
+    XCTAssertTrue(tags.count == 3);
+    XCTAssertEqualObjects([tags firstObject], @"iOSTest");
+    XCTAssertTrue([tags[1] isEqualToString:@"name=test\\ lineProtocol"]||[tags[2] isEqualToString:@"name=test\\ lineProtocol"]);
+    XCTAssertTrue([field containsString:@"event=\"test lineProtocol\""]);
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
+    XCTAssertTrue([field containsString:tm]);
+}
+/**
+    tag： "," —> "\\,"
+    field: "," -> ","
+ */
+- (void)testLineProtocol_Comma{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"test,lineProtocol"},
+        FT_TAGS:@{@"name":@"test,lineProtocol"},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@"event"];
+    NSString *str = [array firstObject];
+    NSString *tagsStr = [str stringByReplacingOccurrencesOfString:[[str componentsSeparatedByString:@"name"] firstObject] withString:@""];
+    NSString *field = [lineStr stringByReplacingOccurrencesOfString:[array firstObject] withString:@""];
+    XCTAssertTrue([tagsStr containsString:@"name=test\\,lineProtocol"]);
+    XCTAssertTrue([field containsString:@"event=\"test,lineProtocol\""]);
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
+    XCTAssertTrue([field containsString:tm]);
+}
+/**
+    tag： "\"" —> "\""
+    field: "\"" -> "\\\""
+ */
+- (void)testLineProtocol_QuotationMarks{
+    NSDictionary *dict = @{
+        FT_MEASUREMENT:@"iOSTest",
+        FT_FIELDS:@{@"event":@"test\"lineProtocol"},
+        FT_TAGS:@{@"name":@"test\"lineProtocol"},
+    };
+    NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
+                          FT_OPDATA:dict,
+    };
+    
+    FTRecordModel *model = [FTRecordModel new];
+    model.op =FT_DATA_TYPE_RUM;
+    model.data =[FTJSONUtil convertToJsonData:data];
+    FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
+    
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSArray *array = [lineStr componentsSeparatedByString:@"event"];
+    NSString *str = [array firstObject];
+    NSString *tagsStr = [str stringByReplacingOccurrencesOfString:[[str componentsSeparatedByString:@"name"] firstObject] withString:@""];
+    NSString *field = [lineStr stringByReplacingOccurrencesOfString:[array firstObject] withString:@""];
+    XCTAssertTrue([tagsStr containsString:@"name=test\"lineProtocol"]);
+    XCTAssertTrue([field containsString:@"event=\"test\\\"lineProtocol\""]);
+    NSString *tm =[NSString stringWithFormat:@"%lld",model.tm];
+    XCTAssertTrue([field containsString:tm]);
 }
 - (void)testStringReplacingBlank{
     NSString *str = @"a b c";
@@ -187,14 +282,18 @@
         FT_MEASUREMENT:@"iOSTest",
         FT_TAGS:@{@"string":@"stringValue",
                   @"boolNumber":@(YES),
-                  @"null":[NSNull null]
+                  @"null":[NSNull null],
+                  @"array":@[@"1",@"2"],
+                  @"dict":@{@"key1":@"value1"}
         },
         FT_FIELDS:@{@"string":@"stringValue",
                   @"intNumber":@(1),
                   @"floatNumber":@(1.23456789),
                   @"boolNumber":@(NO),
                   @"array":@[@"1",@"2"],
-                  @"null":[NSNull null]},
+                  @"null":[NSNull null],
+                  @"dict":@{@"key1":@"value1"}
+        },
     };
     NSDictionary *data =@{FT_OP:FT_DATA_TYPE_RUM,
                           FT_OPDATA:dict,
@@ -212,12 +311,16 @@
     
     XCTAssertTrue([tagStr containsString:@"string=stringValue"]);
     XCTAssertTrue([tagStr containsString:@"boolNumber=true"]);
-    
+    XCTAssertTrue([tagStr containsString:@"array=[\"1\"\\,\"2\"]"]);
+    XCTAssertTrue([tagStr containsString:@"dict={\"key1\":\"value1\"}"]);
+
     XCTAssertTrue([fieldStr containsString:@"string=\"stringValue\""]);
     XCTAssertTrue([fieldStr containsString:@"floatNumber=1.2"]);
     XCTAssertTrue([fieldStr containsString:@"intNumber=1i"]);
     XCTAssertTrue([fieldStr containsString:@"boolNumber=false"]);
     XCTAssertTrue([fieldStr containsString:@"array=\"[\\\"1\\\",\\\"2\\\"]\""]);
+    XCTAssertTrue([fieldStr containsString:@"dict=\"{\\\"key1\\\":\\\"value1\\\"}\""]);
+
     
 }
 - (void)transliteration:(NSString *)str expect:(NSString *)expect{
