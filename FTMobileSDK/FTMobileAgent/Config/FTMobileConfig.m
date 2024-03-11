@@ -221,8 +221,8 @@
 -(void)setSyncSleepTime:(int)syncSleepTime{
     _syncSleepTime = MAX(0, MIN(syncSleepTime, 100));
 }
--(void)setPageSize:(int)pageSize{
-    _syncPageSize = MAX(5, pageSize);
+-(void)setSyncPageSize:(int)syncPageSize{
+    _syncPageSize = MAX(5, syncPageSize);
 }
 - (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize {
     switch (pageSize) {
