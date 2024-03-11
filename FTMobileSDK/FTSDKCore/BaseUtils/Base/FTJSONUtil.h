@@ -41,13 +41,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSData *)JSONSerializeDictObject:(NSDictionary *)obj;
 /**
  * @abstract
- * 把一个array转成Json字符串
+ * 把一个 Foundation 对象转成 Json 字符串
  *
- * @param array 要转化的数组
+ * @param object 要转化的对象
  *
  * @return 转化后得到的字符串
  */
-+ (NSString *)convertToJsonDataWithArray:(NSArray *)array;
++ (NSString *)convertToJsonDataWithObject:(id)object;
 
 @end
 

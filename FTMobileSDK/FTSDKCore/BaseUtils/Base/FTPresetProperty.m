@@ -136,7 +136,7 @@ static NSString * const FT_VERSION = @"version";
         NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:rumContext];
         NSArray *allKeys = rumContext.allKeys;
         if (allKeys && allKeys.count>0) {
-            [tags setValue:[FTJSONUtil convertToJsonDataWithArray:allKeys] forKey:@"custom_keys"];
+            [tags setValue:[FTJSONUtil convertToJsonDataWithObject:allKeys] forKey:@"custom_keys"];
         }
         _rumContext = tags;
     }
