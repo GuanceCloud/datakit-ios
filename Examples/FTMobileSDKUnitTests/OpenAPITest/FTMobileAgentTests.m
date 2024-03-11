@@ -8,6 +8,7 @@
 #import <KIF/KIF.h>
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent.h"
+#import "FTTrackDataManager.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
@@ -27,6 +28,8 @@
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
+@property (nonatomic, strong) XCTestExpectation *expectation;
+
 @end
 
 
@@ -157,6 +160,7 @@
     XCTAssertFalse([ft_key isEqualToString:@"ft_value"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+#pragma mark ========== 配置项 ==========
 -(void)testServiceName{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
@@ -283,6 +287,102 @@
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testSyncSleepTimeScope{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.syncSleepTime = -1;
+    XCTAssertTrue(config.syncSleepTime == 0);
+    config.syncSleepTime = 150;
+    XCTAssertTrue(config.syncSleepTime == 100);
+    config.syncSleepTime = 99;
+    XCTAssertTrue(config.syncSleepTime == 99);
+}
+- (void)testSyncPageSizeScope{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    XCTAssertTrue(config.syncPageSize == 10);
+    config.syncPageSize = -1;
+    XCTAssertTrue(config.syncPageSize == 5);
+    config.syncPageSize = 150;
+    XCTAssertTrue(config.syncPageSize == 150);
+    [config setSyncPageSizeWithType:FTSyncPageSizeMax];
+    XCTAssertTrue(config.syncPageSize == 50);
+    [config setSyncPageSizeWithType:FTSyncPageSizeMini];
+    XCTAssertTrue(config.syncPageSize == 5);
+    [config setSyncPageSizeWithType:FTSyncPageSizeMedium];
+    XCTAssertTrue(config.syncPageSize == 10);
+}
+- (void)testAutoSync_NO{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance]
+     startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusError];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(oldDatas.count>0);
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(newDatas.count>=oldDatas.count);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTMobileAgent sharedInstance] shutDown];
+    
+}
+- (void)testAutoSync_YES{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance]
+     startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusError];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(oldDatas.count>0);
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+   
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(newDatas.count<oldDatas.count);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    if([keyPath isEqualToString:@"isUploading"]){
+        FTTrackDataManager *manager = object;
+        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
+        if(isUploading.boolValue == NO){
+            [self.expectation fulfill];
+            self.expectation = nil;
+        }
+        
+    }
+}
+#pragma mark ========== copy ==========
 - (void)testSDKConfigCopy{
     FTMobileConfig *datakitConfig = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     datakitConfig.enableSDKDebugLog = YES;

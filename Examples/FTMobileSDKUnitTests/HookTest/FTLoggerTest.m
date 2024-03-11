@@ -62,12 +62,21 @@
     [[FTMobileAgent sharedInstance] shutDown];
 
 }
+- (void)testLogCacheLimitCount{
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    XCTAssertTrue(loggerConfig.logCacheLimitCount == 5000);
+    loggerConfig.logCacheLimitCount = 500;
+    XCTAssertTrue(loggerConfig.logCacheLimitCount == 1000);
+    loggerConfig.logCacheLimitCount = 10000;
+    XCTAssertTrue(loggerConfig.logCacheLimitCount == 10000);
+}
 - (void)testDiscardNew{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.discardType = FTDiscard;
+    loggerConfig.logCacheLimitCount = 1000;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    for (int i = 0; i<5030; i++) {
+    for (int i = 0; i<1030; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_LOGGING;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -78,7 +87,7 @@
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
 
-    XCTAssertTrue(newCount == 5000);
+    XCTAssertTrue(newCount == 1000);
     [[FTMobileAgent sharedInstance] shutDown];
 
 }
@@ -87,9 +96,10 @@
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.discardType = FTDiscardOldest;
+    loggerConfig.logCacheLimitCount = 500;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
 
-    for (int i = 0; i<5045; i++) {
+    for (int i = 0; i<1050; i++) {
         FTRecordModel *model = [FTRecordModel new];
         model.op = FT_DATA_TYPE_LOGGING;
         model.data = [NSString stringWithFormat:@"testData%d",i];
@@ -99,7 +109,7 @@
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
-    XCTAssertTrue(newCount == 5000);
+    XCTAssertTrue(newCount == 1000);
     [[FTMobileAgent sharedInstance] shutDown];
 
 }
