@@ -11,44 +11,57 @@
 #import "NSDate+FTUtil.h"
 
 @interface FTFileLogger()
-@property (nonatomic, strong) NSFileHandle *fileHandle;
-@property (nonatomic, copy, readwrite) NSString *logFilePath;
+@property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
+@property (nonatomic, copy, readwrite) NSString *logsDirectory;
 
 @end
 @implementation FTFileLogger
 -(instancetype)init{
-    return [self initWithFilePath:nil];
+    return [self initWithLogsDirectory:nil];
 }
--(instancetype)initWithFilePath:(NSString *)filePath{
+-(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory{
     self = [super init];
     if(self){
-        _logFilePath = filePath;
         _loggerQueue = dispatch_queue_create("com.guance.debugLog.file", NULL);
+        if(logsDirectory){
+            _logsDirectory = [logsDirectory copy];
+        }else{
+            _logsDirectory = [[self defaultLogsDirectory] copy];
+        }
     }
     return self;
 }
--(NSString *)logFilePath{
-    if(!_logFilePath){
-        _logFilePath = [self currentLogFile];
-    }
-    return _logFilePath;
+- (NSString *)defaultLogsDirectory {
+
+#if TARGET_OS_IPHONE
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"FTLogs"];
+#else
+    NSString *appName = [[NSProcessInfo processInfo] processName];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? paths[0] : NSTemporaryDirectory();
+    NSString *logsDirectory = [[basePath stringByAppendingPathComponent:@"FTLogs"] stringByAppendingPathComponent:appName];
+#endif
+
+    return logsDirectory;
 }
-- (NSFileHandle *)fileHandle {
-    if (!_fileHandle) {
-        _fileHandle = [NSFileHandle fileHandleForWritingAtPath:self.logFilePath];
+- (NSFileHandle *)currentLogFileHandle {
+    if (!_currentLogFileHandle) {
+        NSString *logFilePath = [self currentLogFile];
+        _currentLogFileHandle = [NSFileHandle fileHandleForWritingAtPath:logFilePath];
     }
-    return _fileHandle;
+    return _currentLogFileHandle;
 }
 - (NSString *)currentLogFile{
     NSFileManager *manager = [NSFileManager defaultManager];
-    NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *filePath = [path stringByAppendingPathComponent:@"FTLog/FTLog.log"];
+    NSString *filePath = [self.logsDirectory stringByAppendingPathComponent:@"FTLog.log"];
     BOOL fileExists = [manager fileExistsAtPath:filePath];
     if (fileExists) {
         return filePath;
     }
     NSError *error;
-    BOOL directoryCreated = [manager createDirectoryAtPath:[filePath stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:&error];
+    BOOL directoryCreated = [manager createDirectoryAtPath:self.logsDirectory withIntermediateDirectories:YES attributes:nil error:&error];
     if (!directoryCreated) {
         FTNSLogError(@"[FTLog][FTFileLogger] FTFileLogger file created failed");
         return nil;
@@ -65,8 +78,8 @@
     return filePath;
 }
 - (void)logMessage:(nonnull FTLogMessage *)logMessage {
-    if (!self.fileHandle) {
-        FTNSLogError(@"[FTLog][FTFileLogger] %@ is not a valid file path.",_logFilePath);
+    if (!self.currentLogFileHandle) {
+        FTNSLogError(@"[FTLog][FTFileLogger] %@ is not a valid file path.",_logsDirectory);
         return;
     }
     @try {
@@ -74,8 +87,8 @@
         if (data.length == 0) {
             return;
         }
-        [self.fileHandle seekToEndOfFile];
-        [self.fileHandle writeData:data];
+        [self.currentLogFileHandle seekToEndOfFile];
+        [self.currentLogFileHandle writeData:data];
     } @catch (NSException *exception) {
         FTNSLogError(@"[FTLog][FTFileLogger] %@",exception.description);
     }
