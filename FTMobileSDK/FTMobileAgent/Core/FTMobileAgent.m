@@ -255,6 +255,9 @@ static dispatch_once_t onceToken;
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     [[FTTrackDataManager sharedInstance] addTrackData:model type:type];
 }
+- (void)flushSyncData{
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+}
 #pragma mark - SDK注销
 - (void)shutDown{
     [[FTGlobalRumManager sharedInstance] shutDown];
