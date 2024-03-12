@@ -17,6 +17,9 @@
 #import "UITestVC.h"
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
+#import "FTLog.h"
+#import "FTLog+Private.h"
+#import "FTFileLogger.h"
 @interface FTLoggerTest : KIFTestCase
 
 @property (nonatomic, copy) NSString *url;
@@ -346,5 +349,47 @@
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertNoThrow([[FTLogger sharedInstance] ok:@"testSDKShutDown" property:nil]);
     XCTAssertTrue(count == newCount);
+}
+- (void)testLogFile{
+    [self logFile:nil];
+}
+- (void)testLogFileCustomPath{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogs"];
+    [self logFile:logsDirectory];
+}
+- (void)logFile:(NSString *)path{
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:path];
+    NSDate *date = [NSDate date];
+    NSString *dateStr = [date ft_stringWithBaseFormat];
+    dateStr = [dateStr stringByAppendingString:@"testLogFile"];
+    FTInnerLogInfo(@"%@",dateStr);
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileUserLog" level:StatusInfo property:nil];
+    NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
+    BOOL hasFileLogger = NO;
+    for (id object in array) {
+        if([object isKindOfClass:FTFileLogger.class]){
+            FTFileLogger *fileLogger = (FTFileLogger *)object;
+            NSData *data;
+            dispatch_sync(fileLogger.loggerQueue, ^{
+              
+            });
+            hasFileLogger = YES;
+            NSString *logFilePath = [fileLogger performSelector:@selector(currentLogFile)];
+            if (path) {
+                XCTAssertTrue([path isEqualToString:[logFilePath stringByDeletingLastPathComponent]]);
+            }
+            NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFilePath];
+            data = [fileHandle readDataToEndOfFile];
+            NSString *logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            XCTAssertTrue([logs containsString:dateStr]);
+            XCTAssertTrue([logs containsString:@"testLogFileUserLog"]);
+            break;
+        }
+    }
+    XCTAssertTrue(hasFileLogger);
+    [[FTLog sharedInstance] shutDown];
 }
 @end

@@ -97,6 +97,7 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 /**
  * 设置 appid 后 Rum 开启
