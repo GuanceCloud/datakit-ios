@@ -167,7 +167,6 @@ static dispatch_once_t onceToken;
             self.isUploading = YES;
             [self flushWithType:FT_DATA_TYPE_RUM];
             [self flushWithType:FT_DATA_TYPE_LOGGING];
-            
             self.isUploading = NO;
         });
     } @catch (NSException *exception) {
@@ -189,7 +188,11 @@ static dispatch_once_t onceToken;
         }else{
             // 减缓同步速率降低CPU使用率
             if(self.syncSleepTime>0){
-                [NSThread sleepForTimeInterval:self.syncSleepTime/1000.0];
+                dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.syncSleepTime * NSEC_PER_MSEC)), dispatch_get_global_queue(0, 0), ^{
+                    dispatch_semaphore_signal(flushSemaphore);
+                });
+                dispatch_semaphore_wait(flushSemaphore, DISPATCH_TIME_FOREVER);
             }
             events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
         }
