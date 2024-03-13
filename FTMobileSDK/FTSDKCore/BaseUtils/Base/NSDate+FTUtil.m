@@ -26,7 +26,7 @@
     dispatch_once(&onceToken, ^{
         formatter = [[NSDateFormatter alloc]init];
         [formatter setLocale:[NSLocale currentLocale]];
-        formatter.dateFormat=@"yyyy-MM-dd HH:mm:ss:SSS";
+        formatter.dateFormat=@"yyyy-MM-dd--HH:mm:ss:SSS";
     });
     return [formatter stringFromDate:self];
 }
