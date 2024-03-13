@@ -163,7 +163,6 @@
     };
     resourceHandler.errorHandler = ^{
         weakSelf.viewErrorCount+=1;
-        weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }

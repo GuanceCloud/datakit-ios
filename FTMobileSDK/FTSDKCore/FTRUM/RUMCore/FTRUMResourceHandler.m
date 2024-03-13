@@ -38,12 +38,12 @@
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
                 case FTRUMDataResourceComplete:
-                    [self writeResourceData:data];
-                    return NO;
-                case FTRUMDataResourceStop:{
                     if (self.resourceHandler) {
                         self.resourceHandler();
                     }
+                    [self writeResourceData:data];
+                    return NO;
+                case FTRUMDataResourceStop:{
                     if(data.fields && data.fields.allKeys.count>0){
                         [self.resourceProperty addEntriesFromDictionary:data.fields];
                     }
