@@ -12,7 +12,6 @@
 
 @interface FTFileLogger()
 @property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
-@property (nonatomic, copy, readwrite) NSString *logsDirectory;
 
 @end
 @implementation FTFileLogger
