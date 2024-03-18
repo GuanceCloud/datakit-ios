@@ -18,7 +18,6 @@
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
-@property (nonatomic, strong) FTRUMContext *sessionContext;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
@@ -51,23 +50,22 @@
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
-        self.sessionContext = context;
+        context.view_id = self.view_id;
+        context.view_name = self.view_name;
+        context.view_referrer = self.view_referrer;
+        _context = [context copy];
+        _context.writer = context.writer;
         self.monitor = monitor;
         self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor frequency:monitor.frequency];
     }
     return self;
 }
 - (FTRUMContext *)context{
-    FTRUMContext *context = [self.sessionContext copy];
-    context.view_name = self.view_name;
-    context.view_id = self.view_id;
-    context.view_referrer = self.view_referrer;
-    context.writer = self.sessionContext.writer;
     if(self.actionHandler){
-        context.action_id = self.actionHandler.context.action_id;
-        context.action_name = self.actionHandler.context.action_name;
+        _context.action_id = self.actionHandler.context.action_id;
+        _context.action_name = self.actionHandler.context.action_name;
     }
-    return context;
+    return _context;
 }
 - (BOOL)process:(FTRUMDataModel *)model{
    
