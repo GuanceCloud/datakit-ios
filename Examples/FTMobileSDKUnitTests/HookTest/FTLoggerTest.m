@@ -351,17 +351,79 @@
     XCTAssertTrue(count == newCount);
 }
 - (void)testLogFile{
-    [self logFile:nil];
+    [self logFile:nil fileName:nil];
 }
 - (void)testLogFileCustomPath{
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogs"];
-    [self logFile:logsDirectory];
+    [self logFile:logsDirectory fileName:nil];
 }
-- (void)logFile:(NSString *)path{
+- (void)testLogCustomFileName{
+    [self logFile:nil fileName:[[NSUUID UUID] UUIDString]];
+}
+- (void)testLogFileMaximumFileSize{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogsFileSize1"];
     [FTLog enableLog:YES];
-    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:path];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:logsDirectory fileNamePrefix:nil];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
+    NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
+    FTFileLogger *fileLogger;
+    FTLogFileInfo *logFileInfo;
+    for (id object in array) {
+        if([object isKindOfClass:FTFileLogger.class]){
+            fileLogger = (FTFileLogger *)object;
+            logFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
+            break;
+        }
+    }
+    fileLogger.maximumFileSize = 1024;
+    for (int i = 0; i<2; i++) {
+        FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
+    }
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
+    FTLogFileInfo *currentFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
+    XCTAssertTrue(currentFileInfo != logFileInfo);
+    XCTAssertTrue(![currentFileInfo.fileName isEqualToString:logFileInfo.fileName]);
+    NSData *file = [[NSFileManager defaultManager] contentsAtPath:logFileInfo.filePath];
+    XCTAssertTrue(file.length<1024*1.5);
+    [[FTLog sharedInstance] shutDown];
+    NSError *error;
+    [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
+}
+- (void)testLogFilesDiskQuota{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestLogFilesDiskQuota"];
+    FTLogFileManager *fileManager = [[FTLogFileManager alloc]initWithLogsDirectory:logsDirectory fileNamePrefix:nil];
+    fileManager.logFilesDiskQuota = 2*1024;
+    FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogFileManager:fileManager];
+    fileLogger.maximumFileSize = 1024;
+    FTLogFileInfo *currentFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
+    NSString *firstFilePath = currentFileInfo.filePath;
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] performSelector:@selector(addLogger:) withObject:fileLogger];
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota" level:StatusInfo property:nil];
+    for (int i = 0; i<10; i++) {
+        FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
+    }
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota" level:StatusInfo property:nil];
+    NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:logsDirectory error:nil];
+    NSError *error;
+    unsigned long long totalSize = 0;
+    for (NSString *name in fileNames) {
+        XCTAssertFalse([name isEqualToString:firstFilePath]);
+        NSDictionary * fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:name error:&error];
+        totalSize += [fileAttributes[NSFileSize] unsignedLongLongValue];
+    }
+    XCTAssertTrue(totalSize<2*1024*1024);
+    [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
+}
+- (void)logFile:(NSString *)path fileName:(NSString *)fileName{
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:path fileNamePrefix:fileName];
     NSDate *date = [NSDate date];
     NSString *dateStr = [date ft_stringWithBaseFormat];
     dateStr = [dateStr stringByAppendingString:@"testLogFile"];
@@ -369,6 +431,7 @@
     [[FTLog sharedInstance] userLog:NO message:@"testLogFileUserLog" level:StatusInfo property:nil];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
+    FTLogFileInfo *logFileInfo;
     for (id object in array) {
         if([object isKindOfClass:FTFileLogger.class]){
             FTFileLogger *fileLogger = (FTFileLogger *)object;
@@ -377,11 +440,14 @@
               
             });
             hasFileLogger = YES;
-            NSString *logFilePath = [fileLogger performSelector:@selector(currentLogFile)];
+            logFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
             if (path) {
-                XCTAssertTrue([path isEqualToString:[logFilePath stringByDeletingLastPathComponent]]);
+                XCTAssertTrue([path isEqualToString:[logFileInfo.filePath stringByDeletingLastPathComponent]]);
             }
-            NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFilePath];
+            if(fileName){
+                XCTAssertTrue([logFileInfo.fileName hasPrefix:fileName]);
+            }
+            NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFileInfo.filePath];
             data = [fileHandle readDataToEndOfFile];
             NSString *logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             XCTAssertTrue([logs containsString:dateStr]);
@@ -391,5 +457,7 @@
     }
     XCTAssertTrue(hasFileLogger);
     [[FTLog sharedInstance] shutDown];
+    NSError *error;
+    [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
 }
 @end

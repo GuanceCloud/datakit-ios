@@ -49,7 +49,7 @@
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( !isUnitTests && !isUITests) {
-        [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil];
+        [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:nil];
         // 本地环境部署
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
         // 使用公网 DataWay 部署

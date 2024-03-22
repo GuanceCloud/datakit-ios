@@ -109,8 +109,8 @@ static dispatch_group_t _loggingGroup;
 + (void)removeLogger:(id <FTDebugLogger>)logger {
     [[self sharedInstance] removeLogger:logger];
 }
-- (void)registerInnerLogCacheToLogsDirectory:(NSString *)logsDirectory{
-    FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogsDirectory:logsDirectory];
+- (void)registerInnerLogCacheToLogsDirectory:(NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix{
+    FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogsDirectory:logsDirectory fileNamePrefix:fileNamePrefix];
     [FTLog addLogger:fileLogger];
 }
 - (void)addLogger:(id <FTDebugLogger>)logger {

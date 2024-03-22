@@ -11,32 +11,31 @@
 #import "NSDate+FTUtil.h"
 #import <sys/xattr.h>
 
-unsigned long long const kFTDefaultLogMaxFileSize      = 32 * 1024 * 1024; // 32 MB
-NSUInteger         const kFTDefaultLogMaxNumLogFiles   = 10;
-unsigned long long const kFTDefaultLogFilesDiskQuota   = 300 * 1024 * 1024; // 300 MB
+unsigned long long const kFTDefaultLogMaxFileSize      = 100 * 1024 * 1024; // 100 MB
+//NSUInteger         const kFTDefaultLogMaxNumLogFiles   = 10;
+unsigned long long const kFTDefaultLogFilesDiskQuota   = 1 * 1024 * 1024 * 1024; // 1G
 
 NSString * const FT_LOG_FILE_PREFIX = @"FTLog";
 #if TARGET_OS_IPHONE
 BOOL doesAppRunInBackground(void);
 #endif
-@interface FTLogFileManager(){
-    NSUInteger _maximumNumberOfLogFiles;
-    unsigned long long _logFilesDiskQuota;
-}
-@property (nonatomic, copy, readwrite) NSString *logsDirectory;
--(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory;
-
+@interface FTLogFileManager()
 @end
 @implementation FTLogFileManager
--(instancetype)initWithLogsDirectory:(NSString *)logsDirectory{
+-(instancetype)initWithLogsDirectory:(NSString *)logsDirectory fileNamePrefix:(NSString *)fileNamePrefix{
     self = [super init];
     if(self){
         _logFilesDiskQuota = kFTDefaultLogFilesDiskQuota;
-        _maximumNumberOfLogFiles = kFTDefaultLogMaxNumLogFiles;
-        if(logsDirectory){
+//        _maximumNumberOfLogFiles = kFTDefaultLogMaxNumLogFiles;
+        if(logsDirectory&&logsDirectory.length>0){
             _logsDirectory = [logsDirectory copy];
         }else{
             _logsDirectory = [[self defaultLogsDirectory] copy];
+        }
+        if(fileNamePrefix&&fileNamePrefix.length>0){
+            _prefix = [fileNamePrefix copy];
+        }else{
+            _prefix = FT_LOG_FILE_PREFIX;
         }
     }
     return self;
@@ -115,7 +114,7 @@ BOOL doesAppRunInBackground(void);
 }
 // 判断是否是SDK生成的日志文件
 - (BOOL)isLogFile:(NSString *)fileName {
-    NSString *prefix = FT_LOG_FILE_PREFIX;
+    NSString *prefix = _prefix;
     BOOL hasProperPrefix = [fileName hasPrefix:[prefix stringByAppendingString:@" "]];
     BOOL hasProperSuffix = [fileName hasSuffix:@".log"];
     return (hasProperPrefix && hasProperSuffix);
@@ -125,7 +124,7 @@ BOOL doesAppRunInBackground(void);
     static NSUInteger MAX_ALLOWED_ERROR = 5;
     NSDate *currentDate = [NSDate date];
     NSString *dateStr = [currentDate ft_stringWithBaseFormat];
-    NSString *fileName = [NSString stringWithFormat:@"%@ %@.log",FT_LOG_FILE_PREFIX,dateStr];
+    NSString *fileName = [NSString stringWithFormat:@"%@ %@.log",_prefix,dateStr];
     NSString *logsDirectory = [self logsDirectory];
     NSData *fileHeader = [NSData new];
 
@@ -194,24 +193,24 @@ BOOL doesAppRunInBackground(void);
     NSUInteger firstIndexToDelete = NSNotFound;
     unsigned long long used = 0;
     const unsigned long long diskQuota = _logFilesDiskQuota;
-    const NSUInteger maxNumLogFiles = _maximumNumberOfLogFiles;
+//    const NSUInteger maxNumLogFiles = _maximumNumberOfLogFiles;
     if(diskQuota){
         for (NSUInteger i = 0; i < sortedLogFileInfos.count; i++) {
             FTLogFileInfo *info = sortedLogFileInfos[i];
             used += info.fileSize;
-            if (used > kFTDefaultLogFilesDiskQuota) {
+            if (used > diskQuota) {
                 firstIndexToDelete = i;
                 break;
             }
         }
     }
-    if(maxNumLogFiles){
-        if (firstIndexToDelete == NSNotFound) {
-            firstIndexToDelete = maxNumLogFiles;
-        } else {
-            firstIndexToDelete = MIN(firstIndexToDelete, maxNumLogFiles);
-        }
-    }
+//    if(maxNumLogFiles){
+//        if (firstIndexToDelete == NSNotFound) {
+//            firstIndexToDelete = maxNumLogFiles;
+//        } else {
+//            firstIndexToDelete = MIN(firstIndexToDelete, maxNumLogFiles);
+//        }
+//    }
     if (firstIndexToDelete == 0) {
         if (sortedLogFileInfos.count > 0) {
             FTLogFileInfo *logFileInfo = sortedLogFileInfos[0];
@@ -246,7 +245,6 @@ BOOL doesAppRunInBackground(void);
 @end
 @interface FTFileLogger(){
     dispatch_source_t _currentLogFileVnode;
-    unsigned long long _maximumFileSize;
 }
 @property (nonatomic, strong) NSFileHandle *currentLogFileHandle;
 @property (nonatomic, strong) FTLogFileInfo *currentLogFileInfo;
@@ -254,22 +252,19 @@ BOOL doesAppRunInBackground(void);
 @end
 @implementation FTFileLogger
 -(instancetype)init{
-    return [self initWithLogsDirectory:nil];
+    return [self initWithLogsDirectory:nil fileNamePrefix:nil];
 }
--(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory{
+-(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix{
+    return [self initWithLogFileManager:[[FTLogFileManager alloc]initWithLogsDirectory:logsDirectory fileNamePrefix:fileNamePrefix]];
+}
+-(instancetype)initWithLogFileManager:(FTLogFileManager *)manager{
     self = [super init];
     if(self){
         _maximumFileSize = kFTDefaultLogMaxFileSize;
         _loggerQueue = dispatch_queue_create("com.guance.debugLog.file", NULL);
-        _logFileManager = [[FTLogFileManager alloc]initWithLogsDirectory:logsDirectory];
+        _logFileManager = manager;
     }
     return self;
-}
--(unsigned long long)maximumFileSize{
-    return _maximumFileSize;
-}
--(void)setMaximumFileSize:(unsigned long long)maximumFileSize{
-    
 }
 - (NSFileHandle *)currentLogFileHandle {
     if (_currentLogFileHandle == nil) {
@@ -315,6 +310,9 @@ BOOL doesAppRunInBackground(void);
     return _currentLogFileInfo;
 }
 - (BOOL)shouldUseLogFile:(nonnull FTLogFileInfo *)logFileInfo isResuming:(BOOL)isResuming {
+    if (![logFileInfo.fileName hasPrefix:self.logFileManager.prefix]){
+        return NO;
+    }
     if (logFileInfo.isArchived) {
         return NO;
     }

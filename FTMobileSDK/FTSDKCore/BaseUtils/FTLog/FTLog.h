@@ -17,9 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 单例
 + (instancetype)sharedInstance;
 
-/// 将调试日志写入文件。若未指定 logsDirectory ，那么将在应用程序的缓存目录中创建一个名为 'FTLogs' 的文件夹。
-/// - Parameter logsDirectory: 存储日志文件的文件夹
-- (void)registerInnerLogCacheToLogsDirectory:(nullable NSString *)logsDirectory;
+/// 将调试日志写入文件。若未指定 logsDirectory ，那么将在应用程序的缓存目录中创建一个名为 'FTLogs' 的文件夹。若未指定 fileNamePrefix ，日志文件前缀为 'FTLog'
+/// - Parameters:
+///   - logsDirectory: 存储日志文件的文件夹
+///   - fileNamePrefix: 日志文件名前缀
+- (void)registerInnerLogCacheToLogsDirectory:(nullable NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix;;
 @end
 
 NS_ASSUME_NONNULL_END
