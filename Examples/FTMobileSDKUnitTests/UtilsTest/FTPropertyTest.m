@@ -87,8 +87,7 @@
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(!success);

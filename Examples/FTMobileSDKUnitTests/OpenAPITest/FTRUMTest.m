@@ -442,8 +442,9 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-    XCTAssertTrue([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
+    FTRUMSessionHandler *sessionHandler = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
+    NSArray *viewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count>0);
 
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
@@ -452,8 +453,8 @@
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-    XCTAssertFalse([dict2.allKeys containsObject:FT_KEY_VIEW_ID]);
+    NSArray *newViewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
+    XCTAssertTrue(newViewHandlers.count == 0);
 }
 // 当下一个 View Start，不再更新当前 View 的 duration（不再有新的 View 数据，直至 resource 结束）
 - (void)testGivenViewUnfinishedResource{
