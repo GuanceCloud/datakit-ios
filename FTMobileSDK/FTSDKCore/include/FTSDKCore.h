@@ -11,7 +11,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTPresetProperty.h"
 #import "FTRecordModel.h"
-#import "FTInternalLog.h"
+#import "FTLog.h"
 #import "FTResourceMetricsModel.h"
 #import "FTResourceContentModel.h"
 #import "FTSwizzle.h"

@@ -550,7 +550,7 @@
 		1776BA7E2B99B668008424FF /* FTOSLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTOSLogger.h; sourceTree = "<group>"; };
 		1776BA7F2B99B668008424FF /* FTOSLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTOSLogger.m; sourceTree = "<group>"; };
 		1777C3D82A36EA7300C0AA45 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = SOURCE_ROOT; };
-		1777C3DA2A36EA9400C0AA45 /* FTMobileSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = FTMobileSDK.podspec; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		1777C3DA2A36EA9400C0AA45 /* FTMobileSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = FTMobileSDK.podspec; sourceTree = SOURCE_ROOT; };
 		1777C3DC2A36EAAE00C0AA45 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		1777C3DE2A36EAB600C0AA45 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		1777C3E02A36EAD000C0AA45 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
@@ -706,6 +706,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		17402E182BAD8F8C00DE3176 /* FTLog */ = {
+			isa = PBXGroup;
+			children = (
+				17E4CB0C29CD42DA005C2D99 /* FTLog.h */,
+				17E4CB0229CD42DA005C2D99 /* FTLog.m */,
+				1776BA7A2B997D19008424FF /* FTLog+Private.h */,
+				17AC17392B98525B003E18A6 /* FTLogMessage.h */,
+				17AC173A2B98525B003E18A6 /* FTLogMessage.m */,
+				17AC17412B9856C3003E18A6 /* FTFileLogger.h */,
+				17AC17422B9856C3003E18A6 /* FTFileLogger.m */,
+				1776BA7E2B99B668008424FF /* FTOSLogger.h */,
+				1776BA7F2B99B668008424FF /* FTOSLogger.m */,
+			);
+			name = FTLog;
+			sourceTree = "<group>";
+		};
 		1763BD6B29DFF04F009EE026 /* DataManager */ = {
 			isa = PBXGroup;
 			children = (
@@ -871,26 +887,9 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
-		17AC17302B984BA4003E18A6 /* FTLog */ = {
-			isa = PBXGroup;
-			children = (
-				17E4CB0C29CD42DA005C2D99 /* FTLog.h */,
-				17E4CB0229CD42DA005C2D99 /* FTLog.m */,
-				1776BA7A2B997D19008424FF /* FTLog+Private.h */,
-				17AC17392B98525B003E18A6 /* FTLogMessage.h */,
-				17AC173A2B98525B003E18A6 /* FTLogMessage.m */,
-				17AC17412B9856C3003E18A6 /* FTFileLogger.h */,
-				17AC17422B9856C3003E18A6 /* FTFileLogger.m */,
-				1776BA7E2B99B668008424FF /* FTOSLogger.h */,
-				1776BA7F2B99B668008424FF /* FTOSLogger.m */,
-			);
-			path = FTLog;
-			sourceTree = "<group>";
-		};
 		17E4CACF29CD42DA005C2D99 /* BaseUtils */ = {
 			isa = PBXGroup;
 			children = (
-				17AC17302B984BA4003E18A6 /* FTLog */,
 				17E4CAEC29CD42DA005C2D99 /* Swizzle */,
 				17E4CAF329CD42DA005C2D99 /* Thread */,
 				17E4CAFA29CD42DA005C2D99 /* Base */,
@@ -921,6 +920,7 @@
 		17E4CAFA29CD42DA005C2D99 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				17402E182BAD8F8C00DE3176 /* FTLog */,
 				1776073429D1416200D17137 /* FTUserInfo.h */,
 				1776073529D1416200D17137 /* FTUserInfo.m */,
 				17E4CB0B29CD42DA005C2D99 /* FTConstants.h */,

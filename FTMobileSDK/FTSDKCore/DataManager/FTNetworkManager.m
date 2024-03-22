@@ -23,7 +23,7 @@
             configuration.timeoutIntervalForRequest = 30;
             configuration.HTTPShouldUsePipelining = NO;
         }
-        _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+        _session = [NSURLSession sessionWithConfiguration:configuration];
     }
     return self;
 }
