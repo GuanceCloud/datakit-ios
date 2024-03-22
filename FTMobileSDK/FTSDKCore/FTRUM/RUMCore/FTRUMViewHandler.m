@@ -50,22 +50,15 @@
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
-        context.view_id = self.view_id;
-        context.view_name = self.view_name;
-        context.view_referrer = self.view_referrer;
         _context = [context copy];
+        _context.view_name = self.view_name;
+        _context.view_id = self.view_id;
+        _context.view_referrer = self.view_referrer;
         _context.writer = context.writer;
         self.monitor = monitor;
         self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor frequency:monitor.frequency];
     }
     return self;
-}
-- (FTRUMContext *)context{
-    if(self.actionHandler){
-        _context.action_id = self.actionHandler.context.action_id;
-        _context.action_name = self.actionHandler.context.action_name;
-    }
-    return _context;
 }
 - (BOOL)process:(FTRUMDataModel *)model{
    
@@ -149,6 +142,8 @@
     actionHandler.handler = ^{
         weakSelf.viewActionCount +=1;
         weakSelf.needUpdateView = YES;
+        weakSelf.context.action_id = nil;
+        weakSelf.context.action_name = nil;
     };
     self.actionHandler = actionHandler;
 }
