@@ -13,6 +13,9 @@
 #import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTSDKCompat.h"
+
+void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
+
 @interface FTLogger ()
 @property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
@@ -45,6 +48,7 @@ static dispatch_once_t onceToken;
         _logLevelFilterSet = [NSSet setWithArray:filter];
         _enableCustomLog = enableCustomLog;
         _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
+        dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
     return self;
 }
@@ -95,9 +99,9 @@ static dispatch_once_t onceToken;
     [self log:content status:StatusOk property:property];
 }
 - (void)syncProcess{
-    dispatch_sync(self.loggerQueue, ^{
-        
-    });
+    if(dispatch_get_specific(FTLoggerQueueIdentityKey) == NULL){
+        dispatch_sync(self.loggerQueue, ^{});
+    }
 }
 - (void)shutDown{
     [self syncProcess];
