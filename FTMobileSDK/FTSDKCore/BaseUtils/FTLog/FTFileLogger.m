@@ -11,10 +11,9 @@
 #import "NSDate+FTUtil.h"
 #import <sys/xattr.h>
 
-unsigned long long const kFTDefaultLogMaxFileSize      = 100 * 1024 * 1024; // 100 MB
+unsigned long long const kFTDefaultLogMaxFileSize      = 33554432; // //32MB
 //NSUInteger         const kFTDefaultLogMaxNumLogFiles   = 10;
-unsigned long long const kFTDefaultLogFilesDiskQuota   = 1 * 1024 * 1024 * 1024; // 1G
-
+unsigned long long const kFTDefaultLogFilesDiskQuota   = 1073741824; //1G
 NSString * const FT_LOG_FILE_PREFIX = @"FTLog";
 #if TARGET_OS_IPHONE
 BOOL doesAppRunInBackground(void);

@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFilePath:(NSString *)aFilePath;
 @end
 /**
- 单个文件大小限制 100M
+ 单个文件大小限制 32MB
  总的磁盘占用限制 1G
  文件新增、删除逻辑：单个文件大小超过限制，新增新的日志文件写入，文件总大小超过限制时删除最旧的文件
  */
