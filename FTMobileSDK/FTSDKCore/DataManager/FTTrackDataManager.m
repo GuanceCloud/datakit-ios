@@ -26,25 +26,38 @@
 @property (atomic, assign) int uploadPageSize;
 @property (atomic, assign) int syncSleepTime;
 @property (atomic, assign) int logCacheLimitCount;
+@property (nonatomic, strong) FTNetworkManager *networkManager;
 @end
-@implementation FTTrackDataManager{
-}
+@implementation FTTrackDataManager
+static  FTTrackDataManager *sharedInstance;
 static dispatch_once_t onceToken;
 
 +(instancetype)sharedInstance{
-    static  FTTrackDataManager *sharedInstance;
+    if(!sharedInstance){
+        sharedInstance = [self startWithAutoSync:YES syncPageSize:10 syncSleepTime:0];
+    }
+    return sharedInstance;
+}
++(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:nil] init];
+        sharedInstance = [[super allocWithZone:nil] initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
     });
     return sharedInstance;
 }
--(instancetype)init{
+-(instancetype)initWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     self = [super init];
     if (self) {
         NSString *serialLabel = @"com.guance.network";
         _serialQueue = dispatch_queue_create_with_target([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0));
-        _autoSync = YES;
-        _uploadPageSize = 10;
+        _autoSync = autoSync;
+        _uploadPageSize = syncPageSize;
+        _syncSleepTime = syncSleepTime;
+        NSURLSessionConfiguration *sessionConfiguration = nil;
+        if (syncPageSize>30) {
+            sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+            sessionConfiguration.timeoutIntervalForRequest = syncPageSize;
+        }
+        _networkManager = [[FTNetworkManager alloc]initWithSessionConfiguration:sessionConfiguration];
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
@@ -53,34 +66,13 @@ static dispatch_once_t onceToken;
 - (void)listenNetworkChangeAndAppLifeCycle{
     [[FTReachability sharedInstance] startNotifier];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
-}
-- (FTTrackDataManager *(^)(BOOL))setAutoSync{
-    return ^(BOOL value) {
-        self->_autoSync = value;
-        if(value){
-            __weak typeof(self) weakSelf = self;
-            [FTReachability sharedInstance].networkChanged = ^(){
-                if([FTReachability sharedInstance].isReachable){
-                    [weakSelf uploadTrackData];
-                }
-            };
-        }else{
-            [FTReachability sharedInstance].networkChanged = nil;
-        }
-        return self;
-    };
-}
-- (FTTrackDataManager *(^)(int))setSyncPageSize{
-    return ^(int value) {
-        self->_uploadPageSize = value;
-        return self;
-    };
-}
-- (FTTrackDataManager *(^)(int))setSyncSleepTime{
-    return ^(int value) {
-        self->_syncSleepTime = value;
-        return self;
-    };
+    if(_autoSync){
+        [FTReachability sharedInstance].networkChanged = ^(){
+            if([FTReachability sharedInstance].isReachable){
+                [self uploadTrackData];
+            }
+        };
+    }
 }
 - (FTTrackDataManager *(^)(int))setLogCacheLimitCount{
     return ^(int value) {
@@ -206,7 +198,7 @@ static dispatch_once_t onceToken;
             dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
             FTRequest *request = [FTRequest createRequestWithEvents:events type:type];
             
-            [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+            [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
                 if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                     FTInnerLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
                     success = NO;

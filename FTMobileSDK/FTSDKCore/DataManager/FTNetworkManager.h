@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @interface FTNetworkManager : NSObject
-+ (instancetype)sharedInstance;
+-(instancetype)initWithSessionConfiguration:(nullable NSURLSessionConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 - (void)sendRequest:(id<FTRequestProtocol>  _Nonnull)request
          completion:(void(^_Nullable)(NSHTTPURLResponse * _Nonnull httpResponse,
                                       NSData * _Nullable data,

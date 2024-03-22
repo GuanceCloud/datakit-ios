@@ -64,10 +64,8 @@ static dispatch_once_t onceToken;
             [FTLog enableLog:config.enableSDKDebugLog];
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
-            [FTTrackDataManager sharedInstance]
-                .setAutoSync(config.autoSync)
-                .setSyncPageSize(config.syncPageSize)
-                .setSyncSleepTime(config.syncSleepTime);
+            [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+            
             _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version
                                                                     env:config.env
                                                                 service:config.service

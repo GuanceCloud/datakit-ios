@@ -23,9 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 单例
 +(instancetype)sharedInstance;
 
-- (FTTrackDataManager *(^)(BOOL))setAutoSync;
-- (FTTrackDataManager *(^)(int))setSyncPageSize;
-- (FTTrackDataManager *(^)(int))setSyncSleepTime;
++(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
+
 - (FTTrackDataManager *(^)(int))setLogCacheLimitCount;
 - (FTTrackDataManager *(^)(BOOL))setLogDiscardNew;
 
