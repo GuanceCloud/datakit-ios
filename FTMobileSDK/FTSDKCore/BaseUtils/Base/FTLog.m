@@ -33,7 +33,7 @@
             }
             consoleMessage =[consoleMessage stringByAppendingFormat:@" ,{%@}",[mutableStrs componentsJoinedByString:@","]];
         }
-        return [NSString stringWithFormat:@"[%@][%@] %@",prefix,[FTStatusStringMap[logMessage.level] uppercaseString], consoleMessage];
+        return consoleMessage;
     }else{
         NSString *prefix = @"FTLog";
         return [NSString stringWithFormat:@"[%@][%@] %@ [Line %lu] %@",prefix,[FTStatusStringMap[logMessage.level] uppercaseString],logMessage.function,(unsigned long)logMessage.line, logMessage.message];
