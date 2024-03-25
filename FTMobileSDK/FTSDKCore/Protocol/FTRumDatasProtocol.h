@@ -9,9 +9,13 @@
 #ifndef FTAddRumDatasProtocol_h
 #define FTAddRumDatasProtocol_h
 NS_ASSUME_NONNULL_BEGIN
+/// App 运行状态
 typedef NS_ENUM(NSUInteger, FTAppState) {
+    /// 未知
     FTAppStateUnknown,
+    /// 启动中
     FTAppStateStartUp,
+    /// 运行中
     FTAppStateRun,
 };
 /// rum 数据协议
