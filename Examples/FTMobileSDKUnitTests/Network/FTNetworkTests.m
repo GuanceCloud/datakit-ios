@@ -32,6 +32,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTestPageSizeMedium,
     FTNetworkTestPageSizeMax,
     FTNetworkTestPageSizeCustom,
+    FTNetworkTestTimeout,
+
 };
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
@@ -136,6 +138,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
                 return [OHHTTPStubsResponse responseWithError:notConnectedError];
             }
                 break;
+            case FTNetworkTestTimeout:{
+                sleep(3);
+                return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
+            }
             default:
                 return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
                 break;
@@ -340,6 +346,24 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 }
 - (void)testPageSize_custom_25{
     [self pageSize:FTNetworkTestPageSizeCustom];
+}
+- (void)testTimeout{
+    [self setRightConfigWithTestType:FTNetworkTestTimeout];
+
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
+    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    configuration.timeoutIntervalForRequest = 2;
+    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithSessionConfiguration:configuration];
+    [networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        XCTAssertTrue(error.code == -1001);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];

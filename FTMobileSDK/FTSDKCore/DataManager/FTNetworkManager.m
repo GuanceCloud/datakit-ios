@@ -56,7 +56,7 @@
     if (!url) {
         return nil;
     }
-    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:requestObject.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:requestObject.absoluteURL];
     if([requestObject respondsToSelector:@selector(adaptedRequest:)]){
         urlRequest = [requestObject adaptedRequest:urlRequest];
     }
