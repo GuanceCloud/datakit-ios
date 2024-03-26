@@ -16,7 +16,7 @@ unsigned long long const kFTDefaultLogMaxFileSize      = 33554432; // //32MB
 unsigned long long const kFTDefaultLogFilesDiskQuota   = 1073741824; //1G
 NSString * const FT_LOG_FILE_PREFIX = @"FTLog";
 #if TARGET_OS_IPHONE
-BOOL doesAppRunInBackground(void);
+BOOL FTDoesAppRunInBackground(void);
 #endif
 @interface FTLogFileManager()
 @end
@@ -234,7 +234,7 @@ BOOL doesAppRunInBackground(void);
 }
 #if TARGET_OS_IPHONE
 - (NSFileProtectionType)logFileProtection {
-   if (doesAppRunInBackground()) {
+   if (FTDoesAppRunInBackground()) {
         return NSFileProtectionCompleteUntilFirstUserAuthentication;
     } else {
         return NSFileProtectionCompleteUnlessOpen;
@@ -330,7 +330,7 @@ BOOL doesAppRunInBackground(void);
     }
 
 #if TARGET_OS_IPHONE
-    if (doesAppRunInBackground()) {
+    if (FTDoesAppRunInBackground()) {
         NSFileProtectionType key = mostRecentLogFileInfo.fileAttributes[NSFileProtectionKey];
         BOOL isUntilFirstAuth = [key isEqualToString:NSFileProtectionCompleteUntilFirstUserAuthentication];
         BOOL isNone = [key isEqualToString:NSFileProtectionNone];
@@ -608,7 +608,7 @@ static NSString * const kFTXAttrArchivedName = @"FTSDK.log.archived";
 @end
 
 #if TARGET_OS_IPHONE
-BOOL doesAppRunInBackground(void) {
+BOOL FTDoesAppRunInBackground(void) {
     BOOL answer = NO;
     NSArray *backgroundModes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIBackgroundModes"];
     for (NSString *mode in backgroundModes) {
