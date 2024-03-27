@@ -496,6 +496,7 @@
 		17563F9B2AAAC4D00077C067 /* FTMobileSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTMobileSDK.h; path = FTMobileSDK/FTMobileSDK.h; sourceTree = "<group>"; };
 		1759510A2A6FE4DE006FAB9D /* NSNumber+FTAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSNumber+FTAdd.h"; sourceTree = "<group>"; };
 		1759510B2A6FE4DE006FAB9D /* NSNumber+FTAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+FTAdd.m"; sourceTree = "<group>"; };
+		175B22BC2BB4366500621460 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTNetworkManager.h; sourceTree = "<group>"; };
 		1763BD6D29DFF04F009EE026 /* FTReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReachability.m; sourceTree = "<group>"; };
 		1763BD6E29DFF04F009EE026 /* FTRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRequest.m; sourceTree = "<group>"; };
@@ -549,7 +550,6 @@
 		1776BA7A2B997D19008424FF /* FTLog+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLog+Private.h"; sourceTree = "<group>"; };
 		1776BA7E2B99B668008424FF /* FTOSLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTOSLogger.h; sourceTree = "<group>"; };
 		1776BA7F2B99B668008424FF /* FTOSLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTOSLogger.m; sourceTree = "<group>"; };
-		1777C3D82A36EA7300C0AA45 /* CHANGELOG */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG; sourceTree = SOURCE_ROOT; };
 		1777C3DA2A36EA9400C0AA45 /* FTMobileSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = FTMobileSDK.podspec; sourceTree = SOURCE_ROOT; };
 		1777C3DC2A36EAAE00C0AA45 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		1777C3DE2A36EAB600C0AA45 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
@@ -831,7 +831,7 @@
 				1777C3DE2A36EAB600C0AA45 /* README.md */,
 				1777C3DC2A36EAAE00C0AA45 /* LICENSE */,
 				1777C3DA2A36EA9400C0AA45 /* FTMobileSDK.podspec */,
-				1777C3D82A36EA7300C0AA45 /* CHANGELOG */,
+				175B22BC2BB4366500621460 /* CHANGELOG.md */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
