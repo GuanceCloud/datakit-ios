@@ -8,7 +8,7 @@
 
 #import "FTRUMResourceHandler.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
@@ -38,12 +38,12 @@
         if ([newData.identifier isEqualToString:self.identifier]) {
             switch (data.type) {
                 case FTRUMDataResourceComplete:
-                    [self writeResourceData:data];
-                    return NO;
-                case FTRUMDataResourceStop:{
                     if (self.resourceHandler) {
                         self.resourceHandler();
                     }
+                    [self writeResourceData:data];
+                    return NO;
+                case FTRUMDataResourceStop:{
                     if(data.fields && data.fields.allKeys.count>0){
                         [self.resourceProperty addEntriesFromDictionary:data.fields];
                     }
@@ -68,7 +68,7 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
@@ -77,7 +77,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
-    [fields setValue:[FTDateUtil nanosecondTimeIntervalSinceDate:self.time toDate:data.time] forKey:FT_DURATION];
+    [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
         [fields setValue:model.metrics.resource_ttfb forKey:FT_KEY_RESOURCE_TTFB];
         [fields setValue:model.metrics.resource_ssl forKey:FT_KEY_RESOURCE_SSL];
@@ -92,6 +92,6 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:self.time]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
 }
 @end

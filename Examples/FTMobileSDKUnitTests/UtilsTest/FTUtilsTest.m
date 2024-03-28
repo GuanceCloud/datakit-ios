@@ -12,11 +12,10 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTJSONUtil.h"
 #import "NSString+FTAdd.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTRequestBody.h"
@@ -32,7 +31,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 #pragma mark NSString+FTAdd
 - (void)testStringRemoveFrontBackBlank{
@@ -86,11 +85,11 @@
     XCTAssertNil([FTJSONUtil dictionaryWithJsonString:@"a:b"]);
 }
 - (void)testConvertToJsonDataWithArray{
-    NSString *str = [FTJSONUtil convertToJsonDataWithArray:@[@"A",@"B",@"C"]];
+    NSString *str = [FTJSONUtil convertToJsonDataWithObject:@[@"A",@"B",@"C"]];
     XCTAssertTrue([str isEqualToString:@"[\"A\",\"B\",\"C\"]"]);
 }
 - (void)testConvertToJsonDataWithNilArray{
-    XCTAssertNil([FTJSONUtil convertToJsonDataWithArray:nil]);
+    XCTAssertNil([FTJSONUtil convertToJsonDataWithObject:nil]);
 }
 - (void)testConvertToJsonDataWithObjectDict{
     UIView *view = [[UIView alloc]init];

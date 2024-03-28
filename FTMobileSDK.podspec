@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "FTMobileSDK"
-	#s.version      = "1.3.12-alpha.3"
+	#s.version      = "1.4.11-alpha.1"
 	s.version      = "$JENKINS_DYNAMIC_VERSION"
 	s.summary      = "观测云 iOS 数据采集 SDK"
 	#s.description  = ""
@@ -16,6 +16,9 @@ Pod::Spec.new do |s|
 	#$JENKINS_DYNAMIC_VERSION 替换成 "#{s.version}" 会在 pod valid 阶段报错
 	s.source       = { :git => "https://github.com/GuanceCloud/datakit-ios.git", :tag => "$JENKINS_DYNAMIC_VERSION" }
 
+    s.resource_bundle = {
+      "FTSDKPrivacyInfo" => "FTMobileSDK/Resources/PrivacyInfo.xcprivacy"
+    }
 
 	s.subspec  'FTMobileAgent' do | agent |
 		agent.platform = :ios, '10.0'
@@ -65,7 +68,7 @@ Pod::Spec.new do |s|
 		c.subspec 'BaseUtils' do |b|
 
 			b.subspec 'Base' do |bb|
-				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/*{.h,.m}'
+				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Base/**/*{.h,.m}'
 			end
 
 			b.subspec 'Thread' do |bb|
@@ -76,6 +79,7 @@ Pod::Spec.new do |s|
 				bb.source_files = 'FTMobileSDK/FTSDKCore/BaseUtils/Swizzle/*{.h,.m,.c}'
 				bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 			end
+
 		end
 
 		c.subspec 'Logger' do |l|

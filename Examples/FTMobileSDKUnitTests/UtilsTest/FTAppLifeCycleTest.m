@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTAppLifeCycle.h"
-#import "FTInternalLog.h"
+#import "FTLog.h"
 @interface FTAppLifeCycleTest : XCTestCase<FTAppLifeCycleDelegate>
 @property (nonatomic,assign) NSInteger applicationWillTerminateCount;
 @property (nonatomic,assign) NSInteger applicationDidBecomeActiveCount;

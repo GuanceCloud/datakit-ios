@@ -97,6 +97,7 @@
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
         _logLevelFilter = @[@0,@1,@2,@3,@4];
+        _logCacheLimitCount = 5000;
     }
     return self;
 }
@@ -108,6 +109,7 @@
     options.logLevelFilter = self.logLevelFilter;
     options.discardType = self.discardType;
     options.globalContext = self.globalContext;
+    options.logCacheLimitCount = self.logCacheLimitCount;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -124,6 +126,9 @@
     }else{
         return nil;
     }
+}
+-(void)setLogCacheLimitCount:(int)logCacheLimitCount{
+    _logCacheLimitCount = MAX(1000, logCacheLimitCount);
 }
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -181,28 +186,29 @@
     return self;
 }
 -(instancetype)initWithDatakitUrl:(NSString *)datakitUrl{
-    if (self = [super init]) {
+    if (self = [self init]) {
         _datakitUrl = datakitUrl;
-        _enableSDKDebugLog = NO;
-        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
-        _service = FT_DEFAULT_SERVICE_NAME;
-        _env = FTEnvStringMap[FTEnvProd];
     }
     return self;
 }
 - (nonnull instancetype)initWithDatawayUrl:(nonnull NSString *)datawayUrl clientToken:(nonnull NSString *)clientToken{
-    if (self = [super init]) {
+    if (self = [self init]) {
         _datawayUrl = datawayUrl;
         _clientToken = clientToken;
-        _enableSDKDebugLog = NO;
-        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
-        _service = FT_DEFAULT_SERVICE_NAME;
-        _env = FTEnvStringMap[FTEnvProd];
     }
     return self;
 }
 -(instancetype)init{
-    return [self initWithMetricsUrl:@""];
+    if (self = [super init]) {
+        _enableSDKDebugLog = NO;
+        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        _service = FT_DEFAULT_SERVICE_NAME;
+        _env = FTEnvStringMap[FTEnvProd];
+        _autoSync = YES;
+        _syncPageSize = 10;
+        _syncSleepTime = 0;
+    }
+    return self;
 }
 - (void)setEnvWithType:(FTEnv)envType{
     _env = FTEnvStringMap[envType];
@@ -210,6 +216,25 @@
 -(void)setEnv:(NSString *)env{
     if(env!=nil && env.length>0){
         _env = env;
+    }
+}
+-(void)setSyncSleepTime:(int)syncSleepTime{
+    _syncSleepTime = MAX(0, MIN(syncSleepTime, 100));
+}
+-(void)setSyncPageSize:(int)syncPageSize{
+    _syncPageSize = MAX(5, syncPageSize);
+}
+- (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize {
+    switch (pageSize) {
+        case FTSyncPageSizeMini:
+            _syncPageSize = 5;
+            break;
+        case FTSyncPageSizeMedium:
+            _syncPageSize = 10;
+            break;
+        case FTSyncPageSizeMax:
+            _syncPageSize = 50;
+            break;
     }
 }
 #pragma mark NSCopying
@@ -224,6 +249,9 @@
     options.globalContext = self.globalContext;
     options.groupIdentifiers = self.groupIdentifiers;
     options.service = self.service;
+    options.autoSync = self.autoSync;
+    options.syncPageSize = self.syncPageSize;
+    options.syncSleepTime = self.syncSleepTime;
     return options;
 }
 @end

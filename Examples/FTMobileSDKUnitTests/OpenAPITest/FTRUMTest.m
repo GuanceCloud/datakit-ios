@@ -12,14 +12,13 @@
 #import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTRUMManager.h"
 #import "FTRUMSessionHandler.h"
 #import "FTGlobalRumManager.h"
-#import "FTTrackDataManager+Test.h"
 #import "UIView+FTAutoTrack.h"
 #import "FTExternalDataManager.h"
 #import "FTResourceContentModel.h"
@@ -242,7 +241,7 @@
             XCTAssertTrue(errorCount == 1);
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == 1);
-            XCTAssertTrue(updateTime == 4);
+            XCTAssertTrue(updateTime == 3);
         }else if([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]){
             trueActionCount ++;
         }
@@ -288,7 +287,7 @@
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
     [FTModelHelper startView];
     [self addLongTaskData:nil];
@@ -443,8 +442,9 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-    XCTAssertTrue([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
+    FTRUMSessionHandler *sessionHandler = [[FTGlobalRumManager sharedInstance].rumManager valueForKey:@"sessionHandler"];
+    NSArray *viewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
+    XCTAssertTrue(viewHandlers.count>0);
 
     FTResourceContentModel *model = [FTResourceContentModel new];
     model.url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
@@ -453,8 +453,8 @@
     [[FTExternalDataManager sharedManager] stopResourceWithKey:key];
     [[FTExternalDataManager sharedManager] addResourceWithKey:key metrics:nil content:model];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-    XCTAssertFalse([dict2.allKeys containsObject:FT_KEY_VIEW_ID]);
+    NSArray *newViewHandlers = [sessionHandler valueForKey:@"viewHandlers"];
+    XCTAssertTrue(newViewHandlers.count == 0);
 }
 // 当下一个 View Start，不再更新当前 View 的 duration（不再有新的 View 数据，直至 resource 结束）
 - (void)testGivenViewUnfinishedResource{
@@ -764,7 +764,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
@@ -808,7 +808,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
     [self addErrorData:nil];
     [self addResource];
@@ -839,7 +839,7 @@
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
     [self addErrorData:nil];
     [self addResource];
@@ -864,7 +864,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     
     [FTModelHelper startView];
     [self addErrorData:nil];
@@ -1148,6 +1148,7 @@
 
 - (void)setRumConfig{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
@@ -1157,7 +1158,7 @@
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     
 }
 

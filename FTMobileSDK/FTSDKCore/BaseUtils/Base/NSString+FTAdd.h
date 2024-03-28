@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString *)ft_subStringWithCharacterLength:(NSUInteger)length;
 /// 清除字符串前后的空格
 -(NSString *)ft_removeFrontBackBlank;
+/// 数据上传行协议，Measurement 格式处理
+-(NSString *)ft_replacingMeasurementSpecialCharacters;
+/// 数据上传行协议，Tags key、 value ，Fields key格式处理
+- (NSString *)ft_replacingSpecialCharacters;
+/// 数据上传行协议，Fields value 格式处理
+- (NSString *)ft_replacingFieldSpecialCharacters;
 @end
 
 NS_ASSUME_NONNULL_END

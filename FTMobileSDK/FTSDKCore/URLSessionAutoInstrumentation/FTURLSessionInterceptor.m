@@ -12,7 +12,7 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTReadWriteHelper.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 @interface FTURLSessionInterceptor ()
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;

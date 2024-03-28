@@ -9,9 +9,10 @@
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTWebViewJavascriptLeakAvoider.h"
 #import "FTConstants.h"
-
+@interface FTWKWebViewJavascriptBridge()
+@property (nonatomic, weak) WKWebView *webView;
+@end
 @implementation FTWKWebViewJavascriptBridge{
-    WKWebView* _webView;
     long _uniqueId;
     FTWebViewJavascriptBridgeBase *_base;
 }

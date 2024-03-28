@@ -178,7 +178,7 @@ static dispatch_once_t onceToken;
     }
     return trace;
 }
-- (void)resetInstance{
+- (void)shutDown{
     [self disableAutomaticRegistration];
     [self unSwizzleURLSession];
     [[FTURLSessionInterceptor shared] shutDown];

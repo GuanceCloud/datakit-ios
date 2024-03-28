@@ -11,7 +11,7 @@
 #import "FTAppLifeCycle.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTThreadDispatchManager.h"
 @interface FTDisplayRateMonitor()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) CADisplayLink *displayLink;

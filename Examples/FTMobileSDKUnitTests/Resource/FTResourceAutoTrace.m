@@ -15,7 +15,7 @@
 #import "TestSessionDelegate.h"
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 @interface FTResourceAutoTrace : KIFTestCase
 
 @end
@@ -39,7 +39,7 @@
     rumConfig.enableTraceUserResource = enable;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)testAutoTraceResource_NoDelegate{
     [self initSDKWithEnableAutoTraceResource:YES];

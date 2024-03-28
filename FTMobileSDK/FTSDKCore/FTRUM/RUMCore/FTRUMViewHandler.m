@@ -10,15 +10,14 @@
 #import "FTRUMActionHandler.h"
 #import "FTRUMResourceHandler.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTBaseInfoHandler.h"
 #import "FTMonitorItem.h"
 #import "FTMonitorValue.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMContext *context;
-@property (nonatomic, strong) FTRUMContext *sessionContext;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
@@ -51,23 +50,15 @@
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
-        self.sessionContext = context;
+        _context = [context copy];
+        _context.view_name = self.view_name;
+        _context.view_id = self.view_id;
+        _context.view_referrer = self.view_referrer;
+        _context.writer = context.writer;
         self.monitor = monitor;
         self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor frequency:monitor.frequency];
     }
     return self;
-}
-- (FTRUMContext *)context{
-    FTRUMContext *context = [self.sessionContext copy];
-    context.view_name = self.view_name;
-    context.view_id = self.view_id;
-    context.view_referrer = self.view_referrer;
-    context.writer = self.sessionContext.writer;
-    if(self.actionHandler){
-        context.action_id = self.actionHandler.context.action_id;
-        context.action_name = self.actionHandler.context.action_name;
-    }
-    return context;
 }
 - (BOOL)process:(FTRUMDataModel *)model{
    
@@ -81,7 +72,6 @@
                     self.isActiveView = NO;
                 }
                 self.didReceiveStartData = YES;
-                self.needUpdateView = YES;
             }else if(self.isActiveView == YES){
                 self.isActiveView = NO;
                 self.needUpdateView = YES;
@@ -152,6 +142,8 @@
     actionHandler.handler = ^{
         weakSelf.viewActionCount +=1;
         weakSelf.needUpdateView = YES;
+        weakSelf.context.action_id = nil;
+        weakSelf.context.action_name = nil;
     };
     self.actionHandler = actionHandler;
 }
@@ -164,7 +156,6 @@
     };
     resourceHandler.errorHandler = ^{
         weakSelf.viewErrorCount+=1;
-        weakSelf.needUpdateView = YES;
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
@@ -217,7 +208,7 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[FTDateUtil dateTimeNanosecond:self.viewStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[self.viewStartTime ft_nanosecondTimeStamp]];
 }
 
 @end

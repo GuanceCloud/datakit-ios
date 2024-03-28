@@ -9,7 +9,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "ZY_FMDB.h"
 #import "FTRecordModel.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTConstants.h"
 #import <pthread.h>
 #import "FTSDKCompat.h"
@@ -52,7 +52,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
-            dbTool.dbLoggingMaxCount = FT_DB_CONTENT_MAX_COUNT;
+            dbTool.logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
         }
         pthread_mutex_init(&(dbTool->_lock), NULL);
         [dbTool createTable];
@@ -121,7 +121,7 @@ static dispatch_once_t onceToken;
     pthread_mutex_lock(&_lock);
     [self.messageCaches addObject:item];
     if (self.messageCaches.count>=20) {
-        NSInteger count = self.dbLoggingMaxCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING]-self.messageCaches.count;
+        NSInteger count = self.logCacheLimitCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING]-self.messageCaches.count;
         
         if(count < 0){
             if(!self.discardNew){
@@ -318,8 +318,9 @@ static dispatch_once_t onceToken;
     }
     return _messageCaches;
 }
-- (void)resetInstance{
+- (void)shutDown{
+    [self insertCacheToDB];
     onceToken = 0;
-    dbTool =nil;
+    dbTool = nil;
 }
 @end

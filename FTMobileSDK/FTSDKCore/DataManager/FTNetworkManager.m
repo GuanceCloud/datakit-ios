@@ -12,22 +12,18 @@
 @property (nonatomic, strong) NSURLSession *session;
 @end
 @implementation FTNetworkManager
-+ (instancetype)sharedInstance {
-    static FTNetworkManager *manger;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        manger = [[FTNetworkManager alloc]init];
-    });
-    return manger;
-}
 -(instancetype)init{
+    return [self initWithSessionConfiguration:nil];
+}
+-(instancetype)initWithSessionConfiguration:(nullable NSURLSessionConfiguration *)configuration {
     self = [super init];
     if(self){
-        NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-        config.timeoutIntervalForRequest = 30.0;
-        config.HTTPShouldUsePipelining = NO;
-        _session = [NSURLSession sessionWithConfiguration:config];
-
+        if(!configuration){
+            configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+            configuration.timeoutIntervalForRequest = 30;
+            configuration.HTTPShouldUsePipelining = NO;
+        }
+        _session = [NSURLSession sessionWithConfiguration:configuration];
     }
     return self;
 }
@@ -60,7 +56,7 @@
     if (!url) {
         return nil;
     }
-    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:requestObject.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:requestObject.absoluteURL];
     if([requestObject respondsToSelector:@selector(adaptedRequest:)]){
         urlRequest = [requestObject adaptedRequest:urlRequest];
     }

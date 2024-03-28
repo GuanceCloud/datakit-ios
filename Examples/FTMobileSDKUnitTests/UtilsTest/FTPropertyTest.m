@@ -13,12 +13,11 @@
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import <objc/runtime.h>
 #import <FTJSONUtil.h>
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"
@@ -40,7 +39,7 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 
 - (void)tearDown {
@@ -49,6 +48,7 @@
 
 - (void)testSetEmptyEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
     NSString *env = dict[@"env"];
@@ -57,6 +57,7 @@
 }
 - (void)testSetEnv{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     [config setEnvWithType:FTEnvPre];
     [FTMobileAgent startWithConfigOptions:config];
     NSDictionary *dict = [[FTMobileAgent sharedInstance].presetProperty rumProperty];
@@ -76,6 +77,7 @@
 - (void)testIllegalUrl{
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"111"];
+    config.autoSync = NO;
     [FTMobileAgent startWithConfigOptions:config];
     FTLoggerConfig *logger = [[FTLoggerConfig alloc]init];
     logger.enableCustomLog = YES;
@@ -85,8 +87,7 @@
     [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
         XCTAssertTrue(!success);
@@ -95,6 +96,7 @@
     [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 /**
  * 设置 appid 后 Rum 开启
@@ -102,11 +104,12 @@
  */
 - (void)testSetAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:_appid];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -120,11 +123,12 @@
  */
 -(void)testSetEmptyAppid{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]init];
     rumConfig.enableTraceUserAction = YES;
     [FTMobileAgent startWithConfigOptions:config];
     XCTAssertThrows([[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig]);
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [self addRumData];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

@@ -9,15 +9,15 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTRecordModel.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTConstants.h"
 @implementation FTRecordModel
 -(instancetype)init{
     self = [super init];
     if (self) {
-        _tm = [FTDateUtil currentTimeNanosecond];
+        _tm = [NSDate ft_currentNanosecondTimeStamp];
         _op = @"";
     }
     return self;
@@ -33,14 +33,17 @@
         NSDictionary *data =@{FT_OP:op,
                               FT_OPDATA:opdata,
         };
-        FTInnerLogDebug(@"write data = %@",data);
         _op = op;
         _data =[FTJSONUtil convertToJsonData:data];
         if (tm&&tm>0) {
             _tm = tm;
         }else{
-            _tm = [FTDateUtil currentTimeNanosecond];
+            _tm = [NSDate ft_currentNanosecondTimeStamp];
         }
+        FTInnerLogDebug(@"write data = %@",@{@"time":@(_tm),
+                                             @"data":data
+                                           });
+
     }
     return self;
 }

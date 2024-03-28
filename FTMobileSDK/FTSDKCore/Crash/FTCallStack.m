@@ -19,7 +19,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/arch.h>
 #include <sys/sysctl.h>
-
+#import "FTPresetProperty.h"
 
 static mach_port_t main_thread_id;
 
@@ -93,20 +93,7 @@ int ft_crashThreadNumber(thread_t thread){
     return -1;
 }
 NSString* getCurrentCPUArch(void){
-    int32_t cpuType = 0;
-    size_t size = sizeof(cpuType);
-
-    int res = sysctlbyname("hw.cputype", &cpuType, &size, NULL, 0);
-    if(res != 0){
-        cpuType = 0;
-    }
-    int32_t cpuSubType = 0;
-    size_t subSize = sizeof(cpuSubType);
-    res = sysctlbyname("hw.cpusubtype", &cpuSubType, &subSize, NULL, 0);
-    if(res != 0){
-        cpuSubType = 0;
-    }
-    NSString *arch = [FTCallStack CPUArchForMajor:cpuType minor:cpuSubType];
+    NSString *arch = [FTPresetProperty cpuArch];
     return [FTCallStack CPUType:arch isSystemInfoHeader:YES];
 }
 #pragma -mark Convert NSThread to Mach thread
@@ -176,7 +163,7 @@ NSString* ft_logBinaryImage(const FTMachoImage* const image) {
 
     NSString *uuid = [[[NSUUID alloc] initWithUUIDBytes:image->uuid] UUIDString];
     uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
-    NSString *cpuType = [FTCallStack CPUArchForMajor:image->cpuType minor:image->cpuSubType];
+    NSString *cpuType = [FTPresetProperty CPUArchForMajor:image->cpuType minor:image->cpuSubType];
     NSString *imagestr = [NSString stringWithFormat:@"       0x%llx -        0x%llx %@ %@ <%@> %@\n",image->loadAddress,image->loadEndAddress,[NSString stringWithCString:fname encoding:NSUTF8StringEncoding],[cpuType lowercaseString],uuid,[NSString stringWithCString:image-> name encoding:NSUTF8StringEncoding]];
     return imagestr;
 
@@ -205,53 +192,6 @@ const char* ft_lastPathEntry(const char* const path) {
     return header;
 }
 
-+ (NSString*)CPUArchForMajor:(cpu_type_t) majorCode minor:(cpu_subtype_t) minorCode
-{
-#ifdef __APPLE__
-    // In Apple platforms we can use this function to get the name of a particular architecture
-    const NXArchInfo* info = NXGetArchInfoFromCpuType(majorCode, minorCode);
-    if (info && info->name) {
-        return [[NSString alloc] initWithUTF8String: info->name];
-    }
-#endif
-
-    switch(majorCode)
-    {
-        case CPU_TYPE_ARM:
-        {
-            switch (minorCode)
-            {
-                case CPU_SUBTYPE_ARM_V6:
-                    return @"armv6";
-                case CPU_SUBTYPE_ARM_V7:
-                    return @"armv7";
-                case CPU_SUBTYPE_ARM_V7F:
-                    return @"armv7f";
-                case CPU_SUBTYPE_ARM_V7K:
-                    return @"armv7k";
-#ifdef CPU_SUBTYPE_ARM_V7S
-                case CPU_SUBTYPE_ARM_V7S:
-                    return @"armv7s";
-#endif
-            }
-            return @"arm";
-        }
-        case CPU_TYPE_ARM64:
-        {
-            switch (minorCode)
-            {
-                case CPU_SUBTYPE_ARM64E:
-                    return @"arm64e";
-            }
-            return @"arm64";
-        }
-        case CPU_TYPE_X86:
-            return @"i386";
-        case CPU_TYPE_X86_64:
-            return @"x86_64";
-    }
-    return [NSString stringWithFormat:@"unknown(%d,%d)", majorCode, minorCode];
-}
 + (NSString*)CPUType:(NSString*) CPUArch isSystemInfoHeader:(BOOL) isSystemInfoHeader
 {
     if(isSystemInfoHeader && [CPUArch rangeOfString:@"arm64e"].location == 0)

@@ -9,8 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTGlobalRumManager.h"
-#import "FTInternalLog.h"
-#import "FTDateUtil.h"
+#import "FTLog+Private.h"
 #import "FTWKWebViewHandler.h"
 #import "FTLongTaskDetector.h"
 #import "FTJSONUtil.h"
@@ -93,8 +92,13 @@ static dispatch_once_t onceToken;
             NSString *measurement = data[FT_MEASUREMENT];
             NSDictionary *tags = data[FT_TAGS];
             NSDictionary *fields = data[FT_FIELDS];
-            // web 端 time 数据以微秒为单位，native 需要纳秒，需要转换单位
-            long long time = [data[@"time"] longLongValue] * 1000;
+            long long time = [data[@"time"] longLongValue];
+            long long fixTime = time * 1000000;
+            // web 端 time 数据以毫秒为单位，native 需要纳秒，需要转换单位
+            // 判断是否越界
+            if (time == fixTime/1000000) {
+                time = fixTime;
+            }
             if (measurement && fields.count>0) {
                 if ([name isEqualToString:@"rum"]) {
                     [self.rumManager addWebViewData:measurement tags:tags fields:fields tm:time];
@@ -153,13 +157,13 @@ static dispatch_once_t onceToken;
     }
 }
 #pragma mark ========== 注销 ==========
-- (void)resetInstance{
+- (void)shutDown{
     [self.rumManager syncProcess];
-    onceToken = 0;
-    sharedInstance =nil;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
     [_longTaskDetector stopDetecting];
+    onceToken = 0;
+    sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");
 }
 @end

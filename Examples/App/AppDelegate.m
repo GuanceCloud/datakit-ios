@@ -10,6 +10,7 @@
 #import <FTMobileSDK/FTMobileAgent.h>
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
+#import "FTMobileSDK/FTLog.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"
@@ -48,6 +49,7 @@
     BOOL isUnitTests = [[processInfo environment][@"isUnitTests"] boolValue];
     BOOL isUITests = [[processInfo environment][@"isUITests"] boolValue];
     if ( !isUnitTests && !isUITests) {
+        [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:nil];
         // 本地环境部署
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:datakitUrl];
         // 使用公网 DataWay 部署

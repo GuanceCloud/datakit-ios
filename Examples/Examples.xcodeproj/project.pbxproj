@@ -76,7 +76,6 @@
 		7C28B872266098B800CECBA6 /* TestJsbridgeData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C28B871266098B800CECBA6 /* TestJsbridgeData.m */; };
 		7C28B878266098E700CECBA6 /* sample.html in Resources */ = {isa = PBXBuildFile; fileRef = 7C28B877266098E700CECBA6 /* sample.html */; };
 		7C3C289627683983009DB8E2 /* FTRUMTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C3C289527683983009DB8E2 /* FTRUMTest.m */; };
-		7C57E8BE26D3A40F002DA85B /* FTTrackDataManager+Test.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */; };
 		7C64008B275A1E8300B2708B /* ManualRumAndTraceDataAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */; };
 		7C6E8EC125DE4D4E00D12C12 /* CrashVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8EC025DE4D4E00D12C12 /* CrashVC.m */; };
 		7C6E8F1425DF684600D12C12 /* TableViewCellItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C6E8F1325DF684600D12C12 /* TableViewCellItem.m */; };
@@ -248,8 +247,6 @@
 		7C28B877266098E700CECBA6 /* sample.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample.html; sourceTree = "<group>"; };
 		7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		7C3C289527683983009DB8E2 /* FTRUMTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMTest.m; sourceTree = "<group>"; };
-		7C57E8BC26D3A40F002DA85B /* FTTrackDataManager+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTTrackDataManager+Test.h"; sourceTree = "<group>"; };
-		7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "FTTrackDataManager+Test.m"; sourceTree = "<group>"; };
 		7C640089275A1E8300B2708B /* ManualRumAndTraceDataAdd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ManualRumAndTraceDataAdd.h; sourceTree = "<group>"; };
 		7C64008A275A1E8300B2708B /* ManualRumAndTraceDataAdd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManualRumAndTraceDataAdd.m; sourceTree = "<group>"; };
 		7C6E8EBF25DE4D4E00D12C12 /* CrashVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CrashVC.h; sourceTree = "<group>"; };
@@ -578,8 +575,6 @@
 			isa = PBXGroup;
 			children = (
 				4A1D78A124F52ACC006125D0 /* FTTrackerEventDBTool+Test.h */,
-				7C57E8BC26D3A40F002DA85B /* FTTrackDataManager+Test.h */,
-				7C57E8BD26D3A40F002DA85B /* FTTrackDataManager+Test.m */,
 				17D339EC2807AB0C0083C2B3 /* FTModelHelper.h */,
 				17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */,
 			);
@@ -922,7 +917,6 @@
 				177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */,
 				1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */,
 				17C7631F28267154009582B6 /* FTLineProtocol.m in Sources */,
-				7C57E8BE26D3A40F002DA85B /* FTTrackDataManager+Test.m in Sources */,
 				1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */,
 				17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */,
 				174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */,

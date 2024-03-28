@@ -7,7 +7,7 @@
 //
 
 #import "FTNetworkInfoManager.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 @interface FTNetworkInfoManager()
 
 @end

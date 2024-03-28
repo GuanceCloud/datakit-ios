@@ -17,9 +17,8 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTTracer.h"
@@ -40,7 +39,7 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 
 - (void)tearDown {
@@ -56,6 +55,7 @@
     
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.service = serviceName;
+    config.autoSync = NO;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.networkTraceType = type;
     traceConfig.enableAutoTrace = YES;

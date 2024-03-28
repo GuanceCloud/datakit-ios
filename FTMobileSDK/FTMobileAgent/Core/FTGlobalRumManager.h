@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter rumConfig: rum 配置项
 - (void)setRumConfig:(FTRumConfig *)rumConfig;
 
-/// 重置
-- (void)resetInstance;
+/// 关闭单例
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

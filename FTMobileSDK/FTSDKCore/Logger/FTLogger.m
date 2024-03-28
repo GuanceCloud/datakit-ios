@@ -5,16 +5,17 @@
 //  Created by hulilei on 2023/5/24.
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
-
-#import "FTLogger.h"
 #import "FTLogger+Private.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTConstants.h"
 #import "NSString+FTAdd.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTSDKCompat.h"
+
+void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
+
 @interface FTLogger ()
 @property (nonatomic, assign) BOOL printLogsToConsole;
 @property (nonatomic, weak) id<FTLoggerDataWriteProtocol> loggerWriter;
@@ -47,6 +48,7 @@ static dispatch_once_t onceToken;
         _logLevelFilterSet = [NSSet setWithArray:filter];
         _enableCustomLog = enableCustomLog;
         _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
+        dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
     return self;
 }
@@ -56,19 +58,7 @@ static dispatch_once_t onceToken;
 {
     dispatch_block_t logBlock = ^{
         if(self.printLogsToConsole){
-            NSString *prefix = @"[IOS APP]" ;
-#if FT_MAC
-            prefix = @"[MACOS APP]";
-#endif
-            NSString *consoleMessage = [NSString stringWithFormat:@"%@ [%@] %@",prefix,[FTStatusStringMap[status] uppercaseString],message];
-            NSMutableArray *mutableStrs = [NSMutableArray array];
-            if(property && property.allKeys.count>0){
-                for (NSString *key in property.allKeys) {
-                    [mutableStrs addObject:[NSString stringWithFormat:@"%@=%@",key,property[key]]];
-                }
-                consoleMessage =[consoleMessage stringByAppendingFormat:@" ,{%@}",[mutableStrs componentsJoinedByString:@","]];
-            }
-            FT_CONSOLE_LOG(status,consoleMessage);
+            FT_CONSOLE_LOG(status,message,property);
         }
         // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
@@ -82,7 +72,7 @@ static dispatch_once_t onceToken;
                 FTInnerLogInfo(@"[Logging][Not Sampled] %@",message);
                 return;
             }
-            [self.loggerWriter logging:message status:status tags:nil field:property time:[FTDateUtil currentTimeNanosecond]];
+            [self.loggerWriter logging:message status:status tags:nil field:property time:[NSDate ft_currentNanosecondTimeStamp]];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }
@@ -109,9 +99,9 @@ static dispatch_once_t onceToken;
     [self log:content status:StatusOk property:property];
 }
 - (void)syncProcess{
-    dispatch_sync(self.loggerQueue, ^{
-        
-    });
+    if(dispatch_get_specific(FTLoggerQueueIdentityKey) == NULL){
+        dispatch_sync(self.loggerQueue, ^{});
+    }
 }
 - (void)shutDown{
     [self syncProcess];

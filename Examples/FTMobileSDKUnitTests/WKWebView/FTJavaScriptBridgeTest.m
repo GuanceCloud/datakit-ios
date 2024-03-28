@@ -11,9 +11,8 @@
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool+Test.h"
 #import "FTConstants.h"
-#import "FTTrackDataManager+Test.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
@@ -74,13 +73,14 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
     traceConfig.enableAutoTrace = YES;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 /// 1.验证有webview传入数据添加
 /// 2.验证数据格式
@@ -98,8 +98,16 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 ///   session_id： 与 native SDK 一致
 ///   is_active: false
 ///   其余与 webview 一致
+///
 - (void)testAddRumViewData{
+    [self addRumViewData:NO];
+}
+- (void)testAddRumViewData_Nanosecond{
+    [self addRumViewData:YES];
+}
+- (void)addRumViewData:(BOOL)nano{
     [self setsdk];
+    long long smallTime = [NSDate ft_currentNanosecondTimeStamp];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self.viewController ft_load:url.absoluteString];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -107,9 +115,16 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         XCTAssertNil(error);
     }];
     XCTestExpectation *jsScript = [self expectationWithDescription:@"请求超时timeout!"];
-    [self.viewController test_addWebViewRumView:^{
-        [jsScript fulfill];
-    }];
+    if(nano){
+        [self.viewController test_addWebViewRumViewNano:^{
+            [jsScript fulfill];
+        }];
+    }else{
+        [self.viewController test_addWebViewRumView:^{
+            [jsScript fulfill];
+        }];
+    }
+    
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
@@ -138,14 +153,14 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 
                 // rum 相关调整
                 XCTAssertFalse([tags[FT_RUM_KEY_SESSION_ID] isEqualToString:@"12345"]);
-                XCTAssertTrue(field[FT_KEY_IS_ACTIVE] == @(NO));
+                XCTAssertTrue([field[FT_KEY_IS_ACTIVE] isEqual:@(NO)]);
 
                 // 基础 tags
                 XCTAssertTrue([tags[@"package_native"] isEqualToString:SDK_VERSION]);
                 XCTAssertFalse([tags[FT_SDK_VERSION] isEqualToString:SDK_VERSION]);
                 XCTAssertTrue([tags[FT_SDK_NAME] isEqualToString:@"df_web_rum_sdk"]);
                 XCTAssertTrue([tags[FT_KEY_SERVICE] isEqualToString:@"browser"]);
-
+                XCTAssertTrue(obj.tm>smallTime && obj.tm < [NSDate ft_currentNanosecondTimeStamp]);
                 hasViewData = YES;
             }
         }

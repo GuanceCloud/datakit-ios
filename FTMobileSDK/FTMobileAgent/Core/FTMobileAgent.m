@@ -9,15 +9,13 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTMobileAgent.h"
-#import "FTTrackerEventDBTool.h"
 #import "FTRecordModel.h"
 #import "FTBaseInfoHandler.h"
 #import "FTGlobalRumManager.h"
 #import "FTConstants.h"
 #import "FTMobileAgent+Private.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "NSString+FTAdd.h"
-#import "FTDateUtil.h"
 #import "FTPresetProperty.h"
 #import "FTReachability.h"
 #import "FTTrackDataManager.h"
@@ -49,9 +47,6 @@ static dispatch_once_t onceToken;
     NSAssert ((strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(dispatch_get_main_queue())) == 0),@"SDK 必须在主线程里进行初始化，否则会引发无法预料的问题（比如丢失 launch 事件）。");
     
     NSAssert((configOptions.datakitUrl.length!=0||(configOptions.datawayUrl.length!=0&&configOptions.clientToken.length!=0)), @"请正确配置 datakit  或 dataway 写入地址");
-    if (sharedInstance) {
-        [[FTMobileAgent sharedInstance] resetConfig:configOptions];
-    }
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTMobileAgent alloc] initWithConfig:configOptions];
     });
@@ -66,12 +61,12 @@ static dispatch_once_t onceToken;
         self = [super init];
         if (self) {
             //基础类型的记录
-            [FTInternalLog enableLog:config.enableSDKDebugLog];
+            [FTLog enableLog:config.enableSDKDebugLog];
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
-            
             //开启数据处理管理器
-            [FTTrackDataManager sharedInstance];
-            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version 
+            [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
+            
+            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version
                                                                     env:config.env
                                                                 service:config.service
                                                           globalContext:config.globalContext];
@@ -89,14 +84,6 @@ static dispatch_once_t onceToken;
     }
     return self;
 }
--(void)resetConfig:(FTMobileConfig *)config{
-    [FTInternalLog enableLog:config.enableSDKDebugLog];
-    if (_presetProperty) {
-        [self.presetProperty resetWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
-    }else{
-        _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
-    }
-}
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
     NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
     FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
@@ -112,7 +99,9 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         self.loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
-        [FTTrackerEventDBTool sharedManger].discardNew = (loggerConfigOptions.discardType == FTDiscard);
+        [FTTrackDataManager sharedInstance]
+            .setLogCacheLimitCount(loggerConfigOptions.logCacheLimitCount)
+            .setLogDiscardNew((loggerConfigOptions.discardType == FTDiscard));
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole
                                     enableCustomLog:loggerConfigOptions.enableCustomLog
@@ -180,10 +169,6 @@ static dispatch_once_t onceToken;
     FTInnerLogInfo(@"Unbind User");
 }
 #pragma mark ========== private method ==========
-//RUM  ES
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type tags:tags fields:fields time:[FTDateUtil currentTimeNanosecond]];
-}
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     if (![type isKindOfClass:NSString.class] || type.length == 0) {
         return;
@@ -268,16 +253,20 @@ static dispatch_once_t onceToken;
 - (void)insertDBWithItemData:(FTRecordModel *)model type:(FTAddDataType)type{
     [[FTTrackDataManager sharedInstance] addTrackData:model type:type];
 }
+- (void)flushSyncData{
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+}
 #pragma mark - SDK注销
 - (void)shutDown{
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
-    [[FTGlobalRumManager sharedInstance] resetInstance];
+    [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
-    [[FTURLSessionInstrumentation sharedInstance] resetInstance];
+    [[FTURLSessionInstrumentation sharedInstance] shutDown];
     onceToken = 0;
-    sharedInstance =nil;
+    sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+    [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

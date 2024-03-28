@@ -7,13 +7,13 @@
 //
 
 #import "FTTracer.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "NSString+FTAdd.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTURLSessionInterceptor.h"
 #import "FTEnumConstant.h"
-#import "FTInternalLog.h"
+#import "FTLog.h"
 #include <pthread.h>
 static NSUInteger SkyWalkingSequence = 0.0;
 
@@ -190,7 +190,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 //    [self.lock lock];
 //    NSInteger v2 =  _skywalkingv2 ++;
 //    [self.lock unlock];
-//    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
+//    NSString *basetraceId = [NSString stringWithFormat:@"%lu.%@.%lld",(unsigned long)v2,[self getThreadNumber],[NSDate currentNanosecondTimeStamp]];
 //    NSString *urlStr = url.port ? [NSString stringWithFormat:@"#%@:%@",url.host,url.port]: [NSString stringWithFormat:@"#%@",url.host];
 //    urlStr = [urlStr ft_base64Encode];
 //    NSUInteger seq = [self getSkywalkingSeq];
@@ -203,7 +203,7 @@ static NSUInteger SkyWalkingSequence = 0.0;
 //    traceHeader(trace,span,header);
 //}
 - (NSDictionary *)getSkyWalking_V3Header:(BOOL)sampled url:(NSURL *)url handler:(UnpackTraceHeaderHandler)handler{
-    NSString *baseTraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceID,[self getThreadNumber],[FTDateUtil currentTimeMillisecond]];
+    NSString *baseTraceId = [NSString stringWithFormat:@"%@.%@.%lld",self.skyTraceID,[self getThreadNumber],[NSDate ft_currentNanosecondTimeStamp]];
     NSString *parentServiceInstance = [[NSString stringWithFormat:@"%@@%@",self.skyParentInstance,[FTBaseInfoHandler cellularIPAddress:YES]] ft_base64Encode];
     NSString *urlStr = url.port!=nil ? [NSString stringWithFormat:@"%@:%@",url.host,url.port]: url.host;
     NSString *urlPath = url.path.length>0 ? url.path : @"/";

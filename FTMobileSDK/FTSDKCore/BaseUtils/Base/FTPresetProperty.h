@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sdkVersion;
 /// 设备名称
 + (NSString *)deviceInfo;
++ (NSString *)cpuArch;
++ (NSString*)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_MAC
 + (NSString *)getDeviceUUID;
 + (NSString *)macOSdeviceModel;

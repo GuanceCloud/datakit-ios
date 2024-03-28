@@ -7,7 +7,7 @@
 //
 
 #import "FTRequest.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTNetworkInfoManager.h"
 #import "FTRecordModel.h"
 #import "FTConstants.h"
@@ -50,7 +50,7 @@
     return nil;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
-     NSString *date =[FTDateUtil currentTimeGMT];
+     NSString *date =[[NSDate date] ft_stringWithGMTFormat];
      mutableRequest.HTTPMethod = self.httpMethod;
      //添加header
      [mutableRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];

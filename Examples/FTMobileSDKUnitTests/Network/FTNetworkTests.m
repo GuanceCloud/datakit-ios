@@ -12,12 +12,12 @@
 #import "FTRecordModel.h"
 #import "OHHTTPStubs.h"
 #import "FTConstants.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTJSONUtil.h"
 #import "FTRequest.h"
 #import "FTNetworkManager.h"
 #import "FTModelHelper.h"
-#import "FTTrackDataManager+Test.h"
+#import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
@@ -28,6 +28,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTestEmptyResponseData,
     FTNetworkTestErrorResponse,
     FTNetworkTestErrorNet,
+    FTNetworkTestPageSizeMini,
+    FTNetworkTestPageSizeMedium,
+    FTNetworkTestPageSizeMax,
+    FTNetworkTestPageSizeCustom,
+    FTNetworkTestTimeout,
+
 };
 @interface FTNetworkTests : XCTestCase
 @property (nonatomic, strong) XCTestExpectation *expectation;
@@ -37,10 +43,11 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    long  tm =[FTDateUtil currentTimeNanosecond];
+    long  tm =[NSDate ft_currentNanosecondTimeStamp];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:tm];
 }
 - (void)tearDown{
+    [OHHTTPStubs removeAllStubs];
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)setRightConfigWithTestType:(FTNetworkTestsType)type{
@@ -48,9 +55,44 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     NSString *logUrl = [urlStr stringByAppendingString:@"/v1/write/logging"];
     NSString *rumUrl = [urlStr stringByAppendingString:@"/v1/write/rum"];
     NSString *traceUrl = [urlStr stringByAppendingString:@"/v1/write/tracing"];
+    int pageSize = 0;
+    switch (type) {
+        case FTNetworkTestPageSizeMax:
+            pageSize = 50;
+            break;
+        case FTNetworkTestPageSizeMedium:
+            pageSize = 10;
+            break;
+        case FTNetworkTestPageSizeMini:
+            pageSize = 5;
+            break;
+        case FTNetworkTestPageSizeCustom:
+            pageSize = 25;
+            break;
+        default:
+            break;
+    }
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         NSString *str =  request.URL.absoluteString;
-        return [str isEqualToString:logUrl] || [str isEqualToString:rumUrl] || [str isEqualToString:traceUrl];
+        BOOL isURL = [str isEqualToString:logUrl] || [str isEqualToString:rumUrl] || [str isEqualToString:traceUrl];
+        if(pageSize>0){
+            uint8_t sub[1024] = {0};
+            NSInputStream *inputStream = request.HTTPBodyStream;
+            NSMutableData *body = [[NSMutableData alloc] init];
+            [inputStream open];
+            while ([inputStream hasBytesAvailable]) {
+                NSInteger len = [inputStream read:sub maxLength:1024];
+                if (len > 0 && inputStream.streamError == nil) {
+                    [body appendBytes:(void *)sub length:len];
+                }else{
+                    break;
+                }
+            }
+            NSString *bodyStr = [[NSString alloc]initWithData:body encoding:NSUTF8StringEncoding];
+            NSArray *array = [bodyStr componentsSeparatedByString:@"\n"];
+            XCTAssertTrue(array.count == pageSize);
+        }
+        return isURL;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         switch (type) {
             case FTNetworkTest:{
@@ -96,11 +138,20 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
                 return [OHHTTPStubsResponse responseWithError:notConnectedError];
             }
                 break;
+            case FTNetworkTestTimeout:{
+                sleep(3);
+                return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
+            }
+            default:
+                return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
+                break;
         }
         
     }];
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
+        config.autoSync = NO;
+        config.syncPageSize = pageSize>0?pageSize:10;
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];
@@ -119,7 +170,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
@@ -141,7 +192,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testBadNetwork"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
     
         NSInteger statusCode = httpResponse.statusCode;
         BOOL success = (statusCode >=200 && statusCode < 500);
@@ -164,7 +215,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
      [self setRightConfigWithTestType:FTNetworkTestNoJsonResponse];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testNoJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
         NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         XCTAssertTrue(error != nil && [result isEqualToString:@"Hello World!"]);
@@ -184,8 +235,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self setRightConfigWithTestType:FTNetworkTestWrongJsonResponse];
     FTRecordModel *model = [FTModelHelper createLogModel:@"testWrongJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-    
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSError *errors;
         [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&errors];
         XCTAssertTrue(errors != nil);
@@ -205,7 +255,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testEmptyResponseDataNetWork"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(data.bytes == 0);
         [expectation fulfill];
     }];
@@ -223,7 +273,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorResponse"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
@@ -241,7 +291,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testErrorNet"];
 
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    [[FTNetworkManager sharedInstance] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+    [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         NSInteger statusCode = httpResponse.statusCode;
         XCTAssertFalse(statusCode == 200);
         [expectation fulfill];
@@ -266,13 +316,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
        
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] performSelector:@selector(privateUpload)];
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
@@ -283,5 +334,118 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
             self.expectation = nil;
         }
     }
+}
+- (void)testPageSize_default{
+    [self pageSize:FTNetworkTestPageSizeMedium];
+}
+- (void)testPageSize_max{
+    [self pageSize:FTNetworkTestPageSizeMax];
+}
+- (void)testPageSize_mini{
+    [self pageSize:FTNetworkTestPageSizeMini];
+}
+- (void)testPageSize_custom_25{
+    [self pageSize:FTNetworkTestPageSizeCustom];
+}
+- (void)testTimeout{
+    [self setRightConfigWithTestType:FTNetworkTestTimeout];
+
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    
+    FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
+    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    configuration.timeoutIntervalForRequest = 2;
+    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithSessionConfiguration:configuration];
+    [networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        XCTAssertTrue(error.code == -1001);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+}
+- (void)pageSize:(FTNetworkTestsType)type{
+    [self setRightConfigWithTestType:type];
+    for (int i = 0 ; i<50; i++) {
+       FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
+        FTRecordModel *rumModel = [FTModelHelper createRumModel];
+
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+    }
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(count == 100);
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+    FTNetworkManager *networkManager = [[FTTrackDataManager sharedInstance] valueForKey:@"networkManager"];
+    NSURLSession *session = [networkManager valueForKey:@"session"];
+    switch (type) {
+        case FTNetworkTestPageSizeMax:
+            XCTAssertTrue(session.configuration.timeoutIntervalForRequest == 50);
+            break;
+        case FTNetworkTestPageSizeMini:
+            XCTAssertTrue(session.configuration.timeoutIntervalForRequest == 30);
+            break;
+        case FTNetworkTestPageSizeMedium:
+            XCTAssertTrue(session.configuration.timeoutIntervalForRequest == 30);
+            break;
+        case FTNetworkTestPageSizeCustom:
+            XCTAssertTrue(session.configuration.timeoutIntervalForRequest == 30);
+            break;
+        default:
+            break;
+    }
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 0);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+}
+- (void)testSyncSleepTime_Max{
+    [self syncSleepTime:100];
+}
+- (void)testSyncSleepTime_Medium{
+    [self syncSleepTime:50];
+}
+- (void)testSyncSleepTime_Min{
+    [self syncSleepTime:0];
+}
+- (void)syncSleepTime:(int)time{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:@"http://www.test.com/some/url/string"];
+    config.syncSleepTime = time;
+    config.autoSync = NO;
+    [FTMobileAgent startWithConfigOptions:config];
+    __block NSTimeInterval duration = 0;
+    __block NSTimeInterval end = 0;
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        if(end>0){
+            duration = ([NSDate timeIntervalSinceReferenceDate] - end)*1000;
+            end = 0;
+        }
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        end = [NSDate timeIntervalSinceReferenceDate];
+        return [OHHTTPStubsResponse responseWithData:[NSData data] statusCode:200 headers:nil];
+    }];
+    for (int i = 0 ; i<20; i++) {
+       FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+    }
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+       
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 0);
+    XCTAssertTrue(duration>time&&duration<50+time);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

@@ -11,7 +11,7 @@
 #import "FTMobileConfig.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool+Test.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTModelHelper.h"
 #import "FTGlobalRumManager.h"
 #import "FTRUMManager.h"
@@ -61,7 +61,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
 }
 - (void)sdkInnerURLTestSet{
@@ -79,7 +79,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
 }
 - (void)testUseDelegateDirect{
@@ -204,7 +204,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         }
     }];
     XCTAssertTrue(hasResource);
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     ResourcePropertyProvider provider2 = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
         XCTAssertTrue(request);
         NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -266,7 +266,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     }];
     XCTAssertTrue(hasResource);
     
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     XCTestExpectation *expectation2= [self expectationWithDescription:@"SecondRequestInterceptor"];
     RequestInterceptor requestInterceptor2 = ^NSURLRequest *(NSURLRequest *request){
         NSMutableURLRequest *newRequest = [request mutableCopy];
@@ -324,7 +324,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     [FTModelHelper startView];
     XCTestExpectation *expectation= [self expectationWithDescription:@"testResourceUrlHandlerReturnYes"];
     HttpEngineTestUtil *engine = [[HttpEngineTestUtil alloc]initWithSessionInstrumentationType:InstrumentationInherit expectation:expectation provider:nil requestInterceptor:nil];

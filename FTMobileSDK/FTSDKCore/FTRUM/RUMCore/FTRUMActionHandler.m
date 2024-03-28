@@ -7,7 +7,7 @@
 //
 
 #import "FTRUMActionHandler.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
@@ -85,8 +85,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 }
 
 -(BOOL)timedOutOrExpired:(NSDate*)currentTime{
-    NSTimeInterval sessionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
-    BOOL expired = sessionDuration >= discreteActionTimeoutDuration;
+    NSTimeInterval actionDuration = [currentTime  timeIntervalSinceDate:_actionStartTime];
+    BOOL expired = actionDuration >= discreteActionTimeoutDuration;
     return  expired;
 }
 
@@ -95,7 +95,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 }
 -(void)writeActionData:(NSDate *)endDate{
     if (self.type == FTRUMDataClick) {
-        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[FTDateUtil nanosecondTimeIntervalSinceDate:self.actionStartTime toDate:endDate];
+        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     }
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
 
@@ -109,7 +109,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[FTDateUtil dateTimeNanosecond:self.actionStartTime]];
+    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
     if (self.handler) {
         self.handler();
     }

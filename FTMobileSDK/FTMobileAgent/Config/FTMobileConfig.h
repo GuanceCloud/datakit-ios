@@ -79,6 +79,15 @@ typedef NS_ENUM(NSInteger, FTEnv) {
     /// 本地环境
     FTEnvLocal,
 };
+/// 数据同步大小
+typedef NS_ENUM(NSUInteger, FTSyncPageSize) {
+    /// MINI 5
+    FTSyncPageSizeMini = 0,
+    /// MEDIUM 10
+    FTSyncPageSizeMedium,
+    /// MAX 50
+    FTSyncPageSizeMax,
+};
 /// 日志废弃策略
 typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 默认，当日志数据数量大于最大值（5000）时，新数据不进行写入
@@ -104,6 +113,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableCustomLog;
 /// 是否将自定义日志在控制台打印
 @property (nonatomic, assign) BOOL printCustomLogToConsole; 
+/// 日志最大缓存量, 最低设置为 1000  默认 5000
+@property (nonatomic, assign) int logCacheLimitCount;
 /// 采集自定义日志的状态数组，默认为全采集
 ///
 /// 例: @[@(FTStatusInfo),@(FTStatusError)]
@@ -210,6 +221,12 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, copy) NSString *version;
 /// 所属业务或服务的名称 默认：df_rum_ios
 @property (nonatomic, copy) NSString *service;
+/// 数据是否进行自动同步上传 默认：YES
+@property (nonatomic, assign) BOOL autoSync;
+/// 数据同步时每条请求同步条数,最小值 5 默认：10
+@property (nonatomic, assign) int syncPageSize;
+/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <100
+@property (nonatomic, assign) int syncSleepTime;
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native
@@ -221,6 +238,10 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 /// 根据提供的 FTEnv 类型设置 env
 /// - Parameter envType: 环境
 - (void)setEnvWithType:(FTEnv)envType;
+/// 根据提供的 FTSyncPageSize 类型设置 syncPageSize
+/// - Parameter pageSize: 数据同步大小
+- (void)setSyncPageSizeWithType:(FTSyncPageSize)pageSize;
+
 @end
 
 NS_ASSUME_NONNULL_END

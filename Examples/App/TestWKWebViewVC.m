@@ -20,10 +20,13 @@
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
+    [self.webView.scrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew context:nil];
     NSURL *url =  [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
     [self ft_load:url.absoluteString];
 }
-
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    
+}
 - (void)ft_loadOther:(NSString *)urlStr{
     NSMutableURLRequest *request2 = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlStr]];
     [self.webView loadRequest:request2];
@@ -52,9 +55,16 @@
             complete();
         }
     }];
-
 }
-
+- (void)test_addWebViewRumViewNano:(void(^)(void))complete{
+    [self.webView evaluateJavaScript:@"testOldRumView()" completionHandler:^(id _Nullable response, NSError * _Nullable error) {
+        //js函数调用return,这里才会有东西,否则无任何信息。
+        NSLog(@"response: %@ error: %@", response, error);
+        if(complete){
+            complete();
+        }
+    }];
+}
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
 
     decisionHandler(WKNavigationResponsePolicyAllow);

@@ -11,7 +11,7 @@
 #import "FTTrackerEventDBTool+Test.h"
 #import "ZY_FMDatabase.h"
 #import "FTRecordModel.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTConstants.h"
@@ -24,15 +24,15 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [[FTTrackerEventDBTool sharedManger] resetInstance];
+    [[FTTrackerEventDBTool sharedManger] shutDown];
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[FTBaseInfoHandler randomUUID]];
     [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
-    [FTTrackerEventDBTool sharedManger].dbLoggingMaxCount = 5000;
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [FTTrackerEventDBTool sharedManger].logCacheLimitCount = 5000;
 }
 
 - (void)tearDown {
-    [[FTTrackerEventDBTool sharedManger] resetInstance];
+    [[FTTrackerEventDBTool sharedManger] shutDown];
     NSString  *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:self.name];
     NSError *errpr;
     [[NSFileManager defaultManager] removeItemAtPath:path error:&errpr];
@@ -128,7 +128,7 @@
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];
         [[FTTrackerEventDBTool sharedManger] insertItem:model];
     }
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithType:FT_DATA_TYPE_LOGGING tm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithType:FT_DATA_TYPE_LOGGING tm:[NSDate ft_currentNanosecondTimeStamp]];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
 }
@@ -159,7 +159,7 @@
     model.data = @"testData";
     [[FTTrackerEventDBTool sharedManger] insertItem:model];
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(oldCount>0 && newCount == 0);
 }

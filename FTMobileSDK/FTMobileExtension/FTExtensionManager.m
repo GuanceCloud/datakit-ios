@@ -9,8 +9,7 @@
 #import "FTExtensionManager.h"
 #import "FTExtensionDataManager.h"
 #import "FTCrashMonitor.h"
-#import "FTDateUtil.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTRUMManager.h"
 #import "FTRUMDataWriteProtocol.h"
 #import "FTMobileConfig.h"
@@ -46,7 +45,7 @@ static FTExtensionManager *sharedInstance = nil;
     self = [super init];
     if (self) {
         _extensionConfig = extensionConfig;
-        [FTInternalLog enableLog:extensionConfig.enableSDKDebugLog];
+        [FTLog enableLog:extensionConfig.enableSDKDebugLog];
         [FTExtensionDataManager sharedInstance].maxCount = extensionConfig.memoryMaxCount;
         [self processingConfigItems];
     }
@@ -123,9 +122,6 @@ static FTExtensionManager *sharedInstance = nil;
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
-}
-- (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields{
-    [self rumWrite:type tags:tags fields:fields time:[FTDateUtil currentTimeNanosecond]];
 }
 - (void)rumWrite:(NSString *)type tags:(NSDictionary *)tags fields:(NSDictionary *)fields time:(long long)time{
     NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];

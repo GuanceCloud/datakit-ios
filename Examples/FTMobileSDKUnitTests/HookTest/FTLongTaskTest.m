@@ -11,11 +11,10 @@
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTTrackerEventDBTool.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTJSONUtil.h"
 #import "FTConstants.h"
-#import "FTTrackDataManager+Test.h"
 #import <KIF/KIF.h>
 #import "FTModelHelper.h"
 @interface FTLongTaskTest : KIFTestCase
@@ -32,13 +31,14 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appID = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appID];
     rumConfig.enableTrackAppANR = enable;
     rumConfig.enableTrackAppFreeze = longTask;
     config.enableSDKDebugLog = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[FTDateUtil currentTimeNanosecond]];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 - (void)testTrackLongTask{
     [self initSDKWithEnableTrackAppANR:NO longTask:YES];
@@ -47,7 +47,7 @@
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppLongTask"] tap];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_RUM];
         XCTAssertTrue(newCount-lastCount>0);
@@ -95,7 +95,7 @@
 - (void)testTrackAnrAndAnrStartTime{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
-    long long startTime = [FTDateUtil currentTimeNanosecond];
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     
@@ -146,7 +146,7 @@
 }
 - (void)testLongTaskStartTime{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    long long startTime = [FTDateUtil currentTimeNanosecond]-1000000;
+    long long startTime = [NSDate ft_currentNanosecondTimeStamp]-1000000;
     [[FTExternalDataManager sharedManager] addLongTaskWithStack:@"test_stack" duration:@(1000000)];
     
     [[FTMobileAgent sharedInstance] syncProcess];

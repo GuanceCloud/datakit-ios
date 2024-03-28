@@ -9,7 +9,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTRUMSessionHandler.h"
 #import "FTMonitorUtils.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 #import "FTSDKCompat.h"
@@ -19,6 +19,8 @@ NSString * const AppStateStringMap[] = {
     [FTAppStateStartUp] = @"startup",
     [FTAppStateRun] = @"run",
 };
+void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
+
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, assign) ErrorMonitorType errorMonitorType;
@@ -40,6 +42,7 @@ NSString * const AppStateStringMap[] = {
         _monitor = monitor;
         _writer = writer;
         _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+        dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         self.assistant = self;
     }
     return self;
@@ -431,10 +434,22 @@ NSString * const AppStateStringMap[] = {
 }
 
 -(NSDictionary *)getCurrentSessionInfo{
-    return [self.sessionHandler getCurrentSessionInfo];
+    __block NSDictionary *info;
+    dispatch_block_t block = ^(){
+        info = [self.sessionHandler getCurrentSessionInfo];
+    };
+    [self syncProcess:block];
+    return info;
 }
 - (void)syncProcess{
-    dispatch_sync(self.rumQueue, ^{});
+    [self syncProcess:^(){}];
+}
+- (void)syncProcess:(dispatch_block_t)block{
+    if(dispatch_get_specific(FTRUMQueueIdentityKey)==NULL){
+        dispatch_sync(self.rumQueue, block);
+    }else{
+        block();
+    }
 }
 @end
 

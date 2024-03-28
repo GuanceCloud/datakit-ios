@@ -9,7 +9,7 @@
 #error This file must be compiled with ARC. Either turn on ARC for the project or use -fobjc-arc flag on this file.
 #endif
 #import "FTJSONUtil.h"
-#import "FTInternalLog.h"
+#import "FTLog+Private.h"
 #import "FTJsonWriter.h"
 @interface FTJSONUtil ()<FTJsonWriterDelegate>
 @property (nonatomic, copy) NSString *error;
@@ -70,12 +70,12 @@
     }
     return dic;
 }
-+ (NSString *)convertToJsonDataWithArray:(NSArray *)array{
-    if (array == nil) {
++ (NSString *)convertToJsonDataWithObject:(id)object{
+    if (object == nil) {
         return nil;
     }
     NSError *err;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:array options:0 error:&err];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object options:0 error:&err];
     if(err){
         FTInnerLogError(@"json解析失败：%@",err);
         return @"";

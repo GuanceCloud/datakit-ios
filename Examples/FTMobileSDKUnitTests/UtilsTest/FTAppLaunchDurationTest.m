@@ -9,7 +9,7 @@
 #import <KIF/KIF.h>
 #import "FTAppLaunchTracker.h"
 #import "FTRUMManager.h"
-#import "FTDateUtil.h"
+#import "NSDate+FTUtil.h"
 #import "FTMobileConfig.h"
 #import "FTConstants.h"
 typedef void(^LaunchBlock)( NSNumber * _Nullable duration, FTLaunchType type);
@@ -136,14 +136,14 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     }];
 }
 - (void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming {
-    NSNumber *maxDuration = [FTDateUtil nanosecondTimeIntervalSinceDate:launchTime toDate:[NSDate date]];
+    NSNumber *maxDuration = [launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
     XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     if(self.launchBlock){
         self.launchBlock(duration, isPreWarming?FTLaunchWarm:FTLaunchCold);
     }
 }
 - (void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{ 
-    NSNumber *maxDuration = [FTDateUtil nanosecondTimeIntervalSinceDate:launchTime toDate:[NSDate date]];
+    NSNumber *maxDuration = [launchTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
     XCTAssertTrue(maxDuration.longLongValue>duration.longLongValue);
     if(self.launchBlock){
         self.launchBlock(duration, FTLaunchHot);
