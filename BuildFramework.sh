@@ -9,6 +9,13 @@ IPHONEOS_ARCH="arm64"
 # 模拟器 arch 架构
 IPHONESIMULATOR_ARCH="x86_64"
 
+FILE_PATH="FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h"
+  
+# 使用 grep 和 awk 提取 SDK_VERSION 的值
+SDK_VERSION=$(grep 'SDK_VERSION' "$FILE_PATH" | awk -F'"' '{print $2}')
+  
+# 输出 SDK_VERSION 的值
+echo "SDK_VERSION: $SDK_VERSION"
 
 buildFrameWorkWithName(){
 
@@ -22,9 +29,9 @@ SIMULATOR_DIR=${WORK_DIR}/'Release-iphonesimulator'/${FRAMEWORK_NAME}'.framework
 OUTPUT_DIR=FRAMEWORK/${FRAMEWORK_NAME}'.framework'
 
 ##xcodebuild打包
-xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONEOS_ARCH}  ONLY_ACTIVE_ARCH=NO -configuration 'Relase'   -sdk iphoneos
+xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONEOS_ARCH}  ONLY_ACTIVE_ARCH=NO MARKETING_VERSION=${SDK_VERSION} -configuration 'Relase'   -sdk iphoneos
 
-xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONESIMULATOR_ARCH} ONLY_ACTIVE_ARCH=NO -configuration 'Relase' -sdk iphonesimulator
+xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONESIMULATOR_ARCH} ONLY_ACTIVE_ARCH=NO MARKETING_VERSION=${SDK_VERSION} -configuration 'Relase' -sdk iphonesimulator
 
 #如果输出目录存在，即移除该目录，再创建该目录。目的是为了清空输出目录。
 if [ -d ${OUTPUT_DIR} ]; then
