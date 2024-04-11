@@ -9,14 +9,6 @@ IPHONEOS_ARCH="arm64"
 # 模拟器 arch 架构
 IPHONESIMULATOR_ARCH="x86_64"
 
-FILE_PATH="FTMobileSDK/FTMobileAgent/Core/FTMobileAgentVersion.h"
-  
-# 使用 grep 和 awk 提取 SDK_VERSION 的值
-SDK_VERSION=$(grep 'SDK_VERSION' "$FILE_PATH" | awk -F'"' '{print $2}')
-  
-# 输出 SDK_VERSION 的值
-echo "SDK_VERSION: $SDK_VERSION"
-
 buildFrameWorkWithName(){
 
 FRAMEWORK_NAME="$1"
