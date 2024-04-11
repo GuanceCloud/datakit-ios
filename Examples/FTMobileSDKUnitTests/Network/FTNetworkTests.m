@@ -33,6 +33,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTestPageSizeMax,
     FTNetworkTestPageSizeCustom,
     FTNetworkTestTimeout,
+    FTNetworkTestAutoSyncData,
 
 };
 @interface FTNetworkTests : XCTestCase
@@ -150,10 +151,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
-        config.autoSync = NO;
+        config.autoSync = (type == FTNetworkTestAutoSyncData);
         config.syncPageSize = pageSize>0?pageSize:10;
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
+        if(type == FTNetworkTestAutoSyncData){
+            FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:@"Test"];
+            [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+        }
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];
         trace.enableAutoTrace = YES;
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
@@ -364,6 +369,28 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+}
+- (void)testAutoSyncData{
+    [self setRightConfigWithTestType:FTNetworkTestAutoSyncData];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation]];
+
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    [FTModelHelper addAction];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(count>0);
+    XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation2 fulfill];
+    });
+    [self waitForExpectations:@[expectation2]];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 0);
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];

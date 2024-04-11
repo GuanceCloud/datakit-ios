@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 关闭单例
 - (void)shutDown;
+
+/// 缓存中的数据添加到数据库中
+-(void)insertCacheToDB;
 @end
 
 NS_ASSUME_NONNULL_END

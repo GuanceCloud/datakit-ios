@@ -28,7 +28,6 @@
     self.dbName = [NSString stringWithFormat:@"%@test.sqlite",[FTBaseInfoHandler randomUUID]];
     [FTTrackerEventDBTool shareDatabaseWithPath:nil dbName:self.dbName];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    [FTTrackerEventDBTool sharedManger].logCacheLimitCount = 5000;
 }
 
 - (void)tearDown {
@@ -84,11 +83,10 @@
         FTRecordModel *model = [FTRecordModel new];
         model.op = [NSString stringWithFormat:@"test%d",i];
         model.data = [NSString stringWithFormat:@"testData%d",i];
-        [[FTTrackerEventDBTool sharedManger] insertLoggingItems:model];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     }
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 20);
-    
 }
 /**
 *  @abstract
@@ -98,13 +96,13 @@
     NSInteger oldCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel];
-        [[FTTrackerEventDBTool sharedManger] insertLoggingItems:model];
+        [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
     }
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount-oldCount == 15);
 }
-
+                     
 -(void)testGetAllDatas{
     for (int i = 0; i<15; i++) {
         FTRecordModel *model = [FTModelHelper createLogModel:[NSString stringWithFormat:@"testData%d",i]];

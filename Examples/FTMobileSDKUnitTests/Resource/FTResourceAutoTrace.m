@@ -35,6 +35,7 @@
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = enable;
     [FTMobileAgent startWithConfigOptions:config];
