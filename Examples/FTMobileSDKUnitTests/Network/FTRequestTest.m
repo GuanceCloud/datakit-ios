@@ -18,8 +18,12 @@
 #import "FTNetworkInfoManager.h"
 #import "FTEnumConstant.h"
 #import "FTModelHelper.h"
-@interface FTRequestTest : XCTestCase
+#import "FTTrackDataManager.h"
+#import "NSDate+FTUtil.h"
+#import "FTBaseInfoHandler.h"
 
+@interface FTRequestTest : XCTestCase
+@property (nonatomic, strong) XCTestExpectation *expectation;
 @end
 
 @implementation FTRequestTest
@@ -80,6 +84,73 @@
     }];
     [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
+}
+- (void)testRumSdkDataIDIncrease{
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [self mockHttp];
+    for (int i = 0 ; i<8; i++) {
+        FTRecordModel *rumModel = [FTModelHelper createRumModel];
+        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
+    }
+    NSString *serialNumber = [FTBaseInfoHandler rumRequestSerialNumber];
+    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
+       
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSString *newSerialNumber = [FTBaseInfoHandler rumRequestSerialNumber];
+    XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+}
+- (void)testLogSdkDataIDIncrease{
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [self mockHttp];
+    self.expectation= [self expectationWithDescription:@"异步操作timeout"];
+    for (int i = 0 ; i<8; i++) {
+        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
+        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
+    }
+    
+    NSString *serialNumber = [FTBaseInfoHandler logRequestSerialNumber];
+    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
+    [[FTTrackDataManager sharedInstance] uploadTrackData];
+
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSString *newSerialNumber = [FTBaseInfoHandler logRequestSerialNumber];
+    XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
+    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+}
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
+    if([keyPath isEqualToString:@"isUploading"]){
+        FTTrackDataManager *manager = object;
+        NSNumber *isUploading = [manager valueForKey:@"isUploading"];
+        if(!isUploading.boolValue){
+            [self.expectation fulfill];
+            self.expectation = nil;
+        }
+    }
+}
+- (unsigned long long)base36ToDecimal:(NSString *)str {
+    NSString *str36 = str.copy;
+    NSString *param = @"0123456789abcdefghijklmnopqrstuvwxyz";
+    unsigned long long num = 0;
+    for (unsigned long long i = 0; i < str36.length; i++) {
+        for (NSInteger j = 0; j < param.length; j++) {
+            char iChar = [str36 characterAtIndex:i];
+            char jChar = [param characterAtIndex:j];
+            if (iChar == jChar) {
+                unsigned long long n = j * pow(36, str36.length - i - 1);
+                num += n;
+                break;
+            }
+        }
+    }
+    return num;
 }
 - (void)testWrongFormat{
     [self mockHttp];

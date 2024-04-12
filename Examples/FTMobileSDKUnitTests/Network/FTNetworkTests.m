@@ -330,6 +330,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     XCTAssertTrue(newCount == 0);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
+
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
         FTTrackDataManager *manager = object;

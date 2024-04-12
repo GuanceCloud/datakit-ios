@@ -16,6 +16,7 @@
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
 #import <pthread.h>
+#import "FTBaseInfoHandler.h"
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isUploading;
@@ -274,6 +275,9 @@ static dispatch_once_t onceToken;
         }
         if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
             _logCount -= events.count;
+            [FTBaseInfoHandler increaseLogRequestSerialNumber];
+        }else{
+            [FTBaseInfoHandler increaseRumRequestSerialNumber];
         }
         if(events.count < self.uploadPageSize){
             break;
