@@ -29,9 +29,6 @@
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
 @property (nonatomic, strong) FTTracer *tracer;
-@property (nonatomic, strong) NSLock *lock;
-@property (nonatomic, assign) int bindingsCount;
-@property (nonatomic, assign) BOOL autoRegistration;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
 @property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
 @property (nonatomic, assign) NSString *serviceName;
@@ -42,16 +39,13 @@ static FTURLSessionInstrumentation *sharedInstance = nil;
 static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:NULL] init];
-        [sharedInstance swizzleURLSession];
+        sharedInstance = [[FTURLSessionInstrumentation alloc] init];
     });
     return sharedInstance;
 }
 -(instancetype)init{
     self = [super init];
     if(self){
-        _lock = [[NSLock alloc]init];
-        _bindingsCount = 0;
         _shouldRUMInterceptor = NO;
         _shouldTraceInterceptor = NO;
     }
@@ -91,33 +85,6 @@ static dispatch_once_t onceToken;
 }
 -(void)setIntakeUrlHandler:(FTIntakeUrl)intakeUrlHandler{
     self.interceptor.intakeUrlHandler = intakeUrlHandler;
-}
-#pragma mark ========== swizzle ==========
-- (void)swizzleURLSession{
-    [self.lock lock];
-    if(self.bindingsCount==0){
-        [self _swizzleURLSession];
-    }
-    self.bindingsCount++;
-    [self.lock unlock];
-}
-- (void)unSwizzleURLSession{
-    [self.lock lock];
-    if(self.bindingsCount > 1){
-        self.bindingsCount--;
-    }else if (self.bindingsCount == 1){
-        [self _swizzleURLSession];
-    }
-    [self.lock unlock];
-}
-- (void)_swizzleURLSession{
-    NSError *error = NULL;
-    if(@available(iOS 13.0,macOS 10.15,*)){
-        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
-        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
-    }
-    [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
-    [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
 }
 /// 关闭自动采集
 - (void)disableAutomaticRegistration{
@@ -180,7 +147,6 @@ static dispatch_once_t onceToken;
 }
 - (void)shutDown{
     [self disableAutomaticRegistration];
-    [self unSwizzleURLSession];
     [[FTURLSessionInterceptor shared] shutDown];
     onceToken = 0;
     sharedInstance =nil;
