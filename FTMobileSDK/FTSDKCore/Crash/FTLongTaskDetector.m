@@ -91,8 +91,8 @@ static BOOL g_bRun;
                                                                             ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if(strongSelf.enableANR){
-            self->_activity = activity;
-            dispatch_semaphore_signal(self->_semaphore);
+            strongSelf->_activity = activity;
+            dispatch_semaphore_signal(strongSelf->_semaphore);
         }
         switch (activity) {
             case kCFRunLoopEntry:
@@ -125,11 +125,12 @@ static BOOL g_bRun;
     });
     CFRetain(beginObserver);
     m_runLoopBeginObserver = beginObserver;
+    CFRelease(beginObserver);
     CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         if(strongSelf.enableANR){
-            self->_activity = activity;
-            dispatch_semaphore_signal(self->_semaphore);
+            strongSelf->_activity = activity;
+            dispatch_semaphore_signal(strongSelf->_semaphore);
         }
         switch (activity) {
             case kCFRunLoopBeforeWaiting:
@@ -152,6 +153,7 @@ static BOOL g_bRun;
     });
     CFRetain(endObserver);
     m_runLoopEndObserver = endObserver;
+    CFRelease(endObserver);
     // 将新建的observer加入到当前thread的runloop
     CFRunLoopAddObserver(CFRunLoopGetMain(), beginObserver, kCFRunLoopCommonModes);
     CFRunLoopAddObserver(CFRunLoopGetMain(), endObserver, kCFRunLoopCommonModes);
