@@ -105,8 +105,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     
     FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:(FTRUMViewModel *)model context:self.context monitor:self.monitor];
     //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    __weak __typeof(self) weakSelf = self;
     viewHandler.errorHandled = ^{
-        self.needWriteErrorData = NO;
+        weakSelf.needWriteErrorData = NO;
     };
     [self.viewHandlers addObject:viewHandler];
 }

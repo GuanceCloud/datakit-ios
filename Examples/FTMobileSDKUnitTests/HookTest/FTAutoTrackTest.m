@@ -40,22 +40,7 @@
 @implementation FTAutoTrackTest
 
 - (void)setUp {
-    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
-    NSString *appid = [processInfo environment][@"APP_ID"];
-    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    config.autoSync = NO;
-    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
-    rumConfig.enableTraceUserAction = YES;
-    rumConfig.enableTraceUserView = YES;
-    rumConfig.enableTraceUserResource = YES;
-    rumConfig.enableTrackAppCrash = YES;
-    [FTMobileAgent startWithConfigOptions:config];
-    FTTraceConfig *trace = [[FTTraceConfig alloc]init];
-    trace.enableAutoTrace = YES;
-    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
-    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    
     // Put setup code here. This method is called before the invocation of each
    
 }
@@ -65,8 +50,29 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTMobileAgent sharedInstance] shutDown];
 }
-- (void)testAutoTableViewClick{
+- (void)setSdkWithRum:(BOOL)hasRum{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     
+    [FTMobileAgent startWithConfigOptions:config];
+    FTTraceConfig *trace = [[FTTraceConfig alloc]init];
+    trace.enableAutoTrace = YES;
+    [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];\
+    if(hasRum){
+        FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+        rumConfig.enableTraceUserAction = YES;
+        rumConfig.enableTraceUserView = YES;
+        rumConfig.enableTraceUserResource = YES;
+        rumConfig.enableTrackAppCrash = YES;
+        [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    }
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+}
+- (void)testAutoTableViewClick{
+    [self setSdkWithRum:YES];
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     
@@ -101,7 +107,7 @@
     
 }
 - (void)testTapGes{
-    
+    [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
@@ -123,7 +129,7 @@
     
 }
 - (void)testLongPressGes{
-    
+    [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointZero duration:1];
@@ -143,6 +149,7 @@
     [tester waitForTimeInterval:0.5];
 }
 - (void)testButtonClick{
+    [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
     [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
@@ -161,7 +168,7 @@
 }
 
 - (void)testCollectionViewCellClick{
-    
+    [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"EventFlowLog"] tap];
     [tester waitForTimeInterval:1];
     
@@ -187,6 +194,7 @@
     [self resourceUrlHandler:NO];
 }
 - (void)resourceUrlHandler:(BOOL)excluded{
+    [self setSdkWithRum:NO];
     NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
     rumConfig.enableTraceUserAction = YES;
@@ -226,6 +234,7 @@
     [self intakeUrl:NO];
 }
 - (void)intakeUrl:(BOOL)trace{
+    [self setSdkWithRum:YES];
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
         return trace;
     }];
@@ -250,6 +259,7 @@
     XCTAssertTrue(hasRes == trace);
 }
 - (void)testActionName{
+    [self setSdkWithRum:YES];
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     

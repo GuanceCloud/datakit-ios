@@ -1,3 +1,17 @@
+# 1.4.12
+1. 修复注销 SDK 后产生的内存泄漏问题
+2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题
+3. 处理完 UncaughtException 传递 UncaughtExceptionHandler
+4. 修复重复配置 SDK 造成的数据异常
+
+---
+# 1.4.12-beta.1
+1. 修复注销SDK后产生的内存泄漏问题
+2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题
+3. 处理完 UncaughtException 传递 UncaughtExceptionHandler
+4. 修复重复配置 SDK 造成的数据异常
+
+---
 # 1.4.11
 1. 新增支持数据同步参数配置，请求条目数据，同步间歇时间，以及日志缓存条目数
 2. 新增内部日志转文件方法

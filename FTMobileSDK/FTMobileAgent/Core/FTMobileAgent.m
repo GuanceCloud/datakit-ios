@@ -36,6 +36,8 @@
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
+@property (nonatomic, strong) FTTraceConfig *traceConfig;
+
 @property (nonatomic, copy) NSString *netTraceStr;
 @end
 @implementation FTMobileAgent
@@ -85,40 +87,45 @@ static dispatch_once_t onceToken;
     return self;
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
-    NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
-    FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
-    [self.presetProperty setAppID:rumConfigOptions.appid];
-    self.presetProperty.rumContext = [rumConfigOptions.globalContext copy];
-    [[FTGlobalRumManager sharedInstance] setRumConfig:rumConfigOptions];
-    [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:rumConfigOptions.enableTraceUserResource resourceUrlHandler:rumConfigOptions.resourceUrlHandler];
-    [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
-    [[FTExtensionDataManager sharedInstance] writeRumConfig:[rumConfigOptions convertToDictionary]];
+    if(!_rumConfig){
+        NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
+        FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
+        _rumConfig = [rumConfigOptions copy];
+        [self.presetProperty setAppID:_rumConfig.appid];
+        self.presetProperty.rumContext = [_rumConfig.globalContext copy];
+        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
+        [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
+        [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
+        [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
+        [[FTExtensionDataManager sharedInstance] writeRumConfig:[_rumConfig convertToDictionary]];
+    }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
-        self.loggerConfig = [loggerConfigOptions copy];
-        self.presetProperty.logContext = [self.loggerConfig.globalContext copy];
+        _loggerConfig = [loggerConfigOptions copy];
+        self.presetProperty.logContext = [_loggerConfig.globalContext copy];
         [FTTrackDataManager sharedInstance]
-            .setLogCacheLimitCount(loggerConfigOptions.logCacheLimitCount)
-            .setLogDiscardNew((loggerConfigOptions.discardType == FTDiscard));
-        [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[loggerConfigOptions convertToDictionary]];
-        [FTLogger startWithEnablePrintLogsToConsole:loggerConfigOptions.printCustomLogToConsole
-                                    enableCustomLog:loggerConfigOptions.enableCustomLog
-                                     logLevelFilter:loggerConfigOptions.logLevelFilter sampleRate:loggerConfigOptions.samplerate writer:self];
+            .setLogCacheLimitCount(_loggerConfig.logCacheLimitCount)
+            .setLogDiscardNew((_loggerConfig.discardType == FTDiscard));
+        [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
+        [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
+                                    enableCustomLog:_loggerConfig.enableCustomLog
+                                     logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
-    _netTraceStr = FTNetworkTraceStringMap[traceConfigOptions.networkTraceType];
-    [FTWKWebViewHandler sharedInstance].enableTrace = traceConfigOptions.enableAutoTrace;
-    [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionInstrumentation sharedInstance].interceptor;
-    [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:traceConfigOptions.enableAutoTrace
-                                                        enableLinkRumData:traceConfigOptions.enableLinkRumData
-                                                               sampleRate:traceConfigOptions.samplerate
-                                                                traceType:traceConfigOptions.networkTraceType];
-    [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
-    [[FTExtensionDataManager sharedInstance] writeTraceConfig:[traceConfigOptions convertToDictionary]];
-
+    if(!_traceConfig){
+        _traceConfig = [traceConfigOptions copy];
+        _netTraceStr = FTNetworkTraceStringMap[_traceConfig.networkTraceType];
+        [FTWKWebViewHandler sharedInstance].enableTrace = _traceConfig.enableAutoTrace;
+        [FTWKWebViewHandler sharedInstance].interceptor = [FTURLSessionInstrumentation sharedInstance].interceptor;
+        [[FTURLSessionInstrumentation sharedInstance] setTraceEnableAutoTrace:_traceConfig.enableAutoTrace
+                                                            enableLinkRumData:_traceConfig.enableLinkRumData
+                                                                   sampleRate:_traceConfig.samplerate
+                                                                    traceType:_traceConfig.networkTraceType];
+        [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
+        [[FTExtensionDataManager sharedInstance] writeTraceConfig:[_traceConfig convertToDictionary]];
+    }
 }
 #pragma mark ========== public method ==========
 - (void)isIntakeUrl:(BOOL(^)(NSURL *url))handler{
