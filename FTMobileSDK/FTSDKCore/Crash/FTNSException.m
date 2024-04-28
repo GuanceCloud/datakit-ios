@@ -33,6 +33,7 @@ static void handleException(NSException *exception) {
 }
 void FTInstallUncaughtExceptionHandler(const FTCrashNotifyCallback onCrashNotify){
     g_onCrashNotify = onCrashNotify;
+    previousUncaughtExceptionHandler = NSGetUncaughtExceptionHandler();
     NSSetUncaughtExceptionHandler(&handleException);
 }
 

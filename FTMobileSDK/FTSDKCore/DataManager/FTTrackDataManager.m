@@ -52,7 +52,7 @@ static dispatch_once_t onceToken;
 }
 +(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime{
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[super allocWithZone:nil] initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
+        sharedInstance = [[FTTrackDataManager alloc]initWithAutoSync:autoSync syncPageSize:syncPageSize syncSleepTime:syncSleepTime];
     });
     return sharedInstance;
 }

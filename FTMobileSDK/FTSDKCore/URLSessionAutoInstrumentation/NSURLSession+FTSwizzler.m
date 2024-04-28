@@ -33,6 +33,12 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     dispatch_once(&onceToken, ^{
         NSError *error = NULL;
         [NSURLSession ft_swizzleClassMethod:@selector(ft_sessionWithConfiguration:delegate:delegateQueue:) withClassMethod:@selector(sessionWithConfiguration:delegate:delegateQueue:) error:&error];
+        if(@available(iOS 13.0,macOS 10.15,*)){
+            [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:) withMethod:@selector(dataTaskWithURL:) error:&error];
+            [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithURL:completionHandler:) withMethod:@selector(dataTaskWithURL:completionHandler:) error:&error];
+        }
+        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:) withMethod:@selector(dataTaskWithRequest:) error:&error];
+        [NSURLSession ft_swizzleMethod:@selector(ft_dataTaskWithRequest:completionHandler:) withMethod:@selector(dataTaskWithRequest:completionHandler:) error:&error];
     });
 }
 - (NSURLSessionDataTask *)ft_dataTaskWithURL:(NSURL *)url{

@@ -72,4 +72,7 @@
         callback(nil,nil,nil);
     }
 }
+-(void)dealloc{
+    [self.session finishTasksAndInvalidate];
+}
 @end
