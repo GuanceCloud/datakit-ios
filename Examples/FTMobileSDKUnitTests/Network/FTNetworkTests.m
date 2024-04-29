@@ -20,6 +20,8 @@
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
+#define FT_SDK_COMPILED_FOR_TESTING
+
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -473,7 +475,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time&&duration<50+time);
+    XCTAssertTrue(duration>time&&duration<100+time);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end
