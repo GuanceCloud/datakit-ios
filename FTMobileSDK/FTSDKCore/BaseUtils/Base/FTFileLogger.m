@@ -16,7 +16,7 @@ unsigned long long const kFTDefaultLogMaxFileSize      = 33554432; // //32MB
 unsigned long long const kFTDefaultLogFilesDiskQuota   = 1073741824; //1G
 NSString * const FT_LOG_FILE_PREFIX = @"FTLog.log";
 NSString * const FT_LOG_FILE_DIRECTORY = @"FTLogs";
-NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTLogsBackupLog";
+NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
 
 @interface FTLogFileManager()
 @property (nonatomic, copy, readwrite) NSString *logsBackupDirectory;
