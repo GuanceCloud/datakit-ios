@@ -11,7 +11,7 @@
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
 #import "FTWKWebViewHandler.h"
-#import "FTLongTaskDetector.h"
+#import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
@@ -35,7 +35,7 @@
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
-@property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
+@property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
 
 @implementation FTGlobalRumManager
@@ -62,8 +62,7 @@ static dispatch_once_t onceToken;
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
-        [_longTaskDetector startDetecting];
+        _longTaskManager = [[FTLongTaskManager alloc]initWithDelegate:self writer:[FTMobileAgent sharedInstance] enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
@@ -161,7 +160,6 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-    [_longTaskDetector stopDetecting];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

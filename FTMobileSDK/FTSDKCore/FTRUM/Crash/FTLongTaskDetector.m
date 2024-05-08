@@ -14,7 +14,6 @@
 #import "FTConstants.h"
 #import <sys/time.h>
 #import "NSDate+FTUtil.h"
-#import "FTLongTaskManager.h"
 
 static NSDate *g_startDate;
 
@@ -25,7 +24,6 @@ static NSDate *g_startDate;
     CFRunLoopActivity _activity;     // 状态
 }
 
-@property (nonatomic, weak) id<FTRunloopDetectorDelegate> delegate;
 @property (nonatomic, weak) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
 @property (nonatomic, assign) NSInteger countTime; // 耗时次数
@@ -34,10 +32,10 @@ static NSDate *g_startDate;
 @property (nonatomic, strong) dispatch_queue_t longTaskQueue;
 @end
 @implementation FTLongTaskDetector
--(instancetype)initWithDelegate:(id<FTRunloopDetectorDelegate>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze{
+-(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze{
     self = [super init];
     if(self){
-        _delegate = delegate;
+        _longTaskDelegate = delegate;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
         _semaphore = dispatch_semaphore_create(0);

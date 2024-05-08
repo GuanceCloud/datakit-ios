@@ -9,10 +9,10 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTRunloopDetectorDelegate <NSObject>
-@optional
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time;
-- (void)anrStackDetected:(NSString*)slowStack;
+@protocol FTLongTaskProtocol<NSObject>
+- (void)startLongTask:(NSDate *)startDate backtrace:(NSString *)backtrace;
+- (void)updateLongTaskDate:(NSDate *)date;
+- (void)endLongTask;
 @end
 @interface FTLongTaskDetector : NSObject
 
@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger limitANRMillisecond;
 /// 多少次 anr 卡顿纪录为一次有效 ANR
 @property (nonatomic, assign) NSUInteger standstillCount;
--(instancetype)initWithDelegate:(id<FTRunloopDetectorDelegate>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze;
+-(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze;
 
 //must be called from main thread
 - (void)startDetecting;
