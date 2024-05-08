@@ -14,12 +14,9 @@
 #import "FTConstants.h"
 #import <sys/time.h>
 #import "NSDate+FTUtil.h"
-//250ms  （纳秒）
-static const NSInteger kMonitorRunloopStandstillMillisecond = 250000000;
-//60s    （纳秒）
-static const NSInteger kMonitorRunloopMaxTillMillisecond = 60000000000;
-static struct timeval g_tvRun;
-static BOOL g_bRun;
+#import "FTLongTaskManager.h"
+
+static NSDate *g_startDate;
 
 @interface FTLongTaskDetector (){
     CFRunLoopObserverRef m_runLoopBeginObserver;  // 观察者
@@ -29,10 +26,12 @@ static BOOL g_bRun;
 }
 
 @property (nonatomic, weak) id<FTRunloopDetectorDelegate> delegate;
+@property (nonatomic, weak) id<FTLongTaskProtocol> longTaskDelegate;
 @property (nonatomic, assign) BOOL isCancel;
 @property (nonatomic, assign) NSInteger countTime; // 耗时次数
 @property (nonatomic, assign) BOOL enableANR;
 @property (nonatomic, assign) BOOL enableFreeze;
+@property (nonatomic, strong) dispatch_queue_t longTaskQueue;
 @end
 @implementation FTLongTaskDetector
 -(instancetype)initWithDelegate:(id<FTRunloopDetectorDelegate>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze{
@@ -42,9 +41,8 @@ static BOOL g_bRun;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
         _semaphore = dispatch_semaphore_create(0);
-        _limitMillisecond = kMonitorRunloopStandstillMillisecond;
         _limitANRMillisecond = MXRMonitorRunloopOneStandstillMillisecond;
-        _standstillCount  = MXRMonitorRunloopStandstillCount;
+        _longTaskQueue = dispatch_queue_create("com.guance.longtask", 0);
     }
     return self;
 }
@@ -53,7 +51,7 @@ static BOOL g_bRun;
     if(self.enableANR){
         self.isCancel = NO;
         __weak __typeof(self) weakSelf = self;
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        dispatch_async(_longTaskQueue, ^{
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -65,16 +63,26 @@ static BOOL g_bRun;
                 long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
                 if(st!=0){
                     if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
-                        if(++strongSelf.countTime == strongSelf.standstillCount){
+                        strongSelf.countTime++;
+                        if(strongSelf.countTime == 1){
                             NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
-                            if (strongSelf.delegate != nil && [strongSelf.delegate  respondsToSelector:@selector(anrStackDetected:)]) {
-                                [strongSelf.delegate anrStackDetected:backtrace];
+                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:backtrace:)]) {
+                                [strongSelf.longTaskDelegate startLongTask:g_startDate backtrace:backtrace];
+                            }
+                        }else{
+                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
+                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate date]];
                             }
                         }
                         continue;
                     }
-                    
-                }// end semaphore wait
+                }
+                // end semaphore wait
+                if(strongSelf.countTime>0){
+                    if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(endLongTask)]) {
+                        [strongSelf.longTaskDelegate endLongTask];
+                    }
+                }
                 strongSelf.countTime = 0;
             }
         });
@@ -85,42 +93,15 @@ static BOOL g_bRun;
     __weak __typeof(self) weakSelf = self;
     // 创建Runloop observer对象
     CFRunLoopObserverRef beginObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault,
-                                                                            kCFRunLoopEntry|kCFRunLoopBeforeTimers|kCFRunLoopBeforeSources|kCFRunLoopAfterWaiting,
+                                                                            kCFRunLoopEntry|kCFRunLoopBeforeSources|kCFRunLoopAfterWaiting,
                                                                             YES,
                                                                             LONG_MIN,
                                                                             ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if(strongSelf.enableANR){
+        if(strongSelf.enableANR||strongSelf.enableFreeze){
             strongSelf->_activity = activity;
+            g_startDate = [NSDate date];
             dispatch_semaphore_signal(strongSelf->_semaphore);
-        }
-        switch (activity) {
-            case kCFRunLoopEntry:
-                g_bRun = YES;
-                break;
-
-            case kCFRunLoopBeforeTimers:
-                if (g_bRun == NO) {
-                    gettimeofday(&g_tvRun, NULL);
-                }
-                g_bRun = YES;
-                break;
-
-            case kCFRunLoopBeforeSources:
-                if (g_bRun == NO) {
-                    gettimeofday(&g_tvRun, NULL);
-                }
-                g_bRun = YES;
-                break;
-
-            case kCFRunLoopAfterWaiting:
-                if (g_bRun == NO) {
-                    gettimeofday(&g_tvRun, NULL);
-                }
-                g_bRun = YES;
-                break;
-            default:
-                break;
         }
     });
     CFRetain(beginObserver);
@@ -128,27 +109,10 @@ static BOOL g_bRun;
     CFRelease(beginObserver);
     CFRunLoopObserverRef endObserver = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopExit|kCFRunLoopBeforeWaiting, YES, LONG_MAX, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
         __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if(strongSelf.enableANR){
+        if(strongSelf.enableANR||strongSelf.enableFreeze){
             strongSelf->_activity = activity;
+            g_startDate = [NSDate date];
             dispatch_semaphore_signal(strongSelf->_semaphore);
-        }
-        switch (activity) {
-            case kCFRunLoopBeforeWaiting:
-                if (g_bRun) {
-                    if (!strongSelf) {
-                        break;
-                    }
-                    [strongSelf checkLoopDuration];
-                }
-                gettimeofday(&g_tvRun, NULL);
-                g_bRun = NO;
-                break;
-
-            case kCFRunLoopExit:
-                g_bRun = NO;
-                break;
-            default:
-                break;
         }
     });
     CFRetain(endObserver);
@@ -157,26 +121,6 @@ static BOOL g_bRun;
     // 将新建的observer加入到当前thread的runloop
     CFRunLoopAddObserver(CFRunLoopGetMain(), beginObserver, kCFRunLoopCommonModes);
     CFRunLoopAddObserver(CFRunLoopGetMain(), endObserver, kCFRunLoopCommonModes);
-}
-- (void)checkLoopDuration{
-    struct timeval tvCur;
-    gettimeofday(&tvCur, NULL);
-    unsigned long long duration = [self diffTime:&g_tvRun endTime:&tvCur]*1000;
-    // 设置 250 ms 与 Instrument -> Time Profiler -> Hangs 采集基本一致 250ms < MicroHang <500ms < Hang
-    if ((duration > self.limitMillisecond) && (duration < kMonitorRunloopMaxTillMillisecond)) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
-            id<FTRunloopDetectorDelegate> del = self.delegate;
-            NSTimeInterval start = (NSTimeInterval)g_tvRun.tv_sec + (double)((g_tvRun.tv_usec) / 1e6);
-            NSDate *startDate = [NSDate dateWithTimeIntervalSince1970:start];
-            if (del != nil && [del respondsToSelector:@selector(longTaskStackDetected:duration:time:)]) {
-                [del longTaskStackDetected:backtrace duration:duration time:[startDate ft_nanosecondTimeStamp]];
-            }
-        });
-    }
-}
-- (unsigned long long)diffTime:(struct timeval *)tvStart endTime:(struct timeval *)tvEnd {
-    return 1000000 * (tvEnd->tv_sec - tvStart->tv_sec) + tvEnd->tv_usec - tvStart->tv_usec;
 }
 - (void)stopDetecting{
     self.isCancel = YES;

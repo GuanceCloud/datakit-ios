@@ -16,9 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTLongTaskDetector : NSObject
 
-/// 超过多少毫秒为一次卡顿 默认 250 毫秒
+/// 超过多少毫秒为一次 longTask 默认 1000 毫秒
 @property (nonatomic, assign) NSUInteger limitMillisecond;
-/// 超过 1000 毫秒, 记做 anr 卡顿一次
+/// 超过 1000 毫秒, 记做 ANR 卡顿一次
 @property (nonatomic, assign) NSUInteger limitANRMillisecond;
 /// 多少次 anr 卡顿纪录为一次有效 ANR
 @property (nonatomic, assign) NSUInteger standstillCount;

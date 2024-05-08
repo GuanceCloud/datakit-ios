@@ -96,17 +96,6 @@ let package = Package(
                    
                 ]
                ),
-        .target(name: "_FTCrash",
-                dependencies: ["_FTBaseUtils_Base",
-                               "_FTProtocol",
-                              ],
-                path: "FTMobileSDK/FTSDKCore/Crash",
-                publicHeadersPath: ".",
-                cSettings: [
-                    .headerSearchPath("LongTask"),
-                ]
-               ),
-        
         // MARK: - BaseUtils
         .target(name: "_FTBaseUtils_Base",
                 dependencies: [],
@@ -143,7 +132,6 @@ let package = Package(
                                "_FTExtension",
                                "_FTRUM",
                                "_FTURLSessionAutoInstrumentation",
-                               "_FTCrash",
                                "_FTExternalData",
                                "_FTLogger",
                                "_FTConfig"
@@ -160,7 +148,6 @@ let package = Package(
                 dependencies: [
                                "_FTRUM",
                                "_FTURLSessionAutoInstrumentation",
-                               "_FTCrash",
                                "_FTLogger"
                               ],
                 path: "FTMobileSDK",
