@@ -12,7 +12,7 @@
 #import "FTAutoTrackProperty.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIView (FTAutoTrack)<FTAutoTrackViewProperty>
+@interface UIView (FTAutoTrack)<FTRUMActionProperty>
 
 @end
 

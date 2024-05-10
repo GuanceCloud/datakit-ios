@@ -11,9 +11,9 @@
 #import "UIView+FTAutoTrack.h"
 #import "FTTrack.h"
 @implementation UIApplication (FTAutoTrack)
--(BOOL)dataflux_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
+-(BOOL)ft_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
     [self ftTrack:action to:target from:sender forEvent:event];
-    return [self dataflux_sendAction:action to:target from:sender forEvent:event];
+    return [self ft_sendAction:action to:target from:sender forEvent:event];
 }
 - (void)ftTrack:(SEL)action to:(id)target from:(id )sender forEvent:(UIEvent *)event {
    //过滤 底部导航 与 顶部导航 多余的点击事件，采集 UITabBarButton 与 _UIButtonBarButton

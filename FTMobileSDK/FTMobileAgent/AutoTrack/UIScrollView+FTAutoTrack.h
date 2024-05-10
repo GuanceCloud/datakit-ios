@@ -12,13 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UITableView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UITableViewDelegate>)delegate;
+- (void)ft_setDelegate:(id <UITableViewDelegate>)delegate;
 
 @end
 
 @interface UICollectionView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UICollectionViewDelegate>)delegate;
+- (void)ft_setDelegate:(id <UICollectionViewDelegate>)delegate;
 
 @end
 

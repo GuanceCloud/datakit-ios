@@ -13,27 +13,27 @@
 #import "FTURLSessionInterceptorProtocol.h"
 @implementation WKWebView (FTAutoTrack)
 
--(WKNavigation *)dataflux_loadRequest:(NSURLRequest *)request{
+-(WKNavigation *)ft_loadRequest:(NSURLRequest *)request{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
         NSURLRequest *newrequest = [[FTWKWebViewHandler sharedInstance].interceptor interceptRequest:request];
         [[FTWKWebViewHandler sharedInstance] addWebView:self request:request];
-        return  [self dataflux_loadRequest:newrequest];
+        return  [self ft_loadRequest:newrequest];
     }else{
-        return [self dataflux_loadRequest:request];
+        return [self ft_loadRequest:request];
     }
 }
 
--(WKNavigation *)dataflux_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
+-(WKNavigation *)ft_loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
-    return [self dataflux_loadHTMLString:string baseURL:baseURL];
+    return [self ft_loadHTMLString:string baseURL:baseURL];
 }
 
--(WKNavigation *)dataflux_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
+-(WKNavigation *)ft_loadFileURL:(NSURL *)URL allowingReadAccessToURL:(NSURL *)readAccessURL{
     [[FTWKWebViewHandler sharedInstance] addScriptMessageHandlerWithWebView:self];
-    return [self dataflux_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
+    return [self ft_loadFileURL:URL allowingReadAccessToURL:readAccessURL];
 }
--(WKNavigation *)dataflux_reload{
+-(WKNavigation *)ft_reload{
     if ([FTWKWebViewHandler sharedInstance].enableTrace) {
         __block BOOL trace = NO;
         __block NSURLRequest *newRequest = nil;
@@ -43,15 +43,15 @@
                 newRequest = request;
             }
         }];
-        return  trace?[self loadRequest:newRequest]:[self dataflux_reload];
+        return  trace?[self loadRequest:newRequest]:[self ft_reload];
     }else{
-        return [self dataflux_reload];
+        return [self ft_reload];
     }
 }
 
--(void)dataflux_dealloc{
+-(void)ft_dealloc{
     [[FTWKWebViewHandler sharedInstance] removeWebView:self];
-    [self dataflux_dealloc];
+    [self ft_dealloc];
 }
 
 @end

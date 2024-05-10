@@ -12,8 +12,8 @@
 #import "UIView+FTAutoTrack.h"
 @implementation UITableView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UITableViewDelegate>)delegate {
-    [self dataflux_setDelegate:delegate];
+- (void)ft_setDelegate:(id <UITableViewDelegate>)delegate {
+    [self ft_setDelegate:delegate];
     if (self.delegate == nil) {
         return;
     }
@@ -44,8 +44,8 @@
 
 @implementation UICollectionView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UICollectionViewDelegate>)delegate {
-    [self dataflux_setDelegate:delegate];
+- (void)ft_setDelegate:(id <UICollectionViewDelegate>)delegate {
+    [self ft_setDelegate:delegate];
     
     if (self.delegate == nil) {
         return;

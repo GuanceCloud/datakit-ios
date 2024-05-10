@@ -59,27 +59,27 @@
 
 
 @implementation UITapGestureRecognizer (FTAutoTrack)
--(instancetype)dataflux_initWithTarget:(id)target action:(SEL)action{
-    [self dataflux_initWithTarget:target action:action];
+-(instancetype)ft_initWithTarget:(id)target action:(SEL)action{
+    [self ft_initWithTarget:target action:action];
     [self removeTarget:target action:action];
     [self addTarget:target action:action];
     return self;
 }
-- (void)dataflux_addTarget:(id)target action:(SEL)action {
-    [self dataflux_addTarget:self action:@selector(ftTrackGestureRecognizerAppClick:)];
-    [self dataflux_addTarget:target action:action];
+- (void)ft_addTarget:(id)target action:(SEL)action {
+    [self ft_addTarget:self action:@selector(ftTrackGestureRecognizerAppClick:)];
+    [self ft_addTarget:target action:action];
 }
 @end
 
 @implementation UILongPressGestureRecognizer (FTAutoTrack)
--(instancetype)dataflux_initWithTarget:(id)target action:(SEL)action{
-    [self dataflux_initWithTarget:target action:action];
+-(instancetype)ft_initWithTarget:(id)target action:(SEL)action{
+    [self ft_initWithTarget:target action:action];
     [self removeTarget:target action:action];
     [self addTarget:target action:action];
     return self;
 }
-- (void)dataflux_addTarget:(id)target action:(SEL)action {
-    [self dataflux_addTarget:self action:@selector(ftTrackGestureRecognizerAppClick:)];
-    [self dataflux_addTarget:target action:action];
+- (void)ft_addTarget:(id)target action:(SEL)action {
+    [self ft_addTarget:self action:@selector(ftTrackGestureRecognizerAppClick:)];
+    [self ft_addTarget:target action:action];
 }
 @end
