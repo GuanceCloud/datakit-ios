@@ -351,6 +351,8 @@
     XCTAssertTrue(count == newCount);
 }
 - (void)testLogFile{
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:nil];
     [self logFile:nil fileName:nil];
 }
 - (void)testRegisterInnerLogCacheToLogs_LogsDirectory{
