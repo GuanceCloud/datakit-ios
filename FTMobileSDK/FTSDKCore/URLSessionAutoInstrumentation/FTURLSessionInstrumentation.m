@@ -118,21 +118,31 @@ static dispatch_once_t onceToken;
         class_addMethod(collectMetricsClass, collectMetricsSelector, collectMetricsIMP, "v@:@@@");
     }
     __weak typeof(self) weakSelf = self;
-    [FTSwizzler swizzleSelector:receiveDataSelector onClass:receiveDataClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSData *data){
-        if(weakSelf.shouldRUMInterceptor){
-            [weakSelf.interceptor taskReceivedData:task data:data];
+    FTSwizzlerInstanceMethod(receiveDataClass,
+                             receiveDataSelector,
+                             FTSWReturnType(void),
+                             FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSData *data),
+                             FTSWReplacement({
+        if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
+            [FTURLSessionInstrumentation.sharedInstance.interceptor taskReceivedData:task data:data];
         }
-    } named:@"receiveDataSelector"];
-    [FTSwizzler swizzleSelector:completeSelector onClass:completeClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSError *error){
-        if(weakSelf.shouldRUMInterceptor){
-            [weakSelf.interceptor taskCompleted:task error:error];
+        FTSWCallOriginal(session,task,data);
+        }),
+                             FTSwizzlerModeOncePerClassAndSuperclasses,
+                             "receiveDataSelector");
+    FTSwizzlerInstanceMethod(completeClass, completeSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSError *error), FTSWReplacement({
+        if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
+            [FTURLSessionInstrumentation.sharedInstance.interceptor taskCompleted:task error:error];
         }
-    } named:@"completeSelector"];
-    [FTSwizzler swizzleSelector:collectMetricsSelector onClass:collectMetricsClass withBlock:^(id object, SEL command, NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics){
-        if(weakSelf.shouldRUMInterceptor){
-            [weakSelf.interceptor taskMetricsCollected:task metrics:metrics];
+        FTSWCallOriginal(session,task,error);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "completeSelector");
+    
+    FTSwizzlerInstanceMethod(collectMetricsClass, collectMetricsSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics), FTSWReplacement({
+        if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
+            [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics];
         }
-    } named:@"collectMetricsSelector"];
+        FTSWCallOriginal(session,task,metrics);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "collectMetricsSelector");
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;
