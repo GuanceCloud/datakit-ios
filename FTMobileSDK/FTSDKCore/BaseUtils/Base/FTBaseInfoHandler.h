@@ -36,6 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// 设备 IP Adderss
 /// - Parameter preferIPv4 是否优先IPv4
 + (NSString *)cellularIPAddress:(BOOL)preferIPv4;
+
+
++ (NSString *)rumRequestSerialNumber;
++ (void)increaseRumRequestSerialNumber;
++ (NSString *)logRequestSerialNumber;
++ (void)increaseLogRequestSerialNumber;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

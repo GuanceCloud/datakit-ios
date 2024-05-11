@@ -11,6 +11,7 @@
 #import "FTNetworkInfoManager.h"
 #import "FTRecordModel.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 @interface FTRequest()
 @property (nonatomic, strong) NSArray <FTRecordModel *> *events;
 
@@ -49,6 +50,9 @@
 -(NSString *)path{
     return nil;
 }
+-(NSString *)serialNumber{
+    return nil;
+}
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
      NSString *date =[[NSDate date] ft_stringWithGMTFormat];
      mutableRequest.HTTPMethod = self.httpMethod;
@@ -63,7 +67,7 @@
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      
     if (self.requestBody&&self.events) {
-        NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events];
+        NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events requestNumber:self.serialNumber];
         mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     }
      return mutableRequest;
@@ -76,7 +80,9 @@
 -(NSString *)path{
     return @"/v1/write/logging";
 }
-
+-(NSString *)serialNumber{
+    return [FTBaseInfoHandler logRequestSerialNumber];
+}
 @end
 @implementation FTRumRequest
 -(id<FTRequestBodyProtocol>)requestBody{
@@ -85,6 +91,7 @@
 -(NSString *)path{
     return @"/v1/write/rum";
 }
-
-
+-(NSString *)serialNumber{
+    return [FTBaseInfoHandler rumRequestSerialNumber];
+}
 @end

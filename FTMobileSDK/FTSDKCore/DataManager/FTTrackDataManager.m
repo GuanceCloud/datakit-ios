@@ -15,6 +15,7 @@
 #import "FTNetworkManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isUploading;
@@ -174,6 +175,11 @@ static dispatch_once_t onceToken;
         FTRecordModel *model = [events lastObject];
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
+        }
+        if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
+            [FTBaseInfoHandler increaseLogRequestSerialNumber];
+        }else{
+            [FTBaseInfoHandler increaseRumRequestSerialNumber];
         }
         if(events.count < self.uploadPageSize){
             break;
