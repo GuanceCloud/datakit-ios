@@ -164,7 +164,7 @@ NSString* ft_logBinaryImage(const FTMachoImage* const image) {
     NSString *uuid = [[[NSUUID alloc] initWithUUIDBytes:image->uuid] UUIDString];
     uuid = [[uuid stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
     NSString *cpuType = [FTPresetProperty CPUArchForMajor:image->cpuType minor:image->cpuSubType];
-    NSString *imagestr = [NSString stringWithFormat:@"       0x%llx -        0x%llx %@ %@ <%@> %@\n",image->loadAddress,image->loadEndAddress,[NSString stringWithCString:fname encoding:NSUTF8StringEncoding],[cpuType lowercaseString],uuid,[NSString stringWithCString:image-> name encoding:NSUTF8StringEncoding]];
+    NSString *imagestr = [NSString stringWithFormat:@"       0x%llx -        0x%llx %@ %@ <%@> %@\n",image->loadAddress,image->loadEndAddress,[NSString stringWithCString:fname encoding:NSUTF8StringEncoding],[cpuType lowercaseString],uuid,[NSString stringWithCString:image->name encoding:NSUTF8StringEncoding]];
     return imagestr;
 
 }

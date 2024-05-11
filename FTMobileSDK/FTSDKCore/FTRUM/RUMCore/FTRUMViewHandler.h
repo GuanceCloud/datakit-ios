@@ -21,7 +21,7 @@ typedef void(^FTErrorHandled)(void);
 /// 当前 view 处理了 error 数据回调
 @property (nonatomic, copy) FTErrorHandled errorHandled;
 
--(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context monitor:(FTRUMMonitor *)monitor;
+-(instancetype)initWithModel:(FTRUMViewModel *)model context:(FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies;
 @end
 
 NS_ASSUME_NONNULL_END

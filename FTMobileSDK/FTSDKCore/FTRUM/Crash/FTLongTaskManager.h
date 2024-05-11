@@ -8,16 +8,21 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRUMDataWriteProtocol.h"
+#import "FTEnumConstant.h"
+#import "FTRUMDependencies.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @protocol FTRunloopDetectorDelegate <NSObject>
 @optional
-- (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time;
-- (void)anrStackDetected:(NSString*)slowStack;
+- (void)longTaskStackDetected:(NSString *)slowStack duration:(long long)duration time:(long long)time;
+- (void)anrStackDetected:(NSString *)slowStack time:(NSDate *)time;
 @end
-NS_ASSUME_NONNULL_BEGIN
-
 @interface FTLongTaskManager : NSObject
--(instancetype)initWithDelegate:(id<FTRunloopDetectorDelegate>)delegate writer:(id<FTRUMDataWriteProtocol>)writer enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze;
+-(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies
+                           delegate:(id<FTRunloopDetectorDelegate>)delegate
+                  enableTrackAppANR:(BOOL)enableANR
+               enableTrackAppFreeze:(BOOL)enableFreeze;
+-(void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

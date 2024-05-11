@@ -163,6 +163,8 @@ static dispatch_once_t onceToken;
         });
     } @catch (NSException *exception) {
         FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
+    } @finally {
+        self.isUploading = NO;
     }
 }
 -(void)flushWithType:(NSString *)type{

@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTLongTaskDetector.h"
+#import "FTRUMDependencies.h"
+#import "FTLongTaskManager.h"
 #import "NSDate+FTUtil.h"
 #import "FTPresetProperty.h"
 #import "FTRecordModel.h"

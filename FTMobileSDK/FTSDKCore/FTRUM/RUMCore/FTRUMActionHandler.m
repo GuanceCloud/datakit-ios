@@ -13,6 +13,7 @@
 static const NSTimeInterval actionMaxDuration = 10; // 10 seconds
 static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @interface FTRUMActionHandler ()<FTRUMSessionProtocol>
+@property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, assign) FTRUMDataType type;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, copy) NSString *action_name;
@@ -30,9 +31,10 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @end
 @implementation FTRUMActionHandler
 
--(instancetype)initWithModel:(FTRUMActionModel *)model context:(FTRUMContext *)context{
+-(instancetype)initWithModel:(FTRUMActionModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies{
     self = [super init];
     if (self) {
+        self.dependencies = dependencies;
         self.assistant = self;
         self.actionStartTime = model.time;
         self.action_id = [FTBaseInfoHandler randomUUID];
@@ -109,7 +111,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
     if (self.handler) {
         self.handler();
     }

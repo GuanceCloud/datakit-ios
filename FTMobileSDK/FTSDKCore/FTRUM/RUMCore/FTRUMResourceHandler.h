@@ -26,7 +26,7 @@ typedef void(^FTErrorEventSent)(void);
 /// - Parameters:
 ///   - model: rum数据模型
 ///   - context: rum 上下文
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context;
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(FTRUMDependencies *)dependencies;
 @end
 
 NS_ASSUME_NONNULL_END
