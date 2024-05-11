@@ -12,9 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTLogFileManager : NSObject
 @property (nonatomic, copy, readwrite) NSString *logsDirectory;
 @property (nonatomic, copy, readwrite) NSString *prefix;
+@property (nonatomic, copy, readwrite) NSString *filePath;
 @property (atomic, assign)  unsigned long long logFilesDiskQuota;
 
 -(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix;
+-(instancetype)initWithLogsFilePath:(NSString *)filePath;
 @end
 @interface FTLogFileInfo : NSObject
 @property (nonatomic, strong, readonly) NSString *filePath;
@@ -37,13 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTFileLogger : FTAbstractLogger
 @property (atomic, readwrite, assign) unsigned long long maximumFileSize;
 @property (nonatomic, copy, readwrite) NSString *logsDirectory;
-
-/// 初始化方法，可以指定存储日志文件的文件夹路径。若未指定 logsDirectory ，那么将在应用程序的缓存目录中创建一个名为 'FTLogs' 的文件夹.
-/// - Parameters:
-///   - logsDirectory: 保存日志的文件夹
-///   - fileNamePrefix: 日志文件名前缀
--(instancetype)initWithLogsDirectory:(nullable NSString *)logsDirectory fileNamePrefix:(nullable NSString *)fileNamePrefix;
-
 /// 初始化方法
 /// - Parameter manager: 文件管理对象
 -(instancetype)initWithLogFileManager:(FTLogFileManager *)manager;
