@@ -93,7 +93,7 @@ static dispatch_once_t onceToken;
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppID:_rumConfig.appid];
         self.presetProperty.rumContext = [_rumConfig.globalContext copy];
-        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig];
+        [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;

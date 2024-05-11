@@ -152,8 +152,8 @@ static dispatch_once_t onceToken;
     [self privateUpload];
 }
 - (void)privateUpload{
-    @try {
-        dispatch_async(self.serialQueue, ^{
+    dispatch_async(self.serialQueue, ^{
+        @try {
             if (self.isUploading) {
                 return;
             }
@@ -161,10 +161,13 @@ static dispatch_once_t onceToken;
             [self flushWithType:FT_DATA_TYPE_RUM];
             [self flushWithType:FT_DATA_TYPE_LOGGING];
             self.isUploading = NO;
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
+        } @finally {
+            self.isUploading = NO;
+        }
+    });
+    
 }
 -(void)flushWithType:(NSString *)type{
     NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];

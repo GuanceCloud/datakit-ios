@@ -12,14 +12,16 @@
 #import "FTResourceContentModel.h"
 #import "FTResourceMetricsModel.h"
 @interface FTRUMResourceHandler()<FTRUMSessionProtocol>
+@property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, copy,readwrite) NSString *identifier;
 @property (nonatomic, strong) NSDate *time;
 @property (nonatomic, strong) NSMutableDictionary *resourceProperty;
 @end
 @implementation FTRUMResourceHandler
--(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context{
+-(instancetype)initWithModel:(FTRUMResourceDataModel *)model context:(FTRUMContext *)context dependencies:(nonnull FTRUMDependencies *)dependencies{
     self = [super init];
     if (self) {
+        self.dependencies = dependencies;
         self.identifier = model.identifier;
         self.assistant = self;
         self.time = model.time;
@@ -68,7 +70,7 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
 }
 - (void)writeResourceData:(FTRUMDataModel *)data{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
@@ -92,6 +94,6 @@
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
-    [self.context.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
+    [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
 }
 @end

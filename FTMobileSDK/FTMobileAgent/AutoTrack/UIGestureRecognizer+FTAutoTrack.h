@@ -11,13 +11,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UITapGestureRecognizer (FTAutoTrack)
--(instancetype)dataflux_initWithTarget:(id)target action:(SEL)action;
-- (void)dataflux_addTarget:(id)target action:(SEL)action;
+-(instancetype)ft_initWithTarget:(id)target action:(SEL)action;
+- (void)ft_addTarget:(id)target action:(SEL)action;
 @end
 
 @interface UILongPressGestureRecognizer (FTAutoTrack)
--(instancetype)dataflux_initWithTarget:(id)target action:(SEL)action;
-- (void)dataflux_addTarget:(id)target action:(SEL)action;
+-(instancetype)ft_initWithTarget:(id)target action:(SEL)action;
+- (void)ft_addTarget:(id)target action:(SEL)action;
 @end
 
 NS_ASSUME_NONNULL_END
