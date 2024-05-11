@@ -46,7 +46,7 @@ static NSDate *g_startDate;
 }
 - (void)startDetecting {
     [self registerObserver];
-    if(self.enableANR){
+    if(self.enableANR||self.enableFreeze){
         self.isCancel = NO;
         __weak __typeof(self) weakSelf = self;
         dispatch_async(_longTaskQueue, ^{
@@ -55,33 +55,35 @@ static NSDate *g_startDate;
                 return;
             }
             while (YES) {
-                if (strongSelf.isCancel) {
-                    return;
-                }
-                long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
-                if(st!=0){
-                    if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
-                        strongSelf.countTime++;
-                        if(strongSelf.countTime == 1){
-                            NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
-                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:backtrace:)]) {
-                                [strongSelf.longTaskDelegate startLongTask:g_startDate backtrace:backtrace];
+                @autoreleasepool {
+                    if (strongSelf.isCancel) {
+                        return;
+                    }
+                    long st = dispatch_semaphore_wait(self->_semaphore, dispatch_time(DISPATCH_TIME_NOW, strongSelf.limitANRMillisecond*NSEC_PER_MSEC));
+                    if(st!=0){
+                        if (self->_activity == kCFRunLoopBeforeSources || self->_activity == kCFRunLoopAfterWaiting) {
+                            strongSelf.countTime++;
+                            if(strongSelf.countTime == 1){
+                                NSString *backtrace = [FTCallStack ft_backtraceOfMainThread];
+                                if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(startLongTask:backtrace:)]) {
+                                    [strongSelf.longTaskDelegate startLongTask:g_startDate backtrace:backtrace];
+                                }
+                            }else{
+                                if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
+                                    [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate date]];
+                                }
                             }
-                        }else{
-                            if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(updateLongTaskDate:)]) {
-                                [strongSelf.longTaskDelegate updateLongTaskDate:[NSDate date]];
-                            }
+                            continue;
                         }
-                        continue;
                     }
-                }
-                // end semaphore wait
-                if(strongSelf.countTime>0){
-                    if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(endLongTask)]) {
-                        [strongSelf.longTaskDelegate endLongTask];
+                    // end semaphore wait
+                    if(strongSelf.countTime>0){
+                        if (strongSelf.longTaskDelegate != nil && [strongSelf.longTaskDelegate  respondsToSelector:@selector(endLongTask)]) {
+                            [strongSelf.longTaskDelegate endLongTask];
+                        }
                     }
+                    strongSelf.countTime = 0;
                 }
-                strongSelf.countTime = 0;
             }
         });
     }
