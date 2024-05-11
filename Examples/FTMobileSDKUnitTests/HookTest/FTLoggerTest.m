@@ -366,6 +366,8 @@
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogsFileSize1"];
+    NSError *error;
+    [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
     [FTLog enableLog:YES];
     [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:logsDirectory fileNamePrefix:nil];
     [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
@@ -390,7 +392,6 @@
     NSData *file = [[NSFileManager defaultManager] contentsAtPath:logFileInfo.filePath];
     XCTAssertTrue(file.length<1024*1.5);
     [[FTLog sharedInstance] shutDown];
-    NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
 }
 - (void)testLogFilesDiskQuota{

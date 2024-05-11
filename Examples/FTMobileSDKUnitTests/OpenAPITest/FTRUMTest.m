@@ -41,6 +41,7 @@
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
     self.track_id = [processInfo environment][@"TRACK_ID"];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
