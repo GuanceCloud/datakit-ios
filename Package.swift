@@ -80,6 +80,7 @@ let package = Package(
             path: "FTMobileSDK/FTSDKCore/FTRUM",
             cSettings: [
                 .headerSearchPath("Monitor"),
+                .headerSearchPath("Crash"),
             ]
         ),
         .target(name: "_FTURLSessionAutoInstrumentation",
