@@ -1,3 +1,11 @@
+# 1.4.13-alpha.1
+1. LongTask、Anr 采集优化，修复 LongTask 堆栈信息不准确问题
+2. 修复多线程访问造成 Resource 数据 swizzle 崩溃问题
+3. Framework info.plist 版本信息补充
+4. sdk_data_id 算法修改
+5. SDK 内部日志转化为文件功能优化，新增指定文件路径方法
+
+---
 # 1.4.12
 1. 修复注销 SDK 后产生的内存泄漏问题
 2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题

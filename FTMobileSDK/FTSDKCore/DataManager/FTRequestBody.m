@@ -95,7 +95,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 
 @end
 @implementation FTRequestLineBody
-- (NSString *)getRequestBodyWithEventArray:(NSArray *)events{
+- (NSString *)getRequestBodyWithEventArray:(NSArray *)events requestNumber:(NSString *)requestNumber{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -106,14 +106,13 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         if (!source) {
             source =[[opdata valueForKey:FT_MEASUREMENT] ft_replacingMeasurementSpecialCharacters];
         }
-        NSMutableDictionary *tagDict = @{@"sdk_data_id":[FTBaseInfoHandler randomUUID]}.mutableCopy;
+        NSString *dataId = [NSString stringWithFormat:@"%@.%lu.%@",requestNumber,(unsigned long)events.count,[FTBaseInfoHandler randomUUID]];
+        NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
         NSDictionary *tag = opdata[FT_TAGS];
-        
         if(tag.allKeys.count>0){
             [tagDict addEntriesFromDictionary:tag];
         }
         NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag);
-
         if ([[opdata allKeys] containsObject:FT_FIELDS]) {
             NSString *field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
             

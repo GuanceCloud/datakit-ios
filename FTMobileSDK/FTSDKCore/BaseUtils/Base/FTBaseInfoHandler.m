@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #import <ifaddrs.h>
 #include <net/if.h>
+#import <dns_sd.h>
 #define IOS_CELLULAR    @"pdp_ip0"
 #define IOS_WIFI        @"en0"
 #define IOS_VPN         @"utun0"
@@ -115,7 +116,7 @@
         address = addresses[key];
         //筛选出IP地址格式
         if([self isValidatIP:address]) *stop = YES;
-    } ];
+    }];
     return address ? address : @"0.0.0.0";
 }
 + (BOOL)isValidatIP:(NSString *)ipAddress {
@@ -177,5 +178,37 @@
     }
     return [addresses count] ? addresses : nil;
 }
++ (NSString *)decimalToBase36:(unsigned long)decimalNumber{
+    static NSString *const base36Characters = @"0123456789abcdefghijklmnopqrstuvwxyz";
+    NSMutableString *result = [NSMutableString string];
+    while (decimalNumber > 0) {
+        NSUInteger remainder = decimalNumber % 36;
+        [result insertString:[base36Characters substringWithRange:NSMakeRange(remainder, 1)] atIndex:0];
+        decimalNumber /= 36;
+    }
+    return result.length > 0 ? result : @"0";
+}
+static unsigned long rumSerialNumber = 0;
+static unsigned long logSerialNumber = 0;
 
++ (NSString *)rumRequestSerialNumber{
+    return [NSString stringWithFormat:@"%@",[self decimalToBase36:rumSerialNumber]];
+}
++ (void)increaseRumRequestSerialNumber{
+    if(rumSerialNumber == ULONG_MAX){
+        rumSerialNumber = 0;
+    }else{
+        rumSerialNumber += 1;
+    }
+}
++ (NSString *)logRequestSerialNumber{
+    return [NSString stringWithFormat:@"%@",[self decimalToBase36:logSerialNumber]];
+}
++ (void)increaseLogRequestSerialNumber{
+    if(logSerialNumber == ULONG_MAX){
+        logSerialNumber = 0;
+    }else{
+        logSerialNumber += 1;
+    }
+}
 @end
