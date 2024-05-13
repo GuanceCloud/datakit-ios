@@ -64,6 +64,7 @@
 @property (nonatomic, weak) id<FTRunloopDetectorDelegate> delegate;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
+@property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) NSFileHandle *fileHandle;
 @property (nonatomic, strong) FTLongTaskEvent *longTaskEvent;
 @property (nonatomic, copy) NSString *dataStorePath;
@@ -82,9 +83,10 @@
         _delegate = delegate;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
+        _queue = dispatch_queue_create("com.guance.read-write", 0);
         _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self enableTrackAppANR:enableANR enableTrackAppFreeze:enableFreeze];
-        [_longTaskDetector startDetecting];
         [self reportFatalWatchDogIfFound];
+        [_longTaskDetector startDetecting];
     }
     return self;
 }
@@ -119,85 +121,87 @@
     return nil;
 }
 - (void)deleteFile{
-    NSError *error = nil;
-    if(_fileHandle){
-        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
-            __autoreleasing NSError *error = nil;
-            [_fileHandle truncateAtOffset:0 error:&error];
-        } else {
-            [_fileHandle truncateFileAtOffset:0];
-        }
-        [_fileHandle closeFile];
-        _fileHandle = nil;
-    }else{
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(_queue, ^{
+        NSError *error = nil;
         NSFileManager *fileManager = [NSFileManager defaultManager];
-        [fileManager removeItemAtPath:self.dataStorePath error:&error];
-    }
+        [fileManager removeItemAtPath:weakSelf.dataStorePath error:&error];
+        weakSelf.fileHandle = nil;
+    });
+}
+- (void)appendData:(NSData *)data{
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(_queue, ^{
+        [weakSelf.fileHandle writeData:data];
+    });
 }
 // longTask、 ANR、View
 - (void)reportFatalWatchDogIfFound{
-    @try {
-        NSError *error = nil;
-        NSString *content = [NSString stringWithContentsOfFile:self.dataStorePath encoding:NSUTF8StringEncoding error:&error];
-        if(error){
-            goto ended;
-        }
-        //有数据，需要区分是 longtask 还是 anr
-        if(content && content.length>0){
-            NSArray *datas = [content componentsSeparatedByString:FTBoundary];
-            if(datas.count != 2){
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(_queue, ^{
+        @try {
+            NSError *error = nil;
+            NSString *content = [NSString stringWithContentsOfFile:weakSelf.dataStorePath encoding:NSUTF8StringEncoding error:&error];
+            if(error){
                 goto ended;
             }
-            NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:datas[0]];
-            NSArray *updateTimes = [datas[1] componentsSeparatedByString:@"\n"];
-            long long startTime = [dict[@"startDate"] longLongValue];
-            __block long long lastTime = 0;
-            [updateTimes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                if(obj.length>0){
-                    lastTime = [obj longLongValue];
-                    *stop = YES;
+            //有数据，需要区分是 longtask 还是 anr
+            if(content && content.length>0){
+                NSArray *datas = [content componentsSeparatedByString:FTBoundary];
+                if(datas.count != 2){
+                    goto ended;
                 }
-            }];
-            NSNumber *duration = lastTime-startTime>0?[NSNumber numberWithLongLong:lastTime-startTime]:dict[@"duration"];
-            NSDictionary *tags = dict[@"sessionContext"];
-            NSDictionary *fields = @{FT_DURATION:duration,
-                                     FT_KEY_LONG_TASK_STACK:dict[@"backtrace"],
-            };
-            [self.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime];
-            //判断是否是 ANR,是则添加 ANR 数据
-            if(duration.longLongValue>5000000000){
-                NSMutableDictionary *anrTags = @{
-                    FT_KEY_ERROR_TYPE:@"anr_error",
-                    FT_KEY_ERROR_SOURCE:FT_LOGGER,
-                }.mutableCopy;
-                [anrTags setValue:dict[@"appState"] forKey:FT_KEY_ERROR_SITUATION];
-                [anrTags addEntriesFromDictionary:dict[@"errorMonitorInfo"]];
-                [anrTags addEntriesFromDictionary:tags];
-                NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
-                                                FT_KEY_ERROR_STACK:dict[@"backtrace"],
-                }.mutableCopy;
-                [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime];
+                NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:datas[0]];
+                NSArray *updateTimes = [datas[1] componentsSeparatedByString:@"\n"];
+                long long startTime = [dict[@"startDate"] longLongValue];
+                __block long long lastTime = 0;
+                [updateTimes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    if(obj.length>0){
+                        lastTime = [obj longLongValue];
+                        *stop = YES;
+                    }
+                }];
+                NSNumber *duration = lastTime-startTime>0?[NSNumber numberWithLongLong:lastTime-startTime]:dict[@"duration"];
+                NSDictionary *tags = dict[@"sessionContext"];
+                NSDictionary *fields = @{FT_DURATION:duration,
+                                         FT_KEY_LONG_TASK_STACK:dict[@"backtrace"],
+                };
+                [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_LONG_TASK tags:tags fields:fields time:startTime];
+                //判断是否是 ANR,是则添加 ANR 数据
+                if(duration.longLongValue>5000000000){
+                    NSMutableDictionary *anrTags = @{
+                        FT_KEY_ERROR_TYPE:@"anr_error",
+                        FT_KEY_ERROR_SOURCE:FT_LOGGER,
+                    }.mutableCopy;
+                    [anrTags setValue:dict[@"appState"] forKey:FT_KEY_ERROR_SITUATION];
+                    [anrTags addEntriesFromDictionary:dict[@"errorMonitorInfo"]];
+                    [anrTags addEntriesFromDictionary:tags];
+                    NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:@"ios_anr",
+                                                    FT_KEY_ERROR_STACK:dict[@"backtrace"],
+                    }.mutableCopy;
+                    [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:anrTags fields:field time:startTime];
+                }
+                //更新View
+                NSDictionary *lastViews  = dict[@"view"];
+                if(lastViews){
+                    NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
+                    lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue]+1);
+                    lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] = @([lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] intValue]+1);
+                    lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
+                    lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
+                    NSNumber *time = lastViews[@"time"];
+                    [weakSelf.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue]];
+                }
+                goto ended;
             }
-            //更新View
-            NSDictionary *lastViews  = dict[@"view"];
-            if(lastViews){
-                NSMutableDictionary *lastViewsFields = [NSMutableDictionary dictionaryWithDictionary:lastViews[@"fields"]];
-                lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] = @([lastViewsFields[FT_KEY_VIEW_ERROR_COUNT] intValue]+1);
-                lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] = @([lastViewsFields[FT_KEY_VIEW_LONG_TASK_COUNT] intValue]+1);
-                lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] = @([lastViewsFields[FT_KEY_VIEW_UPDATE_TIME] intValue]+1);
-                lastViewsFields[FT_KEY_IS_ACTIVE] = @(NO);
-                NSNumber *time = lastViews[@"time"];
-                [self.dependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:lastViews[@"tags"] fields:lastViewsFields time:[time longLongValue]];
-            }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[LongTask] exception %@",exception);
             goto ended;
         }
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[LongTask] exception %@",exception);
-        goto ended;
-    }
-ended:
-    [self deleteFile];
-    return;
+    ended:
+        [weakSelf deleteFile];
+        return;
+    });
 }
 - (void)startLongTask:(NSDate *)startDate backtrace:(NSString *)backtrace{
     @try {
@@ -216,8 +220,8 @@ ended:
         NSString *jsonString = [FTJSONUtil convertToJsonDataWithObject:dict];
         NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
         NSData *boundaryData = [FTBoundary dataUsingEncoding:NSUTF8StringEncoding];
-        [self.fileHandle writeData:data];
-        [self.fileHandle writeData:boundaryData];
+        [self appendData:data];
+        [self appendData:boundaryData];
     }@catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }
@@ -231,7 +235,7 @@ ended:
         long long updateDate = [date ft_nanosecondTimeStamp];
         NSString *lastDate = [NSString stringWithFormat:@"%lld\n",updateDate];
         NSData *data = [lastDate dataUsingEncoding:NSUTF8StringEncoding];
-        [self.fileHandle writeData:data];
+        [self appendData:data];
     } @catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }
