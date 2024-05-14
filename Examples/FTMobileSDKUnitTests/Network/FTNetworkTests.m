@@ -375,6 +375,9 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
 }
 - (void)testAutoSyncData{
     [self setRightConfigWithTestType:FTNetworkTestAutoSyncData];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
@@ -384,6 +387,11 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [FTModelHelper startView];
     [FTModelHelper addAction];
     [FTModelHelper addAction];
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+    }
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count>0);
@@ -394,6 +402,19 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectations:@[expectation2]];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+    }
+    XCTestExpectation *expectation3= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation3 fulfill];
+    });
+    [self waitForExpectations:@[expectation3]];
+    NSInteger newCount2 = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount2 == 0);
+
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];

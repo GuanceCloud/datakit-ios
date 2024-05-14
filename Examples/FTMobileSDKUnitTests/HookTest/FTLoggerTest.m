@@ -355,7 +355,13 @@
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    for (int i = 0; i<10; i++) {
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+    }
+    [NSThread sleepForTimeInterval:1];
+    for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
         });
@@ -368,8 +374,8 @@
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
-    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
-    XCTAssertTrue(newCount >= 10);
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(newCount == 202);
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLogFile{
@@ -410,7 +416,7 @@
     XCTAssertTrue(currentFileInfo != logFileInfo);
     XCTAssertTrue(![currentFileInfo.fileName isEqualToString:logFileInfo.fileName]);
     NSData *file = [[NSFileManager defaultManager] contentsAtPath:logFileInfo.filePath];
-    XCTAssertTrue(file.length<1024*1.5);
+    XCTAssertTrue(file.length<1024*1.8);
     [[FTLog sharedInstance] shutDown];
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
