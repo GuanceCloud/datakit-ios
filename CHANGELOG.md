@@ -1,3 +1,9 @@
+# 1.4.13-beta.1
+1. LongTask、Anr 采集优化，文件操作添加线程保护
+2. 修复 NSURLSession 未设置 delegate 时 metrics 采集失败问题
+3. SDK 内部日志转化为文件 backup 文件名赋值错误修复
+
+---
 # 1.4.13-alpha.1
 1. LongTask、Anr 采集优化，修复 LongTask 堆栈信息不准确问题
 2. 修复多线程访问造成 Resource 数据 swizzle 崩溃问题
@@ -7,10 +13,10 @@
 
 ---
 # 1.4.12
-1. 修复注销 SDK 后产生的内存泄漏问题
+1. 修复 SDK 调用注销方法 shutDown 产生的内存泄漏问题
 2. 修复采集 RUM-Resource 时与其他库冲突导致崩溃问题
-3. 处理完 UncaughtException 传递 UncaughtExceptionHandler
-4. 修复重复配置 SDK 造成的数据异常
+3. 修复崩溃采集 UncaughtExceptionHandler 未传递问题
+4. 修复多次初始化 SDK 造成的数据异常
 
 ---
 # 1.4.12-beta.1
