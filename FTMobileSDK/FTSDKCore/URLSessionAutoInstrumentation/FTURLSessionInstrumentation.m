@@ -117,7 +117,6 @@ static dispatch_once_t onceToken;
         IMP collectMetricsIMP = imp_implementationWithBlock(collectMetricsBlock);
         class_addMethod(collectMetricsClass, collectMetricsSelector, collectMetricsIMP, "v@:@@@");
     }
-    __weak typeof(self) weakSelf = self;
     FTSwizzlerInstanceMethod(receiveDataClass,
                              receiveDataSelector,
                              FTSWReturnType(void),
