@@ -1,3 +1,11 @@
+# 1.4.13
+1. RUM LongTask、Anr 采集优化，修复 LongTask 堆栈信息采集不准确问题，新增支持采集致命卡顿
+2. 修复多线程访问下 NSURLSession delegate 方法 hook 造成的崩溃问题
+3. 修复打包 SDK Framework info.plist 中版本信息缺失问题
+4. 修复自定义 NSURLSession 未设置 delegate 时 Resource 的性能指标采集失败问题
+5. SDK 内部日志转化为文件功能优化，新增指定文件路径方法
+
+---
 # 1.4.13-beta.1
 1. LongTask、Anr 采集优化，文件操作添加线程保护
 2. 修复 NSURLSession 未设置 delegate 时 metrics 采集失败问题
