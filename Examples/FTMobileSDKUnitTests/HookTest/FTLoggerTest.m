@@ -451,7 +451,7 @@
     [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
 }
 - (void)testBackupDirectoryOrder{
-    FTLogFileManager *fileManager = [[FTLogFileManager alloc]init];
+    FTLogFileManager *fileManager = [[FTLogFileManager alloc]initWithLogsDirectory:nil fileNamePrefix:@"testBackupDirectoryOrder.A"];
     FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogFileManager:fileManager];
     fileLogger.maximumFileSize = 1024;
     [FTLog enableLog:YES];
@@ -465,6 +465,7 @@
     NSArray *array = [fileManager performSelector:@selector(sortedLogFileInfos)];
 
     FTLogFileInfo *info = [array lastObject];
+    XCTAssertTrue([info.fileName  containsString:@"testBackupDirectoryOrder.A"]);
     NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:info.filePath];
     NSData *data = [fileHandle readDataToEndOfFile];
     NSString *logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];

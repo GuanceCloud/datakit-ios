@@ -143,8 +143,7 @@ NSString * const FT_LOG_BACKUP_DIRECTORY= @"FTBackupLogs";
 }
 - (void)copyFileToCacheDirectoryWithCreateDate:(NSDate *)creationDate{
     NSString *dateStr = [creationDate ft_stringWithBaseFormat];
-    NSArray<NSString *> *arrayComponent = [_prefix componentsSeparatedByString:@"."];
-    NSString *fileName = [arrayComponent firstObject];
+    NSString *fileName = [_prefix stringByReplacingOccurrencesOfString:@".log" withString:@""];
     NSString *actuallyFileName = [NSString stringWithFormat:@"%@ %@.log",fileName,dateStr];
     NSString *logsBackupDirectory = [self logsBackupDirectory];
     NSString *cacheFilePath = [logsBackupDirectory stringByAppendingPathComponent:actuallyFileName];
