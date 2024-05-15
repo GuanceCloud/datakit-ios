@@ -30,6 +30,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 将调试日志写入指定文件。
 /// - Parameter filePath: 日志写入文件路径
+///
+/// 示例：
+/// ```
+/// NSString *baseDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+/// NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"ExampleLogs"];
+/// NSString *filePath = [logsDirectory stringByAppendingPathComponent:@"ExampleName.log"];
+/// [[FTLog sharedInstance] registerInnerLogCacheToLogsFilePath:filePath];
+/// ```
 - (void)registerInnerLogCacheToLogsFilePath:(NSString *)filePath;
 @end
 
