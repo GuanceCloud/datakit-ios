@@ -22,7 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger limitANRMillisecond;
 /// 多少次 anr 卡顿纪录为一次有效 ANR
 @property (nonatomic, assign) NSUInteger standstillCount;
--(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate enableTrackAppANR:(BOOL)enableANR enableTrackAppFreeze:(BOOL)enableFreeze;
+
+-(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate;
 
 //must be called from main thread
 - (void)startDetecting;

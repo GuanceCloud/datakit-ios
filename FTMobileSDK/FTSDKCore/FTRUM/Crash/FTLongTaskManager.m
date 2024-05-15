@@ -84,7 +84,7 @@
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
         _queue = dispatch_queue_create("com.guance.read-write", 0);
-        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self enableTrackAppANR:enableANR enableTrackAppFreeze:enableFreeze];
+        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self];
         [self reportFatalWatchDogIfFound];
         [_longTaskDetector startDetecting];
     }
