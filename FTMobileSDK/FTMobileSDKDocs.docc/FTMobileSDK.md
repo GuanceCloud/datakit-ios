@@ -4,7 +4,6 @@
 ## Topics
 
 ### Articles
-- <doc:app-access>
 - <doc:/tutorials/Meet-FTMobileSDK>
 
 ### Classes
