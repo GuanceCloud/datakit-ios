@@ -9,7 +9,6 @@ IPHONEOS_ARCH="arm64"
 # 模拟器 arch 架构
 IPHONESIMULATOR_ARCH="x86_64"
 
-
 buildFrameWorkWithName(){
 
 FRAMEWORK_NAME="$1"
@@ -22,9 +21,9 @@ SIMULATOR_DIR=${WORK_DIR}/'Release-iphonesimulator'/${FRAMEWORK_NAME}'.framework
 OUTPUT_DIR=FRAMEWORK/${FRAMEWORK_NAME}'.framework'
 
 ##xcodebuild打包
-xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONEOS_ARCH}  ONLY_ACTIVE_ARCH=NO -configuration 'Relase'   -sdk iphoneos
+xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONEOS_ARCH}  ONLY_ACTIVE_ARCH=NO MARKETING_VERSION=${SDK_VERSION} -configuration 'Relase'   -sdk iphoneos
 
-xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONESIMULATOR_ARCH} ONLY_ACTIVE_ARCH=NO -configuration 'Relase' -sdk iphonesimulator
+xcodebuild -target ${FRAMEWORK_NAME} -arch ${IPHONESIMULATOR_ARCH} ONLY_ACTIVE_ARCH=NO MARKETING_VERSION=${SDK_VERSION} -configuration 'Relase' -sdk iphonesimulator
 
 #如果输出目录存在，即移除该目录，再创建该目录。目的是为了清空输出目录。
 if [ -d ${OUTPUT_DIR} ]; then

@@ -10,12 +10,12 @@
 #import "FTAutoTrackProperty.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIViewController (FTAutoTrack)<FTAutoTrackViewControllerProperty>
+@interface UIViewController (FTAutoTrack)<FTRumViewProperty>
 -(BOOL)isBlackListContainsViewController;
 -(NSString *)ft_viewControllerName;
--(void)dataflux_viewDidLoad;
--(void)dataflux_viewDidAppear:(BOOL)animated;
--(void)dataflux_viewDidDisappear:(BOOL)animated;
+-(void)ft_viewDidLoad;
+-(void)ft_viewDidAppear:(BOOL)animated;
+-(void)ft_viewDidDisappear:(BOOL)animated;
 @end
 
 NS_ASSUME_NONNULL_END

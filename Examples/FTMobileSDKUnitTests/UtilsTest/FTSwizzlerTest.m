@@ -68,134 +68,84 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
-/**
- 
- 
- + (void)swizzleSelector:(SEL)aSelector onClass:(Class)aClass withBlock:(datafluxSwizzleBlock)block named:(NSString *)aName;
- + (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass named:(NSString *)aName;
- + (void)printSwizzles;
- + (BOOL)realDelegateClass:(Class)cls respondsToSelector:(SEL)sel;
- + (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy;
- */
 - (void)testSwizzleNoArg{
     __block BOOL swizzled = NO;
-    [FTSwizzler swizzleSelector:@selector(noArgument) onClass:BaseSwizzlerClass.class withBlock:^{
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(noArgument), FTSWReturnType(void), FTSWArguments(), FTSWReplacement({
         swizzled = YES;
-    } named:@"testSwizzleNoArg"];
-    
+        FTSWCallOriginal();
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleNoArg");
     BaseSwizzlerClass *base = [BaseSwizzlerClass new];
     [base noArgument];
     XCTAssertTrue(swizzled);
-    [FTSwizzler printSwizzles];
 }
 - (void)testSwizzleOneArg{
     __block BOOL swizzled = NO;
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class withBlock:^{
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(oneArgument:), FTSWReturnType(void), FTSWArguments(NSString *first), FTSWReplacement({
         swizzled = YES;
-    } named:@"testSwizzleOneArg"];
-    
+        FTSWCallOriginal(first);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleOneArg");
     BaseSwizzlerClass *base = [BaseSwizzlerClass new];
     [base oneArgument:@"first"];
     XCTAssertTrue(swizzled);
 }
 - (void)testSwizzleTwoArg{
     __block BOOL swizzled = NO;
-    [FTSwizzler swizzleSelector:@selector(twoArgument:second:) onClass:BaseSwizzlerClass.class withBlock:^{
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(twoArgument:second:), FTSWReturnType(void), FTSWArguments(NSString *first,NSString *second), FTSWReplacement({
         swizzled = YES;
-    } named:@"testSwizzleTwoArg"];
-    
+        FTSWCallOriginal(first,second);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleTwoArg");
     BaseSwizzlerClass *base = [BaseSwizzlerClass new];
     [base twoArgument:@"first" second:@"second"];
     XCTAssertTrue(swizzled);
 }
 - (void)testSwizzleThreeArg{
     __block BOOL swizzled = NO;
-    [FTSwizzler swizzleSelector:@selector(threeArgument:second:third:) onClass:BaseSwizzlerClass.class withBlock:^{
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(threeArgument:second:third:), FTSWReturnType(void), FTSWArguments(NSString *first,NSString *second,NSString *third), FTSWReplacement({
         swizzled = YES;
-    } named:@"testSwizzleThreeArg"];
-    
+        FTSWCallOriginal(first,second,third);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleThreeArg");
     BaseSwizzlerClass *base = [BaseSwizzlerClass new];
     [base threeArgument:@"first" second:@"second" third:@"third"];
     XCTAssertTrue(swizzled);
 }
 - (void)testSwizzleBoolArg{
     __block BOOL swizzled = NO;
-    [FTSwizzler swizzleSelector:@selector(boolArgument:) onClass:BaseSwizzlerClass.class withBlock:^{
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(boolArgument:), FTSWReturnType(void), FTSWArguments(BOOL animation), FTSWReplacement({
         swizzled = YES;
-    } named:@"testSwizzleBoolArg"];
-    
+        FTSWCallOriginal(animation);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleBoolArg");
     BaseSwizzlerClass *base = [BaseSwizzlerClass new];
     [base boolArgument:YES];
     XCTAssertTrue(swizzled);
 }
+- (void)testSwizzleWrongOriSelector{
+    SEL wrongOriSelector = @selector(selector_ori_no_existed);
+
+    XCTAssertThrows([FTSwizzler swizzleInstanceMethod:wrongOriSelector inClass:BaseSwizzlerClass.class newImpFactory:^id(FTSwizzlerInfo *swizzleInfo) {
+        return nil;
+    } mode:FTSwizzlerModeOncePerClassAndSuperclasses key:"testSwizzleWrongOriSelector"]);
+}
 - (void)testSwizzleSuperMethod{
     __block NSInteger times = 0;
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:SubSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testSwizzleSuperMethod"];
-    
+    FTSwizzlerInstanceMethod(SubSwizzlerClass.class, @selector(oneArgument:), FTSWReturnType(void), FTSWArguments(NSString *first), FTSWReplacement({
+        times ++;
+        FTSWCallOriginal(first);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleSuperMethod");
+
     SubSwizzlerClass *base = [SubSwizzlerClass new];
     [base oneArgument:@"first"];
     XCTAssertTrue(times == 1);
-    
 }
 - (void)testSwizzleSuperMethodSubClassUse{
     __block NSInteger times = 0;
-    [FTSwizzler swizzleSelector:@selector(noArgument) onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testSwizzleSuperMethodSubClassUse"];
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(noArgument), FTSWReturnType(void), FTSWArguments(), FTSWReplacement({
+        times ++;
+        FTSWCallOriginal();
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleSuperMethodSubClassUse");
     
     SubSwizzlerClass *base = [SubSwizzlerClass new];
     [base noArgument];
     XCTAssertTrue(times == 1);
-    
-}
-- (void)testUnswizzle{
-    __block NSInteger times = 0;
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testUnswizzle1"];
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testUnswizzle2"];
-    
-    BaseSwizzlerClass *base = [BaseSwizzlerClass new];
-    [base oneArgument:@"first"];
-    XCTAssertTrue(times == 2);
-    [FTSwizzler unswizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class];
-    [base oneArgument:@"second"];
-    XCTAssertTrue(times == 2);
-}
-
-- (void)testUnswizzleWithName{
-    __block NSInteger times = 0;
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testUnswizzleWithName1"];
-    [FTSwizzler swizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-        times += 1;
-    } named:@"testUnswizzleWithName2"];
-    
-    BaseSwizzlerClass *base = [BaseSwizzlerClass new];
-    [base oneArgument:@"first"];
-    XCTAssertTrue(times == 2);
-    [FTSwizzler unswizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class named:@"testUnswizzleWithName1"];
-    [base oneArgument:@"second"];
-    XCTAssertTrue(times == 3);
-    [FTSwizzler unswizzleSelector:@selector(oneArgument:) onClass:BaseSwizzlerClass.class named:@"testUnswizzleWithName2"];
-    [base oneArgument:@"third"];
-    XCTAssertTrue(times == 3);
-}
-- (void)testSwizzleWrongOriSelector{
-    SEL wrongOriSelector = @selector(selector_ori_no_existed);
-
-   XCTAssertThrows([FTSwizzler swizzleSelector:wrongOriSelector onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-   } named:@"testSwizzleWrongOriSelector"]);
-}
-- (void)testSwizzleExceedArgSelector{
-    SEL exceedArgumentSelector = @selector(exceedArgument:second:third:fourth:);
-    XCTAssertThrows([FTSwizzler swizzleSelector:exceedArgumentSelector onClass:BaseSwizzlerClass.class withBlock:^(NSString *first){
-    } named:@"testSwizzleExceedArgSelector"]);
 }
 - (void)testSwizzleDelegate{
     self.sub = [SubSwizzlerClass new];
@@ -204,12 +154,10 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
     __block NSInteger times = 0;
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        [FTSwizzler swizzleSelector:selector
-                            onClass:class
-                          withBlock:^{
+        FTSwizzlerInstanceMethod(class, selector, FTSWReturnType(NSString*), FTSWArguments(NSString *str), FTSWReplacement({
             times += 1;
-        }
-                              named:@"testSwizzleDelegate"];
+            return FTSWCallOriginal(str);
+        }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleDelegate");
     }
     [self.sub baseSring:@"first"];
     XCTAssertTrue(times == 1);
@@ -220,60 +168,58 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:self.delegate];
     __block NSInteger times = 0;
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        [FTSwizzler swizzleSelector:selector
-                            onClass:class
-                          withBlock:^{
+        FTSwizzlerInstanceMethod(class, selector, FTSWReturnType(NSString*), FTSWArguments(NSString *str), FTSWReplacement({
             times += 1;
-        }
-                              named:@"testSwizzleNullDelegate"];
+            return FTSWCallOriginal(str);
+        }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleNullDelegate");
     }
     [self.sub baseSring:@"first"];
     XCTAssertTrue(times == 0);
 }
 - (void)testSwizzleAsync{
-    SEL selector = @selector(noArgument);
-    BaseSwizzlerClass *base = [[BaseSwizzlerClass alloc]init];
     __block NSInteger times = 0;
-    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
-    for (int i = 0; i<1000; i++) {
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            XCTAssertNoThrow([FTSwizzler swizzleSelector:selector
-                                onClass:BaseSwizzlerClass.class
-                              withBlock:^{
-                times += 1;
-                [exception fulfill];
-            }
-                                                   named:@"testSwizzleAsync"]);
-        });
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            [base noArgument];
-        });
-    }
-    [self waitForExpectations:@[exception]];
-    XCTAssertTrue(times > 0);
-}
-
-- (void)testRemoveSwizzleAsync{
-    SEL selector = @selector(threeArgument:second:third:);
-    BaseSwizzlerClass *base = [[BaseSwizzlerClass alloc]init];
-    __block NSInteger times = 0;
+    SubSwizzlerClass *base = [SubSwizzlerClass new];
     XCTestExpectation *exception = [[XCTestExpectation alloc]init];
     dispatch_group_t group = dispatch_group_create();
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(noArgument), FTSWReturnType(void), FTSWArguments(), FTSWReplacement({
+        @synchronized (self) {
+            times ++;
+        }
+        FTSWCallOriginal();
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleAsync");
     for (int i = 0; i<1000; i++) {
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            XCTAssertNoThrow([FTSwizzler swizzleSelector:selector
-                                                 onClass:BaseSwizzlerClass.class
-                                               withBlock:^{
-                times += 1;
-            }
-                                                   named:@"testRemoveSwizzleAsync"]);
+            FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(noArgument), FTSWReturnType(void), FTSWArguments(), FTSWReplacement({
+                    times ++;
+                FTSWCallOriginal();
+            }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzleAsync");
             dispatch_group_leave(group);
-            
         });
+        [base noArgument];
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    XCTAssertTrue(times == 1000);
+}
+-(void)testCallingMethodAsync{
+    __block NSInteger times = 0;
+    SubSwizzlerClass *base = [SubSwizzlerClass new];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    FTSwizzlerInstanceMethod(BaseSwizzlerClass.class, @selector(noArgument), FTSWReturnType(void), FTSWArguments(), FTSWReplacement({
+        @synchronized (self) {
+            times ++;
+        }
+        FTSWCallOriginal();
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testCallingMethodAsync");
+    for (int i = 0; i<1000; i++) {
         dispatch_group_enter(group);
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            XCTAssertNoThrow([FTSwizzler unswizzleSelector:selector onClass:BaseSwizzlerClass.class]);
+            [base noArgument];
+            NSLog(@"%d %ld",i,times);
             dispatch_group_leave(group);
         });
     }
@@ -281,8 +227,6 @@
         [exception fulfill];
     });
     [self waitForExpectations:@[exception]];
-    XCTAssertNoThrow([FTSwizzler unswizzleSelector:selector onClass:BaseSwizzlerClass.class]);
-    [base threeArgument:@"a" second:@"b" third:@"c"];
-    XCTAssertTrue(times == 0);
+    XCTAssertTrue(times == 1000);
 }
 @end

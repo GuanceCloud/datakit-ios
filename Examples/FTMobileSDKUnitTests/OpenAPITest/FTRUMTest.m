@@ -41,6 +41,7 @@
     self.url = [processInfo environment][@"ACCESS_SERVER_URL"];
     self.appid = [processInfo environment][@"APP_ID"];
     self.track_id = [processInfo environment][@"TRACK_ID"];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
 }
 -(void)tearDown{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -403,7 +404,7 @@
     XCTAssertTrue(hasResource);
     FTRequestLineBody *lineBody = [[FTRequestLineBody alloc]init];
     lineBody.events = @[resourceModel];
-    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel]];
+    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel] requestNumber:@"1"];
     NSArray *nameAry = @[FT_KEY_RESOURCE_SIZE,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_TTFB,FT_KEY_RESOURCE_SSL,FT_KEY_RESOURCE_TCP,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_FIRST_BYTE,FT_DURATION,FT_KEY_RESOURCE_TRANS];
     for (NSString *name in nameAry) {
         NSString *line = [NSString stringWithFormat:@"%@=%@i",name,fieldDict[name]];

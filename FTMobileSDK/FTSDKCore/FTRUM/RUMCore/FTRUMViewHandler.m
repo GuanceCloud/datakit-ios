@@ -17,6 +17,7 @@
 #import "FTLog+Private.h"
 #import "FTRUMMonitor.h"
 @interface FTRUMViewHandler()<FTRUMSessionProtocol>
+@property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
@@ -27,13 +28,12 @@
 @property (nonatomic, assign) BOOL didReceiveStartData;
 @property (nonatomic, strong) NSDate *viewStartTime;
 @property (nonatomic, assign) BOOL needUpdateView;
-@property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTMonitorItem *monitorItem;
 @property (nonatomic, strong) NSMutableDictionary *viewProperty;//存储在field中
 @property (nonatomic, assign) uint64_t updateTime;
 @end
 @implementation FTRUMViewHandler
--(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context monitor:(FTRUMMonitor *)monitor{
+-(instancetype)initWithModel:(FTRUMViewModel *)model context:(nonnull FTRUMContext *)context rumDependencies:(FTRUMDependencies *)rumDependencies{
     self = [super init];
     if (self) {
         self.assistant = self;
@@ -47,6 +47,7 @@
         self.viewStartTime = model.time;
         self.resourceHandlers = [NSMutableDictionary new];
         self.viewProperty = [NSMutableDictionary new];
+        self.rumDependencies = rumDependencies;
         if(model.fields && model.fields.allKeys.count>0){
             [self.viewProperty addEntriesFromDictionary:model.fields];
         }
@@ -54,9 +55,7 @@
         _context.view_name = self.view_name;
         _context.view_id = self.view_id;
         _context.view_referrer = self.view_referrer;
-        _context.writer = context.writer;
-        self.monitor = monitor;
-        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:monitor.cpuMonitor memoryMonitor:monitor.memoryMonitor displayRateMonitor:monitor.displayMonitor frequency:monitor.frequency];
+        self.monitorItem = [[FTMonitorItem alloc]initWithCpuMonitor:rumDependencies.monitor.cpuMonitor memoryMonitor:rumDependencies.monitor.memoryMonitor displayRateMonitor:rumDependencies.monitor.displayMonitor frequency:rumDependencies.monitor.frequency];
     }
     return self;
 }
@@ -138,7 +137,7 @@
 }
 - (void)startAction:(FTRUMDataModel *)model{
     __weak typeof(self) weakSelf = self;
-    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context];
+    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
     actionHandler.handler = ^{
         weakSelf.viewActionCount +=1;
         weakSelf.needUpdateView = YES;
@@ -149,7 +148,7 @@
 }
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;
-    FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context];
+    FTRUMResourceHandler *resourceHandler = [[FTRUMResourceHandler alloc] initWithModel:model context:self.context dependencies:self.rumDependencies];
     resourceHandler.resourceHandler = ^{
         weakSelf.viewResourceCount+=1;
         weakSelf.needUpdateView = YES;
@@ -164,7 +163,7 @@
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.context.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
     if(self.errorHandled){
         self.errorHandled();
     }
@@ -208,7 +207,12 @@
     if (![self.loading_time isEqual:@0]) {
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
-    [self.context.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:[self.viewStartTime ft_nanosecondTimeStamp]];
+    long long time = [self.viewStartTime ft_nanosecondTimeStamp];
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:time];
+    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":sessionViewTag,
+                                                               @"fields":field,
+                                                               @"time":[NSNumber numberWithLongLong:time]
+    };
 }
 
 @end

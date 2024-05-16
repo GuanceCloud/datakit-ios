@@ -5,336 +5,317 @@
 //  Created by 胡蕾蕾 on 2021/7/2.
 //  Copyright © 2021 hll. All rights reserved.
 //
+#import "FTSwizzler.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
-#import "FTSwizzler.h"
-#import "FTLog+Private.h"
-#define DATAFLUX_MIN_ARGS 2
-#define DATAFLUX_MAX_ARGS 5
-#define FT_FIND_SWIZZLE \
-FTSDKSwizzlingOnClass *swizzlingOnClass = ft_findSwizzle(self, _cmd); \
-FTSwizzleEntity *swizzle = swizzlingOnClass.bindingSwizzle;
+#import <os/lock.h>
 
-#define FT_REMOVE_SELECTOR \
-[FTSwizzler object:self ofClass:swizzlingOnClass.bindingClass removeSelector:_cmd];
-@interface FTSwizzleEntity : NSObject
+#if !__has_feature(objc_arc)
+#error This code needs ARC. Use compiler option -fobjc-arc
+#endif
 
-@property (nonatomic, assign) Class class;
-@property (nonatomic, assign) SEL selector;
-@property (nonatomic, assign) IMP originalMethod;
-@property (nonatomic, assign) uint numArgs;
-@property (nonatomic, copy) NSMapTable *blocks;
+#pragma mark - Block Helpers
+#if !defined(NS_BLOCK_ASSERTIONS)
 
-- (instancetype)initWithBlock:(datafluxSwizzleBlock)aBlock
-                        named:(NSString *)aName
-                     forClass:(Class)aClass
-                     selector:(SEL)aSelector
-               originalMethod:(IMP)aMethod
-                  withNumArgs:(uint)numArgs;
+// See http://clang.llvm.org/docs/Block-ABI-Apple.html#high-level
+struct Block_literal_1 {
+    void *isa; // initialized to &_NSConcreteStackBlock or &_NSConcreteGlobalBlock
+    int flags;
+    int reserved;
+    void (*invoke)(void *, ...);
+    struct Block_descriptor_1 {
+        unsigned long int reserved;         // NULL
+        unsigned long int size;         // sizeof(struct Block_literal_1)
+        // optional helper functions
+        void (*copy_helper)(void *dst, void *src);     // IFF (1<<25)
+        void (*dispose_helper)(void *src);             // IFF (1<<25)
+        // required ABI.2010.3.16
+        const char *signature;                         // IFF (1<<30)
+    } *descriptor;
+    // imported variables
+};
 
-@end
-@interface FTSDKSwizzlingOnClass : NSObject
+enum {
+    BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
+    BLOCK_HAS_CTOR =          (1 << 26), // helpers have C++ code
+    BLOCK_IS_GLOBAL =         (1 << 28),
+    BLOCK_HAS_STRET =         (1 << 29), // IFF BLOCK_HAS_SIGNATURE
+    BLOCK_HAS_SIGNATURE =     (1 << 30),
+};
+typedef int BlockFlags;
 
-@property (nonatomic) FTSwizzleEntity *bindingSwizzle;
-@property (nonatomic) Class bindingClass;
-
-- (instancetype)initWithSwizzle:(FTSwizzleEntity *)aSwizzle
-                          class:(Class)aClass;
-
-@end
-@interface FTSwizzler ()
-
-+ (void)object:(id)anObject ofClass:(Class)aClass addSelector:(SEL)aSelector;
-+ (void)object:(id)anObject ofClass:(Class)aClass removeSelector:(SEL)aSelector;
-+ (BOOL)object:(id)anObject ofClass:(Class)aClass isCallingSelector:(SEL)aSelector;
-
-@end
-static NSMapTable *datafluxSwizzles;
-static NSMutableSet<NSString *> *selectorCallingSet;
-static FTSDKSwizzlingOnClass *ft_findSwizzle(id self, SEL _cmd)
-{
-    Method aMethod = class_getInstanceMethod(object_getClass(self), _cmd);
-    Class this_class = object_getClass(self);
-    FTSwizzleEntity *swizzle = nil;
+static const char *blockGetType(id block){
+    struct Block_literal_1 *blockRef = (__bridge struct Block_literal_1 *)block;
+    BlockFlags flags = blockRef->flags;
     
-    if (![FTSwizzler object:self ofClass:this_class isCallingSelector:_cmd]) {
-        swizzle = (FTSwizzleEntity *)[datafluxSwizzles objectForKey:MAPTABLE_ID(aMethod)];
-    }
-    
-    while (!swizzle && class_getSuperclass(this_class)) {
-        this_class = class_getSuperclass(this_class);
-        aMethod = class_getInstanceMethod(this_class, _cmd);
+    if (flags & BLOCK_HAS_SIGNATURE) {
+        void *signatureLocation = blockRef->descriptor;
+        signatureLocation += sizeof(unsigned long int);
+        signatureLocation += sizeof(unsigned long int);
         
-        if (![FTSwizzler object:self ofClass:this_class isCallingSelector:_cmd]) {
-            swizzle = (FTSwizzleEntity *)[datafluxSwizzles objectForKey:MAPTABLE_ID(aMethod)];
+        if (flags & BLOCK_HAS_COPY_DISPOSE) {
+            signatureLocation += sizeof(void(*)(void *dst, void *src));
+            signatureLocation += sizeof(void (*)(void *src));
+        }
+        
+        const char *signature = (*(const char **)signatureLocation);
+        return signature;
+    }
+    
+    return NULL;
+}
+
+static BOOL blockIsCompatibleWithMethodType(id block, const char *methodType){
+    
+    const char *blockType = blockGetType(block);
+    
+    NSMethodSignature *blockSignature;
+    
+    if (0 == strncmp(blockType, (const char *)"@\"", 2)) {
+        // Block return type includes class name for id types
+        // while methodType does not include.
+        // Stripping out return class name.
+        char *quotePtr = strchr(blockType+2, '"');
+        if (NULL != quotePtr) {
+            ++quotePtr;
+            char filteredType[strlen(quotePtr) + 2];
+            memset(filteredType, 0, sizeof(filteredType));
+            *filteredType = '@';
+            strncpy(filteredType + 1, quotePtr, sizeof(filteredType) - 2);
+            
+            blockSignature = [NSMethodSignature signatureWithObjCTypes:filteredType];
+        }else{
+            return NO;
+        }
+    }else{
+        blockSignature = [NSMethodSignature signatureWithObjCTypes:blockType];
+    }
+    
+    NSMethodSignature *methodSignature =
+        [NSMethodSignature signatureWithObjCTypes:methodType];
+    
+    if (!blockSignature || !methodSignature) {
+        return NO;
+    }
+    
+    if (blockSignature.numberOfArguments != methodSignature.numberOfArguments){
+        return NO;
+    }
+    
+    if (strcmp(blockSignature.methodReturnType, methodSignature.methodReturnType) != 0) {
+        return NO;
+    }
+    
+    for (int i=0; i<methodSignature.numberOfArguments; ++i){
+        if (i == 0){
+            // self in method, block in block
+            if (strcmp([methodSignature getArgumentTypeAtIndex:i], "@") != 0) {
+                return NO;
+            }
+            if (strcmp([blockSignature getArgumentTypeAtIndex:i], "@?") != 0) {
+                return NO;
+            }
+        }else if(i == 1){
+            // SEL in method, self in block
+            if (strcmp([methodSignature getArgumentTypeAtIndex:i], ":") != 0) {
+                return NO;
+            }
+            if (strncmp([blockSignature getArgumentTypeAtIndex:i], "@", 1) != 0) {
+                return NO;
+            }
+        }else {
+            const char *blockSignatureArg = [blockSignature getArgumentTypeAtIndex:i];
+            
+            if (strncmp(blockSignatureArg, "@?", 2) == 0) {
+                // Handle function pointer / block arguments
+                blockSignatureArg = "@?";
+            }
+            else if (strncmp(blockSignatureArg, "@", 1) == 0) {
+                blockSignatureArg = "@";
+            }
+            
+            if (strcmp(blockSignatureArg,
+                       [methodSignature getArgumentTypeAtIndex:i]) != 0)
+            {
+                return NO;
+            }
         }
     }
     
-    if (swizzle) {
-        [FTSwizzler object:self ofClass:this_class addSelector:_cmd];
-    }
-    FTSDKSwizzlingOnClass *swizzlingOnClass = [[FTSDKSwizzlingOnClass alloc] initWithSwizzle:swizzle
-                                                                                       class:this_class];
-    return swizzlingOnClass;
+    return YES;
 }
 
-static void ft_swizzledMethod_2(id self, SEL _cmd)
-{
-    FT_FIND_SWIZZLE
-    if (swizzle) {
-        @synchronized (swizzle) {
-            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-            void (^block)(id self, SEL _cmd);
-            while ((block = [blocks nextObject])) {
-                block(self, _cmd);
-            }
-            ((void(*)(id, SEL))swizzle.originalMethod)(self, _cmd);
-        }
-        FT_REMOVE_SELECTOR
-    }
+static BOOL blockIsAnImpFactoryBlock(id block){
+    const char *blockType = blockGetType(block);
+    FTSwizzlerImpFactoryBlock dummyFactory = ^id(FTSwizzlerInfo *swizzleInfo){
+        return nil;
+    };
+    const char *factoryType = blockGetType(dummyFactory);
+    return 0 == strcmp(factoryType, blockType);
 }
 
-static void ft_swizzledMethod_3(id self, SEL _cmd, id arg)
-{
-    FT_FIND_SWIZZLE
-    if (swizzle) {
-        @synchronized (swizzle) {
-            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-            void (^block)(id self, SEL _cmd, id arg);
-            while ((block = [blocks nextObject])) {
-                block(self, _cmd, arg);
-            }
-            ((void(*)(id, SEL, id))swizzle.originalMethod)(self, _cmd, arg);
-        }
-        FT_REMOVE_SELECTOR
-    }
+#endif // NS_BLOCK_ASSERTIONS
+
+
+#pragma mark - Swizzling
+
+#pragma mark └ FTSwizzlerInfo
+typedef IMP (^FTSwizzlerImpProvider)(void);
+
+@interface FTSwizzlerInfo()
+@property (nonatomic,copy) FTSwizzlerImpProvider impProviderBlock;
+@property (nonatomic, readwrite) SEL selector;
+@end
+
+@implementation FTSwizzlerInfo
+
+-(FTSwizzlerOriginalIMP)getOriginalImplementation{
+    NSAssert(_impProviderBlock,nil);
+    // Casting IMP to FTSwizzlerOriginalIMP to force user casting.
+    return (FTSwizzlerOriginalIMP)_impProviderBlock();
 }
 
-static void ft_swizzledMethod_4(id self, SEL _cmd, id arg, id arg2)
-{
-    FT_FIND_SWIZZLE
-    if (swizzle) {
-        @synchronized (swizzle) {
-            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-            void (^block)(id self, SEL _cmd, id arg, id arg2);
-            while ((block = [blocks nextObject])) {
-                block(self, _cmd, arg, arg2);
-            }
-            ((void(*)(id, SEL, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2);
-        }
-        FT_REMOVE_SELECTOR
-    }
-}
+@end
 
-static void ft_swizzledMethod_5(id self, SEL _cmd, id arg, id arg2, id arg3)
-{
-    FT_FIND_SWIZZLE
-    if (swizzle) {
-        @synchronized (swizzle) {
-            ((void(*)(id, SEL, id, id, id))swizzle.originalMethod)(self, _cmd, arg, arg2, arg3);
-            
-            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-            void (^block)(id self, SEL _cmd, id arg, id arg2, id arg3);
-            while ((block = [blocks nextObject])) {
-                block(self, _cmd, arg, arg2, arg3);
-            }
-        }
-        FT_REMOVE_SELECTOR
-    }
-}
-static void ft_swizzleMethod_3_io(id self, SEL _cmd, BOOL arg)
-{
-    FT_FIND_SWIZZLE;
-    if (swizzle) {
-        @synchronized (swizzle) {
-            ((void (*)(id, SEL, BOOL))swizzle.originalMethod)(self, _cmd, arg);
-            
-            NSEnumerator *blocks = [swizzle.blocks objectEnumerator];
-            void (^block)(id self, SEL _cmd, BOOL arg);
-            while ((block = [blocks nextObject])) {
-                block(self, _cmd, arg);
-            }
-        }
-        FT_REMOVE_SELECTOR;
-    }
-}
-// Ignore the warning cause we need the paramters to be dynamic and it's only being used internally
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wstrict-prototypes"
-static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() = {ft_swizzledMethod_2, ft_swizzledMethod_3, ft_swizzledMethod_4, ft_swizzledMethod_5};
-#pragma clang diagnostic pop
 
+#pragma mark └ FTSwizzler
 @implementation FTSwizzler
 
-+ (void)initialize
+static void swizzle(Class classToSwizzle,
+                    SEL selector,
+                    FTSwizzlerImpFactoryBlock factoryBlock)
 {
-    datafluxSwizzles = [NSMapTable mapTableWithKeyOptions:(NSPointerFunctionsOpaqueMemory | NSPointerFunctionsOpaquePersonality)
-                                             valueOptions:(NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality)];
-    selectorCallingSet = [NSMutableSet set];
+    Method method = class_getInstanceMethod(classToSwizzle, selector);
     
-}
+    NSCAssert(NULL != method,
+              @"Selector %@ not found in %@ methods of class %@.",
+              NSStringFromSelector(selector),
+              class_isMetaClass(classToSwizzle) ? @"class" : @"instance",
+              classToSwizzle);
+    
+    NSCAssert(blockIsAnImpFactoryBlock(factoryBlock),
+             @"Wrong type of implementation factory block.");
+    
+    __block os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
+    // To keep things thread-safe, we fill in the originalIMP later,
+    // with the result of the class_replaceMethod call below.
+    __block IMP originalIMP = NULL;
 
-+ (void)printSwizzles
-{
-    NSEnumerator *en = [datafluxSwizzles objectEnumerator];
-    FTSwizzler *swizzle;
-    while ((swizzle = (FTSwizzler *)[en nextObject])) {
-        FTInnerLogDebug(@"%@", swizzle);
-    }
-}
-
-+ (FTSwizzleEntity *)swizzleForMethod:(Method)aMethod{
-    FTSwizzleEntity *entity = nil;
-    @synchronized (self) {
-        entity = (FTSwizzleEntity *)[datafluxSwizzles objectForKey:MAPTABLE_ID(aMethod)];
-    }
-    return entity;
-}
-
-+ (void)removeSwizzleForMethod:(Method)aMethod{
-    @synchronized (self) {
-        [datafluxSwizzles removeObjectForKey:MAPTABLE_ID(aMethod)];
-    }
-}
-
-+ (void)setSwizzle:(FTSwizzleEntity *)swizzle forMethod:(Method)aMethod{
-    @synchronized (self) {
-        [datafluxSwizzles setObject:swizzle forKey:MAPTABLE_ID(aMethod)];
-    }
-}
-
-+ (BOOL)isLocallyDefinedMethod:(Method)aMethod onClass:(Class)aClass
-{
-    uint count;
-    BOOL isLocal = NO;
-    Method *methods = class_copyMethodList(aClass, &count);
-    for (NSUInteger i = 0; i < count; i++) {
-        if (aMethod == methods[i]) {
-            isLocal = YES;
-            break;
+    // This block will be called by the client to get original implementation and call it.
+    FTSwizzlerImpProvider originalImpProvider = ^IMP{
+        // It's possible that another thread can call the method between the call to
+        // class_replaceMethod and its return value being set.
+        // So to be sure originalIMP has the right value, we need a lock.
+        os_unfair_lock_lock(&lock);
+        IMP imp = originalIMP;
+        os_unfair_lock_unlock(&lock);
+        
+        if (NULL == imp){
+            // If the class does not implement the method
+            // we need to find an implementation in one of the superclasses.
+            Class superclass = class_getSuperclass(classToSwizzle);
+            imp = method_getImplementation(class_getInstanceMethod(superclass,selector));
         }
-    }
-    free(methods);
-    return isLocal;
+        return imp;
+    };
+    
+    FTSwizzlerInfo *swizzleInfo = [FTSwizzlerInfo new];
+    swizzleInfo.selector = selector;
+    swizzleInfo.impProviderBlock = originalImpProvider;
+    
+    // We ask the client for the new implementation block.
+    // We pass swizzleInfo as an argument to factory block, so the client can
+    // call original implementation from the new implementation.
+    id newIMPBlock = factoryBlock(swizzleInfo);
+    
+    const char *methodType = method_getTypeEncoding(method);
+    
+    NSCAssert(blockIsCompatibleWithMethodType(newIMPBlock,methodType),
+             @"Block returned from factory is not compatible with method type.");
+    
+    IMP newIMP = imp_implementationWithBlock(newIMPBlock);
+    
+    // Atomically replace the original method with our new implementation.
+    // This will ensure that if someone else's code on another thread is messing
+    // with the class' method list too, we always have a valid method at all times.
+    //
+    // If the class does not implement the method itself then
+    // class_replaceMethod returns NULL and superclasses's implementation will be used.
+    //
+    // We need a lock to be sure that originalIMP has the right value in the
+    // originalImpProvider block above.
+    os_unfair_lock_lock(&lock);
+    originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
+    os_unfair_lock_unlock(&lock);
 }
 
-+ (void)swizzleSelector:(SEL)aSelector onClass:(Class)aClass withBlock:(datafluxSwizzleBlock)aBlock named:(NSString *)aName
+static NSMutableDictionary *swizzledClassesDictionary(void){
+    static NSMutableDictionary *swizzledClasses;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        swizzledClasses = [NSMutableDictionary new];
+    });
+    return swizzledClasses;
+}
+
+static NSMutableSet *swizzledClassesForKey(const void *key){
+    NSMutableDictionary *classesDictionary = swizzledClassesDictionary();
+    NSValue *keyValue = [NSValue valueWithPointer:key];
+    NSMutableSet *swizzledClasses = [classesDictionary objectForKey:keyValue];
+    if (!swizzledClasses) {
+        swizzledClasses = [NSMutableSet new];
+        [classesDictionary setObject:swizzledClasses forKey:keyValue];
+    }
+    return swizzledClasses;
+}
+
++(BOOL)swizzleInstanceMethod:(SEL)selector
+                     inClass:(Class)classToSwizzle
+               newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock
+                        mode:(FTSwizzlerMode)mode
+                         key:(const void *)key
 {
-    Method aMethod = class_getInstanceMethod(aClass, aSelector);
-    if (aMethod) {
-        uint numArgs = method_getNumberOfArguments(aMethod);
-        if (numArgs >= DATAFLUX_MIN_ARGS && numArgs <= DATAFLUX_MAX_ARGS) {
-            
-            BOOL isLocal = [self isLocallyDefinedMethod:aMethod onClass:aClass];
-            IMP swizzledMethod = (IMP)ft_swizzledMethods[numArgs - 2];
-            if (numArgs == 3) {
-                char *type = method_copyArgumentType(aMethod, 2);
-                NSString *firstType = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
-                NSString *integerTypes = @"b";
-                if ([integerTypes containsString:firstType.lowercaseString]) {
-                    swizzledMethod = (IMP)ft_swizzleMethod_3_io;
+    NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
+             @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
+
+    @synchronized(swizzledClassesDictionary()){
+        if (key){
+            NSSet *swizzledClasses = swizzledClassesForKey(key);
+            if (mode == FTSwizzlerModeOncePerClass) {
+                if ([swizzledClasses containsObject:classToSwizzle]){
+                    return NO;
                 }
-                free(type);
-            }
-            FTSwizzleEntity *swizzle = [self swizzleForMethod:aMethod];
-            
-            if (isLocal) {
-                if (!swizzle) {
-                    IMP originalMethod = method_getImplementation(aMethod);
-                    
-                    // Replace the local implementation of this method with the swizzled one
-                    method_setImplementation(aMethod,swizzledMethod);
-                    
-                    // Create and add the swizzle
-                    swizzle = [[FTSwizzleEntity alloc] initWithBlock:aBlock named:aName forClass:aClass selector:aSelector originalMethod:originalMethod withNumArgs:numArgs];
-                    [FTSwizzler setSwizzle:swizzle forMethod:aMethod];
-                    
-                } else {
-                    @synchronized (swizzle) {
-                        [swizzle.blocks setObject:aBlock forKey:aName];
+            }else if (mode == FTSwizzlerModeOncePerClassAndSuperclasses){
+                for (Class currentClass = classToSwizzle;
+                     nil != currentClass;
+                     currentClass = class_getSuperclass(currentClass))
+                {
+                    if ([swizzledClasses containsObject:currentClass]) {
+                        return NO;
                     }
                 }
-            } else {
-                IMP originalMethod = swizzle ? swizzle.originalMethod : method_getImplementation(aMethod);
-                
-                // Add the swizzle as a new local method on the class.
-                if (!class_addMethod(aClass, aSelector, swizzledMethod, method_getTypeEncoding(aMethod))) {
-                    NSAssert(NO, @"SwizzlerAssert: Could not add swizzled for %@::%@, even though it didn't already exist locally", NSStringFromClass(aClass), NSStringFromSelector(aSelector));
-                    return;
-                }
-                // Now re-get the Method, it should be the one we just added.
-                Method newMethod = class_getInstanceMethod(aClass, aSelector);
-                if (aMethod == newMethod) {
-                    NSAssert(NO, @"SwizzlerAssert: Newly added method for %@::%@ was the same as the old method", NSStringFromClass(aClass), NSStringFromSelector(aSelector));
-                    return;
-                }
-                
-                FTSwizzleEntity *newSwizzle = [[FTSwizzleEntity alloc] initWithBlock:aBlock named:aName forClass:aClass selector:aSelector originalMethod:originalMethod withNumArgs:numArgs];
-                [self setSwizzle:newSwizzle forMethod:newMethod];
-            }
-        } else {
-            NSAssert(NO, @"SwizzlerAssert: Cannot swizzle method with %d args", numArgs);
-        }
-    } else {
-        NSAssert(NO, @"SwizzlerAssert: Cannot find method for %@ on %@", NSStringFromSelector(aSelector), NSStringFromClass(aClass));
-    }
-}
-
-+ (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass
-{
-    Method aMethod = class_getInstanceMethod(aClass, aSelector);
-    FTSwizzleEntity *swizzle = [self swizzleForMethod:aMethod];
-    if (swizzle) {
-        @synchronized (swizzle) {
-            method_setImplementation(aMethod, swizzle.originalMethod);
-            [self removeSwizzleForMethod:aMethod];
-        }
-    }
-}
-
-/*
- Remove the named swizzle from the given class/selector. If aName is nil, remove all
- swizzles for this class/selector
- */
-+ (void)unswizzleSelector:(SEL)aSelector onClass:(Class)aClass named:(NSString *)aName
-{
-    Method aMethod = class_getInstanceMethod(aClass, aSelector);
-    FTSwizzleEntity *swizzle = [self swizzleForMethod:aMethod];
-    if (swizzle) {
-        @synchronized (swizzle) {
-            if (aName) {
-                [swizzle.blocks removeObjectForKey:aName];
-            }
-            if (!aName || swizzle.blocks.count == 0) {
-                method_setImplementation(aMethod, swizzle.originalMethod);
-                [self removeSwizzleForMethod:aMethod];
             }
         }
+        
+        swizzle(classToSwizzle, selector, factoryBlock);
+        
+        if (key){
+            [swizzledClassesForKey(key) addObject:classToSwizzle];
+        }
     }
-}
-+ (void)object:(id)anObject ofClass:(Class)aClass addSelector:(SEL)aSelector
-{
-    NSString *objectClassSelectorString = [NSString stringWithFormat:@"%p %@ %@", anObject, NSStringFromClass(aClass), NSStringFromSelector(aSelector)];
-    @synchronized(selectorCallingSet) {
-        [selectorCallingSet addObject:objectClassSelectorString];
-    }
+
+    return YES;
 }
 
-+ (void)object:(id)anObject ofClass:(Class)aClass removeSelector:(SEL)aSelector
++(void)swizzleClassMethod:(SEL)selector
+                  inClass:(Class)classToSwizzle
+            newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock
 {
-    NSString *objectClassSelectorString = [NSString stringWithFormat:@"%p %@ %@", anObject, NSStringFromClass(aClass), NSStringFromSelector(aSelector)];
-    @synchronized(selectorCallingSet) {
-        [selectorCallingSet removeObject:objectClassSelectorString];
-    }
-}
-
-+ (BOOL)object:(id)anObject ofClass:(Class)aClass isCallingSelector:(SEL)aSelector
-{
-    NSString *objectClassSelectorString = [NSString stringWithFormat:@"%p %@ %@", anObject, NSStringFromClass(aClass), NSStringFromSelector(aSelector)];
-    if ([selectorCallingSet containsObject:objectClassSelectorString]) {
-        return YES;
-    }
-    return NO;
+    [self swizzleInstanceMethod:selector
+                        inClass:object_getClass(classToSwizzle)
+                  newImpFactory:factoryBlock
+                           mode:FTSwizzlerModeAlways
+                            key:NULL];
 }
 + (Class)realDelegateClassFromSelector:(SEL)selector proxy:(id)proxy {
     if (!proxy) {
@@ -362,61 +343,6 @@ static void (*ft_swizzledMethods[DATAFLUX_MAX_ARGS - DATAFLUX_MIN_ARGS + 1])() =
     //如果cls继承自NSProxy，使用respondsToSelector来判断会崩溃
     //因为NSProxy本身未实现respondsToSelector
     return class_respondsToSelector(cls, sel);
-}
-@end
-
-
-@implementation FTSwizzleEntity
-
-- (instancetype)init
-{
-    if ((self = [super init])) {
-        self.blocks = [NSMapTable mapTableWithKeyOptions:(NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPersonality)
-                                            valueOptions:(NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality)];
-    }
-    return self;
-}
-
-- (instancetype)initWithBlock:(datafluxSwizzleBlock)aBlock
-                        named:(NSString *)aName
-                     forClass:(Class)aClass
-                     selector:(SEL)aSelector
-               originalMethod:(IMP)aMethod
-                  withNumArgs:(uint)numArgs
-{
-    if ((self = [self init])) {
-        self.class = aClass;
-        self.selector = aSelector;
-        self.numArgs = numArgs;
-        self.originalMethod = aMethod;
-        [self.blocks setObject:aBlock forKey:aName];
-    }
-    return self;
-}
-
-//- (NSString *)description
-//{
-//    NSString *descriptors = @"";
-//    NSString *key;
-//    NSEnumerator *keys = [self.blocks keyEnumerator];
-//    while ((key = [keys nextObject])) {
-//        descriptors = [descriptors stringByAppendingFormat:@"\t%@ : %@\n", key, [self.blocks objectForKey:key]];
-//    }
-//    return [NSString stringWithFormat:@"Swizzle on %@::%@ [\n%@]", NSStringFromClass(self.class), NSStringFromSelector(self.selector), descriptors];
-//}
-
-
-@end
-@implementation FTSDKSwizzlingOnClass
-
-- (instancetype)initWithSwizzle:(FTSwizzleEntity *)aSwizzle
-                          class:(Class)aClass
-{
-    if ((self = [super init])) {
-        self.bindingSwizzle = aSwizzle;
-        self.bindingClass = aClass;
-    }
-    return self;
 }
 
 @end

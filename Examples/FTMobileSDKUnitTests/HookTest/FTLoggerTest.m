@@ -351,21 +351,48 @@
     XCTAssertTrue(count == newCount);
 }
 - (void)testLogFile{
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:nil];
     [self logFile:nil fileName:nil];
 }
-- (void)testLogFileCustomPath{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+- (void)testRegisterInnerLogCacheToLogs_LogsDirectory{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogs"];
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:logsDirectory fileNamePrefix:nil];
     [self logFile:logsDirectory fileName:nil];
 }
-- (void)testLogCustomFileName{
-    [self logFile:nil fileName:[[NSUUID UUID] UUIDString]];
+- (void)testRegisterInnerLogCacheToLogs_FileName{
+    NSString *fileName = [[NSUUID UUID] UUIDString];
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:nil fileNamePrefix:fileName];
+    [self logFile:nil fileName:fileName];
+}
+- (void)testRegisterInnerLogCacheToLogsFilePath{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogs"];
+    NSString *filePath = [logsDirectory stringByAppendingPathComponent:@"ALog.log"];
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToLogsFilePath:filePath];
+    [self logFile:logsDirectory fileName:@"ALog"];
+}
+- (void)testRegisterInnerLogCacheToDefaultPath{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *baseDir = paths.firstObject;
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"FTLogs"];
+
+    [FTLog enableLog:YES];
+    [[FTLog sharedInstance] registerInnerLogCacheToDefaultPath];
+    [self logFile:logsDirectory fileName:@"FTLog"];
 }
 - (void)testLogFileMaximumFileSize{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
     NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestFTLogsFileSize1"];
+    NSError *error;
+    [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
     [FTLog enableLog:YES];
     [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:logsDirectory fileNamePrefix:nil];
     [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
@@ -386,17 +413,15 @@
     [[FTLog sharedInstance] userLog:NO message:@"testLogFileMaximumFileSize" level:StatusInfo property:nil];
     FTLogFileInfo *currentFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
     XCTAssertTrue(currentFileInfo != logFileInfo);
-    XCTAssertTrue(![currentFileInfo.fileName isEqualToString:logFileInfo.fileName]);
     NSData *file = [[NSFileManager defaultManager] contentsAtPath:logFileInfo.filePath];
     XCTAssertTrue(file.length<1024*1.5);
     [[FTLog sharedInstance] shutDown];
-    NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:[logFileInfo.filePath stringByDeletingLastPathComponent] error:&error];
 }
 - (void)testLogFilesDiskQuota{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *baseDir = paths.firstObject;
-    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestLogFilesDiskQuota"];
+    NSString *logsDirectory = [baseDir stringByAppendingPathComponent:@"TestLogFilesDiskQuota_start"];
     FTLogFileManager *fileManager = [[FTLogFileManager alloc]initWithLogsDirectory:logsDirectory fileNamePrefix:nil];
     fileManager.logFilesDiskQuota = 2*1024;
     FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogFileManager:fileManager];
@@ -409,21 +434,44 @@
     for (int i = 0; i<10; i++) {
         FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
     }
-    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota" level:StatusInfo property:nil];
-    NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:logsDirectory error:nil];
-    NSError *error;
+    [[FTLog sharedInstance] userLog:NO message:@"testLogFilesDiskQuota_end" level:StatusInfo property:nil];
+    NSArray *array = [fileManager performSelector:@selector(sortedLogFileInfos)];
     unsigned long long totalSize = 0;
-    for (NSString *name in fileNames) {
-        XCTAssertFalse([name isEqualToString:firstFilePath]);
-        NSDictionary * fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:name error:&error];
-        totalSize += [fileAttributes[NSFileSize] unsignedLongLongValue];
+    for (FTLogFileInfo *info in array) {
+        XCTAssertFalse([info.fileName isEqualToString:firstFilePath]);
+        totalSize += info.fileSize;
     }
+    FTLogFileInfo *oldestFile = [array lastObject];
+    NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:oldestFile.filePath];
+    NSData *data = [fileHandle readDataToEndOfFile];
+    NSString *logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    XCTAssertFalse([logs containsString:@"TestLogFilesDiskQuota_start"]);
     XCTAssertTrue(totalSize<2*1024*1024);
+    NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:logsDirectory error:&error];
 }
-- (void)logFile:(NSString *)path fileName:(NSString *)fileName{
+- (void)testBackupDirectoryOrder{
+    FTLogFileManager *fileManager = [[FTLogFileManager alloc]initWithLogsDirectory:nil fileNamePrefix:@"testBackupDirectoryOrder.A"];
+    FTFileLogger *fileLogger = [[FTFileLogger alloc]initWithLogFileManager:fileManager];
+    fileLogger.maximumFileSize = 1024;
     [FTLog enableLog:YES];
-    [[FTLog sharedInstance] registerInnerLogCacheToLogsDirectory:path fileNamePrefix:fileName];
+    [[FTLog sharedInstance] performSelector:@selector(addLogger:) withObject:fileLogger];
+    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_Start" level:StatusInfo property:nil];
+    for (int i = 0; i<10; i++) {
+        FTInnerLogInfo(@"count:%d 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",i);
+    }
+    [[FTLog sharedInstance] userLog:NO message:@"testBackupDirectoryOrder_End" level:StatusInfo property:nil];
+    
+    NSArray *array = [fileManager performSelector:@selector(sortedLogFileInfos)];
+
+    FTLogFileInfo *info = [array lastObject];
+    XCTAssertTrue([info.fileName  containsString:@"testBackupDirectoryOrder.A"]);
+    NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:info.filePath];
+    NSData *data = [fileHandle readDataToEndOfFile];
+    NSString *logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    XCTAssertTrue([logs containsString:@"testBackupDirectoryOrder_Start"]);
+}
+- (void)logFile:(NSString *)path fileName:(NSString *)fileName{
     NSDate *date = [NSDate date];
     NSString *dateStr = [date ft_stringWithBaseFormat];
     dateStr = [dateStr stringByAppendingString:@"testLogFile"];

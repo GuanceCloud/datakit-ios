@@ -54,7 +54,7 @@
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
     NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
@@ -86,7 +86,7 @@
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@"event"];
     NSArray *tags = [[[array firstObject] ft_removeFrontBackBlank]componentsSeparatedByString:@","];
     NSString *field = [lineStr stringByReplacingOccurrencesOfString:[array firstObject] withString:@""];
@@ -116,7 +116,7 @@
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@"event"];
     NSString *str = [array firstObject];
     NSString *tagsStr = [str stringByReplacingOccurrencesOfString:[[str componentsSeparatedByString:@"name"] firstObject] withString:@""];
@@ -145,7 +145,7 @@
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@"event"];
     NSString *str = [array firstObject];
     NSString *tagsStr = [str stringByReplacingOccurrencesOfString:[[str componentsSeparatedByString:@"name"] firstObject] withString:@""];
@@ -178,11 +178,11 @@
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
-    NSString *lineStr2 = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
+    NSString *lineStr2 = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     XCTAssertFalse([lineStr isEqualToString:lineStr2]);
-    XCTAssertTrue([lineStr containsString:@"sdk_data_id"]);
-    XCTAssertTrue([lineStr2 containsString:@"sdk_data_id"]);
+    XCTAssertTrue([lineStr containsString:@"sdk_data_id=1.1."]);
+    XCTAssertTrue([lineStr2 containsString:@"sdk_data_id=1.1."]);
 }
 - (void)testNullValue{
     NSDictionary *dict = @{
@@ -198,8 +198,7 @@
     model.op =FT_DATA_TYPE_RUM;
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
-    
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     XCTAssertTrue(array.count == 3);
     NSArray *tags = [[array firstObject] componentsSeparatedByString:@","];
@@ -215,7 +214,7 @@
     
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     //df_rum_ios_log,status=info message="testLogLineProtocol" 1651916317042660096
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     NSArray *sourceAndTagsArray = [[array firstObject] componentsSeparatedByString:@","];
@@ -241,7 +240,7 @@
     FTRecordModel *model = [[FTRecordModel alloc]initWithSource:FT_RUM_SOURCE_ERROR op:FT_DATA_TYPE_RUM tags:tags fields:field tm:time];
     
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     NSArray *sourceAndTagsArray = [[array firstObject] componentsSeparatedByString:@","];
     XCTAssertTrue([[sourceAndTagsArray firstObject] isEqualToString:FT_RUM_SOURCE_ERROR]);
@@ -303,7 +302,7 @@
     model.op =FT_DATA_TYPE_RUM;
     model.data =[FTJSONUtil convertToJsonData:data];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     
     NSRange range = [lineStr rangeOfString:@" "];
     NSString *tagStr = [lineStr substringToIndex:range.location];
@@ -338,7 +337,7 @@
     FTRecordModel *model = [FTModelHelper createLogModel:str];
     FTRequestLineBody *line = [[FTRequestLineBody alloc]init];
     
-    NSString *lineStr = [line getRequestBodyWithEventArray:@[model]];
+    NSString *lineStr = [line getRequestBodyWithEventArray:@[model] requestNumber:@"1"];
     NSArray *array = [lineStr componentsSeparatedByString:@" "];
     if(array.count == 3){
         NSString *message = [NSString stringWithFormat:@"message=\"%@\"",expect];

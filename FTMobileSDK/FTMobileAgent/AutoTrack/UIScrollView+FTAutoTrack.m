@@ -12,8 +12,8 @@
 #import "UIView+FTAutoTrack.h"
 @implementation UITableView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UITableViewDelegate>)delegate {
-    [self dataflux_setDelegate:delegate];
+- (void)ft_setDelegate:(id <UITableViewDelegate>)delegate {
+    [self ft_setDelegate:delegate];
     if (self.delegate == nil) {
         return;
     }
@@ -21,22 +21,23 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
     
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        void (^didSelectRowBlock)(id, SEL, id, id) = ^(id view, SEL command, UITableView *tableView, NSIndexPath *indexPath) {
-            
-            if (tableView && indexPath) {
-                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                    [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
-                }
-            }
-        };
-        
-        [FTSwizzler swizzleSelector:selector
-                            onClass:class
-                          withBlock:didSelectRowBlock
-                              named:@"tableView_didSelect"];
+        FTSwizzlerInstanceMethod(class,
+                                 selector,
+                                 FTSWReturnType(void),
+                                 FTSWArguments(UITableView *tableView, NSIndexPath * indexPath),
+                                 FTSWReplacement({
+                                                     if (tableView && indexPath) {
+                                                         UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         }
+                                                     }
+                                                     FTSWCallOriginal(tableView, indexPath);
+                                                     
+                                                 }),
+                                 FTSwizzlerModeOncePerClassAndSuperclasses, 
+                                 "tableView_didSelect");
     }
-    
 }
 
 @end
@@ -44,8 +45,8 @@
 
 @implementation UICollectionView (FTAutoTrack)
 
-- (void)dataflux_setDelegate:(id <UICollectionViewDelegate>)delegate {
-    [self dataflux_setDelegate:delegate];
+- (void)ft_setDelegate:(id <UICollectionViewDelegate>)delegate {
+    [self ft_setDelegate:delegate];
     
     if (self.delegate == nil) {
         return;
@@ -54,20 +55,21 @@
     Class class = [FTSwizzler realDelegateClassFromSelector:selector proxy:delegate];
     
     if ([FTSwizzler realDelegateClass:class respondsToSelector:selector]) {
-        void (^didSelectItemBlock)(id, SEL, id, id) = ^(id view, SEL command, UICollectionView *collectionView, NSIndexPath *indexPath) {
-            
-            if (collectionView && indexPath) {
-                UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                    [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
-                }
-            }
-        };
-        
-        [FTSwizzler swizzleSelector:selector
-                            onClass:class
-                          withBlock:didSelectItemBlock
-                              named:@"collectionView_didSelect"];
+        FTSwizzlerInstanceMethod(class,
+                                 selector,
+                                 FTSWReturnType(void),
+                                 FTSWArguments(UICollectionView * collectionView, NSIndexPath * indexPath),
+                                 FTSWReplacement({
+                                                     if (collectionView && indexPath) {
+                                                         UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         }
+                                                     }
+                                                     FTSWCallOriginal(collectionView, indexPath);
+                                                 }),
+                                 FTSwizzlerModeOncePerClassAndSuperclasses,
+                                 "collectionView_didSelect");
     }
     
 }

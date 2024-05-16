@@ -27,9 +27,9 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
+-(instancetype)initWithRumDependencies:(FTRUMDependencies *)dependencies;
 
--(instancetype)initWithRumSampleRate:(int)sampleRate errorMonitorType:(ErrorMonitorType)errorMonitorType monitor:(nullable FTRUMMonitor *)monitor writer:(id<FTRUMDataWriteProtocol>)writer;
-
+-(void)notifyRumInit;
 #pragma mark - resource -
 /// HTTP 请求开始
 ///
@@ -140,6 +140,8 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  * @param property   事件属性(可选)
  */
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property;
+
+- (void)addErrorWithType:(nonnull NSString *)type message:(nonnull NSString *)message stack:(nonnull NSString *)stack date:(NSDate *)date;
 /// 卡顿
 /// @param stack 卡顿堆栈
 /// @param duration 卡顿时长

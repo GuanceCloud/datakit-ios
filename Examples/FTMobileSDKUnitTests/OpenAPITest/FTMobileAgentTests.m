@@ -24,6 +24,7 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
+#import "OHHTTPStubs.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -311,6 +312,7 @@
     XCTAssertTrue(config.syncPageSize == 10);
 }
 - (void)testAutoSync_NO{
+    [self networkOHHTTPStubs];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
@@ -343,6 +345,7 @@
     
 }
 - (void)testAutoSync_YES{
+    [self networkOHHTTPStubs];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = YES;
@@ -381,6 +384,15 @@
         }
         
     }
+}
+- (void)networkOHHTTPStubs{
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+        NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
+        NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
+    }];
 }
 #pragma mark ========== copy ==========
 - (void)testSDKConfigCopy{

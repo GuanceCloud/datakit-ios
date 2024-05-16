@@ -189,6 +189,9 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             hasRes = YES;
+            [fields.allKeys containsObject:FT_KEY_RESOURCE_DNS];
+            [fields.allKeys containsObject:FT_KEY_RESOURCE_TCP];
+            [fields.allKeys containsObject:FT_KEY_RESOURCE_SSL];
             *stop = YES;
         }
     }];

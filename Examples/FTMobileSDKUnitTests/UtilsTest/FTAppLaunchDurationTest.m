@@ -107,7 +107,11 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     [self launchData:FTLaunchHot];
 }
 - (void)launchData:(FTLaunchType)type{
-    FTRUMManager *manager = [[FTRUMManager alloc]initWithRumSampleRate:100 errorMonitorType:ErrorMonitorAll monitor:nil writer:self];
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    dependencies.writer = self;
+    dependencies.errorMonitorType = ErrorMonitorAll;
+    dependencies.sampleRate = 100;
+    FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
         if([source isEqualToString:FT_RUM_SOURCE_ACTION]){

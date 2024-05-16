@@ -11,11 +11,10 @@
 #import "FTGlobalRumManager.h"
 #import "FTLog+Private.h"
 #import "FTWKWebViewHandler.h"
-#import "FTLongTaskDetector.h"
+#import "FTLongTaskManager.h"
 #import "FTJSONUtil.h"
 #import "FTWKWebViewJavascriptBridge.h"
 #import "FTTrack.h"
-#import "UIViewController+FTAutoTrack.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
 #import "FTAppLaunchTracker.h"
@@ -30,12 +29,14 @@
 #import "FTThreadDispatchManager.h"
 #import "FTBaseInfoHandler.h"
 #import "FTCrashMonitor.h"
+#import "FTFatalErrorContext.h"
 @interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
+@property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
 @property (nonatomic, strong) FTAppLaunchTracker *launchTracker;
 @property (nonatomic, strong) FTRUMMonitor *monitor;
-@property (nonatomic, strong) FTLongTaskDetector *longTaskDetector;
+@property (nonatomic, strong) FTLongTaskManager *longTaskManager;
 @end
 
 @implementation FTGlobalRumManager
@@ -47,10 +48,16 @@ static dispatch_once_t onceToken;
     });
     return sharedInstance;
 }
--(void)setRumConfig:(FTRumConfig *)rumConfig{
+-(void)setRumConfig:(FTRumConfig *)rumConfig writer:(id<FTRUMDataWriteProtocol>)writer{
     _rumConfig = rumConfig;
-    self.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
-    self.rumManager = [[FTRUMManager alloc]initWithRumSampleRate:rumConfig.samplerate errorMonitorType:(ErrorMonitorType)rumConfig.errorMonitorType monitor:self.monitor writer:[FTMobileAgent sharedInstance]];
+    FTRUMDependencies *dependencies = [[FTRUMDependencies alloc]init];
+    dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
+    dependencies.writer = writer;
+    dependencies.sampleRate = rumConfig.samplerate;
+    dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
+    dependencies.fatalErrorContext = [FTFatalErrorContext new];
+    self.dependencies = dependencies;
+    self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];
     [[FTTrack sharedInstance]startWithTrackView:rumConfig.enableTraceUserView action:rumConfig.enableTraceUserAction];
     [FTTrack sharedInstance].addRumDatasDelegate = self.rumManager;
     if(rumConfig.enableTraceUserAction){
@@ -62,11 +69,11 @@ static dispatch_once_t onceToken;
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
-        [_longTaskDetector startDetecting];
+        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
+    [self.rumManager notifyRumInit];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
@@ -113,17 +120,17 @@ static dispatch_once_t onceToken;
 - (void)longTaskStackDetected:(NSString*)slowStack duration:(long long)duration time:(long long)time{
     [self.rumManager addLongTaskWithStack:slowStack duration:[NSNumber numberWithLongLong:duration] startTime:time];
 }
-- (void)anrStackDetected:(NSString*)slowStack{
-    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack];
+- (void)anrStackDetected:(NSString*)slowStack time:(nonnull NSDate *)time{
+    [self.rumManager addErrorWithType:@"anr_error" message:@"ios_anr" stack:slowStack date:time];
 }
-#pragma mark ========== APP LAUNCH ==========
+#pragma mark ========== RUM-Action: App Launch ==========
 -(void)ftAppHotStart:(NSDate *)launchTime duration:(NSNumber *)duration{
     [self.rumManager addLaunch:FTLaunchHot launchTime:launchTime duration:duration];
 }
 -(void)ftAppColdStart:(NSDate *)launchTime duration:(NSNumber *)duration isPreWarming:(BOOL)isPreWarming{
     [self.rumManager addLaunch:isPreWarming?FTLaunchWarm:FTLaunchCold launchTime:launchTime duration:duration];
 }
-#pragma mark ========== AUTO TRACK ==========
+#pragma mark ========== RUM-View: App Life Cycle ==========
 -(void)applicationWillEnterForeground{
     @try {
         self.rumManager.appState = FTAppStateStartUp;
@@ -132,10 +139,9 @@ static dispatch_once_t onceToken;
         }
         if (self.rumManager.viewReferrer) {
             NSString *viewID = [FTBaseInfoHandler randomUUID];
-            NSNumber *loadDuration = [FTTrack sharedInstance].currentController?[FTTrack sharedInstance].currentController.ft_loadDuration:@-1;
             NSString *viewReferrer =self.rumManager.viewReferrer;
             self.rumManager.viewReferrer = @"";
-            [self.rumManager onCreateView:viewReferrer loadTime:loadDuration];
+            [self.rumManager onCreateView:viewReferrer loadTime:@0];
             [self.rumManager startViewWithViewID:viewID viewName:viewReferrer property:nil];
         }
     }@catch (NSException *exception) {
@@ -161,7 +167,6 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-    [_longTaskDetector stopDetecting];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

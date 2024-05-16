@@ -43,18 +43,18 @@ static dispatch_once_t onceToken;
         NSError *error = NULL;
         
         [WKWebView ft_swizzleMethod:@selector(loadRequest:)
-                         withMethod:@selector(dataflux_loadRequest:)
+                         withMethod:@selector(ft_loadRequest:)
                               error:&error];
         [WKWebView ft_swizzleMethod:@selector(loadHTMLString:baseURL:)
-                         withMethod:@selector(dataflux_loadHTMLString:baseURL:)
+                         withMethod:@selector(ft_loadHTMLString:baseURL:)
                               error:&error];
         [WKWebView ft_swizzleMethod:@selector(loadFileURL:allowingReadAccessToURL:)
-                         withMethod:@selector(dataflux_loadFileURL:allowingReadAccessToURL:)
+                         withMethod:@selector(ft_loadFileURL:allowingReadAccessToURL:)
                               error:&error];
-        [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(dataflux_reload) error:&error];
+        [WKWebView ft_swizzleMethod:@selector(reload) withMethod:@selector(ft_reload) error:&error];
         SEL deallocMethod =  NSSelectorFromString(@"dealloc");
         [WKWebView ft_swizzleMethod:deallocMethod
-                         withMethod:@selector(dataflux_dealloc)
+                         withMethod:@selector(ft_dealloc)
                               error:&error];
     });
 }

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMDataWriteProtocol.h"
 NS_ASSUME_NONNULL_BEGIN
 @class  FTRUMManager,FTRumConfig;
 
@@ -20,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 设置 rum 配置项
 /// - Parameter rumConfig: rum 配置项
-- (void)setRumConfig:(FTRumConfig *)rumConfig;
+- (void)setRumConfig:(FTRumConfig *)rumConfig writer:(id <FTRUMDataWriteProtocol>)writer;
 
 /// 关闭单例
 - (void)shutDown;

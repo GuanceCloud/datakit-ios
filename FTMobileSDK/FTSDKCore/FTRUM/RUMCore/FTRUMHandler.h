@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTRUMDependencies.h"
 #import "FTRUMDataModel.h"
 
 @class FTRUMHandler;

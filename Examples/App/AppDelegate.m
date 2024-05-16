@@ -61,7 +61,6 @@
         NSString *dynamicTag = [[NSUserDefaults standardUserDefaults] valueForKey:@"DYNAMIC_TAG"]?:@"N/A";
         //开启 rum
         FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:rumAppid];
-        rumConfig.samplerate = 80;
         rumConfig.enableTrackAppCrash = YES;
         rumConfig.enableTrackAppANR = YES;
         rumConfig.enableTrackAppFreeze = YES;

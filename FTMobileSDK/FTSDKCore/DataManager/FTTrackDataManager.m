@@ -15,6 +15,7 @@
 #import "FTNetworkManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTConstants.h"
+#import "FTBaseInfoHandler.h"
 
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isUploading;
@@ -151,8 +152,8 @@ static dispatch_once_t onceToken;
     [self privateUpload];
 }
 - (void)privateUpload{
-    @try {
-        dispatch_async(self.serialQueue, ^{
+    dispatch_async(self.serialQueue, ^{
+        @try {
             if (self.isUploading) {
                 return;
             }
@@ -160,10 +161,13 @@ static dispatch_once_t onceToken;
             [self flushWithType:FT_DATA_TYPE_RUM];
             [self flushWithType:FT_DATA_TYPE_LOGGING];
             self.isUploading = NO;
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
+        } @finally {
+            self.isUploading = NO;
+        }
+    });
+    
 }
 -(void)flushWithType:(NSString *)type{
     NSArray *events = [[FTTrackerEventDBTool sharedManger] getFirstRecords:self.uploadPageSize withType:type];
@@ -174,6 +178,11 @@ static dispatch_once_t onceToken;
         FTRecordModel *model = [events lastObject];
         if (![[FTTrackerEventDBTool sharedManger] deleteItemWithType:type identify:model._id]) {
             FTInnerLogError(@"数据库删除已上传数据失败");
+        }
+        if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
+            [FTBaseInfoHandler increaseLogRequestSerialNumber];
+        }else{
+            [FTBaseInfoHandler increaseRumRequestSerialNumber];
         }
         if(events.count < self.uploadPageSize){
             break;

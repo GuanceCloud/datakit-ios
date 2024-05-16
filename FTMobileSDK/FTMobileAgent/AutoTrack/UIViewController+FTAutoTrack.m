@@ -67,20 +67,20 @@ static char *ignoredLoad = "ignoredLoad";
     }];
     return isContains;
 }
-- (void)dataflux_viewDidLoad{
+- (void)ft_viewDidLoad{
     self.ft_viewLoadStartTime =[NSDate date];
-    [self dataflux_viewDidLoad];
+    [self ft_viewDidLoad];
 }
--(void)dataflux_viewDidAppear:(BOOL)animated{
-    [self dataflux_viewDidAppear:animated];
+-(void)ft_viewDidAppear:(BOOL)animated{
+    [self ft_viewDidAppear:animated];
     if(![self isBlackListContainsViewController]){
         // 预防撤回侧滑
-        if ([FTTrack sharedInstance].currentController != self) {
-            if ([self dataflux_parentViewControllerIsContainer]) {
+        if ([FTTrack sharedInstance].currentRUMView != self) {
+            if ([self ft_parentViewControllerIsContainer]) {
                 return;
             }
-            [FTTrack sharedInstance].currentController = self;
-            if(![self dataflux_ignoreTabBarControllerChildLoadDuration] && self.ft_viewLoadStartTime){
+            [FTTrack sharedInstance].currentRUMView = self;
+            if(![self ft_ignoreTabBarControllerChildLoadDuration] && self.ft_viewLoadStartTime){
                 NSNumber *loadTime = [self.ft_viewLoadStartTime ft_nanosecondTimeIntervalToDate:[NSDate date]];
                 self.ft_loadDuration = loadTime;
                 self.ft_viewLoadStartTime = nil;
@@ -101,19 +101,19 @@ static char *ignoredLoad = "ignoredLoad";
         }
     }
 }
--(void)dataflux_viewDidDisappear:(BOOL)animated{
-    [self dataflux_viewDidDisappear:animated];
+-(void)ft_viewDidDisappear:(BOOL)animated{
+    [self ft_viewDidDisappear:animated];
     if([self isBlackListContainsViewController]){
         return;
     }
-    if ([FTTrack sharedInstance].currentController == self) {
+    if ([FTTrack sharedInstance].currentRUMView == self) {
         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(stopViewWithViewID:property:)]){
             [[FTTrack sharedInstance].addRumDatasDelegate stopViewWithViewID:self.ft_viewUUID property:nil];
         }
     }
 }
 
--(BOOL)dataflux_parentViewControllerIsContainer{
+-(BOOL)ft_parentViewControllerIsContainer{
     UIViewController *parent = self.parentViewController;
     while (parent != nil) {
         if ([parent isKindOfClass:UIPageViewController.class] || [parent isKindOfClass:UISplitViewController.class]) {
@@ -130,7 +130,7 @@ static char *ignoredLoad = "ignoredLoad";
 /// UITabBarController 页面加载后，所有子视图页面都会加载
 /// 仅记录第一个展示的子视图的 viewDidLoad 时间
 /// 其他子视图的 viewDidLoad - viewDidDisappear 不能作为页面加载时间
--(BOOL)dataflux_ignoreTabBarControllerChildLoadDuration{
+-(BOOL)ft_ignoreTabBarControllerChildLoadDuration{
     id ignored = objc_getAssociatedObject(self.class, &ignoredLoad);
     if(ignored == nil){
         if ([self isKindOfClass:UITabBarController.class]){

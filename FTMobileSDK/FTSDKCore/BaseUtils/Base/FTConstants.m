@@ -153,7 +153,7 @@ NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
 int const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 
-NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 1000;
+NSUInteger const MXRMonitorRunloopOneStandstillMillisecond = 250;
 NSUInteger const MXRMonitorRunloopStandstillCount = 5;
 
 NSString * const FT_USER_ID = @"userid";
