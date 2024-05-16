@@ -248,27 +248,19 @@ static void swizzle(Class classToSwizzle,
     originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
     os_unfair_lock_unlock(&lock);
 }
-
-static NSMutableDictionary *swizzledClassesDictionary(void){
-    static NSMutableDictionary *swizzledClasses;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        swizzledClasses = [NSMutableDictionary new];
-    });
-    return swizzledClasses;
+static dispatch_queue_t swizzleQueue;
++ (void)initialize{
+  swizzleQueue = dispatch_queue_create("com.guance.swizzler", DISPATCH_QUEUE_SERIAL);
 }
-
-static NSMutableSet *swizzledClassesForKey(const void *key){
-    NSMutableDictionary *classesDictionary = swizzledClassesDictionary();
-    NSValue *keyValue = [NSValue valueWithPointer:key];
-    NSMutableSet *swizzledClasses = [classesDictionary objectForKey:keyValue];
-    if (!swizzledClasses) {
-        swizzledClasses = [NSMutableSet new];
-        [classesDictionary setObject:swizzledClasses forKey:keyValue];
-    }
-    return swizzledClasses;
++ (void)setFTAssociatedObject:(id)object
+                        key:(const void *)key
+                      value:(nullable id)value
+                association:(objc_AssociationPolicy)association {
+  objc_setAssociatedObject(object, key, value, association);
 }
-
++ (nullable id)getAssociatedObject:(id)object key:(const void *)key {
+  return objc_getAssociatedObject(object, key);
+}
 +(BOOL)swizzleInstanceMethod:(SEL)selector
                      inClass:(Class)classToSwizzle
                newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock
@@ -277,34 +269,32 @@ static NSMutableSet *swizzledClassesForKey(const void *key){
 {
     NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
              @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
-
-    @synchronized(swizzledClassesDictionary()){
+    __block BOOL result = YES;
+    dispatch_sync(swizzleQueue, ^{
         if (key){
-            NSSet *swizzledClasses = swizzledClassesForKey(key);
             if (mode == FTSwizzlerModeOncePerClass) {
-                if ([swizzledClasses containsObject:classToSwizzle]){
-                    return NO;
+                if ([self getAssociatedObject:classToSwizzle key:key]){
+                    result = NO;
+                    return;
                 }
             }else if (mode == FTSwizzlerModeOncePerClassAndSuperclasses){
                 for (Class currentClass = classToSwizzle;
                      nil != currentClass;
                      currentClass = class_getSuperclass(currentClass))
                 {
-                    if ([swizzledClasses containsObject:currentClass]) {
-                        return NO;
+                    if ([self getAssociatedObject:currentClass key:key]) {
+                        result = NO;
+                        return;
                     }
                 }
             }
         }
-        
         swizzle(classToSwizzle, selector, factoryBlock);
-        
         if (key){
-            [swizzledClassesForKey(key) addObject:classToSwizzle];
+            [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_ASSIGN];
         }
-    }
-
-    return YES;
+    });
+    return result;
 }
 
 +(void)swizzleClassMethod:(SEL)selector
