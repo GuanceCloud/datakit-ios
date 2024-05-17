@@ -1,3 +1,7 @@
+# 1.4.14-alpha.1
+1. 修复 swizzle 方法与其他库 swizzle 方法冲突问题
+
+---
 # 1.4.13
 1. RUM LongTask、Anr 采集优化，修复 LongTask 堆栈信息采集不准确问题，新增支持采集致命卡顿
 2. 修复多线程访问下 NSURLSession delegate 方法 hook 造成的崩溃问题
