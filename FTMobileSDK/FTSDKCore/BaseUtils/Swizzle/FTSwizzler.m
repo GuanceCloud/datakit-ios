@@ -92,7 +92,7 @@ static BOOL blockIsCompatibleWithMethodType(id block, const char *methodType){
     }
     
     NSMethodSignature *methodSignature =
-        [NSMethodSignature signatureWithObjCTypes:methodType];
+    [NSMethodSignature signatureWithObjCTypes:methodType];
     
     if (!blockSignature || !methodSignature) {
         return NO;
@@ -194,13 +194,13 @@ static void swizzle(Class classToSwizzle,
               classToSwizzle);
     
     NSCAssert(blockIsAnImpFactoryBlock(factoryBlock),
-             @"Wrong type of implementation factory block.");
+              @"Wrong type of implementation factory block.");
     
     __block os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
     // To keep things thread-safe, we fill in the originalIMP later,
     // with the result of the class_replaceMethod call below.
     __block IMP originalIMP = NULL;
-
+    
     // This block will be called by the client to get original implementation and call it.
     FTSwizzlerImpProvider originalImpProvider = ^IMP{
         // It's possible that another thread can call the method between the call to
@@ -231,7 +231,7 @@ static void swizzle(Class classToSwizzle,
     const char *methodType = method_getTypeEncoding(method);
     
     NSCAssert(blockIsCompatibleWithMethodType(newIMPBlock,methodType),
-             @"Block returned from factory is not compatible with method type.");
+              @"Block returned from factory is not compatible with method type.");
     
     IMP newIMP = imp_implementationWithBlock(newIMPBlock);
     
@@ -248,18 +248,14 @@ static void swizzle(Class classToSwizzle,
     originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
     os_unfair_lock_unlock(&lock);
 }
-static dispatch_queue_t swizzleQueue;
-+ (void)initialize{
-  swizzleQueue = dispatch_queue_create("com.guance.swizzler", DISPATCH_QUEUE_SERIAL);
-}
 + (void)setFTAssociatedObject:(id)object
-                        key:(const void *)key
-                      value:(nullable id)value
-                association:(objc_AssociationPolicy)association {
-  objc_setAssociatedObject(object, key, value, association);
+                          key:(const void *)key
+                        value:(nullable id)value
+                  association:(objc_AssociationPolicy)association {
+    objc_setAssociatedObject(object, key, value, association);
 }
-+ (nullable id)getAssociatedObject:(id)object key:(const void *)key {
-  return objc_getAssociatedObject(object, key);
++ (nullable id)getFTAssociatedObject:(id)object key:(const void *)key {
+    return objc_getAssociatedObject(object, key);
 }
 +(BOOL)swizzleInstanceMethod:(SEL)selector
                      inClass:(Class)classToSwizzle
@@ -269,22 +265,19 @@ static dispatch_queue_t swizzleQueue;
 {
     NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
              @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
-    __block BOOL result = YES;
-    dispatch_sync(swizzleQueue, ^{
+    @synchronized (self) {
         if (key){
             if (mode == FTSwizzlerModeOncePerClass) {
-                if ([self getAssociatedObject:classToSwizzle key:key]){
-                    result = NO;
-                    return;
+                if ([self getFTAssociatedObject:classToSwizzle key:key]){
+                    return NO;
                 }
             }else if (mode == FTSwizzlerModeOncePerClassAndSuperclasses){
                 for (Class currentClass = classToSwizzle;
                      nil != currentClass;
                      currentClass = class_getSuperclass(currentClass))
                 {
-                    if ([self getAssociatedObject:currentClass key:key]) {
-                        result = NO;
-                        return;
+                    if ([self getFTAssociatedObject:currentClass key:key]) {
+                        return NO;
                     }
                 }
             }
@@ -293,8 +286,8 @@ static dispatch_queue_t swizzleQueue;
         if (key){
             [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_ASSIGN];
         }
-    });
-    return result;
+    }
+    return YES;
 }
 
 +(void)swizzleClassMethod:(SEL)selector
