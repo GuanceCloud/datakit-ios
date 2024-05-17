@@ -26,6 +26,7 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "TestSessionDelegate.h"
+#import "FTNetworkMock.h"
 @interface FTAutoTrackTest : KIFTestCase
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) UITestVC *testVC;
@@ -194,6 +195,7 @@
     [self resourceUrlHandler:NO];
 }
 - (void)resourceUrlHandler:(BOOL)excluded{
+    [FTNetworkMock networkOHHTTPStubs];
     [self setSdkWithRum:NO];
     NSURL * rumUrl = [NSURL URLWithString:[[NSProcessInfo processInfo] environment][@"TRACE_URL"]];
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"AA"];
@@ -234,6 +236,7 @@
     [self intakeUrl:NO];
 }
 - (void)intakeUrl:(BOOL)trace{
+    [FTNetworkMock networkOHHTTPStubs];
     [self setSdkWithRum:YES];
     [[FTMobileAgent sharedInstance] isIntakeUrl:^BOOL(NSURL * _Nonnull url) {
         return trace;
