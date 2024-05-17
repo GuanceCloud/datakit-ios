@@ -78,7 +78,7 @@ static dispatch_once_t onceToken;
         }
     };
     if(status == StatusError){
-        dispatch_sync(self.loggerQueue, logBlock);
+        [self syncProcess:logBlock];
     }else{
         dispatch_async(self.loggerQueue, logBlock);
     }
@@ -99,12 +99,17 @@ static dispatch_once_t onceToken;
     [self log:content status:StatusOk property:property];
 }
 - (void)syncProcess{
+    [self syncProcess:^{}];
+}
+- (void)syncProcess:(dispatch_block_t)block{
     if(dispatch_get_specific(FTLoggerQueueIdentityKey) == NULL){
-        dispatch_sync(self.loggerQueue, ^{});
+        dispatch_sync(self.loggerQueue, block);
+    }else{
+        block();
     }
 }
 - (void)shutDown{
-    [self syncProcess];
+    [self syncProcess:^{}];
     onceToken = 0;
     sharedInstance =nil;
     FTInnerLogInfo(@"[Logging] SHUT DOWN");
