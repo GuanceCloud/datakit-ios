@@ -104,9 +104,7 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = [_loggerConfig.globalContext copy];
-        [FTTrackDataManager sharedInstance]
-            .setLogCacheLimitCount(_loggerConfig.logCacheLimitCount)
-            .setLogDiscardNew((_loggerConfig.discardType == FTDiscard));
+        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
                                     enableCustomLog:_loggerConfig.enableCustomLog

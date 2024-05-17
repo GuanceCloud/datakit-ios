@@ -86,6 +86,7 @@
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
 
     }
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
@@ -109,6 +110,7 @@
         [[FTTrackDataManager sharedInstance] addTrackData:model type:FTAddDataLogging];
 
     }
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
@@ -368,7 +370,7 @@
     }
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
  
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expect fulfill];
     });
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {

@@ -362,9 +362,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    configuration.timeoutIntervalForRequest = 2;
-    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithSessionConfiguration:configuration];
+    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:2];
     [networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(error.code == -1001);
         [expectation fulfill];

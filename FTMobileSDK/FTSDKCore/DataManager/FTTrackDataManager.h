@@ -25,8 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)startWithAutoSync:(BOOL)autoSync syncPageSize:(int)syncPageSize syncSleepTime:(int)syncSleepTime;
 
-- (FTTrackDataManager *(^)(int))setLogCacheLimitCount;
-- (FTTrackDataManager *(^)(BOOL))setLogDiscardNew;
+- (void)setLogCacheLimitCount:(int)count logDiscardNew:(BOOL)discardNew;
 
 /// 数据写入
 /// - Parameters:
