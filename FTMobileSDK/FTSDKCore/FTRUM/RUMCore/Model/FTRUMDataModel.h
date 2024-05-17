@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 /// 处理 View 事件的数据模型
 @interface FTRUMViewModel : FTRUMDataModel
+@property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, copy) NSString *view_id;
 @property (nonatomic, copy) NSString *view_name;
 @property (nonatomic, copy) NSString *view_referrer;

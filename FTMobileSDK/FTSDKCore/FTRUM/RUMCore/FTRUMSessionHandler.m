@@ -72,6 +72,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     _lastInteractionTime = [NSDate date];
     self.needWriteErrorData = NO;
     switch (model.type) {
+        case FTRUMSDKInit:
+            [self startInitialView:model];
+            break;
         case FTRUMDataViewStart:
             [self startView:model];
             break;
@@ -105,6 +108,20 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         }
     }
     return NO;
+}
+-(void)startInitialView:(FTRUMDataModel *)model{
+    if(self.viewHandlers.count>0){
+        return;
+    }
+    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMSDKInit time:model.time];
+    viewModel.isInitialView = YES;
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
+    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    __weak __typeof(self) weakSelf = self;
+    viewHandler.errorHandled = ^{
+        weakSelf.needWriteErrorData = NO;
+    };
+    [self.viewHandlers addObject:viewHandler];
 }
 -(void)startView:(FTRUMDataModel *)model{
     
