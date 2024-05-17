@@ -89,11 +89,22 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
+    if(![self hasActivityView]){
+        self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
+    }
     // 没有 view 能处理 error\longTask 则由 session 处理写入
     if(self.needWriteErrorData){
         [self writeErrorData:model];
     }
     return  YES;
+}
+- (BOOL)hasActivityView{
+    for (FTRUMViewHandler *viewHandler in self.viewHandlers) {
+        if(viewHandler.isActiveView){
+            return YES;
+        }
+    }
+    return NO;
 }
 -(void)startView:(FTRUMDataModel *)model{
     

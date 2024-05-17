@@ -419,12 +419,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 
 -(NSDictionary *)getCurrentSessionInfo{
-    __block NSDictionary *info;
-    dispatch_block_t block = ^(){
-        info = [self.sessionHandler getCurrentSessionInfo];
-    };
-    [self syncProcess:block];
-    return info;
+    return self.rumDependencies.fatalErrorContext.lastSessionContext;
 }
 - (void)syncProcess{
     [self syncProcess:^{}];
