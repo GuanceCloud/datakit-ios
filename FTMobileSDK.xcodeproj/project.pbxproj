@@ -13,6 +13,12 @@
 		171C21BF2B9183D500C67AD6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		171C21C02B9183D500C67AD6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
 		171C21C12B9183D500C67AD6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */; };
+		171CE1D82BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */; };
+		171CE1D92BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
+		171CE1DA2BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */; };
+		171CE1DB2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
+		171CE1DC2BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */; };
+		171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
 		17400E672B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E682B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E692B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
@@ -504,6 +510,8 @@
 
 /* Begin PBXFileReference section */
 		171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = FTMobileSDK/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDURLSessionDelegate.h; sourceTree = "<group>"; };
+		171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDURLSessionDelegate.m; sourceTree = "<group>"; };
 		172C1DD42BC7EB6400412DB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = FTMobileSDK/Info.plist; sourceTree = "<group>"; };
 		17400E652B466EFC00ACBA6C /* FTSignalException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSignalException.h; sourceTree = "<group>"; };
 		17400E662B466EFC00ACBA6C /* FTSignalException.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTSignalException.c; sourceTree = "<group>"; };
@@ -1034,6 +1042,8 @@
 				17E4CB7129CD42E4005C2D99 /* FTURLSessionInstrumentation.m */,
 				17E4CB7629CD42E4005C2D99 /* FTURLSessionDelegate.h */,
 				17E4CB6D29CD42E4005C2D99 /* FTURLSessionDelegate.m */,
+				171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */,
+				171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */,
 				1771558F2B046B5800C26DC4 /* FTURLSessionDelegate+Private.h */,
 				17E4CB7329CD42E4005C2D99 /* FTURLSessionInterceptor.h */,
 				177155B92B0F5C2F00C26DC4 /* FTURLSessionInterceptor+Private.h */,
@@ -1244,6 +1254,7 @@
 				17AB76FE29D432DE008FBBF5 /* FTRUMDataModel.h in Headers */,
 				17AB770129D432DE008FBBF5 /* FTRUMManager.h in Headers */,
 				174D91A52A2083C300D85AAA /* FTLogger+Private.h in Headers */,
+				171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */,
 				1776072B29D13A3000D17137 /* FTWKWebViewHandler.h in Headers */,
 				1776064629D1361400D17137 /* FTSwizzler.h in Headers */,
 				1748A0082BE0BF5800B921FB /* FTLongTaskManager.h in Headers */,
@@ -1350,6 +1361,7 @@
 				1776067B29D1370600D17137 /* FTAppLifeCycle.h in Headers */,
 				177155BB2B0F5C3000C26DC4 /* FTURLSessionInterceptor+Private.h in Headers */,
 				1776BA822B99B668008424FF /* FTOSLogger.h in Headers */,
+				171CE1DB2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */,
 				1776063E29D135FA00D17137 /* FTCrashMonitor.h in Headers */,
 				17E4CC5129CD42EB005C2D99 /* FTExtensionConfig.h in Headers */,
 				177606AA29D1377000D17137 /* FTResourceMetricsModel.h in Headers */,
@@ -1455,6 +1467,7 @@
 				17AB76C629D432DE008FBBF5 /* FTRUMMonitor.h in Headers */,
 				1776062929D1347500D17137 /* WKWebView+FTAutoTrack.h in Headers */,
 				1776BA7B2B997D19008424FF /* FTLog+Private.h in Headers */,
+				171CE1D92BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */,
 				17E4CC3329CD42E4005C2D99 /* FTAppLaunchTracker.h in Headers */,
 				17E4CC4329CD42E4005C2D99 /* FTCrashMonitor.h in Headers */,
 				1763BD8C29DFF04F009EE026 /* FTNetworkInfoManager.h in Headers */,
@@ -1627,6 +1640,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				171CE1DC2BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */,
 				1776068E29D1372800D17137 /* FTRecordModel.m in Sources */,
 				177606A329D1376300D17137 /* FTEnumConstant.m in Sources */,
 				1799581829D43FDE0033B46E /* FTPresetProperty.m in Sources */,
@@ -1752,6 +1766,7 @@
 				177606AC29D1377400D17137 /* FTCallStack.m in Sources */,
 				1776067329D136F800D17137 /* FTThreadDispatchManager.m in Sources */,
 				178649362A1DB58400521187 /* FTLogger.m in Sources */,
+				171CE1DA2BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */,
 				1776064329D1360500D17137 /* FTExternalDataManager.m in Sources */,
 				175951102A6FE4DE006FAB9D /* NSNumber+FTAdd.m in Sources */,
 				1776068F29D1372900D17137 /* FTRecordModel.m in Sources */,
@@ -1776,6 +1791,7 @@
 			files = (
 				17E4CB3629CD42DA005C2D99 /* FTSwizzle.m in Sources */,
 				17E4CC2629CD42E4005C2D99 /* UIApplication+FTAutoTrack.m in Sources */,
+				171CE1D82BFB3C550083FC1C /* FTDURLSessionDelegate.m in Sources */,
 				17AC174E2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17E4CC2929CD42E4005C2D99 /* UIViewController+FTAutoTrack.m in Sources */,
 				1759510F2A6FE4DE006FAB9D /* NSNumber+FTAdd.m in Sources */,
