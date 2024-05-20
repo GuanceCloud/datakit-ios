@@ -10,6 +10,7 @@
 		1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */; };
 		1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
 		1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */; };
+		171CE1D52BFB2D590083FC1C /* FTResourceInstrumentTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D42BFB2D590083FC1C /* FTResourceInstrumentTest.m */; };
 		172931D22BF602D700AA9D53 /* FTSwizzlerConflictTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */; };
 		172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
 		172931D52BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
@@ -154,6 +155,7 @@
 		1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSessionDelegate.m; sourceTree = "<group>"; };
 		1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTTestInteraction.swift; sourceTree = "<group>"; };
 		1712C5FA2B63B1BB00C4BD38 /* FTMobileSDKUnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileSDKUnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		171CE1D42BFB2D590083FC1C /* FTResourceInstrumentTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceInstrumentTest.m; sourceTree = "<group>"; };
 		172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerConflictTest.m; sourceTree = "<group>"; };
 		172931D32BF6032900AA9D53 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		172931D62BF6148600AA9D53 /* FTNetworkMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTNetworkMock.h; sourceTree = "<group>"; };
@@ -369,6 +371,7 @@
 				1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */,
 				1712C5F52B60F0B100C4BD38 /* TestSessionDelegate.h */,
 				1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */,
+				171CE1D42BFB2D590083FC1C /* FTResourceInstrumentTest.m */,
 			);
 			path = Resource;
 			sourceTree = "<group>";
@@ -700,7 +703,6 @@
 				4A85313323AB85FC00B40B5D /* Frameworks */,
 				4A85313423AB85FC00B40B5D /* Resources */,
 				320DD14D718F07296F5EBEE3 /* [CP] Embed Pods Frameworks */,
-				172931F22BF6340000AA9D53 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -942,6 +944,7 @@
 				17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */,
 				172931D92BF6148600AA9D53 /* FTNetworkMock.m in Sources */,
 				172C3571280E7D5F002D139E /* FTSwizzleTest.m in Sources */,
+				171CE1D52BFB2D590083FC1C /* FTResourceInstrumentTest.m in Sources */,
 				1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */,
 				1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */,
 				177892BF29A60FD00007B47F /* PerformanceLoggingTest.m in Sources */,

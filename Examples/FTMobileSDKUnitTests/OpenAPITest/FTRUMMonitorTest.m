@@ -94,11 +94,14 @@
     __block double heavyMemoryUsage;
     XCTestExpectation *expectation = [[XCTestExpectation alloc]initWithDescription:@"Memory Test"];
     NSThread *thread = [[NSThread alloc]initWithBlock:^{
-        [weakSelf heavyWork];
-        NSData *data = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"]];
-        heavyMemoryUsage = [memoryMonitor memoryUsage];
-        data = nil;
-        [expectation fulfill];
+        @autoreleasepool {
+            [weakSelf heavyWork];
+            NSData *data = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"]];
+            heavyMemoryUsage = [memoryMonitor memoryUsage];
+            data = nil;
+        }
+            [expectation fulfill];
+        
     }];
     [thread start];
     [self waitForExpectations:@[expectation] timeout:10];
@@ -190,8 +193,6 @@
             [array addObject:@1];
             [array addObject:@2];
             [array addObject:@3];
-            [array removeAllObjects];
-            array = nil;
         }
     }
 }

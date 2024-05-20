@@ -24,4 +24,18 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TestSessionDelegate_None : NSObject<NSURLSessionDelegate,NSURLSessionDataDelegate>
 
 @end
+
+@interface FTURLSessionCompleteTestDelegate : NSObject <NSURLSessionDelegate>
+@property (nonatomic, assign) NSInteger URLSessionTaskDidCompleteWithErrorCalledCount;
+@property (nonatomic, assign) NSInteger URLSessionDataTaskDidReceiveDataCalledCount;
+@end
+
+@interface FTURLSessionNoCompleteTestDelegate : NSObject <NSURLSessionDelegate>
+@property (nonatomic, assign) NSInteger URLSessionTaskDidCompleteWithErrorCalledCount;
+@property (nonatomic, assign) NSInteger URLSessionDataTaskDidReceiveDataCalledCount;
+@end
+@interface FTURLSessionNoDidFinishCollectingMetrics : NSObject <NSURLSessionDelegate>
+@property (nonatomic, assign) NSInteger URLSessionTaskDidCompleteWithErrorCalledCount;
+@property (nonatomic, assign) NSInteger URLSessionDataTaskDidReceiveDataCalledCount;
+@end
 NS_ASSUME_NONNULL_END
