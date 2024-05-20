@@ -35,7 +35,7 @@
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
     [self measureBlock:^{
-         [presetProperty loggerPropertyWithStatus:(LogStatus)FTStatusInfo];
+         [presetProperty loggerProperty];
     }];
 }
 - (void)testSDKInitPerformance {

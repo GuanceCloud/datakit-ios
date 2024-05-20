@@ -20,10 +20,11 @@
     }
     return self;
 }
--(instancetype)initWithMessage:(NSString *)message level:(LogStatus)level property:(nullable NSDictionary *)property timestamp:(nonnull NSDate *)timestamp{
+-(instancetype)initWithMessage:(NSString *)message level:(LogStatus)level status:(NSString *)status property:(nullable NSDictionary *)property timestamp:(nonnull NSDate *)timestamp{
     if (self = [super init]) {
         _message = message;
         _level = level;
+        _status = status;
         _timestamp = timestamp;
         _property = property;
         _userLog = YES;

@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - status: 等级和状态
 ///   - property: 自定义属性(可选)
 - (void)log:(NSString *)message
-     status:(LogStatus)status
+ statusType:(LogStatus)statusType
    property:(nullable NSDictionary *)property;
 
 /// 同步执行处理日志的队列

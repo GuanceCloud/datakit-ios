@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTLogMessage : NSObject
 @property (nonatomic, copy, readonly) NSString *message;
 @property (nonatomic, assign, readonly) LogStatus level;
+@property (nonatomic, copy, readonly) NSString *status;
 @property (nonatomic, copy, readonly) NSString *function;
 @property (nonatomic, assign, readonly) NSUInteger line;
 @property (nonatomic, strong, readonly) NSDate *timestamp;
@@ -27,10 +28,11 @@ NS_ASSUME_NONNULL_BEGIN
                        function:(NSString *)function
                            line:(NSUInteger)line
                       timestamp:(NSDate *)timestamp;
-- (instancetype)initWithMessage:(NSString *)message
-                          level:(LogStatus)level
-                       property:(nullable NSDictionary *)property
-                      timestamp:(NSDate *)timestamp;
+-(instancetype)initWithMessage:(NSString *)message
+                         level:(LogStatus)level
+                        status:(nullable NSString *)status
+                      property:(nullable NSDictionary *)property
+                     timestamp:(nonnull NSDate *)timestamp;
 @end
 
 NS_ASSUME_NONNULL_END

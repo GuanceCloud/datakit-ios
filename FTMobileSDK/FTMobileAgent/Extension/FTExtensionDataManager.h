@@ -83,7 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param tm 时间戳
 /// @param groupIdentifier AppGroups Identifier
 /// @return 是否写入成功
-- (BOOL)writeLoggerEvent:(int)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
+- (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(nullable NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier;
 
 /// 读取 groupIdentifier 对应的所有缓存事件
 /// @param groupIdentifier AppGroups Identifier

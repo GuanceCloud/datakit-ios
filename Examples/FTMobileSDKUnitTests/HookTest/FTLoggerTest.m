@@ -331,6 +331,34 @@
     XCTAssertTrue(count == 5);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testCustomLoggerStatus{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.printCustomLogToConsole = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    
+    [[FTLogger sharedInstance] log:@"testCustomLoggerStatus" status:@"test"];
+    
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    BOOL hasLogger = NO;
+    for (FTRecordModel *model in newDatas) {
+        NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+        NSDictionary *op = dict[@"opdata"];
+        NSDictionary *tags = op[FT_TAGS];
+        NSDictionary *fields = op[FT_FIELDS];
+        NSString *message = fields[@"message"];
+        NSString *status = tags[@"status"];
+        if([message isEqualToString:@"testCustomLoggerStatus"]){
+            hasLogger = YES;
+            XCTAssertTrue([status isEqualToString:@"test"]);
+            break;
+        }
+    }
+    [[FTMobileAgent sharedInstance] shutDown];
+}
 - (void)testSDKShutDown{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
