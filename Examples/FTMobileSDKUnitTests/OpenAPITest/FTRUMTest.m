@@ -881,6 +881,17 @@
     XCTAssertFalse([[tags valueForKey:FT_RUM_KEY_SESSION_ID] isEqualToString:@"testRUMGlobalContext"]);
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
 }
+- (void)testRUMGlobalContext_mutable{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    [FTMobileAgent startWithConfigOptions:config];
+
+    NSMutableDictionary *context = @{@"testRUMGlobalContext_mutable":@"testRUMGlobalContext_mutable"}.mutableCopy;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.globalContext = context;
+    [context setValue:@"testRUMGlobalContext" forKey:@"testRUMGlobalContext_mutable"];
+    XCTAssertTrue([rumConfig.globalContext[@"testRUMGlobalContext_mutable"] isEqualToString:@"testRUMGlobalContext_mutable"]);
+    XCTAssertTrue([context[@"testRUMGlobalContext_mutable"] isEqualToString:@"testRUMGlobalContext"]);
+}
 #pragma mark ========== Property ==========
 - (void)testActionProperty{
     [self setRumConfig];
@@ -894,6 +905,26 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
             XCTAssertTrue([fields[@"action_property"] isEqualToString:@"testActionProperty1"]);
+            *stop = YES;
+        }
+    }];
+}
+- (void)testActionProperty_mutable{
+    [self setRumConfig];
+    NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    [FTModelHelper startView];
+    NSDictionary *property = @{@"action_property":@"testActionProperty1"}.mutableCopy;
+    [FTModelHelper addActionWithContext:property];
+    [property setValue:@"add" forKey:@"add"];
+    [FTModelHelper addActionWithContext:@{@"action_property":@"testActionPropert2"}];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
+    XCTAssertTrue(newArray.count>oldArray.count);
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+            XCTAssertTrue([fields[@"action_property"] isEqualToString:@"testActionProperty1"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"add"]);
+            XCTAssertTrue([property[@"add"] isEqualToString:@"add"]);
             *stop = YES;
         }
     }];
@@ -950,6 +981,32 @@
     }];
     XCTAssertTrue(hasViewData);
 }
+- (void)testViewProperty_mutable{
+    [self setRumConfig];
+    NSDictionary *property = @{@"view_start_context":@"testViewProperty"}.mutableCopy;
+    [FTModelHelper startView:property];
+    [property setValue:@"add" forKey:@"add"];
+    [self addErrorData:nil];
+    NSDictionary *stopProperty = @{@"view_stop_context":@"testViewProperty"}.mutableCopy;
+    [FTModelHelper stopView:stopProperty];
+    [stopProperty setValue:@"add" forKey:@"view_stop_add"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasViewData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_VIEW] && hasViewData == NO) {
+            XCTAssertTrue([fields[@"view_stop_context"] isEqualToString:@"testViewProperty"]);
+            XCTAssertTrue([fields[@"view_start_context"] isEqualToString:@"testViewProperty"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"add"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"view_stop_add"]);
+            XCTAssertTrue([stopProperty[@"view_stop_add"] isEqualToString:@"add"]);
+            XCTAssertTrue([property[@"add"] isEqualToString:@"add"]);
+            hasViewData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasViewData);
+}
 - (void)testErrorProperty{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -960,6 +1017,26 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
             XCTAssertTrue([fields[@"error_context"] isEqualToString:@"testErrorProperty"]);
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
+- (void)testErrorProperty_mutable{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    NSDictionary *property = @{@"error_context":@"error_context"}.mutableCopy;
+    [self addErrorData:property];
+    [property setValue:@"add" forKey:@"add"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasErrorData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ERROR]) {
+            XCTAssertTrue([fields[@"error_context"] isEqualToString:@"error_context"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"add"]);
+            XCTAssertTrue([property[@"add"] isEqualToString:@"add"]);
             hasErrorData = YES;
             *stop = YES;
         }
@@ -982,6 +1059,26 @@
     }];
     XCTAssertTrue(hasErrorData);
 }
+- (void)testLongTaskProperty_mutable{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    NSDictionary *property = @{@"longtask_context":@"testLongTaskContext"}.mutableCopy;
+    [self addLongTaskData:property];
+    [property setValue:@"add" forKey:@"add"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasErrorData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_LONG_TASK]) {
+            XCTAssertTrue([fields[@"longtask_context"] isEqualToString:@"testLongTaskContext"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"add"]);
+            XCTAssertTrue([property[@"add"] isEqualToString:@"add"]);
+            hasErrorData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasErrorData);
+}
 - (void)testStartResourceProperty{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -998,6 +1095,28 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
+- (void)testStartResourceProperty_mutable{
+    [self setRumConfig];
+    NSMutableArray *array = @[@1,@2].mutableCopy;
+    NSMutableDictionary *property = @{@"resource_start_context":array}.mutableCopy;
+    [FTModelHelper startView];
+    [self addResource:property endContext:nil];
+    [array addObject:@3];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            XCTAssertTrue([fields[@"resource_start_context"] isKindOfClass:NSArray.class]);
+            NSArray *context = fields[@"resource_start_context"];
+            NSArray *equalArray = @[@1,@2];
+            XCTAssertTrue([context isEqualToArray:equalArray]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
 - (void)testStopResourceProperty{
     [self setRumConfig];
     [FTModelHelper startView];
@@ -1008,6 +1127,26 @@
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
             XCTAssertTrue([fields[@"resource_stop_context"] isEqualToString:@"testStopResourceContext"]);
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
+- (void)testStopResourceProperty_mutable{
+    [self setRumConfig];
+    [FTModelHelper startView];
+    NSDictionary *endProperty = @{@"resource_stop_context":@"testResourceContext"}.mutableCopy;
+    [self addResource:nil endContext:endProperty];
+    [endProperty setValue:@"add" forKey:@"add"];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            XCTAssertTrue([fields[@"resource_stop_context"] isEqualToString:@"testResourceContext"]);
+            XCTAssertFalse([fields.allKeys containsObject:@"add"]);
+            XCTAssertTrue([endProperty[@"add"] isEqualToString:@"add"]);
             hasResourceData = YES;
             *stop = YES;
         }

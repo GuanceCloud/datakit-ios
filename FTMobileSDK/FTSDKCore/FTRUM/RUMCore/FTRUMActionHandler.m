@@ -21,7 +21,6 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 @property (nonatomic, copy) NSString *action_id;
 //field
 @property (nonatomic, strong) NSDate *actionStartTime;
-@property (nonatomic, strong) NSNumber *duration;
 @property (nonatomic, assign) NSInteger actionLongTaskCount;
 @property (nonatomic, assign) NSInteger actionResourcesCount;
 @property (nonatomic, assign) NSInteger actionErrorCount;
@@ -96,15 +95,13 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     return self.activeResourcesCount<=0;
 }
 -(void)writeActionData:(NSDate *)endDate{
-    if (self.type == FTRUMDataClick) {
-        self.duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
-    }
+    NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
-
-    NSMutableDictionary *fields = @{FT_DURATION:self.duration,
-                             FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
-                             FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
-                             FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
+    
+    NSMutableDictionary *fields = @{FT_DURATION:duration,
+                                    FT_KEY_ACTION_LONG_TASK_COUNT:@(self.actionLongTaskCount),
+                                    FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
+                                    FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
     }.mutableCopy;
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];

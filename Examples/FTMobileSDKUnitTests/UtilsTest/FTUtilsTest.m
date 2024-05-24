@@ -89,7 +89,7 @@
     XCTAssertTrue([str isEqualToString:@"[\"A\",\"B\",\"C\"]"]);
 }
 - (void)testConvertToJsonDataWithNilArray{
-    XCTAssertNil([FTJSONUtil convertToJsonDataWithObject:nil]);
+    XCTAssertTrue([[FTJSONUtil convertToJsonDataWithObject:nil] isEqualToString:@""]);
 }
 - (void)testConvertToJsonDataWithObjectDict{
     UIView *view = [[UIView alloc]init];
