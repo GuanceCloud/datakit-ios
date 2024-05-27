@@ -34,7 +34,7 @@
                               FT_OPDATA:opdata,
         };
         _op = op;
-        _data =[FTJSONUtil convertToJsonData:data];
+        _data = [FTJSONUtil convertToJsonData:data];
         if (tm&&tm>0) {
             _tm = tm;
         }else{

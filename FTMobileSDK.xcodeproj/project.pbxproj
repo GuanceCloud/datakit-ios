@@ -49,6 +49,12 @@
 		1748A0072BE0BF5800B921FB /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1748A0022BE0BF5800B921FB /* FTLongTaskManager.h */; };
 		1748A0082BE0BF5800B921FB /* FTLongTaskManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1748A0022BE0BF5800B921FB /* FTLongTaskManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1748A0092BE0BF5800B921FB /* FTLongTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */; };
+		174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
+		174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
+		174BC87B2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
+		174BC87C2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
+		174BC87D2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */; };
+		174BC87E2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = 174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */; };
 		174CB06E2B5126D600A4F9C5 /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CB06C2B5126D600A4F9C5 /* FTLongTaskDetector.m */; };
 		174CB06F2B5126D600A4F9C5 /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CB06C2B5126D600A4F9C5 /* FTLongTaskDetector.m */; };
 		174CB0702B5126D600A4F9C5 /* FTLongTaskDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CB06C2B5126D600A4F9C5 /* FTLongTaskDetector.m */; };
@@ -523,6 +529,10 @@
 		17400E912B4E41E100ACBA6C /* FTMachException.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FTMachException.c; sourceTree = "<group>"; };
 		1748A0022BE0BF5800B921FB /* FTLongTaskManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTLongTaskManager.h; sourceTree = "<group>"; };
 		1748A0032BE0BF5800B921FB /* FTLongTaskManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskManager.m; sourceTree = "<group>"; };
+		174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+FTCopyProperties.h"; sourceTree = "<group>"; };
+		174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+FTCopyProperties.m"; sourceTree = "<group>"; };
+		174BC8872BFCBC1B00478EE1 /* NSDate+FTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDate+FTUtil.h"; sourceTree = "<group>"; };
+		174BC8882BFCBC1B00478EE1 /* NSDate+FTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDate+FTUtil.m"; sourceTree = "<group>"; };
 		174CB06C2B5126D600A4F9C5 /* FTLongTaskDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskDetector.m; sourceTree = "<group>"; };
 		174CB06D2B5126D600A4F9C5 /* FTLongTaskDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTLongTaskDetector.h; sourceTree = "<group>"; };
 		174D91A22A2083C300D85AAA /* FTLogger+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLogger+Private.h"; sourceTree = "<group>"; };
@@ -998,6 +1008,8 @@
 				1759510B2A6FE4DE006FAB9D /* NSNumber+FTAdd.m */,
 				17AC17492B98635C003E18A6 /* NSDate+FTUtil.h */,
 				17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */,
+				174BC8772BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h */,
+				174BC8782BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -1240,6 +1252,7 @@
 				17AB76CE29D432DE008FBBF5 /* FTCPUMonitor.h in Headers */,
 				1776BA852B99B668008424FF /* FTOSLogger.h in Headers */,
 				17AB770A29D432DE008FBBF5 /* FTRUMViewHandler.h in Headers */,
+				174BC87E2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
 				17AB770729D432DE008FBBF5 /* FTRUMResourceHandler.h in Headers */,
 				178649342A1DB58400521187 /* FTLogger.h in Headers */,
 				17AC17452B9856C3003E18A6 /* FTFileLogger.h in Headers */,
@@ -1328,6 +1341,7 @@
 				1759510D2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
 				1776070929D139DA00D17137 /* FTSessionTaskHandler.h in Headers */,
 				174CB0722B5126D600A4F9C5 /* FTLongTaskDetector.h in Headers */,
+				174BC87C2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
 				1776069C29D1375800D17137 /* NSString+FTAdd.h in Headers */,
 				177606B829D137E900D17137 /* FTExternalResourceProtocol.h in Headers */,
 				17E4CC5029CD42EB005C2D99 /* FTMobileExtension.h in Headers */,
@@ -1389,6 +1403,7 @@
 				17E4CC3529CD42E4005C2D99 /* FTTrack.h in Headers */,
 				1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */,
 				1759510C2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
+				174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
 				1763BD8629DFF04F009EE026 /* FTNetworkManager.h in Headers */,
 				17E4CC2429CD42E4005C2D99 /* FTExternalResourceProtocol.h in Headers */,
 				17E4CB3A29CD42DA005C2D99 /* FTThreadDispatchManager.h in Headers */,
@@ -1713,6 +1728,7 @@
 				17400E972B4E41E100ACBA6C /* FTMachException.c in Sources */,
 				1776063F29D135FC00D17137 /* FTCrashMonitor.m in Sources */,
 				1763BDAF29DFF04F009EE026 /* ZY_FMDatabaseAdditions.m in Sources */,
+				174BC87D2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,
 				17AB76D129D432DE008FBBF5 /* FTMemoryMonitor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1756,6 +1772,7 @@
 				1776071F29D13A0700D17137 /* FTURLSessionInterceptor.m in Sources */,
 				17AC174F2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */,
 				17AB76B829D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
+				174BC87B2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,
 				17AB76D029D432DE008FBBF5 /* FTMemoryMonitor.m in Sources */,
 				1776066629D1367200D17137 /* FTSwizzler.m in Sources */,
 				1776072329D13A1100D17137 /* NSURLSession+FTSwizzler.m in Sources */,
@@ -1854,6 +1871,7 @@
 				17AB76B729D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
 				1776062B29D1347500D17137 /* FTWebViewJavascriptLeakAvoider.m in Sources */,
 				17E4CC4429CD42E4005C2D99 /* FTCrashMonitor.m in Sources */,
+				174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,
 				1776BA812B99B668008424FF /* FTOSLogger.m in Sources */,
 				17AB76EA29D432DE008FBBF5 /* FTRUMViewHandler.m in Sources */,
 				17E4CB3D29CD42DA005C2D99 /* FTThreadDispatchManager.m in Sources */,

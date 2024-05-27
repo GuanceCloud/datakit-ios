@@ -279,7 +279,28 @@
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
-- (void)testLoggerProperty{
+- (void)testGlobalContext_mutable{
+    [self setRightSDKConfig];
+    NSMutableDictionary *globalContext = @{@"logger_id":@"logger_id_1"}.mutableCopy;
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.globalContext = globalContext;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [globalContext setValue:@"logger_mutable" forKey:@"logger_mutable"];
+    [[FTMobileAgent sharedInstance] logging:@"testGlobalContext_mutable" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
+    XCTAssertFalse([tags.allKeys containsObject:@"logger_mutable"]);
+
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testLogger_Property{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
@@ -293,6 +314,25 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *fields = op[FT_FIELDS];
     XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testLogger_mutableProperty{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    NSMutableDictionary *property = @{@"logger_property":@"testLoggerProperty"}.mutableCopy;
+    [[FTMobileAgent sharedInstance] logging:@"testLoggerProperty" status:FTStatusInfo property:property];
+    [property setValue:@"logger_property_add" forKey:@"testLoggerProperty_add"];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *fields = op[FT_FIELDS];
+    XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
+    XCTAssertFalse([fields.allKeys containsObject:@"logger_property_add"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLoggerStatus{

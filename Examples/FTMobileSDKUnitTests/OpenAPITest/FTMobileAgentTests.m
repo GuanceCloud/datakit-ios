@@ -288,6 +288,16 @@
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testGlobalContext_mutable{
+    NSMutableDictionary *context = @{@"testGlobalContext_mutable":@"testGlobalContext_mutable"}.mutableCopy;
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    config.globalContext = context;
+    [context setValue:@"testGlobalContext" forKey:@"testGlobalContext_mutable"];
+    XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
+    XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
+}
 - (void)testSyncSleepTimeScope{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.syncSleepTime = -1;
@@ -484,6 +494,7 @@
     loggerConfig.discardType = FTDiscard;
     loggerConfig.enableLinkRumData = YES;
     loggerConfig.logLevelFilter = @[@(FTStatusOk)];
+    loggerConfig.printCustomLogToConsole = YES;
     loggerConfig.globalContext = @{@"aa":@"bb"};
     FTLoggerConfig *copyLoggerConfig = [loggerConfig copy];
     XCTAssertTrue(copyLoggerConfig.enableCustomLog == loggerConfig.enableCustomLog);
@@ -492,10 +503,14 @@
     XCTAssertTrue(copyLoggerConfig.enableLinkRumData == loggerConfig.enableLinkRumData);
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
+    XCTAssertTrue(loggerConfig.printCustomLogToConsole == copyLoggerConfig.printCustomLogToConsole);
 }
 - (void)testLoggerConfigInitWithDict{
     XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.printCustomLogToConsole = YES;
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableLinkRumData = YES;
     NSDictionary *dict = [loggerConfig convertToDictionary];
     FTLoggerConfig *newLogger = [[FTLoggerConfig alloc]initWithDictionary:dict];
     XCTAssertTrue(loggerConfig.logLevelFilter == newLogger.logLevelFilter);

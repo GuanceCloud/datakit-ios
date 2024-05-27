@@ -95,8 +95,7 @@
     UIView *view = [[UIView alloc]init];
     view.backgroundColor = [UIColor redColor];
     NSDictionary *dict = @{@"view":view};
-    NSString *str = [FTJSONUtil convertToJsonData:dict];
-    XCTAssertTrue([str isEqualToString:@""]);
+    XCTAssertNil([FTJSONUtil convertToJsonData:dict]);
 }
 #pragma mark FTBaseInfoHandler
 - (void)testReplaceUrlGroupNumberChar{

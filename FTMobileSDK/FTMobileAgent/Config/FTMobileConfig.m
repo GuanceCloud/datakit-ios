@@ -12,6 +12,7 @@
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
 #import "FTEnumConstant.h"
+#import "NSDictionary+FTCopyProperties.h"
 @implementation FTRumConfig
 - (instancetype)init{
     return [self initWithAppid:@""];
@@ -70,6 +71,9 @@
         return nil;
     }
 }
+-(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
+    _globalContext = [globalContext ft_deepCopy];
+}
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:@(self.enableTrackAppCrash) forKey:@"enableTrackAppCrash"];
@@ -110,6 +114,7 @@
     options.discardType = self.discardType;
     options.globalContext = self.globalContext;
     options.logCacheLimitCount = self.logCacheLimitCount;
+    options.printCustomLogToConsole = self.printCustomLogToConsole;
     return options;
 }
 -(instancetype)initWithDictionary:(NSDictionary *)dict{
@@ -121,6 +126,7 @@
             _logLevelFilter = dict[@"logLevelFilter"];
             _discardType = (FTLogCacheDiscard)[dict[@"discardType"] intValue];
             _globalContext = dict[@"globalContext"];
+            _printCustomLogToConsole = [dict[@"printCustomLogToConsole"] boolValue];
         }
         return self;
     }else{
@@ -130,6 +136,9 @@
 -(void)setLogCacheLimitCount:(int)logCacheLimitCount{
     _logCacheLimitCount = MAX(1000, logCacheLimitCount);
 }
+-(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
+    _globalContext = [globalContext ft_deepCopy];
+}
 -(NSDictionary *)convertToDictionary{
     NSMutableDictionary *dict = [NSMutableDictionary new];
     [dict setValue:@(self.samplerate) forKey:@"samplerate"];
@@ -138,6 +147,7 @@
     [dict setValue:self.logLevelFilter forKey:@"logLevelFilter"];
     [dict setValue:@(self.discardType) forKey:@"discardType"];
     [dict setValue:self.globalContext forKey:@"globalContext"];
+    [dict setValue:@(self.printCustomLogToConsole) forKey:@"printCustomLogToConsole"];
     return dict;
 }
 @end
@@ -209,6 +219,9 @@
         _syncSleepTime = 0;
     }
     return self;
+}
+-(void)setGlobalContext:(NSDictionary<NSString *,NSString *> *)globalContext{
+    _globalContext = [globalContext ft_deepCopy];
 }
 - (void)setEnvWithType:(FTEnv)envType{
     _env = FTEnvStringMap[envType];

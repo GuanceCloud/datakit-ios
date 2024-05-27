@@ -92,7 +92,7 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppID:_rumConfig.appid];
-        self.presetProperty.rumContext = [_rumConfig.globalContext copy];
+        self.presetProperty.rumContext = _rumConfig.globalContext;
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -103,7 +103,7 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
-        self.presetProperty.logContext = [_loggerConfig.globalContext copy];
+        self.presetProperty.logContext = _loggerConfig.globalContext;
         [FTTrackDataManager sharedInstance]
             .setLogCacheLimitCount(_loggerConfig.logCacheLimitCount)
             .setLogDiscardNew((_loggerConfig.discardType == FTDiscard));
@@ -271,9 +271,9 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    FTInnerLogInfo(@"[SDK] SHUT DOWN");
     [[FTLog sharedInstance] shutDown];
     [[FTTrackDataManager sharedInstance] shutDown];
+    FTInnerLogInfo(@"[SDK] SHUT DOWN");
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
