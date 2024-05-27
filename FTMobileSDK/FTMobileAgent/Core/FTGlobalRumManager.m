@@ -54,6 +54,7 @@ static dispatch_once_t onceToken;
     dependencies.monitor = [[FTRUMMonitor alloc]initWithMonitorType:(DeviceMetricsMonitorType)rumConfig.deviceMetricsMonitorType frequency:(MonitorFrequency)rumConfig.monitorFrequency];
     dependencies.writer = writer;
     dependencies.sampleRate = rumConfig.samplerate;
+    dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
@@ -73,7 +74,6 @@ static dispatch_once_t onceToken;
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-    [self.rumManager notifyRumInit];
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{

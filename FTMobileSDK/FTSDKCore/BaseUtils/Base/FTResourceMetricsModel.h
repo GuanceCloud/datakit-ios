@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *duration;
 ///响应结果大小 response data size
 @property (nonatomic, strong) NSNumber *responseSize;
+///远程地址
+@property (nonatomic, copy) NSString *remoteAddress;
 /// 初始化方法
 ///
 /// - Parameters:

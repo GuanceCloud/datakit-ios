@@ -33,6 +33,7 @@
         }
         if (@available(iOS 13,macOS 10.15, *)) {
             _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
+            _remoteAddress = taskMetrics.remoteAddress;
         }
     }
     return self;

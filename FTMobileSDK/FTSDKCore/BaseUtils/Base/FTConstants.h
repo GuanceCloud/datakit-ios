@@ -87,6 +87,7 @@ extern NSString * const FT_KEY_RESOURCE_STATUS_GROUP;
 extern NSString * const FT_KEY_RESPONSE_CONNECTION;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_TYPE;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_ENCODING;
+extern NSString * const FT_KEY_RESOURCE_HOST_IP;
 #pragma mark --- field
 extern NSString * const FT_KEY_RESOURCE_SIZE;
 extern NSString * const FT_KEY_RESOURCE_DNS;

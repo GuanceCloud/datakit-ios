@@ -1031,6 +1031,39 @@
     }];
     XCTAssertTrue(hasResourceData);
 }
+
+- (void)testEnableResourceHostIP{
+    [self enableResourceHostIP:YES];
+}
+- (void)testDisableResourceHostIP{
+    [self enableResourceHostIP:NO];
+}
+- (void)enableResourceHostIP:(BOOL)enable{
+    [self setRumConfigEnableResourceHostIP:enable];
+    [FTModelHelper startView];
+    XCTestExpectation *expect = [self expectationWithDescription:@"testEnableResourceHostIP"];
+    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSURLSessionDataTask *dataTask = [urlSession dataTaskWithURL:[NSURL URLWithString:@"https://www.baidu.com"] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        [expect fulfill];
+    }];
+    [dataTask resume];
+    [self waitForExpectations:@[expect]];
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    __block NSInteger hasResourceData = NO;
+    [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
+        if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
+            if(enable){
+                XCTAssertNotNil(fields[FT_KEY_RESOURCE_HOST_IP]);
+            }else{
+                XCTAssertNil(fields[FT_KEY_RESOURCE_HOST_IP]);
+            }
+            hasResourceData = YES;
+            *stop = YES;
+        }
+    }];
+    XCTAssertTrue(hasResourceData);
+}
 #pragma mark ========== Mock Data ==========
 
 - (void)addErrorData:(NSDictionary *)property{
@@ -1148,19 +1181,21 @@
 }
 
 - (void)setRumConfig{
+    [self setRumConfigEnableResourceHostIP:NO];
+}
+- (void)setRumConfigEnableResourceHostIP:(BOOL)enable{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableResourceHostIP = enable;
     rumConfig.errorMonitorType = FTErrorMonitorAll;
     [FTMobileAgent startWithConfigOptions:config];
     
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    
 }
-
 @end
