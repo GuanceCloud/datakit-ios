@@ -15,6 +15,7 @@
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
 #import "FTErrorMonitorInfo.h"
+#import "FTReadWriteHelper.h"
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
     [FTAppStateStartUp] = @"startup",
@@ -25,7 +26,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 @interface FTRUMManager()<FTRUMSessionProtocol>
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMSessionHandler *sessionHandler;
-@property (nonatomic, strong) NSMutableDictionary *preViewDuration;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary *> *preViewDuration;
 @property (nonatomic, strong) dispatch_queue_t rumQueue;
 @end
 @implementation FTRUMManager
@@ -34,7 +35,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if(self){
         _rumDependencies = dependencies;
         _appState = FTAppStateStartUp;
-        _preViewDuration = [NSMutableDictionary new];
+        _preViewDuration = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]] ;
         _rumQueue = dispatch_queue_create_with_target("com.guance.rum", DISPATCH_QUEUE_SERIAL, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         dispatch_queue_set_specific(_rumQueue, FTRUMQueueIdentityKey, &FTRUMQueueIdentityKey, NULL);
         [self notifyRumInit];
@@ -49,14 +50,20 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 #pragma mark - Session -
 -(void)notifyRumInit{
     dispatch_sync(self.rumQueue, ^{
-        FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
-        model.type = FTRUMSDKInit;
-        [self process:model];
+        @try {
+            FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
+            model.type = FTRUMSDKInit;
+            [self process:model];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
     });
 }
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
-    [self.preViewDuration setValue:loadTime forKey:viewName];
+    [self.preViewDuration concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+        [value setValue:loadTime forKey:viewName];
+    }];
 }
 -(void)startViewWithName:(NSString *)viewName{
     [self startViewWithName:viewName property:nil];
@@ -65,17 +72,20 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self startViewWithViewID:[FTBaseInfoHandler randomUUID] viewName:viewName property:property];
 }
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
-    NSNumber *duration = @0;
+    __block NSNumber *duration = @0;
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
         return;
     }
-    if ([self.preViewDuration.allKeys containsObject:viewName]) {
-        duration = self.preViewDuration[viewName];
-        [self.preViewDuration removeObjectForKey:viewName];
-    }
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    [self.preViewDuration concurrentRead:^(NSMutableDictionary * _Nonnull value) {
+        if ([value.allKeys containsObject:viewName]) {
+            duration = value[viewName];
+            [value removeObjectForKey:viewName];
+        }
+    }];
+    
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithViewID:viewId viewName:viewName viewReferrer:self.viewReferrer];
             viewModel.time = time;
             viewModel.loading_time = duration?:@0;
@@ -83,11 +93,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.fields = property;
             self.viewReferrer = viewName;
             [self process:viewModel];
-        });
-        
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 -(void)stopView{
     [self stopViewWithViewID:nil property:nil];
@@ -96,9 +105,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self stopViewWithViewID:nil property:property];
 }
 -(void)stopViewWithViewID:(NSString *)viewId property:(nullable NSDictionary *)property{
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             NSString *stopViewId = viewId?viewId:[self.sessionHandler getCurrentViewID];
             if(!stopViewId){
                 return;
@@ -108,10 +117,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             viewModel.type = FTRUMDataViewStop;
             viewModel.fields = property;
             [self process:viewModel];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 #pragma mark - Action -
 -(void)addClickActionWithName:(NSString *)actionName{
@@ -127,22 +136,22 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!actionName || actionName.length == 0 || !actionType || actionType.length == 0) {
         return;
     }
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.time = time;
             actionModel.type = FTRUMDataClick;
             actionModel.fields = property;
             [self process:actionModel];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 - (void)addLaunch:(FTLaunchType)type launchTime:(NSDate *)time duration:(NSNumber *)duration{
-    @try {
-        dispatch_async(self.rumQueue, ^{
+    dispatch_async(self.rumQueue, ^{
+        @try {
             NSString *actionName;
             NSString *actionType;
             switch (type) {
@@ -165,10 +174,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             launchModel.action_type = actionType;
             
             [self process:launchModel];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 
 #pragma mark - Resource -
@@ -179,17 +188,17 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!key) {
         return;
     }
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             FTRUMResourceDataModel *resourceStart = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStart identifier:key];
             resourceStart.time = time;
             resourceStart.fields = property;
             [self process:resourceStart];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
     [self addResourceWithKey:key metrics:metrics content:content spanID:nil traceID:nil];
@@ -199,9 +208,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!key) {
         return;
     }
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             NSMutableDictionary *tags = [NSMutableDictionary new];
             NSMutableDictionary *fields = [NSMutableDictionary new];
             NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
@@ -276,11 +285,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             resourceSuccess.tags = tags;
             resourceSuccess.fields = fields;
             [self process:resourceSuccess];
-        });
-        
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 - (NSString *)getResourceStatusGroup:(NSInteger )status{
     if (status>=0 && status<1000) {
@@ -296,17 +304,18 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!key) {
         return;
     }
-    @try {
-        NSDate *time = [NSDate date];
-        dispatch_async(self.rumQueue, ^{
+    NSDate *time = [NSDate date];
+    dispatch_async(self.rumQueue, ^{
+        @try {
             FTRUMResourceDataModel *resource = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceStop identifier:key];
             resource.time = time;
             resource.fields = property;
             [self process:resource];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
+    
 }
 
 
@@ -330,8 +339,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
-    @try {
-        dispatch_sync(self.rumQueue, ^{
+    dispatch_sync(self.rumQueue, ^{
+        @try {
             NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
                                             FT_KEY_ERROR_STACK:stack,
             }.mutableCopy;
@@ -350,10 +359,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             model.fields = field;
             model.fatal = fatal;
             [self process:model];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time{
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
@@ -362,8 +371,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!stack || stack.length == 0 || (duration == nil)) {
         return;
     }
-    @try {
-        dispatch_async(self.rumQueue, ^{
+    dispatch_async(self.rumQueue, ^{
+        @try {
             NSMutableDictionary *fields = @{FT_DURATION:duration,
                                             FT_KEY_LONG_TASK_STACK:stack
             }.mutableCopy;
@@ -376,10 +385,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
             model.fields = fields;
             model.tm = time;
             [self process:model];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 #pragma mark - webview js -
 
@@ -387,16 +396,16 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!measurement) {
         return;
     }
-    @try {
-        dispatch_async(self.rumQueue, ^{
+    dispatch_async(self.rumQueue, ^{
+        @try {
             FTRUMWebViewData *webModel = [[FTRUMWebViewData alloc]initWithMeasurement:measurement tm:tm];
             webModel.tags = tags;
             webModel.fields = fields;
             [self process:webModel];
-        });
-    } @catch (NSException *exception) {
-        FTInnerLogError(@"exception %@",exception);
-    }
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"exception %@",exception);
+        }
+    });
 }
 
 #pragma mark - FTRUMSessionProtocol -

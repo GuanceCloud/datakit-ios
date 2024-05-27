@@ -190,8 +190,6 @@
             [array addObject:@1];
             [array addObject:@2];
             [array addObject:@3];
-            [array removeAllObjects];
-            array = nil;
         }
     }
 }

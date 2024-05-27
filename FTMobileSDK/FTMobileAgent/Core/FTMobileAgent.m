@@ -271,9 +271,9 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    FTInnerLogInfo(@"[SDK] SHUT DOWN");
     [[FTLog sharedInstance] shutDown];
     [[FTTrackDataManager sharedInstance] shutDown];
+    FTInnerLogInfo(@"[SDK] SHUT DOWN");
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

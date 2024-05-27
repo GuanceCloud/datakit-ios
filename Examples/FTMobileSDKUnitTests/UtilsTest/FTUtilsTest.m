@@ -89,14 +89,13 @@
     XCTAssertTrue([str isEqualToString:@"[\"A\",\"B\",\"C\"]"]);
 }
 - (void)testConvertToJsonDataWithNilArray{
-    XCTAssertTrue([[FTJSONUtil convertToJsonDataWithObject:nil] isEqualToString:@""]);
+    XCTAssertNil([FTJSONUtil convertToJsonDataWithObject:nil]);
 }
 - (void)testConvertToJsonDataWithObjectDict{
     UIView *view = [[UIView alloc]init];
     view.backgroundColor = [UIColor redColor];
     NSDictionary *dict = @{@"view":view};
-    NSString *str = [FTJSONUtil convertToJsonData:dict];
-    XCTAssertTrue([str isEqualToString:@""]);
+    XCTAssertNil([FTJSONUtil convertToJsonData:dict]);
 }
 #pragma mark FTBaseInfoHandler
 - (void)testReplaceUrlGroupNumberChar{

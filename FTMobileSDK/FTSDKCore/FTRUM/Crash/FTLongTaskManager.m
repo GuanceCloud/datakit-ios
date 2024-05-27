@@ -218,10 +218,14 @@
         self.longTaskEvent = event;
         NSDictionary *dict = [self.longTaskEvent convertToDictionary];
         NSString *jsonString = [FTJSONUtil convertToJsonDataWithObject:dict];
-        NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-        NSData *boundaryData = [FTBoundary dataUsingEncoding:NSUTF8StringEncoding];
-        [self appendData:data];
-        [self appendData:boundaryData];
+        if(jsonString){
+            NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+            NSData *boundaryData = [FTBoundary dataUsingEncoding:NSUTF8StringEncoding];
+            [self appendData:data];
+            [self appendData:boundaryData];
+        }else{
+            FTInnerLogError(@"[LongTask] longTaskEvent convert to Json Data Error");
+        }
     }@catch (NSException *exception) {
         FTInnerLogError(@"[LongTask] exception %@",exception);
     }
