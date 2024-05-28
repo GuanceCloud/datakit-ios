@@ -30,7 +30,7 @@
 #import "FTURLSessionInterceptor.h"
 #import "FTSessionTaskHandler.h"
 #import "FTTracer.h"
-#define FT_SDK_COMPILED_FOR_TESTING
+
 @interface FTTraceTest : XCTestCase<NSURLSessionDelegate,NSCacheDelegate>
 @property (nonatomic, strong) id<FTTracerProtocol> tracer;
 @end

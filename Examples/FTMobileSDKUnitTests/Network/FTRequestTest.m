@@ -104,6 +104,7 @@
     NSString *newSerialNumber = [FTBaseInfoHandler rumRequestSerialNumber];
     XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance] shutDown];
 }
 - (void)testLogSdkDataIDIncrease{
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
@@ -124,6 +125,7 @@
     NSString *newSerialNumber = [FTBaseInfoHandler logRequestSerialNumber];
     XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
+    [[FTTrackDataManager sharedInstance] shutDown];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){

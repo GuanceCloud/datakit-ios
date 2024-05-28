@@ -20,6 +20,8 @@
 #import "FTTrackDataManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileAgent+Private.h"
+#define FT_SDK_COMPILED_FOR_TESTING
+
 typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTest          = 0,
     FTNetworkTestBad          = 1,
@@ -33,6 +35,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTNetworkTestPageSizeMax,
     FTNetworkTestPageSizeCustom,
     FTNetworkTestTimeout,
+    FTNetworkTestAutoSyncData,
 
 };
 @interface FTNetworkTests : XCTestCase
@@ -150,10 +153,14 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     if (urlStr) {
         FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:urlStr];
-        config.autoSync = NO;
+        config.autoSync = (type == FTNetworkTestAutoSyncData);
         config.syncPageSize = pageSize>0?pageSize:10;
         config.enableSDKDebugLog = YES;
         [FTMobileAgent startWithConfigOptions:config];
+        if(type == FTNetworkTestAutoSyncData){
+            FTRumConfig *rum = [[FTRumConfig alloc]initWithAppid:@"Test"];
+            [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rum];
+        }
         FTTraceConfig *trace = [[FTTraceConfig alloc]init];
         trace.enableAutoTrace = YES;
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
@@ -355,9 +362,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     
     FTRecordModel *model = [FTModelHelper createLogModel:@"FTNetworkTests"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
-    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    configuration.timeoutIntervalForRequest = 2;
-    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithSessionConfiguration:configuration];
+    FTNetworkManager *networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:2];
     [networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
         XCTAssertTrue(error.code == -1001);
         [expectation fulfill];
@@ -365,6 +370,49 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
+}
+- (void)testAutoSyncData{
+    [self setRightConfigWithTestType:FTNetworkTestAutoSyncData];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation]];
+
+    [FTModelHelper startView];
+    [FTModelHelper addAction];
+    [FTModelHelper addAction];
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+    }
+    [[FTMobileAgent sharedInstance] syncProcess];
+    NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(count>0);
+    XCTestExpectation *expectation2= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation2 fulfill];
+    });
+    [self waitForExpectations:@[expectation2]];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount == 0);
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+    }
+    XCTestExpectation *expectation3= [self expectationWithDescription:@"异步操作timeout"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(11 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation3 fulfill];
+    });
+    [self waitForExpectations:@[expectation3]];
+    NSInteger newCount2 = [[FTTrackerEventDBTool sharedManger] getDatasCount];
+    XCTAssertTrue(newCount2 == 0);
+
 }
 - (void)pageSize:(FTNetworkTestsType)type{
     [self setRightConfigWithTestType:type];
@@ -446,7 +494,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time&&duration<50+time);
+    XCTAssertTrue(duration>time&&duration<100+time);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

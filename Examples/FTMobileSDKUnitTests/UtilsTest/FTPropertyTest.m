@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
+#import "FTTrackDataManager.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
 #import "FTMobileAgent+Private.h"
@@ -84,7 +85,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
     [[FTMobileAgent sharedInstance] logging:@"testIllegalUrl" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getAllDatas] lastObject];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {

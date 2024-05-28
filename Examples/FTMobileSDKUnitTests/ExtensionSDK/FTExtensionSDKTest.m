@@ -19,6 +19,7 @@
 #import "FTConstants.h"
 #import "FTTrackerEventDBTool.h"
 #import "FTLogger+Private.h"
+#import "FTTrackDataManager.h"
 @interface FTExtensionSDKTest : XCTestCase
 
 @end
@@ -203,10 +204,10 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:logger];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     [[FTMobileAgent sharedInstance] trackEventFromExtensionWithGroupIdentifier:@"group.com.ft.widget.demo" completion:^(NSString * _Nonnull groupIdentifier, NSArray * _Nonnull events) {
-        [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+        [[FTTrackDataManager sharedInstance] insertCacheToDB];
         NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
         XCTAssertTrue(datas.count == events.count);
         XCTAssertTrue(count + datas.count == newCount);

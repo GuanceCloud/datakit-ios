@@ -13,16 +13,14 @@
 @end
 @implementation FTNetworkManager
 -(instancetype)init{
-    return [self initWithSessionConfiguration:nil];
+    return [self initWithTimeoutIntervalForRequest:30];
 }
--(instancetype)initWithSessionConfiguration:(nullable NSURLSessionConfiguration *)configuration {
+-(instancetype)initWithTimeoutIntervalForRequest:(NSTimeInterval)timeOut{
     self = [super init];
     if(self){
-        if(!configuration){
-            configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-            configuration.timeoutIntervalForRequest = 30;
-            configuration.HTTPShouldUsePipelining = NO;
-        }
+        NSURLSessionConfiguration  *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        configuration.timeoutIntervalForRequest = timeOut;
+        configuration.HTTPShouldUsePipelining = NO;
         _session = [NSURLSession sessionWithConfiguration:configuration];
     }
     return self;

@@ -105,7 +105,7 @@
         _enableLinkRumData = NO;
         _enableCustomLog = NO;
         _logLevelFilter = @[@0,@1,@2,@3,@4];
-        _logCacheLimitCount = 5000;
+        _logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
     }
     return self;
 }
