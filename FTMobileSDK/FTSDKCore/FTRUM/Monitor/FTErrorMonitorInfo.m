@@ -9,6 +9,7 @@
 #import "FTErrorMonitorInfo.h"
 #import "FTConstants.h"
 #import "FTMonitorUtils.h"
+#import "FTBaseInfoHandler.h"
 @implementation FTErrorMonitorInfo
 + (NSDictionary *)errorMonitorInfo:(ErrorMonitorType)monitorType{
     NSMutableDictionary *errorTag = [NSMutableDictionary new];
