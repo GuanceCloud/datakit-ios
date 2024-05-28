@@ -153,10 +153,13 @@ static dispatch_once_t onceToken;
         }
         __weak __typeof(self) weakSelf = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            long result = dispatch_semaphore_wait(weakSelf.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)1*NSEC_PER_MSEC));
-            if(result!=0){
-                [weakSelf createUploadDelayTimer];
-                dispatch_semaphore_wait(weakSelf.uploadDelaySemaphore, DISPATCH_TIME_FOREVER);
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if(strongSelf){
+                long result = dispatch_semaphore_wait(strongSelf.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)1*NSEC_PER_MSEC));
+                if(result!=0){
+                    [strongSelf createUploadDelayTimer];
+                    strongSelf.uploadDelaySemaphore = nil;
+                }
             }
         });
     }
@@ -247,7 +250,9 @@ static dispatch_once_t onceToken;
     [self.logDataCache insertCacheToDB];
 }
 - (void)shutDown{
-    if(self.uploadDelaySemaphore) dispatch_semaphore_signal(self.uploadDelaySemaphore);
+    if(self.uploadDelaySemaphore){ dispatch_semaphore_signal(self.uploadDelaySemaphore);
+        self.uploadDelaySemaphore = nil;
+    }
     [self.logDataCache insertCacheToDB];
     [self cancelUploadDelayTimer];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];

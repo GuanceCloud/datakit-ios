@@ -59,10 +59,13 @@
     }
     __weak __typeof(self) weakSelf = self;
     dispatch_async(self.logCacheQueue, ^{
-        long result = dispatch_semaphore_wait(weakSelf.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)10*NSEC_PER_MSEC));
-        if(result!=0){
-            [weakSelf insertCacheToDB];
-            if(weakSelf.logSemaphore) dispatch_semaphore_wait(weakSelf.logSemaphore, DISPATCH_TIME_FOREVER);
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if(strongSelf){
+            long result = dispatch_semaphore_wait(strongSelf.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)10*NSEC_PER_MSEC));
+            if(result!=0){
+                [strongSelf insertCacheToDB];
+                strongSelf.logSemaphore = nil;
+            }
         }
     });
 }
@@ -102,7 +105,10 @@
     }
 }
 -(void)dealloc{
-    if(self.logSemaphore)dispatch_semaphore_signal(self.logSemaphore);
+    if(self.logSemaphore){
+        dispatch_semaphore_signal(self.logSemaphore);
+        self.logSemaphore = nil;
+    }
     [self insertCacheToDB];
 }
 @end
