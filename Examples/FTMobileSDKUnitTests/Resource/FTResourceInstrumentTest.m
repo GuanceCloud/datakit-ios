@@ -250,7 +250,8 @@
     [task resume];
     FTSessionTaskHandler *handler = [self getTraceHandler:task];
     [handler addObserver:self forKeyPath:@"response" options:NSKeyValueObservingOptionNew context:nil];
-    [self waitForExpectations:@[self.expectation]];
+    [self waitForExpectationsWithTimeout:5 handler:nil];
+    XCTAssertTrue(handler.response);
     [handler removeObserver:self forKeyPath:@"response"];
     XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount == 1);
 }
