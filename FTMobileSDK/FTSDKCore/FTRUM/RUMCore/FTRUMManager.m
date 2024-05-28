@@ -49,7 +49,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 #pragma mark - Session -
 -(void)notifyRumInit{
-    dispatch_sync(self.rumQueue, ^{
+    [self syncProcess:^{
         @try {
             FTRUMDataModel *model = [[FTRUMDataModel alloc]init];
             model.type = FTRUMSDKInit;
@@ -57,7 +57,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
-    });
+    }];
 }
 #pragma mark - View -
 -(void)onCreateView:(NSString *)viewName loadTime:(NSNumber *)loadTime{
@@ -342,7 +342,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
         return;
     }
-    dispatch_sync(self.rumQueue, ^{
+    [self syncProcess:^{
         @try {
             NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
                                             FT_KEY_ERROR_STACK:stack,
@@ -365,7 +365,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
-    });
+    }];
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time{
     [self addLongTaskWithStack:stack duration:duration startTime:time property:nil];
@@ -431,15 +431,10 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 
 -(NSDictionary *)getCurrentSessionInfo{
-    __block NSDictionary *info;
-    dispatch_block_t block = ^(){
-        info = [self.sessionHandler getCurrentSessionInfo];
-    };
-    [self syncProcess:block];
-    return info;
+    return self.rumDependencies.fatalErrorContext.lastSessionContext;
 }
 - (void)syncProcess{
-    [self syncProcess:^(){}];
+    [self syncProcess:^{}];
 }
 - (void)syncProcess:(dispatch_block_t)block{
     if(dispatch_get_specific(FTRUMQueueIdentityKey)==NULL){

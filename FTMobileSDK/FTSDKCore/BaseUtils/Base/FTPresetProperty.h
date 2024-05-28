@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取 logger 数据公共 Tag
 /// - Parameters:
 ///   - status: 事件等级和状态
-- (NSDictionary *)loggerPropertyWithStatus:(LogStatus)status;
+- (NSDictionary *)loggerProperty;
 /// 重新设置 SDK 配置项
 /// - Parameter version: 版本号
 /// - Parameter env: 环境

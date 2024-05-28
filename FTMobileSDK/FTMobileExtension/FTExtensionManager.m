@@ -103,9 +103,9 @@ static FTExtensionManager *sharedInstance = nil;
     if (![content isKindOfClass:[NSString class]] || content.length==0) {
         return;
     }
-    [[FTLogger sharedInstance] log:content status:(LogStatus)status property:property];
+    [[FTLogger sharedInstance] log:content statusType:(LogStatus)status property:property];
 }
--(void)logging:(NSString *)content status:(LogStatus)status tags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time{
+-(void)logging:(NSString *)content status:(NSString *)status tags:(NSDictionary *)tags field:(NSDictionary *)field time:(long long)time{
     @try {
         NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
         NSString *bundleIdentifier =  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
@@ -122,7 +122,7 @@ static FTExtensionManager *sharedInstance = nil;
                              @"tags":tagDict,
                              @"content":newContent
                            });
-        [[FTExtensionDataManager sharedInstance] writeLoggerEvent:(int)status content:newContent tags:tagDict fields:nil tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
+        [[FTExtensionDataManager sharedInstance] writeLoggerEvent:status content:newContent tags:tagDict fields:nil tm:time groupIdentifier:self.extensionConfig.groupIdentifier];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }

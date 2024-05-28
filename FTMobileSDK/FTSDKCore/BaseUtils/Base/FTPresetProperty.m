@@ -141,12 +141,11 @@ static NSString * const FT_VERSION = @"version";
         _rumContext = tags;
     }
 }
-- (NSDictionary *)loggerPropertyWithStatus:(LogStatus)status{
+- (NSDictionary *)loggerProperty{
     NSMutableDictionary *tag = [NSMutableDictionary new];
     [tag addEntriesFromDictionary:self.context];
     [tag addEntriesFromDictionary:self.logContext];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
-    [tag setValue:FTStatusStringMap[status] forKey:FT_KEY_STATUS];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:self.env forKey:FT_ENV];
     return tag;

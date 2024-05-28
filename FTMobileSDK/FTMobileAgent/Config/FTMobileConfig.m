@@ -117,6 +117,7 @@
     options.logLevelFilter = self.logLevelFilter;
     options.discardType = self.discardType;
     options.globalContext = self.globalContext;
+    options.printCustomLogToConsole = self.printCustomLogToConsole;
     options.logCacheLimitCount = self.logCacheLimitCount;
     options.printCustomLogToConsole = self.printCustomLogToConsole;
     return options;

@@ -269,7 +269,7 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
         return NO;
     }
 }
-- (BOOL)writeLoggerEvent:(int)status content:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
+- (BOOL)writeLoggerEvent:(NSString *)status content:(NSString *)content tags:(NSDictionary *)tags fields:(NSDictionary *)fields tm:(long long)tm groupIdentifier:(NSString *)groupIdentifier{
     @try {
         if (![content isKindOfClass:NSString.class] || !content.length) {
             return NO;
@@ -284,7 +284,7 @@ NSString * const FT_LOGGER_CONFIG = @"LOGGER_CONFIG";
             return NO;
         }
         NSDictionary *event = @{@"dataType":FT_DATA_TYPE_LOGGING,
-                                @"status":@(status),
+                                @"status":status,
                                 @"content":content,
                                 @"fields": fields?fields:@{},
                                 @"tags": tags?tags:@{},

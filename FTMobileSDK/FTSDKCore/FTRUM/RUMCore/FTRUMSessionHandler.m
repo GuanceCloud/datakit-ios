@@ -72,6 +72,9 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     _lastInteractionTime = [NSDate date];
     self.needWriteErrorData = NO;
     switch (model.type) {
+        case FTRUMSDKInit:
+            [self startInitialView:model];
+            break;
         case FTRUMDataViewStart:
             [self startView:model];
             break;
@@ -89,11 +92,36 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
             break;
     }
     self.viewHandlers = [self.assistant manageChildHandlers:self.viewHandlers byPropagatingData:model];
+    if(![self hasActivityView]){
+        self.rumDependencies.fatalErrorContext.lastSessionContext = [self getCurrentSessionInfo];
+    }
     // 没有 view 能处理 error\longTask 则由 session 处理写入
     if(self.needWriteErrorData){
         [self writeErrorData:model];
     }
     return  YES;
+}
+- (BOOL)hasActivityView{
+    for (FTRUMViewHandler *viewHandler in self.viewHandlers) {
+        if(viewHandler.isActiveView){
+            return YES;
+        }
+    }
+    return NO;
+}
+-(void)startInitialView:(FTRUMDataModel *)model{
+    if(self.viewHandlers.count>0){
+        return;
+    }
+    FTRUMViewModel *viewModel = [[FTRUMViewModel alloc]initWithType:FTRUMSDKInit time:model.time];
+    viewModel.isInitialView = YES;
+    FTRUMViewHandler *viewHandler = [[FTRUMViewHandler alloc]initWithModel:viewModel context:self.context rumDependencies:self.rumDependencies];
+    //当前 view 处理了 error 数据回调,若没有 view 能处理则由 session 处理
+    __weak __typeof(self) weakSelf = self;
+    viewHandler.errorHandled = ^{
+        weakSelf.needWriteErrorData = NO;
+    };
+    [self.viewHandlers addObject:viewHandler];
 }
 -(void)startView:(FTRUMDataModel *)model{
     

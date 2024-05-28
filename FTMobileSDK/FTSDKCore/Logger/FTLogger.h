@@ -18,28 +18,40 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - content: 日志内容
 ///   - property: 自定义属性(可选)
--(void)info:(NSString *)content property:(nullable NSDictionary *)property;
+- (void)info:(NSString *)content property:(nullable NSDictionary *)property;
 /// 添加 warning 类型自定义日志
 /// - Parameters:
 ///   - content: 日志内容
 ///   - property: 自定义属性(可选)
--(void)warning:(NSString *)content property:(nullable NSDictionary *)property;
+- (void)warning:(NSString *)content property:(nullable NSDictionary *)property;
 /// 添加 error 类型自定义日志
 /// - Parameters:
 ///   - content: 日志内容
 ///   - property: 自定义属性(可选)
--(void)error:(NSString *)content  property:(nullable NSDictionary *)property;
+- (void)error:(NSString *)content  property:(nullable NSDictionary *)property;
 /// 添加 critical 类型自定义日志
 /// - Parameters:
 ///   - content: 日志内容
 ///   - property: 自定义属性(可选)
--(void)critical:(NSString *)content property:(nullable NSDictionary *)property;
+- (void)critical:(NSString *)content property:(nullable NSDictionary *)property;
 /// 添加 ok 类型自定义日志
 /// - Parameters:
 ///   - content: 日志内容
 ///   - property: 自定义属性(可选)
--(void)ok:(NSString *)content property:(nullable NSDictionary *)property;
+- (void)ok:(NSString *)content property:(nullable NSDictionary *)property;
 
+/// 添加自定义日志
+/// - Parameters:
+///   - content: 日志内容
+///   - status: 日志状态
+- (void)log:(NSString *)content status:(NSString *)status;
+
+/// 添加自定义日志
+/// - Parameters:
+///   - content: 日志内容
+///   - status: 日志状态
+///   - property: 自定义属性(可选)
+- (void)log:(NSString *)content status:(NSString *)status property:(nullable NSDictionary *)property;
 @end
 
 /// 管理自定义日志

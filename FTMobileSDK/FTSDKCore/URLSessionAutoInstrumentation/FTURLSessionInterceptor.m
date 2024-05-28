@@ -13,6 +13,8 @@
 #import "FTResourceMetricsModel.h"
 #import "FTReadWriteHelper.h"
 #import "FTLog+Private.h"
+void *FTInterceptorQueueIdentityKey = &FTInterceptorQueueIdentityKey;
+
 @interface FTURLSessionInterceptor ()
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary <id,FTSessionTaskHandler *>*> *traceHandlers;
 @property (nonatomic, strong) dispatch_semaphore_t lock;
@@ -36,6 +38,8 @@ static dispatch_once_t onceToken;
     if (self) {
         _traceHandlers = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
         _queue = dispatch_queue_create("com.network.interceptor", DISPATCH_QUEUE_SERIAL);
+        dispatch_queue_set_specific(_queue, FTInterceptorQueueIdentityKey, &FTInterceptorQueueIdentityKey, NULL);
+
     }
     return self;
 }
@@ -245,7 +249,9 @@ static dispatch_once_t onceToken;
     }
 }
 - (void)shutDown{
-    dispatch_sync(self.queue, ^{});
+    if(dispatch_get_specific(FTInterceptorQueueIdentityKey)==NULL){
+        dispatch_sync(self.queue, ^{});
+    }
     onceToken = 0;
     sharedInstance =nil;
 }
