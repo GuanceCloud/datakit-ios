@@ -58,5 +58,11 @@
         return self;
     };
 }
+- (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible{
+    return ^(BOOL value) {
+        self->_enableDataIntegerCompatible = value;
+        return self;
+    };
+}
 
 @end

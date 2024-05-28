@@ -87,6 +87,7 @@ NSString * const FT_KEY_RESOURCE_TRANS = @"resource_trans";
 NSString * const FT_KEY_RESOURCE_FIRST_BYTE = @"resource_first_byte";
 NSString * const FT_KEY_RESPONSE_HEADER = @"response_header";
 NSString * const FT_KEY_REQUEST_HEADER = @"request_header";
+NSString * const FT_KEY_RESOURCE_HOST_IP = @"resource_host_ip";
 //trace link rum tag
 NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";

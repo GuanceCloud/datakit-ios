@@ -11,7 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSNumber (FTAdd)
-- (NSString *)ft_toFiledString;
+- (id)ft_toFieldFormat;
+- (id)ft_toFieldIntegerCompatibleFormat;
+
 - (id)ft_toTagFormat;
 @end
 

@@ -275,6 +275,9 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
             }
             [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
+            if(self.rumDependencies.enableResourceHostIP){
+                [fields setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
+            }
             //add trace info
             [tags setValue:spanID forKey:FT_KEY_SPANID];
             [tags setValue:traceID forKey:FT_KEY_TRACEID];

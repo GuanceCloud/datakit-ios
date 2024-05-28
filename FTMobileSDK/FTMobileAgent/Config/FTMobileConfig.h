@@ -147,6 +147,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL enableTraceUserView;
 /// 设置是否追踪用户网络请求  (仅作用于native http)
 @property (nonatomic, assign) BOOL enableTraceUserResource;
+/// 设置是否采集网络请求 Host IP (仅作用于native http，iOS 13及以上)
+@property (nonatomic, assign) BOOL enableResourceHostIP;
 /// 自定义采集 resource 规则。
 /// 根据请求资源 url 判断是否需要采集对应资源数据，默认都采集。 返回：NO 表示要采集，YES 表示不需要采集。
 @property (nonatomic, copy) FTResourceUrlHandler resourceUrlHandler;
@@ -227,6 +229,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int syncPageSize;
 /// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <100
 @property (nonatomic, assign) int syncSleepTime;
+/// 数据同步时是否开启数据整数兼容
+@property (nonatomic, assign) BOOL enableDataIntegerCompatible;
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

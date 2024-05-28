@@ -28,6 +28,7 @@
         _enableTraceUserAction = NO;
         _enableTraceUserView = NO;
         _enableTraceUserResource = NO;
+        _enableResourceHostIP = NO;
         _monitorFrequency = FTMonitorFrequencyDefault;
     }
     return self;
@@ -41,6 +42,7 @@
     options.enableTraceUserAction = self.enableTraceUserAction;
     options.enableTraceUserView = self.enableTraceUserView;
     options.enableTraceUserResource = self.enableTraceUserResource;
+    options.enableResourceHostIP = self.enableResourceHostIP;
     options.appid = self.appid;
     options.errorMonitorType = self.errorMonitorType;
     options.globalContext = self.globalContext;
@@ -59,6 +61,7 @@
             _enableTraceUserAction = [dict[@"enableTraceUserAction"] boolValue];
             _enableTraceUserView = [dict[@"enableTraceUserView"] boolValue];
             _enableTraceUserResource = [dict[@"enableTraceUserResource"] boolValue];
+            _enableResourceHostIP = [dict[@"enableResourceHostIP"] boolValue];
             _appid = dict[@"appid"];
             _errorMonitorType = (FTErrorMonitorType)[dict[@"errorMonitorType"] intValue];
             _globalContext = dict[@"globalContext"];
@@ -83,6 +86,7 @@
     [dict setValue:@(self.enableTraceUserAction) forKey:@"enableTraceUserAction"];
     [dict setValue:@(self.enableTraceUserView) forKey:@"enableTraceUserView"];
     [dict setValue:@(self.enableTraceUserResource) forKey:@"enableTraceUserResource"];
+    [dict setValue:@(self.enableResourceHostIP) forKey:@"enableResourceHostIP"];
     [dict setValue:@(self.errorMonitorType) forKey:@"errorMonitorType"];
     [dict setValue:self.appid forKey:@"appid"];
     [dict setValue:@(self.deviceMetricsMonitorType) forKey:@"deviceMetricsMonitorType"];
@@ -265,6 +269,7 @@
     options.autoSync = self.autoSync;
     options.syncPageSize = self.syncPageSize;
     options.syncSleepTime = self.syncSleepTime;
+    options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     return options;
 }
 @end

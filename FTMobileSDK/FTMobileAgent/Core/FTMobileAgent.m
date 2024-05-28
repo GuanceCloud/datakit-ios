@@ -77,7 +77,8 @@ static dispatch_once_t onceToken;
                 .setDatakitUrl(config.datakitUrl)
                 .setDatawayUrl(config.datawayUrl)
                 .setClientToken(config.clientToken)
-                .setSdkVersion(SDK_VERSION);
+                .setSdkVersion(SDK_VERSION)
+                .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
         }
