@@ -14,12 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *datawayUrl;
 @property (nonatomic,copy,readonly) NSString *clientToken;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
-
+@property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
 + (instancetype)sharedInstance;
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl;
 - (FTNetworkInfoManager *(^)(NSString *value))setDatawayUrl;
 - (FTNetworkInfoManager *(^)(NSString *value))setClientToken;
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
+- (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible;
 
 @end
 

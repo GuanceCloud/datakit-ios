@@ -256,6 +256,7 @@
     options.autoSync = self.autoSync;
     options.syncPageSize = self.syncPageSize;
     options.syncSleepTime = self.syncSleepTime;
+    options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
     return options;
 }
 @end

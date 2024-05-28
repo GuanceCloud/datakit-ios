@@ -229,6 +229,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int syncPageSize;
 /// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <100
 @property (nonatomic, assign) int syncSleepTime;
+/// 数据同步时是否开启数据整数兼容
+@property (nonatomic, assign) BOOL enableDataIntegerCompatible;
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

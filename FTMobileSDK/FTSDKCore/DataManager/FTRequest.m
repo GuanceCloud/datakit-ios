@@ -53,6 +53,9 @@
 -(NSString *)serialNumber{
     return nil;
 }
+-(BOOL)enableDataIntegerCompatible{
+    return FTNetworkInfoManager.sharedInstance.enableDataIntegerCompatible;
+}
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
      NSString *date =[[NSDate date] ft_stringWithGMTFormat];
      mutableRequest.HTTPMethod = self.httpMethod;
@@ -67,7 +70,7 @@
      [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
      
     if (self.requestBody&&self.events) {
-        NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events requestNumber:self.serialNumber];
+        NSString *body = [self.requestBody getRequestBodyWithEventArray:self.events requestNumber:self.serialNumber enableIntegerCompatible:self.enableDataIntegerCompatible];
         mutableRequest.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
     }
      return mutableRequest;

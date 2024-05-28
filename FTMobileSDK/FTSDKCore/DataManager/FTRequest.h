@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *contentType;
 @property (nonatomic, copy, readonly) NSString *httpMethod;
 @property (nonatomic, copy, readonly) NSString *serialNumber;
+@property (nonatomic, assign, readonly) BOOL enableDataIntegerCompatible;
+
 @optional
 ///event property
 @property (nonatomic, strong) id<FTRequestBodyProtocol> requestBody;

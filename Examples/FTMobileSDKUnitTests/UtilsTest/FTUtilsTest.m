@@ -146,31 +146,40 @@
 #pragma mark ==========  NSNumber ==========
 - (void)testLineProtocolDealNumber{
     NSNumber *trueNum = [NSNumber numberWithBool:YES];
-    XCTAssertEqualObjects([trueNum ft_toFiledString], @"true");
-    
+    XCTAssertEqualObjects([trueNum ft_toFieldFormat], @"true");
+    XCTAssertEqualObjects([trueNum ft_toFieldIntegerCompatibleFormat], @"true");
+
     NSNumber *falseNum = [NSNumber numberWithBool:NO];
-    XCTAssertEqualObjects([falseNum ft_toFiledString], @"false");
-    
+    XCTAssertEqualObjects([falseNum ft_toFieldFormat], @"false");
+    XCTAssertEqualObjects([falseNum ft_toFieldIntegerCompatibleFormat], @"false");
+
     NSNumber *floatNum = [NSNumber numberWithFloat:1234567.12];
-    XCTAssertEqualObjects([floatNum ft_toFiledString], @"1234567.1");
-   
+    XCTAssertEqualObjects([floatNum ft_toFieldFormat], @"1234567.1");
+    XCTAssertEqualObjects([floatNum ft_toFieldIntegerCompatibleFormat], @"1234567.1");
+
     NSNumber *doubleNum = [NSNumber numberWithDouble:123456789012345.12345];
-    XCTAssertEqualObjects([doubleNum ft_toFiledString], @"123456789012345.1");
-    
+    XCTAssertEqualObjects([doubleNum ft_toFieldFormat], @"123456789012345.1");
+    XCTAssertEqualObjects([doubleNum ft_toFieldIntegerCompatibleFormat], @"123456789012345.1");
+
     NSNumber *intNum = [NSNumber numberWithInt:2147483647];
-    XCTAssertEqualObjects([intNum ft_toFiledString], @"2147483647i");
-    
+    XCTAssertEqualObjects([intNum ft_toFieldFormat], @"2147483647i");
+    XCTAssertEqualObjects([[intNum ft_toFieldIntegerCompatibleFormat] stringValue], @"2147483647");
+
     NSNumber *longNum = [NSNumber numberWithLong:9223372036854775807];
-    XCTAssertEqualObjects([longNum ft_toFiledString], @"9223372036854775807i");
-    
+    XCTAssertEqualObjects([longNum ft_toFieldFormat], @"9223372036854775807i");
+    XCTAssertEqualObjects([[longNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
+
     NSNumber *unsignedLongNum = [NSNumber numberWithUnsignedLong:9223372036854775807];
-    XCTAssertEqualObjects([unsignedLongNum ft_toFiledString], @"9223372036854775807i");
-   
+    XCTAssertEqualObjects([unsignedLongNum ft_toFieldFormat], @"9223372036854775807i");
+    XCTAssertEqualObjects([[unsignedLongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
+
     NSNumber *longlongNum = [NSNumber numberWithLongLong:9223372036854775807];
-    XCTAssertEqualObjects([longlongNum ft_toFiledString], @"9223372036854775807i");
-    
+    XCTAssertEqualObjects([longlongNum ft_toFieldFormat], @"9223372036854775807i");
+    XCTAssertEqualObjects([[longlongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
+
     NSNumber *unsignedLongLongNum = [NSNumber numberWithUnsignedLongLong:9223372036854775807];
-    XCTAssertEqualObjects([unsignedLongLongNum ft_toFiledString], @"9223372036854775807i");
+    XCTAssertEqualObjects([unsignedLongLongNum ft_toFieldFormat], @"9223372036854775807i");
+    XCTAssertEqualObjects([[unsignedLongLongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
 
 }
 @end

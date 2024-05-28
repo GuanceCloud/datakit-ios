@@ -392,6 +392,7 @@
     datakitConfig.globalContext = @{@"aa":@"bb"};
     datakitConfig.service = @"testsdk";
     datakitConfig.version = @"1.1.1";
+    datakitConfig.enableDataIntegerCompatible = YES;
     [datakitConfig setEnvWithType:FTEnvLocal];
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
@@ -400,6 +401,7 @@
     XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
     XCTAssertTrue([copyConfig.version isEqualToString:datakitConfig.version]);
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
+    XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);

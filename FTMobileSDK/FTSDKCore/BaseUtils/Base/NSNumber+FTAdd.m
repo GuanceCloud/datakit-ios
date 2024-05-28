@@ -14,7 +14,7 @@
     return [self isKindOfClass:NSClassFromString(@"__NSCFBoolean")];
 }
 
-- (NSString *)ft_toFiledString{
+- (id)ft_toFieldFormat{
     if ([self ft_isBool]) {
         return [self boolValue] ? @"true": @"false";
     }if (strcmp([self objCType], @encode(float)) == 0){
@@ -24,7 +24,17 @@
     }else{
         return [NSString stringWithFormat:@"%@i", self];
     }
-    return self.stringValue;
+    return self;
+}
+- (id)ft_toFieldIntegerCompatibleFormat{
+    if ([self ft_isBool]) {
+        return [self boolValue] ? @"true": @"false";
+    }if (strcmp([self objCType], @encode(float)) == 0){
+        return [NSString stringWithFormat:@"%.1f",self.floatValue];
+    }else if(strcmp([self objCType], @encode(double)) == 0){
+        return [NSString stringWithFormat:@"%.1f",self.doubleValue];
+    }
+    return self;
 }
 - (id)ft_toTagFormat{
     if ([self ft_isBool]) {
