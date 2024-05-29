@@ -112,7 +112,7 @@ static NSString * const FT_VERSION = @"version";
         _env = env;
         _service = service;
         _mobileDevice = [[MobileDevice alloc]init];
-        _context = [globalContext copy];
+        _context = globalContext;
         _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
     }
     return self;

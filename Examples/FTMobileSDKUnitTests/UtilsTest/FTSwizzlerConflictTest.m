@@ -1,0 +1,185 @@
+//
+//  FTSwizzlerConflictTest.m
+//  FTMobileSDKUnitTests
+//
+//  Created by hulilei on 2024/5/16.
+//  Copyright © 2024 GuanceCloud. All rights reserved.
+//
+
+#import <XCTest/XCTest.h>
+#import "FTNetworkMock.h"
+#import "Firebase.h"
+#import "FTSwizzler.h"
+#import "objc/runtime.h"
+#import "FTURLSessionInstrumentation.h"
+#import "FTMobileSDK.h"
+#import "FTTrackerEventDBTool.h"
+#import "NSDate+FTUtil.h"
+@interface DelegateSwizzlerClass : NSObject<UITableViewDelegate,NSURLSessionDelegate,NSURLSessionDataDelegate>
+@property (nonatomic, strong) NSString *nameStr;
+
+@property (nonatomic, strong) NSString *name;
+@end
+@implementation DelegateSwizzlerClass
+
+-(NSString *)name{
+    return NSStringFromClass(object_getClass(self)) ;
+}
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+}
+-(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    
+}
+@end
+@interface FTSwizzlerConflictTest : XCTestCase
+
+@end
+
+@implementation FTSwizzlerConflictTest
+
+- (void)setUp {
+    [FTNetworkMock networkOHHTTPStubs];
+    // Put setup code here. This method is called before the invocation of each test method in the class.
+}
+
+- (void)tearDown {
+    // Put teardown code here. This method is called after the invocation of each test method in the class.
+}
+- (void)setSDK{
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
+    NSString *appid = [processInfo environment][@"APP_ID"];
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
+    rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableTraceUserView = YES;
+    rumConfig.enableTraceUserAction = YES;
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+}
+- (void)testTableViewDelegate_KVO{
+    [self setSDK];
+    SEL selector = @selector(tableView:didSelectRowAtIndexPath:);
+    
+    for (int i = 0; i<1000; i++) {
+        @autoreleasepool {
+            UITableView *tableView = [[UITableView alloc]init];
+            DelegateSwizzlerClass *delegateClass = [[DelegateSwizzlerClass alloc]init];
+            [delegateClass addObserver:self forKeyPath:@"nameStr" options:NSKeyValueObservingOptionNew context:nil];
+            tableView.delegate = delegateClass;
+            XCTAssertTrue([delegateClass.name isEqualToString:@"NSKVONotifying_DelegateSwizzlerClass"]);
+        }
+    }
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testTableViewDelegate{
+    [self setSDK];
+    
+    for (int i = 0; i<1000; i++) {
+        @autoreleasepool {
+            UITableView *tableView = [[UITableView alloc]init];
+            DelegateSwizzlerClass *delegateClass = [[DelegateSwizzlerClass alloc]init];
+            [delegateClass addObserver:self forKeyPath:@"nameStr" options:NSKeyValueObservingOptionNew context:nil];
+            tableView.delegate = delegateClass;
+            XCTAssertTrue([delegateClass.name isEqualToString:@"NSKVONotifying_DelegateSwizzlerClass"]);
+        }
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                DelegateSwizzlerClass *resourceDelegate = [[DelegateSwizzlerClass alloc]init];
+                NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
+                NSURL *url = [NSURL URLWithString:urlStr];
+                NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:resourceDelegate delegateQueue:nil];
+                NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                    [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+                }];
+                [task resume];
+                [session finishTasksAndInvalidate];
+            });
+    }
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testURLSession_shareSession_firebase{
+    [self setSDK];
+    [FIRApp configure];
+    for (int i = 0; i<1000; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSURLSession *session = [NSURLSession sharedSession];
+            NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+            }];
+            [task resume];
+            [session finishTasksAndInvalidate];
+        });
+    }
+    [FIRApp performSelector:@selector(resetApps)];
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testURLSession_customSession_noDelegate_firebase{
+    [self setSDK];
+    [FIRApp configure];
+    for (int i = 0; i<1000; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+            NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+            }];
+            [task resume];
+            [session finishTasksAndInvalidate];
+        });
+    }
+    [FIRApp performSelector:@selector(resetApps)];
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+- (void)testURLSession_customSession_delegate_firebase{
+    [self setSDK];
+    [FIRApp configure];
+    NSMutableSet *set = [NSMutableSet new];
+    XCTestExpectation *exception = [[XCTestExpectation alloc]init];
+    dispatch_group_t group = dispatch_group_create();
+    NSLock *lock = [[NSLock alloc]init];
+    for (int i = 0; i<1000; i++) {
+        dispatch_group_enter(group);
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            DelegateSwizzlerClass *delegate = [[DelegateSwizzlerClass alloc]init];
+            NSString *urlStr = [NSString stringWithFormat:@"http://testing-ft2x-api.cloudcare.cn/api/v1/account/permissions%d",i];
+            NSURL *url = [NSURL URLWithString:urlStr];
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:delegate delegateQueue:nil];
+            XCTAssertTrue(![delegate.name isEqualToString:@"DelegateSwizzlerClass"]);
+            XCTAssertTrue([delegate.name containsString:@"fir_"]);
+            [lock lock];
+            [set addObject:delegate.name];
+            [lock unlock];
+            NSURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                [[NSURLCache sharedURLCache] removeCachedResponseForRequest:request];
+                dispatch_group_leave(group);
+            }];
+            [task resume];
+            [session finishTasksAndInvalidate];
+            
+        });
+    }
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [exception fulfill];
+    });
+    [self waitForExpectations:@[exception]];
+    BOOL classDealloc = NO;
+    for (NSString *name in set) {
+        if(NSClassFromString(name) == nil){
+            classDealloc = YES;
+            break;
+        }
+    }
+    XCTAssertTrue(classDealloc);
+    [FIRApp performSelector:@selector(resetApps)];
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+@end

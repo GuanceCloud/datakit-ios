@@ -42,44 +42,55 @@
 - (void)writer:(FTJsonWriter *)writer appendBytes:(const void *)bytes length:(NSUInteger)length {
     [self.acc appendBytes:bytes length:length];
 }
-+ (NSString *)convertToJsonData:(NSDictionary *)dict
-{
-    FTJSONUtil *util = [FTJSONUtil new];
-    NSData *jsonData = [util JSONSerializeDictObject:dict];
-    NSString *jsonString = @"";
-    if (jsonData) {
-        jsonString = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
++ (NSString *)convertToJsonData:(NSDictionary *)dict{
+    NSString *result = nil;
+    @try {
+        FTJSONUtil *util = [FTJSONUtil new];
+        NSData *jsonData = [util JSONSerializeDictObject:dict];
+        if (jsonData) {
+            result = [[NSString alloc]initWithData:jsonData encoding:NSUTF8StringEncoding];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"%@ exception encoding api data: %@", self, exception);
     }
-    return jsonString;
+    return result;
 }
-+ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString
-{
-    if (jsonString == nil) {
-        return nil;
++ (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString{
+    NSDictionary *result = nil;
+    @try {
+        if (jsonString == nil) {
+            return nil;
+        }
+        NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *err;
+        result = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                 options:NSJSONReadingMutableContainers
+                                                   error:&err];
+        if(err){
+            FTInnerLogError(@"json解析失败：%@",err);
+            return nil;
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"%@ exception encoding api data: %@", self, exception);
     }
-    
-    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *err;
-    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
-                                                        options:NSJSONReadingMutableContainers
-                                                          error:&err];
-    if(err)
-    {
-        FTInnerLogError(@"json解析失败：%@",err);
-        return nil;
-    }
-    return dic;
+    return result;
 }
 + (NSString *)convertToJsonDataWithObject:(id)object{
-    if (object == nil) {
-        return nil;
+    NSString *result = nil;
+    @try {
+        if (object == nil) {
+            return nil;
+        }
+        NSError *err;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object options:0 error:&err];
+        if(err){
+            FTInnerLogError(@"json 解析失败：%@",err);
+        }else{
+            result = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        }
+    } @catch (NSException *exception) {
+        FTInnerLogError(@"%@ exception encoding api data: %@", self, exception);
     }
-    NSError *err;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object options:0 error:&err];
-    if(err){
-        FTInnerLogError(@"json解析失败：%@",err);
-        return @"";
-    }
-    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return result;
 }
 @end

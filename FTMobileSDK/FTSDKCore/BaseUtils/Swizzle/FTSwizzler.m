@@ -92,7 +92,7 @@ static BOOL blockIsCompatibleWithMethodType(id block, const char *methodType){
     }
     
     NSMethodSignature *methodSignature =
-        [NSMethodSignature signatureWithObjCTypes:methodType];
+    [NSMethodSignature signatureWithObjCTypes:methodType];
     
     if (!blockSignature || !methodSignature) {
         return NO;
@@ -194,13 +194,13 @@ static void swizzle(Class classToSwizzle,
               classToSwizzle);
     
     NSCAssert(blockIsAnImpFactoryBlock(factoryBlock),
-             @"Wrong type of implementation factory block.");
+              @"Wrong type of implementation factory block.");
     
     __block os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
     // To keep things thread-safe, we fill in the originalIMP later,
     // with the result of the class_replaceMethod call below.
     __block IMP originalIMP = NULL;
-
+    
     // This block will be called by the client to get original implementation and call it.
     FTSwizzlerImpProvider originalImpProvider = ^IMP{
         // It's possible that another thread can call the method between the call to
@@ -231,7 +231,7 @@ static void swizzle(Class classToSwizzle,
     const char *methodType = method_getTypeEncoding(method);
     
     NSCAssert(blockIsCompatibleWithMethodType(newIMPBlock,methodType),
-             @"Block returned from factory is not compatible with method type.");
+              @"Block returned from factory is not compatible with method type.");
     
     IMP newIMP = imp_implementationWithBlock(newIMPBlock);
     
@@ -248,27 +248,15 @@ static void swizzle(Class classToSwizzle,
     originalIMP = class_replaceMethod(classToSwizzle, selector, newIMP, methodType);
     os_unfair_lock_unlock(&lock);
 }
-
-static NSMutableDictionary *swizzledClassesDictionary(void){
-    static NSMutableDictionary *swizzledClasses;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        swizzledClasses = [NSMutableDictionary new];
-    });
-    return swizzledClasses;
++ (void)setFTAssociatedObject:(id)object
+                          key:(const void *)key
+                        value:(nullable id)value
+                  association:(objc_AssociationPolicy)association {
+    objc_setAssociatedObject(object, key, value, association);
 }
-
-static NSMutableSet *swizzledClassesForKey(const void *key){
-    NSMutableDictionary *classesDictionary = swizzledClassesDictionary();
-    NSValue *keyValue = [NSValue valueWithPointer:key];
-    NSMutableSet *swizzledClasses = [classesDictionary objectForKey:keyValue];
-    if (!swizzledClasses) {
-        swizzledClasses = [NSMutableSet new];
-        [classesDictionary setObject:swizzledClasses forKey:keyValue];
-    }
-    return swizzledClasses;
++ (nullable id)getFTAssociatedObject:(id)object key:(const void *)key {
+    return objc_getAssociatedObject(object, key);
 }
-
 +(BOOL)swizzleInstanceMethod:(SEL)selector
                      inClass:(Class)classToSwizzle
                newImpFactory:(FTSwizzlerImpFactoryBlock)factoryBlock
@@ -277,12 +265,10 @@ static NSMutableSet *swizzledClassesForKey(const void *key){
 {
     NSAssert(!(NULL == key && FTSwizzlerModeAlways != mode),
              @"Key may not be NULL if mode is not FTSwizzlerModeAlways.");
-
-    @synchronized(swizzledClassesDictionary()){
+    @synchronized (self) {
         if (key){
-            NSSet *swizzledClasses = swizzledClassesForKey(key);
             if (mode == FTSwizzlerModeOncePerClass) {
-                if ([swizzledClasses containsObject:classToSwizzle]){
+                if ([self getFTAssociatedObject:classToSwizzle key:key]){
                     return NO;
                 }
             }else if (mode == FTSwizzlerModeOncePerClassAndSuperclasses){
@@ -290,20 +276,17 @@ static NSMutableSet *swizzledClassesForKey(const void *key){
                      nil != currentClass;
                      currentClass = class_getSuperclass(currentClass))
                 {
-                    if ([swizzledClasses containsObject:currentClass]) {
+                    if ([self getFTAssociatedObject:currentClass key:key]) {
                         return NO;
                     }
                 }
             }
         }
-        
         swizzle(classToSwizzle, selector, factoryBlock);
-        
         if (key){
-            [swizzledClassesForKey(key) addObject:classToSwizzle];
+            [self setFTAssociatedObject:classToSwizzle key:key value:@(YES) association:OBJC_ASSOCIATION_ASSIGN];
         }
     }
-
     return YES;
 }
 

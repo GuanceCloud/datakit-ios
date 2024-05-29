@@ -10,6 +10,10 @@
 #import "FTSwizzler.h"
 #import "FTTrack.h"
 #import "UIView+FTAutoTrack.h"
+
+static void *const kFTCollectionViewDidSelect = (void *)&kFTCollectionViewDidSelect;
+static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
+
 @implementation UITableView (FTAutoTrack)
 
 - (void)ft_setDelegate:(id <UITableViewDelegate>)delegate {
@@ -36,7 +40,7 @@
                                                      
                                                  }),
                                  FTSwizzlerModeOncePerClassAndSuperclasses, 
-                                 "tableView_didSelect");
+                                 kFTTableViewDidSelect);
     }
 }
 
@@ -69,7 +73,7 @@
                                                      FTSWCallOriginal(collectionView, indexPath);
                                                  }),
                                  FTSwizzlerModeOncePerClassAndSuperclasses,
-                                 "collectionView_didSelect");
+                                 kFTCollectionViewDidSelect);
     }
     
 }

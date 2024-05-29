@@ -24,7 +24,7 @@
 #import "FTRUMManager.h"
 #import "FTModelHelper.h"
 #import "FTMobileConfig+Private.h"
-#import "OHHTTPStubs.h"
+#import "FTNetworkMock.h"
 @interface FTMobileAgentTests : KIFTestCase
 @property (nonatomic, strong) FTMobileConfig *config;
 @property (nonatomic, copy) NSString *url;
@@ -288,6 +288,16 @@
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testGlobalContext_mutable{
+    NSMutableDictionary *context = @{@"testGlobalContext_mutable":@"testGlobalContext_mutable"}.mutableCopy;
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    config.globalContext = context;
+    [context setValue:@"testGlobalContext" forKey:@"testGlobalContext_mutable"];
+    XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
+    XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
+}
 - (void)testSyncSleepTimeScope{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.syncSleepTime = -1;
@@ -312,7 +322,7 @@
     XCTAssertTrue(config.syncPageSize == 10);
 }
 - (void)testAutoSync_NO{
-    [self networkOHHTTPStubs];
+    [FTNetworkMock networkOHHTTPStubs];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = NO;
@@ -345,7 +355,7 @@
     
 }
 - (void)testAutoSync_YES{
-    [self networkOHHTTPStubs];
+    [FTNetworkMock networkOHHTTPStubs];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.enableSDKDebugLog = YES;
     config.autoSync = YES;
@@ -384,15 +394,6 @@
         }
         
     }
-}
-- (void)networkOHHTTPStubs{
-    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        return YES;
-    } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
-        NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
-        NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-        return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
-    }];
 }
 #pragma mark ========== copy ==========
 - (void)testSDKConfigCopy{
@@ -493,6 +494,7 @@
     loggerConfig.discardType = FTDiscard;
     loggerConfig.enableLinkRumData = YES;
     loggerConfig.logLevelFilter = @[@(FTStatusOk)];
+    loggerConfig.printCustomLogToConsole = YES;
     loggerConfig.globalContext = @{@"aa":@"bb"};
     FTLoggerConfig *copyLoggerConfig = [loggerConfig copy];
     XCTAssertTrue(copyLoggerConfig.enableCustomLog == loggerConfig.enableCustomLog);
@@ -501,10 +503,14 @@
     XCTAssertTrue(copyLoggerConfig.enableLinkRumData == loggerConfig.enableLinkRumData);
     XCTAssertTrue([copyLoggerConfig.logLevelFilter isEqual: loggerConfig.logLevelFilter]);
     XCTAssertTrue([copyLoggerConfig.globalContext isEqual: loggerConfig.globalContext]);
+    XCTAssertTrue(loggerConfig.printCustomLogToConsole == copyLoggerConfig.printCustomLogToConsole);
 }
 - (void)testLoggerConfigInitWithDict{
     XCTAssertNil([[FTLoggerConfig alloc]initWithDictionary:nil]);
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.printCustomLogToConsole = YES;
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.enableLinkRumData = YES;
     NSDictionary *dict = [loggerConfig convertToDictionary];
     FTLoggerConfig *newLogger = [[FTLoggerConfig alloc]initWithDictionary:dict];
     XCTAssertTrue(loggerConfig.logLevelFilter == newLogger.logLevelFilter);

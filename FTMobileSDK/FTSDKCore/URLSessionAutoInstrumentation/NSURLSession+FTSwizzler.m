@@ -22,7 +22,7 @@
 #import "FTURLSessionInstrumentation.h"
 #import "FTURLSessionDelegate+Private.h"
 #import "FTURLSessionInterceptorProtocol.h"
-#import "FTURLSessionDelegate+Private.h"
+#import "FTDURLSessionDelegate.h"
 #import "FTSwizzle.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
@@ -158,9 +158,8 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
 +(NSURLSession *)ft_sessionWithConfiguration:(NSURLSessionConfiguration *)configuration delegate:(id<NSURLSessionDelegate>)delegate delegateQueue:(NSOperationQueue *)queue{
     id<NSURLSessionDelegate> realDelegate = delegate;
     if (delegate == nil) {
-        realDelegate = [FTURLSessionInstrumentation sharedInstance];
-    }
-    if(![realDelegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+        realDelegate = [[FTDURLSessionDelegate alloc]init];
+    }else if(![realDelegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
         [[FTURLSessionInstrumentation sharedInstance] enableSessionDelegate:realDelegate];
     }
     return [NSURLSession ft_sessionWithConfiguration:configuration delegate:realDelegate delegateQueue:queue];

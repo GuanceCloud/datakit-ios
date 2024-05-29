@@ -11,6 +11,7 @@
 #import "FTURLSessionInterceptorProtocol.h"
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
+#import "NSDictionary+FTCopyProperties.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
@@ -42,8 +43,9 @@
     }
 }
 -(void)startViewWithName:(NSString *)viewName property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(startViewWithName:property:)]){
-        [self.delegate startViewWithName:viewName property:property];
+        [self.delegate startViewWithName:viewName property:copyDict];
     }
 }
 -(void)stopView{
@@ -52,8 +54,9 @@
     }
 }
 -(void)stopViewWithProperty:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(stopViewWithProperty:)]){
-        [self.delegate stopViewWithProperty:property];
+        [self.delegate stopViewWithProperty:copyDict];
     }
 }
 - (void)addClickActionWithName:(NSString *)actionName {
@@ -62,8 +65,9 @@
     }
 }
 -(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:property:)]){
-        [self.delegate addClickActionWithName:actionName property:property];
+        [self.delegate addClickActionWithName:actionName property:copyDict];
     }
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
@@ -72,8 +76,9 @@
     }
 }
 -(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:actionType property:property];
+        [self.delegate addActionName:actionName actionType:actionType property:copyDict];
     }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{
@@ -82,13 +87,15 @@
     }
 }
 -(void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:message:stack:property:)]){
-        [self.delegate addErrorWithType:type message:message stack:stack property:property];
+        [self.delegate addErrorWithType:type message:message stack:stack property:copyDict];
     }
 }
 - (void)addErrorWithType:(nonnull NSString *)type state:(FTAppState)state message:(nonnull NSString *)message stack:(nonnull NSString *)stack property:(nullable NSDictionary *)property {
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addErrorWithType:state: message:stack:property:)]){
-        [self.delegate addErrorWithType:type state:state message:message stack:stack property:property];
+        [self.delegate addErrorWithType:type state:state message:message stack:stack property:copyDict];
     }
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration{
@@ -99,8 +106,9 @@
 }
 -(void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration property:(NSDictionary *)property{
     long long startTime = [NSDate ft_currentNanosecondTimeStamp] - [duration longLongValue];
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addLongTaskWithStack:duration:startTime:property:)]){
-        [self.delegate addLongTaskWithStack:stack duration:duration startTime:startTime  property:property];
+        [self.delegate addLongTaskWithStack:stack duration:duration startTime:startTime  property:copyDict];
     }
 }
 - (void)startResourceWithKey:(NSString *)key{
@@ -109,8 +117,9 @@
     }
 }
 -(void)startResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(startResourceWithKey:property:)]){
-        [self.resourceDelegate startResourceWithKey:key property:property];
+        [self.resourceDelegate startResourceWithKey:key property:copyDict];
     }
 }
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content{
@@ -124,8 +133,9 @@
     }
 }
 -(void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
     if(self.resourceDelegate && [self.resourceDelegate respondsToSelector:@selector(stopResourceWithKey:property:)]){
-        [self.resourceDelegate stopResourceWithKey:key property:property];
+        [self.resourceDelegate stopResourceWithKey:key property:copyDict];
     }
 }
 - (nullable NSDictionary *)getTraceHeaderWithUrl:(NSURL *)url{

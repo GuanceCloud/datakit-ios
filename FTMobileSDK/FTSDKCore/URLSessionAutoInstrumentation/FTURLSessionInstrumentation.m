@@ -25,6 +25,10 @@
 #import "FTURLSessionInterceptor+Private.h"
 #import "FTTracer.h"
 #import <objc/runtime.h>
+static void *const kFTReceiveDataSelector = (void *)&kFTReceiveDataSelector;
+static void *const kFTCompleteSelector = (void *)&kFTCompleteSelector;
+static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelector;
+
 @interface FTURLSessionInstrumentation()
 /// sdk 内部的数据上传 url
 @property (nonatomic, copy) NSString *sdkUrlStr;
@@ -128,20 +132,20 @@ static dispatch_once_t onceToken;
         FTSWCallOriginal(session,task,data);
         }),
                              FTSwizzlerModeOncePerClassAndSuperclasses,
-                             "receiveDataSelector");
+                             kFTReceiveDataSelector);
     FTSwizzlerInstanceMethod(completeClass, completeSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSError *error), FTSWReplacement({
         if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskCompleted:task error:error];
         }
         FTSWCallOriginal(session,task,error);
-    }), FTSwizzlerModeOncePerClassAndSuperclasses, "completeSelector");
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCompleteSelector);
     
     FTSwizzlerInstanceMethod(collectMetricsClass, collectMetricsSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics), FTSWReplacement({
         if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
             [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics];
         }
         FTSWCallOriginal(session,task,metrics);
-    }), FTSwizzlerModeOncePerClassAndSuperclasses, "collectMetricsSelector");
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);
 }
 - (BOOL)isNotSDKInsideUrl:(NSURL *)url{
     BOOL trace = YES;

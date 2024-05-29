@@ -44,7 +44,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
     }else if([self.value isKindOfClass:NSString.class]){
         return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingSpecialCharacters]];
     }else{
-        return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingSpecialCharacters]];
+        NSString *str = [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingSpecialCharacters];
+        if(str && str.length>0){
+            return [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], str];
+        }else{
+            return nil;
+        }
     }
 }
 - (NSString *)URLEncodedFiledStringValue{
@@ -57,7 +62,12 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         }else if ([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingFieldSpecialCharacters]];
         }else{
-            return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingFieldSpecialCharacters]];
+            NSString *str = [[FTJSONUtil convertToJsonDataWithObject:self.value] ft_replacingFieldSpecialCharacters];
+            if(str){
+                return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], str];
+            }else{
+                return [NSString stringWithFormat:@"%@=\"\"",[self.field ft_replacingSpecialCharacters]];
+            }
         }
     }
 }

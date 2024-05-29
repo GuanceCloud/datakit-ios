@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FTSwizzler.h"
-
+#import "FTLog+Private.h"
 @protocol FTBaseDelegate <NSObject>
 - (NSString *)baseSring:(NSString *)str;
 @end

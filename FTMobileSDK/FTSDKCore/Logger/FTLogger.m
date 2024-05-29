@@ -13,7 +13,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTRecordModel.h"
 #import "FTSDKCompat.h"
-
+#import "NSDictionary+FTCopyProperties.h"
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
 @interface FTLogger ()
@@ -56,6 +56,7 @@ static dispatch_once_t onceToken;
      status:(LogStatus)status
    property:(nullable NSDictionary *)property
 {
+    NSDictionary *copyDict = [property ft_deepCopy];
     dispatch_block_t logBlock = ^{
         if(self.printLogsToConsole){
             FT_CONSOLE_LOG(status,message,property);
@@ -72,7 +73,7 @@ static dispatch_once_t onceToken;
                 FTInnerLogInfo(@"[Logging][Not Sampled] %@",message);
                 return;
             }
-            [self.loggerWriter logging:message status:status tags:nil field:property time:[NSDate ft_currentNanosecondTimeStamp]];
+            [self.loggerWriter logging:message status:status tags:nil field:copyDict time:[NSDate ft_currentNanosecondTimeStamp]];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }

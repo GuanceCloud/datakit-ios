@@ -59,3 +59,26 @@
 
 
 @end
+
+@implementation FTURLSessionCompleteTestDelegate
+
+-(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
+    self.URLSessionTaskDidCompleteWithErrorCalledCount += 1;
+}
+-(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    self.URLSessionDataTaskDidReceiveDataCalledCount += 1;
+}
+@end
+
+@implementation FTURLSessionNoCompleteTestDelegate
+
+-(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
+    self.URLSessionDataTaskDidReceiveDataCalledCount += 1;
+}
+@end
+
+
+@implementation FTURLSessionNoDidFinishCollectingMetrics
+
+
+@end
