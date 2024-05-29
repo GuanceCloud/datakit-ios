@@ -64,7 +64,7 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    [FTNetworkMock networkOHHTTPStubs];
+    [FTNetworkMock networkOHHTTPStubsHandler];
 }
 
 - (void)tearDown {

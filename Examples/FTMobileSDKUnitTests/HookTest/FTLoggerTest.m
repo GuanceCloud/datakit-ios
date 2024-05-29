@@ -430,11 +430,48 @@
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
         });
     }
-    [NSThread sleepForTimeInterval:1];
+    sleep(10);
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
         });
+    }
+    XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
+ 
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expect fulfill];
+    });
+    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+    NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
+    XCTAssertTrue(newCount == 202);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
+// 测试多线程操作存放 log 的数组
+- (void)testLogAsync_insertCacheToDB{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+        if(i%5==0){
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                [[FTTrackDataManager sharedInstance] insertCacheToDB];
+            });
+        }
+    }
+    sleep(10);
+    for (int i = 0; i<101; i++) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
+        });
+        if(i%5==0){
+            [[FTTrackDataManager sharedInstance] insertCacheToDB];
+        }
     }
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
  
