@@ -13,7 +13,9 @@
 @interface FTLogDataCache()
 @property (nonatomic, strong) dispatch_queue_t logCacheQueue;
 @property (nonatomic, strong) NSMutableArray *messageCaches;
-@property (atomic, strong) dispatch_semaphore_t logSemaphore;
+@property (nonatomic, strong) dispatch_semaphore_t logSemaphore;
+@property (atomic, assign) BOOL semaphoreWaiting;
+
 @end
 @implementation FTLogDataCache{
     pthread_mutex_t _lock;
@@ -29,6 +31,9 @@
         _messageCaches = [NSMutableArray array];
         _logCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
         _logCacheQueue = dispatch_queue_create("com.guance.logger.write", DISPATCH_QUEUE_SERIAL);
+        _logSemaphore = dispatch_semaphore_create(0);
+        _semaphoreWaiting = NO;
+        pthread_mutex_init(&(self->_lock), NULL);
     }
     return self;
 }
@@ -36,35 +41,29 @@
     if (!data) {
         return;
     }
+    BOOL fullArray = NO;
     pthread_mutex_lock(&_lock);
     [self.messageCaches addObject:data];
     self.logCount += 1;
-    if (self.messageCaches.count>=20) {
-        // 判断当前日志是否超额
-        NSInteger sum = [self optLogCachePolicy:self.messageCaches.count];
-        if (sum>=0) {
-            [self.messageCaches removeObjectsInRange:NSMakeRange(sum, self.messageCaches.count-sum)];
-        }
-        [[FTTrackerEventDBTool sharedManger] insertItemsWithDatas:self.messageCaches];
-        [self.messageCaches removeAllObjects];
-    }
+    fullArray = self.messageCaches.count == 20;
     pthread_mutex_unlock(&_lock);
     [self autoInsertCacheToDB];
+    if(fullArray){
+        [self insertCacheToDB];
+    }
 }
 - (void)autoInsertCacheToDB{
-    if(self.logSemaphore){
+    if(self.semaphoreWaiting){
         dispatch_semaphore_signal(self.logSemaphore);
     }else{
-        self.logSemaphore = dispatch_semaphore_create(0);
+        self.semaphoreWaiting = YES;
     }
-    __weak __typeof(self) weakSelf = self;
     dispatch_async(self.logCacheQueue, ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if(strongSelf){
-            long result = dispatch_semaphore_wait(strongSelf.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)10*NSEC_PER_MSEC));
+        if(self.logSemaphore){
+            long result = dispatch_semaphore_wait(self.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)10*NSEC_PER_MSEC));
             if(result!=0){
-                [strongSelf insertCacheToDB];
-                strongSelf.logSemaphore = nil;
+                self.semaphoreWaiting = NO;
+                [self insertCacheToDB];
             }
         }
     });
@@ -105,10 +104,7 @@
     }
 }
 -(void)dealloc{
-    if(self.logSemaphore){
-        dispatch_semaphore_signal(self.logSemaphore);
-        self.logSemaphore = nil;
-    }
+    if(self.logSemaphore) dispatch_semaphore_signal(self.logSemaphore);
     [self insertCacheToDB];
 }
 @end

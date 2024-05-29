@@ -18,6 +18,7 @@
 #import <pthread.h>
 #import "FTBaseInfoHandler.h"
 #import "FTLogDataCache.h"
+#import "FTJSONUtil.h"
 @interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
 @property (atomic, assign) BOOL isUploading;
 @property (nonatomic, strong) dispatch_queue_t networkQueue;
@@ -28,7 +29,8 @@
 @property (atomic, assign) int syncSleepTime;
 @property (nonatomic, strong) FTNetworkManager *networkManager;
 @property (nonatomic, strong) FTLogDataCache *logDataCache;
-@property (atomic, strong) dispatch_semaphore_t uploadDelaySemaphore;
+@property (nonatomic, strong) dispatch_semaphore_t uploadDelaySemaphore;
+@property (atomic, assign) BOOL semaphoreWaiting;
 @property (nonatomic, strong) dispatch_source_t uploadDelayTimer;
 @end
 @implementation FTTrackDataManager
@@ -57,6 +59,8 @@ static dispatch_once_t onceToken;
         _syncSleepTime = syncSleepTime;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
         _logDataCache = [[FTLogDataCache alloc]init];
+        _uploadDelaySemaphore = dispatch_semaphore_create(0);
+        _semaphoreWaiting = NO;
         [self listenNetworkChangeAndAppLifeCycle];
     }
     return self;
@@ -109,6 +113,7 @@ static dispatch_once_t onceToken;
             [self.logDataCache addLogData:data];
             if(self.autoSync&&[self.logDataCache reachHalfLimit]){
                 [self uploadTrackData];
+                return;
             }
             break;
         case FTAddDataNormal:
@@ -146,19 +151,17 @@ static dispatch_once_t onceToken;
         return;
     }
     if(self.autoSync&&!self.uploadDelayTimer){
-        if(self.uploadDelaySemaphore){
+        if(self.semaphoreWaiting){
             dispatch_semaphore_signal(self.uploadDelaySemaphore);
         }else{
-            self.uploadDelaySemaphore = dispatch_semaphore_create(0);
+            self.semaphoreWaiting = YES;
         }
-        __weak __typeof(self) weakSelf = self;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if(strongSelf){
-                long result = dispatch_semaphore_wait(strongSelf.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)1*NSEC_PER_MSEC));
+            if(self.uploadDelaySemaphore){
+                long result = dispatch_semaphore_wait(self.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)1*NSEC_PER_MSEC));
                 if(result!=0){
-                    [strongSelf createUploadDelayTimer];
-                    strongSelf.uploadDelaySemaphore = nil;
+                    self.semaphoreWaiting = NO;
+                    [self createUploadDelayTimer];
                 }
             }
         });
@@ -232,8 +235,8 @@ static dispatch_once_t onceToken;
                 NSInteger statusCode = httpResponse.statusCode;
                 success = (statusCode >=200 && statusCode < 500);
                 FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
-                if (!success) {
-                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 response = %@",httpResponse);
+                if (statusCode != 200 && data.length>0) {
+                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
                 }
                 dispatch_semaphore_signal(flushSemaphore);
             }];
@@ -250,9 +253,7 @@ static dispatch_once_t onceToken;
     [self.logDataCache insertCacheToDB];
 }
 - (void)shutDown{
-    if(self.uploadDelaySemaphore){ dispatch_semaphore_signal(self.uploadDelaySemaphore);
-        self.uploadDelaySemaphore = nil;
-    }
+    if(self.uploadDelaySemaphore) dispatch_semaphore_signal(self.uploadDelaySemaphore);
     [self.logDataCache insertCacheToDB];
     [self cancelUploadDelayTimer];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
