@@ -110,30 +110,29 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata =item[FT_OPDATA];
-        
-        NSString *source =[[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
-       
+        NSString *source = [[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
         if (!source) {
             source =[[opdata valueForKey:FT_MEASUREMENT] ft_replacingMeasurementSpecialCharacters];
         }
-        NSString *dataId = [NSString stringWithFormat:@"%@.%lu.%@",requestNumber,(unsigned long)events.count,[FTBaseInfoHandler randomUUID]];
-        NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
         NSDictionary *tag = opdata[FT_TAGS];
-        if(tag.allKeys.count>0){
-            [tagDict addEntriesFromDictionary:tag];
-        }
-        NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
-        if ([[opdata allKeys] containsObject:FT_FIELDS]) {
-            NSString *field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
+        NSDictionary *field = opdata[FT_FIELDS];
+        if(field.count>0 && tag.count>0){
+            NSString *dataId = [NSString stringWithFormat:@"%@.%lu.%@",requestNumber,(unsigned long)events.count,[FTBaseInfoHandler randomUUID]];
+            NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
+            if(tag.allKeys.count>0){
+                [tagDict addEntriesFromDictionary:tag];
+            }
+            NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
+            NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
             
-            NSString *requestStr = tagStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
+            NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,obj.tm];
             if (idx==0) {
                 [requestDatas appendString:requestStr];
             }else{
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagStr,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",source,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];
