@@ -404,7 +404,7 @@
     XCTAssertTrue(hasResource);
     FTRequestLineBody *lineBody = [[FTRequestLineBody alloc]init];
     lineBody.events = @[resourceModel];
-    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel] requestNumber:@"1" enableIntegerCompatible:NO];
+    NSString *lineStr = [lineBody getRequestBodyWithEventArray:@[resourceModel] packageId:@"1.1.1" enableIntegerCompatible:NO];
     NSArray *nameAry = @[FT_KEY_RESOURCE_SIZE,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_TTFB,FT_KEY_RESOURCE_SSL,FT_KEY_RESOURCE_TCP,FT_KEY_RESOURCE_DNS,FT_KEY_RESOURCE_FIRST_BYTE,FT_DURATION,FT_KEY_RESOURCE_TRANS];
     for (NSString *name in nameAry) {
         NSString *line = [NSString stringWithFormat:@"%@=%@i",name,fieldDict[name]];
@@ -1185,7 +1185,9 @@
         [expect fulfill];
     }];
     [dataTask resume];
+    [urlSession finishTasksAndInvalidate];
     [self waitForExpectations:@[expect]];
+    sleep(0.5);
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     __block NSInteger hasResourceData = NO;

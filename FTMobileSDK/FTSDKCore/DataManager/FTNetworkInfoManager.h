@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *datawayUrl;
 @property (nonatomic,copy,readonly) NSString *clientToken;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
+@property (nonatomic,copy,readonly) NSString *processID;
 @property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
 + (instancetype)sharedInstance;
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl;

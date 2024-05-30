@@ -105,7 +105,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 
 @end
 @implementation FTRequestLineBody
-- (NSString *)getRequestBodyWithEventArray:(NSArray *)events requestNumber:(NSString *)requestNumber enableIntegerCompatible:(BOOL)compatible{
+- (NSString *)getRequestBodyWithEventArray:(NSArray *)events packageId:(NSString *)packageId enableIntegerCompatible:(BOOL)compatible{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
@@ -116,8 +116,8 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
         }
         NSDictionary *tag = opdata[FT_TAGS];
         NSDictionary *field = opdata[FT_FIELDS];
-        if(field.count>0 && tag.count>0){
-            NSString *dataId = [NSString stringWithFormat:@"%@.%lu.%@",requestNumber,(unsigned long)events.count,[FTBaseInfoHandler randomUUID]];
+        if(source.length>0 && field.count>0 && tag.count>0){
+            NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler randomUUID]];
             NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
             if(tag.allKeys.count>0){
                 [tagDict addEntriesFromDictionary:tag];
@@ -132,7 +132,7 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",source,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",item,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];
