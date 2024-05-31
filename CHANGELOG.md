@@ -1,3 +1,9 @@
+# 1.5.0-alpha.2
+1. 修复日志数据写入时互斥锁未初始化造成访问冲突问题
+2. 行协议处理格式错误数据逻辑优化
+3. sdk_data_id 算法修改
+4. 对传入 SDK 的 NSDictionary 类型参数格式处理防止转换 json 失败造成数据丢失
+---
 # 1.5.0-alpha.1
 1. RUM resource 网络请求添加 remote ip 地址解析功能
 2. 添加行协议 Integer 数据兼容模式，处理 web 数据类型冲突问题
