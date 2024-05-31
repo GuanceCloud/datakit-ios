@@ -7,6 +7,7 @@
 //
 
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTJSONUtil.h"
 #import "FTLog+Private.h"
 @implementation NSDictionary (FTCopyProperties)
 - (NSDictionary *)ft_deepCopy{
@@ -14,9 +15,19 @@
     @try {
         NSArray *allKeys = [self allKeys];
         for (id key in allKeys) {
+            NSString *stringKey = key;
+            if(![key isKindOfClass:[NSString class]]){
+                stringKey = [key description];
+                FTInnerLogWarning(@"%@ :All dictionary keys should be NSStrings",self);
+            }
             id value = [self objectForKey:key];
-            if ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]] || [value isKindOfClass:[NSDate class]]) {
+            if ([value isKindOfClass:[NSString class]]) {
                 properties[key] = [value copy];
+                continue;
+            }
+            if([value isKindOfClass:[NSNumber class]]){
+                id number = [value isEqualToNumber:NSDecimalNumber.notANumber] || [value isEqualToNumber:@(INFINITY)] ? nil : value;
+                properties[key] = number;
                 continue;
             }
             if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]) {
@@ -28,7 +39,7 @@
                 properties[key] = [self ft_copyArrayOrDictionary:[set allObjects]];
                 continue;
             }
-            properties[key] = value;
+            properties[key] = [value description];
         }
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@", exception);
@@ -40,12 +51,14 @@
     if (!object) {
         return nil;
     }
-    if (![NSJSONSerialization isValidJSONObject:object]) {
+    id safeObject = [FTJSONUtil JSONSerializableObject:object];
+    if (![NSJSONSerialization isValidJSONObject:safeObject]) {
+        FTInnerLogError(@"All objects need be NSString, NSNumber, NSArray, NSDictionary, or NSNull. NSNumbers are not NaN or infinity");
         return nil;
     }
     @try {
         NSError *error;
-        NSData *objectData = [NSJSONSerialization dataWithJSONObject:object options:NSJSONWritingPrettyPrinted error:&error];
+        NSData *objectData = [NSJSONSerialization dataWithJSONObject:safeObject options:NSJSONWritingPrettyPrinted error:&error];
         id tempObject = [NSJSONSerialization JSONObjectWithData:objectData options:NSJSONReadingFragmentsAllowed error:&error];
         if (error) {
             FTInnerLogError(@"%@", error.localizedDescription);

@@ -32,6 +32,7 @@
 #import "FTEnumConstant.h"
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
+#import "NSDictionary+FTCopyProperties.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -159,10 +160,11 @@ static dispatch_once_t onceToken;
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
+    NSDictionary *safeExtra = [extra ft_deepCopy];
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:userName email:userEmail extra:extra];
+        [value updateUser:Id name:userName email:userEmail extra:safeExtra];
     }];
-    FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,extra);
+    FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
 //用户注销
 - (void)logout{

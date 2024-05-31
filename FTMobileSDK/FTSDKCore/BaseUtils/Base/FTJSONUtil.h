@@ -49,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (NSString *)convertToJsonDataWithObject:(id)object;
 
+/// 安全保护，把一个对象转成可以转成Json字符串的对象
+/// @param obj 要转化的对象
++ (id)JSONSerializableObject:(id)obj;
 @end
 
 NS_ASSUME_NONNULL_END
