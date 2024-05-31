@@ -171,7 +171,6 @@
     }
 }
 - (void)writeViewData:(FTRUMDataModel *)model{
-    FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
     if(self.isInitialView){
         return;
     }
