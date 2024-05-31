@@ -218,11 +218,6 @@ static dispatch_once_t onceToken;
     @try {
         __block BOOL success = NO;
         @autoreleasepool {
-            if([type isEqualToString:FT_DATA_TYPE_LOGGING]){
-                [FTBaseInfoHandler increaseLogRequestSerialNumber];
-            }else{
-                [FTBaseInfoHandler increaseRumRequestSerialNumber];
-            }
             FTInnerLogDebug(@"[NETWORK][%@] 开始上报事件(本次上报事件数:%lu)", type,(unsigned long)[events count]);
             dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
             FTRequest *request = [FTRequest createRequestWithEvents:events type:type];

@@ -192,6 +192,7 @@ static unsigned long rumSerialNumber = 0;
 static unsigned long logSerialNumber = 0;
 
 + (NSString *)rumRequestSerialNumber{
+    [self increaseRumRequestSerialNumber];
     return [NSString stringWithFormat:@"%@",[self decimalToBase36:rumSerialNumber]];
 }
 + (void)increaseRumRequestSerialNumber{
@@ -202,6 +203,7 @@ static unsigned long logSerialNumber = 0;
     }
 }
 + (NSString *)logRequestSerialNumber{
+    [self increaseLogRequestSerialNumber];
     return [NSString stringWithFormat:@"%@",[self decimalToBase36:logSerialNumber]];
 }
 + (void)increaseLogRequestSerialNumber{
