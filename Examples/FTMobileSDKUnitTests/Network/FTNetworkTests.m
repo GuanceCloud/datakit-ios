@@ -223,9 +223,10 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     FTRecordModel *model = [FTModelHelper createLogModel:@"testNoJsonResponseNetWork"];
     FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:FT_DATA_TYPE_LOGGING];
     [[FTNetworkManager new] sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
-        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
+        NSError *jsonError;
+        NSMutableDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
         NSString *result =[[ NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        XCTAssertTrue(error != nil && [result isEqualToString:@"Hello World!"]);
+        XCTAssertTrue(jsonError != nil && [result isEqualToString:@"Hello World!"]);
         [expectation fulfill];
         
     }];

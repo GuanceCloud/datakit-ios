@@ -401,6 +401,39 @@
     }
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testPrintCustomLogToConsole{
+    [[FTLog sharedInstance] registerInnerLogCacheToDefaultPath];
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.printCustomLogToConsole = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
+    sleep(0.1);
+    [[FTMobileAgent sharedInstance] syncProcess];
+    NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
+    BOOL hasFileLogger = NO;
+    FTLogFileInfo *logFileInfo;
+    NSString *logs = nil;
+    for (id object in array) {
+        if([object isKindOfClass:FTFileLogger.class]){
+            FTFileLogger *fileLogger = (FTFileLogger *)object;
+            NSData *data;
+            dispatch_sync(fileLogger.loggerQueue, ^{
+              
+            });
+            hasFileLogger = YES;
+            logFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
+            NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:logFileInfo.filePath];
+            data = [fileHandle readDataToEndOfFile];
+            logs = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            break;
+        }
+    }
+    XCTAssertTrue([logs containsString:@"[IOS APP]"]);
+    XCTAssertTrue([logs containsString:@"testPrintCustomLogToConsole"]);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
 - (void)testSDKShutDown{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -430,7 +463,7 @@
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
         });
     }
-    sleep(10);
+    sleep(1);
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
@@ -464,7 +497,7 @@
             });
         }
     }
-    sleep(10);
+    sleep(1);
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];
@@ -625,7 +658,9 @@
             hasFileLogger = YES;
             logFileInfo = [fileLogger valueForKey:@"currentLogFileInfo"];
             if (path) {
-                XCTAssertTrue([path isEqualToString:[logFileInfo.filePath stringByDeletingLastPathComponent]]);
+                NSString *filePath = [logFileInfo.filePath stringByDeletingLastPathComponent];
+                NSLog(@"path:%@\n filePath:%@",path,filePath);
+                XCTAssertTrue([path isEqualToString:filePath]);
             }
             if(fileName){
                 XCTAssertTrue([logFileInfo.fileName hasPrefix:fileName]);
