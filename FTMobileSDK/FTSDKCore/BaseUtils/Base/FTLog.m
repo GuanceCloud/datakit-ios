@@ -45,7 +45,7 @@
 
 
 static BOOL _enableLog;
-void *FTLoggingQueueIdentityKey = &FTLoggingQueueIdentityKey;
+void *FTInnerLogQueueIdentityKey = &FTInnerLogQueueIdentityKey;
 
 static dispatch_queue_t _loggingQueue;
 static dispatch_group_t _loggingGroup;
@@ -60,7 +60,7 @@ static dispatch_group_t _loggingGroup;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
         _loggingQueue = dispatch_queue_create("com.guance.debugLog", DISPATCH_QUEUE_SERIAL);
-        dispatch_queue_set_specific(_loggingQueue, FTLoggingQueueIdentityKey, &FTLoggingQueueIdentityKey, NULL);
+        dispatch_queue_set_specific(_loggingQueue, FTInnerLogQueueIdentityKey, &FTInnerLogQueueIdentityKey, NULL);
         _loggingGroup = dispatch_group_create();
     });
     return sharedInstance;
@@ -187,7 +187,7 @@ static dispatch_group_t _loggingGroup;
     };
     if (asyncFlag) {
         dispatch_async(_loggingQueue, logBlock);
-    } else if (dispatch_get_specific(FTLoggingQueueIdentityKey)) {
+    } else if (dispatch_get_specific(FTInnerLogQueueIdentityKey)) {
         logBlock();
     } else {
         dispatch_sync(_loggingQueue, logBlock);
