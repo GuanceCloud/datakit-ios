@@ -60,7 +60,7 @@
     }
     dispatch_async(self.logCacheQueue, ^{
         if(self.logSemaphore){
-            long result = dispatch_semaphore_wait(self.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)10*NSEC_PER_MSEC));
+            long result = dispatch_semaphore_wait(self.logSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)FT_TIME_INTERVAL*NSEC_PER_MSEC));
             if(result!=0){
                 self.semaphoreWaiting = NO;
                 [self insertCacheToDB];

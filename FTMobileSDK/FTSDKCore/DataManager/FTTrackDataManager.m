@@ -158,7 +158,7 @@ static dispatch_once_t onceToken;
         }
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             if(self.uploadDelaySemaphore){
-                long result = dispatch_semaphore_wait(self.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)1*NSEC_PER_MSEC));
+                long result = dispatch_semaphore_wait(self.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)FT_TIME_INTERVAL*NSEC_PER_MSEC));
                 if(result!=0){
                     self.semaphoreWaiting = NO;
                     [self createUploadDelayTimer];

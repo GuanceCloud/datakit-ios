@@ -151,6 +151,8 @@ NSString * const FT_NETWORK_TRACEPARENT_KEY = @"traceparent";
 NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
+NSUInteger const FT_TIME_INTERVAL = 100;
+
 int const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 
