@@ -87,6 +87,7 @@ NSString * const FT_KEY_RESOURCE_TRANS = @"resource_trans";
 NSString * const FT_KEY_RESOURCE_FIRST_BYTE = @"resource_first_byte";
 NSString * const FT_KEY_RESPONSE_HEADER = @"response_header";
 NSString * const FT_KEY_REQUEST_HEADER = @"request_header";
+NSString * const FT_KEY_RESOURCE_HOST_IP = @"resource_host_ip";
 //trace link rum tag
 NSString * const FT_KEY_TRACEID  = @"trace_id";
 NSString * const FT_KEY_SPANID = @"span_id";
@@ -150,6 +151,8 @@ NSString * const FT_NETWORK_TRACEPARENT_KEY = @"traceparent";
 NSString * const FT_NETWORK_ZIPKIN_SINGLE_KEY = @"b3";
 
 NSUInteger const FT_LOGGING_CONTENT_SIZE = 30720;
+NSUInteger const FT_TIME_INTERVAL = 100;
+
 int const FT_DB_CONTENT_MAX_COUNT = 5000;
 NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME = @"ftMobileSdk";
 

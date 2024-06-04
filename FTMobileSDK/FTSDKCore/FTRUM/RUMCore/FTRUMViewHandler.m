@@ -20,6 +20,7 @@
 @property (nonatomic, strong) FTRUMDependencies *rumDependencies;
 @property (nonatomic, strong) FTRUMContext *context;
 @property (nonatomic, strong) FTRUMActionHandler *actionHandler;
+@property (nonatomic, assign) BOOL isInitialView;
 @property (nonatomic, strong) NSMutableDictionary *resourceHandlers;
 @property (nonatomic, assign) NSInteger viewLongTaskCount;
 @property (nonatomic, assign) NSInteger viewResourceCount;
@@ -38,6 +39,7 @@
     if (self) {
         self.assistant = self;
         self.isActiveView = YES;
+        self.isInitialView = model.isInitialView;
         self.updateTime = 0;
         self.view_id = model.view_id;
         self.view_name = model.view_name;
@@ -169,6 +171,9 @@
     }
 }
 - (void)writeViewData:(FTRUMDataModel *)model{
+    if(self.isInitialView){
+        return;
+    }
     self.updateTime+=1;
     //秒级
     NSTimeInterval sTimeSpent = MAX(1e-9, [model.time timeIntervalSinceDate:self.viewStartTime]);

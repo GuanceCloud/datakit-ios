@@ -87,6 +87,7 @@ extern NSString * const FT_KEY_RESOURCE_STATUS_GROUP;
 extern NSString * const FT_KEY_RESPONSE_CONNECTION;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_TYPE;
 extern NSString * const FT_KEY_RESPONSE_CONTENT_ENCODING;
+extern NSString * const FT_KEY_RESOURCE_HOST_IP;
 #pragma mark --- field
 extern NSString * const FT_KEY_RESOURCE_SIZE;
 extern NSString * const FT_KEY_RESOURCE_DNS;
@@ -171,6 +172,7 @@ extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 extern int const FT_DB_CONTENT_MAX_COUNT;
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
 
+extern NSUInteger const FT_TIME_INTERVAL;
 /// 超过多少毫秒为一次卡顿,default 5s 记录一次ANR
 extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
 /// 多少次卡顿纪录为一次有效卡顿

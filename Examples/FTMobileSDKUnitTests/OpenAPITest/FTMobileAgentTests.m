@@ -177,7 +177,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testSetEmptyServiceName" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
@@ -212,7 +212,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testEnvProperty" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance]insertCacheToDB];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
@@ -247,7 +247,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testEnvProperty" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [array lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
@@ -279,7 +279,7 @@
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     FTRecordModel *model = [newDatas lastObject];
     NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
@@ -335,7 +335,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusError];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
@@ -368,7 +368,7 @@
     [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] logging:@"testAutoSync" status:FTStatusError];
     [[FTMobileAgent sharedInstance] syncProcess];
-    [[FTTrackerEventDBTool sharedManger]insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *oldDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count>0);
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
@@ -402,6 +402,7 @@
     datakitConfig.globalContext = @{@"aa":@"bb"};
     datakitConfig.service = @"testsdk";
     datakitConfig.version = @"1.1.1";
+    datakitConfig.enableDataIntegerCompatible = YES;
     [datakitConfig setEnvWithType:FTEnvLocal];
     FTMobileConfig *copyConfig = [datakitConfig copy];
     XCTAssertTrue(copyConfig.enableSDKDebugLog == datakitConfig.enableSDKDebugLog);
@@ -410,6 +411,7 @@
     XCTAssertTrue([copyConfig.service isEqualToString:datakitConfig.service]);
     XCTAssertTrue([copyConfig.version isEqualToString:datakitConfig.version]);
     XCTAssertTrue([copyConfig.globalContext isEqual:datakitConfig.globalContext]);
+    XCTAssertTrue(copyConfig.enableDataIntegerCompatible == datakitConfig.enableDataIntegerCompatible);
     FTMobileConfig *datawayConfig = [[FTMobileConfig alloc]initWithDatawayUrl:self.url clientToken:@"clientToken"];
     FTMobileConfig *copy = [datawayConfig copy];
     XCTAssertTrue([copy.datawayUrl isEqualToString:datawayConfig.datawayUrl]);
@@ -421,6 +423,7 @@
     rumConfig.enableTraceUserAction = YES;
     rumConfig.enableTraceUserView = YES;
     rumConfig.enableTraceUserResource = YES;
+    rumConfig.enableResourceHostIP = YES;
     rumConfig.enableTrackAppANR = YES;
     rumConfig.enableTrackAppCrash = YES;
     rumConfig.enableTrackAppFreeze = YES;
@@ -436,6 +439,7 @@
     XCTAssertTrue(copyRumConfig.enableTraceUserAction == rumConfig.enableTraceUserAction);
     XCTAssertTrue(copyRumConfig.enableTraceUserView == rumConfig.enableTraceUserView);
     XCTAssertTrue(copyRumConfig.enableTraceUserResource == rumConfig.enableTraceUserResource);
+    XCTAssertTrue(copyRumConfig.enableResourceHostIP == rumConfig.enableResourceHostIP);
     XCTAssertTrue(copyRumConfig.enableTrackAppANR == rumConfig.enableTrackAppANR);
     XCTAssertTrue(copyRumConfig.enableTrackAppCrash == rumConfig.enableTrackAppCrash);
     XCTAssertTrue(copyRumConfig.enableTrackAppFreeze == rumConfig.enableTrackAppFreeze);
@@ -550,7 +554,7 @@
     for (int i = 0; i<20; i++) {
         [[FTLogger sharedInstance] info:@"test" property:nil];
     }
-    [[FTTrackerEventDBTool sharedManger] insertCacheToDB];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
     XCTAssertTrue([[FTTrackerEventDBTool sharedManger] getDatasCount] == count);
     // RUM Anctio、View、Resource采集关闭
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];

@@ -85,46 +85,6 @@
     [self waitForExpectationsWithTimeout:35 handler:^(NSError *error) {
     }];
 }
-- (void)testRumSdkDataIDIncrease{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    [self mockHttp];
-    for (int i = 0 ; i<8; i++) {
-        FTRecordModel *rumModel = [FTModelHelper createRumModel];
-        [[FTTrackDataManager sharedInstance] addTrackData:rumModel type:FTAddDataNormal];
-    }
-    NSString *serialNumber = [FTBaseInfoHandler rumRequestSerialNumber];
-    self.expectation = [self expectationWithDescription:@"异步操作timeout"];
-       
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
-
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    NSString *newSerialNumber = [FTBaseInfoHandler rumRequestSerialNumber];
-    XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
-}
-- (void)testLogSdkDataIDIncrease{
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    [self mockHttp];
-    self.expectation= [self expectationWithDescription:@"异步操作timeout"];
-    for (int i = 0 ; i<8; i++) {
-        FTRecordModel *logModel = [FTModelHelper createLogModel:[NSString stringWithFormat:@"%d",i]];
-        [[FTTrackDataManager sharedInstance] addTrackData:logModel type:FTAddDataNormal];
-    }
-    
-    NSString *serialNumber = [FTBaseInfoHandler logRequestSerialNumber];
-    [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
-    [[FTTrackDataManager sharedInstance] uploadTrackData];
-
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
-        XCTAssertNil(error);
-    }];
-    NSString *newSerialNumber = [FTBaseInfoHandler logRequestSerialNumber];
-    XCTAssertTrue([self  base36ToDecimal:newSerialNumber] - [self base36ToDecimal:serialNumber] == 1);
-    [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
-}
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
         FTTrackDataManager *manager = object;
@@ -159,6 +119,51 @@
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
     NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
     XCTAssertTrue([mRequest.HTTPBody isEqual: [@"" dataUsingEncoding:NSUTF8StringEncoding]]);
+}
+- (void)testSdkDataID_RUM{
+    [self sdkDataIDTest:YES];
+}
+- (void)testSdkDataID_LOG{
+    [self sdkDataIDTest:NO];
+}
+- (void)sdkDataIDTest:(BOOL)rum{
+    FTRecordModel *model = rum?[FTModelHelper createRumModel]:[FTModelHelper createLogModel];
+    FTRequest *request = [FTRequest createRequestWithEvents:@[model] type:rum?FT_DATA_TYPE_RUM:FT_DATA_TYPE_LOGGING];
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+    NSMutableURLRequest *urlRequest2 = [[NSMutableURLRequest alloc]initWithURL:request.absoluteURL cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:30.0];
+
+    NSMutableURLRequest *mRequest = [request adaptedRequest:urlRequest];
+    NSMutableURLRequest *mRequest2 = [request adaptedRequest:urlRequest2];
+    NSString *bodyStr = [[NSString alloc]initWithData:mRequest.HTTPBody encoding:NSUTF8StringEncoding];
+    NSString *bodyStr2 = [[NSString alloc]initWithData:mRequest2.HTTPBody encoding:NSUTF8StringEncoding];
+    XCTAssertFalse([bodyStr isEqualToString:bodyStr2]);
+    NSArray *array1 = [bodyStr componentsSeparatedByString:@","];
+    NSArray *array2 = [bodyStr2 componentsSeparatedByString:@","];
+    __block NSString *sdk_data_id1;
+    __block NSString *sdk_data_id2;
+    [array1 enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj containsString:@"sdk_data_id"]) {
+            sdk_data_id1 = obj;
+            *stop = YES;
+        }
+    }];
+    [array2 enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj containsString:@"sdk_data_id"]) {
+            sdk_data_id2 = obj;
+            *stop = YES;
+        }
+    }];
+    array1 = [[sdk_data_id1 substringFromIndex:12] componentsSeparatedByString:@"."];
+    array2 = [[sdk_data_id2 substringFromIndex:12] componentsSeparatedByString:@"."];
+    // packageId +1
+    XCTAssertTrue([self base36ToDecimal:array2[0]] - [self base36ToDecimal:array1[0]] == 1);
+    // 进程 id 一致
+    XCTAssertTrue([array1[1] isEqualToString:array2[1]]);
+    // 数据个数
+    XCTAssertTrue([array2[2] intValue] == [array1[2] intValue] == 1);
+    // 数据 id 不一致
+    XCTAssertFalse([[array1 lastObject] isEqualToString:[array2 lastObject]]);
+
 }
 - (void)testDatakitUrl{
     NSString *datakitUrlStr = @"http://www.test.com/some/url/string";

@@ -61,8 +61,6 @@
 }
 - (void)testTableViewDelegate_KVO{
     [self setSDK];
-    SEL selector = @selector(tableView:didSelectRowAtIndexPath:);
-    
     for (int i = 0; i<1000; i++) {
         @autoreleasepool {
             UITableView *tableView = [[UITableView alloc]init];

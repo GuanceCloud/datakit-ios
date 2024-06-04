@@ -51,6 +51,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     NSString *appid = [processInfo environment][@"APP_ID"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
     config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = enable;
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];
@@ -446,7 +447,6 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
             hasResourceCount += 1;
             XCTAssertTrue([fields.allKeys containsObject:@"ft_test"]);
             NSString *requestHeader = [fields valueForKey:FT_KEY_REQUEST_HEADER];
-            NSDictionary *header = [FTJSONUtil dictionaryWithJsonString:requestHeader];
             XCTAssertTrue([tags.allKeys containsObject:FT_KEY_SPANID]);
             NSString *span = [NSString stringWithFormat:@"%@:%@",FT_NETWORK_DDTRACE_SPANID,tags[FT_KEY_SPANID]];
             XCTAssertTrue([requestHeader containsString:span]);

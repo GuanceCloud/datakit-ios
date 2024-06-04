@@ -25,7 +25,8 @@
 #if FT_MAC
         prefix = @"MACOS APP";
 #endif
-        NSString *consoleMessage = [NSString stringWithFormat:@"[%@][%@] %@",prefix,[FTStatusStringMap[logMessage.level] uppercaseString], logMessage.message];
+        NSString *status = logMessage.status.length>0?[logMessage.status uppercaseString]:[FTStatusStringMap[logMessage.level] uppercaseString];
+        NSString *consoleMessage = [NSString stringWithFormat:@"[%@][%@] %@",prefix,status, logMessage.message];
         NSMutableArray *mutableStrs = [NSMutableArray array];
         if(logMessage.property && logMessage.property.allKeys.count>0){
             for (NSString *key in logMessage.property.allKeys) {
@@ -44,7 +45,7 @@
 
 
 static BOOL _enableLog;
-void *FTLoggingQueueIdentityKey = &FTLoggingQueueIdentityKey;
+void *FTInnerLogQueueIdentityKey = &FTInnerLogQueueIdentityKey;
 
 static dispatch_queue_t _loggingQueue;
 static dispatch_group_t _loggingGroup;
@@ -59,7 +60,7 @@ static dispatch_group_t _loggingGroup;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
         _loggingQueue = dispatch_queue_create("com.guance.debugLog", DISPATCH_QUEUE_SERIAL);
-        dispatch_queue_set_specific(_loggingQueue, FTLoggingQueueIdentityKey, &FTLoggingQueueIdentityKey, NULL);
+        dispatch_queue_set_specific(_loggingQueue, FTInnerLogQueueIdentityKey, &FTInnerLogQueueIdentityKey, NULL);
         _loggingGroup = dispatch_group_create();
     });
     return sharedInstance;
@@ -160,7 +161,19 @@ static dispatch_group_t _loggingGroup;
    property:(nullable NSDictionary *)property{
     @try {
         NSDate *timestamp = [NSDate date];
-        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:level property:property timestamp:timestamp];
+        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:level status:nil property:property timestamp:timestamp];
+        [self queueLogMessage:logMessage asynchronously:asynchronous];
+    } @catch(NSException *e) {
+        FTNSLogError(@"[FTLog] %@",e.description);
+    }
+}
+- (void)userLog:(BOOL)asynchronous
+        message:(NSString *)message
+         status:(NSString *)status
+       property:(nullable NSDictionary *)property{
+    @try {
+        NSDate *timestamp = [NSDate date];
+        FTLogMessage *logMessage = [[FTLogMessage alloc] initWithMessage:message  level:StatusInfo status:status property:property timestamp:timestamp];
         [self queueLogMessage:logMessage asynchronously:asynchronous];
     } @catch(NSException *e) {
         FTNSLogError(@"[FTLog] %@",e.description);
@@ -174,7 +187,7 @@ static dispatch_group_t _loggingGroup;
     };
     if (asyncFlag) {
         dispatch_async(_loggingQueue, logBlock);
-    } else if (dispatch_get_specific(FTLoggingQueueIdentityKey)) {
+    } else if (dispatch_get_specific(FTInnerLogQueueIdentityKey)) {
         logBlock();
     } else {
         dispatch_sync(_loggingQueue, logBlock);

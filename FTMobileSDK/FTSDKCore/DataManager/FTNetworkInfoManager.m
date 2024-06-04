@@ -8,6 +8,7 @@
 
 #import "FTNetworkInfoManager.h"
 #import "FTLog+Private.h"
+#import <unistd.h>
 @interface FTNetworkInfoManager()
 
 @end
@@ -20,7 +21,14 @@
     });
     return sharedInstance;
 }
-
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        pid_t processID = getpid();
+        _processID = [NSString stringWithFormat:@"%d",processID];
+    }
+    return self;
+}
 - (FTNetworkInfoManager *(^)(NSString *value))setDatakitUrl {
     return ^(NSString *value) {
         self->_datakitUrl = value;
@@ -55,6 +63,12 @@
         if(value && value.length>0){
             FTInnerLogInfo(@"SDK Dataway Client Token：%@*****",[value substringWithRange:NSMakeRange(0, value.length/2)]);
         }
+        return self;
+    };
+}
+- (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible{
+    return ^(BOOL value) {
+        self->_enableDataIntegerCompatible = value;
         return self;
     };
 }

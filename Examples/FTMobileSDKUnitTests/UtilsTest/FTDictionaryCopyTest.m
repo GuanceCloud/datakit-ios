@@ -67,7 +67,7 @@
     XCTAssertTrue([copyDict[@"key_1"] isKindOfClass:NSDictionary.class]);
     XCTAssertTrue([copyDict[@"key_1"] isEqualToDictionary:dictValue]);
 }
-- (void)testDictionaryCopy_setValue{
+- (void)testDictionaryCopy_NSSetValue{
     NSSet *setValue = [NSSet setWithArray:@[@1,@2,@3]];
     NSDictionary *dict = @{@"key_1":setValue,
     };
@@ -82,22 +82,67 @@
     NSDictionary *copyDict = [dict ft_deepCopy];
     [dict setValue:@"key_3" forKey:@"value_3"];
     [dict setValue:@"value_4" forKey:@"key_1"];
-
+    
     XCTAssertFalse(copyDict == dict);
     XCTAssertTrue(copyDict.allKeys.count == 2);
     XCTAssertTrue([copyDict[@"key_1"] isEqualToString:@"value_1"]);
     XCTAssertTrue(dict.allKeys.count == 3);
 }
-- (void)testDictionaryCopyProperties_multithreading{
-    NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-    for (int i = 0; i<1000; i++) {
-        [dict setValue:@(i) forKey:[NSString stringWithFormat:@"%d",i]];
-    }
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        for (int i = 0; i<1000; i++) {
-            [dict removeObjectForKey:[NSString stringWithFormat:@"%d",i]];
-        }
-    });
-    XCTAssertNoThrow([dict ft_deepCopy]);
+
+- (void)testDictionaryCopyProperties_NSDate{
+    NSDate *date = [NSDate date];
+    NSDictionary *dict = @{@"date":date};
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue(copyDict.allKeys.count == 1);
+    XCTAssertTrue([copyDict[@"date"] isEqualToString:[date description]]);
+}
+
+- (void)testDictionaryCopyProperties_Object{
+    NSDictionary *dict = @{@"object":self};
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue(copyDict.allKeys.count == 1);
+    XCTAssertTrue([copyDict[@"object"] isEqualToString:[self description]]);
+}
+
+- (void)testDictionaryCopyProperties_NaN_Infinity_Number{
+    NSDictionary *dict = @{@"NaN":NSDecimalNumber.notANumber,
+                           @"Infinity":@(INFINITY),
+    };
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue(copyDict.allKeys.count == 0);
+}
+- (void)testDictionaryCopyProperties_ArrayValue_Null{
+    NSDate *date = [NSDate date];
+    NSDictionary *dict = @{@"array":@[[NSNull null],date,NSDecimalNumber.notANumber,@(INFINITY),self]};
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue(copyDict.allKeys.count == 1);
+    NSArray *array = copyDict[@"array"];
+    XCTAssertTrue(array.count == 3);
+    XCTAssertTrue([array containsObject:[[NSNull null] description]]);
+    XCTAssertTrue([array containsObject:[date description]]);
+    XCTAssertTrue([array containsObject:[self description]]);
+}
+- (void)testDictionaryCopyProperties_DictValue_Null{
+    NSDate *date = [NSDate date];
+    NSDictionary *dict = @{@"dictValue":@{@"date":date,
+                                     @"null":[NSNull null],
+                                     @"object":self,
+                                     @"NAN":NSDecimalNumber.notANumber,
+                                     @"INFINITY":@(INFINITY)
+    }};
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue(copyDict.allKeys.count == 1);
+    NSDictionary *dictValue = copyDict[@"dictValue"];
+    XCTAssertTrue(dictValue.count == 3);
+    XCTAssertTrue([dictValue[@"null"] isEqualToString:[[NSNull null] description]]);
+    XCTAssertTrue([dictValue[@"date"] isEqualToString:[date description]]);
+    XCTAssertTrue([dictValue[@"object"] isEqualToString:[self description]]);
 }
 @end

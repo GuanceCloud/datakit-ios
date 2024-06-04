@@ -31,7 +31,7 @@ final class FTTestInteraction: XCTestCase {
         XCTAssertNoThrow(FTMobileAgent.sharedInstance())
         
         
-        var traceConfig = FTTraceConfig()
+        let traceConfig = FTTraceConfig()
         traceConfig.networkTraceType = .dDtrace
         traceConfig.enableAutoTrace = true
         traceConfig.enableLinkRumData = true
@@ -39,7 +39,7 @@ final class FTTestInteraction: XCTestCase {
         let tracer = FTURLSessionInstrumentation.sharedInstance().value(forKey: "tracer")
         XCTAssertTrue(tracer != nil)
         
-        var rumConfig = FTRumConfig(appid: appid!)
+        let rumConfig = FTRumConfig(appid: appid!)
         rumConfig.enableTraceUserAction = true
         rumConfig.enableTrackAppANR = true
         rumConfig.enableTraceUserView = true
@@ -52,7 +52,7 @@ final class FTTestInteraction: XCTestCase {
         let manager = FTGlobalRumManager.sharedInstance().rumManager
         XCTAssertTrue(oldManager != manager)
         
-        var logConfig = FTLoggerConfig()
+        let logConfig = FTLoggerConfig()
         logConfig.enableCustomLog = true
         logConfig.enableLinkRumData = true
         logConfig.printCustomLogToConsole = true
@@ -99,13 +99,13 @@ final class FTTestInteraction: XCTestCase {
     func traceSDKInit(traceType:FTNetworkTraceType,enableTrace:Bool? = true) {
         let dic = ProcessInfo().environment
         let url = dic["ACCESS_SERVER_URL"]
-        let appid = dic["APP_ID"]
+//        let appid = dic["APP_ID"]
         let config:FTMobileConfig = FTMobileConfig(datakitUrl: url!)
         config.autoSync = false
         FTMobileAgent.start(withConfigOptions: config)
         
         if(enableTrace == nil || enableTrace == true){
-            var traceConfig = FTTraceConfig()
+            let traceConfig = FTTraceConfig()
             traceConfig.networkTraceType = traceType
             traceConfig.enableAutoTrace = true
             traceConfig.enableLinkRumData = true

@@ -10,7 +10,7 @@
 @class FTRecordModel;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTRequestBodyProtocol <NSObject>
-- (NSString *)getRequestBodyWithEventArray:(NSArray *)events requestNumber:(NSString *)requestNumber;
+- (NSString *)getRequestBodyWithEventArray:(NSArray *)events packageId:(NSString *)packageId enableIntegerCompatible:(BOOL)compatible;
 @end
 @interface FTRequestBody : NSObject
 

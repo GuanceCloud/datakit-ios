@@ -13,10 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTRecordModel;
 /// 操作数据库数据的工具
 @interface FTTrackerEventDBTool : NSObject
-/// logging 类型数据超过最大值后是否废弃最新数据
-@property (atomic, assign) BOOL discardNew;
-/// 数据库中 logging 类型数据最大数量
-@property (atomic, assign) int logCacheLimitCount;
 /// 单例
 + (FTTrackerEventDBTool *)sharedManger;
 /// 单例
@@ -31,13 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 向数据库中添加一组对象
 /// @param items 要记录的数据
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items;
-
-/// 向日志缓存中添加一组对象
-/// @param data 要记录的数据
--(void)insertLoggingItems:(FTRecordModel *)data;
-
-/// 缓存中的数据添加到数据库中
--(void)insertCacheToDB;
 
 /// 获取数据库所有的数据
 -(NSArray *)getAllDatas;

@@ -93,4 +93,47 @@
     }
     return result;
 }
++ (id)JSONSerializableObject:(id)obj{
+    // valid json types
+    if ([obj isKindOfClass:[NSString class]]) {
+        return obj;
+    }
+    if ([obj isKindOfClass:[NSNull class]]) {
+        return [obj description];
+    }
+    //防止 NaN 与 无穷大
+    if ([obj isKindOfClass:[NSNumber class]]) {
+        return [obj isEqualToNumber:NSDecimalNumber.notANumber] || [obj isEqualToNumber:@(INFINITY)] ? nil : obj;
+    }
+    // recurse on containers
+    if ([obj isKindOfClass:[NSArray class]] || [obj isKindOfClass:[NSSet class]]) {
+        NSMutableArray *mutableArray = [NSMutableArray array];
+        for (id value in obj) {
+            id newValue = [self JSONSerializableObject:value];
+            if (newValue) {
+                [mutableArray addObject:newValue];
+            }
+        }
+        return [NSArray arrayWithArray:mutableArray];
+    }
+    if ([obj isKindOfClass:[NSDictionary class]]) {
+        NSMutableDictionary *mutableDic = [NSMutableDictionary dictionary];
+        [(NSDictionary *)obj enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            NSString *stringKey = key;
+            if (![key isKindOfClass:[NSString class]]) {
+                stringKey = [key description];
+                FTInnerLogWarning(@"property keys should be strings. but property: %@, type: %@, key: %@", obj, [key class], key);
+            }
+            mutableDic[stringKey] = [self JSONSerializableObject:obj];
+        }];
+        return [NSDictionary dictionaryWithDictionary:mutableDic];
+    }
+
+    if ([obj isKindOfClass:[NSDate class]]) {
+        return [obj description];
+    }
+    
+    FTInnerLogWarning(@"property values should be valid json types, but current value: %@, with invalid type: %@", obj, [obj class]);
+    return [obj description];
+}
 @end

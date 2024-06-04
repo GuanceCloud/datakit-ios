@@ -32,6 +32,7 @@
 #import "FTEnumConstant.h"
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
+#import "NSDictionary+FTCopyProperties.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -77,7 +78,8 @@ static dispatch_once_t onceToken;
                 .setDatakitUrl(config.datakitUrl)
                 .setDatawayUrl(config.datawayUrl)
                 .setClientToken(config.clientToken)
-                .setSdkVersion(SDK_VERSION);
+                .setSdkVersion(SDK_VERSION)
+                .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
         }
@@ -104,9 +106,7 @@ static dispatch_once_t onceToken;
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
         self.presetProperty.logContext = _loggerConfig.globalContext;
-        [FTTrackDataManager sharedInstance]
-            .setLogCacheLimitCount(_loggerConfig.logCacheLimitCount)
-            .setLogDiscardNew((_loggerConfig.discardType == FTDiscard));
+        [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
                                     enableCustomLog:_loggerConfig.enableCustomLog
@@ -146,7 +146,7 @@ static dispatch_once_t onceToken;
             FTInnerLogError(@"[Logging] 传入的第数据格式有误");
             return;
         }
-        [[FTLogger sharedInstance] log:content status:(LogStatus)status property:property];
+        [[FTLogger sharedInstance] log:content statusType:(LogStatus)status property:property];
     } @catch (NSException *exception) {
         FTInnerLogError(@"exception %@",exception);
     }
@@ -160,10 +160,11 @@ static dispatch_once_t onceToken;
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
     NSParameterAssert(Id);
+    NSDictionary *safeExtra = [extra ft_deepCopy];
     [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
-        [value updateUser:Id name:userName email:userEmail extra:extra];
+        [value updateUser:Id name:userName email:userEmail extra:safeExtra];
     }];
-    FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,extra);
+    FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
 //用户注销
 - (void)logout{
@@ -203,10 +204,10 @@ static dispatch_once_t onceToken;
 }
 
 // FT_DATA_TYPE_LOGGING
--(void)logging:(NSString *)content status:(LogStatus)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
+-(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerPropertyWithStatus:(LogStatus)status]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerProperty]];
+        [tagDict setValue:status forKey:FT_KEY_STATUS];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
@@ -218,7 +219,7 @@ static dispatch_once_t onceToken;
                 [tagDict addEntriesFromDictionary:rumTag];
             }
         }
-        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:newContent,
+        NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
             [filedDict addEntriesFromDictionary:field];
@@ -240,13 +241,19 @@ static dispatch_once_t onceToken;
                 NSString *dataType = dict[@"dataType"];
                 NSNumber *time = dict[@"tm"];
                 if([dataType isEqualToString:FT_DATA_TYPE_LOGGING]){
-                    LogStatus status = [dict[@"status"] intValue];
-                    [self logging:dict[@"content"] status:status tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
+                    id status = dict[@"status"];
+                    NSString *statusStr;
+                    if([status isKindOfClass:NSNumber.class]){
+                        statusStr = FTStatusStringMap[[status intValue]];
+                    }else{
+                        statusStr = status;
+                    }
+                    [self logging:dict[@"content"] status:statusStr tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
                     [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
                 }
-               
+                
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {

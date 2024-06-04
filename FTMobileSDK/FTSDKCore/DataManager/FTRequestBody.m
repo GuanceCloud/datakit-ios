@@ -24,7 +24,7 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
 
 - (instancetype)initWithField:(id)field value:(id)value;
 - (NSString *)URLEncodedTagsStringValue;
-- (NSString *)URLEncodedFiledStringValue;
+- (NSString *)URLEncodedFiledStringValueWithIntegerCompatible:(BOOL)compatible;
 @end
 @implementation FTQueryStringPair
 - (instancetype)initWithField:(id)field value:(id)value {
@@ -52,13 +52,13 @@ typedef NS_OPTIONS(NSInteger, FTParameterType) {
         }
     }
 }
-- (NSString *)URLEncodedFiledStringValue{
+- (NSString *)URLEncodedFiledStringValueWithIntegerCompatible:(BOOL)compatible{
     if (!self.value || [self.value isEqual:[NSNull null]] || ([self.value isKindOfClass:NSString.class] && [self.value isEqualToString: @""])) {
         return [NSString stringWithFormat:@"%@=\"\"",[self.field ft_replacingSpecialCharacters]];
     }else{
         if([self.value isKindOfClass:NSNumber.class]){
             NSNumber *number = self.value;
-            return  [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], number.ft_toFiledString];
+            return  [NSString stringWithFormat:@"%@=%@", [self.field ft_replacingSpecialCharacters], compatible?number.ft_toFieldIntegerCompatibleFormat:number.ft_toFieldFormat];
         }else if ([self.value isKindOfClass:NSString.class]){
             return [NSString stringWithFormat:@"%@=\"%@\"", [self.field ft_replacingSpecialCharacters], [self.value ft_replacingFieldSpecialCharacters]];
         }else{
@@ -84,11 +84,11 @@ NSArray * FTQueryStringPairsFromKeyAndValue(NSDictionary *value) {
     }
     return mutableQueryStringComponents;
 }
-NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type) {
+NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType type,BOOL compatible) {
     NSMutableArray *mutablePairs = [NSMutableArray array];
     for (FTQueryStringPair *pair in FTQueryStringPairsFromKeyAndValue(parameters)) {
         if (type == FTParameterTypeField) {
-            [mutablePairs addObject:[pair URLEncodedFiledStringValue]];
+            [mutablePairs addObject:[pair URLEncodedFiledStringValueWithIntegerCompatible:compatible]];
         }else{
             NSString *str = [pair URLEncodedTagsStringValue];
             if(str){
@@ -105,35 +105,34 @@ NSString * FTQueryStringFromParameters(NSDictionary *parameters,FTParameterType 
 
 @end
 @implementation FTRequestLineBody
-- (NSString *)getRequestBodyWithEventArray:(NSArray *)events requestNumber:(NSString *)requestNumber{
+- (NSString *)getRequestBodyWithEventArray:(NSArray *)events packageId:(NSString *)packageId enableIntegerCompatible:(BOOL)compatible{
     __block NSMutableString *requestDatas = [NSMutableString new];
     [events enumerateObjectsUsingBlock:^(FTRecordModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *item = [FTJSONUtil dictionaryWithJsonString:obj.data];
         NSDictionary *opdata =item[FT_OPDATA];
-        
-        NSString *source =[[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
-       
+        NSString *source = [[opdata valueForKey:FT_KEY_SOURCE] ft_replacingMeasurementSpecialCharacters];
         if (!source) {
             source =[[opdata valueForKey:FT_MEASUREMENT] ft_replacingMeasurementSpecialCharacters];
         }
-        NSString *dataId = [NSString stringWithFormat:@"%@.%lu.%@",requestNumber,(unsigned long)events.count,[FTBaseInfoHandler randomUUID]];
-        NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
         NSDictionary *tag = opdata[FT_TAGS];
-        if(tag.allKeys.count>0){
-            [tagDict addEntriesFromDictionary:tag];
-        }
-        NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag);
-        if ([[opdata allKeys] containsObject:FT_FIELDS]) {
-            NSString *field=FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField);
+        NSDictionary *field = opdata[FT_FIELDS];
+        if(source.length>0 && field.count>0 && tag.count>0){
+            NSString *dataId = [NSString stringWithFormat:@"%@.%@",packageId,[FTBaseInfoHandler randomUUID]];
+            NSMutableDictionary *tagDict = @{@"sdk_data_id":dataId}.mutableCopy;
+            if(tag.allKeys.count>0){
+                [tagDict addEntriesFromDictionary:tag];
+            }
+            NSString *tagStr = FTQueryStringFromParameters(tagDict,FTParameterTypeTag,compatible);
+            NSString *fieldStr= FTQueryStringFromParameters(opdata[FT_FIELDS],FTParameterTypeField,compatible);
             
-            NSString *requestStr = tagStr.length>0? [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,field,obj.tm]:[NSString stringWithFormat:@"%@ %@ %lld",source,field,obj.tm];
+            NSString *requestStr = [NSString stringWithFormat:@"%@,%@ %@ %lld",source,tagStr,fieldStr,obj.tm];
             if (idx==0) {
                 [requestDatas appendString:requestStr];
             }else{
                 [requestDatas appendFormat:@"\n%@",requestStr];
             }
         }else{
-            FTInnerLogError(@"\n*********此条数据格式错误********\n%@,%@  %lld\n******************\n",source,tagStr,obj.tm);
+            FTInnerLogError(@"\n*********此条数据格式错误********\n%@ %lld\n******************\n",item,obj.tm);
         }
     }];
     FTRecordModel *model = [events firstObject];

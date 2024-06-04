@@ -11,19 +11,14 @@
 #import "FTRecordModel.h"
 #import "FTLog+Private.h"
 #import "FTConstants.h"
-#import <pthread.h>
 #import "FTSDKCompat.h"
 @interface FTTrackerEventDBTool ()
 @property (nonatomic, strong) NSString *dbPath;
 @property (nonatomic, strong) ZY_FMDatabaseQueue *dbQueue;
 @property (nonatomic, strong) ZY_FMDatabase *db;
-@property (nonatomic, strong) NSMutableArray<FTRecordModel *> *messageCaches;
 
 @end
-@implementation FTTrackerEventDBTool{
-    pthread_mutex_t _lock;
-
-}
+@implementation FTTrackerEventDBTool
 static FTTrackerEventDBTool *dbTool = nil;
 static dispatch_once_t onceToken;
 
@@ -52,9 +47,7 @@ static dispatch_once_t onceToken;
             dbTool.dbPath = path;
             FTInnerLogDebug(@"db path:%@",path);
             dbTool.dbQueue = dbQueue;
-            dbTool.logCacheLimitCount = FT_DB_CONTENT_MAX_COUNT;
         }
-        pthread_mutex_init(&(dbTool->_lock), NULL);
         [dbTool createTable];
      }
     });
@@ -114,31 +107,6 @@ static dispatch_once_t onceToken;
    }
     return success;
 }
--(void)insertLoggingItems:(FTRecordModel *)item{
-    if (!item) {
-        return;
-    }
-    pthread_mutex_lock(&_lock);
-    [self.messageCaches addObject:item];
-    if (self.messageCaches.count>=20) {
-        NSInteger count = self.logCacheLimitCount - [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING]-self.messageCaches.count;
-        
-        if(count < 0){
-            if(!self.discardNew){
-                [[FTTrackerEventDBTool sharedManger] deleteLoggingItem:-count];
-            }else{
-                NSInteger sum = count+self.messageCaches.count;
-                if (sum>=0) {
-                    [self.messageCaches removeObjectsInRange:NSMakeRange(sum, self.messageCaches.count-sum)];
-                }
-            }
-        }
-        [self insertItemsWithDatas:self.messageCaches];
-        [self.messageCaches removeAllObjects];
-    }
-    pthread_mutex_unlock(&_lock);
-
-}
 -(BOOL)insertItemsWithDatas:(NSArray<FTRecordModel*> *)items{
     __block BOOL needRollback = NO;
     if([self isOpenDatabase:self.db]) {
@@ -155,17 +123,6 @@ static dispatch_once_t onceToken;
         
     }
     return !needRollback;
-}
--(void)insertCacheToDB{
-    pthread_mutex_lock(&_lock);
-    if (self.messageCaches.count > 0) {
-        NSArray *array = [self.messageCaches copy];
-        self.messageCaches = nil;
-        pthread_mutex_unlock(&_lock);
-        [self insertItemsWithDatas:array];
-    }else{
-        pthread_mutex_unlock(&_lock);
-    }
 }
 -(NSArray *)getAllDatas{
     NSString* sql = [NSString stringWithFormat:@"SELECT * FROM '%@' ORDER BY tm ASC  ;",FT_DB_TRACE_EVENT_TABLE_NAME];
@@ -312,14 +269,7 @@ static dispatch_once_t onceToken;
     }];
 
 }
-- (NSMutableArray<FTRecordModel *> *)messageCaches {
-    if (!_messageCaches) {
-        _messageCaches = [NSMutableArray array];
-    }
-    return _messageCaches;
-}
 - (void)shutDown{
-    [self insertCacheToDB];
     onceToken = 0;
     dbTool = nil;
 }

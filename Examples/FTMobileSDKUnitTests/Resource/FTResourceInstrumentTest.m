@@ -64,7 +64,6 @@
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
-    [FTNetworkMock networkOHHTTPStubs];
 }
 
 - (void)tearDown {
@@ -76,6 +75,7 @@
 }
 /** Tests that creating a shared session returns a non-nil object. */
 - (void)testSharedSession {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     NSURLSession *session = [NSURLSession sharedSession];
     XCTAssertNotNil(session);
     NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -91,6 +91,7 @@
 
 /** Tests sessionWithConfiguration: with the default configurtion returns a non-nil object. */
 - (void)testSessionWithDefaultSessionConfiguration {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
@@ -105,6 +106,7 @@
 
 /** Tests sessionWithConfiguration: with an ephemeral configuration returns a non-nil object. */
 - (void)testSessionWithEphemeralSessionConfiguration {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration ephemeralSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
@@ -119,6 +121,7 @@
 
 /** Tests sessionWithConfiguration: with a background configuration returns a non-nil object. */
 - (void)testSessionWithBackgroundSessionConfiguration {
+    [FTNetworkMock networkOHHTTPStubs];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"madeUpID"];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
@@ -126,6 +129,7 @@
 }
 /** Tests instrumenting an NSProxy wrapped NSURLSession object works. */
 - (void)testProxyWrappedSharedSession {
+    [FTNetworkMock networkOHHTTPStubs];
     Method method = class_getClassMethod([NSURLSession class], @selector(sharedSession));
     IMP originalImp = method_getImplementation(method);
     IMP swizzledImp = imp_implementationWithBlock(^(id session) {
@@ -152,6 +156,7 @@
 
 /** Tests instrumenting an NSProxy wrapped NSURLSession object works. */
 - (void)testProxyWrappedSessionWithConfiguration {
+    [FTNetworkMock networkOHHTTPStubs];
     Method method = class_getClassMethod([NSURLSession class], @selector(sessionWithConfiguration:));
     IMP originalImp = method_getImplementation(method);
     IMP swizzledImp =
@@ -182,6 +187,7 @@
 }
 /** Tests instrumenting an NSProxy wrapped NSURLSession object works. */
 - (void)testProxyWrappedSessionWithConfigurationDelegateDelegateQueue {
+    [FTNetworkMock networkOHHTTPStubs];
     SEL selector = @selector(sessionWithConfiguration:delegate:delegateQueue:);
     Method method = class_getClassMethod([NSURLSession class], selector);
     IMP originalImp = method_getImplementation(method);
@@ -220,6 +226,7 @@
 
 /** Tests using a nil delegate still results in tracking responses. */
 - (void)testSessionWithConfigurationDelegateDelegateQueueWithNilDelegate {
+    [FTNetworkMock networkOHHTTPStubs];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration
@@ -238,6 +245,7 @@
 
 //* Tests that the delegate class isn't instrumented more than once.
 - (void)testDelegateClassOnlyRegisteredOnce {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     FTURLSessionCompleteTestDelegate *delegate =
     [[FTURLSessionCompleteTestDelegate alloc] init];
     NSURLSessionConfiguration *configuration =
@@ -245,26 +253,17 @@
     [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url ];
-    self.expectation = [self expectationWithDescription:@"completionHandler called"];
     NSURLSessionTask *task = [session dataTaskWithRequest:request];
     [task resume];
     FTSessionTaskHandler *handler = [self getTraceHandler:task];
-    [handler addObserver:self forKeyPath:@"response" options:NSKeyValueObservingOptionNew context:nil];
-    [self waitForExpectationsWithTimeout:5 handler:nil];
-    XCTAssertTrue(handler.response);
-    [handler removeObserver:self forKeyPath:@"response"];
-    XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount == 1);
+    [self waitAndRunBlockAfterResponse:^{
+        XCTAssertTrue(handler.response);
+        XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount == 1);
+    }];
 }
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
-    if([keyPath isEqualToString:@"response"]){
-        sleep(0.1);
-        [self.expectation fulfill];
-    }
-}
-
 /** Tests that the called delegate selector is wrapped and calls through. */
 - (void)testDelegateURLSessionTaskDidCompleteWithError {
-    
+    [FTNetworkMock networkOHHTTPStubs];
     FTURLSessionCompleteTestDelegate *delegate =
     [[FTURLSessionCompleteTestDelegate alloc] init];
     // This request needs to fail.
@@ -286,6 +285,7 @@
 }
 /** Tests that the called delegate selector is wrapped and calls through. */
 - (void)testDelegateURLSessionDataTaskDidReceiveData {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     NSURLSessionDataTask *dataTask;
     @autoreleasepool {
         FTURLSessionCompleteTestDelegate *delegate =
@@ -306,6 +306,7 @@
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidCompleteWithError {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     FTURLSessionNoCompleteTestDelegate *delegate = [[FTURLSessionNoCompleteTestDelegate alloc] init];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -323,6 +324,7 @@
 }
 /** Tests that even if a delegate doesn't implement a method, we add it to the delegate class. */
 - (void)testDelegateUnimplementedURLSessionTaskDidFinishCollectingMetrics {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     FTURLSessionNoDidFinishCollectingMetrics *delegate = [[FTURLSessionNoDidFinishCollectingMetrics alloc] init];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
@@ -343,6 +345,7 @@
 
 /** Tests that dataTaskWithRequest: returns a non-nil object. */
 - (void)testDataTaskWithRequest {
+    [FTNetworkMock networkOHHTTPStubs];
     NSURLSession *session = [NSURLSession sharedSession];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
@@ -354,6 +357,7 @@
 
 /** Tests that dataTaskWithRequest:completionHandler: returns a non-nil object. */
 - (void)testDataTaskWithRequestAndCompletionHandler {
+    [FTNetworkMock networkOHHTTPStubs];
     NSURLSession *session = [NSURLSession sharedSession];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
     XCTestExpectation *expectation = [self expectationWithDescription:@"completionHandler called"];
@@ -371,7 +375,7 @@
 
 /** Tests that dataTaskWithUrl:completionHandler: returns a non-nil object. */
 - (void)testDataTaskWithUrlAndCompletionHandler {
-    
+    [FTNetworkMock networkOHHTTPStubs];
     NSURLSession *session = [NSURLSession sharedSession];
     XCTestExpectation *expectation = [self expectationWithDescription:@"completionHandler called"];
     
@@ -390,7 +394,7 @@
 
 /** Validate that it works with NSMutableURLRequest URLs across data, upload, and download. */
 - (void)testMutableRequestURLs{
-    
+    [FTNetworkMock networkOHHTTPStubs];
     NSMutableURLRequest *URLRequest = [NSMutableURLRequest requestWithURL:self.url];
     NSURLSession *session = [NSURLSession
                              sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
@@ -400,6 +404,7 @@
     XCTAssertNotNil([self getTraceHandler:dataTask]);
 }
 - (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
+    [FTNetworkMock networkOHHTTPStubsHandler];
     __block BOOL loopingMainThread = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         dispatch_semaphore_t sema = dispatch_semaphore_create(0);
