@@ -88,6 +88,7 @@
 }
 - (NSString *)ft_replacingSpecialCharacters{
     NSString *reStr = [self stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+    reStr = [reStr stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
     reStr =[reStr stringByReplacingOccurrencesOfString:@"," withString:@"\\,"];
     reStr =[reStr stringByReplacingOccurrencesOfString:@"=" withString:@"\\="];
     reStr =[reStr stringByReplacingOccurrencesOfString:@" " withString:@"\\ " options:NSLiteralSearch range:NSMakeRange(0, reStr.length)];
