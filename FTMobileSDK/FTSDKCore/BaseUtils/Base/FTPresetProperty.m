@@ -176,7 +176,6 @@ static NSString * const FT_VERSION = @"version";
 #endif
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
-    [dict setValue:self.appID forKey:FT_APP_ID];
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;

@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTUserInfo;
 /// 预置属性
 @interface FTPresetProperty : NSObject
-/// 应用唯一 ID
-@property (nonatomic, copy) NSString *appID;
 /// 用户设置的 logger globalContext
 @property (nonatomic, strong) NSDictionary *logContext;
 /// 用户设置的 rum globalContext

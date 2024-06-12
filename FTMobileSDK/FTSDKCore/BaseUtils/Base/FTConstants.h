@@ -177,3 +177,6 @@ extern NSUInteger const FT_TIME_INTERVAL;
 extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
 /// 多少次卡顿纪录为一次有效卡顿
 extern NSUInteger const MXRMonitorRunloopStandstillCount;
+
+FOUNDATION_EXPORT const NSNotificationName FTRumContextDidChangeNotification
+    NS_SWIFT_NAME(RumContextDidChange);

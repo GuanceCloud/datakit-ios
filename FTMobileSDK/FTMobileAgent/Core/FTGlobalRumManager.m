@@ -56,6 +56,7 @@ static dispatch_once_t onceToken;
     dependencies.sampleRate = rumConfig.samplerate;
     dependencies.enableResourceHostIP = rumConfig.enableResourceHostIP;
     dependencies.errorMonitorType = (ErrorMonitorType)rumConfig.errorMonitorType;
+    dependencies.appId = rumConfig.appid;
     dependencies.fatalErrorContext = [FTFatalErrorContext new];
     self.dependencies = dependencies;
     self.rumManager = [[FTRUMManager alloc]initWithRumDependencies:self.dependencies];

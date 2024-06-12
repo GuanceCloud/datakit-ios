@@ -69,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL fatal;
 @end
 @interface FTRUMContext : NSObject
+@property (nonatomic, copy) NSString *app_id;
 @property (nonatomic, copy) NSString *session_id;
 @property (nonatomic, copy) NSString *session_type;
 @property (nonatomic, copy) NSString *view_id;
@@ -76,6 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *view_referrer;
 @property (nonatomic, copy, nullable) NSString *action_id;
 @property (nonatomic, copy, nullable) NSString *action_name;
+- (instancetype)initWithAppID:(NSString *)appID;
 /// trace、logger 获取 rum 关联数据
 -(NSDictionary *)getGlobalSessionViewTags;
 /// rum 内部获取相关关联数据

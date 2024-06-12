@@ -43,7 +43,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.rumDependencies = expiredSession.rumDependencies;
         self.sessionStartTime = time;
-        self.context = [FTRUMContext new];
+        self.context = [FTRUMContext alloc]init;
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
             if(viewHandler.isActiveView){

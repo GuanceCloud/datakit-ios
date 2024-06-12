@@ -97,9 +97,10 @@
 
 @end
 @implementation FTRUMContext
--(instancetype)init{
+-(instancetype)initWithAppID:(NSString *)appID{
     self = [super init];
     if (self) {
+        self.app_id = appID;
         self.session_id = [FTBaseInfoHandler randomUUID];
         self.session_type = @"user";
     }
@@ -107,6 +108,7 @@
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTRUMContext *context = [[[self class] allocWithZone:zone] init];
+    context.app_id = self.app_id;
     context.action_id = self.action_id;
     context.action_name = self.action_name;
     context.session_id = self.session_id;
@@ -121,6 +123,7 @@
     [dict setValue:self.session_id forKey:FT_RUM_KEY_SESSION_ID];
     [dict setValue:self.session_type forKey:FT_RUM_KEY_SESSION_TYPE];
     [dict setValue:self.view_id forKey:FT_KEY_VIEW_ID];
+    [dict setValue:self.app_id forKey:FT_APP_ID];
     if(self.view_referrer.length>0){
         [dict setValue:self.view_referrer forKey:FT_KEY_VIEW_REFERRER];
     }
