@@ -9,17 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
-typedef NS_ENUM(NSInteger,FTTouchState) {
+typedef NS_ENUM(NSInteger,FTTouchPhase) {
     TouchDown,
     TouchMoved,
     TouchUp
 };
 
 @interface FTTouchCircle : NSObject
-@property (nonatomic, assign) float width;
-@property (nonatomic, assign) CGPoint point;
-@property (nonatomic, strong) UIColor *color;
-@property (nonatomic, assign) FTTouchState state;
+@property (nonatomic, assign) CGPoint position;
+@property (nonatomic, assign) FTTouchPhase phase;
 @property (nonatomic, assign) int identifier;
 @property (nonatomic, assign) long long timestamp;
 @end

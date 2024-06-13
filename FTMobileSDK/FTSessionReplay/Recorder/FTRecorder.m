@@ -8,7 +8,6 @@
 
 #import "FTRecorder.h"
 #import "FTWindowObserver.h"
-#import "FTViewTreeSnapshotProducer.h"
 #import "FTViewAttributes.h"
 #import "FTTouchCircle.h"
 #import "FTViewAttributes.h"
@@ -19,10 +18,10 @@
 #import "FTNodesFlattener.h"
 #import "FTSnapshotProcessor.h"
 #import "FTResourceProcessor.h"
-
+#import "FTViewTreeSnapshotBuilder.h"
 @interface FTRecorder()
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
-@property (nonatomic, strong) FTViewTreeSnapshotProducer *viewSnapShot;
+@property (nonatomic, strong) FTViewTreeSnapshotBuilder *viewSnapShot;
 @property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
 @property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
@@ -32,7 +31,7 @@
     self = [super init];
     if(self){
         _windowObserver = observer;
-        _viewSnapShot = [[FTViewTreeSnapshotProducer alloc]init];
+        _viewSnapShot = [[FTViewTreeSnapshotBuilder alloc]init];
         _serialQueue = dispatch_queue_create("com.guance.SRWireframe", DISPATCH_QUEUE_SERIAL);
     }
     return self;

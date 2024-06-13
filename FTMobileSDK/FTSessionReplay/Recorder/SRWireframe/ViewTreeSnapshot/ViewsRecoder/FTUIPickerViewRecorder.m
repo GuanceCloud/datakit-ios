@@ -14,7 +14,7 @@
 #import "FTImageDataUtils.h"
 
 @implementation FTUIPickerViewRecorder
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UIPickerView.class]){
         return nil;
     }

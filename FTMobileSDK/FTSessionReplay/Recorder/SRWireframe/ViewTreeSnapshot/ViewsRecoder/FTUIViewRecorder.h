@@ -12,6 +12,8 @@
 
 @class FTViewAttributes;
 NS_ASSUME_NONNULL_BEGIN
+typedef id<FTSRNodeSemantics>_Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
+
 @interface FTUIViewBuilder : NSObject<FTSRWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
@@ -23,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *label;
 @end
 @interface FTUIViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) SemanticsOverride semanticsOverride;
 
 @end
 

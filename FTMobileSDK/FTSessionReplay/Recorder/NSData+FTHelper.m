@@ -20,7 +20,7 @@
     return digest;
 }
 - (NSString *)ft_imageDataToSting{
-    NSString *str =  [self
+    NSString *str = [self
                       base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];;
     return str;
 }

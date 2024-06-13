@@ -14,7 +14,8 @@
 #import "FTSystemColors.h"
 #import "FTUIViewRecorder.h"
 #import "FTUIImageViewRecorder.h"
-typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTRecorderContext *context,BOOL isSensitive,BOOL isPlaceholder);
+#import "FTViewTreeRecordingContext.h"
+typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder);
 @interface  FTUITextFieldRecorder()
 @property (nonatomic, strong) FTUIViewRecorder *backgroundViewRecorder;
 @property (nonatomic, strong) FTUIImageViewRecorder *iconsRecorder;
@@ -26,7 +27,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTRecorderContex
 -(instancetype)init{
     self = [super init];
     if(self){
-        _textObfuscator = ^(FTRecorderContext *context,BOOL isSensitive,BOOL isPlaceholder){
+        _textObfuscator = ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder){
             if (isPlaceholder) {
                 return context.recorder.privacy.hintTextObfuscator;
             } else if (isSensitive) {
@@ -38,7 +39,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTRecorderContex
     }
     return self;
 }
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if([view isKindOfClass:UITextField.class]){
         return nil;
     }

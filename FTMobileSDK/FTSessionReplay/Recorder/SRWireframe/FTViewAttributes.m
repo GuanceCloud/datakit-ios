@@ -9,12 +9,6 @@
 #import "FTViewAttributes.h"
 @implementation FTSRContext
 @end
-@implementation FTRecorderContext
-
-@end
-@implementation FTViewTreeSnapshot
-
-@end
 
 @implementation FTViewAttributes
 -(instancetype)initWithFrameInRootView:(CGRect)frame view:(UIView *)view{
@@ -44,5 +38,17 @@
 }
 -(BOOL)isTranslucent{
     return  !self.isVisible || self.alpha < 1 || ((self.backgroundColor? 0 : CGColorGetAlpha(self.backgroundColor)) < 1);
+}
+- (instancetype)copyWithZone:(NSZone *)zone {
+    FTViewAttributes *attributes = [[[self class] allocWithZone:zone] init];
+    attributes.frame = self.frame;
+    attributes.alpha = self.alpha;
+    attributes.backgroundColor = self.backgroundColor;
+    attributes.layerBorderColor = self.layerBorderColor;
+    attributes.layerBorderWidth = self.layerBorderWidth;
+    attributes.layerCornerRadius = self.layerCornerRadius;
+    attributes.isHidden = self.isHidden;
+    attributes.intrinsicContentSize = self.intrinsicContentSize;
+    return attributes;
 }
 @end

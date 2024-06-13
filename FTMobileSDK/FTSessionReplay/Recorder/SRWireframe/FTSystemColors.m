@@ -49,12 +49,15 @@
         return @"#ffffffff";
     }
 }
-+ (NSString *)systemBackgroundColor{
++ (CGColorRef)systemBackgroundCGColor{
     if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor systemBackgroundColor].CGColor];
+        return [UIColor systemBackgroundColor].CGColor;
     } else {
-        return @"#ffffffff";
+        return [UIColor colorWithRed:255 / 255 green:255 / 255 blue:255 / 255 alpha:1].CGColor;
     }
+}
++ (NSString *)systemBackgroundColor{
+    return [FTSRUtils colorHexString:self.systemBackgroundCGColor];
 }
 + (NSString *)labelColor{
     if (@available(iOS 13.0, *)) {

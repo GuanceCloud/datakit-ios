@@ -16,6 +16,7 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
 @interface FTSRUtils : NSObject
 + (NSString *)colorHexString:(CGColorRef)color;
 + (NSString *)srPrivacyLabelString:(NSString *)string privacyType:(FTSRPrivacy)type;
++ (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;
 @end
 
 NS_ASSUME_NONNULL_END

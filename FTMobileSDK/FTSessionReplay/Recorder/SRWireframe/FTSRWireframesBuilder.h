@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
-@class FTSRWireframe,FTViewAttributes,FTRecorderContext;
+@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext;
+@protocol FTSRNodeSemantics;
 @protocol FTSRWireframesBuilder <NSObject>
 - (FTViewAttributes*)attributes;
 - (CGRect)wireframeRect;
@@ -17,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @protocol FTSRWireframesRecorder <NSObject>
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context;
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
 @end
 
 @protocol FTSRResource <NSObject>

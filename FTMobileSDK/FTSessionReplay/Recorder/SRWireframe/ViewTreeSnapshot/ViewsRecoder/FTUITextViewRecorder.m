@@ -12,16 +12,16 @@
 #import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
-typedef id<FTSRTextObfuscatingProtocol>(^FTTextViewObfuscator)(FTRecorderContext *context,BOOL isSensitive,BOOL isEditable);
+#import "FTViewTreeRecordingContext.h"
+#import "FTSRUtils.h"
 
 @interface FTUITextViewRecorder()
-@property (nonatomic,copy) FTTextViewObfuscator textObfuscator;
 @end
 @implementation FTUITextViewRecorder
 -(instancetype)init{
     self = [super init];
     if(self){
-        _textObfuscator = ^(FTRecorderContext *context,BOOL isSensitive,BOOL isEditable){
+        _textObfuscator = ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isEditable){
             if (isSensitive) {
                 return context.recorder.privacy.sensitiveTextObfuscator;
             }
@@ -35,12 +35,12 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextViewObfuscator)(FTRecorderContext
     }
     return self;
 }
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UITextView class]]){
         return nil;
     }
     if(!attributes.isVisible){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     UITextView *textView = (UITextView *)view;
     FTUITextViewBuilder *builder = [[FTUITextViewBuilder alloc]init];
@@ -50,9 +50,12 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextViewObfuscator)(FTRecorderContext
     builder.textColor = textView.textColor.CGColor;
     builder.font = textView.font;
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
-    // TODO：
-    //builder.textObfuscator =
-    return @[builder];
+    builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textView],textView.isEditable);
+    builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.nodes = @[builder];
+    return element;
 }
 
 @end

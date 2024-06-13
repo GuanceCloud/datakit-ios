@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FTViewTreeSnapshot.h"
 #import <UIKit/UIKit.h>
 #import "FTImageDataUtils.h"
 #import "FTSRViewID.h"
@@ -20,22 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, strong) NSDate *date;
-@end
-@interface FTRecorderContext : NSObject
-@property (nonatomic, weak) id<FTImageDataProvider> imageDataProvider;
-@property (nonatomic, strong) FTSRContext *recorder;
-@property (nonatomic, strong) FTSRViewID *viewIDGenerator;
-@property (nonatomic, strong) UIView *rootView;
-@end
-@protocol FTSRWireframesBuilder;
-@protocol FTSRResource;
-@interface FTViewTreeSnapshot : NSObject
-@property (nonatomic, strong) NSDate *date;
-@property (nonatomic, strong) FTSRContext *context;
-@property (nonatomic, assign) CGSize viewportSize;
-@property (nonatomic, strong) NSArray<id<FTSRWireframesBuilder>> *nodes;
-@property (nonatomic, strong) NSArray<id<FTSRResource>> *resources;
-
 @end
 
 @interface FTViewAttributes : NSObject

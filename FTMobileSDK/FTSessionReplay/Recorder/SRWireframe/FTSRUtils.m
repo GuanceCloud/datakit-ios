@@ -131,4 +131,37 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
     
     return @"";
 }
++ (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits{
+    if (textInputTraits.isSecureTextEntry) {
+        return YES;
+    }
+    UITextContentType contentType = textInputTraits.textContentType;
+    if(contentType&&contentType.length>0){
+        // TODO: sensitiveContentTypes 只创建一次
+        NSMutableSet * sensitiveContentTypes  = [[NSMutableSet alloc]initWithArray:@[
+            UITextContentTypeEmailAddress,
+            UITextContentTypeTelephoneNumber,
+            UITextContentTypeAddressCity,
+            UITextContentTypeAddressState,
+            UITextContentTypeAddressCityAndState,
+            UITextContentTypeFullStreetAddress,
+            UITextContentTypeStreetAddressLine1,
+            UITextContentTypeStreetAddressLine2,
+            UITextContentTypePostalCode,
+        ]];
+        if (@available(iOS 11.0, *)) {
+            [sensitiveContentTypes addObject:UITextContentTypePassword];
+        }
+        if (@available(iOS 12.0, *)) {
+            [sensitiveContentTypes addObject:UITextContentTypeNewPassword];
+            [sensitiveContentTypes addObject:UITextContentTypeOneTimeCode];
+        }
+        if (@available(iOS 17.0, *)) {
+            [sensitiveContentTypes addObject:UITextContentTypeCreditCardName];
+        }
+        return [sensitiveContentTypes containsObject:contentType];
+    }
+
+    return NO;
+}
 @end

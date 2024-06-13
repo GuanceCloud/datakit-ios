@@ -13,18 +13,11 @@
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 @interface FTUIDatePickerRecorder()
-@property (nonatomic,copy,readwrite) NSString *identifier;
 
 @end
 @implementation FTUIDatePickerRecorder
--(instancetype)init{
-    self = [super init];
-    if(self){
-        self.identifier = [[NSUUID UUID] UUIDString];
-    }
-    return self;
-}
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UIDatePicker.class]){
         return nil;
     }

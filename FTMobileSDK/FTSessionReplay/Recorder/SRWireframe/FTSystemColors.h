@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)tertiarySystemFillColor;
 + (NSString *)tertiarySystemBackgroundColor;
 + (NSString *)secondarySystemGroupedBackgroundColor;
++ (CGColorRef)systemBackgroundCGColor;
+
 + (NSString *)systemBackgroundColor;
 + (NSString *)labelColor;
 + (NSString *)placeholderTextColor;

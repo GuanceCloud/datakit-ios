@@ -11,7 +11,8 @@
 #import "FTViewAttributes.h"
 #import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
-typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTRecorderContext *context);
+#import "FTViewTreeRecordingContext.h"
+typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTViewTreeRecordingContext *context);
 @interface FTUILabelRecorder()
 @property (nonatomic,copy) FTTextObfuscator textObfuscator;
 @end
@@ -19,13 +20,13 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTRecorderContext *co
 -(instancetype)init{
     self = [super init];
     if(self){
-        _textObfuscator = ^(FTRecorderContext *context){
+        _textObfuscator = ^(FTViewTreeRecordingContext *context){
             return [context.recorder.privacy staticTextObfuscator];
         };
     }
     return self;
 }
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UILabel class]]){
         return nil;
     }

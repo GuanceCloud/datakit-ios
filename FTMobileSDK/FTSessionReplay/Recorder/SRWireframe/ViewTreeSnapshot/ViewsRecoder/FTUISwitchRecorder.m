@@ -13,8 +13,9 @@
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "UIView+FTSR.h"
+#import "FTViewTreeRecordingContext.h"
 @implementation FTUISwitchRecorder
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UISwitch.class]){
         return nil;
     }

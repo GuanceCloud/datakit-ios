@@ -35,8 +35,8 @@
 		170018E92C186B8600D39A2A /* FTUIViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 170018722C186B8600D39A2A /* FTUIViewRecorder.m */; };
 		170018EA2C186B8600D39A2A /* FTRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 170018742C186B8600D39A2A /* FTRecorder.h */; };
 		170018EB2C186B8600D39A2A /* FTRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 170018752C186B8600D39A2A /* FTRecorder.m */; };
-		170018EC2C186B8600D39A2A /* FTViewTreeSnapshotProducer.h in Headers */ = {isa = PBXBuildFile; fileRef = 170018762C186B8600D39A2A /* FTViewTreeSnapshotProducer.h */; };
-		170018ED2C186B8600D39A2A /* FTViewTreeSnapshotProducer.m in Sources */ = {isa = PBXBuildFile; fileRef = 170018772C186B8600D39A2A /* FTViewTreeSnapshotProducer.m */; };
+		170018EC2C186B8600D39A2A /* FTViewTreeSnapshotBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 170018762C186B8600D39A2A /* FTViewTreeSnapshotBuilder.h */; };
+		170018ED2C186B8600D39A2A /* FTViewTreeSnapshotBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 170018772C186B8600D39A2A /* FTViewTreeSnapshotBuilder.m */; };
 		170018EE2C186B8600D39A2A /* FTImageDataUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 170018792C186B8600D39A2A /* FTImageDataUtils.h */; };
 		170018EF2C186B8600D39A2A /* FTImageDataUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 1700187A2C186B8600D39A2A /* FTImageDataUtils.m */; };
 		170018F02C186B8600D39A2A /* FTJSONKeyMapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 1700187B2C186B8600D39A2A /* FTJSONKeyMapper.h */; };
@@ -97,10 +97,16 @@
 		171CE1DD2BFB3C550083FC1C /* FTDURLSessionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */; };
 		172572802C1992740029AD93 /* FTSnapshotProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1725727E2C1992740029AD93 /* FTSnapshotProcessor.h */; };
 		172572812C1992740029AD93 /* FTSnapshotProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1725727F2C1992740029AD93 /* FTSnapshotProcessor.m */; };
+		17285E2D2C1ACBA9005DEA1B /* FTViewTreeRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 17285E2B2C1ACBA9005DEA1B /* FTViewTreeRecorder.h */; };
+		17285E2E2C1ACBA9005DEA1B /* FTViewTreeRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 17285E2C2C1ACBA9005DEA1B /* FTViewTreeRecorder.m */; };
+		17285E312C1AD4FC005DEA1B /* FTViewTreeRecordingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17285E2F2C1AD4FC005DEA1B /* FTViewTreeRecordingContext.h */; };
+		17285E322C1AD4FC005DEA1B /* FTViewTreeRecordingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17285E302C1AD4FC005DEA1B /* FTViewTreeRecordingContext.m */; };
 		1733605D2C05FFD600A50C02 /* FTLogDataCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTLogDataCache.h */; };
 		1733605E2C05FFD600A50C02 /* FTLogDataCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTLogDataCache.h */; };
 		1733605F2C05FFD600A50C02 /* FTLogDataCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTLogDataCache.m */; };
 		173360602C05FFD600A50C02 /* FTLogDataCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTLogDataCache.m */; };
+		173960AF2C1B00E200FE1492 /* FTViewTreeSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 173960AD2C1B00E200FE1492 /* FTViewTreeSnapshot.h */; };
+		173960B02C1B00E200FE1492 /* FTViewTreeSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 173960AE2C1B00E200FE1492 /* FTViewTreeSnapshot.m */; };
 		17400E672B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E682B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
 		17400E692B466EFC00ACBA6C /* FTSignalException.h in Headers */ = {isa = PBXBuildFile; fileRef = 17400E652B466EFC00ACBA6C /* FTSignalException.h */; };
@@ -394,6 +400,8 @@
 		1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
 		179F69692C199E5800CD2FAC /* FTResourceProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F69672C199E5800CD2FAC /* FTResourceProcessor.h */; };
 		179F696A2C199E5800CD2FAC /* FTResourceProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 179F69682C199E5800CD2FAC /* FTResourceProcessor.m */; };
+		179F696D2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F696B2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h */; };
+		179F696E2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 179F696C2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.m */; };
 		17AB76B429D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */; };
 		17AB76B529D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */; };
 		17AB76B629D432DE008FBBF5 /* FTMemoryMonitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -627,8 +635,8 @@
 		170018722C186B8600D39A2A /* FTUIViewRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTUIViewRecorder.m; sourceTree = "<group>"; };
 		170018742C186B8600D39A2A /* FTRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRecorder.h; sourceTree = "<group>"; };
 		170018752C186B8600D39A2A /* FTRecorder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTRecorder.m; sourceTree = "<group>"; };
-		170018762C186B8600D39A2A /* FTViewTreeSnapshotProducer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTViewTreeSnapshotProducer.h; sourceTree = "<group>"; };
-		170018772C186B8600D39A2A /* FTViewTreeSnapshotProducer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeSnapshotProducer.m; sourceTree = "<group>"; };
+		170018762C186B8600D39A2A /* FTViewTreeSnapshotBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTViewTreeSnapshotBuilder.h; sourceTree = "<group>"; };
+		170018772C186B8600D39A2A /* FTViewTreeSnapshotBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeSnapshotBuilder.m; sourceTree = "<group>"; };
 		170018792C186B8600D39A2A /* FTImageDataUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTImageDataUtils.h; sourceTree = "<group>"; };
 		1700187A2C186B8600D39A2A /* FTImageDataUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTImageDataUtils.m; sourceTree = "<group>"; };
 		1700187B2C186B8600D39A2A /* FTJSONKeyMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTJSONKeyMapper.h; sourceTree = "<group>"; };
@@ -680,9 +688,15 @@
 		171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDURLSessionDelegate.m; sourceTree = "<group>"; };
 		1725727E2C1992740029AD93 /* FTSnapshotProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSnapshotProcessor.h; sourceTree = "<group>"; };
 		1725727F2C1992740029AD93 /* FTSnapshotProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSnapshotProcessor.m; sourceTree = "<group>"; };
+		17285E2B2C1ACBA9005DEA1B /* FTViewTreeRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTViewTreeRecorder.h; sourceTree = "<group>"; };
+		17285E2C2C1ACBA9005DEA1B /* FTViewTreeRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeRecorder.m; sourceTree = "<group>"; };
+		17285E2F2C1AD4FC005DEA1B /* FTViewTreeRecordingContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTViewTreeRecordingContext.h; sourceTree = "<group>"; };
+		17285E302C1AD4FC005DEA1B /* FTViewTreeRecordingContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeRecordingContext.m; sourceTree = "<group>"; };
 		172C1DD42BC7EB6400412DB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = FTMobileSDK/Info.plist; sourceTree = "<group>"; };
 		1733605B2C05FFD600A50C02 /* FTLogDataCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTLogDataCache.h; sourceTree = "<group>"; };
 		1733605C2C05FFD600A50C02 /* FTLogDataCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLogDataCache.m; sourceTree = "<group>"; };
+		173960AD2C1B00E200FE1492 /* FTViewTreeSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTViewTreeSnapshot.h; sourceTree = "<group>"; };
+		173960AE2C1B00E200FE1492 /* FTViewTreeSnapshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTViewTreeSnapshot.m; sourceTree = "<group>"; };
 		17400E652B466EFC00ACBA6C /* FTSignalException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSignalException.h; sourceTree = "<group>"; };
 		17400E662B466EFC00ACBA6C /* FTSignalException.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FTSignalException.c; sourceTree = "<group>"; };
 		17400E752B47AAB400ACBA6C /* FTNSException.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTNSException.m; sourceTree = "<group>"; };
@@ -769,6 +783,8 @@
 		1799581229D43FDE0033B46E /* FTPresetProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPresetProperty.m; sourceTree = "<group>"; };
 		179F69672C199E5800CD2FAC /* FTResourceProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTResourceProcessor.h; sourceTree = "<group>"; };
 		179F69682C199E5800CD2FAC /* FTResourceProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceProcessor.m; sourceTree = "<group>"; };
+		179F696B2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUnsupportedViewRecorder.h; sourceTree = "<group>"; };
+		179F696C2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUnsupportedViewRecorder.m; sourceTree = "<group>"; };
 		17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMemoryMonitor.h; sourceTree = "<group>"; };
 		17AB769629D432DE008FBBF5 /* FTCPUMonitor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTCPUMonitor.m; sourceTree = "<group>"; };
 		17AB769729D432DE008FBBF5 /* FTMonitorValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTMonitorValue.m; sourceTree = "<group>"; };
@@ -950,6 +966,8 @@
 				170018702C186B8600D39A2A /* FTUITextViewRecorder.m */,
 				170018712C186B8600D39A2A /* FTUIViewRecorder.h */,
 				170018722C186B8600D39A2A /* FTUIViewRecorder.m */,
+				179F696B2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h */,
+				179F696C2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.m */,
 			);
 			path = ViewsRecoder;
 			sourceTree = "<group>";
@@ -958,8 +976,14 @@
 			isa = PBXGroup;
 			children = (
 				170018732C186B8600D39A2A /* ViewsRecoder */,
-				170018762C186B8600D39A2A /* FTViewTreeSnapshotProducer.h */,
-				170018772C186B8600D39A2A /* FTViewTreeSnapshotProducer.m */,
+				170018762C186B8600D39A2A /* FTViewTreeSnapshotBuilder.h */,
+				170018772C186B8600D39A2A /* FTViewTreeSnapshotBuilder.m */,
+				17285E2B2C1ACBA9005DEA1B /* FTViewTreeRecorder.h */,
+				17285E2C2C1ACBA9005DEA1B /* FTViewTreeRecorder.m */,
+				17285E2F2C1AD4FC005DEA1B /* FTViewTreeRecordingContext.h */,
+				17285E302C1AD4FC005DEA1B /* FTViewTreeRecordingContext.m */,
+				173960AD2C1B00E200FE1492 /* FTViewTreeSnapshot.h */,
+				173960AE2C1B00E200FE1492 /* FTViewTreeSnapshot.m */,
 			);
 			path = ViewTreeSnapshot;
 			sourceTree = "<group>";
@@ -1743,6 +1767,7 @@
 				170018E22C186B8600D39A2A /* FTUITabBarRecorder.h in Headers */,
 				170019332C186B8600D39A2A /* FTImageRequest.h in Headers */,
 				17E4CC2D29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h in Headers */,
+				17285E2D2C1ACBA9005DEA1B /* FTViewTreeRecorder.h in Headers */,
 				170018F42C186B8600D39A2A /* FTSRBaseFrame.h in Headers */,
 				170018FE2C186B8600D39A2A /* FTSRWireframesBuilder.h in Headers */,
 				17AB76F029D432DE008FBBF5 /* FTRUMDataWriteProtocol.h in Headers */,
@@ -1776,7 +1801,7 @@
 				170018E42C186B8600D39A2A /* FTUITextFieldRecorder.h in Headers */,
 				174CB0712B5126D600A4F9C5 /* FTLongTaskDetector.h in Headers */,
 				1776062F29D1347500D17137 /* FTWebViewJavascriptBridgeBase.h in Headers */,
-				170018EC2C186B8600D39A2A /* FTViewTreeSnapshotProducer.h in Headers */,
+				170018EC2C186B8600D39A2A /* FTViewTreeSnapshotBuilder.h in Headers */,
 				17AC17432B9856C3003E18A6 /* FTFileLogger.h in Headers */,
 				1763BDB229DFF050009EE026 /* FTTrackerEventDBTool.h in Headers */,
 				17E4CBF129CD42E4005C2D99 /* FTExtensionDataManager.h in Headers */,
@@ -1804,6 +1829,7 @@
 				1776063029D1347500D17137 /* FTWKWebViewHandler.h in Headers */,
 				170018E62C186B8600D39A2A /* FTUITextViewRecorder.h in Headers */,
 				177155902B046B5800C26DC4 /* FTURLSessionDelegate+Private.h in Headers */,
+				17285E312C1AD4FC005DEA1B /* FTViewTreeRecordingContext.h in Headers */,
 				17AB76E129D432DE008FBBF5 /* FTRUMHandler.h in Headers */,
 				17E4CB5D29CD42DA005C2D99 /* FTReadWriteHelper.h in Headers */,
 				1763BDA229DFF04F009EE026 /* ZY_FMDatabaseAdditions.h in Headers */,
@@ -1836,6 +1862,7 @@
 				170018DE2C186B8600D39A2A /* FTUIStepperRecorder.h in Headers */,
 				1763BD9029DFF04F009EE026 /* FTRequestBody.h in Headers */,
 				17E4CC3129CD42E4005C2D99 /* FTAutoTrackProperty.h in Headers */,
+				173960AF2C1B00E200FE1492 /* FTViewTreeSnapshot.h in Headers */,
 				17AB76CC29D432DE008FBBF5 /* FTCPUMonitor.h in Headers */,
 				17E4CC3029CD42E4005C2D99 /* UIApplication+FTAutoTrack.h in Headers */,
 				175C7D0E29E9438600A7F271 /* FTMobileAgent.h in Headers */,
@@ -1843,6 +1870,7 @@
 				1700190E2C186B8600D39A2A /* NSData+FTHelper.h in Headers */,
 				1763BDAC29DFF04F009EE026 /* ZY_FMDB.h in Headers */,
 				1700190A2C186B8600D39A2A /* UITouch+FTIdentifier.h in Headers */,
+				179F696D2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h in Headers */,
 				174D91AB2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */,
 				17E4CB5629CD42DA005C2D99 /* FTSDKCompat.h in Headers */,
 			);
@@ -2174,6 +2202,7 @@
 				17678E2629D28BD200C1DA98 /* FTMobileConfig.m in Sources */,
 				17E4CC2A29CD42E4005C2D99 /* FTTrack.m in Sources */,
 				17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */,
+				173960B02C1B00E200FE1492 /* FTViewTreeSnapshot.m in Sources */,
 				170019072C186B8600D39A2A /* FTSessionReplayTouches.m in Sources */,
 				17E4CB3729CD42DA005C2D99 /* FTSwizzler.m in Sources */,
 				1733605F2C05FFD600A50C02 /* FTLogDataCache.m in Sources */,
@@ -2203,10 +2232,12 @@
 				1763BDAE29DFF04F009EE026 /* ZY_FMDatabaseAdditions.m in Sources */,
 				178649352A1DB58400521187 /* FTLogger.m in Sources */,
 				170018E52C186B8600D39A2A /* FTUITextFieldRecorder.m in Sources */,
+				17285E322C1AD4FC005DEA1B /* FTViewTreeRecordingContext.m in Sources */,
 				17AB76F329D432DE008FBBF5 /* FTRUMActionHandler.m in Sources */,
 				17E4CBDC29CD42E4005C2D99 /* FTTracer.m in Sources */,
 				17E4CB4B29CD42DA005C2D99 /* FTReadWriteHelper.m in Sources */,
 				17E32B972BE0FE5900F4685C /* FTFatalErrorContext.m in Sources */,
+				179F696E2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.m in Sources */,
 				17AB76F929D432DE008FBBF5 /* FTRUMDataModel.m in Sources */,
 				17E4CB5429CD42DA005C2D99 /* FTCallStack.m in Sources */,
 				17E4CC3629CD42E4005C2D99 /* BlacklistedVCClassNames.m in Sources */,
@@ -2232,7 +2263,7 @@
 				17AB76CF29D432DE008FBBF5 /* FTMemoryMonitor.m in Sources */,
 				1776073929D1416200D17137 /* FTUserInfo.m in Sources */,
 				1776062C29D1347500D17137 /* FTWebViewJavascriptBridgeBase.m in Sources */,
-				170018ED2C186B8600D39A2A /* FTViewTreeSnapshotProducer.m in Sources */,
+				170018ED2C186B8600D39A2A /* FTViewTreeSnapshotBuilder.m in Sources */,
 				17678E2D29D28BD200C1DA98 /* FTMobileAgent.m in Sources */,
 				17E32BAB2BEE21F600F4685C /* FTRUMDependencies.m in Sources */,
 				17AB76B729D432DE008FBBF5 /* FTCPUMonitor.m in Sources */,
@@ -2273,6 +2304,7 @@
 				170019032C186B8600D39A2A /* FTViewAttributes.m in Sources */,
 				172572812C1992740029AD93 /* FTSnapshotProcessor.m in Sources */,
 				1763BDB029DFF04F009EE026 /* FTNetworkInfoManager.m in Sources */,
+				17285E2E2C1ACBA9005DEA1B /* FTViewTreeRecorder.m in Sources */,
 				170019322C186B8600D39A2A /* FTCompression.m in Sources */,
 				170018D92C186B8600D39A2A /* FTUIPickerViewRecorder.m in Sources */,
 				17400E762B47AAB400ACBA6C /* FTNSException.m in Sources */,

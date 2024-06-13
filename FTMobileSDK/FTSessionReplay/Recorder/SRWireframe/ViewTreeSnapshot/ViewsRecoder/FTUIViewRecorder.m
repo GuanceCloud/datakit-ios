@@ -11,10 +11,50 @@
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
+#import "FTViewTreeRecordingContext.h"
+#import "FTSystemColors.h"
 
 @implementation FTUIViewRecorder
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
-    return nil;
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _semanticsOverride = ^(UIView *view,FTViewAttributes *attributes){
+            id<FTSRNodeSemantics> a;
+            return a;
+        };
+    }
+    return self;
+}
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+    FTViewAttributes *attr = attributes;
+    if ([context.viewControllerContext isRootView:ViewControllerTypeAlert]){
+        attr = [attributes copy];
+        attr.backgroundColor = [FTSystemColors systemBackgroundCGColor];
+        attr.layerBorderColor = nil;
+        attr.layerBorderWidth = 0;
+        attr.layerCornerRadius = 16;
+        attr.alpha = 1;
+        attr.isHidden = NO;
+    }
+    if(attributes.isVisible){
+        return [FTInvisibleElement constant];
+    }
+    id<FTSRNodeSemantics> semantics = self.semanticsOverride(view, attributes);
+    if(semantics){
+        return semantics;
+    }
+    if(!attributes.hasAnyAppearance){
+        FTInvisibleElement *element = [[FTInvisibleElement alloc]init];
+        element.subtreeStrategy = NodeSubtreeStrategyRecord;
+        return element;
+    }
+    FTUIViewBuilder *builder = [[FTUIViewBuilder alloc]init];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:view];
+    builder.attributes = attributes;
+    
+    FTAmbiguousElement *element = [[FTAmbiguousElement alloc]init];
+    element.nodes = @[builder];
+    return element;
 }
 @end
 @implementation FTUIViewBuilder

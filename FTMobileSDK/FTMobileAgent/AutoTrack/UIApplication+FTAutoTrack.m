@@ -42,4 +42,7 @@
     }
     
 }
+-(void)ft_sendEvent:(UIEvent *)event{
+    [self ft_sendEvent:event];
+}
 @end

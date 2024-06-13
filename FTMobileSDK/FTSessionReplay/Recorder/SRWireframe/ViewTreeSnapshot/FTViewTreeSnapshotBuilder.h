@@ -1,5 +1,5 @@
 //
-//  FTViewTreeSnapshot.h
+//  FTViewTreeSnapshotBuilder.h
 //  FTMobileSDK
 //
 //  Created by hulilei on 2023/7/17.
@@ -10,7 +10,9 @@
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTSRContext;
-@interface FTViewTreeSnapshotProducer : NSObject
+@protocol FTSRWireframesRecorder;
+@interface FTViewTreeSnapshotBuilder : NSObject
+@property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>> *recorders;
 - (FTViewTreeSnapshot *)takeSnapshot:(UIView *)rootView context:(FTSRContext *)context;
 @end
 

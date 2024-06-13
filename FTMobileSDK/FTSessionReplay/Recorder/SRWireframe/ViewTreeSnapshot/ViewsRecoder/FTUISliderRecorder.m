@@ -13,8 +13,9 @@
 #import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
+#import "FTViewTreeRecordingContext.h"
 @implementation FTUISliderRecorder
--(NSArray<id<FTSRWireframesBuilder>> *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTRecorderContext *)context{
+-(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UISlider.class]){
         return nil;
     }

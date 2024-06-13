@@ -48,68 +48,60 @@
                                  FTSWArguments(UIEvent *event),
                                  FTSWReplacement({
             FTSWCallOriginal(event);
-            
-            UIWindow *window = weakSelf.windowObserver.keyWindow;
-            if(event.type == UIEventTypeTouches){
-                if(window){
-                    NSSet *set = [event touchesForWindow:window];
-                    NSEnumerator *en = [set objectEnumerator];
-                    UITouch *touch;
-                    FTTouchCircle *circle = [[FTTouchCircle alloc]init];
-                    while ((touch = en.nextObject) != nil) {
-                        if([touch.window isEqual:window]){
-                            float width = 0;
-                            float alpha = 0;
-                            FTTouchState state;
-                            switch (touch.phase) {
-                                case UITouchPhaseBegan:
-                                case UITouchPhaseRegionEntered:
-                                    width = 25;
-                                    alpha = 1;
-                                    touch.identifier = [self getNextID];
-                                    state = TouchDown;
-                                    circle.identifier = touch.identifier;
-                                    break;
-                                case UITouchPhaseMoved:
-                                case UITouchPhaseStationary:
-                                case UITouchPhaseRegionMoved:
-                                    width = 20;
-                                    alpha = 1;
-                                    if(touch.identifier <= 0){
-                                        touch.identifier = [self getNextID];
-                                    }
-                                    state = TouchMoved;
-                                    circle.identifier = touch.identifier;
-                                    break;
-                                case UITouchPhaseEnded:
-                                case UITouchPhaseCancelled:
-                                case UITouchPhaseRegionExited:
-                                    width = 20;
-                                    alpha = 0.5;
-                                    state = TouchUp;
-                                    if(touch.identifier <= 0){
-                                        circle.identifier = [self getNextID];
-                                    }else{
-                                        circle.identifier = touch.identifier;
-                                    }
-                                    break;
-                            }
-                            CGPoint point = [touch locationInView:window];
-                            circle.width = width;
-                            circle.point = point;
-                            circle.color = [UIColor colorWithRed:237/255.0 green:112/255.0 blue:45/255.0 alpha:alpha];
-                            circle.state = state;
-                            circle.timestamp = touch.timestamp*1000000;
-                            [weakSelf.touches addObject:circle];
-                        }
-                    }
-                }
-            }
-            
+            [weakSelf handleEvent:event];
         }),FTSwizzlerModeOncePerClassAndSuperclasses,
                                  "ft_addScreenshot"
                                  );
     });
+}
+- (void)handleEvent:(UIEvent *)event{
+    UIWindow *window = self.windowObserver.keyWindow;
+    if(event.type == UIEventTypeTouches){
+        if(window){
+            NSSet *set = [event touchesForWindow:window];
+            NSEnumerator *en = [set objectEnumerator];
+            UITouch *touch;
+            FTTouchCircle *circle = [[FTTouchCircle alloc]init];
+            while ((touch = en.nextObject) != nil) {
+                if([touch.window isEqual:window]){
+                    FTTouchPhase phase;
+                    switch (touch.phase) {
+                        case UITouchPhaseBegan:
+                        case UITouchPhaseRegionEntered:
+                            touch.identifier = [self getNextID];
+                            phase = TouchDown;
+                            circle.identifier = touch.identifier;
+                            break;
+                        case UITouchPhaseMoved:
+                        case UITouchPhaseStationary:
+                        case UITouchPhaseRegionMoved:
+                            if(touch.identifier <= 0){
+                                touch.identifier = [self getNextID];
+                            }
+                            phase = TouchMoved;
+                            circle.identifier = touch.identifier;
+                            break;
+                        case UITouchPhaseEnded:
+                        case UITouchPhaseCancelled:
+                        case UITouchPhaseRegionExited:
+                            phase = TouchUp;
+                            if(touch.identifier <= 0){
+                                circle.identifier = [self getNextID];
+                            }else{
+                                circle.identifier = touch.identifier;
+                            }
+                            break;
+                    }
+                    CGPoint point = [touch locationInView:window];
+                    circle.position = point;
+                    circle.phase = phase;
+                    circle.timestamp = touch.timestamp*1000;
+                    [self.touches addObject:circle];
+                }
+            }
+        }
+    }
+
 }
 - (void)unSwizzleApplicationTouches{
     [self.touches removeAllObjects];

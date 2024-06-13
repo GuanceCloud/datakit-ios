@@ -13,6 +13,7 @@
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
 NS_ASSUME_NONNULL_BEGIN
+typedef id<FTSRTextObfuscatingProtocol>_Nullable(^FTTextViewObfuscator)(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isEditable);
 @interface FTUITextViewBuilder:NSObject<FTSRWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
@@ -25,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
 @interface FTUITextViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic,copy) FTTextViewObfuscator textObfuscator;
 
 @end
 
