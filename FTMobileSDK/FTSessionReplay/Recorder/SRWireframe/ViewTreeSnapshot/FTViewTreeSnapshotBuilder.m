@@ -66,7 +66,7 @@
     recordingContext.recorder = context;
     recordingContext.coordinateSpace = rootView;
     recordingContext.viewControllerContext = [FTViewControllerContext new];
-    NSMutableArray *node = (NSMutableArray<id<FTSRWireframesBuilder>> *)[[NSMutableArray alloc]init];
+    NSMutableArray *node = [[NSMutableArray alloc]init];
     NSMutableArray *resource = [[NSMutableArray alloc]init];
     [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];

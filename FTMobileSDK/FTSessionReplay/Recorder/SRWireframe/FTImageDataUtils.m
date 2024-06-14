@@ -17,7 +17,7 @@
     self = [super init];
     if(self){
         _imageCache = [[NSCache alloc]init];
-        _desiredMaxBytesSize = 15 * 1024;
+        _desiredMaxBytesSize = 10 * 1024;
     }
     return self;
 }

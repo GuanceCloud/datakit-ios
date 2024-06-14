@@ -15,29 +15,37 @@
 #import "FTUIViewRecorder.h"
 #import "FTUIImageViewRecorder.h"
 #import "FTViewTreeRecordingContext.h"
+#import "FTViewTreeRecorder.h"
+#import "FTSRViewID.h"
 typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder);
 @interface  FTUITextFieldRecorder()
 @property (nonatomic, strong) FTUIViewRecorder *backgroundViewRecorder;
 @property (nonatomic, strong) FTUIImageViewRecorder *iconsRecorder;
 @property (nonatomic,copy) FTTextFieldObfuscator textObfuscator;
-
+@property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
 @end
 
 @implementation FTUITextFieldRecorder
 -(instancetype)init{
     self = [super init];
     if(self){
-        _textObfuscator = ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder){
-            if (isPlaceholder) {
-                return context.recorder.privacy.hintTextObfuscator;
-            } else if (isSensitive) {
-                return context.recorder.privacy.sensitiveTextObfuscator;
-            } else {
-                return context.recorder.privacy.inputAndOptionTextObfuscator;
-            }
-        };
+        _backgroundViewRecorder = [FTUIViewRecorder new];
+        _iconsRecorder = [FTUIImageViewRecorder new];
+        _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
+        _subtreeRecorder.nodeRecorders = @[self.backgroundViewRecorder,self.iconsRecorder];
     }
     return self;
+}
+-(FTTextFieldObfuscator)textObfuscator{
+    return ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isPlaceholder){
+        if (isPlaceholder) {
+            return context.recorder.privacy.hintTextObfuscator;
+        } else if (isSensitive) {
+            return context.recorder.privacy.sensitiveTextObfuscator;
+        } else {
+            return context.recorder.privacy.inputAndOptionTextObfuscator;
+        }
+    };
 }
 -(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if([view isKindOfClass:UITextField.class]){
@@ -46,8 +54,58 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     if(!attributes.isVisible){
         return nil;
     }
+    UITextField *textField = (UITextField *)view;
+    NSMutableArray *node = [NSMutableArray new];
+    NSMutableArray *resource = [NSMutableArray new];
+    [self recordAppearance:textField textFieldAttributes:attributes context:context node:node resource:resource];
+    FTUITextFieldBuilder *builder = [self recordText:textField attributes:attributes context:context];
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    if(builder){
+        [node addObject:builder];
+    }
+    element.nodes = node;
+    return element;
+}
+- (void)recordAppearance:(UITextField *)textField textFieldAttributes:(FTViewAttributes *)textFieldAttributes context:(FTViewTreeRecordingContext *)context node:(NSMutableArray *)node resource:(NSMutableArray *)resource{
+    self.backgroundViewRecorder.semanticsOverride = ^id<FTSRNodeSemantics> _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
+        BOOL hasSameSize = CGRectEqualToRect(textFieldAttributes.frame, attributes.frame);
+        BOOL isBackground = hasSameSize && attributes.hasAnyAppearance;
+        if(!isBackground) {
+            FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
+            element.subtreeStrategy = NodeSubtreeStrategyRecord;
+            return element;
+        }
+        return nil;
+    };
+    return [self.subtreeRecorder record:node resources:resource view:textField context:context];
+}
+- (FTUITextFieldBuilder *)recordText:(UITextField *)textField attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+    NSString *text;
+    BOOL isPlaceholder;
+    if(textField.text && textField.text.length>0){
+        text = textField.text;
+        isPlaceholder = NO;
+    }else if (textField.placeholder){
+        text = textField.placeholder;
+        isPlaceholder = YES;
+    }else{
+        return nil;
+    }
     
-    return nil;
+    CGRect textFrame = CGRectInset(attributes.frame, 5, 5);
+    FTUITextFieldBuilder *builder = [[FTUITextFieldBuilder alloc]init];
+    builder.wireframeRect = textFrame;
+    builder.attributes = attributes;
+    builder.wireframeID = [context.viewIDGenerator SRViewID:textField];
+    builder.text = text;
+    builder.textColor = textField.textColor.CGColor;
+    builder.textAlignment = textField.textAlignment;
+    builder.isPlaceholderText = isPlaceholder;
+    builder.font = textField.font;
+    builder.fontScalingEnabled = textField.adjustsFontSizeToFitWidth;
+    builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textField],isPlaceholder);
+    return builder;
 }
 @end
 @implementation FTUITextFieldBuilder

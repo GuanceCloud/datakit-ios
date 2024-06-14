@@ -20,7 +20,7 @@
         return nil;
     }
     if(!attributes.isVisible){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     UISlider *slider = (UISlider *)view;
     NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:4];
@@ -38,7 +38,11 @@
     builder.minTrackTintColor = slider.minimumTrackTintColor.CGColor;
     builder.maxTrackTintColor = slider.maximumTrackTintColor.CGColor;
     builder.thumbTintColor = slider.thumbTintColor.CGColor;
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    element.nodes = @[builder];
+    return element;
 }
 @end
 

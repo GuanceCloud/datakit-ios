@@ -21,9 +21,13 @@
     FTUITabBarBuilder *builder = [[FTUITabBarBuilder alloc]init];
     builder.color = [self inferTabBarColor:tabBar];
     builder.wireframeID = [context.viewIDGenerator SRViewID:tabBar];
-    builder.wireframeRect = tabBar.frame;
+    builder.wireframeRect = [self inferBarFrame:tabBar context:context];
     builder.attributes = attributes;
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyRecord;
+    element.nodes = @[builder];
+    return element;
 }
 - (CGColorRef )inferTabBarColor:(UITabBar *)bar{
     if (@available(iOS 15.0, *)) {

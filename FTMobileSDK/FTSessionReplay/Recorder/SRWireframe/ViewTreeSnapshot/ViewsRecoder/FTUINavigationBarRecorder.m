@@ -17,13 +17,20 @@
     if(![view isKindOfClass:UINavigationBar.class]){
         return nil;
     }
+    if(!attributes.isVisible){
+        return [FTInvisibleElement constant];
+    }
     UINavigationBar *bar = (UINavigationBar *)view;
     FTUINavigationBarBuilder *builder = [[FTUINavigationBarBuilder alloc]init];
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:bar];
     builder.color = [self inferNavigationBarColor:bar];
-    builder.wireframeRect = bar.frame;
-    return @[builder];
+    builder.wireframeRect = [self inferNavigationBarFrame:bar context:context];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyRecord;
+    element.nodes = @[builder];
+    return element;
 }
 - (CGColorRef )inferNavigationBarColor:(UINavigationBar *)bar{
     if (@available(iOS 15.0, *)) {

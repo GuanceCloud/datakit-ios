@@ -12,17 +12,22 @@
 #import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
-typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTViewTreeRecordingContext *context);
+
 @interface FTUILabelRecorder()
-@property (nonatomic,copy) FTTextObfuscator textObfuscator;
 @end
 @implementation FTUILabelRecorder
 -(instancetype)init{
+    return [self initWithBuilderOverride:^(FTUILabelBuilder *builder){
+        return builder;
+    } textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
+        return [context.recorder.privacy staticTextObfuscator];
+    }];
+}
+-(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
-        _textObfuscator = ^(FTViewTreeRecordingContext *context){
-            return [context.recorder.privacy staticTextObfuscator];
-        };
+        _builderOverride = builderOverride;
+        _textObfuscator = textObfuscator;
     }
     return self;
 }
@@ -33,7 +38,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTViewTreeRecordingCo
     UILabel *label = (UILabel *)view;
     BOOL hasVisibleText = attributes.isVisible && label.text.length>0;
     if(!hasVisibleText && !attributes.hasAnyAppearance){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     FTUILabelBuilder *builder = [[FTUILabelBuilder alloc]init];
     builder.text = label.text;
@@ -44,7 +49,10 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextObfuscator)(FTViewTreeRecordingCo
     builder.textColor = label.textColor.CGColor;
     builder.textAlignment = label.textAlignment;
     builder.textObfuscator = self.textObfuscator(context);
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.nodes = @[self.builderOverride(builder)];
+    return element;
 }
 @end
 

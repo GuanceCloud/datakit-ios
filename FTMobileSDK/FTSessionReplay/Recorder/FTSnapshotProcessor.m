@@ -7,7 +7,7 @@
 //
 
 #import "FTSnapshotProcessor.h"
-#import "FTViewTreeSnapshotProducer.h"
+#import "FTViewTreeSnapshotBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTTouchCircle.h"
 #import "FTViewAttributes.h"

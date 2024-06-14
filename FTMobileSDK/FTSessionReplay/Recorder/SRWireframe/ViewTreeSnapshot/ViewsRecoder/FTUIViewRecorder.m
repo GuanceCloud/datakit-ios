@@ -16,12 +16,14 @@
 
 @implementation FTUIViewRecorder
 -(instancetype)init{
+    return [self initWithSemanticsOverride:^id<FTSRNodeSemantics> _Nullable(UIView *view, FTViewAttributes *attributes) {
+        return nil;
+    }];
+}
+-(instancetype)initWithSemanticsOverride:(SemanticsOverride)semanticsOverride{
     self = [super init];
     if(self){
-        _semanticsOverride = ^(UIView *view,FTViewAttributes *attributes){
-            id<FTSRNodeSemantics> a;
-            return a;
-        };
+        _semanticsOverride = semanticsOverride;
     }
     return self;
 }

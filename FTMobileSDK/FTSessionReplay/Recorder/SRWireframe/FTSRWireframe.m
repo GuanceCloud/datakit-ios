@@ -280,16 +280,13 @@
 @end
 @implementation FTSRImageWireframe
 -(instancetype)init{
-    self = [super init];
-    if(self){
-        self.type = @"image";
-    }
-    return self;
+    return [self initWithIdentifier:0 frame:CGRectNull];
 }
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame {
     self = [super initWithIdentifier:identifier frame:frame];
     if(self){
         self.type = @"image";
+        self.mimeType = @"png";
     }
     return self;
 }
@@ -307,7 +304,7 @@
     FTSRImageWireframe *imageWireframe = (FTSRImageWireframe *)wire;
     FTSRImageWireframe *newWire = (FTSRImageWireframe *)newWireFrame;
     imageWireframe.mimeType = [self.mimeType isEqualToString:newWire.mimeType]?nil:newWire.mimeType;
-    imageWireframe.base64 = [self.base64 isEqualToString:newWire.base64]?nil:newWire.base64;
+    imageWireframe.resourceId = [self.resourceId isEqualToString:newWire.resourceId]?nil:newWire.resourceId;
     imageWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
     imageWireframe.shapeStyle = [self.shapeStyle isEqual:newWire.shapeStyle]?nil:newWire.shapeStyle;
     return imageWireframe;

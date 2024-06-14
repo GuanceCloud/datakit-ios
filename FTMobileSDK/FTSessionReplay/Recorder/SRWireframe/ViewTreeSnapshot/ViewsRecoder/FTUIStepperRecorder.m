@@ -19,7 +19,7 @@
         return nil;
     }
     if(!attributes.isVisible){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     UIStepper *stepper = (UIStepper *)view;
     CGRect stepperFrame = CGRectMake(attributes.frame.origin.x, attributes.frame.origin.y, stepper.intrinsicContentSize.width, stepper.intrinsicContentSize.height);
@@ -37,7 +37,11 @@
     builder.minusWireframeID = [wireframeIDs[2] intValue];
     builder.plusHorizontalWireframeID = [wireframeIDs[3] intValue];
     builder.plusVerticalWireframeID = [wireframeIDs[4] intValue];
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    element.nodes = @[builder];
+    return element;
 }
 @end
 

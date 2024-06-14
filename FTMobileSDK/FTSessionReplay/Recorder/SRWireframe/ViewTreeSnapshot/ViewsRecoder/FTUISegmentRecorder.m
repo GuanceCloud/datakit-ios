@@ -19,7 +19,7 @@
         return nil;
     }
     if (!attributes.isVisible){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     UISegmentedControl *segment = (UISegmentedControl *)view;
     NSArray *ids = [context.viewIDGenerator SRViewIDs:segment size:(int)segment.numberOfSegments+1];
@@ -37,7 +37,11 @@
         [titles addObject:[segment titleForSegmentAtIndex:i]];
     }
     builder.segmentTitles = titles;
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    element.nodes = @[builder];
+    return element;
 }
 @end
 

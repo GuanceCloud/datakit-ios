@@ -59,12 +59,15 @@
 + (NSString *)systemBackgroundColor{
     return [FTSRUtils colorHexString:self.systemBackgroundCGColor];
 }
-+ (NSString *)labelColor{
++ (CGColorRef)labelColorCGColor{
     if (@available(iOS 13.0, *)) {
-        return [FTSRUtils colorHexString:[UIColor labelColor].CGColor];
-    } else {
-        return @"#000000ff";
+        return [UIColor labelColor].CGColor;
+    }else{
+        return [UIColor colorWithRed:0/ 255 green:0 / 255 blue:0 / 255 alpha:1].CGColor;
     }
+}
++ (NSString *)labelColor{
+    return [FTSRUtils colorHexString:[self labelColorCGColor]];
 }
 + (NSString *)placeholderTextColor{
     if (@available(iOS 13.0, *)) {

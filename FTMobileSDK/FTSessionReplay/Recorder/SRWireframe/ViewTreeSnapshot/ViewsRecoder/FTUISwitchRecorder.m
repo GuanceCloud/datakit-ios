@@ -20,7 +20,7 @@
         return nil;
     }
     if(!attributes.isVisible){
-        return nil;
+        return [FTInvisibleElement constant];
     }
     UISwitch *switchView = (UISwitch *)view;
     
@@ -38,7 +38,11 @@
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.trackWireframeID = [ids[1] intValue];
     builder.thumbWireframeID = [ids[2] intValue];
-    return @[builder];
+    
+    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    element.nodes = @[builder];
+    return element;
 }
 @end
 

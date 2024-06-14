@@ -26,22 +26,17 @@
     }
     FTViewAttributes *attribute = [[FTViewAttributes alloc]initWithFrameInRootView:[view convertRect:view.bounds toCoordinateSpace:context.coordinateSpace] view:view];
     
-    if (attribute.isVisible){
-        return;
-    }
 
-    {
-        NSArray<id <FTSRWireframesBuilder>> *builders;
         for (id<FTSRWireframesRecorder> recorder in self.nodeRecorders) {
             id<FTSRNodeSemantics> newBuilders = [recorder recorder:view attributes:attribute context:context];
             if(newBuilders && newBuilders.nodes.count>0){
-                builders = newBuilders.nodes;
+                [nodes addObjectsFromArray:newBuilders.nodes];
+                [resource addObjectsFromArray:newBuilders.resources];
             }
         }
         
         for (UIView *subView in view.subviews) {
             [self recordRecursively:nodes resources:resource view:subView context:context];
         }
-    }
 }
 @end

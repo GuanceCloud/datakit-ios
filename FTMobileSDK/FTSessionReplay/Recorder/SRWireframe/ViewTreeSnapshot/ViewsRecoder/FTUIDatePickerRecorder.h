@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRWireframesBuilder.h"
 
-@class FTViewAttributes;
+@class FTViewAttributes,FTViewTreeRecorder;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUIDatePickerBuilder : NSObject<FTSRWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
@@ -21,5 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUIDatePickerRecorder : NSObject<FTSRWireframesRecorder>
 
 @end
+@interface FTWheelsStyleDatePickerRecorder : NSObject
+-(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
+@end
+@interface FTInlineStyleDatePickerRecorder : NSObject
+-(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
+@end
 
+@interface FTCompactStyleDatePickerRecorder : NSObject
+-(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
+@end
 NS_ASSUME_NONNULL_END

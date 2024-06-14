@@ -12,6 +12,7 @@
 
 @class FTViewAttributes;
 @protocol FTSRTextObfuscatingProtocol;
+
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUILabelBuilder : NSObject<FTSRWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
@@ -24,8 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
-@interface FTUILabelRecorder : NSObject<FTSRWireframesRecorder>
+typedef FTUILabelBuilder* _Nullable (^FTBuilderOverride)(FTUILabelBuilder *builder);
 
+@interface FTUILabelRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic,copy) FTTextObfuscator textObfuscator;
+@property (nonatomic,copy) FTBuilderOverride builderOverride;
+-(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator;
 @end
 
 NS_ASSUME_NONNULL_END

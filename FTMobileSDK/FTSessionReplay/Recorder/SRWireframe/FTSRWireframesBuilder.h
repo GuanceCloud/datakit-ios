@@ -8,9 +8,15 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+
 NS_ASSUME_NONNULL_BEGIN
+
 @class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext;
-@protocol FTSRNodeSemantics;
+@protocol FTSRNodeSemantics,FTSRTextObfuscatingProtocol;
+
+typedef id<FTSRNodeSemantics>_Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
+typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context);
+
 @protocol FTSRWireframesBuilder <NSObject>
 - (FTViewAttributes*)attributes;
 - (CGRect)wireframeRect;

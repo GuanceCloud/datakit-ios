@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FTSRWireframesBuilder.h"
 #import "FTImageDataUtils.h"
-@class FTViewAttributes;
+@class FTViewAttributes,FTUIImageResource;
 NS_ASSUME_NONNULL_BEGIN
 @interface FTUIImageViewBuilder : NSObject<FTSRWireframesBuilder>
 @property (nonatomic, assign) int wireframeID;
@@ -21,10 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, strong) UIColor *tintColor;
 @property (nonatomic, assign) BOOL shouldRecordImage;
-@property (nonatomic, weak) id<FTImageDataProvider> imageDataProvider;
+
+@property (nonatomic, strong) FTUIImageResource *imageResource;
 @property (nonatomic, assign) CGSize wireframeRect;
 @end
 @interface FTUIImageViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) SemanticsOverride semanticsOverride;
 
 @end
 

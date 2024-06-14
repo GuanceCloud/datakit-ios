@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (CGColorRef)systemBackgroundCGColor;
 
 + (NSString *)systemBackgroundColor;
++ (CGColorRef)labelColorCGColor;
 + (NSString *)labelColor;
 + (NSString *)placeholderTextColor;
 + (NSString *)tintColor;
