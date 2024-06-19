@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *unsupportedClassName;
 @end
 @interface FTUnsupportedViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 
 @end
 NS_ASSUME_NONNULL_END

@@ -11,6 +11,7 @@
 #import "DemoViewController.h"
 #import "RootTabbarVC.h"
 #import "FTMobileSDK/FTLog.h"
+#import "FTMobileSDK/FTRumSessionReplay.h"
 //Target -> Build Settings -> GCC_PREPROCESSOR_DEFINITIONS 进行配置预设定义
 #if PREPROD
 #define STATIC_TAG     @"preprod"
@@ -76,6 +77,7 @@
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
                                     @"dynamic_tag":dynamicTag};//eg.
+        [[FTRumSessionReplay sharedInstance] startWithPrivacy:FTSRPrivacyMaskNone];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;

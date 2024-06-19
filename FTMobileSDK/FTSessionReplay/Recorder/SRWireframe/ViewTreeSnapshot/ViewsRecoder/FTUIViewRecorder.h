@@ -17,13 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @end
-@interface FTUnsupportedBuilder : NSObject<FTSRWireframesBuilder>
-@property (nonatomic, assign) int wireframeID;
-@property (nonatomic, strong) FTViewAttributes *attributes;
-@property (nonatomic, assign) CGRect wireframeRect;
-@property (nonatomic, copy) NSString *label;
-@end
 @interface FTUIViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, copy) SemanticsOverride semanticsOverride;
 -(instancetype)initWithSemanticsOverride:(SemanticsOverride)semanticsOverride;
 @end

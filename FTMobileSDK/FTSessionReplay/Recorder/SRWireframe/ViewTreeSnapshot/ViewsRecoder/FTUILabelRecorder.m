@@ -26,12 +26,13 @@
 -(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
         _builderOverride = builderOverride;
         _textObfuscator = textObfuscator;
     }
     return self;
 }
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UILabel class]]){
         return nil;
     }
@@ -43,14 +44,14 @@
     FTUILabelBuilder *builder = [[FTUILabelBuilder alloc]init];
     builder.text = label.text;
     builder.attributes = attributes;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:label];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:label nodeRecorder:self];
     builder.adjustsFontSizeToFitWidth = label.adjustsFontSizeToFitWidth;
     builder.font = label.font;
     builder.textColor = label.textColor.CGColor;
     builder.textAlignment = label.textAlignment;
     builder.textObfuscator = self.textObfuscator(context);
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[self.builderOverride(builder)];
     return element;
 }
@@ -68,7 +69,7 @@
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:self.attributes.layerBorderColor] width:self.attributes.layerBorderWidth];
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     // TODO: 字体 family
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:self.font.familyName];
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
     FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
     textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment horizontal:@"center"];
     wireframe.textPosition = textPosition;

@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef FTUILabelBuilder* _Nullable (^FTBuilderOverride)(FTUILabelBuilder *builder);
 
 @interface FTUILabelRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic,copy) FTTextObfuscator textObfuscator;
 @property (nonatomic,copy) FTBuilderOverride builderOverride;
 -(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator;

@@ -24,19 +24,42 @@
     }else{
         context.viewControllerContext.isRootView = NO;
     }
-    FTViewAttributes *attribute = [[FTViewAttributes alloc]initWithFrameInRootView:[view convertRect:view.bounds toCoordinateSpace:context.coordinateSpace] view:view];
     
+    FTSRNodeSemantics *semantics = [self nodeSemantics:view context:context];
+    if(semantics.nodes.count>0){
+        [nodes addObjectsFromArray:semantics.nodes];
+    }
+    if(semantics.resources.count>0){
+        [resource addObjectsFromArray:semantics.resources];
+    }
+    
+    switch (semantics.subtreeStrategy) {
+        case NodeSubtreeStrategyRecord:
+            for (UIView *subView in view.subviews) {
+                [self recordRecursively:nodes resources:resource view:subView context:context];
+            }
+            break;
+        case NodeSubtreeStrategyIgnore:
+            
+            break;
+    }
+}
 
-        for (id<FTSRWireframesRecorder> recorder in self.nodeRecorders) {
-            id<FTSRNodeSemantics> newBuilders = [recorder recorder:view attributes:attribute context:context];
-            if(newBuilders && newBuilders.nodes.count>0){
-                [nodes addObjectsFromArray:newBuilders.nodes];
-                [resource addObjectsFromArray:newBuilders.resources];
+- (FTSRNodeSemantics *)nodeSemantics:(UIView *)view context:(FTViewTreeRecordingContext *)context{
+    FTViewAttributes *attribute = [[FTViewAttributes alloc]initWithFrameInRootView:[view convertRect:view.bounds toCoordinateSpace:context.coordinateSpace] view:view];
+
+    FTSRNodeSemantics *semantics = [FTUnknownElement constant];
+    for (id<FTSRWireframesRecorder> recorder in self.nodeRecorders) {
+        FTSRNodeSemantics *nextSemantics = [recorder recorder:view attributes:attribute context:context];
+        if(nextSemantics){
+            if(nextSemantics.importance >= semantics.importance){
+                semantics = nextSemantics;
+                if(nextSemantics.importance == INT_MAX){
+                    break;
+                }
             }
         }
-        
-        for (UIView *subView in view.subviews) {
-            [self recordRecursively:nodes resources:resource view:subView context:context];
-        }
+    }
+    return semantics;
 }
 @end

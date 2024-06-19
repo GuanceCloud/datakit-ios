@@ -36,7 +36,9 @@
         NSString *imageStr = [self.imageCache valueForKey:identifier];
         if(!imageStr){
             if (@available(iOS 13.0, *)) {
-                image = [image imageWithTintColor:color];
+                if (image.isSymbolImage) {
+                    image = [image imageWithTintColor:color];
+                }
             }
             NSData *imageData = [self smartCompress:image];
             imageStr = imageData.ft_imageDataToSting;

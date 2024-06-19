@@ -8,6 +8,7 @@
 
 #import "FTSRViewID.h"
 #import "UIView+FTSR.h"
+#import "FTSRWireframesBuilder.h"
 @interface FTSRViewID()
 @property (nonatomic, assign) int currentID;
 @property (nonatomic, assign) int maxID;
@@ -24,13 +25,20 @@
     }
     return self;
 }
-- (int)SRViewID:(UIView *)view{
-    if (view.SRViewID >= 0){
-        return view.SRViewID;
+- (int)SRViewID:(UIView *)view nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
+    if (view.SRNodeID && view.SRNodeID[nodeRecorder.identifier]){
+        return [view.SRNodeID[nodeRecorder.identifier] intValue];
     }else{
-        int viewid = [self getNextID];
-        view.SRViewID = viewid;
-        return viewid;
+        int viewId = [self getNextID];
+        if(view.SRNodeID != nil){
+            NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:view.SRNodeID];
+            [dict setValue:@(viewId) forKey:nodeRecorder.identifier];
+            view.SRNodeID = dict;
+        }else{
+            view.SRNodeID = @{nodeRecorder.identifier:@(viewId)};
+        }
+        
+        return viewId;
     }
 }
 - (int)getNextID{
@@ -38,8 +46,8 @@
     self.currentID = self.currentID < self.maxID ? (self.currentID + 1) : 0 ;
     return nextID;
 }
-- (NSArray*)SRViewIDs:(UIView *)view size:(int)size{
-    NSArray *viewIDs = view.SRViewIDs;
+- (NSArray*)SRViewIDs:(UIView *)view size:(int)size nodeRecorder:(id<FTSRWireframesRecorder>)nodeRecorder{
+    NSArray *viewIDs = view.SRNodeIDs[nodeRecorder.identifier];
     if (viewIDs && viewIDs.count == size){
         return viewIDs;
     }
@@ -47,7 +55,12 @@
     for (int i=0; i<size;i++){
         [ids addObject:@([self getNextID])];
     }
-    view.SRViewIDs = ids;
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    if(view.SRNodeIDs){
+        [dict addEntriesFromDictionary:view.SRNodeIDs];
+    }
+    [dict setValue:ids forKey:nodeRecorder.identifier];
+    view.SRNodeIDs = dict;
     return ids;
 }
 @end

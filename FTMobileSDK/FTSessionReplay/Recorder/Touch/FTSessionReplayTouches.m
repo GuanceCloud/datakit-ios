@@ -25,6 +25,7 @@
         _touches = [[NSMutableArray alloc]init];
         _currentID = 0;
         _windowObserver = observer;
+        [self swizzleApplicationTouches];
     }
     return self;
 }

@@ -16,18 +16,19 @@
 
 @implementation FTUIViewRecorder
 -(instancetype)init{
-    return [self initWithSemanticsOverride:^id<FTSRNodeSemantics> _Nullable(UIView *view, FTViewAttributes *attributes) {
+    return [self initWithSemanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
         return nil;
     }];
 }
 -(instancetype)initWithSemanticsOverride:(SemanticsOverride)semanticsOverride{
     self = [super init];
     if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
         _semanticsOverride = semanticsOverride;
     }
     return self;
 }
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     FTViewAttributes *attr = attributes;
     if ([context.viewControllerContext isRootView:ViewControllerTypeAlert]){
         attr = [attributes copy];
@@ -38,10 +39,10 @@
         attr.alpha = 1;
         attr.isHidden = NO;
     }
-    if(attributes.isVisible){
+    if(!attributes.isVisible){
         return [FTInvisibleElement constant];
     }
-    id<FTSRNodeSemantics> semantics = self.semanticsOverride(view, attributes);
+    FTSRNodeSemantics *semantics = self.semanticsOverride(view, attributes);
     if(semantics){
         return semantics;
     }
@@ -51,7 +52,7 @@
         return element;
     }
     FTUIViewBuilder *builder = [[FTUIViewBuilder alloc]init];
-    builder.wireframeID = [context.viewIDGenerator SRViewID:view];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
     builder.attributes = attributes;
     
     FTAmbiguousElement *element = [[FTAmbiguousElement alloc]init];
@@ -69,11 +70,4 @@
 }
 
 @end
-@implementation FTUnsupportedBuilder
 
--(NSArray<FTSRWireframe *> *)buildWireframes{
-    FTSRPlaceholderWireframe *wireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect label:self.label];
-    return @[wireframe];
-}
-
-@end

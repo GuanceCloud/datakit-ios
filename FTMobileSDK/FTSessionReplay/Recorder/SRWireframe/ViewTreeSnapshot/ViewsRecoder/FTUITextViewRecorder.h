@@ -26,6 +26,7 @@ typedef id<FTSRTextObfuscatingProtocol>_Nullable(^FTTextViewObfuscator)(FTViewTr
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
 @interface FTUITextViewRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic,copy) FTTextViewObfuscator textObfuscator;
 
 @end

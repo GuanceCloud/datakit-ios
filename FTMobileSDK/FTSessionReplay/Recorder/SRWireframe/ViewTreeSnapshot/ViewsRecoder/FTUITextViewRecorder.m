@@ -21,6 +21,7 @@
 -(instancetype)init{
     self = [super init];
     if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
         _textObfuscator = ^(FTViewTreeRecordingContext *context,BOOL isSensitive,BOOL isEditable){
             if (isSensitive) {
                 return context.recorder.privacy.sensitiveTextObfuscator;
@@ -35,7 +36,7 @@
     }
     return self;
 }
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UITextView class]]){
         return nil;
     }
@@ -53,7 +54,7 @@
     builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textView],textView.isEditable);
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
 }
@@ -76,7 +77,7 @@
     wireframe.shapeStyle = shapeStyle;
     // TODO: family
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentLeft horizontal:@"top"];
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:@""];
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
     wireframe.textPosition = position;

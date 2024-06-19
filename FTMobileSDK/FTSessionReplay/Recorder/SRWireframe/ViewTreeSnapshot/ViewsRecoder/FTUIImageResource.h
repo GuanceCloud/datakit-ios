@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRResource;
 @interface FTUIImageResource : NSObject<FTSRResource>

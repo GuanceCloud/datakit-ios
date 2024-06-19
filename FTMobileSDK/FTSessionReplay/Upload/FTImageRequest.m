@@ -24,7 +24,7 @@
     return self;
 }
 -(NSString *)path{
-    return @"/v1/write/rum/replay";
+    return @"/v1/write/rum/replay/resource";
 }
 -(NSString *)contentType{
     return  [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.imageRequestBody boundary]];

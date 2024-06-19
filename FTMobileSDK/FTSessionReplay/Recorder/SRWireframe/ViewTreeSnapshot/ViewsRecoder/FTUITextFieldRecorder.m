@@ -29,6 +29,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
 -(instancetype)init{
     self = [super init];
     if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
         _backgroundViewRecorder = [FTUIViewRecorder new];
         _iconsRecorder = [FTUIImageViewRecorder new];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
@@ -47,8 +48,8 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
         }
     };
 }
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
-    if([view isKindOfClass:UITextField.class]){
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+    if(![view isKindOfClass:UITextField.class]){
         return nil;
     }
     if(!attributes.isVisible){
@@ -59,8 +60,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     NSMutableArray *resource = [NSMutableArray new];
     [self recordAppearance:textField textFieldAttributes:attributes context:context node:node resource:resource];
     FTUITextFieldBuilder *builder = [self recordText:textField attributes:attributes context:context];
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     if(builder){
         [node addObject:builder];
     }
@@ -68,7 +68,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     return element;
 }
 - (void)recordAppearance:(UITextField *)textField textFieldAttributes:(FTViewAttributes *)textFieldAttributes context:(FTViewTreeRecordingContext *)context node:(NSMutableArray *)node resource:(NSMutableArray *)resource{
-    self.backgroundViewRecorder.semanticsOverride = ^id<FTSRNodeSemantics> _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
+    self.backgroundViewRecorder.semanticsOverride = ^FTSRNodeSemantics* _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
         BOOL hasSameSize = CGRectEqualToRect(textFieldAttributes.frame, attributes.frame);
         BOOL isBackground = hasSameSize && attributes.hasAnyAppearance;
         if(!isBackground) {
@@ -97,7 +97,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     FTUITextFieldBuilder *builder = [[FTUITextFieldBuilder alloc]init];
     builder.wireframeRect = textFrame;
     builder.attributes = attributes;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:textField];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:textField nodeRecorder:self];
     builder.text = text;
     builder.textColor = textField.textColor.CGColor;
     builder.textAlignment = textField.textAlignment;
@@ -121,7 +121,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     position.padding = padding;
     wireframe.textPosition = position;
     // TODO: 字体 family
-    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColor]:[FTSRUtils colorHexString:self.textColor] family:@""];
+    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColor]:[FTSRUtils colorHexString:self.textColor] family:nil];
     wireframe.textStyle = textStyle;
     return @[wireframe];
 }

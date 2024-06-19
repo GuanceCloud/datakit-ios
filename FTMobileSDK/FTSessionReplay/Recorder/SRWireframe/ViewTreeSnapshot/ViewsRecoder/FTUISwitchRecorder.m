@@ -15,7 +15,14 @@
 #import "UIView+FTSR.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUISwitchRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UISwitch.class]){
         return nil;
     }
@@ -25,7 +32,7 @@
     UISwitch *switchView = (UISwitch *)view;
     
     CGRect realRect = CGRectMake(attributes.frame.origin.x, attributes.frame.origin.y, switchView.intrinsicContentSize.width, switchView.intrinsicContentSize.height);
-    NSArray *ids = [context.viewIDGenerator SRViewIDs:switchView size:3];
+    NSArray *ids = [context.viewIDGenerator SRViewIDs:switchView size:3 nodeRecorder:self];
     FTUISwitchBuilder *builder = [[FTUISwitchBuilder alloc]init];
     builder.wireframeRect = realRect;
     builder.attributes = attributes;
@@ -39,8 +46,7 @@
     builder.trackWireframeID = [ids[1] intValue];
     builder.thumbWireframeID = [ids[2] intValue];
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
 }

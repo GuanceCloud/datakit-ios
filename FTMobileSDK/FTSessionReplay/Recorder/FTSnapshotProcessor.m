@@ -24,6 +24,13 @@
 @property (nonatomic, strong) FTNodesFlattener *flattener;
 @end
 @implementation FTSnapshotProcessor
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _flattener = [[FTNodesFlattener alloc]init];
+    }
+    return self;
+}
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
     __weak typeof(self) weakSelf = self;
 
@@ -33,7 +40,7 @@
 }
 
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
-        NSMutableArray<FTSRWireframe *> *wireframes = [[NSMutableArray alloc]init];
+        NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
         NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
         for (id<FTSRWireframesBuilder> builder in nodes) {
             [wireframes addObjectsFromArray:[builder buildWireframes]];
@@ -56,7 +63,9 @@
             // 3.2.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
             MutationData *mutation = [[MutationData alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_nanosecondTimeStamp]];
             [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
-            [records addObject:mutation];
+            if(!mutation.isEmpty){
+                [records addObject:mutation];
+            }
         }
         // 4.将 touches 看做增量添加
         if (touches.count>0){
@@ -67,10 +76,13 @@
             }
         }
         // 5.数据写入
+    if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
-        NSDictionary *data = [fullRecord toDictionary];
+//        NSDictionary *data = [fullRecord toJSONString];
+        NSLog(@"[Session Replay] %@",[fullRecord toJSONString]);
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;
+    }
 }
 @end

@@ -33,15 +33,28 @@
 @property (nonatomic, strong) NSDictionary *lastRUMContext;
 @end
 @implementation FTRumSessionReplay
+static FTRumSessionReplay *sharedInstance = nil;
+static dispatch_once_t onceToken;
++ (instancetype)sharedInstance {
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[super allocWithZone:NULL] init];
+    });
+    return sharedInstance;
+}
 -(instancetype)init{
     self = [super init];
     if(self){
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
-        _uploader = [[FTSessionReplayUploader alloc]init];
+//        _uploader = [[FTSessionReplayUploader alloc]init];
+        _sampleRate = 100;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChange:) name:FTRumContextDidChangeNotification object:nil];
     }
     return self;
+}
+- (void)startWithPrivacy:(FTSRPrivacy)privacy{
+    self.privacy = privacy;
+    [self start];
 }
 - (void)contextChange:(NSNotification *)notification{
     NSDictionary *context = notification.userInfo;

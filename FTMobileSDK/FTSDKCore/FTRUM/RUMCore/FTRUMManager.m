@@ -426,7 +426,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         self.sessionHandler = [[FTRUMSessionHandler alloc]initWithModel:model dependencies:self.rumDependencies];
         [self.sessionHandler.assistant process:model];
     }
-    NSDictionary *currentRumContext = [self.sessionHandler getCurrentSessionInfo];
+    NSDictionary *currentRumContext = [self getCurrentSessionInfo];
     [[NSNotificationCenter defaultCenter] postNotificationName:FTRumContextDidChangeNotification object:nil userInfo:currentRumContext];
     return YES;
 }

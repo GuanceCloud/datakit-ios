@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isDisplayedInPopover;
 @end
 @interface FTUIDatePickerRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 
 @end
 @interface FTWheelsStyleDatePickerRecorder : NSObject

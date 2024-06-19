@@ -72,7 +72,7 @@
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
     viewTree.date = [NSDate date];
     viewTree.context = context;
-    viewTree.viewportSize = rootView.frame.size;
+    viewTree.viewportSize = rootView.bounds.size;
     viewTree.nodes = node;
     viewTree.resources = resource;
     return viewTree;

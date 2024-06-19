@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTUISliderRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 
 @end
 

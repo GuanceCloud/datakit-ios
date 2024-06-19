@@ -11,9 +11,14 @@
 #import "FTViewAttributes.h"
 #import "FTTouchCircle.h"
 #import "FTSRUtils.h"
+
+NSString * const FT_DEFAULT_COLOR = @"#FF0000FF";
+CGFloat  const FT_DEFAULT_FONT_SIZE = 10;
+NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif";
+
 @implementation FTSRShapeBorder
 - (instancetype)initWithColor:(NSString *)color width:(CGFloat)width {
-    if(!color && !width){
+    if(!color || width<=0){
         return nil;
     }
     self = [super init];
@@ -149,9 +154,9 @@
 - (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family{
     self = [super init];
     if(self){
-        _size = size;
-        _color = color;
-        _family = family;
+        _size = size?:FT_DEFAULT_FONT_SIZE;
+        _color = color?:FT_DEFAULT_COLOR;
+        _family = family?:FT_DEFAULT_FONT_FAMILY;
     }
     return self;
 }
@@ -183,13 +188,40 @@
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
-    self.identifier = self.identifier;
+    if ([self isEqual:newWireFrame]){
+        return nil;
+    }
+    self.type = [self.type isEqualToString:newWireFrame.type]?nil:newWireFrame.type;
     self.clip = [self.clip isEqual:newWireFrame.clip]?nil:newWireFrame.clip;
     self.width = [self.width isEqualToNumber:newWireFrame.width]?nil:newWireFrame.width;
     self.height = [self.height isEqualToNumber:newWireFrame.height]?nil:newWireFrame.height;
     self.x = [self.x isEqualToNumber:newWireFrame.x]?nil:newWireFrame.x;
     self.y = [self.y isEqualToNumber:newWireFrame.y]?nil:newWireFrame.y;
     return self;
+}
+-(BOOL)isEqualToSRWireframe:(FTSRWireframe *)object{
+    BOOL haveEqualClip = (!self.clip && !object.clip) || [self.clip isEqual:object.clip];
+    BOOL haveEqualWidth= (!self.width && !object.width) || [self.width isEqualToNumber:object.width];
+    BOOL haveEqualHeight= (!self.height && !object.height) || [self.height isEqualToNumber:object.height];
+    BOOL haveEqualX = (!self.x && !object.x) || [self.x isEqualToNumber:object.x];
+    BOOL haveEqualY = (!self.y && !object.y) || [self.y isEqualToNumber:object.y];
+
+    return haveEqualClip && haveEqualWidth && haveEqualHeight && haveEqualX && haveEqualY && self.identifier == object.identifier;
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToSRWireframe:object];
+}
++(FTJSONKeyMapper *)keyMapper{
+    FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
+        @"identifier":@"id",
+    }];
+    return keyMapper;
 }
 @end
 @implementation FTSRShapeWireframe
@@ -225,13 +257,7 @@
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
-    if (self == newWireFrame){
-        return nil;
-    }
-    if (![newWireFrame isKindOfClass:FTSRShapeWireframe.class]){
-        return nil;
-    }
-    if(self.identifier != newWireFrame.identifier){
+    if ([self isEqual:newWireFrame]){
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
@@ -240,6 +266,24 @@
     snapWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
     snapWireframe.shapeStyle = [self.shapeStyle isEqual:newWire.shapeStyle]?nil:newWire.shapeStyle;
     return snapWireframe;
+}
+-(BOOL)isEqualToShapeWireframe:(FTSRShapeWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
+    BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
+   
+    return isBorderEqual && isShapeStyleEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToShapeWireframe:object];
 }
 @end
 @implementation FTSRTextWireframe
@@ -258,13 +302,7 @@
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
-    if (self == newWireFrame){
-        return nil;
-    }
-    if (![newWireFrame isKindOfClass:FTSRTextWireframe.class]){
-        return nil;
-    }
-    if(self.identifier != newWireFrame.identifier){
+    if ([self isEqual:newWireFrame]){
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
@@ -276,6 +314,26 @@
     textWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
     textWireframe.shapeStyle = [self.shapeStyle isEqual:newWire.shapeStyle]?nil:newWire.shapeStyle;
     return textWireframe;
+}
+-(BOOL)isEqualToTextWireframe:(FTSRTextWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isTextEqual = (!self.text && !object.text) || [self.text isEqualToString:object.text];
+    BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
+    BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
+    BOOL isTextPositionEqual = (!self.textPosition && !object.textPosition) || [self.textPosition isEqual:object.textPosition];
+    BOOL isTextStyleEqual = (!self.textStyle && !object.textStyle) || [self.textStyle isEqual:object.textStyle];
+    return isTextEqual && isBorderEqual && isShapeStyleEqual && isTextPositionEqual && isTextStyleEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToTextWireframe:object];
 }
 @end
 @implementation FTSRImageWireframe
@@ -291,13 +349,7 @@
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
-    if (self == newWireFrame){
-        return nil;
-    }
-    if (![newWireFrame isKindOfClass:FTSRImageWireframe.class]){
-        return nil;
-    }
-    if(self.identifier != newWireFrame.identifier){
+    if ([self isEqual:newWireFrame]){
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
@@ -308,6 +360,25 @@
     imageWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
     imageWireframe.shapeStyle = [self.shapeStyle isEqual:newWire.shapeStyle]?nil:newWire.shapeStyle;
     return imageWireframe;
+}
+-(BOOL)isEqualToImageWireframe:(FTSRImageWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isMimeTypeEqual = (!self.mimeType && !object.mimeType) || [self.mimeType isEqualToString:object.mimeType];
+    BOOL isResourceIdEqual = (!self.resourceId && !object.resourceId) || [self.resourceId isEqualToString:object.resourceId];
+    BOOL isBorderEqual = (!self.border && !object.border) || [self.border isEqual:object.border];
+    BOOL isShapeStyleEqual = (!self.shapeStyle && !object.shapeStyle) || [self.shapeStyle isEqual:object.shapeStyle];
+    return isMimeTypeEqual && isResourceIdEqual && isBorderEqual && isShapeStyleEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToImageWireframe:object];
 }
 @end
 @implementation FTSRPlaceholderWireframe
@@ -330,13 +401,7 @@
     return self;
 }
 -(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
-    if (self == newWireFrame){
-        return nil;
-    }
-    if (![newWireFrame isKindOfClass:FTSRPlaceholderWireframe.class]){
-        return nil;
-    }
-    if(self.identifier != newWireFrame.identifier){
+    if ([self isEqual:newWireFrame]){
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
@@ -344,5 +409,21 @@
     FTSRPlaceholderWireframe *newWire = (FTSRPlaceholderWireframe *)newWireFrame;
     placeholder.label = [self.label isEqualToString:newWire.label]?nil:newWire.label;
     return placeholder;
+}
+-(BOOL)isEqualToPlaceholderWireframe:(FTSRPlaceholderWireframe *)object{
+    if(!object){
+        return NO;
+    }
+    BOOL isLabelEqual = (!self.label && !object.label) || [self.label isEqualToString:object.label];
+    return isLabelEqual && [super isEqual:object];
+}
+-(BOOL)isEqual:(id)object{
+    if(self == object){
+        return YES;
+    }
+    if (![object isKindOfClass:self.class]){
+        return NO;
+    }
+    return [self isEqualToPlaceholderWireframe:object];
 }
 @end

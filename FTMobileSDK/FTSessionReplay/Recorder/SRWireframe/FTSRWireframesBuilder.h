@@ -11,10 +11,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext;
-@protocol FTSRNodeSemantics,FTSRTextObfuscatingProtocol;
+@class FTSRWireframe,FTViewAttributes,FTViewTreeRecordingContext,FTSRNodeSemantics;
+@protocol FTSRTextObfuscatingProtocol;
 
-typedef id<FTSRNodeSemantics>_Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
+typedef FTSRNodeSemantics* _Nullable(^SemanticsOverride)(UIView *  view, FTViewAttributes* attributes);
 typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeRecordingContext *context);
 
 @protocol FTSRWireframesBuilder <NSObject>
@@ -24,7 +24,8 @@ typedef id<FTSRTextObfuscatingProtocol> _Nullable(^FTTextObfuscator)(FTViewTreeR
 @end
 
 @protocol FTSRWireframesRecorder <NSObject>
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
+@property (nonatomic, copy) NSString *identifier;
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context;
 @end
 
 @protocol FTSRResource <NSObject>

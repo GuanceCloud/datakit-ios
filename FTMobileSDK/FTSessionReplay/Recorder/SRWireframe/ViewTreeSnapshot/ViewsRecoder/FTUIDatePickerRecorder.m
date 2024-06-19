@@ -23,8 +23,14 @@
 
 @end
 @implementation FTUIDatePickerRecorder
-
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UIDatePicker.class]){
         return nil;
     }
@@ -64,11 +70,10 @@
     FTUIDatePickerBuilder *builder = [[FTUIDatePickerBuilder alloc]init];
     builder.wireframeRect = attributes.frame;
     builder.attributes = attributes;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:view];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
     builder.isDisplayedInPopover = isDisplayedInPopover;
     [nodes insertObject:builder atIndex:0];
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = nodes;
     element.resources = resources;
     return element;
@@ -77,7 +82,7 @@
 
 @implementation FTUIDatePickerBuilder
 
-- ( NSArray<FTSRWireframe *> *)buildWireframes {
+- (NSArray<FTSRWireframe *> *)buildWireframes {
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemGroupedBackgroundColor]:[FTSystemColors systemBackgroundColor] cornerRadius:@(10) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemFillColor]:nil width:1];
     return @[wireframe];
@@ -134,7 +139,7 @@
     return self;
 }
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources{
-    self.viewRecorder.semanticsOverride = ^id<FTSRNodeSemantics> _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
+    self.viewRecorder.semanticsOverride = ^FTSRNodeSemantics* _Nullable(UIView * _Nonnull view, FTViewAttributes * _Nonnull attributes) {
         if (context.recorder.privacy.shouldMaskInputElements) {
             BOOL isSquare = attributes.frame.size.width == attributes.frame.size.height;
             BOOL isCircle = isSquare && attributes.layerCornerRadius == attributes.frame.size.width * 0.5;

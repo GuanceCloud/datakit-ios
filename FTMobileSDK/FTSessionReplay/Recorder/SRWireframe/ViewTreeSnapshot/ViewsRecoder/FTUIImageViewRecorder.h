@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTUIImageViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) SemanticsOverride semanticsOverride;
+@property (nonatomic, copy) NSString *identifier;
 
 @end
 

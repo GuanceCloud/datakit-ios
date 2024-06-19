@@ -48,10 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int size;
 @property (nonatomic, copy) NSString *color;
 @property (nonatomic, copy) NSString *family;
-- (instancetype)initWithSize:(int)size color:(NSString *)color family:(NSString *)family;
+- (instancetype)initWithSize:(int)size color:(NSString *)color family:(nullable NSString *)family;
 @end
 #pragma mark ========== FTSRWireframe ==========
-@protocol FTSRWireframe;
 @interface FTSRWireframe : FTSRBaseFrame
 /// 唯一标识
 @property (nonatomic, assign) int identifier;

@@ -61,7 +61,6 @@
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
         @"height":@"data.height",
         @"width":@"data.width",
-        @"href":@"data.href",
     }];
     return keyMapper;
 }
@@ -72,7 +71,7 @@
 }
 +(FTJSONKeyMapper *)keyMapper{
     FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
-        @"hasFocus":@"data.hasFocus",
+        @"hasFocus":@"has_focus",
     }];
     return keyMapper;
 }
@@ -116,36 +115,40 @@
     return [super initWithSource:0 timestamp:timestamp];
 }
 /// TODO: 增量逻辑确认
+/// 目标：
+/// 子序列相同的部分判断是否 update
+/// 不同的部分考虑 add\remove
+/// 子序列与子序列位置发生变化，对移动到后面的子序列进行 add\remove 操作
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes{
     NSMutableDictionary<NSNumber*,Sampler*> *table = [[NSMutableDictionary alloc]init];
     NSMutableArray<Removes> *removes = (NSMutableArray<Removes> *)[NSMutableArray new];
     NSMutableArray<Adds> *adds = (NSMutableArray<Adds> *)[NSMutableArray new];
     NSMutableArray<FTSRWireframe> *updates = (NSMutableArray<FTSRWireframe>*)[NSMutableArray new];
+    NSMutableArray *oa = [NSMutableArray new];
+    NSMutableArray *na = [NSMutableArray new];
     for(int i=0;i<newWireframes.count;i++){
         FTSRWireframe *new = newWireframes[i];
         table[@(new.identifier)] = [[Sampler alloc]initNewIndex:@(i) oldIndex:@(-1)];
+        [na addObject:@(-1)];
     }
     for(int i=0;i<lastWireframes.count;i++){
         FTSRWireframe *old = lastWireframes[i];
-        if (!table[@(old.identifier)]){
-            Removes *remove = [[Removes alloc]init];
-            remove.identifier = old.identifier;
-            [removes addObject:remove];
-        }else{
+        Sampler *sampler =  table[@(old.identifier)];
+        if(sampler){
             table[@(old.identifier)].inOldIndex = @(i);
+        }else{
+            table[@(old.identifier)] = [[Sampler alloc]initNewIndex:@(-1) oldIndex:@(i)];
         }
+        [oa addObject:@(-1)];
     }
-    
-    for (NSNumber *identifier in table.allKeys) {
-        Sampler *dict = table[identifier];
+    for (Sampler *dict in table.allValues) {
         int newIndex = [dict.inNewIndex intValue];
         int oldIndex = [dict.inOldIndex intValue];
-        if (oldIndex>=0){
-            FTSRWireframe *update = [lastWireframes[oldIndex] compareWithNewWireFrame:newWireframes[newIndex]];
-            if(update){
-                [updates addObject:update];
-            }
-        }else{
+        if(newIndex>=0&&oldIndex>=0){
+            na[newIndex] = dict.inOldIndex;
+            oa[oldIndex] = dict.inNewIndex;
+        }
+        if(oldIndex<0){
             Adds *add = [[Adds alloc]init];
             if (newIndex - 1 >= 0){
                 int pre = newWireframes[newIndex-1].identifier;
@@ -154,10 +157,53 @@
             add.wireframe = newWireframes[newIndex];
             [adds addObject:add];
         }
+        if(newIndex<0){
+            Removes *remove = [[Removes alloc]init];
+            remove.identifier = lastWireframes[oldIndex].identifier;
+            [removes addObject:remove];
+        }
     }
+    NSMutableArray *removalOffsets = [NSMutableArray new];
+    int runningOffset = 0;
+    for (int i = 0; i<oa.count; i++) {
+        removalOffsets[i] = @(runningOffset);
+        if([oa[i] intValue]<0){
+            runningOffset += 1;
+        }
+    }
+    runningOffset = 0;
+    for (int i = 0; i< na.count; i++) {
+        int indexInOld = [na[i] intValue];
+        if(indexInOld<0){
+            runningOffset += 1;
+        }else{
+            int removalOffset = [removalOffsets[indexInOld] intValue];
+            if ((indexInOld - removalOffset + runningOffset) != i) {
+                Removes *remove = [[Removes alloc]init];
+                remove.identifier = lastWireframes[indexInOld].identifier;
+                [removes addObject:remove];
+                Adds *add = [[Adds alloc]init];
+                if (i - 1 >= 0){
+                    int pre = newWireframes[i-1].identifier;
+                    add.previousId = @(pre).stringValue;
+                }
+                add.wireframe = newWireframes[i];
+                [adds addObject:add];
+            }else{
+                FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i]];
+                           if(update){
+                               [updates addObject:update];
+                           }
+            }
+        }
+    }
+
     self.removes = removes.count>0?removes:nil;
     self.updates = updates.count>0?updates:nil;
     self.adds = adds.count>0?adds:nil;
+}
+- (BOOL)isEmpty{
+    return !(self.removes.count>0 || self.updates.count>0 || self.adds.count>0);
 }
 @end
 @implementation ViewportResizeData
@@ -172,10 +218,10 @@
 -(instancetype)initWithTimestamp:(long long)timestamp touch:(FTTouchCircle *)touch{
     self = [self initWithTimestamp:timestamp];
     if(self){
-        self.x = touch.point.x;
-        self.y = touch.point.y;
+        self.x = touch.position.x;
+        self.y = touch.position.y;
         self.pointerId = touch.identifier;
-        switch (touch.state) {
+        switch (touch.phase) {
             case TouchUp:
                 self.pointerEventType = @"up";
                 break;
@@ -200,6 +246,7 @@
     self = [super init];
     if(self){
         _sessionID = context.sessionID;
+        _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
         _firstTimestamp = INT_MAX;

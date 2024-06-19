@@ -14,7 +14,20 @@
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUISegmentRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    return [self initWithTextObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
+        return [context.recorder.privacy inputAndOptionTextObfuscator];
+    }];
+}
+-(instancetype)initWithTextObfuscator:(FTTextObfuscator)textObfuscator{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+        _textObfuscator = textObfuscator;
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UISegmentedControl.class]){
         return nil;
     }
@@ -22,10 +35,11 @@
         return [FTInvisibleElement constant];
     }
     UISegmentedControl *segment = (UISegmentedControl *)view;
-    NSArray *ids = [context.viewIDGenerator SRViewIDs:segment size:(int)segment.numberOfSegments+1];
+    NSArray *ids = [context.viewIDGenerator SRViewIDs:segment size:(int)segment.numberOfSegments+1 nodeRecorder:self];
     FTUISegmentBuilder *builder = [[FTUISegmentBuilder alloc]init];
     builder.attributes = attributes;
     builder.wireframeRect = attributes.frame;
+    builder.textObfuscator = self.textObfuscator(context);
     builder.selectedSegmentIndex = @(segment.selectedSegmentIndex);
     if (@available(iOS 13.0, *)) {
         builder.selectedSegmentTintColor = segment.selectedSegmentTintColor.CGColor;
@@ -38,8 +52,7 @@
     }
     builder.segmentTitles = titles;
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
 }
@@ -70,7 +83,7 @@
         }
         segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors tertiarySystemBackgroundColor]:[FTSystemColors clearColor] width:1];
         segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor]:[FTSystemColors tertiarySystemBackgroundColor]):[FTSystemColors clearColor] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
-        segment.text = self.segmentTitles[i];
+        segment.text = [self.textObfuscator mask:self.segmentTitles[i]]?:@"";
         segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColor] family:[UIFont systemFontOfSize:14].familyName];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
         textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter horizontal:@"center"];

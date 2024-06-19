@@ -11,8 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIView (FTSR)
-@property(nonatomic, assign) int SRViewID;
-@property(nonatomic, strong) NSArray* SRViewIDs;
+@property(nonatomic, strong) NSDictionary* SRNodeID;
+@property(nonatomic, strong) NSDictionary* SRNodeIDs;
 @property(nonatomic, assign, readonly) BOOL usesDarkMode;
 @end
 

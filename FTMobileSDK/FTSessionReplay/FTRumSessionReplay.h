@@ -14,7 +14,9 @@ typedef NS_ENUM(NSUInteger,FTSRPrivacy){
 };
 NS_ASSUME_NONNULL_BEGIN
 @interface FTRumSessionReplay : NSObject
++ (instancetype)sharedInstance;
 
+- (void)startWithPrivacy:(FTSRPrivacy)privacy;
 @end
 
 NS_ASSUME_NONNULL_END

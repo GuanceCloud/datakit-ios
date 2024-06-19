@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTUISwitchRecorder : NSObject<FTSRWireframesRecorder>
+@property (nonatomic, copy) NSString *identifier;
 
 @end
 

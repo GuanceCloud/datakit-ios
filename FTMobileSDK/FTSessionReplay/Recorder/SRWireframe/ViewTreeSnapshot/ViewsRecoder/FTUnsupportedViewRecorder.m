@@ -14,30 +14,32 @@
 #import <WebKit/WebKit.h>
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUnsupportedViewRecorder
-
-- (id<FTSRNodeSemantics>)recorder:(nonnull UIView *)view attributes:(nonnull FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context { 
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+- (FTSRNodeSemantics *)recorder:(nonnull UIView *)view attributes:(nonnull FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context {
     // 是否是不采集的控制器
-    if([context.viewControllerContext isRootView:ViewControllerTypeSafari]||[context.viewControllerContext isRootView:ViewControllerTypeActivity]||[context.viewControllerContext isRootView:ViewControllerTypeSwiftUI]){
-        return nil;
-    }
-    // 是否是不采集的View
-    if ([view isKindOfClass:[UIProgressView class]] || [view isKindOfClass:[UIActivityIndicatorView class]]){
-        return nil;
-    }
-    // View 是不是不可见
-    if (attributes.isVisible){
-        FTInvisibleElement *element = [[FTInvisibleElement alloc]init];
-        element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    if([context.viewControllerContext isRootView:ViewControllerTypeSafari]||[context.viewControllerContext isRootView:ViewControllerTypeActivity]||[context.viewControllerContext isRootView:ViewControllerTypeSwiftUI]||[view isKindOfClass:[UIProgressView class]] || [view isKindOfClass:[UIActivityIndicatorView class]]){
+        
+        // View 是不是不可见
+        if (!attributes.isVisible){
+            FTInvisibleElement *element = [[FTInvisibleElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+            return element;
+        }
+        FTUnsupportedViewBuilder *builder = [[FTUnsupportedViewBuilder alloc]init];
+        builder.wireframeRect = view.frame;
+        builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
+        builder.unsupportedClassName = context.viewControllerContext.name?:NSStringFromClass(view.class);
+        builder.attributes = attributes;
+        FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+        element.nodes = @[builder];
         return element;
     }
-    FTUnsupportedViewBuilder *builder = [[FTUnsupportedViewBuilder alloc]init];
-    builder.wireframeRect = view.frame;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:view];
-    builder.unsupportedClassName = context.viewControllerContext.name?:NSStringFromClass(view.class);
-    builder.attributes = attributes;
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.nodes = @[builder];
-    return element;
+    return nil;
 }
 @end
 

@@ -13,7 +13,14 @@
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUINavigationBarRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UINavigationBar.class]){
         return nil;
     }
@@ -23,12 +30,11 @@
     UINavigationBar *bar = (UINavigationBar *)view;
     FTUINavigationBarBuilder *builder = [[FTUINavigationBarBuilder alloc]init];
     builder.attributes = attributes;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:bar];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:bar nodeRecorder:self];
     builder.color = [self inferNavigationBarColor:bar];
     builder.wireframeRect = [self inferNavigationBarFrame:bar context:context];
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyRecord;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
     return element;
 }

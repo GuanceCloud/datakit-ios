@@ -14,7 +14,14 @@
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUIStepperRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UIStepper class]]){
         return nil;
     }
@@ -23,7 +30,7 @@
     }
     UIStepper *stepper = (UIStepper *)view;
     CGRect stepperFrame = CGRectMake(attributes.frame.origin.x, attributes.frame.origin.y, stepper.intrinsicContentSize.width, stepper.intrinsicContentSize.height);
-    NSArray *wireframeIDs = [context.viewIDGenerator SRViewIDs:view size:5];
+    NSArray *wireframeIDs = [context.viewIDGenerator SRViewIDs:view size:5 nodeRecorder:self];
     FTUIStepperBuilder *builder = [[FTUIStepperBuilder alloc]init];
     builder.attributes = attributes;
     builder.isMinusEnabled = stepper.minimumValue < stepper.value;
@@ -38,8 +45,7 @@
     builder.plusHorizontalWireframeID = [wireframeIDs[3] intValue];
     builder.plusVerticalWireframeID = [wireframeIDs[4] intValue];
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
 }

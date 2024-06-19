@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable) CGColorRef color;
 @end
 @interface FTUINavigationBarRecorder : NSObject<FTSRWireframesRecorder>
-
+@property (nonatomic, copy) NSString *identifier;
 @end
 
 NS_ASSUME_NONNULL_END

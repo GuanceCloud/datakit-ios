@@ -34,10 +34,11 @@
     
     CGFloat fillAlpha = CGColorGetAlpha(self.backgroundColor);
     BOOL hasFillAppearance = fillAlpha > 0 ;
-    return self.isVisible && hasBorderAppearance && hasFillAppearance;
+    return self.isVisible && (hasBorderAppearance || hasFillAppearance);
 }
 -(BOOL)isTranslucent{
-    return  !self.isVisible || self.alpha < 1 || ((self.backgroundColor? 0 : CGColorGetAlpha(self.backgroundColor)) < 1);
+    //{ !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
+    return  !self.isVisible || self.alpha < 1 || ((!self.backgroundColor? 0 : CGColorGetAlpha(self.backgroundColor)) < 1);
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTViewAttributes *attributes = [[[self class] allocWithZone:zone] init];

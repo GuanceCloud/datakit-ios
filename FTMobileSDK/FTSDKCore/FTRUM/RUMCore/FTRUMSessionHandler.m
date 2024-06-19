@@ -31,7 +31,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sampling = [FTBaseInfoHandler randomSampling:dependencies.sampleRate];
         self.sessionStartTime = model.time;
         self.viewHandlers = [NSMutableArray new];
-        self.context = [FTRUMContext new];
+        self.context = [[FTRUMContext alloc] initWithAppID:dependencies.appId];
         self.rumDependencies.fatalErrorContext.lastSessionContext = [self.context getGlobalSessionViewTags];
     }
     return  self;
@@ -43,7 +43,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.rumDependencies = expiredSession.rumDependencies;
         self.sessionStartTime = time;
-        self.context = [FTRUMContext alloc]init;
+        self.context = [[FTRUMContext alloc]init];
+        self.context.app_id = self.rumDependencies.appId;
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
             if(viewHandler.isActiveView){

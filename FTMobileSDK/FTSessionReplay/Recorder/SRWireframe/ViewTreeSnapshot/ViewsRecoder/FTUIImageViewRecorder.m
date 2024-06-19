@@ -15,16 +15,28 @@
 #import "FTUIImageResource.h"
 
 @interface FTUIImageViewRecorder()
-@property (nonatomic,copy,readwrite) NSString *identifier;
 
 @end
 @implementation FTUIImageViewRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+        _semanticsOverride = ^FTSRNodeSemantics*(UIView *view, FTViewAttributes* attributes){
+            if([NSStringFromClass(view.class) isEqualToString:@"_UICutoutShadowView"]){
+                return [[FTIgnoredElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+            }
+            return nil;
+        };
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UIImageView.class]){
         return nil;
     }
     UIImageView *imageView = (UIImageView *)view;
-    id<FTSRNodeSemantics> semantics = self.semanticsOverride(imageView, attributes);
+    FTSRNodeSemantics *semantics = self.semanticsOverride(imageView, attributes);
     if(semantics){
         return semantics;
     }
@@ -44,7 +56,7 @@
 
     }
     FTUIImageResource *imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:tintColor];
-    NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:2];
+    NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:2 nodeRecorder:self];
     FTUIImageViewBuilder *builder = [[FTUIImageViewBuilder alloc]init];
     builder.wireframeID = [ids[0] intValue];
     builder.imageWireframeID = [ids[1] intValue];
@@ -54,8 +66,7 @@
     builder.tintColor = imageView.tintColor;
     builder.shouldRecordImage = shouldRecordImage;
     builder.imageResource = shouldRecordImage?imageResource:nil;
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyRecord;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
     return element;
 }

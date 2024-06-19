@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTUIPickerViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic,copy) FTTextObfuscator textObfuscator;
+@property (nonatomic, copy) NSString *identifier;
 -(instancetype)initWithTextObfuscator:(FTTextObfuscator)textObfuscator;
 @end
 

@@ -30,9 +30,10 @@
 -(instancetype)initWithTextObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
         _textObfuscator = textObfuscator;
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
-        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithSemanticsOverride:^id<FTSRNodeSemantics> _Nullable(UIView *view, FTViewAttributes *attributes) {
+        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithSemanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
             if (@available(iOS 13, *)) {
                 if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
                     FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
@@ -57,7 +58,7 @@
     return self;
 }
 
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UIPickerView.class]){
         return nil;
     }
@@ -71,8 +72,7 @@
     [self.labelsRecorder record:nodes resources:resources view:view context:context];
     
     if(!attributes.hasAnyAppearance){
-        FTSpecificElement *element = [[FTSpecificElement alloc]init];
-        element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+        FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
         element.nodes = nodes;
         element.resources = resources;
         return element;
@@ -80,12 +80,11 @@
     FTUIPickerViewBuilder *builder = [[FTUIPickerViewBuilder alloc]init];
     builder.wireframeRect = attributes.frame;
     builder.attributes = attributes;
-    builder.wireframeID = [context.viewIDGenerator SRViewID:view];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
     
     [nodes insertObject:builder atIndex:0];
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = nodes;
     element.resources = resources;
     return element;

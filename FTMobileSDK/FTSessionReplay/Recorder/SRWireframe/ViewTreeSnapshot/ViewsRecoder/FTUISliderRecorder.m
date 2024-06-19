@@ -15,7 +15,14 @@
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUISliderRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:UISlider.class]){
         return nil;
     }
@@ -23,7 +30,7 @@
         return [FTInvisibleElement constant];
     }
     UISlider *slider = (UISlider *)view;
-    NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:4];
+    NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:4 nodeRecorder:self];
     FTUISliderBuilder *builder = [[FTUISliderBuilder alloc]init];
     builder.attributes = attributes;
     builder.isMasked = context.recorder.privacy != FTSRPrivacyMaskNone;
@@ -39,8 +46,7 @@
     builder.maxTrackTintColor = slider.maximumTrackTintColor.CGColor;
     builder.thumbTintColor = slider.thumbTintColor.CGColor;
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyIgnore;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
 }

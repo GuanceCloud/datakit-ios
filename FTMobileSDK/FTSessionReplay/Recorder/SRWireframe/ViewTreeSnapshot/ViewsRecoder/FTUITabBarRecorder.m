@@ -13,19 +13,25 @@
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUITabBarRecorder
--(id<FTSRNodeSemantics>)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _identifier = [[NSUUID UUID] UUIDString];
+    }
+    return self;
+}
+-(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     if(![view isKindOfClass:[UITabBar class]]){
         return nil;
     }
     UITabBar *tabBar = (UITabBar *)view;
     FTUITabBarBuilder *builder = [[FTUITabBarBuilder alloc]init];
     builder.color = [self inferTabBarColor:tabBar];
-    builder.wireframeID = [context.viewIDGenerator SRViewID:tabBar];
+    builder.wireframeID = [context.viewIDGenerator SRViewID:tabBar nodeRecorder:self];
     builder.wireframeRect = [self inferBarFrame:tabBar context:context];
     builder.attributes = attributes;
     
-    FTSpecificElement *element = [[FTSpecificElement alloc]init];
-    element.subtreeStrategy = NodeSubtreeStrategyRecord;
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
     return element;
 }

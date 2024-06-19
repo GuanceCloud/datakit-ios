@@ -19,14 +19,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long timestamp;
 -(instancetype)initWithTimestamp:(long long)timestamp;
 @end
-
+@protocol FTSRWireframe;
 @interface FTSRFullSnapshotRecord : FTSRRecord
-@property (nonatomic, strong) NSArray<FTSRWireframe*> *wireframes;
+@property (nonatomic, strong) NSArray<FTSRWireframe> *wireframes;
 @end
 @interface FTSRMetaRecord : FTSRRecord
 @property (nonatomic, assign) int height;
 @property (nonatomic, assign) int width;
-@property (nonatomic, assign) int href;
 - (instancetype)initWithViewTreeSnapshot:(FTViewTreeSnapshot *)viewTreeSnapshot;
 @end
 @interface FTSRFocusRecord : FTSRRecord
@@ -50,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<Removes> *removes;
 @property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes;
+- (BOOL)isEmpty;
 @end
 
 @interface ViewportResizeData : FTSRIncrementalSnapshotRecord
@@ -69,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRFullRecord : FTSRBaseFrame
 @property (nonatomic, strong) NSArray<FTSRRecord> *records;
 @property (nonatomic, copy) NSString *sessionID;
+@property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
 @property (nonatomic, assign) long long firstTimestamp;
 @property (nonatomic, assign) long long lastTimestamp;
