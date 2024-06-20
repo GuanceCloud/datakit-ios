@@ -195,7 +195,7 @@
 1. 新增 dataway 公网上传数据逻辑
 2. 添加上传数据唯一标识
 3. 修复 resource duration 负值问题、resource_first_byte 计算逻辑修改
-4. 自动采集 HTTP Resource 逻辑修改
+4. 自动采集 HTTP Resource 逻辑修改，解决 URLSession 创建在 SDK 初始化完成之前时该 URLSession 无法采集问题
 
 ---
 # 1.4.8-alpha.2
