@@ -87,7 +87,33 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
     }
     return rect;
 }
-
+CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical){
+    CGRect new = oriRect;
+    switch (horizontal) {
+        case HorizontalAlignmentLeft:
+            new.origin.x = CGRectGetMinX(inRect);
+            break;
+        case HorizontalAlignmentRight:
+            new.origin.x = CGRectGetMaxX(inRect) - new.size.width;
+            break;
+        case HorizontalAlignmentCenter:
+            new.origin.x = CGRectGetMinX(inRect) + (inRect.size.width-new.size.width)*0.5;
+            break;
+    }
+    
+    switch (vertical) {
+        case VerticalAlignmentTop:
+            new.origin.y = CGRectGetMinY(inRect);
+            break;
+        case VerticalAlignmentBottom:
+            new.origin.y = CGRectGetMaxY(inRect) - new.size.height;
+            break;
+        case VerticalAlignmentMiddle:
+            new.origin.y = CGRectGetMinY(inRect) + (inRect.size.height - new.size.height)*0.5;
+            break;
+    }
+    return new;
+}
 @implementation FTSRUtils
 + (NSString *)colorHexString:(CGColorRef)color {
     if(color == nil){
@@ -95,41 +121,24 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
     }
     size_t count = CGColorGetNumberOfComponents(color);
     const CGFloat *components = CGColorGetComponents(color);
-    static NSString *stringFormat = @"%02x%02x%02x";
+    static NSString *stringFormat = @"%02X%02X%02X";
     NSString *hex = nil;
     if (count == 2) {
-        NSUInteger white = (NSUInteger)(components[0] * 255.0f);
+        NSUInteger white = roundf(components[0] * 255.0f);
         hex = [NSString stringWithFormat:stringFormat, white, white, white];
     } else if (count == 4) {
         hex = [NSString stringWithFormat:stringFormat,
-               (NSUInteger)(components[0] * 255.0f),
-               (NSUInteger)(components[1] * 255.0f),
-               (NSUInteger)(components[2] * 255.0f)];
+               (NSUInteger)roundf(components[0] * 255.0f),
+               (NSUInteger)roundf(components[1] * 255.0f),
+               (NSUInteger)roundf(components[2] * 255.0f)];
     }
     
     if (hex) {
         CGFloat alpha = CGColorGetAlpha(color);;
-        hex = [hex stringByAppendingFormat:@"%02lx",
+        hex = [hex stringByAppendingFormat:@"%02lX",
                (unsigned long)(alpha * 255.0 + 0.5)];
     }
     return [NSString stringWithFormat:@"#%@",hex];;
-}
-+ (NSString *)srPrivacyLabelString:(NSString *)string privacyType:(FTSRPrivacy)type{
-    switch (type) {
-        case FTSRPrivacyMaskNone:
-            return string;
-        case FTSRPrivacyMaskOnlyInput:
-            return string;
-        case FTSRPrivacyMaskAllText:
-            return [FTSRUtils spacePreservingMask:string];
-        default:
-            return string;
-            break;
-    }
-}
-+ (NSString *)spacePreservingMask:(NSString *)string{
-    
-    return @"";
 }
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits{
     if (textInputTraits.isSecureTextEntry) {
@@ -137,31 +146,32 @@ CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mo
     }
     UITextContentType contentType = textInputTraits.textContentType;
     if(contentType&&contentType.length>0){
-        // TODO: sensitiveContentTypes 只创建一次
-        NSMutableSet * sensitiveContentTypes  = [[NSMutableSet alloc]initWithArray:@[
-            UITextContentTypeEmailAddress,
-            UITextContentTypeTelephoneNumber,
-            UITextContentTypeAddressCity,
-            UITextContentTypeAddressState,
-            UITextContentTypeAddressCityAndState,
-            UITextContentTypeFullStreetAddress,
-            UITextContentTypeStreetAddressLine1,
-            UITextContentTypeStreetAddressLine2,
-            UITextContentTypePostalCode,
-        ]];
-        if (@available(iOS 11.0, *)) {
-            [sensitiveContentTypes addObject:UITextContentTypePassword];
-        }
-        if (@available(iOS 12.0, *)) {
-            [sensitiveContentTypes addObject:UITextContentTypeNewPassword];
-            [sensitiveContentTypes addObject:UITextContentTypeOneTimeCode];
-        }
-        if (@available(iOS 17.0, *)) {
-            [sensitiveContentTypes addObject:UITextContentTypeCreditCardName];
-        }
+        static NSSet *sensitiveContentTypes = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            NSMutableSet * mutableSet  = [[NSMutableSet alloc]initWithArray:@[
+                UITextContentTypeEmailAddress,
+                UITextContentTypeTelephoneNumber,
+                UITextContentTypeAddressCity,
+                UITextContentTypeAddressState,
+                UITextContentTypeAddressCityAndState,
+                UITextContentTypeFullStreetAddress,
+                UITextContentTypeStreetAddressLine1,
+                UITextContentTypeStreetAddressLine2,
+                UITextContentTypePostalCode,
+                UITextContentTypeCreditCardNumber,
+            ]];
+            if (@available(iOS 11.0, *)) {
+                [mutableSet addObject:UITextContentTypePassword];
+            }
+            if (@available(iOS 12.0, *)) {
+                [mutableSet addObject:UITextContentTypeNewPassword];
+                [mutableSet addObject:UITextContentTypeOneTimeCode];
+            }
+            sensitiveContentTypes = mutableSet;
+        });
         return [sensitiveContentTypes containsObject:contentType];
     }
-
     return NO;
 }
 @end

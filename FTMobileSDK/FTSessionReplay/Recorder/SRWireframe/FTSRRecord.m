@@ -10,6 +10,7 @@
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
 #import "FTTouchCircle.h"
+#import "NSDate+FTUtil.h"
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [self initWithType:0 timestamp:timestamp];
@@ -50,7 +51,7 @@
     return [super initWithType:4 timestamp:timestamp];
 }
 -(instancetype)initWithViewTreeSnapshot:(FTViewTreeSnapshot *)viewTreeSnapshot{
-    self = [self initWithTimestamp:111111];
+    self = [self initWithTimestamp:[viewTreeSnapshot.date ft_nanosecondTimeStamp]];
     if(self){
         _width = viewTreeSnapshot.viewportSize.width;
         _height = viewTreeSnapshot.viewportSize.height;
@@ -114,8 +115,7 @@
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [super initWithSource:0 timestamp:timestamp];
 }
-/// TODO: 增量逻辑确认
-/// 目标：
+/// 增量逻辑：
 /// 子序列相同的部分判断是否 update
 /// 不同的部分考虑 add\remove
 /// 子序列与子序列位置发生变化，对移动到后面的子序列进行 add\remove 操作
@@ -249,14 +249,10 @@
         _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
-        _firstTimestamp = INT_MAX;
-        _lastTimestamp = INT_MIN;
         for (FTSRRecord *record in records) {
             if ([record isKindOfClass:FTSRFullSnapshotRecord.class]){
                 _hasFullSnapshot = YES;
             }
-            _firstTimestamp = MIN(_firstTimestamp, record.timestamp);
-            _lastTimestamp = MAX(_lastTimestamp, record.timestamp);
         }
     }
     return self;

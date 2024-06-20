@@ -61,8 +61,13 @@
     }
 }
 - (NSArray<FTSRWireframe *> *)createMaskWireframes{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.trackWireframeID frame:self.attributes.frame];
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSystemColors tertiarySystemFillColor] cornerRadius:@(self.attributes.frame.size.width/2) opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]
+                                     initWithIdentifier:self.trackWireframeID
+                                     frame:self.attributes.frame
+                                     backgroundColor:[FTSystemColors tertiarySystemFillColor]
+                                     cornerRadius:@(self.attributes.frame.size.height*0.5)
+                                     opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
+
     if(self.attributes.hasAnyAppearance){
         FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
         return @[background,wireframe];
@@ -70,16 +75,26 @@
     return @[wireframe];
 }
 - (NSArray<FTSRWireframe *> *)createNoMaskWireframes{
-    CGFloat cornerRadius = self.wireframeRect.size.height / 2;
+    CGFloat cornerRadius = self.wireframeRect.size.height * 0.5;
     NSString *trackColor = self.isOn? (self.onTintColor!=nil ? [FTSRUtils colorHexString:self.onTintColor] : [FTSystemColors systemGreenColor]) : (self.offTintColor!=nil ? [FTSRUtils colorHexString:self.offTintColor] : [FTSystemColors tertiarySystemFillColor]);
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.trackWireframeID frame:self.wireframeRect];
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:trackColor cornerRadius:@(cornerRadius) opacity:self.isEnabled? @(self.attributes.alpha):@(0.5)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]
+                                     initWithIdentifier:self.trackWireframeID
+                                     frame:self.wireframeRect
+                                     backgroundColor:trackColor
+                                     cornerRadius:@(cornerRadius)
+                                     opacity:self.isEnabled? @(self.attributes.alpha):@(0.5)];
     
-    CGRect contentSize = FTCGRectFitWithContentMode(self.wireframeRect, CGSizeMake(self.wireframeRect.size.width-4, self.wireframeRect.size.width-4), UIViewContentModeCenter);
-    CGRect thumbSize = FTCGRectFitWithContentMode(contentSize, CGSizeMake(contentSize.size.height, contentSize.size.height),self.isOn? UIViewContentModeRight:UIViewContentModeLeft);
-    FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.thumbWireframeID frame:thumbSize];
+    CGRect thumbContainer = CGRectInset(self.wireframeRect, 2, 2);
+    CGRect thumbFrame = FTCGRectPutInside(CGRectMake(0, 0, thumbContainer.size.width, thumbContainer.size.height), thumbContainer, self.isOn?HorizontalAlignmentRight:HorizontalAlignmentLeft, VerticalAlignmentMiddle);
     NSString *thumbColor = self.thumbTintColor ? [FTSRUtils colorHexString:self.thumbTintColor] : (self.isDarkMode && !self.isEnabled)? [FTSRUtils colorHexString:UIColor.grayColor.CGColor]:[FTSRUtils colorHexString:UIColor.whiteColor.CGColor];
-    thumbWireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:thumbColor cornerRadius:@(cornerRadius-1) opacity:@(1)];
+
+    FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
+                                          initWithIdentifier:self.thumbWireframeID
+                                          frame:thumbFrame
+                                          backgroundColor:thumbColor
+                                          cornerRadius:@(cornerRadius)
+                                          opacity:nil];
+    thumbWireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSystemColors secondarySystemFillColor] width:1];
     
     if(self.attributes.hasAnyAppearance){
         FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];

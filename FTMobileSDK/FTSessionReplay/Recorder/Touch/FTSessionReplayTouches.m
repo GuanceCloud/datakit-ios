@@ -12,6 +12,7 @@
 #import "UITouch+FTIdentifier.h"
 #import "FTWindowObserver.h"
 #import "FTReadWriteHelper.h"
+#import "NSDate+FTUtil.h"
 @interface FTSessionReplayTouches()
 /// 点击事件集合 都在主线程操作，所以不进行锁管理
 @property (nonatomic, strong) NSMutableArray *touches;
@@ -96,7 +97,7 @@
                     CGPoint point = [touch locationInView:window];
                     circle.position = point;
                     circle.phase = phase;
-                    circle.timestamp = touch.timestamp*1000;
+                    circle.timestamp = [NSDate ft_currentNanosecondTimeStamp];
                     [self.touches addObject:circle];
                 }
             }

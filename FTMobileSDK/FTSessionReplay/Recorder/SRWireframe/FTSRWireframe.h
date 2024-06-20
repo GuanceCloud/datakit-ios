@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int left;
 @property (nonatomic, assign) int right;
 @property (nonatomic, assign) int top;
--(instancetype)initWithLeft:(int)left top:(int)top right:(int)right bottom:(int)bottom;
+-(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom;
 @end
 
 @interface FTSRShapeStyle : FTSRBaseFrame
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *horizontal;
 // top、bottom、center
 @property (nonatomic, copy) NSString *vertical;
--(instancetype)initWithTextAlignment:(NSTextAlignment)alignment horizontal:(NSString *)horizontal;
+-(instancetype)initWithTextAlignment:(NSTextAlignment)alignment vertical:(NSString *)vertical;
 @end
 @interface FTSRTextPosition : FTSRBaseFrame
 @property (nonatomic, strong) FTAlignment *alignment;
@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRWireframe : FTSRBaseFrame
 /// 唯一标识
 @property (nonatomic, assign) int identifier;
+// 不要改为 int ,使用 NSNumber 是为了update比较时可以置为 nil
 /// 在根视图的 frame.origin.x
 @property (nonatomic) NSNumber *x;
 /// 在根视图的 frame.origin.y
@@ -75,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRShapeWireframe : FTSRWireframe
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
--(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(NSNumber *)opacity;
+-(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame backgroundColor:(nullable NSString *)color cornerRadius:(nullable NSNumber *)cornerRadius opacity:(nullable NSNumber *)opacity;
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame attributes:(nullable FTViewAttributes *)attributes;
 @end
 @interface FTSRTextWireframe : FTSRWireframe

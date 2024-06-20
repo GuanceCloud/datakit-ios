@@ -43,13 +43,13 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
 }
 @end
 @implementation FTSRContentClip
--(instancetype)initWithLeft:(int)left top:(int)top right:(int)right bottom:(int)bottom{
+-(instancetype)initWithLeft:(float)left top:(float)top right:(float)right bottom:(float)bottom{
     self = [super init];
     if(self){
-        _left = left;
-        _bottom = bottom;
-        _right = right;
-        _top = top;
+        _left = roundf(left);
+        _bottom = roundf(bottom);
+        _right = roundf(right);
+        _top = roundf(top);
     }
     return self;
 }
@@ -91,29 +91,31 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
 }
 -(BOOL)isEqualToShapeStyle:(FTSRShapeStyle *)object{
     BOOL haveEqualColor = (!self.backgroundColor && !object.backgroundColor) || [self.backgroundColor isEqualToString:object.backgroundColor];
-    return  self.cornerRadius == object.cornerRadius && haveEqualColor && self.opacity == object.opacity;
+    BOOL haveEqualCornerRadius = (!self.cornerRadius && !object.cornerRadius) || [self.cornerRadius isEqualToNumber:object.cornerRadius];
+    BOOL haveEqualOpacity = (!self.opacity && !object.opacity) || [self.opacity isEqualToNumber:object.opacity];
+    return  haveEqualCornerRadius && haveEqualColor && haveEqualOpacity;
 }
 @end
 @implementation FTAlignment
-- (instancetype)initWithTextAlignment:(NSTextAlignment)alignment horizontal:(NSString *)horizontal{
+- (instancetype)initWithTextAlignment:(NSTextAlignment)alignment vertical:(NSString *)vertical{
     self = [super init];
     if(self){
-        if(!horizontal){
-            _horizontal = @"center";
+        if(!vertical){
+            _vertical = @"center";
         }else{
-            _horizontal = horizontal;
+            _vertical = vertical;
         }
         switch (alignment) {
             case NSTextAlignmentRight:
-                _vertical = @"right";
+                _horizontal = @"right";
                 break;
             case NSTextAlignmentCenter:
-                _vertical = @"center";
+                _horizontal = @"center";
                 break;
             case NSTextAlignmentLeft:
-                _vertical = @"left";
+                _horizontal = @"left";
             default:
-                _vertical = @"left";
+                _horizontal = @"left";
                 break;
         }
     }
@@ -177,13 +179,13 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
 @end
 @implementation FTSRWireframe
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame{
-    self = [self init];
+    self = [super init];
     if(self){
         self.identifier = identifier;
-        self.width = @(frame.size.width);
-        self.height = @(frame.size.height);
-        self.x = @(CGRectGetMinX(frame));
-        self.y = @(CGRectGetMinY(frame));
+        self.width = @(roundf(frame.size.width));
+        self.height = @(roundf(frame.size.height));
+        self.x = @(roundf(CGRectGetMinX(frame)));
+        self.y = @(roundf(CGRectGetMinY(frame)));
     }
     return self;
 }

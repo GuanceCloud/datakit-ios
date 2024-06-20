@@ -68,7 +68,7 @@
     NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor]:[FTSystemColors tertiarySystemFillColor];
     background.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:color cornerRadius:@(8) opacity:@(self.attributes.alpha)];
     
-    CGSize segmentSize = CGSizeMake(self.wireframeRect.size.width/self.segmentWireframeIDs.count, self.wireframeRect.size.height*0.96);
+    CGSize segmentSize = CGSizeMake(self.wireframeRect.size.width/(self.segmentWireframeIDs.count*1.0), self.wireframeRect.size.height*0.96);
     CGRect dividedRect = self.wireframeRect;
     NSMutableArray *segments = [[NSMutableArray alloc]initWithArray:@[background]];
     for (int i=0;i<self.segmentWireframeIDs.count;i++) {
@@ -81,12 +81,12 @@
         if (self.selectedSegmentIndex != nil){
             isSelected = [self.selectedSegmentIndex intValue] == i;
         }
-        segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors tertiarySystemBackgroundColor]:[FTSystemColors clearColor] width:1];
+        segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors secondarySystemFillColor]:[FTSystemColors clearColor] width:1];
         segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor]:[FTSystemColors tertiarySystemBackgroundColor]):[FTSystemColors clearColor] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
         segment.text = [self.textObfuscator mask:self.segmentTitles[i]]?:@"";
         segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColor] family:[UIFont systemFontOfSize:14].familyName];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
-        textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter horizontal:@"center"];
+        textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter vertical:@"center"];
         textPosition.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
         segment.textPosition = textPosition;
         [segments addObject:segment];

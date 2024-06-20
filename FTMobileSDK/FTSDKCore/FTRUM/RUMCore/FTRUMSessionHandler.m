@@ -43,8 +43,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
         self.sampling = [FTBaseInfoHandler randomSampling:expiredSession.rumDependencies.sampleRate];
         self.rumDependencies = expiredSession.rumDependencies;
         self.sessionStartTime = time;
-        self.context = [[FTRUMContext alloc]init];
-        self.context.app_id = self.rumDependencies.appId;
+        self.context = [[FTRUMContext alloc]initWithAppID:self.rumDependencies.appId];
         self.viewHandlers = [NSMutableArray new];
         for (FTRUMViewHandler *viewHandler in expiredSession.viewHandlers) {
             if(viewHandler.isActiveView){
@@ -150,7 +149,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
     
-    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
                                  FT_KEY_ACTION_NAME:model.action_name,
@@ -174,8 +173,11 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
-    NSDictionary *sessionTag = @{FT_RUM_KEY_SESSION_ID:self.context.session_id,
-                                 FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
+    NSDictionary *sessionTag = @{
+        FT_RUM_KEY_SESSION_ID:self.context.session_id,
+        FT_RUM_KEY_SESSION_TYPE:self.context.session_type,
+        FT_APP_ID:self.context.app_id,
+    };
     NSMutableDictionary *tags = [NSMutableDictionary new];
     [tags addEntriesFromDictionary:data.tags];
     [tags addEntriesFromDictionary:sessionTag];

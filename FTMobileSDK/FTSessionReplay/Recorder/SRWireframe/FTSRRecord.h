@@ -71,8 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
-@property (nonatomic, assign) long long firstTimestamp;
-@property (nonatomic, assign) long long lastTimestamp;
 @property (nonatomic, assign) BOOL hasFullSnapshot;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
 @end

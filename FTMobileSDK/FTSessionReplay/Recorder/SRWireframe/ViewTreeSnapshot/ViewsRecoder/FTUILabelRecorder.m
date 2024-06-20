@@ -71,7 +71,8 @@
     // TODO: 字体 family
     wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
     FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
-    textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment horizontal:@"center"];
+    textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
+    textPosition.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
     wireframe.textPosition = textPosition;
     return @[wireframe];
 }

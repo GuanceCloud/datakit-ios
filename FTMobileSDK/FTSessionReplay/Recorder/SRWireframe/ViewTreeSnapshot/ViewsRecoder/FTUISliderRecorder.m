@@ -66,8 +66,15 @@
     }
 }
 - (NSArray<FTSRWireframe *> *)createMaskWireframes{
-    CGRect slider = FTCGRectFitWithContentMode(self.wireframeRect, CGSizeMake(self.wireframeRect.size.width, 4), UIViewContentModeCenter);
-    FTSRShapeWireframe *sliderWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minTrackWireframeID frame:slider backgroundColor:[FTSystemColors systemFillColor] cornerRadius:@(slider.size.width/2) opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
+    CGRect slice, remainder;
+    CGRectDivide(self.wireframeRect, &slice, &remainder, 3, CGRectMinXEdge);
+    CGRect trackFrame = FTCGRectPutInside(slice, self.wireframeRect, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
+    FTSRShapeWireframe *sliderWireframe = [[FTSRShapeWireframe alloc]
+                                           initWithIdentifier:self.minTrackWireframeID
+                                           frame:trackFrame
+                                           backgroundColor:[FTSystemColors tertiarySystemFillColor]
+                                           cornerRadius:@(self.wireframeRect.size.width/2)
+                                           opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
     
     if(self.attributes.hasAnyAppearance){
         FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
@@ -76,22 +83,51 @@
     return @[sliderWireframe];
 }
 - (NSArray<FTSRWireframe *> *)createNoMaskWireframes{
+    if(self.max<self.min){
+        return @[];
+    }
     float progress = (self.value - self.min) / (self.max-self.min) ;
     CGRect left, right;
     CGRectDivide(self.wireframeRect, &left, &right, self.wireframeRect.size.width*progress,CGRectMinXEdge);
 
-    CGFloat cornerRadius = self.wireframeRect.size.height / 2;
+    CGFloat cornerRadius = self.wireframeRect.size.height * 0.5;
     CGRect thumbFrame = CGRectMake(CGRectGetMaxX(left)-cornerRadius, CGRectGetMinY(left), self.wireframeRect.size.height, self.wireframeRect.size.height);
     
-    FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.thumbWireframeID frame:thumbFrame backgroundColor:[FTSRUtils colorHexString:self.thumbTintColor] cornerRadius:@(cornerRadius) opacity:@(self.attributes.alpha)];
-    thumbWireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.isEnabled?[FTSystemColors secondarySystemFillColor]:[FTSystemColors tertiarySystemFillColor] width:1];
+    FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
+                                          initWithIdentifier:self.thumbWireframeID
+                                          frame:thumbFrame
+                                          backgroundColor:self.isEnabled?(self.thumbTintColor?[FTSRUtils colorHexString:self.thumbTintColor]:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColor]
+                                          cornerRadius:@(cornerRadius)
+                                          opacity:@(self.attributes.alpha)];
+    thumbWireframe.border = [[FTSRShapeBorder alloc]
+                             initWithColor:self.isEnabled?[FTSystemColors secondarySystemFillColor]:[FTSystemColors tertiarySystemBackgroundColor]
+                             width:1];
     
-    CGRect realL = FTCGRectFitWithContentMode(left, CGSizeMake(left.size.width, 4), UIViewContentModeCenter);
-    CGRect realR = FTCGRectFitWithContentMode(right, CGSizeMake(right.size.width, 4), UIViewContentModeCenter);
-    FTSRShapeWireframe *lWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minTrackWireframeID frame:realL backgroundColor:self.minTrackTintColor?[FTSRUtils colorHexString:self.minTrackTintColor]:[FTSystemColors tintColor] cornerRadius:nil opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
-    FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minTrackWireframeID frame:realR backgroundColor:self.minTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor] cornerRadius:nil opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
+    CGRect slice, remainder;
+    CGRectDivide(left, &slice, &remainder, 3,CGRectMinYEdge);
+    
+    CGRect realL = FTCGRectPutInside(slice, left, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
+    
+    CGRectDivide(right, &slice, &remainder, 3,CGRectMinYEdge);
+    CGRect realR = FTCGRectPutInside(slice, right, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
+    FTSRShapeWireframe *lWireframe = [[FTSRShapeWireframe alloc]
+                                      initWithIdentifier:self.minTrackWireframeID 
+                                      frame:realL
+                                      backgroundColor:self.minTrackTintColor?[FTSRUtils
+                                                                              colorHexString:self.minTrackTintColor]:[FTSystemColors tintColor]
+                                      cornerRadius:@(0)
+                                      opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
+    FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
+                                      initWithIdentifier:self.minTrackWireframeID
+                                      frame:realR 
+                                      backgroundColor:self.minTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor]
+                                      cornerRadius:@(0)
+                                      opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     if(self.attributes.hasAnyAppearance){
-        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.attributes.frame attributes:self.attributes];
+        FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]
+                                          initWithIdentifier:self.backgroundWireframeID
+                                          frame:self.attributes.frame
+                                          attributes:self.attributes];
         return @[background,lWireframe,rWireframe,thumbWireframe];
     }
     return @[lWireframe,rWireframe,thumbWireframe];

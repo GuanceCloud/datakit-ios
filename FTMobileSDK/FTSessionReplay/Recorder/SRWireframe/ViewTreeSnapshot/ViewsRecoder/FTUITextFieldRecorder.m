@@ -114,7 +114,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
-    FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment horizontal:@"center"];
+    FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
     FTSRContentClip *padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;

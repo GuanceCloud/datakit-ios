@@ -43,7 +43,7 @@
     if(!attributes.hasAnyAppearance && imageView.image == nil ){
         return [FTInvisibleElement constant];
     }
-    CGRect contentFrame;
+    CGRect contentFrame = CGRectNull;
     BOOL shouldRecordImage = NO;
     UIColor *tintColor;
     if(imageView.image){
