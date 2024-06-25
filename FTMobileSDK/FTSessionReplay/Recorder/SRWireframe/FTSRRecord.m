@@ -260,3 +260,13 @@
 
 
 @end
+@implementation FTEnrichedResource
+
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        _type = @"resource";
+    }
+    return self;
+}
+@end

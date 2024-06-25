@@ -68,6 +68,7 @@
     builder.imageResource = shouldRecordImage?imageResource:nil;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
     element.nodes = @[builder];
+    element.resources = @[imageResource];
     return element;
 }
 - (BOOL)imageIsContextual:(UIImage *)image{

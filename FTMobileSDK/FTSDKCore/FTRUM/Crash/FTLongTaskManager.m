@@ -132,7 +132,12 @@
 - (void)appendData:(NSData *)data{
     __weak __typeof(self) weakSelf = self;
     dispatch_async(_queue, ^{
-        [weakSelf.fileHandle writeData:data];
+        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)) {
+            __autoreleasing NSError *error = nil;
+            [weakSelf.fileHandle writeData:data error:&error];
+        } else {
+            [weakSelf.fileHandle writeData:data];
+        }
     });
 }
 // longTask、 ANR、View

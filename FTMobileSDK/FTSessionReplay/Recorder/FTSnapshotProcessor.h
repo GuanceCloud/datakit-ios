@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTViewTreeSnapshot,FTTouchCircle;
 @interface FTSnapshotProcessor : NSObject
 @property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, weak) id<FTWriter> writer;
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches;
 @end
 

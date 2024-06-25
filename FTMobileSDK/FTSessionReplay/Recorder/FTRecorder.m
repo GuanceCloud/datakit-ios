@@ -19,6 +19,7 @@
 #import "FTSnapshotProcessor.h"
 #import "FTResourceProcessor.h"
 #import "FTViewTreeSnapshotBuilder.h"
+#import "FTResourceWriter.h"
 @interface FTRecorder()
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) FTViewTreeSnapshotBuilder *viewSnapShot;
@@ -27,7 +28,7 @@
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTRecorder
--(instancetype)initWithWindowObserver:(FTWindowObserver *)observer{
+-(instancetype)initWithWindowObserver:(FTWindowObserver *)observer writer:(id<FTWriter>)writer{
     self = [super init];
     if(self){
         _windowObserver = observer;
@@ -35,8 +36,12 @@
         _serialQueue = dispatch_queue_create("com.guance.SRWireframe", DISPATCH_QUEUE_SERIAL);
         _snapshotProcessor = [[FTSnapshotProcessor alloc]init];
         _snapshotProcessor.queue = _serialQueue;
+        _snapshotProcessor.writer = writer;
         _resourceProcessor = [[FTResourceProcessor alloc]init];
         _resourceProcessor.queue = _serialQueue;
+        FTResourceWriter *resourceWriter = [[FTResourceWriter alloc]init];
+        resourceWriter.writer = writer;
+        _resourceProcessor.resourceWriter = resourceWriter;
     }
     return self;
 }
@@ -51,8 +56,6 @@
     
     [self.snapshotProcessor process:viewTreeSnapshot touches:touches];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];
-    
-    
 }
 @end
  

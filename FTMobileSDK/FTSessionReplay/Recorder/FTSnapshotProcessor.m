@@ -16,6 +16,7 @@
 #import "NSDate+FTUtil.h"
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
+#import "FTFileWriter.h"
 @interface FTSnapshotProcessor()
 /// 记录上一页面基本数据，用来判断是否是新页面
 @property (nonatomic, strong) FTViewTreeSnapshot *lastSnapshot;
@@ -78,8 +79,8 @@
         // 5.数据写入
     if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
-//        NSDictionary *data = [fullRecord toJSONString];
-        NSLog(@"[Session Replay] %@",[fullRecord toJSONString]);
+        NSDictionary *data = [fullRecord toJSONString];
+        [self.writer write:data];
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;

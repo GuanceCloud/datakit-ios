@@ -8,10 +8,7 @@
 
 #import "FTRumSessionReplay.h"
 #import "FTSessionReplayTouches.h"
-#import "FTNetworkManager.h"
-#import "FTImageRequest.h"
 #import "FTLog.h"
-#import "FTGlobalRumManager.h"
 #import "FTCompression.h"
 #import "FTThreadDispatchManager.h"
 #import "FTSessionReplayUploader.h"
@@ -21,6 +18,7 @@
 #import "FTSRTextObfuscatingFactory.h"
 #import "FTConstants.h"
 #import "FTBaseInfoHandler.h"
+#import "FTFileWriter.h"
 @interface FTRumSessionReplay ()
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
@@ -31,6 +29,8 @@
 @property (nonatomic, assign) FTSRPrivacy privacy;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
 @property (nonatomic, strong) NSDictionary *lastRUMContext;
+@property (nonatomic, strong) dispatch_queue_t readWriteQueue;
+@property (nonatomic, strong) FTFileWriter *writer;
 @end
 @implementation FTRumSessionReplay
 static FTRumSessionReplay *sharedInstance = nil;
@@ -46,7 +46,7 @@ static dispatch_once_t onceToken;
     if(self){
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
-//        _uploader = [[FTSessionReplayUploader alloc]init];
+        _readWriteQueue = dispatch_queue_create("com.guance.file.readwrite", 0);
         _sampleRate = 100;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChange:) name:FTRumContextDidChangeNotification object:nil];
     }
@@ -73,7 +73,7 @@ static dispatch_once_t onceToken;
 }
 -(FTRecorder *)windowRecorder{
     if(!_windowRecorder){
-        _windowRecorder = [[FTRecorder alloc]initWithWindowObserver:_windowObserver];
+        _windowRecorder = [[FTRecorder alloc]initWithWindowObserver:_windowObserver writer:_writer];
     }
     
     return _windowRecorder;

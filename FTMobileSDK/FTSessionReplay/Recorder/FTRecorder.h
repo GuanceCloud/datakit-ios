@@ -11,8 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTWindowObserver,FTSRContext,FTTouchCircle;
+@protocol FTWriter;
 @interface FTRecorder : NSObject
--(instancetype)initWithWindowObserver:(FTWindowObserver *)observer;
+-(instancetype)initWithWindowObserver:(FTWindowObserver *)observer writer:(id<FTWriter>)writer;
 -(void)taskSnapShot:(FTSRContext *)context touches:(NSMutableArray <FTTouchCircle *> *)touches;
 @end
 

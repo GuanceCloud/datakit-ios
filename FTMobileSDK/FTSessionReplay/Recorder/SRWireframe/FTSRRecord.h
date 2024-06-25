@@ -74,4 +74,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL hasFullSnapshot;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
 @end
+
+@interface FTEnrichedResource : FTSRBaseFrame
+@property (nonatomic, copy) NSString *identifier;
+@property (nonatomic, strong) NSData *data;
+@property (nonatomic, copy) NSString *type;
+@property (nonatomic, copy) NSString *appId;
+@end
 NS_ASSUME_NONNULL_END

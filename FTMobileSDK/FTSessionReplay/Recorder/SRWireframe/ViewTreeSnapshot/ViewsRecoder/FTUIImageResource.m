@@ -23,7 +23,7 @@
     if(self){
         _image = image;
         _tintColor = tintColor;
-        _desiredMaxBytesSize = 10 * 1024;
+        _desiredMaxBytesSize = 10 * 1024 * 1024;
     }
     return self;
 }

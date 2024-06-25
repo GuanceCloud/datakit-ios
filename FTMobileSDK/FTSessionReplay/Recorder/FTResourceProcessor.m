@@ -8,6 +8,11 @@
 
 #import "FTResourceProcessor.h"
 #import "FTSRWireframesBuilder.h"
+#import "FTSRRecord.h"
+#import "FTViewAttributes.h"
+#import "FTFileWriter.h"
+#import "FTResourceWriter.h"
+
 @interface FTResourceProcessor()
 @property (nonatomic, strong) NSMutableSet<NSString *> *processedIdentifiers;
 @end
@@ -20,7 +25,7 @@
     return self;
 }
 - (void)process:(NSArray<id<FTSRResource>> *)resources context:(FTSRContext *)context{
-    if(!resources){
+    if(!resources || resources.count==0){
         return;
     }
     dispatch_async(self.queue, ^{
@@ -30,13 +35,17 @@
                 NSString *identifier = [obj calculateIdentifier];
                 if(![self.processedIdentifiers containsObject:identifier]){
                     [self.processedIdentifiers addObject:identifier];
-                    [addResource addObject:obj];
+                    FTEnrichedResource *resource = [[FTEnrichedResource alloc]init];
+                    resource.identifier = identifier;
+                    resource.data = [obj calculateData];
+                    resource.appId = context.applicationID;
+                    [addResource addObject:resource];
                 }
             }];
         }
         if(addResource.count>0){
             // resource 写入逻辑
-            
+            [self.resourceWriter write:addResource];
         }
     });
 }
