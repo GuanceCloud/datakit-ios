@@ -230,7 +230,8 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
                 NSMutableDictionary *errorField = [NSMutableDictionary new];
                 NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
                 if(content.error){
-                    [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    NSString *errorDescription = [FTBaseInfoHandler urlDomainErrorDescription:content.error];
+                    [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,errorDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }else{
                     [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
                 }
