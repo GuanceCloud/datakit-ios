@@ -43,7 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)logRequestSerialNumber;
 + (void)increaseLogRequestSerialNumber;
 
-+ (NSString *)urlDomainErrorDescription:(NSError *)error;
 @end
 
 NS_ASSUME_NONNULL_END
