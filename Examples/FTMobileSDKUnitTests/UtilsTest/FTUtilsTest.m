@@ -22,7 +22,7 @@
 #import "FTModelHelper.h"
 #import "FTReadWriteHelper.h"
 #import "NSNumber+FTAdd.h"
-
+#import "NSError+FTDescription.h"
 @interface FTUtilsTest : XCTestCase
 
 @end
@@ -180,5 +180,25 @@
     XCTAssertEqualObjects([unsignedLongLongNum ft_toFieldFormat], @"9223372036854775807i");
     XCTAssertEqualObjects([[unsignedLongLongNum ft_toFieldIntegerCompatibleFormat] stringValue], @"9223372036854775807");
 
+}
+- (void)testErrorDescription{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"errors" ofType:@"json"];
+     // 将文件数据化
+     NSData *data = [[NSData alloc] initWithContentsOfFile:path];
+     // 对数据进行JSON格式化并返回字典形式
+     NSArray *array = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+    for (NSDictionary *domain in array) {
+        if([domain[@"key"] isEqualToString:@"NSURLErrorDomain"]){
+            NSArray *errors = domain[@"errors"];
+            for (NSDictionary *error in errors) {
+                NSInteger code =  [error[@"code"] integerValue];
+                NSString *description = error[@"description"];
+                NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:@"testErrorDescription" forKey:NSLocalizedDescriptionKey];
+                NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:code userInfo:errorMessage];
+                NSString *ftError = [error ft_description];
+                XCTAssertTrue([ftError isEqualToString:description]);
+            }
+        }
+    }
 }
 @end

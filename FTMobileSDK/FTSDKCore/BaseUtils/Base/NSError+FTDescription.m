@@ -23,8 +23,8 @@
         case NSURLErrorCancelled: return @"An asynchronous load has been canceled.";
         case NSURLErrorBadURL: return @"A malformed URL prevented a URL request from being initiated.";
         case NSURLErrorTimedOut: return @"An asynchronous operation timed out.";
-        case NSURLErrorUnsupportedURL: return @"TThe host name for a URL couldn’t be resolved.";
-        case NSURLErrorCannotFindHost: return @"The connection failed because the host could not be found.";
+        case NSURLErrorUnsupportedURL: return @"A properly formed URL couldn’t be handled by the framework.";
+        case NSURLErrorCannotFindHost: return @"The host name for a URL couldn’t be resolved.";
         case NSURLErrorCannotConnectToHost: return @"An attempt to connect to a host failed.";
         case NSURLErrorNetworkConnectionLost: return @"A client or server connection was severed in the middle of an in-progress load.";
         case NSURLErrorDNSLookupFailed: return @"The host address couldn’t be found via DNS lookup.";
@@ -44,6 +44,7 @@
         case NSURLErrorFileIsDirectory: return @"A request for an FTP file resulted in the server responding that the file is not a plain file, but a directory.";
         case NSURLErrorNoPermissionsToReadFile: return @"A resource couldn’t be read because of insufficient permissions.";
         case NSURLErrorDataLengthExceedsMaximum: return @"The length of the resource data exceeded the maximum allowed.";
+        case NSURLErrorFileOutsideSafeArea: return @"An internal file operation failed.";
         case NSURLErrorSecureConnectionFailed: return @"An attempt to establish a secure connection failed for reasons that can’t be expressed more specifically.";
         case NSURLErrorServerCertificateHasBadDate: return @"A server certificate is expired, or is not yet valid.";
         case NSURLErrorServerCertificateUntrusted: return @"A server certificate was signed by a root server that isn’t trusted.";
@@ -52,8 +53,8 @@
         case NSURLErrorClientCertificateRejected: return @"A server certificate was rejected.";
         case NSURLErrorClientCertificateRequired: return @"A client certificate was required to authenticate an SSL connection during a connection request.";
         case NSURLErrorCannotLoadFromNetwork: return @"A specific request to load an item only from the cache couldn't be satisfied.";
-        case NSURLErrorCannotCreateFile: return @"A downloaded file on disk couldn’t be opened.";
-        case NSURLErrorCannotOpenFile: return @"The file cannot be opened.";
+        case NSURLErrorCannotCreateFile: return @"A download task couldn’t create the downloaded file on disk because of an I\/O failure.";
+        case NSURLErrorCannotOpenFile: return @"A downloaded file on disk couldn’t be opened.";
         case NSURLErrorCannotCloseFile: return @"A download task couldn’t close the downloaded file on disk.";
         case NSURLErrorCannotWriteToFile: return @"A download task couldn’t write the file to disk.";
         case NSURLErrorCannotRemoveFile: return @"A downloaded file couldn’t be removed from disk.";
