@@ -7,117 +7,80 @@
 //
 
 #import "FTSessionReplayUploader.h"
-#import "FTCompression.h"
 #import "FTLog+Private.h"
 #import "FTNetworkManager.h"
-#import "FTImageRequest.h"
+#import "FTResourceRequest.h"
 #import "FTJSONUtil.h"
-NSString * const FT_SESSION_REPLAY_INFO_PLIST = @"snapshot.plist";
+#import "FTReader.h"
+#import "FTFeatureRequestBuilder.h"
+#import "FTPerformancePreset.h"
+#import "FTDataUploadDelay.h"
 
 @interface FTSessionReplayUploader()
-@property (atomic, assign) BOOL uploading; //使用atomic锁
-@property (nonatomic, copy) NSString *basePath;
-@property (nonatomic, strong) FTCompression *compression;
 @property (nonatomic, strong) FTNetworkManager *networkManager;
-@property (nonatomic, strong) dispatch_queue_t serialQueue;
+@property (nonatomic, strong) dispatch_queue_t queue;
+// TODO:readwrite lock
+@property (nonatomic, strong) dispatch_block_t readWork;
+@property (nonatomic, strong) dispatch_block_t uploadWork;
+@property (nonatomic, strong) id<FTReader> fileReader;
+@property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
+@property (nonatomic, strong) FTPerformancePreset *performance;
+@property (nonatomic, strong) FTDataUploadDelay *delay;
 @end
 @implementation FTSessionReplayUploader
--(instancetype)init{
+-(instancetype)initWithFeatureName:(NSString *)featureName fileReader:(id<FTReader>)fileReader requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder performance:(FTPerformancePreset *)performance{
     self = [super init];
     if(self){
-        _basePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"snapshot"];
-        NSString *serialLabel = [NSString stringWithFormat:@"ft.snapshotUpload.%p", self];
-        _serialQueue = dispatch_queue_create([serialLabel UTF8String], DISPATCH_QUEUE_SERIAL);
-        _onceUploadCount = 20;
-        _uploading = NO;
-        _compression = [[FTCompression alloc]init];
+        NSString *serialLabel = [NSString stringWithFormat:@"com.guance.%@-upload", featureName];
+        _queue = dispatch_queue_create([serialLabel UTF8String], 0);
+        _fileReader = fileReader;
+        _requestBuilder = requestBuilder;
+        _performance = performance;
+        _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
+        dispatch_async(_queue, _readWork);
     }
     return self;
 }
--(void)flushSessionReplay{
-    dispatch_async(self.serialQueue, ^{
-        if(self.uploading){
+- (void)uploadFile:(NSArray<id<FTReadableFile>>*)files parameters:(NSDictionary *)parameters{
+    __weak typeof(self) weakSelf = self;
+    dispatch_block_t uploadWork = ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
             return;
         }
-        self.uploading = YES;
-        // 具体的上传
-        NSError *error;
-        NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.basePath error:&error];
-        NSEnumerator *enumerator = [array objectEnumerator];
-        NSString *filePath;
-        while ((filePath = enumerator.nextObject) != nil) {
-            NSString *name = [filePath lastPathComponent];
-            if(name!=self.currentViewid){
-                [self flushSessionReplay:name];
-            }
+        if(files.count == 0){
+            [strongSelf scheduleNextCycle];
+            return;
         }
-        self.uploading = NO;
-    });
-}
--(void)flushSessionReplay:(NSString *)viewid{
-    NSString *filePath =[self.basePath stringByAppendingPathComponent:viewid];
-    NSError *error;
-    NSMutableArray *array = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:filePath error:&error] mutableCopy];
-    [array removeObject:FT_SESSION_REPLAY_INFO_PLIST];
-    if(array.count == 0){
-        //有一些容器类型控制器如UINavigationController、UITabBarController ，rum view层面会有进入进出，但实际上会立即被内容页面挤出，所以没有实际的截图文件
-        [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
-        return;
-    }
-    NSArray *result = [array sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-        return [obj1 compare:obj2]; // 升序
-    }];
-    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:[filePath stringByAppendingPathComponent:FT_SESSION_REPLAY_INFO_PLIST]];
-    if(dict == nil){
-        return;
-    }
-    NSInteger lastCount = result.count%self.onceUploadCount;
-    NSInteger times = lastCount==0?result.count/self.onceUploadCount:(result.count/self.onceUploadCount)+1;
-    for (NSInteger i=0; i<times; i++) {
-        NSString *zipPath = [self.basePath stringByAppendingFormat:@"/%@.zip",[[NSUUID UUID] UUIDString]];
-        NSMutableArray *files = [[NSMutableArray alloc]init];
-        NSUInteger len = self.onceUploadCount;
-        if(i+1==times){
-            len = lastCount==0?self.onceUploadCount:lastCount;
+        NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
+        id<FTReadableFile> file = [mutableFiles lastObject];
+        [mutableFiles removeLastObject];
+        
+        FTBatch *batch = [strongSelf.fileReader readBatch:file];
+        if(batch){
+            [strongSelf flushWithEvents:batch.events parameters:parameters];
         }
-        NSArray *subArray = [result subarrayWithRange:NSMakeRange(i*self.onceUploadCount, len)];
-        for (NSString *name in subArray) {
-            [files addObject:[filePath stringByAppendingPathComponent:name]];
-        }
-        NSMutableDictionary *param = [NSMutableDictionary dictionaryWithDictionary:self.baseProperty];
-        [param setValue:[result firstObject] forKey:@"start"];
-        [param setValue:[result lastObject] forKey:@"end"];
-        [param setValue:@(result.count) forKey:@"records_count"];
-        [param setValue:@"ios" forKey:@"source"];
-        [param addEntriesFromDictionary:dict];
-        [param setValue:viewid forKey:@"view_id"];
-        if([self flushWithFiles:@[zipPath] parameters:param]){
-            // 删除 zip 文件
-            [[NSFileManager defaultManager] removeItemAtPath:zipPath error:&error];
-            if(i+1==times){
-                // 如果该文件夹下所有图片全部上传，整个文件夹删除
-                [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
-            }else{
-                // 如果该文件夹只上传了部分，删除已上传图片
-                for (NSString *parh in subArray) {
-                    [[NSFileManager defaultManager] removeItemAtPath:parh error:&error];
-                }
-            }
+        if(mutableFiles.count == 0){
+            [strongSelf scheduleNextCycle];
         }else{
-            //上传失败
-            FTInnerLogError(@"Fail To Upload Session Replay Images ");
-            break;
+            [strongSelf uploadFile:mutableFiles parameters:parameters];
         }
+    };
+    self.uploadWork = uploadWork;
+    dispatch_async(self.queue, uploadWork);
+}
+- (void)scheduleNextCycle{
+    if(self.readWork){
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_delay.current * NSEC_PER_SEC)), self.queue, self.readWork);
     }
 }
--(BOOL)flushWithFiles:(NSArray *)files parameters:(NSDictionary *)parameters{
+-(BOOL)flushWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     @try {
         FTInnerLogDebug(@"-----开始上传 session replay-----");
         __block BOOL success = NO;
         dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
-        FTRequest *request = [[FTImageRequest alloc]initRequestWithFiles:files parameters:parameters];
-      
-        [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
+        [self.requestBuilder requestWithEvent:events parameters:parameters];
+        [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 FTInnerLogError(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;
@@ -139,5 +102,12 @@ NSString * const FT_SESSION_REPLAY_INFO_PLIST = @"snapshot.plist";
     }
 
     return NO;
+}
+- (void)cancelSynchronously{
+    __weak typeof(self) weakSelf = self;
+    dispatch_sync(self.queue, ^{
+        if(weakSelf.uploadWork) weakSelf.uploadWork = nil;
+        if(weakSelf.readWork) weakSelf.readWork = nil;
+    });
 }
 @end

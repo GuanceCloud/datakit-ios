@@ -8,13 +8,14 @@
 
 #import <Foundation/Foundation.h>
 NS_ASSUME_NONNULL_BEGIN
-extern NSString * const FT_SESSION_REPLAY_INFO_PLIST;
 
+@protocol FTReader,FTFeatureRequestBuilder;
+@class FTPerformancePreset;
 @interface FTSessionReplayUploader : NSObject
-@property (nonatomic, assign) NSInteger onceUploadCount;
+@property (nonatomic, assign) NSInteger maxBatchesPerUpload;
 @property (nonatomic, strong) NSDictionary *baseProperty;
-@property (nonatomic, copy) NSString *currentViewid;
--(void)flushSessionReplay;
+-(instancetype)initWithFeatureName:(NSString *)featureName fileReader:(id<FTReader>)fileReader requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder performance:(FTPerformancePreset *)performance;
+
 @end
 
 NS_ASSUME_NONNULL_END

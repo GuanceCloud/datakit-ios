@@ -7,11 +7,11 @@
 //
 
 #import "FTRequest.h"
-
+#import "FTFeatureRequestBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTImageRequest : FTRequest
--(instancetype)initRequestWithFiles:(NSArray*)files parameters:(NSDictionary *)parameters;
+@interface FTResourceRequest : FTRequest<FTFeatureRequestBuilder>
+
 
 @end
 

@@ -7,11 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class FTPerformancePreset;
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTWriter;
+@protocol FTWriter,FTReader;
 @interface FTFeatureStorage : NSObject
+-(instancetype)initWithFeatureName:(NSString *)featureName queue:(dispatch_queue_t)queue performance:(FTPerformancePreset *)performance;
 - (id<FTWriter>)writer;
+- (id<FTReader>)reader;
 - (void)clearAllData;
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore;
 @end

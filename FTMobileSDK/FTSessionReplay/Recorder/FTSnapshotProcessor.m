@@ -23,6 +23,7 @@
 /// 用来比较增量数据
 @property (nonatomic, strong) NSArray<FTSRWireframe *> *lastSRWireframes;
 @property (nonatomic, strong) FTNodesFlattener *flattener;
+@property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
 @end
 @implementation FTSnapshotProcessor
 -(instancetype)init{
@@ -79,11 +80,24 @@
         // 5.数据写入
     if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
-        NSDictionary *data = [fullRecord toJSONString];
-        [self.writer write:data];
+        [self trackRecord:fullRecord.viewID value:fullRecord.records.count];
+        [self.writer write:fullRecord];
+        NSError *error;
+        error.localizedDescription
+        
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;
     }
+}
+
+- (void)trackRecord:(NSString *)key value:(NSUInteger)value{
+    NSNumber *existingValue = [self.recordsCountByViewID valueForKey:key];
+    if(existingValue!=nil){
+        self.recordsCountByViewID[key] = @([existingValue integerValue] + value);
+    }else{
+        self.recordsCountByViewID[key] = @(value);
+    }
+    // TODO: 通知或代理实现
 }
 @end

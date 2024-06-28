@@ -10,6 +10,7 @@
 #import "FTSRRecord.h"
 #import "FTFileWriter.h"
 @interface FTResourceWriter()
+// TODO:lock
 @property (nonatomic, strong) NSMutableSet *knownIdentifiers;
 
 @end

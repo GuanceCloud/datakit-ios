@@ -8,10 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "FTRequest.h"
-
+#import "FTFeatureRequestBuilder.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FTSessionReplayRequest : FTRequest
+@interface FTSegmentRequest : FTRequest<FTFeatureRequestBuilder>
+
 
 @end
 

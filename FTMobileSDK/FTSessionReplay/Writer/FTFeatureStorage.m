@@ -11,6 +11,9 @@
 #import "FTDirectory.h"
 #import "FTPerformancePreset.h"
 #import "FTFileWriter.h"
+#import "FTDataReader.h"
+#import "FTFileReader.h"
+#import "FTDataReader.h"
 @interface FTFeatureStorage()
 @property (nonatomic, copy) NSString *featureName;
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
@@ -55,8 +58,11 @@
         self.authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = ignore;
     });
 }
-- (void)reader {
-    
+- (id<FTReader>)reader {
+    FTDataReader *reader = [[FTDataReader alloc]
+                            initWithQueue:self.queue
+                            fileReader:[[FTFileReader alloc] initWithOrchestrator:self.authorizedFilesOrchestrator]];
+    return reader;
 }
 
 @end

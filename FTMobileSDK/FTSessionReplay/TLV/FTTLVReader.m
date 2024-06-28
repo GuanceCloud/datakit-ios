@@ -26,7 +26,7 @@
     }
     return self;
 }
-- (NSArray *)all{
+- (NSArray<FTTLV*> *)all{
     NSMutableArray *array = [NSMutableArray new];
     FTTLV *tlv = [self next];
     while (tlv != nil) {

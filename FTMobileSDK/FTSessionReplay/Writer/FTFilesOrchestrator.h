@@ -10,14 +10,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTFile,FTDirectory;
-@protocol FTStoragePerformancePreset,FTWritableFile;
+@protocol FTStoragePerformancePreset,FTWritableFile,FTReadableFile;
 @protocol FTFilesOrchestratorType <NSObject>
 
 @property (nonatomic, strong) id<FTStoragePerformancePreset> performance;
 @property (nonatomic, assign) BOOL ignoreFilesAgeWhenReading;
 - (id<FTWritableFile>)getWritableFile:(long long)writeSize;
 - (NSArray<FTFile *>*)getReadableFiles:(NSSet *)excludedFileNames limit:(int)limit;
-
+- (void)deleteReadableFile:(id<FTReadableFile>)readableFile;
 @end
 
 @interface FTFilesOrchestrator : NSObject<FTFilesOrchestratorType>

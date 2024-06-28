@@ -249,16 +249,9 @@
         _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
-        for (FTSRRecord *record in records) {
-            if ([record isKindOfClass:FTSRFullSnapshotRecord.class]){
-                _hasFullSnapshot = YES;
-            }
-        }
     }
     return self;
 }
-
-
 @end
 @implementation FTEnrichedResource
 
