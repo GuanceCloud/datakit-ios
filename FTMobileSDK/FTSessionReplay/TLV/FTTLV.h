@@ -12,9 +12,9 @@ extern NSUInteger const FT_MAX_DATA_LENGTH;
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTTLV : NSObject
-@property (nonatomic, assign) int16_t type;
+@property (nonatomic, assign) uint16_t type;
 @property (nonatomic, strong) NSData *value;
--(instancetype)initWithType:(int16_t)type value:(NSData *)value;
+-(instancetype)initWithType:(uint16_t)type value:(NSData *)value;
 - (NSData *)serialize;
 @end
 

@@ -12,9 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTReader,FTFeatureRequestBuilder;
 @class FTPerformancePreset;
 @interface FTSessionReplayUploader : NSObject
-@property (nonatomic, assign) NSInteger maxBatchesPerUpload;
+@property (nonatomic, assign) int maxBatchesPerUpload;
 @property (nonatomic, strong) NSDictionary *baseProperty;
--(instancetype)initWithFeatureName:(NSString *)featureName fileReader:(id<FTReader>)fileReader requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder performance:(FTPerformancePreset *)performance;
+-(instancetype)initWithFeatureName:(NSString *)featureName
+                        fileReader:(id<FTReader>)fileReader
+                    requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
+               maxBatchesPerUpload:(int)maxBatchesPerUpload
+                       performance:(FTPerformancePreset *)performance;
 
 @end
 

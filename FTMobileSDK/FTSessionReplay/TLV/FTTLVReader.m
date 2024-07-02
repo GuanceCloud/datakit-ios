@@ -36,20 +36,22 @@
     return array;
 }
 - (FTTLV *)next{
-    int typeSize = sizeof(int16_t);
+    int typeSize = sizeof(uint16_t);
     int lengthSize = sizeof(int32_t);
     NSData *typeData = [self read:typeSize];
     NSData *dataLength = [self read:lengthSize];
-    NSUInteger length = 0;
-    [dataLength getBytes:&length length:dataLength.length];
-    NSData *data = [self read:length];
-    if(data){
-        FTTLV *tlv = [[FTTLV alloc]init];
-        NSUInteger type = 0;
-        [typeData getBytes:&type length:typeData.length];
-        tlv.type = type;
-        tlv.value = data;
-        return tlv;
+    if(typeData && dataLength){
+        NSUInteger length = 0;
+        [dataLength getBytes:&length length:dataLength.length];
+        NSData *data = [self read:length];
+        if(data){
+            FTTLV *tlv = [[FTTLV alloc]init];
+            NSUInteger type = 0;
+            [typeData getBytes:&type length:typeData.length];
+            tlv.type = type;
+            tlv.value = data;
+            return tlv;
+        }
     }
     return nil;
 }

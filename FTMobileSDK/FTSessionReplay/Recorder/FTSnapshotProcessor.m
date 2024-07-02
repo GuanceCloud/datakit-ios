@@ -81,10 +81,7 @@
     if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
         [self trackRecord:fullRecord.viewID value:fullRecord.records.count];
-        [self.writer write:fullRecord];
-        NSError *error;
-        error.localizedDescription
-        
+        [self.writer write:fullRecord];        
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;

@@ -28,7 +28,11 @@
 @property (nonatomic, strong) FTDataUploadDelay *delay;
 @end
 @implementation FTSessionReplayUploader
--(instancetype)initWithFeatureName:(NSString *)featureName fileReader:(id<FTReader>)fileReader requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder performance:(FTPerformancePreset *)performance{
+-(instancetype)initWithFeatureName:(NSString *)featureName
+                        fileReader:(id<FTReader>)fileReader
+                    requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
+               maxBatchesPerUpload:(int)maxBatchesPerUpload
+                       performance:(FTPerformancePreset *)performance{
     self = [super init];
     if(self){
         NSString *serialLabel = [NSString stringWithFormat:@"com.guance.%@-upload", featureName];
@@ -37,6 +41,25 @@
         _requestBuilder = requestBuilder;
         _performance = performance;
         _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
+        _maxBatchesPerUpload = maxBatchesPerUpload;
+        __weak typeof(self) weakSelf = self;
+        dispatch_block_t readWorkItem = ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            //上传条件判断：电池、网络
+            
+            //读取上传文件
+            NSArray<id <FTReadableFile>> *files = [strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload];
+            if(files == nil || files.count == 0){
+                [strongSelf.delay increase];
+                [strongSelf scheduleNextCycle];
+            }else{
+                [self uploadFile:files parameters:@{}];
+            }
+        };
+        _readWork = readWorkItem;
         dispatch_async(_queue, _readWork);
     }
     return self;

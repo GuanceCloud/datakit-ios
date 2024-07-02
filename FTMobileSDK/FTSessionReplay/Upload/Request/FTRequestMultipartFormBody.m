@@ -44,9 +44,9 @@ static inline NSString * FTMultipartFormFinalBoundary(NSString *boundary) {
     [self.body appendData:[kFTMultipartFormCRLF dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
--(void)addFormData:(NSString *)name filename:(NSString *)filename data:(NSData *)data mimeType:(NSString *)mimeType{
+-(void)addFormData:(NSString *)name filename:(NSString *)fileName data:(NSData *)data mimeType:(NSString *)mimeType{
     [self.body appendData:[FTMultipartFormInitialBoundary(self.boundary) dataUsingEncoding:NSUTF8StringEncoding]];
-    [self.body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"%@", name,filename,kFTMultipartFormCRLF] dataUsingEncoding:NSUTF8StringEncoding]];
+    [self.body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"%@", name,fileName,kFTMultipartFormCRLF] dataUsingEncoding:NSUTF8StringEncoding]];
     [self.body appendData:[[NSString stringWithFormat:@"Content-Type: %@%@", mimeType,kFTMultipartFormCRLF] dataUsingEncoding:NSUTF8StringEncoding]];
     [self.body appendData:[kFTMultipartFormCRLF dataUsingEncoding:NSUTF8StringEncoding]];
     [self.body appendData:data];

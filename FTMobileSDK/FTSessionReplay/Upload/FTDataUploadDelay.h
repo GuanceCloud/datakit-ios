@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTDataUploadDelay : NSObject
 @property (nonatomic, assign,readwrite) NSTimeInterval current;
 -(instancetype)initWithPerformance:(id<FTUploadPerformancePreset>)performance;
+- (void)increase;
+- (void)decrease;
 @end
 
 NS_ASSUME_NONNULL_END

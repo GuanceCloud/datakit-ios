@@ -10,7 +10,7 @@
 NSUInteger const FT_MAX_DATA_LENGTH = 10*1024*1024;
 
 @implementation FTTLV
--(instancetype)initWithType:(int16_t)type value:(NSData *)value{
+-(instancetype)initWithType:(uint16_t)type value:(NSData *)value{
     self = [super init];
     if(self){
         _type = type;

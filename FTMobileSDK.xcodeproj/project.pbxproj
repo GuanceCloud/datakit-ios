@@ -419,6 +419,11 @@
 		1799581729D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
 		1799581829D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
 		1799581929D4403A0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
+		179AD6652C328CA3003DCBE4 /* FTDataStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 17132DD92C328A3C009DFE8F /* FTDataStore.h */; };
+		179AD6682C328F15003DCBE4 /* FTFeatureDataStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 179AD6662C328F15003DCBE4 /* FTFeatureDataStore.h */; };
+		179AD6692C328F15003DCBE4 /* FTFeatureDataStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 179AD6672C328F15003DCBE4 /* FTFeatureDataStore.m */; };
+		179AD66C2C32944E003DCBE4 /* FTDataStoreFileReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 179AD66A2C32944E003DCBE4 /* FTDataStoreFileReader.h */; };
+		179AD66D2C32944E003DCBE4 /* FTDataStoreFileReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 179AD66B2C32944E003DCBE4 /* FTDataStoreFileReader.m */; };
 		179F69692C199E5800CD2FAC /* FTResourceProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F69672C199E5800CD2FAC /* FTResourceProcessor.h */; };
 		179F696A2C199E5800CD2FAC /* FTResourceProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 179F69682C199E5800CD2FAC /* FTResourceProcessor.m */; };
 		179F696D2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F696B2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h */; };
@@ -528,6 +533,8 @@
 		17AC174E2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */; };
 		17AC174F2B98635C003E18A6 /* NSDate+FTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */; };
 		17AC17502B98635C003E18A6 /* NSDate+FTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */; };
+		17B486C62C33993200E59F38 /* FTDataStoreFileWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B486C42C33993200E59F38 /* FTDataStoreFileWriter.h */; };
+		17B486C72C33993200E59F38 /* FTDataStoreFileWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B486C52C33993200E59F38 /* FTDataStoreFileWriter.m */; };
 		17C46E562C257B550067FE62 /* FTFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C46E552C257B550067FE62 /* FTFile.m */; };
 		17C46E572C257B550067FE62 /* FTFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 17C46E542C257B550067FE62 /* FTFile.h */; };
 		17C46E5F2C293E5E0067FE62 /* FTTLV.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C46E5E2C293E5E0067FE62 /* FTTLV.m */; };
@@ -725,6 +732,7 @@
 		17132DCF2C2EB226009DFE8F /* FTFeatureRequestBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTFeatureRequestBuilder.h; sourceTree = "<group>"; };
 		17132DD02C2EBC37009DFE8F /* FTDataUploadDelay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataUploadDelay.h; sourceTree = "<group>"; };
 		17132DD12C2EBC37009DFE8F /* FTDataUploadDelay.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataUploadDelay.m; sourceTree = "<group>"; };
+		17132DD92C328A3C009DFE8F /* FTDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStore.h; sourceTree = "<group>"; };
 		171C21BE2B9183D500C67AD6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = FTMobileSDK/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		171CE1D62BFB3C550083FC1C /* FTDURLSessionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDURLSessionDelegate.h; sourceTree = "<group>"; };
 		171CE1D72BFB3C550083FC1C /* FTDURLSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDURLSessionDelegate.m; sourceTree = "<group>"; };
@@ -839,6 +847,10 @@
 		178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoInterceptorProtocol.h; sourceTree = "<group>"; };
 		1799581129D43FDE0033B46E /* FTPresetProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTPresetProperty.h; sourceTree = "<group>"; };
 		1799581229D43FDE0033B46E /* FTPresetProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPresetProperty.m; sourceTree = "<group>"; };
+		179AD6662C328F15003DCBE4 /* FTFeatureDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTFeatureDataStore.h; sourceTree = "<group>"; };
+		179AD6672C328F15003DCBE4 /* FTFeatureDataStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTFeatureDataStore.m; sourceTree = "<group>"; };
+		179AD66A2C32944E003DCBE4 /* FTDataStoreFileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStoreFileReader.h; sourceTree = "<group>"; };
+		179AD66B2C32944E003DCBE4 /* FTDataStoreFileReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataStoreFileReader.m; sourceTree = "<group>"; };
 		179F69672C199E5800CD2FAC /* FTResourceProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTResourceProcessor.h; sourceTree = "<group>"; };
 		179F69682C199E5800CD2FAC /* FTResourceProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceProcessor.m; sourceTree = "<group>"; };
 		179F696B2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUnsupportedViewRecorder.h; sourceTree = "<group>"; };
@@ -878,6 +890,8 @@
 		17AC17422B9856C3003E18A6 /* FTFileLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTFileLogger.m; sourceTree = "<group>"; };
 		17AC17492B98635C003E18A6 /* NSDate+FTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDate+FTUtil.h"; sourceTree = "<group>"; };
 		17AC174A2B98635C003E18A6 /* NSDate+FTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDate+FTUtil.m"; sourceTree = "<group>"; };
+		17B486C42C33993200E59F38 /* FTDataStoreFileWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTDataStoreFileWriter.h; sourceTree = "<group>"; };
+		17B486C52C33993200E59F38 /* FTDataStoreFileWriter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTDataStoreFileWriter.m; sourceTree = "<group>"; };
 		17C46E542C257B550067FE62 /* FTFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTFile.h; sourceTree = "<group>"; };
 		17C46E552C257B550067FE62 /* FTFile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTFile.m; sourceTree = "<group>"; };
 		17C46E5D2C293E5E0067FE62 /* FTTLV.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTLV.h; sourceTree = "<group>"; };
@@ -1156,9 +1170,10 @@
 			children = (
 				17C46E682C2A6CD60067FE62 /* FTPerformancePreset.h */,
 				17C46E692C2A6CD60067FE62 /* FTPerformancePreset.m */,
+				17132DD82C32898B009DFE8F /* DataStore */,
+				17132DD62C324FB3009DFE8F /* Storage */,
 				170018C92C186B8600D39A2A /* Upload */,
 				17C46E5C2C293E4A0067FE62 /* TLV */,
-				173961512C252B2F00FE1492 /* Writer */,
 				1700189D2C186B8600D39A2A /* Recorder */,
 				170018CA2C186B8600D39A2A /* FTRumSessionReplay.h */,
 				170018CB2C186B8600D39A2A /* FTRumSessionReplay.m */,
@@ -1183,15 +1198,9 @@
 			path = Request;
 			sourceTree = "<group>";
 		};
-		173961512C252B2F00FE1492 /* Writer */ = {
+		17132DD62C324FB3009DFE8F /* Storage */ = {
 			isa = PBXGroup;
 			children = (
-				17C46E922C2BB8360067FE62 /* FTReader.h */,
-				17C46E932C2BB8360067FE62 /* FTReader.m */,
-				17C46E702C2AC6690067FE62 /* FTResourceWriter.h */,
-				17C46E712C2AC6690067FE62 /* FTResourceWriter.m */,
-				173961562C252D6900FE1492 /* FTDataReader.h */,
-				173961572C252D6900FE1492 /* FTDataReader.m */,
 				1739615A2C25578C00FE1492 /* FTFeatureStorage.h */,
 				1739615B2C25578C00FE1492 /* FTFeatureStorage.m */,
 				1739615E2C25687900FE1492 /* FTFilesOrchestrator.h */,
@@ -1200,10 +1209,46 @@
 				173961632C256B4D00FE1492 /* FTDirectory.m */,
 				17C46E542C257B550067FE62 /* FTFile.h */,
 				17C46E552C257B550067FE62 /* FTFile.m */,
-				17C46E6C2C2ABBF00067FE62 /* FTFileWriter.h */,
-				17C46E6D2C2ABBF00067FE62 /* FTFileWriter.m */,
+				17132DD72C324FDE009DFE8F /* Reader */,
+				173961512C252B2F00FE1492 /* Writer */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		17132DD72C324FDE009DFE8F /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				17C46E922C2BB8360067FE62 /* FTReader.h */,
+				17C46E932C2BB8360067FE62 /* FTReader.m */,
+				173961562C252D6900FE1492 /* FTDataReader.h */,
+				173961572C252D6900FE1492 /* FTDataReader.m */,
 				17C46E962C2BBD2F0067FE62 /* FTFileReader.h */,
 				17C46E972C2BBD2F0067FE62 /* FTFileReader.m */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		17132DD82C32898B009DFE8F /* DataStore */ = {
+			isa = PBXGroup;
+			children = (
+				17132DD92C328A3C009DFE8F /* FTDataStore.h */,
+				179AD6662C328F15003DCBE4 /* FTFeatureDataStore.h */,
+				179AD6672C328F15003DCBE4 /* FTFeatureDataStore.m */,
+				179AD66A2C32944E003DCBE4 /* FTDataStoreFileReader.h */,
+				179AD66B2C32944E003DCBE4 /* FTDataStoreFileReader.m */,
+				17B486C42C33993200E59F38 /* FTDataStoreFileWriter.h */,
+				17B486C52C33993200E59F38 /* FTDataStoreFileWriter.m */,
+			);
+			path = DataStore;
+			sourceTree = "<group>";
+		};
+		173961512C252B2F00FE1492 /* Writer */ = {
+			isa = PBXGroup;
+			children = (
+				17C46E702C2AC6690067FE62 /* FTResourceWriter.h */,
+				17C46E712C2AC6690067FE62 /* FTResourceWriter.m */,
+				17C46E6C2C2ABBF00067FE62 /* FTFileWriter.h */,
+				17C46E6D2C2ABBF00067FE62 /* FTFileWriter.m */,
 			);
 			path = Writer;
 			sourceTree = "<group>";
@@ -1949,6 +1994,7 @@
 				1700190C2C186B8600D39A2A /* FTWindowObserver.h in Headers */,
 				17E4CC3829CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h in Headers */,
 				170019372C186B8600D39A2A /* FTSessionReplayUploader.h in Headers */,
+				179AD66C2C32944E003DCBE4 /* FTDataStoreFileReader.h in Headers */,
 				175C7D0A29E9428A00A7F271 /* FTExternalDataManager.h in Headers */,
 				17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */,
 				17E4CB4029CD42DA005C2D99 /* FTAppLifeCycle.h in Headers */,
@@ -2034,17 +2080,20 @@
 				17678E2E29D28BD200C1DA98 /* FTMobileAgent+Private.h in Headers */,
 				17E4CC2129CD42E4005C2D99 /* FTURLSessionInterceptorProtocol.h in Headers */,
 				170018DE2C186B8600D39A2A /* FTUIStepperRecorder.h in Headers */,
+				179AD6682C328F15003DCBE4 /* FTFeatureDataStore.h in Headers */,
 				1763BD9029DFF04F009EE026 /* FTRequestBody.h in Headers */,
 				17E4CC3129CD42E4005C2D99 /* FTAutoTrackProperty.h in Headers */,
 				173960BB2C2030C800FE1492 /* UIColor+FTSRIdentifier.h in Headers */,
 				173960AF2C1B00E200FE1492 /* FTViewTreeSnapshot.h in Headers */,
 				17AB76CC29D432DE008FBBF5 /* FTCPUMonitor.h in Headers */,
 				17E4CC3029CD42E4005C2D99 /* UIApplication+FTAutoTrack.h in Headers */,
+				179AD6652C328CA3003DCBE4 /* FTDataStore.h in Headers */,
 				175C7D0E29E9438600A7F271 /* FTMobileAgent.h in Headers */,
 				1763BDA629DFF04F009EE026 /* ZY_FMResultSet.h in Headers */,
 				1700190E2C186B8600D39A2A /* NSData+FTHelper.h in Headers */,
 				1763BDAC29DFF04F009EE026 /* ZY_FMDB.h in Headers */,
 				1700190A2C186B8600D39A2A /* UITouch+FTIdentifier.h in Headers */,
+				17B486C62C33993200E59F38 /* FTDataStoreFileWriter.h in Headers */,
 				179F696D2C1ABB0100CD2FAC /* FTUnsupportedViewRecorder.h in Headers */,
 				17C46E952C2BB8360067FE62 /* FTReader.h in Headers */,
 				174D91AB2A20B98300D85AAA /* FTLoggerDataWriteProtocol.h in Headers */,
@@ -2390,6 +2439,7 @@
 				170018D72C186B8600D39A2A /* FTUINavigationBarRecorder.m in Sources */,
 				1776062A29D1347500D17137 /* FTWKWebViewJavascriptBridge.m in Sources */,
 				1763BD9C29DFF04F009EE026 /* ZY_FMDatabaseQueue.m in Sources */,
+				179AD66D2C32944E003DCBE4 /* FTDataStoreFileReader.m in Sources */,
 				170018EF2C186B8600D39A2A /* FTImageDataUtils.m in Sources */,
 				1763BD9A29DFF04F009EE026 /* ZY_FMResultSet.m in Sources */,
 				174CB06E2B5126D600A4F9C5 /* FTLongTaskDetector.m in Sources */,
@@ -2433,6 +2483,7 @@
 				170018D52C186B8600D39A2A /* FTUILabelRecorder.m in Sources */,
 				17400E6A2B466EFC00ACBA6C /* FTSignalException.c in Sources */,
 				17C46E6A2C2A6CD60067FE62 /* FTPerformancePreset.m in Sources */,
+				179AD6692C328F15003DCBE4 /* FTFeatureDataStore.m in Sources */,
 				1776063229D1347500D17137 /* WKWebView+FTAutoTrack.m in Sources */,
 				17E4CB5529CD42DA005C2D99 /* FTBaseInfoHandler.m in Sources */,
 				17E4CBE529CD42E4005C2D99 /* FTURLSessionInstrumentation.m in Sources */,
@@ -2460,6 +2511,7 @@
 				17C46E632C293ED20067FE62 /* FTTLVReader.m in Sources */,
 				170019052C186B8600D39A2A /* UIView+FTSR.m in Sources */,
 				170018D32C186B8600D39A2A /* FTUIImageViewRecorder.m in Sources */,
+				17B486C72C33993200E59F38 /* FTDataStoreFileWriter.m in Sources */,
 				1739615D2C25578C00FE1492 /* FTFeatureStorage.m in Sources */,
 				174BC87A2BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.m in Sources */,
 				1776BA812B99B668008424FF /* FTOSLogger.m in Sources */,

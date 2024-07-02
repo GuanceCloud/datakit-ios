@@ -132,6 +132,11 @@
     NSInteger length = limit > index+1?index+1:limit;
     return [readableArray subarrayWithRange:NSMakeRange(0, length)];
 }
+
+- (void)deleteReadableFile:(nonnull id<FTReadableFile>)readableFile { 
+    
+}
+
 - (FTFile *)deleteFileIfItsObsolete:(FTFile *)file{
     NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:file.fileCreationDate];
     if(fileAge > self.performance.maxFileAgeForRead){
