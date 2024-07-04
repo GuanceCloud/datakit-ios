@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTEnrichedResource;
+@class FTEnrichedResource,FTFeatureDataStore;
 @protocol FTWriter;
 @protocol FTResourcesWriting <NSObject>
 
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTResourceWriter : NSObject<FTResourcesWriting>
 @property (nonatomic, strong) id<FTWriter> writer;
-
+- (instancetype)initWithWriter:(id<FTWriter>)writer dataStore:(FTFeatureDataStore *)dataStore;
 @end
 
 NS_ASSUME_NONNULL_END

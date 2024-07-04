@@ -25,13 +25,16 @@
 @end
 @implementation FTFeatureStorage
 
--(instancetype)initWithFeatureName:(NSString *)featureName queue:(dispatch_queue_t)queue performance:(FTPerformancePreset *)performance{
+-(instancetype)initWithFeatureName:(NSString *)featureName 
+                             queue:(dispatch_queue_t)queue
+                         directory:(FTDirectory *)directory
+                       performance:(FTPerformancePreset *)performance{
     self = [super init];
     if(self){
         _featureName = featureName;
         _queue = queue;
         _performance = performance;
-        _directory = [[FTDirectory alloc]initWithSubdirectoryPath:@"sessionReplay"];
+        _directory = directory;
     }
     return self;
 }

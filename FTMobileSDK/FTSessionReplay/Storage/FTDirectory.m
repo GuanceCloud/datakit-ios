@@ -8,6 +8,7 @@
 
 #import "FTDirectory.h"
 #import "FTFile.h"
+#import "FTLog+Private.h"
 @interface FTDirectory()
 @property (nonatomic, strong) NSURL *url;
 
@@ -23,7 +24,6 @@
     }
     return self;
 }
-//TODO: error 处理
 - (FTDirectory *)createSubdirectoryWithPath:(NSString *)path{
     NSURL *subdirectoryURL = [self.url URLByAppendingPathComponent:path isDirectory:YES];
     NSError *error;
@@ -31,19 +31,30 @@
     if(success){
         return [[FTDirectory alloc] initWithUrl:subdirectoryURL];
     }
+    if(error){
+        FTInnerLogError(@"Create directory at %@ fail with error : %@",path,error.localizedDescription);
+    }
     return nil;
 }
 - (NSDate *)modifiedAt{
     NSError *error;
-    NSDate *date = [[[NSFileManager defaultManager] attributesOfItemAtPath:self.url.path error:&error] fileCreationDate];
-    return date;
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:self.url.path error:&error];
+    if(error){
+        FTInnerLogError(@"Get file[%@] attributes fail with error : %@",self.url.path,error.localizedDescription);
+    }else{
+        NSDate *date = [attributes fileCreationDate];
+        return date;
+    }
+    return nil;
 }
 - (FTFile *)createFile:(NSString *)fileName{
     NSURL *fileURL = [self.url URLByAppendingPathComponent:fileName isDirectory:NO];
     
-   BOOL result = [[NSFileManager defaultManager] createFileAtPath:fileURL.path contents:nil attributes:nil];
+    BOOL result = [[NSFileManager defaultManager] createFileAtPath:fileURL.path contents:nil attributes:nil];
     if(result == YES){
         return [[FTFile alloc]initWithUrl:fileURL];
+    }else{
+        FTInnerLogError(@"Create file[%@] attributes fail.",fileURL.path);
     }
     return nil;
 }
@@ -71,35 +82,36 @@
 }
 - (void)deleteAllFiles{
     FTDirectory *temporaryDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:[[NSUUID UUID] UUIDString]];
-    NSError *error;
-    [[NSFileManager defaultManager] replaceItemAtURL:self.url withItemAtURL:temporaryDirectory.url backupItemName:nil options:0 resultingItemURL:nil error:&error];
-    
+    [self retry:3 delay:0.001 block:^(NSError **error) {
+        NSError *fileError;
+        [[NSFileManager defaultManager] replaceItemAtURL:self.url withItemAtURL:temporaryDirectory.url backupItemName:nil options:0 resultingItemURL:nil error:&fileError];
+        *error = fileError;
+    }];
     if([[NSFileManager defaultManager] fileExistsAtPath:temporaryDirectory.url.path]){
+        NSError *error;
         [[NSFileManager defaultManager] removeItemAtURL:temporaryDirectory.url error:&error];
     }
 }
 - (void)moveAllFilesToDestinationDirectory:(FTDirectory *)directory{
-    [self retry:3 delay:0.001 block:^(NSError **error) {
-        [[self files] enumerateObjectsUsingBlock:^(FTFile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSURL *destinationFileURL = [directory.url URLByAppendingPathComponent:obj.name];
-            [self retry:3 delay:0.0001 block:^(NSError **error) {
-                NSError *lastCriticalError;
-                [[NSFileManager defaultManager] moveItemAtURL:obj.url toURL:destinationFileURL error:&lastCriticalError];
-                *error = lastCriticalError;
-            }];
+    [[self files] enumerateObjectsUsingBlock:^(FTFile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSURL *destinationFileURL = [directory.url URLByAppendingPathComponent:obj.name];
+        [self retry:3 delay:0.001 block:^(NSError **error) {
+            NSError *lastCriticalError;
+            [[NSFileManager defaultManager] moveItemAtURL:obj.url toURL:destinationFileURL error:&lastCriticalError];
+            *error = lastCriticalError;
         }];
     }];
 }
 - (void)retry:(NSUInteger)times delay:(NSTimeInterval)delay block:(void(^)(NSError **error))block{
-    for (int i=0; i<times; i++) {
-        __autoreleasing NSError *error;
+    NSError *error;
+    int count = 0;
+    do {
+        count++;
         block(&error);
         if(error){
             [NSThread sleepForTimeInterval:delay];
-        }else{
-            return;
         }
-    }
+    } while (error!=nil&&count<times);
 }
 - (instancetype)cache{
     NSURL *cachesDirectoryURL = [[[NSFileManager defaultManager] URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask] firstObject];

@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSData *value;
 -(instancetype)initWithType:(uint16_t)type value:(NSData *)value;
 - (NSData *)serialize;
+- (NSData *)serialize:(UInt64)maxLength;
 @end
 
 NS_ASSUME_NONNULL_END

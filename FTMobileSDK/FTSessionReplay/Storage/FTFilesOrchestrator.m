@@ -134,7 +134,7 @@
 }
 
 - (void)deleteReadableFile:(nonnull id<FTReadableFile>)readableFile { 
-    
+    [readableFile deleteFile];
 }
 
 - (FTFile *)deleteFileIfItsObsolete:(FTFile *)file{

@@ -26,8 +26,7 @@
     FTTLV *versionTLV = [[FTTLV alloc]initWithType:DataStoreBlockTypeVersion value:typeData];
     FTTLV *dataTLV = [[FTTLV alloc]initWithType:DataStoreBlockTypeData value:data];
     NSMutableData *encoded = [[NSMutableData alloc]init];
-    
-    NSData *versionSerialize = [versionTLV serialize];
+    NSData *versionSerialize = [versionTLV serialize:sizeof(FTDataStoreKeyVersion)];
     if(versionSerialize){
         [encoded appendData:versionSerialize];
     }else{
