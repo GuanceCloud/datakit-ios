@@ -10,9 +10,11 @@
 #import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTWindowObserver,FTSRContext,FTTouchCircle;
+@class FTWindowObserver,FTSRContext,FTTouchCircle,FTSnapshotProcessor,FTResourceProcessor;
 @protocol FTWriter;
 @interface FTRecorder : NSObject
+@property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
+@property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer writer:(id<FTWriter>)writer;
 -(void)taskSnapShot:(FTSRContext *)context touches:(NSMutableArray <FTTouchCircle *> *)touches;
 @end

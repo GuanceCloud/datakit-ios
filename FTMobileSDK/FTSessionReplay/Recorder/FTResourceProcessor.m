@@ -14,12 +14,16 @@
 #import "FTResourceWriter.h"
 
 @interface FTResourceProcessor()
+@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, strong) id<FTResourcesWriting> resourceWriter;
 @property (nonatomic, strong) NSMutableSet<NSString *> *processedIdentifiers;
 @end
 @implementation FTResourceProcessor
--(instancetype)init{
+- (instancetype)initWithQueue:(dispatch_queue_t)queue resourceWriter:(id<FTResourcesWriting>)resourceWriter{
     self = [super init];
     if(self){
+        _queue = queue;
+        _resourceWriter = resourceWriter;
         _processedIdentifiers = [[NSMutableSet alloc]init];
     }
     return self;

@@ -262,4 +262,16 @@
     }
     return self;
 }
+-(instancetype)initWithData:(NSData *)data{
+    self = [super init];
+    if(self){
+        NSError *error;
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        _type = @"resource";
+        _appId = dict[@"appId"];
+        _identifier = dict[@"identifier"];
+        _data = dict[@"data"];
+    }
+    return self;
+}
 @end

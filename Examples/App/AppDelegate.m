@@ -77,7 +77,6 @@
         rumConfig.globalContext = @{@"track_id":trackid,
                                     @"static_tag":STATIC_TAG,
                                     @"dynamic_tag":dynamicTag};//eg.
-        [[FTRumSessionReplay sharedInstance] startWithPrivacy:FTSRPrivacyMaskNone];
         FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
         loggerConfig.enableCustomLog = YES;
         loggerConfig.enableLinkRumData = YES;
@@ -93,6 +92,13 @@
         [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
         [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
+        
+        FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
+        srConfig.privacy = FTSRPrivacyMaskNone;
+        srConfig.sampleRate = 100;
+        
+        [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];
+
     }
     // UI 测试
    

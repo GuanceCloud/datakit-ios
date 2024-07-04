@@ -22,9 +22,7 @@
 #import "FTResourceWriter.h"
 @interface FTRecorder()
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
-@property (nonatomic, strong) FTViewTreeSnapshotBuilder *viewSnapShot;
-@property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
-@property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
+@property (nonatomic, strong) FTViewTreeSnapshotBuilder *viewSnapShotBuilder;
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTRecorder
@@ -32,16 +30,13 @@
     self = [super init];
     if(self){
         _windowObserver = observer;
-        _viewSnapShot = [[FTViewTreeSnapshotBuilder alloc]init];
+        _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]init];
         _serialQueue = dispatch_queue_create("com.guance.SRWireframe", DISPATCH_QUEUE_SERIAL);
         _snapshotProcessor = [[FTSnapshotProcessor alloc]init];
         _snapshotProcessor.queue = _serialQueue;
         _snapshotProcessor.writer = writer;
-        _resourceProcessor = [[FTResourceProcessor alloc]init];
-        _resourceProcessor.queue = _serialQueue;
-        FTResourceWriter *resourceWriter = [[FTResourceWriter alloc]init];
-        resourceWriter.writer = writer;
-        _resourceProcessor.resourceWriter = resourceWriter;
+        FTResourceWriter *resourceWriter = [[FTResourceWriter alloc]initWithWriter:writer dataStore:nil];
+        _resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:_serialQueue resourceWriter:resourceWriter];
     }
     return self;
 }
@@ -52,7 +47,7 @@
         return;
     }
     // 1.采集 view snap shot
-    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShot takeSnapshot:rootView context:context];
+    FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootView context:context];
     
     [self.snapshotProcessor process:viewTreeSnapshot touches:touches];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];

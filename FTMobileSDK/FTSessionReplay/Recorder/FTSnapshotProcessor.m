@@ -95,6 +95,6 @@
     }else{
         self.recordsCountByViewID[key] = @(value);
     }
-    // TODO: 通知或代理实现
+    // TODO: 通知或代理实现与 RUM 同步 record count
 }
 @end

@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRResource,FTResourcesWriting;
 @class FTSRContext;
 @interface FTResourceProcessor : NSObject
-@property (nonatomic, strong) dispatch_queue_t queue;
-@property (nonatomic, strong) id<FTResourcesWriting> resourceWriter;
+
+- (instancetype)initWithQueue:(dispatch_queue_t)queue resourceWriter:(id<FTResourcesWriting>)resourceWriter;
 - (void)process:(NSArray<id<FTSRResource>> *)resources context:(FTSRContext *)context;
 @end
 

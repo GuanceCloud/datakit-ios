@@ -7,16 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-typedef NS_ENUM(NSUInteger,FTSRPrivacy){
-    FTSRPrivacyMaskNone,
-    FTSRPrivacyMaskOnlyInput,
-    FTSRPrivacyMaskAllText,
-};
+#import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTRumSessionReplay : NSObject
 + (instancetype)sharedInstance;
 
-- (void)startWithPrivacy:(FTSRPrivacy)privacy;
+- (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config;
 @end
 
 NS_ASSUME_NONNULL_END

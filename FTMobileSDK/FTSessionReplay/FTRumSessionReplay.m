@@ -7,30 +7,34 @@
 //
 
 #import "FTRumSessionReplay.h"
-#import "FTSessionReplayTouches.h"
 #import "FTLog.h"
-#import "FTCompression.h"
-#import "FTThreadDispatchManager.h"
-#import "FTSessionReplayUploader.h"
-#import "FTWindowObserver.h"
-#import "FTRecorder.h"
-#import "FTViewAttributes.h"
-#import "FTSRTextObfuscatingFactory.h"
-#import "FTConstants.h"
-#import "FTBaseInfoHandler.h"
+#import "FTResourcesFeature.h"
+#import "FTFeatureUpload.h"
 #import "FTFileWriter.h"
+#import "FTPerformancePreset.h"
+#import "FTFeatureStorage.h"
+#import "FTDirectory.h"
+#import "FTSessionReplayFeature.h"
+@interface FTFeatureStores : NSObject
+@property (nonatomic, strong) FTFeatureStorage *storage;
+@property (nonatomic, strong) FTFeatureUpload *upload;
+-(instancetype)initWithStorage:(FTFeatureStorage *)storage upload:(FTFeatureUpload *)upload;
+@end
+@implementation FTFeatureStores
+-(instancetype)initWithStorage:(FTFeatureStorage *)storage upload:(FTFeatureUpload *)upload{
+    self = [super init];
+    if(self){
+        _storage = storage;
+        _upload = upload;
+    }
+    return self;
+}
+@end
 @interface FTRumSessionReplay ()
-@property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, strong) FTSessionReplayTouches *touches;
-@property (nonatomic, assign) int sampleRate;
-@property (nonatomic, assign) BOOL isSampled;
-@property (nonatomic, strong) FTSessionReplayUploader *uploader;
-@property (nonatomic, strong) FTWindowObserver *windowObserver;
-@property (nonatomic, assign) FTSRPrivacy privacy;
-@property (nonatomic, strong) FTRecorder *windowRecorder;
-@property (nonatomic, strong) NSDictionary *lastRUMContext;
 @property (nonatomic, strong) dispatch_queue_t readWriteQueue;
-@property (nonatomic, strong) FTFileWriter *writer;
+@property (nonatomic, strong) FTDirectory *coreDirectory;
+@property (nonatomic, strong) FTPerformancePreset *performancePreset;
+@property (nonatomic, strong) NSMutableDictionary<NSString*,FTFeatureStores*>*stores;
 @end
 @implementation FTRumSessionReplay
 static FTRumSessionReplay *sharedInstance = nil;
@@ -44,74 +48,30 @@ static dispatch_once_t onceToken;
 -(instancetype)init{
     self = [super init];
     if(self){
-        _windowObserver = [[FTWindowObserver alloc]init];
-        _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
+        _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.guance"];
         _readWriteQueue = dispatch_queue_create("com.guance.file.readwrite", 0);
-        _sampleRate = 100;
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChange:) name:FTRumContextDidChangeNotification object:nil];
+        _performancePreset = [[FTPerformancePreset alloc]init];
     }
     return self;
 }
-- (void)startWithPrivacy:(FTSRPrivacy)privacy{
-    self.privacy = privacy;
-    [self start];
-}
-- (void)contextChange:(NSNotification *)notification{
-    NSDictionary *context = notification.userInfo;
-    if(self.lastRUMContext){
-        if(![context isEqualToDictionary:self.lastRUMContext]&& ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:self.lastRUMContext[FT_RUM_KEY_SESSION_ID]]){
-            BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-            if (isSampled) {
-                [self start];
-            } else {
-                [self stop];
-            }
-            _isSampled = isSampled;
-        }
-    }
-    self.lastRUMContext = context;
-}
--(FTRecorder *)windowRecorder{
-    if(!_windowRecorder){
-        _windowRecorder = [[FTRecorder alloc]initWithWindowObserver:_windowObserver writer:_writer];
-    }
-    
-    return _windowRecorder;
-}
--(void)start{
-    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(self.timer){
-            return;
-        }
-        __weak typeof(self) weakSelf = self;
-        self.timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-            [weakSelf captureNextRecord];
-        }];
-        [[NSRunLoop mainRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-    }];
-}
-- (void)stop{
-    [FTThreadDispatchManager performBlockDispatchMainAsync:^{
-        if(self.timer){
-            [self.timer invalidate];
-            self.timer = nil;
-        }
-    }];
-}
-- (void)captureNextRecord{
-    NSString *viewID = self.lastRUMContext[FT_KEY_VIEW_ID];
-    if (!viewID) {
+- (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
+    if(config.sampleRate<=0){
         return;
     }
-    FTSRContext *context = [[FTSRContext alloc]init];
-    context.privacy = [[FTSRTextObfuscatingFactory alloc]initWithPrivacy:self.privacy];
-    context.sessionID = self.lastRUMContext[FT_RUM_KEY_SESSION_ID];
-    context.viewID = self.lastRUMContext[FT_KEY_VIEW_ID];
-    context.applicationID = self.lastRUMContext[FT_APP_ID];
-    context.date = [NSDate date];
-    [self.windowRecorder taskSnapShot:context touches:[self.touches takeTouches]];
+    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
+    FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
+    [self registerFeature:resourcesFeature];
+    [self registerFeature:sessionReplayFeature];
 }
--(void)dealloc{
-    [self stop];
+- (void)registerFeature:(id<FTRemoteFeature>)feature{
+    FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];
+    if(directory){
+        FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
+        FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
+        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:2 performance:performancePreset];
+        FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
+        [self.stores setValue:store forKey:feature.name];
+    }
 }
+
 @end

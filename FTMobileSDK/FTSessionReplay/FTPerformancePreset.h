@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class FTPerformancePresetOverride;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTStoragePerformancePreset <NSObject>
 @property (nonatomic, assign) long long maxFileSize;
@@ -41,8 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval maxUploadDelay;
 @property (nonatomic, assign) double uploadDelayChangeRate;
 
-// TODO: 上传频率，单次上传个数
 -(instancetype)initWithMeanFileAge:(NSTimeInterval)meanFileAge minUploadDelay:(NSTimeInterval)minUploadDelay;
+- (FTPerformancePreset *)updateWithOverride:(FTPerformancePresetOverride *)overridePreset;
 @end
 
 NS_ASSUME_NONNULL_END
