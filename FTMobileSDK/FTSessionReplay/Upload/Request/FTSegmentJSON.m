@@ -36,6 +36,15 @@
     }
     return self;
 }
+- (void)mergeAnother:(FTSegmentJSON *)another{
+    NSMutableArray *records = [NSMutableArray arrayWithArray:_records];
+    [records addObjectsFromArray:another.records];
+    self.records = records;
+    _start = MIN(_start, another.start);
+    _end = MAX(_end, another.end);
+    _recordsCount = _recordsCount + another.recordsCount;
+    _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
+}
 - (NSDictionary *)toJSONODict{
     return @{FT_RUM_KEY_SESSION_ID:self.sessionID,
              FT_KEY_VIEW_ID:self.viewID,

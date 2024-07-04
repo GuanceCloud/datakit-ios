@@ -15,7 +15,7 @@
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
 @property (nonatomic, strong) NSDictionary *parameters;
-@property (nonatomic, strong) NSArray *segments;
+@property (nonatomic, strong) NSArray<FTSegmentJSON*> *segments;
 @end
 @implementation FTSegmentRequest
 -(instancetype)init{
@@ -32,8 +32,30 @@
     return  [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
 }
 - (void)requestWithEvent:(NSArray *)event parameters:(NSDictionary *)parameters{
-    self.segments = event;
+    NSMutableArray *array = [NSMutableArray new];
+    for (NSData *data in event) {
+        FTSegmentJSON *segment = [[FTSegmentJSON alloc]initWithData:data source:@"ios"];
+        [array addObject:segment];
+    }
+    self.segments = array;
     self.parameters = parameters;
+}
+- (void)mergeSegments{
+    NSDictionary<NSString*,NSNumber*> *indexes = [NSDictionary new];
+    NSMutableArray *segments = [NSMutableArray array];
+    for (int i=0; i<self.segments.count; i++) {
+        FTSegmentJSON *segment = self.segments[i];
+        if(indexes[segment.viewID] != nil){
+            int idx = [indexes[segment.viewID] intValue];
+            FTSegmentJSON *current = segments[idx];
+            [current mergeAnother:segment];
+            segments[idx] = current;
+        }else{
+            [indexes setValue:@(i) forKey:segment.viewID];
+            [segments addObject:segment];
+        }
+    }
+    self.segments = segments;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     NSString *date =[[NSDate date] ft_stringWithGMTFormat];
@@ -46,7 +68,7 @@
     if(self.multipartFormBody && self.segments){
         NSMutableArray *segmentsArray = [NSMutableArray new];
         for (int i=0; i<self.segments.count; i++) {
-            FTSegmentJSON *segment = [[FTSegmentJSON alloc]initWithData:self.segments[i] source:@"ios"];
+            FTSegmentJSON *segment = self.segments[i];
             NSMutableDictionary *segmentJson = [[segment toJSONODict] mutableCopy];
             NSError *error;
             NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];

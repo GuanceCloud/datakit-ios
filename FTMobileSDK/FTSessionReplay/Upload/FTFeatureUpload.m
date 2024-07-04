@@ -1,12 +1,12 @@
 //
-//  FTSessionReplayUploader.m
+//  FTFeatureUpload.m
 //  FTMobileAgent
 //
 //  Created by hulilei on 2023/1/11.
 //  Copyright © 2023 DataFlux-cn. All rights reserved.
 //
 
-#import "FTSessionReplayUploader.h"
+#import "FTFeatureUpload.h"
 #import "FTLog+Private.h"
 #import "FTNetworkManager.h"
 #import "FTResourceRequest.h"
@@ -15,11 +15,13 @@
 #import "FTFeatureRequestBuilder.h"
 #import "FTPerformancePreset.h"
 #import "FTDataUploadDelay.h"
-
-@interface FTSessionReplayUploader()
+#import <pthread.h>
+@interface FTFeatureUpload(){
+    pthread_rwlock_t _readWorkLock;
+    pthread_rwlock_t _uploadWorkLock;
+}
 @property (nonatomic, strong) FTNetworkManager *networkManager;
 @property (nonatomic, strong) dispatch_queue_t queue;
-// TODO:readwrite lock
 @property (nonatomic, strong) dispatch_block_t readWork;
 @property (nonatomic, strong) dispatch_block_t uploadWork;
 @property (nonatomic, strong) id<FTReader> fileReader;
@@ -27,7 +29,10 @@
 @property (nonatomic, strong) FTPerformancePreset *performance;
 @property (nonatomic, strong) FTDataUploadDelay *delay;
 @end
-@implementation FTSessionReplayUploader
+@implementation FTFeatureUpload
+@synthesize readWork = _readWork;
+@synthesize uploadWork = _uploadWork;
+
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
@@ -37,6 +42,8 @@
     if(self){
         NSString *serialLabel = [NSString stringWithFormat:@"com.guance.%@-upload", featureName];
         _queue = dispatch_queue_create([serialLabel UTF8String], 0);
+        pthread_rwlock_init(&_readWorkLock, NULL);
+        pthread_rwlock_init(&_uploadWorkLock, NULL);
         _fileReader = fileReader;
         _requestBuilder = requestBuilder;
         _performance = performance;
@@ -48,7 +55,7 @@
             if (!strongSelf) {
                 return;
             }
-            //上传条件判断：电池、网络
+            //TODO:上传条件判断：电池、省点模式、网络
             
             //读取上传文件
             NSArray<id <FTReadableFile>> *files = [strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload];
@@ -59,10 +66,35 @@
                 [self uploadFile:files parameters:@{}];
             }
         };
-        _readWork = readWorkItem;
-        dispatch_async(_queue, _readWork);
+        self.readWork = readWorkItem;
+        dispatch_async(_queue, readWorkItem);
     }
     return self;
+}
+#pragma mark ========== block_item readwrite lock ==========
+-(void)setReadWork:(dispatch_block_t)readWork{
+    pthread_rwlock_wrlock(&_readWorkLock);
+    _readWork = readWork;
+    pthread_rwlock_unlock(&_readWorkLock);
+}
+-(dispatch_block_t)readWork{
+    dispatch_block_t block_t;
+    pthread_rwlock_rdlock(&_readWorkLock);
+    block_t = _readWork;
+    pthread_rwlock_unlock(&_readWorkLock);
+    return block_t;
+}
+-(void)setUploadWork:(dispatch_block_t)uploadWork{
+    pthread_rwlock_wrlock(&_uploadWorkLock);
+    _uploadWork = uploadWork;
+    pthread_rwlock_unlock(&_uploadWorkLock);
+}
+-(dispatch_block_t)uploadWork{
+    dispatch_block_t block_t;
+    pthread_rwlock_rdlock(&_uploadWorkLock);
+    block_t = _uploadWork;
+    pthread_rwlock_unlock(&_uploadWorkLock);
+    return block_t;
 }
 - (void)uploadFile:(NSArray<id<FTReadableFile>>*)files parameters:(NSDictionary *)parameters{
     __weak typeof(self) weakSelf = self;
@@ -81,7 +113,15 @@
         
         FTBatch *batch = [strongSelf.fileReader readBatch:file];
         if(batch){
-            [strongSelf flushWithEvents:batch.events parameters:parameters];
+            if([strongSelf flushWithEvents:batch.events parameters:parameters]){
+                if(mutableFiles.count == 0){
+                    [self.delay decrease];
+                }
+                [self.fileReader markBatchAsRead:batch];
+            }else{
+                [self.delay increase];
+                [strongSelf scheduleNextCycle];
+            }
         }
         if(mutableFiles.count == 0){
             [strongSelf scheduleNextCycle];
@@ -101,7 +141,7 @@
     @try {
         FTInnerLogDebug(@"-----开始上传 session replay-----");
         __block BOOL success = NO;
-        dispatch_semaphore_t  flushSemaphore = dispatch_semaphore_create(0);
+        dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
         [self.requestBuilder requestWithEvent:events parameters:parameters];
         [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
@@ -129,8 +169,14 @@
 - (void)cancelSynchronously{
     __weak typeof(self) weakSelf = self;
     dispatch_sync(self.queue, ^{
-        if(weakSelf.uploadWork) weakSelf.uploadWork = nil;
-        if(weakSelf.readWork) weakSelf.readWork = nil;
+        if(weakSelf.uploadWork){
+            dispatch_block_cancel(weakSelf.uploadWork);
+            weakSelf.uploadWork = nil;
+        }
+        if(weakSelf.readWork){
+            dispatch_block_cancel(weakSelf.readWork);
+            weakSelf.readWork = nil;
+        }
     });
 }
 @end

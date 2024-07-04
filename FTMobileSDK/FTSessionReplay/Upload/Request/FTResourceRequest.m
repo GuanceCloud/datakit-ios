@@ -12,9 +12,9 @@
 #import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
 #import "FTConstants.h"
-
+#import "FTSRRecord.h"
 @interface FTResourceRequest()
-@property (nonatomic, strong) NSArray *resources;
+@property (nonatomic, strong) NSArray<FTEnrichedResource *> *resources;
 @property (nonatomic, strong) NSDictionary *parameters;
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
 @end
@@ -33,8 +33,13 @@
     return [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
 }
 -(void)requestWithEvent:(NSArray *)event parameters:(NSDictionary *)parameters{
-    self.resources = event;
+    NSMutableArray *resources = [NSMutableArray new];
+    for (NSData *data in event) {
+        FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
+        [resources addObject:resource];
+    }
     self.parameters = parameters;
+    self.resources = resources;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     NSString *date =[[NSDate date] ft_stringWithGMTFormat];
@@ -47,14 +52,13 @@
     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
     [mutableRequest setValue:@"zh-CN" forHTTPHeaderField:@"Accept-Language"];
     if(self.multipartFormBody && self.resources){
-        NSDictionary *resource;
-        NSEnumerator *enumerator = self.resources.objectEnumerator;
-        while ((resource = enumerator.nextObject)!=nil) {
-            [self.multipartFormBody addFormData:@"image" filename:resource[@"identifier"] data:resource[@"data"] mimeType:@"image/png"];
+        for (FTEnrichedResource *resource in self.resources) {
+            [self.multipartFormBody addFormData:@"image" filename:resource.identifier data:resource.data mimeType:@"image/png"];
         }
     }
-    // TODO
-    NSDictionary *context = @{FT_APP_ID:self.resources[0][@"applicationID"]};
+    NSDictionary *context = @{FT_APP_ID:self.resources[0].appId,
+                              @"type":self.resources[0].type
+    };
     NSError *error;
     NSData *data = [NSJSONSerialization dataWithJSONObject:context options:0 error:&error];
     [self.multipartFormBody addFormData:@"event"

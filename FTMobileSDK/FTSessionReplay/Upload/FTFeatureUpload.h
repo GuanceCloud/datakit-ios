@@ -1,5 +1,5 @@
 //
-//  FTSessionReplayUploader.h
+//  FTFeatureUpload.h
 //  FTMobileAgent
 //
 //  Created by hulilei on 2023/1/11.
@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTReader,FTFeatureRequestBuilder;
 @class FTPerformancePreset;
-@interface FTSessionReplayUploader : NSObject
+@interface FTFeatureUpload : NSObject
 @property (nonatomic, assign) int maxBatchesPerUpload;
 @property (nonatomic, strong) NSDictionary *baseProperty;
 -(instancetype)initWithFeatureName:(NSString *)featureName
