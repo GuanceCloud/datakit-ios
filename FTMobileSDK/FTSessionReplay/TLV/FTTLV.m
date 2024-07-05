@@ -26,7 +26,7 @@ NSUInteger const FT_MAX_DATA_LENGTH = 10*1024*1024;
     return [self serialize:FT_MAX_DATA_LENGTH];
 }
 -(NSData *)serialize:(UInt64)maxLength{
-    if(_value.length<maxLength){
+    if(_value.length<=maxLength){
         NSMutableData *data = [NSMutableData data];
         NSData *typeData = [NSData dataWithBytes:&_type length:sizeof(_type)];
         int32_t length = (int32_t)_value.length;

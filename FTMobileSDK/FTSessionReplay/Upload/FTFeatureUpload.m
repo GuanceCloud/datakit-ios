@@ -49,6 +49,7 @@
         _performance = performance;
         _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
         _maxBatchesPerUpload = maxBatchesPerUpload;
+        _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:30];
         __weak typeof(self) weakSelf = self;
         dispatch_block_t readWorkItem = ^{
             __strong __typeof(weakSelf) strongSelf = weakSelf;

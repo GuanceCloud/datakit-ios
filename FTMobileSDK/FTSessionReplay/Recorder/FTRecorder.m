@@ -26,17 +26,13 @@
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTRecorder
--(instancetype)initWithWindowObserver:(FTWindowObserver *)observer writer:(id<FTWriter>)writer{
+-(instancetype)initWithWindowObserver:(FTWindowObserver *)observer snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor resourceProcessor:(FTResourceProcessor *)resourceProcessor{
     self = [super init];
     if(self){
         _windowObserver = observer;
         _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]init];
-        _serialQueue = dispatch_queue_create("com.guance.SRWireframe", DISPATCH_QUEUE_SERIAL);
-        _snapshotProcessor = [[FTSnapshotProcessor alloc]init];
-        _snapshotProcessor.queue = _serialQueue;
-        _snapshotProcessor.writer = writer;
-        FTResourceWriter *resourceWriter = [[FTResourceWriter alloc]initWithWriter:writer dataStore:nil];
-        _resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:_serialQueue resourceWriter:resourceWriter];
+        _snapshotProcessor = snapshotProcessor;
+        _resourceProcessor = resourceProcessor;
     }
     return self;
 }

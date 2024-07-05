@@ -23,7 +23,7 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
 @end
 @implementation FTResourceWriter
 
-- (instancetype)initWithWriter:(id<FTWriter>)writer dataStore:(FTFeatureDataStore *)dataStore{
+- (instancetype)initWithWriter:(id<FTWriter>)writer dataStore:(id<FTDataStore>)dataStore{
     self = [super init];
     if(self){
         _writer = writer;

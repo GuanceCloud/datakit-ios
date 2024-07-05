@@ -15,6 +15,7 @@
 #import "FTFeatureStorage.h"
 #import "FTDirectory.h"
 #import "FTSessionReplayFeature.h"
+#import "FTFeatureDataStore.h"
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;
@@ -35,6 +36,8 @@
 @property (nonatomic, strong) FTDirectory *coreDirectory;
 @property (nonatomic, strong) FTPerformancePreset *performancePreset;
 @property (nonatomic, strong) NSMutableDictionary<NSString*,FTFeatureStores*>*stores;
+@property (nonatomic, strong) NSMutableDictionary<NSString*,id<FTRemoteFeature>>*features;
+@property (nonatomic, copy) NSString *source;
 @end
 @implementation FTRumSessionReplay
 static FTRumSessionReplay *sharedInstance = nil;
@@ -51,6 +54,9 @@ static dispatch_once_t onceToken;
         _coreDirectory = [[FTDirectory alloc]initWithSubdirectoryPath:@"com.guance"];
         _readWriteQueue = dispatch_queue_create("com.guance.file.readwrite", 0);
         _performancePreset = [[FTPerformancePreset alloc]init];
+        _stores = [NSMutableDictionary new];
+        _features = [NSMutableDictionary new];
+        _source = @"ios";
     }
     return self;
 }
@@ -60,18 +66,26 @@ static dispatch_once_t onceToken;
     }
     FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
-    [self registerFeature:resourcesFeature];
-    [self registerFeature:sessionReplayFeature];
+    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
+    FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
+    
+    FTFeatureDataStore *dataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
+    [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:resourceStore.storage.writer resourceDataStore:dataStore];
+    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
+    [self.stores setValue:srStore forKey:sessionReplayFeature.name];
+    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
+    [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
 }
-- (void)registerFeature:(id<FTRemoteFeature>)feature{
+- (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:2 performance:performancePreset];
+        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:10 performance:performancePreset];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
-        [self.stores setValue:store forKey:feature.name];
+        return store;
     }
+    return nil;
 }
 
 @end

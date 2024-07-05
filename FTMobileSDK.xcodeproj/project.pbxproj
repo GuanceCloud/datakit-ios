@@ -560,6 +560,8 @@
 		17E2FC462C369AE800F3F173 /* FTResourcesFeature.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E2FC432C369AE800F3F173 /* FTResourcesFeature.h */; };
 		17E2FC492C36A23B00F3F173 /* FTSessionReplayFeature.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E2FC482C36A23B00F3F173 /* FTSessionReplayFeature.m */; };
 		17E2FC4A2C36A23B00F3F173 /* FTSessionReplayFeature.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E2FC472C36A23B00F3F173 /* FTSessionReplayFeature.h */; };
+		17E2FC4D2C37DC3F00F3F173 /* FTUploadConditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E2FC4C2C37DC3F00F3F173 /* FTUploadConditions.m */; };
+		17E2FC4E2C37DC3F00F3F173 /* FTUploadConditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E2FC4B2C37DC3F00F3F173 /* FTUploadConditions.h */; };
 		17E32B972BE0FE5900F4685C /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32B962BE0FE5900F4685C /* FTFatalErrorContext.m */; };
 		17E32B982BE0FE5900F4685C /* FTFatalErrorContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E32B952BE0FE5900F4685C /* FTFatalErrorContext.h */; };
 		17E32B992BE0FE5900F4685C /* FTFatalErrorContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E32B962BE0FE5900F4685C /* FTFatalErrorContext.m */; };
@@ -929,6 +931,8 @@
 		17E2FC442C369AE800F3F173 /* FTResourcesFeature.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourcesFeature.m; sourceTree = "<group>"; };
 		17E2FC472C36A23B00F3F173 /* FTSessionReplayFeature.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayFeature.h; sourceTree = "<group>"; };
 		17E2FC482C36A23B00F3F173 /* FTSessionReplayFeature.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayFeature.m; sourceTree = "<group>"; };
+		17E2FC4B2C37DC3F00F3F173 /* FTUploadConditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUploadConditions.h; sourceTree = "<group>"; };
+		17E2FC4C2C37DC3F00F3F173 /* FTUploadConditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUploadConditions.m; sourceTree = "<group>"; };
 		17E32B952BE0FE5900F4685C /* FTFatalErrorContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTFatalErrorContext.h; sourceTree = "<group>"; };
 		17E32B962BE0FE5900F4685C /* FTFatalErrorContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTFatalErrorContext.m; sourceTree = "<group>"; };
 		17E32B9E2BEC70E700F4685C /* FTErrorMonitorInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTErrorMonitorInfo.h; sourceTree = "<group>"; };
@@ -1179,6 +1183,8 @@
 				170018C82C186B8600D39A2A /* FTFeatureUpload.m */,
 				17132DD02C2EBC37009DFE8F /* FTDataUploadDelay.h */,
 				17132DD12C2EBC37009DFE8F /* FTDataUploadDelay.m */,
+				17E2FC4B2C37DC3F00F3F173 /* FTUploadConditions.h */,
+				17E2FC4C2C37DC3F00F3F173 /* FTUploadConditions.m */,
 			);
 			path = Upload;
 			sourceTree = "<group>";
@@ -2058,6 +2064,7 @@
 				17E4CB4729CD42DA005C2D99 /* FTJSONUtil.h in Headers */,
 				1763BDAA29DFF04F009EE026 /* ZY_FMDatabase.h in Headers */,
 				17400E922B4E41E100ACBA6C /* FTMachException.h in Headers */,
+				17E2FC4E2C37DC3F00F3F173 /* FTUploadConditions.h in Headers */,
 				170019082C186B8600D39A2A /* FTTouchCircle.h in Headers */,
 				17E4CBE329CD42E4005C2D99 /* FTSessionTaskHandler.h in Headers */,
 				17AC173B2B98525B003E18A6 /* FTLogMessage.h in Headers */,
@@ -2541,6 +2548,7 @@
 				17C46E562C257B550067FE62 /* FTFile.m in Sources */,
 				170019012C186B8600D39A2A /* FTSystemColors.m in Sources */,
 				170018DB2C186B8600D39A2A /* FTUISegmentRecorder.m in Sources */,
+				17E2FC4D2C37DC3F00F3F173 /* FTUploadConditions.m in Sources */,
 				17E4CC4429CD42E4005C2D99 /* FTCrashMonitor.m in Sources */,
 				17C46E632C293ED20067FE62 /* FTTLVReader.m in Sources */,
 				170019052C186B8600D39A2A /* UIView+FTSR.m in Sources */,

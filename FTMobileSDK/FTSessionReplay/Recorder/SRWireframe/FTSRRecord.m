@@ -11,6 +11,7 @@
 #import "FTViewAttributes.h"
 #import "FTTouchCircle.h"
 #import "NSDate+FTUtil.h"
+#import "FTLog+Private.h"
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [self initWithType:0 timestamp:timestamp];
@@ -265,13 +266,32 @@
 -(instancetype)initWithData:(NSData *)data{
     self = [super init];
     if(self){
-        NSError *error;
-        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
         _type = @"resource";
         _appId = dict[@"appId"];
         _identifier = dict[@"identifier"];
         _data = dict[@"data"];
     }
     return self;
+}
+// 字典 Value 为 NSData 类型，使用 NSKeyedArchiver 将N SDictionary 转换成 NSData
+-(NSData *)toJSONData{
+    NSData* jsonData = nil;
+    @try {
+        NSDictionary* dict = [self toDictionary];
+        if (@available(iOS 11.0, *)) {
+            NSError *error;
+            jsonData = [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:&error];
+        } else {
+            jsonData = [NSKeyedArchiver archivedDataWithRootObject:dict];
+
+        }
+    }
+    @catch (NSException *exception) {
+        FTInnerLogError(@"EXCEPTION: %@", exception.description);
+        return nil;
+    }
+
+    return jsonData;
 }
 @end

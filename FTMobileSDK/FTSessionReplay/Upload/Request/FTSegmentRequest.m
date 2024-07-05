@@ -38,10 +38,11 @@
         [array addObject:segment];
     }
     self.segments = array;
+    [self mergeSegments];
     self.parameters = parameters;
 }
 - (void)mergeSegments{
-    NSDictionary<NSString*,NSNumber*> *indexes = [NSDictionary new];
+    NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
     NSMutableArray *segments = [NSMutableArray array];
     for (int i=0; i<self.segments.count; i++) {
         FTSegmentJSON *segment = self.segments[i];
@@ -74,13 +75,15 @@
             NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];
             NSMutableData *mutableData = [NSMutableData dataWithData:data];
             [mutableData appendData:[self.multipartFormBody newlineByte]];
-            NSData *compress = [FTCompression compress:mutableData];
-            [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"file%d",i] data:compress mimeType:@"application/octet-stream"];
+//            NSData *compress = [FTCompression compress:mutableData];
+            [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%@-%lld",segment.sessionID,segment.viewID,segment.start] data:data mimeType:@"application/octet-stream"];
             segmentJson[@"records"] = nil;
             segmentJson[@"raw_segment_size"] = @(data.length);
-            segmentJson[@"compressed_segment_size"] = @(compress.length);
+//            segmentJson[@"compressed_segment_size"] = @(compress.length);
+            [segmentJson addEntriesFromDictionary:self.parameters];
             [segmentsArray addObject:segmentJson];
         }
+        
         NSError *error;
         NSData *data = [NSJSONSerialization dataWithJSONObject:segmentsArray options:0 error:&error];
         [self.multipartFormBody addFormData:@"event" 

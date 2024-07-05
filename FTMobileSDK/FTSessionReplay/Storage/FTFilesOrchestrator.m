@@ -51,7 +51,7 @@
 - (id<FTWritableFile>)createNewWritableFile:(long long)writeSize{
     [self purgeFilesDirectoryIfNeeded];
     NSTimeInterval current = [[NSDate date] timeIntervalSinceReferenceDate];
-    NSString *name = [NSString stringWithFormat:@"%f",round(current*1000)];
+    NSString *name = [NSString stringWithFormat:@"%.f",round(current*1000)];
     FTFile *file = [self.directory createFile:name];
     if(file){
         self.lastWritableFileName = name;
@@ -122,6 +122,9 @@
     }
     __block NSUInteger index = 0;
     __weak typeof(self) weakSelf = self;
+    if(readableArray.count == 0){
+        return nil;
+    }
     [readableArray enumerateObjectsUsingBlock:^(FTFile * obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:obj.fileCreationDate];
         if(fileAge < weakSelf.performance.minFileAgeForRead){

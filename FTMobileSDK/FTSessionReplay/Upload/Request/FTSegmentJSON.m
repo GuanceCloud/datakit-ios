@@ -54,6 +54,7 @@
              @"has_full_snapshot":self.hasFullSnapshot?@"true":@"false",
              @"records_count":@(self.recordsCount),
              @"records":self.records,
+             @"source":self.source,
     };
 }
 @end

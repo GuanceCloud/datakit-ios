@@ -10,15 +10,15 @@
 #import "FTFeature.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol FTRemoteFeature,FTWriter;
+@protocol FTRemoteFeature,FTWriter,FTDataStore;
 @class FTSessionReplayConfig;
 @interface FTSessionReplayFeature : NSObject<FTRemoteFeature>
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, strong) PerformancePresetOverride *performanceOverride;
+@property (nonatomic, strong) FTPerformancePresetOverride *performanceOverride;
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
-@property (nonatomic, strong) id<FTWriter> writer;
-@property ()
+
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config;
+-(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -18,6 +18,9 @@
 #import "FTWindowObserver.h"
 #import "FTSessionReplayConfig.h"
 #import "FTTLV.h"
+#import "FTResourceProcessor.h"
+#import "FTResourceWriter.h"
+#import "FTSnapshotProcessor.h"
 @interface FTSessionReplayFeature()
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *lastRUMContext;
@@ -27,6 +30,7 @@
 @property (nonatomic, assign) int sampleRate;
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
+@property (nonatomic, strong) dispatch_queue_t processorsQueue;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -34,6 +38,7 @@
     if(self){
         _name = @"session-replay";
         _privacy = config.privacy;
+        _processorsQueue = dispatch_queue_create("com.guance.session-replay.processors", 0);
         _sampleRate = config.sampleRate;
         _requestBuilder = [[FTSegmentRequest alloc]init];
         FTPerformancePresetOverride *performancePresetOverride = [[FTPerformancePresetOverride alloc]initWithMeanFileAge:2 minUploadDelay:0.6];
@@ -48,12 +53,14 @@
     }
     return self;
 }
--(FTRecorder *)windowRecorder{
-    if(!_windowRecorder){
-        _windowRecorder = [[FTRecorder alloc]initWithWindowObserver:_windowObserver writer:_writer];
-    }
-    
-    return _windowRecorder;
+
+-(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
+    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
+    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+    FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:resourceProcessor];
+    self.windowRecorder = windowRecorder;
+    [self start];
 }
 -(void)start{
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{

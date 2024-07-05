@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTRemoteFeature;
 @interface FTResourcesFeature : NSObject<FTRemoteFeature>
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, strong) PerformancePresetOverride *performanceOverride;
+@property (nonatomic, strong) FTPerformancePresetOverride *performanceOverride;
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
 @end
 

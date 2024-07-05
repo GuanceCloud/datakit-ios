@@ -18,6 +18,8 @@
 #import "FTNodesFlattener.h"
 #import "FTFileWriter.h"
 @interface FTSnapshotProcessor()
+@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, strong) id<FTWriter> writer;
 /// 记录上一页面基本数据，用来判断是否是新页面
 @property (nonatomic, strong) FTViewTreeSnapshot *lastSnapshot;
 /// 用来比较增量数据
@@ -26,9 +28,11 @@
 @property (nonatomic, strong) NSMutableDictionary *recordsCountByViewID;
 @end
 @implementation FTSnapshotProcessor
--(instancetype)init{
+-(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer{
     self = [super init];
     if(self){
+        _queue = queue;
+        _writer = writer;
         _flattener = [[FTNodesFlattener alloc]init];
     }
     return self;
@@ -81,7 +85,7 @@
     if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
         [self trackRecord:fullRecord.viewID value:fullRecord.records.count];
-        [self.writer write:fullRecord];        
+        [self.writer write:fullRecord];    
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;
