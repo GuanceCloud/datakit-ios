@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<FTReadableFile> file;
 -(instancetype)initWithFile:(id<FTReadableFile>)file datas:(NSArray<FTTLV*> *)datas;
 - (NSArray *)events;
+- (NSData *)serialize;
 @end
 @protocol FTReader <NSObject>
 - (NSArray<id<FTReadableFile>>*)readFiles:(int)limit;

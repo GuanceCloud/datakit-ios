@@ -64,7 +64,7 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
     NSMutableSet *unknownResources = [NSMutableSet new];
     [resources enumerateObjectsUsingBlock:^(FTEnrichedResource * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if(![self.knownIdentifiers containsObject:obj.identifier]){
-            [self.writer write:obj];
+            [self.writer write:[obj toJSONData]];
             [unknownResources addObject:obj.identifier];
         }
     }];

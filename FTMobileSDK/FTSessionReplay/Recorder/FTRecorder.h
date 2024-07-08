@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTRecorder : NSObject
 @property (nonatomic, strong) FTSnapshotProcessor *snapshotProcessor;
 @property (nonatomic, strong) FTResourceProcessor *resourceProcessor;
--(instancetype)initWithWindowObserver:(FTWindowObserver *)observer snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor resourceProcessor:(FTResourceProcessor *)resourceProcessor;
+-(instancetype)initWithWindowObserver:(FTWindowObserver *)observer snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor resourceProcessor:(nullable FTResourceProcessor *)resourceProcessor;
 -(void)taskSnapShot:(FTSRContext *)context touches:(NSMutableArray <FTTouchCircle *> *)touches;
 @end
 

@@ -110,6 +110,7 @@ static NSString * const FT_VERSION = @"version";
     if (self){
         _version = version;
         _env = env;
+        _sessionReplaySource = @"ios";
         _service = service;
         _mobileDevice = [[MobileDevice alloc]init];
         _context = globalContext;
@@ -148,6 +149,16 @@ static NSString * const FT_VERSION = @"version";
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:self.env forKey:FT_ENV];
+    return tag;
+}
+- (NSDictionary *)sessionReplayProperty{
+    NSMutableDictionary *tag = [NSMutableDictionary new];
+    [tag setValue:self.version forKey:@"version"];
+    [tag setValue:self.env forKey:FT_ENV];
+    [tag setValue:FT_IOS_SDK_NAME forKey:FT_SDK_NAME];
+    [tag setValue:self.service forKey:FT_KEY_SERVICE];
+    [tag setValue:self.sdkVersion forKey:FT_SDK_VERSION];
+    [tag setValue:self.sessionReplaySource forKey:FT_KEY_SOURCE];
     return tag;
 }
 - (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{

@@ -79,6 +79,7 @@
         [fields addEntriesFromDictionary:self.resourceProperty];
     }
     [fields addEntriesFromDictionary:data.fields];
+    [fields setValue:@(self.dependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     [fields setValue:[self.time ft_nanosecondTimeIntervalToDate:data.time] forKey:FT_DURATION];
     if(model.metrics){
         [fields setValue:model.metrics.resource_ttfb forKey:FT_KEY_RESOURCE_TTFB];

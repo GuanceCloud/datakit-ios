@@ -18,7 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
                         fileReader:(id<FTReader>)fileReader
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
-                       performance:(FTPerformancePreset *)performance;
+                       performance:(FTPerformancePreset *)performance
+                           context:(NSDictionary *)context;
 
 @end
 

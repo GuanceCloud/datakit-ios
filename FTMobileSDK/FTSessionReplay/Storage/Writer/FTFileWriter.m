@@ -24,9 +24,9 @@
     }
     return self;
 }
--(void)write:(id<FTAbstractJSONModelProtocol>)datas{
+-(void)write:(NSData *)datas{
     dispatch_async(self.queue, ^{
-        NSData *data = [datas toJSONData];
+        NSData *data = datas;
         FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
         data = [tlv serialize];
         long long fileSize = data.length;

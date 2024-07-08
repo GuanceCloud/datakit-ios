@@ -285,4 +285,7 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [[FTLogger sharedInstance] syncProcess];
 }
+- (void)additionalConfigurationWithSource:(NSString *)source{
+    self.presetProperty.sessionReplaySource = source;
+}
 @end

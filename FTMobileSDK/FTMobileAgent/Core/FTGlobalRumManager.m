@@ -75,6 +75,16 @@ static dispatch_once_t onceToken;
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionReplayDidChange:) name:FTSRHasReplayDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionReplayDidChange:) name:FTSRRecordsCountByViewIDChangeNotification object:nil];
+}
+- (void)sessionReplayDidChange:(NSNotification *)notification{
+    NSDictionary *context = notification.userInfo;
+    if(notification.name == FTSRHasReplayDidChangeNotification){
+        self.dependencies.sessionHasReplay = [context[FT_SESSION_HAS_REPLAY] boolValue];
+    }else{
+        self.dependencies.sessionReplayStats = context;
+    }
 }
 #pragma mark ========== jsBridge ==========
 -(void)ftAddScriptMessageHandlerWithWebView:(WKWebView *)webView{
@@ -168,6 +178,8 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:FTSRHasReplayDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:FTSRRecordsCountByViewIDChangeNotification object:nil];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

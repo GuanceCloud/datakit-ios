@@ -139,6 +139,12 @@ extern NSString * const FT_KEY_ACTION_LONG_TASK_COUNT;
 extern NSString * const FT_KEY_ACTION_RESOURCE_COUNT;
 extern NSString * const FT_KEY_ACTION_ERROR_COUNT;
 
+#pragma mark ========== Session Replay ==========
+extern NSString * const FT_SESSION_HAS_REPLAY;
+extern NSString * const FT_SESSION_REPLAY_STATS;
+extern NSString * const FT_RECORDS_COUNT;
+extern NSString * const FT_SEGMENTS_COUNT;
+extern NSString * const FT_SEGMENTS_TOTAL_RAW_SIZE;
 #pragma mark ========== logging ==========
 extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_CONTENT;
@@ -180,3 +186,7 @@ extern NSUInteger const MXRMonitorRunloopStandstillCount;
 
 FOUNDATION_EXPORT const NSNotificationName FTRumContextDidChangeNotification
     NS_SWIFT_NAME(RumContextDidChange);
+FOUNDATION_EXPORT const NSNotificationName FTSRHasReplayDidChangeNotification
+    NS_SWIFT_NAME(SRHasReplayDidChange);
+FOUNDATION_EXPORT const NSNotificationName FTSRRecordsCountByViewIDChangeNotification
+    NS_SWIFT_NAME(SRRecordsCountByViewIDChange);

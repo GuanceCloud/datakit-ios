@@ -11,8 +11,9 @@
 #import <Foundation/Foundation.h>
 @protocol FTRequestProtocol;
 @protocol FTFeatureRequestBuilder <NSObject,FTRequestProtocol>
-
-- (void)requestWithEvent:(NSArray *)event parameters:(NSDictionary *)parameters;
+@optional
+- (void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters;
+- (void)requestWithEvent:(NSData *)event parameters:(NSDictionary *)parameters;
 
 @end
 #endif /* FTFeatureRequestBuilder_h */

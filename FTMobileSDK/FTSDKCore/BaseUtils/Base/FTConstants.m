@@ -121,7 +121,12 @@ NSString * const FT_KEY_ACTION_TYPE_CLICK = @"click";
 NSString * const FT_LAUNCH_HOT = @"launch_hot";
 NSString * const FT_LAUNCH_COLD = @"launch_cold";
 NSString * const FT_LAUNCH_WARM = @"launch_warm";
-
+#pragma mark ========== Session Replay ==========
+NSString * const FT_SESSION_HAS_REPLAY = @"session_has_replay";
+NSString * const FT_SESSION_REPLAY_STATS = @"session_replay_stats";
+NSString * const FT_RECORDS_COUNT = @"records_count";
+NSString * const FT_SEGMENTS_COUNT = @"segments_count";
+NSString * const FT_SEGMENTS_TOTAL_RAW_SIZE = @"segments_total_raw_size";
 #pragma mark ========== error monitor ==========
 NSString * const FT_MEMORY_TOTAL  = @"memory_total";
 NSString * const FT_MEMORY_USE  = @"memory_use";
@@ -167,3 +172,7 @@ NSString * const FT_USER_INFO = @"FT_USER_INFO";
 
 const NSNotificationName FTRumContextDidChangeNotification =
     @"FTRumContextDidChangeNotification";
+const NSNotificationName FTSRHasReplayDidChangeNotification =
+    @"FTSRHasReplayDidChangeNotification";
+const NSNotificationName FTSRRecordsCountByViewIDChangeNotification =
+    @"FTSRRecordsCountByViewIDChangeNotification";

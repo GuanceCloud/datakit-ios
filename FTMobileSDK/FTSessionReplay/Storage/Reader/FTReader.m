@@ -24,4 +24,11 @@
     }
     return arrays;
 }
+- (NSData *)serialize{
+    NSMutableData *data = [[NSMutableData alloc]init];
+    for (FTTLV *tlv in self.tlvDatas) {
+        [data appendData:[tlv serialize]];
+    }
+    return data;
+}
 @end

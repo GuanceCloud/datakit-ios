@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTRUMMonitor *monitor;
 @property (nonatomic, strong) FTFatalErrorContext *fatalErrorContext;
 
+@property (atomic, assign) BOOL sessionHasReplay;
+@property (atomic, strong) NSDictionary *sessionReplayStats;
 @end
 
 NS_ASSUME_NONNULL_END

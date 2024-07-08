@@ -16,6 +16,9 @@
 #import "FTPerformancePreset.h"
 #import "FTDataUploadDelay.h"
 #import <pthread.h>
+#import "FTTLV.h"
+#import "FTFile.h"
+#import "FTUploadConditions.h"
 @interface FTFeatureUpload(){
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
@@ -28,6 +31,9 @@
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
 @property (nonatomic, strong) FTPerformancePreset *performance;
 @property (nonatomic, strong) FTDataUploadDelay *delay;
+@property (nonatomic, strong) FTUploadConditions *uploadConditions;
+@property (nonatomic, strong) NSDictionary *context;
+@property (nonatomic, copy) NSString *featureName;
 @end
 @implementation FTFeatureUpload
 @synthesize readWork = _readWork;
@@ -37,34 +43,40 @@
                         fileReader:(id<FTReader>)fileReader
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
-                       performance:(FTPerformancePreset *)performance{
+                       performance:(FTPerformancePreset *)performance
+                           context:(nonnull NSDictionary *)context
+{
     self = [super init];
     if(self){
         NSString *serialLabel = [NSString stringWithFormat:@"com.guance.%@-upload", featureName];
         _queue = dispatch_queue_create([serialLabel UTF8String], 0);
+        _featureName = featureName;
         pthread_rwlock_init(&_readWorkLock, NULL);
         pthread_rwlock_init(&_uploadWorkLock, NULL);
         _fileReader = fileReader;
         _requestBuilder = requestBuilder;
         _performance = performance;
+        _context = context;
         _delay = [[FTDataUploadDelay alloc]initWithPerformance:performance];
         _maxBatchesPerUpload = maxBatchesPerUpload;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:30];
+        _uploadConditions = [[FTUploadConditions alloc]init];
+        [_uploadConditions startObserver];
         __weak typeof(self) weakSelf = self;
         dispatch_block_t readWorkItem = ^{
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            //TODO:上传条件判断：电池、省点模式、网络
-            
+            BOOL canUpload = [strongSelf.uploadConditions checkForUpload];
             //读取上传文件
-            NSArray<id <FTReadableFile>> *files = [strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload];
+            NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
             if(files == nil || files.count == 0){
                 [strongSelf.delay increase];
                 [strongSelf scheduleNextCycle];
             }else{
-                [self uploadFile:files parameters:@{}];
+                FTInnerLogDebug(@"-----[%@] 开始上传 -----",strongSelf.featureName);
+                [self uploadFile:files parameters:strongSelf.context];
             }
         };
         self.readWork = readWorkItem;
@@ -114,7 +126,7 @@
         
         FTBatch *batch = [strongSelf.fileReader readBatch:file];
         if(batch){
-            if([strongSelf flushWithEvents:batch.events parameters:parameters]){
+            if([strongSelf flushWithBath:batch parameters:parameters]){
                 if(mutableFiles.count == 0){
                     [self.delay decrease];
                 }
@@ -138,12 +150,26 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_delay.current * NSEC_PER_SEC)), self.queue, self.readWork);
     }
 }
--(BOOL)flushWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
+-(BOOL)flushWithBath:(FTBatch *)bath parameters:(NSDictionary *)parameters{
+    NSArray *events = bath.tlvDatas;
+    NSMutableArray *mutableEvents = [NSMutableArray arrayWithArray:events];
+    for (FTTLV *tlv in events) {
+        if([self flushWithEvent:tlv.value parameters:parameters]){
+            [mutableEvents removeObject:tlv];
+        }else{
+            bath.tlvDatas = mutableEvents;
+            NSData *data = [bath serialize];
+            NSError *error;
+            [data writeToURL:[NSURL URLWithString:bath.file.name] options:NSDataWritingAtomic error:&error];
+        }
+    }
+    return YES;
+}
+-(BOOL)flushWithEvent:(NSData *)event parameters:(NSDictionary *)parameters{
     @try {
-        FTInnerLogDebug(@"-----开始上传 session replay-----");
         __block BOOL success = NO;
         dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);
-        [self.requestBuilder requestWithEvent:events parameters:parameters];
+        [self.requestBuilder requestWithEvent:event parameters:parameters];
         [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 FTInnerLogError(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
@@ -168,6 +194,7 @@
     return NO;
 }
 - (void)cancelSynchronously{
+    [self.uploadConditions cancel];
     __weak typeof(self) weakSelf = self;
     dispatch_sync(self.queue, ^{
         if(weakSelf.uploadWork){

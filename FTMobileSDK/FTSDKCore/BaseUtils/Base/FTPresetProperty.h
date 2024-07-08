@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 读写保护的用户信息
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, copy) NSString *sdkVersion;
+@property (atomic, copy) NSString *sessionReplaySource;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
@@ -47,6 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取 Rum ES 公共Tag
 - (NSMutableDictionary *)rumProperty;
 - (NSDictionary *)rumDynamicProperty;
+/// 获取 Session Replay 公共Tag
+- (NSDictionary *)sessionReplayProperty;
 /// 获取 logger 数据公共 Tag
 /// - Parameters:
 ///   - status: 事件等级和状态

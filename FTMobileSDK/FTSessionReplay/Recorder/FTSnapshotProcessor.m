@@ -17,6 +17,8 @@
 #import "FTSRRecord.h"
 #import "FTNodesFlattener.h"
 #import "FTFileWriter.h"
+#import "FTConstants.h"
+
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) id<FTWriter> writer;
@@ -34,12 +36,12 @@
         _queue = queue;
         _writer = writer;
         _flattener = [[FTNodesFlattener alloc]init];
+        _recordsCountByViewID = [NSMutableDictionary new];
     }
     return self;
 }
 - (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
     __weak typeof(self) weakSelf = self;
-
     dispatch_async(self.queue, ^{
         [weakSelf processSync:viewTreeSnapshot touches:touches];
     });
@@ -84,21 +86,39 @@
         // 5.数据写入
     if(records.count>0){
         FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
-        [self trackRecord:fullRecord.viewID value:fullRecord.records.count];
-        [self.writer write:fullRecord];    
+        NSData *data = [self trackRecord:fullRecord];
+        
+        [self.writer write:data];
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;
     }
 }
 
-- (void)trackRecord:(NSString *)key value:(NSUInteger)value{
-    NSNumber *existingValue = [self.recordsCountByViewID valueForKey:key];
+- (NSData *)trackRecord:(FTSRFullRecord *)record{
+    NSString *key = record.viewID;
+    NSDictionary *existingValue = [self.recordsCountByViewID valueForKey:key];
+    NSUInteger index = 0;
+    NSUInteger count = record.records.count;
+    NSUInteger segmentsSize = 0;
     if(existingValue!=nil){
-        self.recordsCountByViewID[key] = @([existingValue integerValue] + value);
-    }else{
-        self.recordsCountByViewID[key] = @(value);
+        count = [existingValue[FT_RECORDS_COUNT] integerValue] + count;
+        index = [existingValue[FT_SEGMENTS_COUNT] integerValue];
+        segmentsSize = [existingValue[FT_SEGMENTS_TOTAL_RAW_SIZE] integerValue];
     }
+    record.indexInView = index;
+    NSData *data = [record toJSONData];
+    self.recordsCountByViewID[key] = @{
+        FT_RECORDS_COUNT:@(count),
+        FT_SEGMENTS_COUNT:@(index+1),
+        FT_SEGMENTS_TOTAL_RAW_SIZE:@(segmentsSize+data.length),
+    };
     // TODO: 通知或代理实现与 RUM 同步 record count
+    [[NSNotificationCenter defaultCenter] postNotificationName:FTSRRecordsCountByViewIDChangeNotification object:nil userInfo:[self.recordsCountByViewID mutableCopy]];
+    
+    return data;
+}
+- (void)trackRecord:(NSString *)key dataLength:(long long)dataLength{
+   
 }
 @end

@@ -23,5 +23,7 @@
 
 /// 等待正在处理数据全部处理
 - (void)syncProcess;
+/// 需要在 sessionReplay 配置前设置
+- (void)additionalConfigurationWithSource:(NSString *)source;
 @end
 #endif /* FTMobileAgent_Private_h */

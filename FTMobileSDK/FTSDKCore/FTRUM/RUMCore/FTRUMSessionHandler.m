@@ -160,6 +160,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_RESOURCE_COUNT:@(0),
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
     };
+    [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
+
     [tags addEntriesFromDictionary:actionTags];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 
@@ -169,8 +171,10 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
     NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
+    NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithDictionary:model.fields];
+    [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
-    [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:data.tm];
+    [self.rumDependencies.writer rumWrite:error tags:tags fields:fields time:data.tm];
 }
 - (void)writeWebViewJSBData:(FTRUMWebViewData *)data{
     NSDictionary *sessionTag = @{

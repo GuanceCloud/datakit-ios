@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<FTFeatureRequestBuilder> requestBuilder;
 
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config;
--(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore;
+-(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(nullable id<FTWriter>)resourceWriter resourceDataStore:(nullable id<FTDataStore>)dataStore;
 @end
 
 NS_ASSUME_NONNULL_END

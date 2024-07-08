@@ -103,6 +103,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
                                     FT_KEY_ACTION_RESOURCE_COUNT:@(self.actionResourcesCount),
                                     FT_KEY_ACTION_ERROR_COUNT:@(self.actionErrorCount),
     }.mutableCopy;
+    [fields setValue:@(self.dependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }

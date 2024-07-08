@@ -23,7 +23,7 @@
 #import "FTSnapshotProcessor.h"
 @interface FTSessionReplayFeature()
 @property (nonatomic, strong) NSTimer *timer;
-@property (nonatomic, strong) NSDictionary *lastRUMContext;
+@property (nonatomic, strong) NSDictionary *currentRUMContext;
 @property (nonatomic, assign) BOOL isSampled;
 @property (nonatomic, strong) FTRecorder *windowRecorder;
 @property (nonatomic, assign) FTSRPrivacy privacy;
@@ -55,12 +55,11 @@
 }
 
 -(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
-    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
-    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
+//    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
+//    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:resourceProcessor];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil];
     self.windowRecorder = windowRecorder;
-    [self start];
 }
 -(void)start{
     [FTThreadDispatchManager performBlockDispatchMainAsync:^{
@@ -84,30 +83,28 @@
 }
 - (void)contextChange:(NSNotification *)notification{
     NSDictionary *context = notification.userInfo;
-    if(self.lastRUMContext){
-        if(![context isEqualToDictionary:self.lastRUMContext]&& ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:self.lastRUMContext[FT_RUM_KEY_SESSION_ID]]){
-            BOOL isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
-            if (isSampled) {
-                [self start];
-            } else {
-                [self stop];
-            }
-            _isSampled = isSampled;
-        }
+    if(self.currentRUMContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
+        self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
     }
-    self.lastRUMContext = context;
+    self.currentRUMContext = context;
+    if(self.isSampled){
+        [self start];
+    }else{
+        [self stop];
+    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:FTSRHasReplayDidChangeNotification object:nil userInfo:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
 }
 
 - (void)captureNextRecord{
-    NSString *viewID = self.lastRUMContext[FT_KEY_VIEW_ID];
+    NSString *viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
     if (!viewID) {
         return;
     }
     FTSRContext *context = [[FTSRContext alloc]init];
     context.privacy = [[FTSRTextObfuscatingFactory alloc]initWithPrivacy:self.privacy];
-    context.sessionID = self.lastRUMContext[FT_RUM_KEY_SESSION_ID];
-    context.viewID = self.lastRUMContext[FT_KEY_VIEW_ID];
-    context.applicationID = self.lastRUMContext[FT_APP_ID];
+    context.sessionID = self.currentRUMContext[FT_RUM_KEY_SESSION_ID];
+    context.viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
+    context.applicationID = self.currentRUMContext[FT_APP_ID];
     context.date = [NSDate date];
     [self.windowRecorder taskSnapShot:context touches:[self.touches takeTouches]];
 }

@@ -11,7 +11,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTUploadConditions : NSObject
-
+- (BOOL)checkForUpload;
+- (void)startObserver;
+- (void)cancel;
 @end
 
 NS_ASSUME_NONNULL_END

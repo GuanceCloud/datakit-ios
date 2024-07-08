@@ -9,7 +9,7 @@
 #import "FTSegmentJSON.h"
 #import "FTConstants.h"
 @implementation FTSegmentJSON
--(instancetype)initWithData:(NSData *)data source:(NSString *)source{
+-(instancetype)initWithData:(NSData *)data{
     self = [super init];
     if(self){
         NSError *error;
@@ -17,13 +17,13 @@
         _appId = dict[@"applicationID"];
         _sessionID = dict[@"sessionID"];
         _viewID = dict[@"viewID"];
-        _source = source?source:@"ios";
         _start = INT_MAX;
         _end = INT_MIN;
+        _indexInView = dict[@"indexInView"];
         NSArray *array = dict[@"records"];
         for (NSDictionary *record in array) {
             NSInteger type = [record[@"type"] integerValue];
-            if (type == 0 || type == 2){
+            if (type == 2 || type == 10){
                 _hasFullSnapshot = YES;
             }
             long long startTimestamp = [record[@"timestamp"] longLongValue];
@@ -49,12 +49,12 @@
     return @{FT_RUM_KEY_SESSION_ID:self.sessionID,
              FT_KEY_VIEW_ID:self.viewID,
              FT_APP_ID:self.appId,
-             @"start":@(self.start),
-             @"end":@(self.end),
+             @"start": [NSString stringWithFormat:@"%lld",self.start],
+             @"end":[NSString stringWithFormat:@"%lld",self.end],
              @"has_full_snapshot":self.hasFullSnapshot?@"true":@"false",
-             @"records_count":@(self.recordsCount),
+             @"records_count":[NSString stringWithFormat:@"%lld",self.recordsCount],
              @"records":self.records,
-             @"source":self.source,
+             @"index_in_view":[NSString stringWithFormat:@"%@",self.indexInView],
     };
 }
 @end
