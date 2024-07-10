@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class FTPerformancePreset;
 @interface FTFeatureUpload : NSObject
 @property (nonatomic, assign) int maxBatchesPerUpload;
-@property (nonatomic, strong) NSDictionary *baseProperty;
 -(instancetype)initWithFeatureName:(NSString *)featureName
                         fileReader:(id<FTReader>)fileReader
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder

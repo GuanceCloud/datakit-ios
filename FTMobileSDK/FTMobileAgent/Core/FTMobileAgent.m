@@ -33,6 +33,8 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTModuleManager.h"
+
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
@@ -82,6 +84,7 @@ static dispatch_once_t onceToken;
                 .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
+            [[FTModuleManager sharedInstance] postMessage:FTMessageKeySRProperty message:_presetProperty.sessionReplayProperty];
         }
     }@catch(NSException *exception) {
         FTInnerLogError(@"exception: %@",exception);

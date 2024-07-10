@@ -19,7 +19,8 @@
 #import "FTTLV.h"
 #import "FTFile.h"
 #import "FTUploadConditions.h"
-@interface FTFeatureUpload(){
+#import "FTSRRecord.h"
+@interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
 }
@@ -109,6 +110,7 @@
     pthread_rwlock_unlock(&_uploadWorkLock);
     return block_t;
 }
+#pragma mark ========== deal upload data ==========
 - (void)uploadFile:(NSArray<id<FTReadableFile>>*)files parameters:(NSDictionary *)parameters{
     __weak typeof(self) weakSelf = self;
     dispatch_block_t uploadWork = ^{
@@ -150,22 +152,54 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_delay.current * NSEC_PER_SEC)), self.queue, self.readWork);
     }
 }
+// 不支持 resource 上传逻辑 需要重新适配
 -(BOOL)flushWithBath:(FTBatch *)bath parameters:(NSDictionary *)parameters{
-    NSArray *events = bath.tlvDatas;
+    NSArray *events = bath.events;
+    events = [self mergeSegments:events];
     NSMutableArray *mutableEvents = [NSMutableArray arrayWithArray:events];
-    for (FTTLV *tlv in events) {
-        if([self flushWithEvent:tlv.value parameters:parameters]){
-            [mutableEvents removeObject:tlv];
+    for (FTSRBaseFrame *record in events) {
+        if([self flushWithEvent:record parameters:parameters]){
+            [mutableEvents removeObject:record];
         }else{
-            bath.tlvDatas = mutableEvents;
+            NSMutableArray *tlvs = [NSMutableArray new];
+            for (FTSRBaseFrame *record in mutableEvents) {
+               NSData *data = [record toJSONData];
+               FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
+                [tlvs addObject:tlv];
+            }
+            bath.tlvDatas = tlvs;
             NSData *data = [bath serialize];
             NSError *error;
-            [data writeToURL:[NSURL URLWithString:bath.file.name] options:NSDataWritingAtomic error:&error];
+            [data writeToURL:bath.file.url options:NSDataWritingAtomic error:&error];
         }
     }
     return YES;
 }
--(BOOL)flushWithEvent:(NSData *)event parameters:(NSDictionary *)parameters{
+- (NSArray *)mergeSegments:(NSArray *)segments{
+    NSMutableArray *result = [NSMutableArray array];
+    if([self.featureName isEqualToString:@"session-replay"]){
+        NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
+        for (int i=0; i<segments.count; i++) {
+            FTEnrichedRecord *segment =  [[FTEnrichedRecord alloc]initWithData:segments[i]];
+            if(indexes[segment.viewID] != nil){
+                int idx = [indexes[segment.viewID] intValue];
+                FTEnrichedRecord *current = segments[idx];
+                [current mergeAnother:segment];
+            }else{
+                [indexes setValue:@(i) forKey:segment.viewID];
+                [result addObject:segment];
+            }
+        }
+    }else{
+        for (NSData *data in segments) {
+            FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
+            [result addObject:resource];
+        }
+    }
+    return result;
+}
+#pragma mark upload
+-(BOOL)flushWithEvent:(id)event parameters:(NSDictionary *)parameters{
     @try {
         __block BOOL success = NO;
         dispatch_semaphore_t flushSemaphore = dispatch_semaphore_create(0);

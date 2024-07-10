@@ -159,9 +159,8 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
                              FT_KEY_ACTION_LONG_TASK_COUNT:@(0),
                              FT_KEY_ACTION_RESOURCE_COUNT:@(0),
                              FT_KEY_ACTION_ERROR_COUNT:@(0),
+                             FT_SESSION_HAS_REPLAY:@(self.rumDependencies.sessionHasReplay)
     };
-    [fields setValue:@(self.rumDependencies.sessionHasReplay) forKey:FT_SESSION_HAS_REPLAY];
-
     [tags addEntriesFromDictionary:actionTags];
     [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[model.time ft_nanosecondTimeStamp]];
 

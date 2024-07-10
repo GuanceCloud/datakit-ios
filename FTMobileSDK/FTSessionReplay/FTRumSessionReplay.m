@@ -16,8 +16,7 @@
 #import "FTDirectory.h"
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
-#import "FTMobileAgent+Private.h"
-#import "FTPresetProperty.h"
+#import "FTModuleManager.h"
 
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
@@ -83,7 +82,7 @@ static dispatch_once_t onceToken;
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:10 performance:performancePreset context:[[FTMobileAgent sharedInstance].presetProperty sessionReplayProperty]];
+        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:10 performance:performancePreset context:[[FTModuleManager sharedInstance] getSRProperty]];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;
     }

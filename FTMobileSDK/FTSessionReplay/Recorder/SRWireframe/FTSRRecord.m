@@ -12,6 +12,7 @@
 #import "FTTouchCircle.h"
 #import "NSDate+FTUtil.h"
 #import "FTLog+Private.h"
+#import "FTConstants.h"
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [self initWithType:0 timestamp:timestamp];
@@ -241,7 +242,7 @@
 }
 @end
 
-@implementation FTSRFullRecord
+@implementation FTEnrichedRecord
 
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records{
     self = [super init];
@@ -250,8 +251,58 @@
         _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
+        _start = INT_MAX;
+        _end = INT_MIN;
+        for (FTSRRecord *record in records) {
+            if (record.type == 2 || record.type == 10){
+                _hasFullSnapshot = YES;
+            }
+            long long startTimestamp = record.timestamp;
+            long long endTimestamp = record.timestamp;
+            _start = MIN(_start, startTimestamp);
+            _end = MAX(_end, endTimestamp);
+        }
+        _recordsCount = records.count;
     }
     return self;
+}
+-(instancetype)initWithData:(NSData *)data{
+    self = [super init];
+    if(self){
+        NSError *error;
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        _applicationID = [dict valueForKey:@"applicationID"];
+        _sessionID = [dict valueForKey:@"sessionID"];
+        _viewID = [dict valueForKey:@"viewID"];
+        _start = [[dict valueForKey:@"start"] longLongValue];
+        _end = [[dict valueForKey:@"end"] longLongValue];
+        _hasFullSnapshot = [[dict valueForKey:@"hasFullSnapshot"] boolValue];
+        NSArray<FTSRRecord> *array = dict[@"records"];
+        _recordsCount = array.count;
+        _records = array;
+    }
+    return self;
+}
+- (void)mergeAnother:(FTEnrichedRecord *)another{
+    NSMutableArray *records = [NSMutableArray arrayWithArray:_records];
+    [records addObjectsFromArray:another.records];
+    self.records = (NSArray<FTSRRecord>*)records;
+    _start = MIN(_start, another.start);
+    _end = MAX(_end, another.end);
+    _recordsCount = _recordsCount + another.recordsCount;
+    _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
+}
+- (NSDictionary *)toJSONODict{
+    return @{FT_RUM_KEY_SESSION_ID:self.sessionID,
+             FT_KEY_VIEW_ID:self.viewID,
+             FT_APP_ID:self.applicationID,
+             @"start": [NSString stringWithFormat:@"%lld",self.start],
+             @"end":[NSString stringWithFormat:@"%lld",self.end],
+             @"has_full_snapshot":self.hasFullSnapshot?@"true":@"false",
+             @"records_count":[NSString stringWithFormat:@"%lld",self.recordsCount],
+             @"records":self.records,
+             @"index_in_view":[NSString stringWithFormat:@"%@",self.indexInView],
+    };
 }
 @end
 @implementation FTEnrichedResource

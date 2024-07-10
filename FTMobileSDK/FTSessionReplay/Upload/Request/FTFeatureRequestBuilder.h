@@ -13,7 +13,9 @@
 @protocol FTFeatureRequestBuilder <NSObject,FTRequestProtocol>
 @optional
 - (void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters;
-- (void)requestWithEvent:(NSData *)event parameters:(NSDictionary *)parameters;
+// resource : NSData
+// segment: FTSegmentJSON
+- (void)requestWithEvent:(id)event parameters:(NSDictionary *)parameters;
 
 @end
 #endif /* FTFeatureRequestBuilder_h */

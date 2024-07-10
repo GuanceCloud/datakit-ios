@@ -30,7 +30,9 @@
 #import "FTBaseInfoHandler.h"
 #import "FTCrashMonitor.h"
 #import "FTFatalErrorContext.h"
-@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate>
+#import "FTModuleManager.h"
+#import "FTMessageReceiver.h"
+@interface FTGlobalRumManager ()<FTRunloopDetectorDelegate,FTWKWebViewRumDelegate,FTAppLifeCycleDelegate,FTAppLaunchDataDelegate,FTMessageReceiver>
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTRUMDependencies *dependencies;
 @property (nonatomic, strong) FTWKWebViewJavascriptBridge *jsBridge;
@@ -75,15 +77,13 @@ static dispatch_once_t onceToken;
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionReplayDidChange:) name:FTSRHasReplayDidChangeNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionReplayDidChange:) name:FTSRRecordsCountByViewIDChangeNotification object:nil];
+    [[FTModuleManager sharedInstance] addMessageReceiver:self];
 }
-- (void)sessionReplayDidChange:(NSNotification *)notification{
-    NSDictionary *context = notification.userInfo;
-    if(notification.name == FTSRHasReplayDidChangeNotification){
-        self.dependencies.sessionHasReplay = [context[FT_SESSION_HAS_REPLAY] boolValue];
-    }else{
-        self.dependencies.sessionReplayStats = context;
+-(void)receive:(NSString *)key message:(NSDictionary *)message{
+    if(key == FTMessageKeySessionHasReplay){
+        self.dependencies.sessionHasReplay = [message[FT_SESSION_HAS_REPLAY] boolValue];
+    }else if(key == FTMessageKeyRecordsCountByViewID){
+        self.dependencies.sessionReplayStats = message;
     }
 }
 #pragma mark ========== jsBridge ==========
@@ -178,8 +178,6 @@ static dispatch_once_t onceToken;
     [self.rumManager syncProcess];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     [FTWKWebViewHandler sharedInstance].enableTrace = NO;
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:FTSRHasReplayDidChangeNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:FTSRRecordsCountByViewIDChangeNotification object:nil];
     onceToken = 0;
     sharedInstance = nil;
     FTInnerLogInfo(@"[RUM] SHUT DOWN");

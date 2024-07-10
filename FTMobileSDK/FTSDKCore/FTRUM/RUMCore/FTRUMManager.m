@@ -16,6 +16,7 @@
 #import "FTConstants.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTReadWriteHelper.h"
+#import "FTModuleManager.h"
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
     [FTAppStateStartUp] = @"startup",
@@ -427,7 +428,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         [self.sessionHandler.assistant process:model];
     }
     NSDictionary *currentRumContext = [self getCurrentSessionInfo];
-    [[NSNotificationCenter defaultCenter] postNotificationName:FTRumContextDidChangeNotification object:nil userInfo:currentRumContext];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRUMContext message:currentRumContext];
     return YES;
 }
 

@@ -170,9 +170,4 @@ NSString * const FT_USER_EMAIL = @"user_email";
 NSString * const FT_USER_EXTRA = @"user_extra";
 NSString * const FT_USER_INFO = @"FT_USER_INFO";
 
-const NSNotificationName FTRumContextDidChangeNotification =
-    @"FTRumContextDidChangeNotification";
-const NSNotificationName FTSRHasReplayDidChangeNotification =
-    @"FTSRHasReplayDidChangeNotification";
-const NSNotificationName FTSRRecordsCountByViewIDChangeNotification =
-    @"FTSRRecordsCountByViewIDChangeNotification";
+

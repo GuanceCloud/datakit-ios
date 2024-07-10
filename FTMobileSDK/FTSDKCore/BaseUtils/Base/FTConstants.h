@@ -184,9 +184,3 @@ extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
 /// 多少次卡顿纪录为一次有效卡顿
 extern NSUInteger const MXRMonitorRunloopStandstillCount;
 
-FOUNDATION_EXPORT const NSNotificationName FTRumContextDidChangeNotification
-    NS_SWIFT_NAME(RumContextDidChange);
-FOUNDATION_EXPORT const NSNotificationName FTSRHasReplayDidChangeNotification
-    NS_SWIFT_NAME(SRHasReplayDidChange);
-FOUNDATION_EXPORT const NSNotificationName FTSRRecordsCountByViewIDChangeNotification
-    NS_SWIFT_NAME(SRRecordsCountByViewIDChange);

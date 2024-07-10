@@ -30,6 +30,7 @@ typedef void (^NotificationBlock)(NSNotification *);
 - (void)startObserver{
     __weak typeof(self) weakSelf = self;
     [[FTReachability sharedInstance] startNotifier];
+    self.isReachable = [FTReachability sharedInstance].isReachable;
     [FTReachability sharedInstance].networkChanged = ^(){
         weakSelf.isReachable = [FTReachability sharedInstance].isReachable;
     };
@@ -63,6 +64,9 @@ typedef void (^NotificationBlock)(NSNotification *);
     }
     if(self.lowPowerModeEnabled){
         return NO;
+    }
+    if(self.batteryState == UIDeviceBatteryStateUnknown){
+        return YES;
     }
     BOOL batteryFullOrCharging = self.batteryState == UIDeviceBatteryStateCharging || self.batteryState == UIDeviceBatteryStateFull;
 

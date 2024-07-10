@@ -21,7 +21,9 @@
 #import "FTResourceProcessor.h"
 #import "FTResourceWriter.h"
 #import "FTSnapshotProcessor.h"
-@interface FTSessionReplayFeature()
+#import "FTModuleManager.h"
+#import "FTMessageReceiver.h"
+@interface FTSessionReplayFeature()<FTMessageReceiver>
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *currentRUMContext;
 @property (nonatomic, assign) BOOL isSampled;
@@ -49,12 +51,13 @@
         _performanceOverride = performancePresetOverride;
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChange:) name:FTRumContextDidChangeNotification object:nil];
+        [[FTModuleManager sharedInstance] addMessageReceiver:self];
     }
     return self;
 }
 
 -(void)startWithWriter:(id<FTWriter>)writer resourceWriter:(id<FTWriter>)resourceWriter resourceDataStore:(id<FTDataStore>)dataStore{
+    // image resource writer
 //    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
 //    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
@@ -81,20 +84,21 @@
         }
     }];
 }
-- (void)contextChange:(NSNotification *)notification{
-    NSDictionary *context = notification.userInfo;
-    if(self.currentRUMContext == nil || ![context[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
+- (void)receive:(NSString *)key message:(NSDictionary *)message {
+    if(![key isEqualToString:FTMessageKeyRUMContext]){
+        return;
+    }
+    if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
         self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
     }
-    self.currentRUMContext = context;
+    self.currentRUMContext = message;
     if(self.isSampled){
         [self start];
     }else{
         [self stop];
     }
-    [[NSNotificationCenter defaultCenter] postNotificationName:FTSRHasReplayDidChangeNotification object:nil userInfo:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
 }
-
 - (void)captureNextRecord{
     NSString *viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
     if (!viewID) {
@@ -110,5 +114,6 @@
 }
 -(void)dealloc{
     [self stop];
+    [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 @end

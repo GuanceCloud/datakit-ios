@@ -32,14 +32,20 @@
 -(NSString *)contentType{
     return [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
 }
--(void)requestWithEvent:(NSArray *)event parameters:(NSDictionary *)parameters{
+-(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     NSMutableArray *resources = [NSMutableArray new];
-    for (NSData *data in event) {
+    for (NSData *data in events) {
         FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
         [resources addObject:resource];
     }
     self.parameters = parameters;
     self.resources = resources;
+}
+-(void)requestWithEvent:(id)event parameters:(NSDictionary *)parameters{
+    self.parameters = parameters;
+    if([event isKindOfClass:FTEnrichedResource.class]){
+        self.resources = @[event];
+    }
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     NSString *date =[[NSDate date] ft_stringWithGMTFormat];

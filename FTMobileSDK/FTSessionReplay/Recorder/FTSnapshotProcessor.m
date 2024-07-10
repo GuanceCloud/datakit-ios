@@ -18,6 +18,7 @@
 #import "FTNodesFlattener.h"
 #import "FTFileWriter.h"
 #import "FTConstants.h"
+#import "FTModuleManager.h"
 
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -85,7 +86,7 @@
         }
         // 5.数据写入
     if(records.count>0){
-        FTSRFullRecord *fullRecord = [[FTSRFullRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
+        FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
         NSData *data = [self trackRecord:fullRecord];
         
         [self.writer write:data];
@@ -95,27 +96,25 @@
     }
 }
 
-- (NSData *)trackRecord:(FTSRFullRecord *)record{
+- (NSData *)trackRecord:(FTEnrichedRecord *)record{
     NSString *key = record.viewID;
     NSDictionary *existingValue = [self.recordsCountByViewID valueForKey:key];
-    NSUInteger index = 0;
     NSUInteger count = record.records.count;
     NSUInteger segmentsSize = 0;
     if(existingValue!=nil){
         count = [existingValue[FT_RECORDS_COUNT] integerValue] + count;
-        index = [existingValue[FT_SEGMENTS_COUNT] integerValue];
+//        index = [existingValue[FT_SEGMENTS_COUNT] integerValue];
         segmentsSize = [existingValue[FT_SEGMENTS_TOTAL_RAW_SIZE] integerValue];
     }
-    record.indexInView = index;
+//    record.indexInView = index;
     NSData *data = [record toJSONData];
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
-        FT_SEGMENTS_COUNT:@(index+1),
+//        FT_SEGMENTS_COUNT:@(index+1),
         FT_SEGMENTS_TOTAL_RAW_SIZE:@(segmentsSize+data.length),
     };
-    // TODO: 通知或代理实现与 RUM 同步 record count
-    [[NSNotificationCenter defaultCenter] postNotificationName:FTSRRecordsCountByViewIDChangeNotification object:nil userInfo:[self.recordsCountByViewID mutableCopy]];
-    
+    // TODO: 是否使用协议代理替换单例
+    [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
     return data;
 }
 - (void)trackRecord:(NSString *)key dataLength:(long long)dataLength{

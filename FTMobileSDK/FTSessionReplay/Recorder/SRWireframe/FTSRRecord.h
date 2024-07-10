@@ -66,13 +66,21 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithTimestamp:(long long)timestamp touch:(FTTouchCircle *)touch;
 @end
 
-@interface FTSRFullRecord : FTSRBaseFrame
+@interface FTEnrichedRecord : FTSRBaseFrame
 @property (nonatomic, strong) NSArray<FTSRRecord> *records;
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
-@property (nonatomic, assign) NSUInteger indexInView;
+//@property (nonatomic, assign) NSUInteger indexInView;
+@property (nonatomic, assign) long long start;
+@property (nonatomic, assign) long long end;
+@property (nonatomic, assign) long long recordsCount;
+@property (nonatomic, assign) BOOL hasFullSnapshot;
+@property (nonatomic, assign) NSNumber *indexInView;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
+-(instancetype)initWithData:(NSData *)data;
+- (void)mergeAnother:(FTEnrichedRecord *)another;
+- (NSDictionary *)toJSONODict;
 @end
 
 @interface FTEnrichedResource : FTSRBaseFrame
