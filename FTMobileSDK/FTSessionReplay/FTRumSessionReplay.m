@@ -82,7 +82,14 @@ static dispatch_once_t onceToken;
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name fileReader:storage.reader requestBuilder:feature.requestBuilder maxBatchesPerUpload:10 performance:performancePreset context:[[FTModuleManager sharedInstance] getSRProperty]];
+        FTFeatureDataStore *dataStore = [[FTFeatureDataStore alloc]initWithFeature:feature.name queue:self.readWriteQueue directory:self.coreDirectory];
+        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name 
+                                                                   fileReader:storage.reader
+                                                               requestBuilder:feature.requestBuilder 
+                                                          maxBatchesPerUpload:10
+                                                                  performance:performancePreset
+                                                                    dataStore:dataStore
+                                                                      context:[[FTModuleManager sharedInstance] getSRProperty]];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;
     }

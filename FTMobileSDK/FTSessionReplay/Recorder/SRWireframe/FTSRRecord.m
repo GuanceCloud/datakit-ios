@@ -251,8 +251,8 @@
         _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
-        _start = INT_MAX;
-        _end = INT_MIN;
+        _start = LONG_MAX;
+        _end = LONG_MIN;
         for (FTSRRecord *record in records) {
             if (record.type == 2 || record.type == 10){
                 _hasFullSnapshot = YES;

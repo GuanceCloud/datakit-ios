@@ -117,7 +117,4 @@
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
     return data;
 }
-- (void)trackRecord:(NSString *)key dataLength:(long long)dataLength{
-   
-}
 @end

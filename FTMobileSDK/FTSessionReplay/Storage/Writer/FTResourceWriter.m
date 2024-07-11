@@ -16,7 +16,7 @@
 NSString *const FT_StoreCreationKey = @"ft-store-creation";
 NSString *const FT_KnownResourcesKey = @"ft-known-resources";
 @interface FTResourceWriter()
-// 在串行队列中执行，可以不用加锁
+//TODO: dataStore 读取数据 callback 回调是在读写线程里，所以需要加锁
 @property (nonatomic, strong) NSMutableSet *knownIdentifiers;
 @property (nonatomic, strong) FTFeatureDataStore *dataStore;
 @property (nonatomic, assign) NSTimeInterval dataStoreResetTime;
@@ -35,25 +35,28 @@ NSString *const FT_KnownResourcesKey = @"ft-known-resources";
     return self;
 }
 - (void)readKnownIdentifiers{
+    __weak typeof(self) weakSelf = self;
     [self.dataStore valueForKey:FT_StoreCreationKey callback:^(NSError *error, NSData *data, FTDataStoreKeyVersion version) {
         if(!error){
-            if(version != DataStoreDefaultKeyVersion || ([[NSDate date] timeIntervalSince1970] - [self transDataAsTimeInterval:data] < self.dataStoreResetTime)){
-                    [self.dataStore valueForKey:FT_KnownResourcesKey callback:^(NSError *error, NSData *data, FTDataStoreKeyVersion version) {
+            if(version == DataStoreDefaultKeyVersion && ([[NSDate date] timeIntervalSince1970] - [weakSelf transDataAsTimeInterval:data] < weakSelf.dataStoreResetTime)){
+                    [weakSelf.dataStore valueForKey:FT_KnownResourcesKey callback:^(NSError *error, NSData *data, FTDataStoreKeyVersion version) {
                         if(!error){
                             if(version != DataStoreDefaultKeyVersion){
                                 FTInnerLogError(@"[Session Replay] Resource Writer Read KnownIdentifiers Error");
-                            }else{
+                            }else if(data!=nil){
                                 NSError *error;
                                 NSArray *array = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                [self.knownIdentifiers addObjectsFromArray:array];
+                                if(array){
+                                    [weakSelf.knownIdentifiers addObjectsFromArray:array];
+                                }
                             }
                         }else{
                             FTInnerLogError(@"[Session Replay] Resource Writer Read KnownIdentifiers Error: %@",error.localizedDescription);
                         }
                     }];
             }else{
-                [self.dataStore setValue:[self transTimeIntervalAsData:[[NSDate date] timeIntervalSince1970]] forKey:FT_StoreCreationKey version:DataStoreDefaultKeyVersion];
-                [self.dataStore removeValueForKey:FT_KnownResourcesKey];
+                [weakSelf.dataStore setValue:[weakSelf transTimeIntervalAsData:[[NSDate date] timeIntervalSince1970]] forKey:FT_StoreCreationKey version:DataStoreDefaultKeyVersion];
+                [weakSelf.dataStore removeValueForKey:FT_KnownResourcesKey];
             }
         }else{
             FTInnerLogError(@"[Session Replay] Resource Writer Error: %@",error.localizedDescription);

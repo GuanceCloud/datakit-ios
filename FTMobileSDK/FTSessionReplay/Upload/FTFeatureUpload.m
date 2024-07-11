@@ -20,6 +20,9 @@
 #import "FTFile.h"
 #import "FTUploadConditions.h"
 #import "FTSRRecord.h"
+#import "FTDataStore.h"
+NSString *const FT_IndexInView = @"ft-index-in-view";
+
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
     pthread_rwlock_t _uploadWorkLock;
@@ -35,6 +38,8 @@
 @property (nonatomic, strong) FTUploadConditions *uploadConditions;
 @property (nonatomic, strong) NSDictionary *context;
 @property (nonatomic, copy) NSString *featureName;
+@property (nonatomic, strong) NSMutableDictionary *indexInViews;
+@property (nonatomic, strong) id<FTDataStore> dataStore;
 @end
 @implementation FTFeatureUpload
 @synthesize readWork = _readWork;
@@ -44,7 +49,8 @@
                         fileReader:(id<FTReader>)fileReader
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
-                       performance:(FTPerformancePreset *)performance
+                       performance:(FTPerformancePreset *)performance 
+                         dataStore:(id<FTDataStore>)dataStore
                            context:(nonnull NSDictionary *)context
 {
     self = [super init];
@@ -54,6 +60,7 @@
         _featureName = featureName;
         pthread_rwlock_init(&_readWorkLock, NULL);
         pthread_rwlock_init(&_uploadWorkLock, NULL);
+        _dataStore = dataStore;
         _fileReader = fileReader;
         _requestBuilder = requestBuilder;
         _performance = performance;
@@ -62,28 +69,51 @@
         _maxBatchesPerUpload = maxBatchesPerUpload;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:30];
         _uploadConditions = [[FTUploadConditions alloc]init];
+        _indexInViews = [NSMutableDictionary new];
         [_uploadConditions startObserver];
-        __weak typeof(self) weakSelf = self;
-        dispatch_block_t readWorkItem = ^{
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            BOOL canUpload = [strongSelf.uploadConditions checkForUpload];
-            //读取上传文件
-            NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
-            if(files == nil || files.count == 0){
-                [strongSelf.delay increase];
-                [strongSelf scheduleNextCycle];
-            }else{
-                FTInnerLogDebug(@"-----[%@] 开始上传 -----",strongSelf.featureName);
-                [self uploadFile:files parameters:strongSelf.context];
-            }
-        };
-        self.readWork = readWorkItem;
-        dispatch_async(_queue, readWorkItem);
+        [self readKnownIndexInView];
     }
     return self;
+}
+- (void)readKnownIndexInView{
+    __weak typeof(self) weakSelf = self;
+    [self.dataStore valueForKey:FT_IndexInView callback:^(NSError *error, NSData *data, FTDataStoreKeyVersion version) {
+        if(!error){
+            if(version != DataStoreDefaultKeyVersion){
+                FTInnerLogError(@"[Session Replay Upload] Resource Writer Read IndexInViews Error");
+            }else if(data){
+                NSError *error;
+                NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+                if(dict){
+                    [weakSelf.indexInViews addEntriesFromDictionary:dict];
+                }
+            }
+        }else{
+            FTInnerLogError(@"[Session Replay Upload] Resource Writer Read IndexInViews Error: %@",error.localizedDescription);
+        }
+        [weakSelf startReadWork];
+    }];
+}
+- (void)startReadWork{
+    __weak typeof(self) weakSelf = self;
+    dispatch_block_t readWorkItem = ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        BOOL canUpload = [strongSelf.uploadConditions checkForUpload];
+        //读取上传文件
+        NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
+        if(files == nil || files.count == 0){
+            [strongSelf.delay increase];
+            [strongSelf scheduleNextCycle];
+        }else{
+            FTInnerLogDebug(@"-----[%@] 开始上传 -----",strongSelf.featureName);
+            [strongSelf uploadFile:files parameters:strongSelf.context];
+        }
+    };
+    self.readWork = readWorkItem;
+    dispatch_async(_queue, readWorkItem);
 }
 #pragma mark ========== block_item readwrite lock ==========
 -(void)setReadWork:(dispatch_block_t)readWork{
@@ -157,46 +187,57 @@
     NSArray *events = bath.events;
     events = [self mergeSegments:events];
     NSMutableArray *mutableEvents = [NSMutableArray arrayWithArray:events];
-    for (FTSRBaseFrame *record in events) {
+    for (FTEnrichedRecord *record in events) {
         if([self flushWithEvent:record parameters:parameters]){
             [mutableEvents removeObject:record];
+            [self cacheIndexInView:record.indexInView view:record.viewID];
         }else{
             NSMutableArray *tlvs = [NSMutableArray new];
             for (FTSRBaseFrame *record in mutableEvents) {
-               NSData *data = [record toJSONData];
-               FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
+                NSData *data = [record toJSONData];
+                FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
                 [tlvs addObject:tlv];
             }
             bath.tlvDatas = tlvs;
             NSData *data = [bath serialize];
             NSError *error;
             [data writeToURL:bath.file.url options:NSDataWritingAtomic error:&error];
+            return NO;
         }
     }
     return YES;
 }
 - (NSArray *)mergeSegments:(NSArray *)segments{
+    NSMutableArray *ori = [NSMutableArray array];
+    for (NSData *data in segments) {
+        FTEnrichedRecord *segment =  [[FTEnrichedRecord alloc]initWithData:data];
+        [ori addObject:segment];
+    }
     NSMutableArray *result = [NSMutableArray array];
-    if([self.featureName isEqualToString:@"session-replay"]){
-        NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
-        for (int i=0; i<segments.count; i++) {
-            FTEnrichedRecord *segment =  [[FTEnrichedRecord alloc]initWithData:segments[i]];
-            if(indexes[segment.viewID] != nil){
-                int idx = [indexes[segment.viewID] intValue];
-                FTEnrichedRecord *current = segments[idx];
-                [current mergeAnother:segment];
-            }else{
-                [indexes setValue:@(i) forKey:segment.viewID];
-                [result addObject:segment];
-            }
-        }
-    }else{
-        for (NSData *data in segments) {
-            FTEnrichedResource *resource = [[FTEnrichedResource alloc]initWithData:data];
-            [result addObject:resource];
+    NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
+    for (int i=0; i<ori.count; i++) {
+        FTEnrichedRecord *segment = ori[i];
+        if(indexes[segment.viewID] != nil){
+            int idx = [indexes[segment.viewID] intValue];
+            FTEnrichedRecord *current = ori[idx];
+            [current mergeAnother:segment];
+            result[idx] = current;
+        }else{
+            [indexes setValue:@(i) forKey:segment.viewID];
+            [result addObject:segment];
+            NSNumber *index = [self.indexInViews objectForKey:segment.viewID];
+            segment.indexInView = index?@([index intValue] + 1):@(0);
         }
     }
     return result;
+}
+- (void)cacheIndexInView:(NSNumber *)index view:(NSString *)viewId{
+    [self.indexInViews setValue:index forKey:viewId];
+    NSError *error;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:@{viewId:index} options:0 error:&error];
+    if(data){
+        [self.dataStore setValue:data forKey:FT_IndexInView version:DataStoreDefaultKeyVersion];
+    }
 }
 #pragma mark upload
 -(BOOL)flushWithEvent:(id)event parameters:(NSDictionary *)parameters{
@@ -215,7 +256,7 @@
             success = (statusCode >=200 && statusCode < 500);
             FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
             if (statusCode != 200 && data.length>0) {
-                FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
+                FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];

@@ -233,7 +233,7 @@ static dispatch_once_t onceToken;
                 success = (statusCode >=200 && statusCode < 500);
                 FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
                 if (statusCode != 200 && data.length>0) {
-                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[FTJSONUtil dictionaryWithJsonString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]);
+                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                 }
                 dispatch_semaphore_signal(flushSemaphore);
             }];
