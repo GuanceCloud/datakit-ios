@@ -24,6 +24,9 @@ let package = Package(
             targets: [
                       "FTSDKCore",
                      ]),
+        .library(
+            name: "FTSessionReplay",
+            targets: ["FTSessionReplay"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -69,7 +72,6 @@ let package = Package(
             path: "FTMobileSDK/FTSDKCore/Protocol",
             publicHeadersPath: ".",
             cSettings: [
-                .headerSearchPath("FTErrorDataProtocol.h"),
             ]
         ),
         .target(
@@ -161,6 +163,12 @@ let package = Package(
                     .headerSearchPath("FTSDKCore/FTWKWebView/JSBridge"),
 
                 ]
-               )
+               ),
+        .target(name: "FTSessionReplay",
+                dependencies: ["FTSDKCore"],
+                path: "FTMobileSDK/FTSessionReplay",
+                publicHeadersPath:"Public",
+                cSettings: [.headerSearchPath("../..")]
+               ),
     ]
 )

@@ -21,9 +21,11 @@ Pod::Spec.new do |s|
     }
 
 	s.subspec  'FTMobileAgent' do | agent |
-		agent.platform = :ios, '10.0'
+		core_path='FTMobileSDK/FTMobileAgent/'
 
+		agent.platform = :ios, '10.0'
 		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
+		agent.public_header_files = core_path+'Core/FTMobileSDK.h',core_path+'Core/FTMobileAgent.h',core_path+'Config/FTMobileConfig.h',core_path+'ExternalData/FTExternalDataManager.h',core_path+'Core/FTTraceManager.h'
 		agent.dependency  'FTMobileSDK/FTSDKCore'
 
 	end
@@ -92,6 +94,12 @@ Pod::Spec.new do |s|
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Thread'
 			bb.dependency 'FTMobileSDK/FTSDKCore/BaseUtils/Base'
 		end
+	end
+	s.subspec 'FTSessionReplay' do |sr|
+		 sr.platform = :ios, '10.0'
+		 sr.source_files =  'FTMobileSDK/FTSessionReplay/**/*{.h,.m}'
+		 sr.public_header_files = 'FTMobileSDK/FTSessionReplay/Public/*.h'
+		 sr.dependency 'FTMobileSDK/FTSDKCore'
 	end
 end
 

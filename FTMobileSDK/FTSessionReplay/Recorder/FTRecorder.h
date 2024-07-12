@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTMobileConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
 @class FTWindowObserver,FTSRContext,FTTouchCircle,FTSnapshotProcessor,FTResourceProcessor;

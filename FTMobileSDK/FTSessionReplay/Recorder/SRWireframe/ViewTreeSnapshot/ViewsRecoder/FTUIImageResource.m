@@ -7,7 +7,6 @@
 //
 
 #import "FTUIImageResource.h"
-#import "FTSRWireframesBuilder.h"
 #import "UIImage+FTSRIdentifier.h"
 #import "UIColor+FTSRIdentifier.h"
 @interface FTUIImageResource()

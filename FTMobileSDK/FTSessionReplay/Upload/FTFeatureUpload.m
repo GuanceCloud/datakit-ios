@@ -254,7 +254,7 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
-            FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
+            FTInnerLogDebug(@"[NETWORK][session-replay] Upload Response statusCode : %ld",(long)statusCode);
             if (statusCode != 200 && data.length>0) {
                 FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }
