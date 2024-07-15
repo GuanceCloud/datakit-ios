@@ -13,7 +13,43 @@
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTUIImageResource.h"
-
+@implementation UIImage(FTRecord)
+- (BOOL)isContextual API_AVAILABLE(ios(13.0)){
+    return self.isSymbolImage || [self.description containsString:@"named("] || self.renderingMode == UIImageRenderingModeAlwaysTemplate;
+}
+- (BOOL)isTinted API_AVAILABLE(ios(13.0)){
+    return self.isSymbolImage || self.isAlwaysTemplate;
+}
+- (BOOL)isBundled{
+    return [self.description containsString:@"named("];
+}
+- (BOOL)isAlwaysTemplate{
+    return self.renderingMode == UIImageRenderingModeAlwaysTemplate;
+}
+@end
+@implementation UIImageView(FTRecord)
+- (BOOL)isSystemControlBackground{
+    return self.isButtonBackground || self.isBarBackground;
+}
+- (BOOL)isSystemShadow{
+    return [NSStringFromClass(self.class) isEqualToString:@"_UICutoutShadowView"];
+}
+- (BOOL)isButtonBackground{
+    if([self.superview isKindOfClass:UIButton.class]){
+        UIButton *button = (UIButton *)self.superview;
+        if(button.buttonType == UIButtonTypeCustom) {
+            return [button backgroundImageForState:button.state] == self.image;
+        }
+    }
+    return NO;
+}
+- (BOOL)isBarBackground{
+    if(self.superview){
+        return [NSStringFromClass(self.superview.class) isEqualToString:@"_UIBarBackground"];
+    }
+    return NO;
+}
+@end
 @interface FTUIImageViewRecorder()
 
 @end
@@ -23,10 +59,24 @@
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
         _semanticsOverride = ^FTSRNodeSemantics*(UIView *view, FTViewAttributes* attributes){
-            if([NSStringFromClass(view.class) isEqualToString:@"_UICutoutShadowView"]){
-                return [[FTIgnoredElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+            UIImageView *imageView = (UIImageView *)view;
+            return imageView.isSystemShadow?[[FTIgnoredElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore]:nil;
+        };
+        _tintColorProvider = ^UIColor*(UIImageView *imageView){
+            if (@available(iOS 13.0, *)) {
+                if(imageView.image){
+                    return imageView.image.isTinted?imageView.tintColor:nil;
+                }
             }
             return nil;
+        };
+        _shouldRecordImagePredicate = ^BOOL(UIImageView *imageView){
+            if (@available(iOS 13.0, *)) {
+                if(imageView.image){
+                    return imageView.image.isContextual || imageView.isSystemControlBackground;
+                }
+            }
+            return NO;
         };
     }
     return self;
@@ -44,18 +94,11 @@
         return [FTInvisibleElement constant];
     }
     CGRect contentFrame = CGRectNull;
-    BOOL shouldRecordImage = NO;
-    UIColor *tintColor;
+    BOOL shouldRecordImage = self.shouldRecordImagePredicate(imageView);
     if(imageView.image){
         contentFrame = FTCGRectFitWithContentMode(attributes.frame, imageView.image.size, imageView.contentMode);
-        if (@available(iOS 13.0, *)) {
-            shouldRecordImage = [self imageIsContextual:imageView.image] || [self imageViewIsSystemControlBackground:imageView];
-            BOOL isTinted = imageView.image.isSymbolImage || imageView.image.renderingMode == UIImageRenderingModeAlwaysTemplate;
-            tintColor = isTinted?imageView.tintColor:nil;
-        }
-
     }
-    FTUIImageResource *imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:tintColor];
+    FTUIImageResource *imageResource = [[FTUIImageResource alloc]initWithImage:imageView.image tintColor:self.tintColorProvider(imageView)];
     NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:2 nodeRecorder:self];
     FTUIImageViewBuilder *builder = [[FTUIImageViewBuilder alloc]init];
     builder.wireframeID = [ids[0] intValue];

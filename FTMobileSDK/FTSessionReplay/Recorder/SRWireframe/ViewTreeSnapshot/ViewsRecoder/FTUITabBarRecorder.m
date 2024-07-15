@@ -12,6 +12,21 @@
 #import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
+#import "FTViewTreeRecorder.h"
+#import "FTUIImageViewRecorder.h"
+#import "FTUILabelRecorder.h"
+#import "FTUIViewRecorder.h"
+#import <CoreGraphics/CGImage.h>
+#import "FTSystemColors.h"
+@implementation UIImage(FTTabBarRecorder)
+- (NSString *)uniqueDescription{
+    if(self.CGImage){
+        CGImageRef cgImage = self.CGImage;
+        return [NSString stringWithFormat:@"%zux%zux-%zux%zu-%zu-%u",CGImageGetWidth(cgImage),CGImageGetHeight(cgImage),CGImageGetBitsPerComponent(cgImage),CGImageGetBitsPerPixel(cgImage),CGImageGetBytesPerRow(cgImage),CGImageGetBitmapInfo(cgImage)];
+    }
+    return nil;
+}
+@end
 @implementation FTUITabBarRecorder
 -(instancetype)init{
     self = [super init];
@@ -30,20 +45,41 @@
     builder.wireframeID = [context.viewIDGenerator SRViewID:tabBar nodeRecorder:self];
     builder.wireframeRect = [self inferBarFrame:tabBar context:context];
     builder.attributes = attributes;
-    
-    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyRecord];
-    element.nodes = @[builder];
+    NSMutableArray *records = [NSMutableArray arrayWithArray:@[builder]];
+    NSMutableArray *resources = [NSMutableArray array];
+    [self recordSubtree:tabBar records:records resources:resources context:context];
+    FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
+    element.nodes = records;
+    element.resources = resources;
     return element;
 }
-- (CGColorRef )inferTabBarColor:(UITabBar *)bar{
-    if (@available(iOS 15.0, *)) {
-        // scrollEdgeAppearance
-        if(bar.standardAppearance.backgroundColor){
-            return bar.standardAppearance.backgroundColor.CGColor;
+- (void)recordSubtree:(UITabBar *)tabBar records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
+    FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
+    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
+    imageViewRecorder.tintColorProvider = ^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
+        if(imageView.image){
+            UITabBarItem *currentItemInSelectedState = nil;
+            NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
+            if(uniqueDescription){
+                currentItemInSelectedState = [uniqueDescription isEqualToString:imageView.image.uniqueDescription]?tabBar.items.firstObject:nil;
+            }
+            if(currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState){
+                return tabBar.unselectedItemTintColor?tabBar.unselectedItemTintColor:[[UIColor systemGrayColor] colorWithAlphaComponent:0.5];
+            }
+            return tabBar.tintColor?: [UIColor systemBlueColor];
         }
-    }
-    if(bar.barTintColor){
-        return bar.barTintColor.CGColor;
+        return nil;
+    };
+    viewTreeRecorder.nodeRecorders = @[
+        imageViewRecorder,
+        [[FTUILabelRecorder alloc] init],
+        [[FTUIViewRecorder alloc] init],
+    ];
+    [viewTreeRecorder record:records resources:resources view:tabBar context:context];
+}
+- (CGColorRef )inferTabBarColor:(UITabBar *)bar{
+    if(bar.backgroundColor){
+        return bar.backgroundColor.CGColor;
     }
     if (@available(iOS 13.0, *)) {
         switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
@@ -57,7 +93,7 @@
     }
     return UIColor.whiteColor.CGColor;
 }
-//  TODO: 确认：子视图的 frame 是否有必要添加到 bar 的 frame 上
+
 - (CGRect)inferBarFrame:(UITabBar *)bar context:(FTViewTreeRecordingContext *)context{
     CGRect newRect = bar.frame;
     for (UIView *view in bar.subviews) {
@@ -71,7 +107,7 @@
 @implementation FTUITabBarBuilder
 - (NSArray<FTSRWireframe *> *)buildWireframes{
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.color] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
-    wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[UIColor grayColor].CGColor] width:1];
+    wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[[UIColor lightGrayColor] colorWithAlphaComponent:0.5].CGColor] width:0.5];
     return @[wireframe];
 }
 @end
