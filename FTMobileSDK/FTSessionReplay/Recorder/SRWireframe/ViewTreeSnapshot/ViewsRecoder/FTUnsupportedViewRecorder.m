@@ -23,7 +23,7 @@
 }
 - (FTSRNodeSemantics *)recorder:(nonnull UIView *)view attributes:(nonnull FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context {
     // 是否是不采集的控制器
-    if([context.viewControllerContext isRootView:ViewControllerTypeSafari]||[context.viewControllerContext isRootView:ViewControllerTypeActivity]||[context.viewControllerContext isRootView:ViewControllerTypeSwiftUI]||[view isKindOfClass:[UIProgressView class]] || [view isKindOfClass:[UIActivityIndicatorView class]]){
+    if([context.viewControllerContext isRootView:ViewControllerTypeSafari]||[context.viewControllerContext isRootView:ViewControllerTypeActivity]||[context.viewControllerContext isRootView:ViewControllerTypeSwiftUI]){
         
         // View 是不是不可见
         if (!attributes.isVisible){

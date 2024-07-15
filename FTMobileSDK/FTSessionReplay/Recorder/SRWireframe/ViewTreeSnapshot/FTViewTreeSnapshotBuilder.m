@@ -27,6 +27,8 @@
 #import "FTUIDatePickerRecorder.h"
 #import "FTViewTreeRecorder.h"
 #import "FTUnsupportedViewRecorder.h"
+#import "FTUIProgressViewRecorder.h"
+#import "FTUIActivityIndicatorRecorder.h"
 
 @interface FTViewTreeSnapshotBuilder()
 @property (nonatomic, strong) FTViewTreeRecorder *viewTreeRecorder;
@@ -55,6 +57,8 @@
             [FTUITabBarRecorder new],
             [FTUIPickerViewRecorder new],
             [FTUIDatePickerRecorder new],
+            [FTUIProgressViewRecorder new],
+            [FTUIActivityIndicatorRecorder new],
         ];
     }
     return self;
