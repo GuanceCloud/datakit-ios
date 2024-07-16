@@ -33,8 +33,10 @@ static CompletionHandler g_handler;
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
         if(g_handler){
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                g_handler();
-                g_handler = nil;
+                if(g_handler){
+                    g_handler();
+                    g_handler = nil;
+                }
             });
         }
         return [OHHTTPStubsResponse responseWithData:requestData statusCode:200 headers:nil];
