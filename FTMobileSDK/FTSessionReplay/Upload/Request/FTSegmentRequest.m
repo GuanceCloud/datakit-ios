@@ -36,8 +36,17 @@
     self.parameters = parameters;
     self.segment = event;
 }
+-(NSURL *)absoluteURL{
+    if (FTNetworkInfoManager.sharedInstance.datakitUrl) {
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?precision=ms",FTNetworkInfoManager.sharedInstance.datakitUrl,self.path]];
+    }
+    if(FTNetworkInfoManager.sharedInstance.datawayUrl&&FTNetworkInfoManager.sharedInstance.clientToken){
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@?token=%@&to_headless=true&precision=ms",FTNetworkInfoManager.sharedInstance.datawayUrl,self.path,FTNetworkInfoManager.sharedInstance.clientToken]];
+    }
+    return nil;
+}
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
-    NSString *date =[[NSDate date] ft_stringWithGMTFormat];
+    NSString *date = [[NSDate date] ft_stringWithGMTFormat];
     mutableRequest.HTTPMethod = self.httpMethod;
     //添加header
     [mutableRequest addValue:self.contentType forHTTPHeaderField:@"Content-Type"];

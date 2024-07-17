@@ -97,7 +97,7 @@
                     CGPoint point = [touch locationInView:window];
                     circle.position = point;
                     circle.phase = phase;
-                    circle.timestamp = [NSDate ft_currentNanosecondTimeStamp];
+                    circle.timestamp = [NSDate ft_currentMillisecondTimeStamp];
                     [self.touches addObject:circle];
                 }
             }

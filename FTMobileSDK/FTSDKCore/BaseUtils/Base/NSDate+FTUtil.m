@@ -16,6 +16,10 @@
     NSDate *dateNow = [NSDate date];
     return (long long) ([dateNow timeIntervalSince1970] * 1000000000);
 }
+- (long long)ft_millisecondTimeStamp{
+    long long time= (long long)([self timeIntervalSince1970]*1000);
+    return  time;
+}
 - (long long)ft_nanosecondTimeStamp{
     long long time= (long long)([self timeIntervalSince1970]*1000000000);
     return  time;

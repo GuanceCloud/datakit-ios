@@ -53,7 +53,7 @@
     return [super initWithType:4 timestamp:timestamp];
 }
 -(instancetype)initWithViewTreeSnapshot:(FTViewTreeSnapshot *)viewTreeSnapshot{
-    self = [self initWithTimestamp:[viewTreeSnapshot.date ft_nanosecondTimeStamp]];
+    self = [self initWithTimestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
     if(self){
         _width = viewTreeSnapshot.viewportSize.width;
         _height = viewTreeSnapshot.viewportSize.height;

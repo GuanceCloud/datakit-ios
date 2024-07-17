@@ -61,16 +61,16 @@
         if (self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID){
             // meta focus full
             FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
-            FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_nanosecondTimeStamp]];
+            FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
             focusRecord.hasFocus = YES;
-            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_nanosecondTimeStamp]];
+            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
             fullRecord.wireframes = wireframes;
             [records addObject:metaRecord];
             [records addObject:focusRecord];
             [records addObject:fullRecord];
         }else{
             // 3.2.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
-            MutationData *mutation = [[MutationData alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_nanosecondTimeStamp]];
+            MutationData *mutation = [[MutationData alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
             [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
             if(!mutation.isEmpty){
                 [records addObject:mutation];
