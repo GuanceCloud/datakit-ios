@@ -114,6 +114,13 @@ CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment hori
     }
     return new;
 }
+CGFloat FTCGSizeAspectRatio(CGSize size){
+    if(size.width > 0){
+        return size.height / size.width;
+    }
+    return 0;
+    
+}
 @implementation FTSRUtils
 + (NSString *)colorHexString:(CGColorRef)color {
     if(color == nil){

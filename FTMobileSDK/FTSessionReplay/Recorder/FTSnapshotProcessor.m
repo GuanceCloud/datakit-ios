@@ -19,6 +19,7 @@
 #import "FTFileWriter.h"
 #import "FTConstants.h"
 #import "FTModuleManager.h"
+#import "FTSRUtils.h"
 
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -68,13 +69,25 @@
             [records addObject:metaRecord];
             [records addObject:focusRecord];
             [records addObject:fullRecord];
-        }else{
-            // 3.2.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
+        }else if(self.lastSRWireframes){
+            // 3.2.1.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
             MutationData *mutation = [[MutationData alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
             [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
             if(!mutation.isEmpty){
                 [records addObject:mutation];
             }
+            // 3.2.3.页面尺寸是否发生变化，横屏竖屏切换
+            if(self.lastSnapshot){
+                if(FTCGSizeAspectRatio(self.lastSnapshot.viewportSize) != FTCGSizeAspectRatio(viewTreeSnapshot.viewportSize)){
+                    FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
+                    [records addObject:metaRecord];
+                }
+            }
+        }else{
+            //3.3 有 lastSnapshot ,但未采集到 wireframe 的情况
+            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+            fullRecord.wireframes = wireframes;
+            [records addObject:fullRecord];
         }
         // 4.将 touches 看做增量添加
         if (touches.count>0){
@@ -87,8 +100,9 @@
         // 5.数据写入
     if(records.count>0){
         FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
+        // 5.1. 将页面采集情况同步给 RUM-View
         NSData *data = [self trackRecord:fullRecord];
-        
+        // 5.2. 数据写入文件
         [self.writer write:data];
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
@@ -103,14 +117,11 @@
     NSUInteger segmentsSize = 0;
     if(existingValue!=nil){
         count = [existingValue[FT_RECORDS_COUNT] integerValue] + count;
-//        index = [existingValue[FT_SEGMENTS_COUNT] integerValue];
         segmentsSize = [existingValue[FT_SEGMENTS_TOTAL_RAW_SIZE] integerValue];
     }
-//    record.indexInView = index;
     NSData *data = [record toJSONData];
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
-//        FT_SEGMENTS_COUNT:@(index+1),
         FT_SEGMENTS_TOTAL_RAW_SIZE:@(segmentsSize+data.length),
     };
     // TODO: 是否使用协议代理替换单例

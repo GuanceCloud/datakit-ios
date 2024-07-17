@@ -22,6 +22,8 @@ typedef NS_ENUM(NSUInteger,VerticalAlignment){
 NS_ASSUME_NONNULL_BEGIN
 CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mode);
 CGRect FTCGRectPutInside(CGRect oriRect, CGRect inRect, HorizontalAlignment horizontal,VerticalAlignment vertical);
+
+CGFloat FTCGSizeAspectRatio(CGSize size);
 @interface FTSRUtils : NSObject
 + (NSString *)colorHexString:(CGColorRef)color;
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;
