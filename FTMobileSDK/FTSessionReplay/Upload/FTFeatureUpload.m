@@ -219,11 +219,11 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
         FTEnrichedRecord *segment = ori[i];
         if(indexes[segment.viewID] != nil){
             int idx = [indexes[segment.viewID] intValue];
-            FTEnrichedRecord *current = ori[idx];
+            FTEnrichedRecord *current = result[idx];
             [current mergeAnother:segment];
             result[idx] = current;
         }else{
-            [indexes setValue:@(i) forKey:segment.viewID];
+            [indexes setValue:@(indexes.count) forKey:segment.viewID];
             [result addObject:segment];
             NSNumber *index = [self.indexInViews objectForKey:segment.viewID];
             segment.indexInView = index?@([index intValue] + 1):@(0);
