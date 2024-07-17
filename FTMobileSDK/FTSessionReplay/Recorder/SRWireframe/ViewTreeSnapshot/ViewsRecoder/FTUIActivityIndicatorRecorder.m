@@ -16,6 +16,9 @@
 #import "FTSRUtils.h"
 #import "FTViewTreeRecorder.h"
 #import "FTUIImageViewRecorder.h"
+@interface FTUIActivityIndicatorRecorder()
+@property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
+@end
 @implementation FTUIActivityIndicatorRecorder
 -(instancetype)init{
     self = [super init];
@@ -49,13 +52,16 @@
     }
 }
 - (void)recordSubtree:(UIActivityIndicatorView *)activityIndicator records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
-    FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
-    imageViewRecorder.shouldRecordImagePredicate = ^BOOL(UIImageView * _Nonnull imageView) {
-        return imageView.image != nil;
-    };
-    viewTreeRecorder.nodeRecorders = @[imageViewRecorder];
-    [viewTreeRecorder record:records resources:resources view:activityIndicator context:context];
+    if(!self.subtreeRecorder){
+        FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
+        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
+        imageViewRecorder.shouldRecordImagePredicate = ^BOOL(UIImageView * _Nonnull imageView) {
+            return imageView.image != nil;
+        };
+        viewTreeRecorder.nodeRecorders = @[imageViewRecorder];
+        self.subtreeRecorder = viewTreeRecorder;
+    }
+    [self.subtreeRecorder record:records resources:resources view:activityIndicator context:context];
 }
 @end
 

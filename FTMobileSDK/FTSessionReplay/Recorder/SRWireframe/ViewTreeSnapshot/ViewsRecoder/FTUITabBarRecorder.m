@@ -27,6 +27,9 @@
     return nil;
 }
 @end
+@interface FTUITabBarRecorder()
+@property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
+@end
 @implementation FTUITabBarRecorder
 -(instancetype)init{
     self = [super init];
@@ -54,28 +57,31 @@
     return element;
 }
 - (void)recordSubtree:(UITabBar *)tabBar records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
-    FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
-    imageViewRecorder.tintColorProvider = ^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
-        if(imageView.image){
-            UITabBarItem *currentItemInSelectedState = nil;
-            NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
-            if(uniqueDescription){
-                currentItemInSelectedState = [uniqueDescription isEqualToString:imageView.image.uniqueDescription]?tabBar.items.firstObject:nil;
+    if(!self.subtreeRecorder){
+        FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
+        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
+        imageViewRecorder.tintColorProvider = ^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
+            if(imageView.image){
+                UITabBarItem *currentItemInSelectedState = nil;
+                NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
+                if(uniqueDescription){
+                    currentItemInSelectedState = [uniqueDescription isEqualToString:imageView.image.uniqueDescription]?tabBar.items.firstObject:nil;
+                }
+                if(currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState){
+                    return tabBar.unselectedItemTintColor?tabBar.unselectedItemTintColor:[[UIColor systemGrayColor] colorWithAlphaComponent:0.5];
+                }
+                return tabBar.tintColor?: [UIColor systemBlueColor];
             }
-            if(currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState){
-                return tabBar.unselectedItemTintColor?tabBar.unselectedItemTintColor:[[UIColor systemGrayColor] colorWithAlphaComponent:0.5];
-            }
-            return tabBar.tintColor?: [UIColor systemBlueColor];
-        }
-        return nil;
-    };
-    viewTreeRecorder.nodeRecorders = @[
-        imageViewRecorder,
-        [[FTUILabelRecorder alloc] init],
-        [[FTUIViewRecorder alloc] init],
-    ];
-    [viewTreeRecorder record:records resources:resources view:tabBar context:context];
+            return nil;
+        };
+        viewTreeRecorder.nodeRecorders = @[
+            imageViewRecorder,
+            [[FTUILabelRecorder alloc] init],
+            [[FTUIViewRecorder alloc] init],
+        ];
+        self.subtreeRecorder = viewTreeRecorder;
+    }
+    [self.subtreeRecorder record:records resources:resources view:tabBar context:context];
 }
 - (CGColorRef )inferTabBarColor:(UITabBar *)bar{
     if(bar.backgroundColor){
