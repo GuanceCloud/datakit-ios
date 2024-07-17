@@ -78,14 +78,15 @@
     [FTNetworkMock networkOHHTTPStubsHandler];
     NSURLSession *session = [NSURLSession sharedSession];
     XCTAssertNotNil(session);
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+
     NSURLSessionDataTask *dataTask = [session dataTaskWithURL:self.url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        
+        [expectation fulfill];
     }];
     [dataTask resume];
     XCTAssertNotNil([self getTraceHandler:dataTask]);
-    [self waitAndRunBlockAfterResponse:^{
-        XCTAssertNil([self getTraceHandler:dataTask]);
-    }];
+    [self waitForExpectations:@[expectation]];
+    XCTAssertNil([self getTraceHandler:dataTask]);
 }
 
 
@@ -404,21 +405,11 @@
     XCTAssertNotNil([self getTraceHandler:dataTask]);
 }
 - (void)waitAndRunBlockAfterResponse:(void (^)(void))block {
-    [FTNetworkMock networkOHHTTPStubsHandler];
-    __block BOOL loopingMainThread = YES;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-        [FTNetworkMock registerHandler:^{
-            block();
-            dispatch_semaphore_signal(sema);
-        }];
-        XCTAssertEqual(
-                       dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC)), 0);
-        loopingMainThread = NO;
-    });
-    // This is necessary because the FPRHermeticTestServer callbacks occur on the main thread.
-    while (loopingMainThread) {
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-    }
+    XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
+    [FTNetworkMock registerHandler:^{
+        block();
+        [expectation fulfill];
+    }];
+    [self waitForExpectations:@[expectation]];
 }
 @end
