@@ -87,12 +87,12 @@
             NSError *error;
             NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];
             NSData *compress = [FTCompression compress:data];
-            [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%@-%lld",self.segment.sessionID,self.segment.viewID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
+            [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
             [segmentJson removeObjectForKey:@"records"];
             for (NSString *key in segmentJson.allKeys) {
                 [self.multipartFormBody addFormField:key value:segmentJson[key]];
             }
-            [self.multipartFormBody addFormField:@"raw_segment_size" value:[NSString stringWithFormat:@"%ld",data.length]];
+            [self.multipartFormBody addFormField:@"raw_segment_size" value:[NSString stringWithFormat:@"%ld",compress.length]];
             mutableRequest.HTTPBody = [self.multipartFormBody build];
         }
     }
