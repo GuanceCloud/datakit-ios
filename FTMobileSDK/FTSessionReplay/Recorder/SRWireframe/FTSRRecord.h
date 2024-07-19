@@ -33,18 +33,22 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FTSRIncrementalSnapshotRecord : FTSRRecord
-@property (nonatomic, assign) int source;
+@property (nonatomic, strong) FTSRBaseFrame *data;
+-(instancetype)initWithData:(FTSRBaseFrame *)data timestamp:(long long)timestamp;
 @end
 @protocol Adds;
 @interface Adds : FTSRBaseFrame
-@property (nonatomic, copy) NSString *previousId;
+@property (nonatomic, assign) int previousId;
 @property (nonatomic, strong) FTSRWireframe *wireframe;
 @end
 @protocol Removes;
 @interface Removes : FTSRBaseFrame
 @property (nonatomic, assign) long long identifier;
 @end
-@interface MutationData : FTSRIncrementalSnapshotRecord
+@interface FTSRIncrementalData : FTSRBaseFrame
+@property (nonatomic, assign) int source;
+@end
+@interface MutationData : FTSRIncrementalData
 @property (nonatomic, strong) NSArray<Adds> *adds;
 @property (nonatomic, strong) NSArray<Removes> *removes;
 @property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
@@ -52,18 +56,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isEmpty;
 @end
 
-@interface ViewportResizeData : FTSRIncrementalSnapshotRecord
+@interface ViewportResizeData : FTSRIncrementalData
 @property (nonatomic, assign) int height;
 @property (nonatomic, assign) int width;
+-(instancetype)initWithViewportSize:(CGSize)viewportSize;
 @end
 
-@interface PointerInteractionData : FTSRIncrementalSnapshotRecord
-@property (nonatomic, assign) double x;
-@property (nonatomic, assign) double y;
+@interface PointerInteractionData : FTSRIncrementalData
+@property (nonatomic, assign) int x;
+@property (nonatomic, assign) int y;
 @property (nonatomic, assign) int pointerId;
 @property (nonatomic, copy) NSString *pointerEventType;
 @property (nonatomic, copy) NSString *pointerType;
--(instancetype)initWithTimestamp:(long long)timestamp touch:(FTTouchCircle *)touch;
+-(instancetype)initWithTouch:(FTTouchCircle *)touch;
 @end
 
 @interface FTEnrichedRecord : FTSRBaseFrame
@@ -71,16 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *sessionID;
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
-//@property (nonatomic, assign) NSUInteger indexInView;
-@property (nonatomic, assign) long long start;
-@property (nonatomic, assign) long long end;
-@property (nonatomic, assign) long long recordsCount;
-@property (nonatomic, assign) BOOL hasFullSnapshot;
-@property (nonatomic, assign) NSNumber *indexInView;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
--(instancetype)initWithData:(NSData *)data;
-- (void)mergeAnother:(FTEnrichedRecord *)another;
-- (NSDictionary *)toJSONODict;
+//-(instancetype)initWithData:(NSData *)data;
+//- (void)mergeAnother:(FTEnrichedRecord *)another;
 @end
 
 @interface FTEnrichedResource : FTSRBaseFrame

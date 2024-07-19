@@ -463,6 +463,8 @@
 		178693A52C4130D3001F87A0 /* FTUIActivityIndicatorRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 178693A32C4130D3001F87A0 /* FTUIActivityIndicatorRecorder.m */; };
 		178693A82C41399C001F87A0 /* FTUIProgressViewRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 178693A62C41399C001F87A0 /* FTUIProgressViewRecorder.h */; };
 		178693A92C41399C001F87A0 /* FTUIProgressViewRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 178693A72C41399C001F87A0 /* FTUIProgressViewRecorder.m */; };
+		1791AEDF2C4A43330089EDEC /* FTSegmentJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = 1791AEDD2C4A43330089EDEC /* FTSegmentJSON.h */; };
+		1791AEE02C4A43330089EDEC /* FTSegmentJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 1791AEDE2C4A43330089EDEC /* FTSegmentJSON.m */; };
 		1799581429D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; };
 		1799581529D43FDE0033B46E /* FTPresetProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 1799581129D43FDE0033B46E /* FTPresetProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1799581629D43FDE0033B46E /* FTPresetProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 1799581229D43FDE0033B46E /* FTPresetProperty.m */; };
@@ -911,6 +913,8 @@
 		178693A62C41399C001F87A0 /* FTUIProgressViewRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTUIProgressViewRecorder.h; sourceTree = "<group>"; };
 		178693A72C41399C001F87A0 /* FTUIProgressViewRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTUIProgressViewRecorder.m; sourceTree = "<group>"; };
 		178EF5DC2AEBBD57002A407C /* FTAutoInterceptorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTAutoInterceptorProtocol.h; sourceTree = "<group>"; };
+		1791AEDD2C4A43330089EDEC /* FTSegmentJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSegmentJSON.h; sourceTree = "<group>"; };
+		1791AEDE2C4A43330089EDEC /* FTSegmentJSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSegmentJSON.m; sourceTree = "<group>"; };
 		1799581129D43FDE0033B46E /* FTPresetProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTPresetProperty.h; sourceTree = "<group>"; };
 		1799581229D43FDE0033B46E /* FTPresetProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTPresetProperty.m; sourceTree = "<group>"; };
 		17AB769529D432DE008FBBF5 /* FTMemoryMonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTMemoryMonitor.h; sourceTree = "<group>"; };
@@ -1271,6 +1275,8 @@
 		171D2D102C3E7AC500E7FBAE /* Request */ = {
 			isa = PBXGroup;
 			children = (
+				1791AEDD2C4A43330089EDEC /* FTSegmentJSON.h */,
+				1791AEDE2C4A43330089EDEC /* FTSegmentJSON.m */,
 				171D2D072C3E7AC500E7FBAE /* FTFeatureRequestBuilder.h */,
 				171D2D082C3E7AC500E7FBAE /* FTRequestMultipartFormBody.h */,
 				171D2D092C3E7AC500E7FBAE /* FTRequestMultipartFormBody.m */,
@@ -2030,6 +2036,7 @@
 				171D2DC02C3FDDCB00E7FBAE /* FTModuleManager.h in Headers */,
 				1748A0042BE0BF5800B921FB /* FTLongTaskManager.h in Headers */,
 				171D2DA92C3E7AC600E7FBAE /* FTUploadConditions.h in Headers */,
+				1791AEDF2C4A43330089EDEC /* FTSegmentJSON.h in Headers */,
 				171D2D872C3E7AC600E7FBAE /* FTReader.h in Headers */,
 				171D2D5F2C3E7AC500E7FBAE /* FTSRUtils.h in Headers */,
 				171D2D392C3E7AC500E7FBAE /* FTUIPickerViewRecorder.h in Headers */,
@@ -2600,6 +2607,7 @@
 				171D2D6E2C3E7AC600E7FBAE /* UIImage+FTSRIdentifier.m in Sources */,
 				1763BDB429DFF050009EE026 /* FTRequestBody.m in Sources */,
 				171D2DAF2C3E7AC600E7FBAE /* FTPerformancePresetOverride.m in Sources */,
+				1791AEE02C4A43330089EDEC /* FTSegmentJSON.m in Sources */,
 				171D2D582C3E7AC500E7FBAE /* FTJSONKeyMapper.m in Sources */,
 				17E32BA12BEC70E700F4685C /* FTErrorMonitorInfo.m in Sources */,
 				1776062E29D1347500D17137 /* FTWKWebViewHandler.m in Sources */,

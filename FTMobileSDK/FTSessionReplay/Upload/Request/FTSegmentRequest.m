@@ -11,12 +11,12 @@
 #import "NSDate+FTUtil.h"
 #import "FTNetworkInfoManager.h"
 #import "FTCompression.h"
-#import "FTSRRecord.h"
+#import "FTSegmentJSON.h"
 @interface FTSegmentRequest()
 @property (nonatomic, strong) id<FTMultipartFormBodyProtocol> multipartFormBody;
 @property (nonatomic, strong) NSDictionary *parameters;
 //@property (nonatomic, strong) NSArray<FTSegmentJSON*> *segments;
-@property (nonatomic, strong) FTEnrichedRecord *segment;
+@property (nonatomic, strong) FTSegmentJSON *segment;
 @end
 @implementation FTSegmentRequest
 -(instancetype)init{

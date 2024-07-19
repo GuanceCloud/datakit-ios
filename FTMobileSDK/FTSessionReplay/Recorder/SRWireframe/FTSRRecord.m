@@ -38,12 +38,11 @@
 }
 @end
 @implementation FTSRIncrementalSnapshotRecord
-
--(instancetype)initWithSource:(int)source timestamp:(long long)timestamp{
+-(instancetype)initWithData:(FTSRBaseFrame *)data timestamp:(long long)timestamp{
     self = [super initWithTimestamp:timestamp];
     if(self){
-        self.source = source;
         self.type = 11;
+        self.data = data;
     }
     return self;
 }
@@ -79,6 +78,8 @@
     return keyMapper;
 }
 @end
+@implementation FTSRIncrementalData
+@end
 @implementation Adds
 
 @end
@@ -106,16 +107,12 @@
 }
 @end
 @implementation MutationData
-+(FTJSONKeyMapper *)keyMapper{
-    FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
-        @"adds":@"data.adds",
-        @"removes":@"data.removes",
-        @"updates":@"data.updates",
-    }];
-    return keyMapper;
-}
--(instancetype)initWithTimestamp:(long long)timestamp{
-    return [super initWithSource:0 timestamp:timestamp];
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.source = 0;
+    }
+    return self;
 }
 /// 增量逻辑：
 /// 子序列相同的部分判断是否 update
@@ -154,7 +151,7 @@
             Adds *add = [[Adds alloc]init];
             if (newIndex - 1 >= 0){
                 int pre = newWireframes[newIndex-1].identifier;
-                add.previousId = @(pre).stringValue;
+                add.previousId = pre;
             }
             add.wireframe = newWireframes[newIndex];
             [adds addObject:add];
@@ -187,7 +184,7 @@
                 Adds *add = [[Adds alloc]init];
                 if (i - 1 >= 0){
                     int pre = newWireframes[i-1].identifier;
-                    add.previousId = @(pre).stringValue;
+                    add.previousId = pre;
                 }
                 add.wireframe = newWireframes[i];
                 [adds addObject:add];
@@ -199,26 +196,39 @@
             }
         }
     }
-
-    self.removes = removes.count>0?removes:nil;
-    self.updates = updates.count>0?updates:nil;
-    self.adds = adds.count>0?adds:nil;
+    self.removes = removes;
+    self.updates = updates;
+    self.adds = adds;
 }
 - (BOOL)isEmpty{
     return !(self.removes.count>0 || self.updates.count>0 || self.adds.count>0);
 }
 @end
 @implementation ViewportResizeData
--(instancetype)initWithTimestamp:(long long)timestamp{
-    return [super initWithSource:4 timestamp:timestamp];
+-(instancetype)initWithViewportSize:(CGSize)viewportSize{
+    self = [super init];
+    if(self){
+        self.source = 4;
+        _width = viewportSize.width;
+        _height = viewportSize.height;
+    }
+    return self;
+
+}
+-(instancetype)init{
+    return [self initWithViewportSize:CGSizeZero];
 }
 @end
 @implementation PointerInteractionData
--(instancetype)initWithTimestamp:(long long)timestamp{
-    return [super initWithSource:9 timestamp:timestamp];
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.source = 9;
+    }
+    return self;
 }
--(instancetype)initWithTimestamp:(long long)timestamp touch:(FTTouchCircle *)touch{
-    self = [self initWithTimestamp:timestamp];
+-(instancetype)initWithTouch:(FTTouchCircle *)touch{
+    self = [self init];
     if(self){
         self.x = touch.position.x;
         self.y = touch.position.y;
@@ -251,58 +261,8 @@
         _applicationID = context.applicationID;
         _viewID = context.viewID;
         _records = records;
-        _start = LONG_MAX;
-        _end = LONG_MIN;
-        for (FTSRRecord *record in records) {
-            if (record.type == 2 || record.type == 10){
-                _hasFullSnapshot = YES;
-            }
-            long long startTimestamp = record.timestamp;
-            long long endTimestamp = record.timestamp;
-            _start = MIN(_start, startTimestamp);
-            _end = MAX(_end, endTimestamp);
-        }
-        _recordsCount = records.count;
     }
     return self;
-}
--(instancetype)initWithData:(NSData *)data{
-    self = [super init];
-    if(self){
-        NSError *error;
-        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        _applicationID = [dict valueForKey:@"applicationID"];
-        _sessionID = [dict valueForKey:@"sessionID"];
-        _viewID = [dict valueForKey:@"viewID"];
-        _start = [[dict valueForKey:@"start"] longLongValue];
-        _end = [[dict valueForKey:@"end"] longLongValue];
-        _hasFullSnapshot = [[dict valueForKey:@"hasFullSnapshot"] boolValue];
-        NSArray<FTSRRecord> *array = dict[@"records"];
-        _recordsCount = array.count;
-        _records = array;
-    }
-    return self;
-}
-- (void)mergeAnother:(FTEnrichedRecord *)another{
-    NSMutableArray *records = [NSMutableArray arrayWithArray:_records];
-    [records addObjectsFromArray:another.records];
-    self.records = (NSArray<FTSRRecord>*)records;
-    _start = MIN(_start, another.start);
-    _end = MAX(_end, another.end);
-    _recordsCount = _recordsCount + another.recordsCount;
-    _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
-}
-- (NSDictionary *)toJSONODict{
-    return @{FT_RUM_KEY_SESSION_ID:self.sessionID,
-             FT_KEY_VIEW_ID:self.viewID,
-             FT_APP_ID:self.applicationID,
-             @"start": [NSString stringWithFormat:@"%lld",self.start],
-             @"end":[NSString stringWithFormat:@"%lld",self.end],
-             @"has_full_snapshot":self.hasFullSnapshot?@"true":@"false",
-             @"records_count":[NSString stringWithFormat:@"%lld",self.recordsCount],
-             @"records":self.records,
-             @"index_in_view":[NSString stringWithFormat:@"%@",self.indexInView],
-    };
 }
 @end
 @implementation FTEnrichedResource

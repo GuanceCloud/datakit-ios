@@ -19,7 +19,7 @@
 #import "FTTLV.h"
 #import "FTFile.h"
 #import "FTUploadConditions.h"
-#import "FTSRRecord.h"
+#import "FTSegmentJSON.h"
 #import "FTDataStore.h"
 NSString *const FT_IndexInView = @"ft-index-in-view";
 
@@ -187,9 +187,10 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
     NSArray *events = bath.events;
     events = [self mergeSegments:events];
     NSMutableArray *mutableEvents = [NSMutableArray arrayWithArray:events];
-    for (FTEnrichedRecord *record in events) {
+    for (FTSegmentJSON *record in events) {
         if([self flushWithEvent:record parameters:parameters]){
             [mutableEvents removeObject:record];
+            NSLog(@"[SESSION REPLAY] %@",[record toJSONString]);
             [self cacheIndexInView:record.indexInView view:record.viewID];
         }else{
             NSMutableArray *tlvs = [NSMutableArray new];
@@ -210,16 +211,16 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
 - (NSArray *)mergeSegments:(NSArray *)segments{
     NSMutableArray *ori = [NSMutableArray array];
     for (NSData *data in segments) {
-        FTEnrichedRecord *segment =  [[FTEnrichedRecord alloc]initWithData:data];
+        FTSegmentJSON *segment =  [[FTSegmentJSON alloc]initWithData:data];
         [ori addObject:segment];
     }
     NSMutableArray *result = [NSMutableArray array];
     NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
     for (int i=0; i<ori.count; i++) {
-        FTEnrichedRecord *segment = ori[i];
+        FTSegmentJSON *segment = ori[i];
         if(indexes[segment.viewID] != nil){
             int idx = [indexes[segment.viewID] intValue];
-            FTEnrichedRecord *current = result[idx];
+            FTSegmentJSON *current = result[idx];
             [current mergeAnother:segment];
             result[idx] = current;
         }else{

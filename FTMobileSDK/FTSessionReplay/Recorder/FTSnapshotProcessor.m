@@ -71,16 +71,18 @@
             [records addObject:fullRecord];
         }else if(self.lastSRWireframes){
             // 3.2.1.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
-            MutationData *mutation = [[MutationData alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+            MutationData *mutation = [[MutationData alloc]init];
             [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
             if(!mutation.isEmpty){
-                [records addObject:mutation];
+                FTSRIncrementalSnapshotRecord *mutationRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:mutation timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
+                [records addObject:mutationRecord];
             }
             // 3.2.3.页面尺寸是否发生变化，横屏竖屏切换
             if(self.lastSnapshot){
                 if(FTCGSizeAspectRatio(self.lastSnapshot.viewportSize) != FTCGSizeAspectRatio(viewTreeSnapshot.viewportSize)){
-                    FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
-                    [records addObject:metaRecord];
+                    ViewportResizeData *viewport = [[ViewportResizeData alloc]initWithViewportSize:viewTreeSnapshot.viewportSize];
+                    FTSRIncrementalSnapshotRecord *viewportRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:viewport timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
+                    [records addObject:viewportRecord];
                 }
             }
         }else{
@@ -91,10 +93,10 @@
         }
         // 4.将 touches 看做增量添加
         if (touches.count>0){
-            long long tm =  [touches firstObject].timestamp;
             for (FTTouchCircle *touch in touches) {
-                PointerInteractionData *pointer = [[PointerInteractionData alloc]initWithTimestamp:tm touch:touch];
-                [records addObject:pointer];
+                PointerInteractionData *pointer = [[PointerInteractionData alloc]initWithTouch:touch];
+                FTSRIncrementalSnapshotRecord *pointerRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:pointer timestamp:touch.timestamp];
+                [records addObject:pointerRecord];
             }
         }
         // 5.数据写入
