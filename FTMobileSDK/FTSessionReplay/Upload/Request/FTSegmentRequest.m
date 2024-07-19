@@ -86,7 +86,9 @@
             [segmentJson addEntriesFromDictionary:self.parameters];
             NSError *error;
             NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];
-            NSData *compress = [FTCompression compress:data];
+            NSMutableData *mutableData = [NSMutableData dataWithData:data];
+            [mutableData appendData:[self.multipartFormBody newlineByte]];
+            NSData *compress = [FTCompression compress:mutableData];
             [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
             [segmentJson removeObjectForKey:@"records"];
             for (NSString *key in segmentJson.allKeys) {
