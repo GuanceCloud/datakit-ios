@@ -35,9 +35,14 @@
     [self.touches removeAllObjects];
     return array;
 }
+- (int)persistNextID:(UITouch *)touch{
+    int newID = [self getNextID];
+    touch.identifier = @(newID);
+    return newID;
+}
 - (int)getNextID{
     int nextID = _currentID;
-    _currentID = _currentID + 1 < UINT_MAX ? :0;
+    _currentID = _currentID < UINT_MAX ?(_currentID+1):0;
     return nextID;
 }
 - (void)swizzleApplicationTouches{
@@ -70,27 +75,28 @@
                     switch (touch.phase) {
                         case UITouchPhaseBegan:
                         case UITouchPhaseRegionEntered:
-                            touch.identifier = [self getNextID];
+                            touch.identifier = @([self persistNextID:touch]);
                             phase = TouchDown;
-                            circle.identifier = touch.identifier;
+                            circle.identifier = [touch.identifier intValue];
                             break;
                         case UITouchPhaseMoved:
                         case UITouchPhaseStationary:
                         case UITouchPhaseRegionMoved:
-                            if(touch.identifier <= 0){
-                                touch.identifier = [self getNextID];
+                            if(touch.identifier == nil){
+                                touch.identifier = @([self persistNextID:touch]);
                             }
                             phase = TouchMoved;
-                            circle.identifier = touch.identifier;
+                            circle.identifier = [touch.identifier intValue];
                             break;
                         case UITouchPhaseEnded:
                         case UITouchPhaseCancelled:
                         case UITouchPhaseRegionExited:
                             phase = TouchUp;
-                            if(touch.identifier <= 0){
+                            if(touch.identifier == nil){
                                 circle.identifier = [self getNextID];
                             }else{
-                                circle.identifier = touch.identifier;
+                                circle.identifier = [touch.identifier intValue];
+                                touch.identifier = nil;
                             }
                             break;
                     }

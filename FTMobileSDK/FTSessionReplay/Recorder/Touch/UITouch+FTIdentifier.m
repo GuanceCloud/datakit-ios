@@ -11,10 +11,10 @@
 static char *touchIdentifier = "FTTouchIdentifier";
 
 @implementation UITouch (FTIdentifier)
--(void)setIdentifier:(int )identifier{
-    objc_setAssociatedObject(self, &touchIdentifier, @(identifier), OBJC_ASSOCIATION_COPY);
+-(void)setIdentifier:(NSNumber*)identifier{
+    objc_setAssociatedObject(self, &touchIdentifier, identifier, OBJC_ASSOCIATION_RETAIN);
 }
--(int )identifier{
-    return [objc_getAssociatedObject(self, &touchIdentifier) intValue];
+-(NSNumber*)identifier{
+    return objc_getAssociatedObject(self, &touchIdentifier);
 }
 @end

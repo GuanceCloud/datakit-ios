@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UITouch (FTIdentifier)
-@property (nonatomic, assign) int identifier;
+@property (nonatomic, strong,nullable) NSNumber *identifier;
 @end
 
 NS_ASSUME_NONNULL_END
