@@ -73,7 +73,7 @@
     NSMutableArray *resource = [[NSMutableArray alloc]init];
     [self.viewTreeRecorder record:node resources:resource view:rootView context:recordingContext];
     FTViewTreeSnapshot *viewTree = [[FTViewTreeSnapshot alloc]init];
-    viewTree.date = [NSDate date];
+    viewTree.date = context.date;
     viewTree.context = context;
     viewTree.viewportSize = rootView.bounds.size;
     viewTree.nodes = node;

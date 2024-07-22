@@ -66,7 +66,7 @@
         return obj1.fileCreationDate > obj2.fileCreationDate;
     }]];
     
-    __block long long accumulatedFilesSize;
+    __block long long accumulatedFilesSize = 0;
     [filesSortedByCreationDate enumerateObjectsUsingBlock:^(FTFile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         accumulatedFilesSize += [obj size];
     }];
@@ -108,7 +108,11 @@
         }
     }];
     NSArray *filesFromOldest = [deleteObsolete sortedArrayUsingComparator:^NSComparisonResult(FTFile * obj1, FTFile * obj2) {
-        return obj1.fileCreationDate < obj2.fileCreationDate;
+        if([obj1.name integerValue] < [obj2.name integerValue]){
+            return NSOrderedAscending;
+        }else{
+            return NSOrderedDescending;
+        }
     }];
     NSMutableArray *readableArray = [NSMutableArray new];
     [filesFromOldest enumerateObjectsUsingBlock:^(FTFile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -120,20 +124,24 @@
         NSInteger length = limit > readableArray.count?readableArray.count:limit;
         return [readableArray subarrayWithRange:NSMakeRange(0, length)];
     }
-    __block NSUInteger index = 0;
+    __block NSInteger index = -1;
     __weak typeof(self) weakSelf = self;
     if(readableArray.count == 0){
         return nil;
     }
     [readableArray enumerateObjectsUsingBlock:^(FTFile * obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:obj.fileCreationDate];
-        if(fileAge < weakSelf.performance.minFileAgeForRead){
+        if(fileAge >= weakSelf.performance.minFileAgeForRead){
             index = idx;
+        }else{
             *stop = YES;
         }
     }];
-    NSInteger length = limit > index+1?index+1:limit;
-    return [readableArray subarrayWithRange:NSMakeRange(0, length)];
+    if(index>=0){
+        NSInteger length = limit > index+1?index+1:limit;
+        return [readableArray subarrayWithRange:NSMakeRange(0, length)];
+    }
+    return nil;
 }
 
 - (void)deleteReadableFile:(nonnull id<FTReadableFile>)readableFile { 
@@ -142,7 +150,7 @@
 
 - (FTFile *)deleteFileIfItsObsolete:(FTFile *)file{
     NSTimeInterval fileAge = [[NSDate date] timeIntervalSinceDate:file.fileCreationDate];
-    if(fileAge > self.performance.maxFileAgeForRead){
+    if(fileAge >= self.performance.maxFileAgeForRead){
         [file deleteFile];
         return nil;
     }

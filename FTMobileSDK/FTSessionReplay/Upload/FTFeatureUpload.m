@@ -153,8 +153,8 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
             return;
         }
         NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
-        id<FTReadableFile> file = [mutableFiles lastObject];
-        [mutableFiles removeLastObject];
+        id<FTReadableFile> file = [mutableFiles firstObject];
+        [mutableFiles removeObject:file];
         
         FTBatch *batch = [strongSelf.fileReader readBatch:file];
         if(batch){
