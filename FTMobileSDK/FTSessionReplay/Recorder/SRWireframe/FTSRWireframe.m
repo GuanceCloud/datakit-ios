@@ -340,7 +340,7 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
 @end
 @implementation FTSRImageWireframe
 -(instancetype)init{
-    return [self initWithIdentifier:0 frame:CGRectNull];
+    return [self initWithIdentifier:0 frame:CGRectZero];
 }
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame {
     self = [super initWithIdentifier:identifier frame:frame];

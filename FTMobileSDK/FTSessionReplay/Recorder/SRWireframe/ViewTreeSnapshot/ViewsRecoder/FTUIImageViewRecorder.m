@@ -93,7 +93,7 @@
     if(!attributes.hasAnyAppearance && imageView.image == nil ){
         return [FTInvisibleElement constant];
     }
-    CGRect contentFrame = CGRectNull;
+    CGRect contentFrame = CGRectZero;
     BOOL shouldRecordImage = self.shouldRecordImagePredicate(imageView);
     if(imageView.image){
         contentFrame = FTCGRectFitWithContentMode(attributes.frame, imageView.image.size, imageView.contentMode);
@@ -142,7 +142,7 @@
             imageWireframe.clip = self.clipsToBounds?[self clip]:nil;
             contentWireframe = imageWireframe;
         }else{
-            FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.clipsToBounds?[self relativeIntersectedRect]:CGRectNull label:@"Content Image"];
+            FTSRPlaceholderWireframe *placeholderWireframe = [[FTSRPlaceholderWireframe alloc]initWithIdentifier:self.imageWireframeID frame:self.clipsToBounds?[self relativeIntersectedRect]:self.contentFrame label:@"Content Image"];
             contentWireframe = placeholderWireframe;
         }
         return @[wireframe,contentWireframe];
