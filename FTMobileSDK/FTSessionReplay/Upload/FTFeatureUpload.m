@@ -190,7 +190,6 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
     for (FTSegmentJSON *record in events) {
         if([self flushWithEvent:record parameters:parameters]){
             [mutableEvents removeObject:record];
-            NSLog(@"[SESSION REPLAY] %@",[record toJSONString]);
             [self cacheIndexInView:record.indexInView view:record.viewID];
         }else{
             NSMutableArray *tlvs = [NSMutableArray new];
