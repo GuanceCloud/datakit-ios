@@ -30,19 +30,20 @@
         return [FTInvisibleElement constant];
     }
     UISlider *slider = (UISlider *)view;
-    NSArray *ids = [context.viewIDGenerator SRViewIDs:view size:4 nodeRecorder:self];
+    NSArray *ids = [context.viewIDGenerator SRViewIDs:slider size:4 nodeRecorder:self];
     FTUISliderBuilder *builder = [[FTUISliderBuilder alloc]init];
+    builder.wireframeRect = attributes.frame;
     builder.attributes = attributes;
-    builder.isMasked = context.recorder.privacy != FTSRPrivacyMaskNone;
+    builder.isMasked = context.recorder.privacy.shouldMaskInputElements;
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.minTrackWireframeID = [ids[1] intValue];
     builder.maxTrackWireframeID = [ids[2] intValue];
     builder.thumbWireframeID = [ids[3] intValue];
-    builder.isEnabled = slider.enabled;
+    builder.isEnabled = slider.isEnabled;
     builder.min = slider.minimumValue;
     builder.max = slider.maximumValue;
     builder.value = slider.value;
-    builder.minTrackTintColor = slider.minimumTrackTintColor.CGColor;
+    builder.minTrackTintColor = slider.minimumTrackTintColor.CGColor?slider.minimumTrackTintColor.CGColor:slider.tintColor.CGColor;
     builder.maxTrackTintColor = slider.maximumTrackTintColor.CGColor;
     builder.thumbTintColor = slider.thumbTintColor.CGColor;
     
@@ -67,7 +68,7 @@
 }
 - (NSArray<FTSRWireframe *> *)createMaskWireframes{
     CGRect slice, remainder;
-    CGRectDivide(self.wireframeRect, &slice, &remainder, 3, CGRectMinXEdge);
+    CGRectDivide(self.wireframeRect, &slice, &remainder, 3, CGRectMinYEdge);
     CGRect trackFrame = FTCGRectPutInside(slice, self.wireframeRect, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
     FTSRShapeWireframe *sliderWireframe = [[FTSRShapeWireframe alloc]
                                            initWithIdentifier:self.minTrackWireframeID
@@ -86,7 +87,7 @@
     if(self.max<self.min){
         return @[];
     }
-    float progress = (self.value - self.min) / (self.max-self.min) ;
+    float progress = (self.value - self.min) / ((self.max-self.min)*1.0) ;
     CGRect left, right;
     CGRectDivide(self.wireframeRect, &left, &right, self.wireframeRect.size.width*progress,CGRectMinXEdge);
 
@@ -120,7 +121,7 @@
     FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
                                       initWithIdentifier:self.minTrackWireframeID
                                       frame:realR 
-                                      backgroundColor:self.minTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor]
+                                      backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     if(self.attributes.hasAnyAppearance){

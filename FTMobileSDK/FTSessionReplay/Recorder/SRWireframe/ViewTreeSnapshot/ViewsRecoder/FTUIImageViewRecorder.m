@@ -133,7 +133,7 @@
 @implementation FTUIImageViewBuilder
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.attributes.frame attributes:self.attributes];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect attributes:self.attributes];
     if (!CGRectIsNull(self.contentFrame)){
         FTSRWireframe *contentWireframe;
         if(self.imageResource){
@@ -167,5 +167,8 @@
     CGFloat bottom = MAX(self.contentFrame.size.height - (relativeIntersectedRect.size.height + top), 0);
     CGFloat right = MAX(self.contentFrame.size.width - (relativeIntersectedRect.size.width + left), 0);
     return [[FTSRContentClip alloc]initWithLeft:left top:top right:right bottom:bottom];
+}
+-(CGRect)wireframeRect{
+    return self.attributes.frame;
 }
 @end

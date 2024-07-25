@@ -39,6 +39,7 @@
     builder.isDarkMode = switchView.usesDarkMode;
     builder.isOn = switchView.isOn;
     builder.isEnabled = switchView.isEnabled;
+    builder.isMasked = context.recorder.privacy.shouldMaskInputElements;
     builder.thumbTintColor = switchView.thumbTintColor.CGColor;
     builder.onTintColor = switchView.onTintColor.CGColor;
     builder.offTintColor = switchView.tintColor.CGColor;
@@ -85,7 +86,7 @@
                                      opacity:self.isEnabled? @(self.attributes.alpha):@(0.5)];
     
     CGRect thumbContainer = CGRectInset(self.wireframeRect, 2, 2);
-    CGRect thumbFrame = FTCGRectPutInside(CGRectMake(0, 0, thumbContainer.size.width, thumbContainer.size.height), thumbContainer, self.isOn?HorizontalAlignmentRight:HorizontalAlignmentLeft, VerticalAlignmentMiddle);
+    CGRect thumbFrame = FTCGRectPutInside(CGRectMake(0, 0, thumbContainer.size.height, thumbContainer.size.height), thumbContainer, self.isOn?HorizontalAlignmentRight:HorizontalAlignmentLeft, VerticalAlignmentMiddle);
     NSString *thumbColor = self.thumbTintColor ? [FTSRUtils colorHexString:self.thumbTintColor] : (self.isDarkMode && !self.isEnabled)? [FTSRUtils colorHexString:UIColor.grayColor.CGColor]:[FTSRUtils colorHexString:UIColor.whiteColor.CGColor];
 
     FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]

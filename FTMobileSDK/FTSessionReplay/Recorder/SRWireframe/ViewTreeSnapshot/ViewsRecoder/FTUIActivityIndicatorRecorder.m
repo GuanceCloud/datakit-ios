@@ -42,7 +42,7 @@
         builder.backgroundColor = activityIndicator.backgroundColor.CGColor;
         NSMutableArray *records = [NSMutableArray arrayWithArray:@[builder]];
         NSMutableArray *resources = [NSMutableArray array];
-        [self recordSubtree:activityIndicator records:records resources:records context:context];
+        [self recordSubtree:activityIndicator records:records resources:resources context:context];
         FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
         element.nodes = records;
         element.resources = resources;
@@ -52,7 +52,7 @@
     }
 }
 - (void)recordSubtree:(UIActivityIndicatorView *)activityIndicator records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
-    if(!self.subtreeRecorder){
+    if(!_subtreeRecorder){
         FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
         FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
         imageViewRecorder.shouldRecordImagePredicate = ^BOOL(UIImageView * _Nonnull imageView) {
@@ -71,7 +71,9 @@
     FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     return @[wireframe];
 }
-
+-(CGRect)wireframeRect{
+    return self.attributes.frame;
+}
 @end
 
 

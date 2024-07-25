@@ -27,7 +27,7 @@ typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 @property (nonatomic, assign) BOOL shouldRecordImage;
 
 @property (nonatomic, strong) FTUIImageResource *imageResource;
-@property (nonatomic, assign) CGSize wireframeRect;
+@property (nonatomic, assign) CGRect wireframeRect;
 @end
 @interface FTUIImageViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) SemanticsOverride semanticsOverride;

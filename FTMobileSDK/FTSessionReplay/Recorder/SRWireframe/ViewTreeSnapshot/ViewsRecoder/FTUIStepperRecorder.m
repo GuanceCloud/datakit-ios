@@ -71,7 +71,7 @@
     
     FTSRShapeWireframe *minus = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minusWireframeID frame:FTCGRectPutInside(horizontalElementRect, leftButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isMinusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor]  cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
     
-    FTSRShapeWireframe *plusHorizontal = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusHorizontalWireframeID frame:FTCGRectPutInside(horizontalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isMinusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor] cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
+    FTSRShapeWireframe *plusHorizontal = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusHorizontalWireframeID frame:FTCGRectPutInside(horizontalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor] cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
     
 
     FTSRShapeWireframe *plusVertical = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusVerticalWireframeID frame:FTCGRectPutInside(verticalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor] cornerRadius:@(verticalElementRect.size.width) opacity:nil];

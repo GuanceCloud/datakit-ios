@@ -20,13 +20,18 @@
 #import "FTViewTreeRecordingContext.h"
 #import "FTUIPickerViewRecorder.h"
 @interface FTUIDatePickerRecorder()
-
+@property (nonatomic, strong) FTCompactStyleDatePickerRecorder *compactRecorder;
+@property (nonatomic, strong) FTInlineStyleDatePickerRecorder *inlineRecorder;
+@property (nonatomic, strong) FTWheelsStyleDatePickerRecorder *wheelRecorder;
 @end
 @implementation FTUIDatePickerRecorder
 -(instancetype)init{
     self = [super init];
     if(self){
-        _identifier = [[NSUUID UUID] UUIDString];
+        _identifier = [NSUUID UUID].UUIDString;
+        _compactRecorder = [[FTCompactStyleDatePickerRecorder alloc] init];
+        _inlineRecorder = [[FTInlineStyleDatePickerRecorder alloc] init];
+        _wheelRecorder = [[FTWheelsStyleDatePickerRecorder alloc] init];
     }
     return self;
 }
@@ -41,27 +46,24 @@
     NSMutableArray *nodes = [NSMutableArray new];
     NSMutableArray *resources = [NSMutableArray new];
     if (@available(iOS 13.4, *)) {
-        switch (datePicker.preferredDatePickerStyle) {
+        switch (datePicker.datePickerStyle) {
             case UIDatePickerStyleCompact:
             {
-                FTCompactStyleDatePickerRecorder *recorder =   [[FTCompactStyleDatePickerRecorder alloc] init];
-                [recorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+                [self.compactRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
             }
                 break;
             case UIDatePickerStyleInline:{
-                FTInlineStyleDatePickerRecorder *recorder =   [[FTInlineStyleDatePickerRecorder alloc] init];
-                [recorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+                [self.inlineRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
             }
+                break;
             case UIDatePickerStyleWheels:
             default:{
-                FTWheelsStyleDatePickerRecorder *recorder =   [[FTWheelsStyleDatePickerRecorder alloc] init];
-                [recorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+                [self.wheelRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
             }
                 break;
         }
     } else {
-        FTWheelsStyleDatePickerRecorder *recorder =   [[FTWheelsStyleDatePickerRecorder alloc] init];
-        [recorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
+        [self.wheelRecorder recorder:datePicker attributes:attributes context:context nodes:nodes resources:resources];
     }
     BOOL isDisplayedInPopover = NO;
     if(view.superview){
