@@ -75,9 +75,10 @@ static dispatch_once_t onceToken;
     [[FTReachability sharedInstance] startNotifier];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(_autoSync){
+        __weak typeof(self) weakSelf = self;
         [FTReachability sharedInstance].networkChanged = ^(){
             if([FTReachability sharedInstance].isReachable){
-                [self uploadTrackData];
+                [weakSelf uploadTrackData];
             }
         };
     }
