@@ -118,7 +118,10 @@ static dispatch_once_t onceToken;
         case FTAddDataLogging:
             [self.logDataCache addLogData:data];
             if(self.autoSync&&[self.logDataCache reachHalfLimit]){
-                [self uploadTrackData];
+                //如果正在上传中忽略
+                if(!self.isUploading){
+                    [self uploadTrackData];
+                }
                 return;
             }
             break;
