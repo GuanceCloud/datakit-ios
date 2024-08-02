@@ -11,6 +11,8 @@
 #import "FTJSONUtil.h"
 typedef void (^CompletionHandler)(void);
 static CompletionHandler g_handler;
+static CompletionHandler g_beforeHandler;
+
 static NSString *urlStr;
 @implementation FTNetworkMock
 + (void)registerUrlString:(NSString *)urlString{
@@ -18,6 +20,10 @@ static NSString *urlStr;
 }
 + (void)registerHandler:(void (^)(void))handler{
     g_handler = handler;
+}
++ (void)registerBeforeHandler:(void (^)(void))handler{
+    [self networkOHHTTPStubsHandler];
+    g_beforeHandler = handler;
 }
 + (void)networkOHHTTPStubs{
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
@@ -32,9 +38,6 @@ static NSString *urlStr;
     }];
 }
 + (void)networkOHHTTPStubsHandler{
-    [self networkOHHTTPStubsHandler:nil];
-}
-+ (void)networkOHHTTPStubsHandler:(dispatch_block_t)block{
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         if(urlStr&&urlStr.length>0){
             return [request.URL.absoluteString isEqualToString:urlStr];
@@ -43,8 +46,9 @@ static NSString *urlStr;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
-        if(block){
-            block();
+        if(g_beforeHandler){
+            g_beforeHandler();
+            g_beforeHandler = nil;
         }
         if(g_handler){
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

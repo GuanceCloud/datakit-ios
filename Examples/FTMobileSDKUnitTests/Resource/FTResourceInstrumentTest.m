@@ -80,7 +80,7 @@
 - (void)testSharedSession {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSURLSession *session = [NSURLSession sharedSession];
@@ -100,7 +100,7 @@
 - (void)testSessionWithDefaultSessionConfiguration {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSURLSessionConfiguration *configuration =
@@ -118,7 +118,7 @@
 - (void)testSessionWithEphemeralSessionConfiguration {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSURLSessionConfiguration *configuration =
@@ -300,7 +300,7 @@
 - (void)testDelegateURLSessionDataTaskDidReceiveData {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     @autoreleasepool {
@@ -323,7 +323,7 @@
 - (void)testDelegateUnimplementedURLSessionTaskDidCompleteWithError {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     FTURLSessionNoCompleteTestDelegate *delegate = [[FTURLSessionNoCompleteTestDelegate alloc] init];
@@ -344,7 +344,7 @@
 - (void)testDelegateUnimplementedURLSessionTaskDidFinishCollectingMetrics {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     FTURLSessionNoDidFinishCollectingMetrics *delegate = [[FTURLSessionNoDidFinishCollectingMetrics alloc] init];
@@ -368,7 +368,7 @@
 - (void)testDataTaskWithRequest {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSURLSession *session = [NSURLSession sharedSession];
@@ -400,7 +400,7 @@
 - (void)testDataTaskWithUrlAndCompletionHandler {
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSURLSession *session = [NSURLSession sharedSession];
@@ -420,7 +420,7 @@
 - (void)testMutableRequestURLs{
     __block NSURLSessionDataTask *dataTask;
     __weak typeof(self) weakSelf = self;
-    [FTNetworkMock networkOHHTTPStubsHandler:^{
+    [FTNetworkMock registerBeforeHandler:^{
         XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
     }];
     NSMutableURLRequest *URLRequest = [NSMutableURLRequest requestWithURL:self.url];
