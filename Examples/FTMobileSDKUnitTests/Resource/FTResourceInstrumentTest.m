@@ -59,11 +59,13 @@
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     self.url = [NSURL URLWithString:urlStr];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
+    config.autoSync = NO;
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:appid];
     rumConfig.enableTraceUserResource = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [FTNetworkMock registerUrlString:urlStr];
 }
 
 - (void)tearDown {

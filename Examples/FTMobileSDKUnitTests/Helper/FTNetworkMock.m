@@ -11,13 +11,19 @@
 #import "FTJSONUtil.h"
 typedef void (^CompletionHandler)(void);
 static CompletionHandler g_handler;
-
+static NSString *urlStr;
 @implementation FTNetworkMock
++ (void)registerUrlString:(NSString *)urlString{
+    urlStr = urlString;
+}
 + (void)registerHandler:(void (^)(void))handler{
     g_handler = handler;
 }
 + (void)networkOHHTTPStubs{
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        if(urlStr&&urlStr.length>0){
+            return [request.URL.absoluteString isEqualToString:urlStr];
+        }
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
@@ -30,6 +36,9 @@ static CompletionHandler g_handler;
 }
 + (void)networkOHHTTPStubsHandler:(dispatch_block_t)block{
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        if(urlStr&&urlStr.length>0){
+            return [request.URL.absoluteString isEqualToString:urlStr];
+        }
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
