@@ -40,6 +40,7 @@
      进行单UI试时 在FTMobileSDKUnitTests 的 scheme 中添加
      isUITests = 1;
      */
+    [[FTSessionConfiguration defaultConfiguration] load];
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *datakitUrl = [processInfo environment][@"ACCESS_SERVER_URL"];
 //    NSString *datawayUrl = [processInfo environment][@"ACCESS_DATAWAY_URL"];
