@@ -257,5 +257,8 @@ int g_crasher_denominator = 0;
     MyCPPClass instance;
     instance.throwAnException();
 }
-
+- (void)userException{
+    NSException *exception = [[NSException alloc]initWithName:@"user_Exception😁" reason:@"😀😁🤣🀀🀄︎🀃🀃①②③" userInfo:@{@"ExtraInfoKey": @"ExtraInfoValue"}];
+    @throw exception;
+}
 @end

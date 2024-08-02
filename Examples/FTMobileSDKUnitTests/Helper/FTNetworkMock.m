@@ -26,11 +26,17 @@ static CompletionHandler g_handler;
     }];
 }
 + (void)networkOHHTTPStubsHandler{
+    [self networkOHHTTPStubsHandler:nil];
+}
++ (void)networkOHHTTPStubsHandler:(dispatch_block_t)block{
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return YES;
     } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
         NSString *data  =[FTJSONUtil convertToJsonData:@{@"data":@"Hello World!",@"code":@200}];
         NSData *requestData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        if(block){
+            block();
+        }
         if(g_handler){
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 if(g_handler){

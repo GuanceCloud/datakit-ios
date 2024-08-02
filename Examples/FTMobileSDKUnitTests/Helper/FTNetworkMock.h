@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)registerHandler:(void (^)(void))handler;
 + (void)networkOHHTTPStubs;
 + (void)networkOHHTTPStubsHandler;
++ (void)networkOHHTTPStubsHandler:(dispatch_block_t)block;
 @end
 
 NS_ASSUME_NONNULL_END

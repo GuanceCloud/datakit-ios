@@ -40,4 +40,5 @@
 
 - (void) throwUncaughtCPPException;
 
+- (void) userException;
 @end
