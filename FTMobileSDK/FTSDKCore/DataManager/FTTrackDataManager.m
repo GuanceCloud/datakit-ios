@@ -140,7 +140,9 @@ static dispatch_once_t onceToken;
         }
         NSTimeInterval current = CACurrentMediaTime();
         if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+            FTInnerLogDebug(@"[NETWORK]: start upload waiting");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
+                FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
                 [weakSelf privateUpload];
                 [weakSelf scheduleNextCycle];
             });
@@ -177,18 +179,22 @@ static dispatch_once_t onceToken;
         return;
     }
     dispatch_async(self.networkQueue, ^{
+        FTInnerLogDebug(@"[NETWORK]: uploadTrackData -> privateUpload");
         [self privateUpload];
     });
 }
 - (void)privateUpload{
     @try {
         if (self.isUploading) {
+            FTInnerLogDebug(@"[NETWORK]: privateUpload ingnore");
             return;
         }
+        FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
         self.isUploading = YES;
         [self flushWithType:FT_DATA_TYPE_RUM];
         [self flushWithType:FT_DATA_TYPE_LOGGING];
         self.isUploading = NO;
+        FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
     } @catch (NSException *exception) {
         FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
     } @finally {
