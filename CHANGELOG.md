@@ -1,3 +1,23 @@
+# 1.5.1
+1. 修复行协议数据转义算法，解决因换行符导致数据同步失败问题
+2. 优化错误类型为 `network_error` 的错误信息，统一使用英文描述网络请求错误码
+3. 优化数据同步逻辑，修复多线程访问已释放 `uploadDelayTimer` 导致的崩溃问题
+4. 修复采集崩溃信息时 OC 与 C 字符串转换时编码格式错误导致的崩溃问题
+---
+
+# 1.5.1-beta.2
+1. 优化数据同步逻辑，修复多线程访问已释放 `uploadDelayTimer` 导致的崩溃问题
+2. 修复采集崩溃信息时 OC 与 C 字符串转换时编码格式错误导致的崩溃问题
+---
+# 1.5.1-beta.1
+1. 同 1.5.1-alpha.1、1.5.1-alpha.2
+---
+# 1.5.1-alpha.2
+1. 优化错误类型为 `network_error` 的错误信息，统一使用英文描述网络请求错误码
+---
+# 1.5.1-alpha.1
+1. 修复行协议数据转义算法，解决因换行符导致数据同步失败问题
+---
 # 1.5.0
 1. RUM resource 网络请求添加 remote ip 地址解析功能
 2. 添加行协议 Integer 数据兼容模式，处理 web 数据类型冲突问题
@@ -21,8 +41,8 @@
 4. 日志数据写入优化、数据同步优化
 ---
 # 1.4.14
-1. 修复 swizzle 方法与其他库 swizzle 方法冲突问题
-2. 修复传入变量属性时，可能会导致的冲突问题
+1. 修复 `FTSwizzler` 内访问已被销毁的 Class 对象而导致的内存访问错误崩溃
+2. 修复向 SDK 传递的 NSDictionary 类型参数实际上是可变对象时可能引发的数据一致性和操作冲突问题
 ---
 
 # 1.4.14-beta.1
@@ -37,7 +57,7 @@
 ---
 # 1.4.13
 1. RUM LongTask、Anr 采集优化，修复 LongTask 堆栈信息采集不准确问题，新增支持采集致命卡顿
-2. 修复多线程访问下 NSURLSession delegate 方法 hook 造成的崩溃问题
+2. 修复 `FTSwizzler` 内因多线程同时操作 NSMutableSet 造成的崩溃
 3. 修复打包 SDK Framework info.plist 中版本信息缺失问题
 4. 修复自定义 NSURLSession 未设置 delegate 时 Resource 的性能指标采集失败问题
 5. SDK 内部日志转化为文件功能优化，新增指定文件路径方法
@@ -192,7 +212,7 @@
 1. 新增 dataway 公网上传数据逻辑
 2. 添加上传数据唯一标识
 3. 修复 resource duration 负值问题、resource_first_byte 计算逻辑修改
-4. 自动采集 HTTP Resource 逻辑修改
+4. 自动采集 HTTP Resource 逻辑修改，解决 URLSession 创建在 SDK 初始化完成之前时该 URLSession 无法采集问题
 
 ---
 # 1.4.8-alpha.2

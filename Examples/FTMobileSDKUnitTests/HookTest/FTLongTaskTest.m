@@ -105,10 +105,8 @@
 }
 - (void)testTrackAnrAndAnrStartTime{
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
+    [self mockAnr];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -134,10 +132,7 @@
 }
 - (void)testNoTrackAnr{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
-    [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
-    
+    [self mockAnr];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTMobileAgent sharedInstance] syncProcess];
@@ -197,11 +192,8 @@
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
         XCTAssertTrue(data.length>100);
         NSString *str = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
@@ -219,13 +211,14 @@
             [dates enumerateObjectsUsingBlock:^(NSString  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if(obj.length>0){
                     long long updateDate = [obj longLongValue];
-                    XCTAssertTrue(updateDate - startTime < 2000000000);
+                    XCTAssertTrue(updateDate - startTime < 3000000000);
                 }
             }];
         }
         [expect fulfill];
     });
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+    [self mockAnr];
+    [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     [[FTMobileAgent sharedInstance] shutDown];
@@ -236,15 +229,14 @@
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     FTLongTaskManager *longTaskManager = [[FTGlobalRumManager sharedInstance] valueForKey:@"longTaskManager"];
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
-    [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
     [tester waitForTimeInterval:0.2];
-    [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
         XCTAssertTrue(data.length>0);
         [[FTMobileAgent sharedInstance] shutDown];
     });
+    [self mockAnr];
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -260,7 +252,7 @@
         XCTAssertTrue(noAnr == YES);
         [expect fulfill];
     });
-    [self waitForExpectationsWithTimeout:45 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:8 handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
     NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
@@ -301,8 +293,27 @@
             if (noViewData == YES) noViewData = NO;
         }
     }];
-    XCTAssertTrue(noLongTask == noAnrTask == noViewData == NO);
+    XCTAssertTrue(noLongTask == NO);
+    XCTAssertTrue(noAnrTask == NO);
+    XCTAssertTrue(noViewData == NO);
     [[FTMobileAgent sharedInstance] shutDown];
 
+}
+- (void)mockAnr{
+    NSLock *lock = [[NSLock alloc]init];
+    [lock lock];
+    [NSThread sleepForTimeInterval:0.2f];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [NSThread sleepForTimeInterval:6];
+        [lock unlock];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+        [lock lock];
+    });
+    dispatch_async(dispatch_get_main_queue(), ^
+                   {
+        [lock unlock];
+    });
 }
 @end

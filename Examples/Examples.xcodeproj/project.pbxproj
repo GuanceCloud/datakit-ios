@@ -10,6 +10,8 @@
 		1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F32B60EBFA00C4BD38 /* FTResourceAutoTrace.m */; };
 		1712C5F72B60F0B100C4BD38 /* TestSessionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */; };
 		1712C5F92B63AAE500C4BD38 /* FTTestInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */; };
+		17132DC72C2D9093009DFE8F /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
+		17132DCA2C2D90BA009DFE8F /* errors.json in Resources */ = {isa = PBXBuildFile; fileRef = 17132DC32C2D8AAD009DFE8F /* errors.json */; };
 		171CE1D52BFB2D590083FC1C /* FTResourceInstrumentTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 171CE1D42BFB2D590083FC1C /* FTResourceInstrumentTest.m */; };
 		172931D22BF602D700AA9D53 /* FTSwizzlerConflictTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */; };
 		172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 172931D32BF6032900AA9D53 /* GoogleService-Info.plist */; };
@@ -69,7 +71,6 @@
 		4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D78A024F52ACB006125D0 /* FTDatabaseTest.m */; };
 		4A1D78A424F63FBF006125D0 /* FTMobileAgentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A85313823AB85FC00B40B5D /* FTMobileAgentTests.m */; };
 		4A22526F23B5AC7600B0ED41 /* FTMobileSDKUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A22526E23B5AC7600B0ED41 /* FTMobileSDKUITests.m */; };
-		4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A270E9424FF97FE0079F455 /* FTUtilsTest.m */; };
 		4A299B942514953300400931 /* FTPropertyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A299B932514953300400931 /* FTPropertyTest.m */; };
 		4A3931552531C26300BC2134 /* TestLongTaskVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3931542531C26300BC2134 /* TestLongTaskVC.m */; };
 		4A3C7D4D23E6C995006DC9C7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A3C7D4C23E6C995006DC9C7 /* Foundation.framework */; };
@@ -156,6 +157,7 @@
 		1712C5F62B60F0B100C4BD38 /* TestSessionDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestSessionDelegate.m; sourceTree = "<group>"; };
 		1712C5F82B63AAE500C4BD38 /* FTTestInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FTTestInteraction.swift; sourceTree = "<group>"; };
 		1712C5FA2B63B1BB00C4BD38 /* FTMobileSDKUnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTMobileSDKUnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		17132DC32C2D8AAD009DFE8F /* errors.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = errors.json; sourceTree = "<group>"; };
 		171CE1D42BFB2D590083FC1C /* FTResourceInstrumentTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceInstrumentTest.m; sourceTree = "<group>"; };
 		172931D12BF602D700AA9D53 /* FTSwizzlerConflictTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTSwizzlerConflictTest.m; sourceTree = "<group>"; };
 		172931D32BF6032900AA9D53 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				17132DC32C2D8AAD009DFE8F /* errors.json */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
 				17593ADE29068DC200A15CD9 /* Resource */,
@@ -797,6 +800,7 @@
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
 				172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
+				17132DCA2C2D90BA009DFE8F /* errors.json in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -922,6 +926,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */,
+				17132DC72C2D9093009DFE8F /* FTUtilsTest.m in Sources */,
 				177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */,
 				17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */,
 				174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */,
@@ -934,7 +939,6 @@
 				172C3595280FAC16002D139E /* FTSwizzlerTest.m in Sources */,
 				17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */,
 				4A299B942514953300400931 /* FTPropertyTest.m in Sources */,
-				4A270E9524FF97FE0079F455 /* FTUtilsTest.m in Sources */,
 				174BC8802BFCB05500478EE1 /* FTDictionaryCopyTest.m in Sources */,
 				177892C129A60FE90007B47F /* PerformanceTracingTest.m in Sources */,
 				1712C5F42B60EBFA00C4BD38 /* FTResourceAutoTrace.m in Sources */,

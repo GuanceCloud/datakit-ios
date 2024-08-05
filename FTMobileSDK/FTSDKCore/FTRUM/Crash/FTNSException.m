@@ -24,7 +24,7 @@ static void handleException(NSException *exception) {
             callStack[i] = (uintptr_t)[addresses[i] unsignedLongLongValue];
         }
         thread_t thread_self = mach_thread_self();
-        g_onCrashNotify(thread_self,callStack,(int)numFrames,[message cStringUsingEncoding:NSASCIIStringEncoding]);
+        g_onCrashNotify(thread_self,callStack,(int)numFrames,[message cStringUsingEncoding:NSUTF8StringEncoding]);
     }
     
     if(previousUncaughtExceptionHandler != NULL){

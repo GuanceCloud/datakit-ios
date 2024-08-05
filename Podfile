@@ -9,7 +9,7 @@ target 'FTMobileSDKUnitTests' do
   # Comment the next line if you don't want to use dynamic frameworks
   project example_project_path
    pod 'OHHTTPStubs','8.0.0'
-   pod 'KIF'
+   pod 'KIF','3.8.5'
    pod 'Firebase', '8.15.0'
    pod 'FirebasePerformance', '8.15.0'
   # Pods for SampleApp

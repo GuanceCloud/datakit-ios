@@ -163,6 +163,11 @@
     str2 = [str2 ft_replacingMeasurementSpecialCharacters];
     XCTAssertTrue([str2 isEqualToString:@"⍣\\ ₂₈.₂₃ᴀͤꜱᷟ\\ ⷨꜱᷛᴮᴀᷟꜱͤı\\ ⷨɴ"]);
 }
+- (void)testStringReplacingLineBreak{
+    NSString *str = @"a\nb\tc";  
+    str = [str ft_replacingSpecialCharacters];
+    XCTAssertTrue([str isEqualToString:@"a\\ b\tc"]);
+}
 - (void)testDataUUID{
     NSDictionary *dict = @{
         FT_MEASUREMENT:@"iOSTest",
