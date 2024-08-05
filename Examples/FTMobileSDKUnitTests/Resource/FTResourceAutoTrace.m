@@ -16,6 +16,7 @@
 #import "FTMobileAgent.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
+#import "FTSessionConfiguration.h"
 @interface FTResourceAutoTrace : KIFTestCase
 
 @end
@@ -24,11 +25,15 @@
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
+    [[FTSessionConfiguration defaultConfiguration] load];
+
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTMobileAgent sharedInstance] shutDown];
+    [[FTSessionConfiguration defaultConfiguration] unload];
+
 }
 - (void)initSDKWithEnableAutoTraceResource:(BOOL)enable{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -186,16 +191,19 @@
     [tester waitForTimeInterval:0.5];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getAllDatas];
-    __block BOOL hasRes = NO;
+    __block NSInteger hasResCount = 0;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_RESOURCE]) {
-            hasRes = YES;
+            hasResCount ++;
             [fields.allKeys containsObject:FT_KEY_RESOURCE_DNS];
             [fields.allKeys containsObject:FT_KEY_RESOURCE_TCP];
             [fields.allKeys containsObject:FT_KEY_RESOURCE_SSL];
-            *stop = YES;
         }
     }];
-    XCTAssertTrue(hasRes==trace);
+    if(trace){
+        XCTAssertTrue(hasResCount==1);
+    }else{
+        XCTAssertTrue(hasResCount==0);
+    }
 }
 @end
