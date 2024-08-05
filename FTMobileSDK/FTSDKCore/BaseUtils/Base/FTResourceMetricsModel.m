@@ -7,6 +7,7 @@
 //
 
 #import "FTResourceMetricsModel.h"
+#import "FTResourceMetricsModel+Private.h"
 #import "NSDate+FTUtil.h"
 @implementation FTResourceMetricsModel
 
@@ -16,24 +17,28 @@
         NSMutableArray<NSURLSessionTaskTransactionMetrics *> *transactionMetrics = [NSMutableArray arrayWithArray:metrics.transactionMetrics];
         [metrics.transactionMetrics enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSURLSessionTaskTransactionMetrics * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             if (obj.resourceFetchType == NSURLSessionTaskMetricsResourceFetchTypeLocalCache) {
+                _resourceFetchTypeLocalCache = YES;
                 [transactionMetrics removeObjectAtIndex:idx];
             }
         }];
-        NSURLSessionTaskTransactionMetrics *taskMetrics = [transactionMetrics lastObject];
-        _resource_dns = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.domainLookupEndDate];
-        _resource_tcp = [taskMetrics.connectStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
-        _resource_ssl = [taskMetrics.secureConnectionStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
-        _resource_ttfb = [taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
-        _resource_trans =[taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseEndDate];
         _duration = [metrics.taskInterval.startDate ft_nanosecondTimeIntervalToDate:metrics.taskInterval.endDate];
-        if(taskMetrics.domainLookupStartDate){
-            _resource_first_byte = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
-        }else{
-            _resource_first_byte = [taskMetrics.fetchStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
-        }
-        if (@available(iOS 13,macOS 10.15, *)) {
-            _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
-            _remoteAddress = taskMetrics.remoteAddress;
+        if(transactionMetrics.count>0){
+            _resourceFetchTypeLocalCache = NO;
+            NSURLSessionTaskTransactionMetrics *taskMetrics = [transactionMetrics lastObject];
+            _resource_dns = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.domainLookupEndDate];
+            _resource_tcp = [taskMetrics.connectStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
+            _resource_ssl = [taskMetrics.secureConnectionStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.connectEndDate];
+            _resource_ttfb = [taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
+            _resource_trans =[taskMetrics.requestStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseEndDate];
+            if(taskMetrics.domainLookupStartDate){
+                _resource_first_byte = [taskMetrics.domainLookupStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
+            }else{
+                _resource_first_byte = [taskMetrics.fetchStartDate ft_nanosecondTimeIntervalToDate:taskMetrics.responseStartDate];
+            }
+            if (@available(iOS 13,macOS 10.15, *)) {
+                _responseSize = @(taskMetrics.countOfResponseBodyBytesAfterDecoding);
+                _remoteAddress = taskMetrics.remoteAddress;
+            }
         }
     }
     return self;

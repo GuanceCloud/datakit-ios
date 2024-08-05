@@ -430,6 +430,7 @@
             break;
         }
     }
+    NSLog(@"testPrintCustomLogToConsole:logs %@",logs);
     XCTAssertTrue([logs containsString:@"[IOS APP]"]);
     XCTAssertTrue([logs containsString:@"testPrintCustomLogToConsole"]);
     [[FTMobileAgent sharedInstance] shutDown];

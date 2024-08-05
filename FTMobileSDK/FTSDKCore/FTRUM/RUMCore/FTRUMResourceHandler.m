@@ -41,7 +41,7 @@
             switch (data.type) {
                 case FTRUMDataResourceComplete:
                     if (self.resourceHandler) {
-                        self.resourceHandler();
+                        self.resourceHandler(YES);
                     }
                     [self writeResourceData:data];
                     return NO;
@@ -58,6 +58,11 @@
                     [self writeResourceError:data];
                 }
                     break;
+                case FTRUMDataResourceAbandon:
+                    if (self.resourceHandler) {
+                        self.resourceHandler(NO);
+                    }
+                    return NO;
                 default:
                     break;
             }

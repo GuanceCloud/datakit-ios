@@ -16,7 +16,7 @@
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
     if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
-        [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics];
+        [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics custom:NO];
     }
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{

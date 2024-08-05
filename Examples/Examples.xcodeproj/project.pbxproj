@@ -59,6 +59,8 @@
 		17D339EE2807AB0C0083C2B3 /* FTModelHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D339ED2807AB0C0083C2B3 /* FTModelHelper.m */; };
 		17DA844D288808B2001A0B30 /* FTRUMMonitorTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */; };
 		17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E0792D291E60830014A420 /* FTExtensionSDKTest.m */; };
+		17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */; };
+		17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */; };
 		4A037EFA24F791CB007B2104 /* FTTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A037EF924F791CB007B2104 /* FTTraceTest.m */; };
 		4A11695B239113B600C0BC4E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11695A239113B600C0BC4E /* AppDelegate.m */; };
 		4A11695E239113B600C0BC4E /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A11695D239113B600C0BC4E /* SceneDelegate.m */; };
@@ -216,6 +218,10 @@
 		17DA844C288808B2001A0B30 /* FTRUMMonitorTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTRUMMonitorTest.m; sourceTree = "<group>"; };
 		17E0792D291E60830014A420 /* FTExtensionSDKTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTExtensionSDKTest.m; sourceTree = "<group>"; };
 		17E1927929C9883A0067B23D /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSessionConfiguration.m; sourceTree = "<group>"; };
+		17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTURLProtocol.m; sourceTree = "<group>"; };
+		17F5C5212C60D62A007F2B2C /* FTSessionConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSessionConfiguration.h; sourceTree = "<group>"; };
+		17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTURLProtocol.h; sourceTree = "<group>"; };
 		4A037EF924F791CB007B2104 /* FTTraceTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTraceTest.m; sourceTree = "<group>"; };
 		4A116956239113B600C0BC4E /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A116959239113B600C0BC4E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -565,6 +571,10 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				17F5C5212C60D62A007F2B2C /* FTSessionConfiguration.h */,
+				17F5C51F2C60D629007F2B2C /* FTSessionConfiguration.m */,
+				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
+				17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */,
 				17132DC32C2D8AAD009DFE8F /* errors.json */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
@@ -928,7 +938,9 @@
 				17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */,
 				17132DC72C2D9093009DFE8F /* FTUtilsTest.m in Sources */,
 				177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */,
+				17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */,
 				17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */,
+				17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */,
 				174058C828D826540092E096 /* FTAppLaunchDurationTest.m in Sources */,
 				4A85318C23B23A4000B40B5D /* FTNetworkTests.m in Sources */,
 				4A1D78A224F52ACC006125D0 /* FTDatabaseTest.m in Sources */,
