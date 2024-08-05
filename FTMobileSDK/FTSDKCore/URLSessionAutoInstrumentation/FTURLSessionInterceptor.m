@@ -145,12 +145,15 @@ static dispatch_once_t onceToken;
     });
 }
 - (void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics{
+    [self taskMetricsCollected:task metrics:metrics custom:YES];
+}
+-(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
     dispatch_async(self.queue, ^{
         FTSessionTaskHandler *handler = [self getTraceHandler:task];
         if(!handler){
             return;
         }
-        [handler taskReceivedMetrics:metrics];
+        [handler taskReceivedMetrics:metrics custom:custom];
     });
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{

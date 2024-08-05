@@ -9,7 +9,7 @@
 #import "FTSessionTaskHandler.h"
 #import "FTTracerProtocol.h"
 #import "FTResourceContentModel.h"
-#import "FTResourceMetricsModel.h"
+#import "FTResourceMetricsModel+Private.h"
 #import "FTBaseInfoHandler.h"
 @interface FTSessionTaskHandler ()
 @end
@@ -31,10 +31,13 @@
         [self.data appendData:data];
     }
 }
-- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics{
+- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
     FTResourceMetricsModel *metricsModel = nil;
     if (metrics) {
         metricsModel = [[FTResourceMetricsModel alloc]initWithTaskMetrics:metrics];
+    }
+    if(custom){
+        metricsModel.resourceFetchTypeLocalCache = NO;
     }
     self.metricsModel = metricsModel;
 }
