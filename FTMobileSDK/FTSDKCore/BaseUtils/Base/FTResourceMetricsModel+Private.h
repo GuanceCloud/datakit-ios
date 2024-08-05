@@ -6,7 +6,7 @@
 //  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 
-#import <FTMobileSDK/FTMobileSDK.h>
+#import "FTResourceMetricsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
