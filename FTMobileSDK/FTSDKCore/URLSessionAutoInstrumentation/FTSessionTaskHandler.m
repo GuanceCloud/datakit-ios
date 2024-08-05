@@ -31,6 +31,9 @@
         [self.data appendData:data];
     }
 }
+- (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics{
+    [self taskReceivedMetrics:metrics custom:NO];
+}
 - (void)taskReceivedMetrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
     FTResourceMetricsModel *metricsModel = nil;
     if (metrics) {
