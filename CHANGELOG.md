@@ -1,3 +1,6 @@
+# 1.5.2-alpha.2
+1. 自动采集 RUM-Resource 过滤条件增加，过滤掉资源获取类型未知的 Resource
+---
 # 1.5.2-alpha.1
 1. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取的 Resource，防止采集重复
 ---
