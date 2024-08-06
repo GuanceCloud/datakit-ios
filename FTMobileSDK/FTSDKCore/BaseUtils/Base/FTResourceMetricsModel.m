@@ -16,7 +16,7 @@
     if (self) {
         NSMutableArray<NSURLSessionTaskTransactionMetrics *> *transactionMetrics = [NSMutableArray arrayWithArray:metrics.transactionMetrics];
         [metrics.transactionMetrics enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSURLSessionTaskTransactionMetrics * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if (obj.resourceFetchType == NSURLSessionTaskMetricsResourceFetchTypeLocalCache) {
+            if (obj.resourceFetchType == NSURLSessionTaskMetricsResourceFetchTypeLocalCache||obj.resourceFetchType == NSURLSessionTaskMetricsResourceFetchTypeUnknown) {
                 _resourceFetchTypeLocalCache = YES;
                 [transactionMetrics removeObjectAtIndex:idx];
             }
