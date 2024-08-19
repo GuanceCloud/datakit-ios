@@ -16,6 +16,7 @@ extern "C" {
 #include <stdbool.h>
 #include <mach/mach.h>
 #include <dlfcn.h>
+#include <sys/ucontext.h>
 
 #ifdef __LP64__
 #define TRACE_FMT         "%-4d%-31s 0x%016lx %s + %lu"
@@ -45,11 +46,11 @@ typedef struct FTMachoImage {
         int cpuType;
         int cpuSubType;
 } FTMachoImage;
-uintptr_t ft_faultAddress(mcontext_t const machineContext);
-uintptr_t ft_mach_instructionAddress(mcontext_t const machineContext);
+uintptr_t ft_faultAddress(_STRUCT_MCONTEXT *const machineContext);
+uintptr_t ft_mach_instructionAddress(_STRUCT_MCONTEXT *const machineContext);
 bool ft_fillThreadStateIntoMachineContext(thread_t thread, _STRUCT_MCONTEXT *machineContext);
 
-void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* count);
+void ft_backtrace(_STRUCT_MCONTEXT *const machineContext,uintptr_t *backtrace,int* count);
 
 void ft_symbolicate(const uintptr_t* const backtraceBuffer,
                     Dl_info* const symbolsBuffer,
