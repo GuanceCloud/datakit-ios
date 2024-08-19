@@ -1,3 +1,6 @@
+# 1.5.2-alpha.3
+1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
+---
 # 1.5.2-alpha.2
 1. 自动采集 RUM-Resource 过滤条件增加，过滤掉资源获取类型未知的 Resource
 ---
