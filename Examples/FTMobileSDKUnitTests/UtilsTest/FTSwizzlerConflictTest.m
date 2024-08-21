@@ -15,6 +15,7 @@
 #import "FTMobileSDK.h"
 #import "FTTrackerEventDBTool.h"
 #import "NSDate+FTUtil.h"
+#import "OHHTTPStubs.h"
 @interface DelegateSwizzlerClass : NSObject<UITableViewDelegate,NSURLSessionDelegate,NSURLSessionDataDelegate>
 @property (nonatomic, strong) NSString *nameStr;
 
@@ -45,6 +46,7 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [OHHTTPStubs removeAllStubs];
 }
 - (void)setSDK{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

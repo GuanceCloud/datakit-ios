@@ -409,7 +409,6 @@
     loggerConfig.printCustomLogToConsole = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
-    sleep(0.1);
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
