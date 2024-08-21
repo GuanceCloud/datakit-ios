@@ -1,3 +1,7 @@
+# 1.5.2-beta.1
+1. 同 1.5.2-alpha.1 - 1.5.2-alpha.3
+2. 修复 UITabBarController 子视图 loadingTime 计算逻辑
+---
 # 1.5.2-alpha.3
 1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
 ---
