@@ -1,3 +1,21 @@
+# 1.5.2
+1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
+2. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取或获取类型未知的 Resource，防止采集重复
+3. 修复 UITabBarController 子视图 loadingTime 计算逻辑
+---
+# 1.5.2-beta.1
+1. 同 1.5.2-alpha.1 - 1.5.2-alpha.3
+2. 修复 UITabBarController 子视图 loadingTime 计算逻辑
+---
+# 1.5.2-alpha.3
+1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
+---
+# 1.5.2-alpha.2
+1. 自动采集 RUM-Resource 过滤条件增加，过滤掉资源获取类型未知的 Resource
+---
+# 1.5.2-alpha.1
+1. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取的 Resource，防止采集重复
+---
 # 1.5.1
 1. 修复行协议数据转义算法，解决因换行符导致数据同步失败问题
 2. 优化错误类型为 `network_error` 的错误信息，统一使用英文描述网络请求错误码

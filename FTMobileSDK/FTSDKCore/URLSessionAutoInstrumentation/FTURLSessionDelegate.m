@@ -49,7 +49,7 @@
     [self.instrumentation.interceptor taskReceivedData:dataTask data:data];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics{
-    [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics];
+    [self.instrumentation.interceptor taskMetricsCollected:task metrics:metrics custom:YES];
 }
 -(void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error{
     [self.instrumentation.interceptor taskCompleted:task error:error extraProvider:self.provider];

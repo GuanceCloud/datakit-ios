@@ -409,7 +409,6 @@
     loggerConfig.printCustomLogToConsole = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
     [[FTLogger sharedInstance] info:@"testPrintCustomLogToConsole" property:nil];
-    sleep(0.1);
     [[FTMobileAgent sharedInstance] syncProcess];
     NSArray *array =  [[FTLog sharedInstance] valueForKey:@"loggers"];
     BOOL hasFileLogger = NO;
@@ -430,6 +429,7 @@
             break;
         }
     }
+    NSLog(@"testPrintCustomLogToConsole:logs %@",logs);
     XCTAssertTrue([logs containsString:@"[IOS APP]"]);
     XCTAssertTrue([logs containsString:@"testPrintCustomLogToConsole"]);
     [[FTMobileAgent sharedInstance] shutDown];

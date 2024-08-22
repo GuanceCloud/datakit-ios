@@ -63,28 +63,28 @@ kern_return_t ft_mach_copyMem(const void *const src, void *const dst, const size
     ///   调用api函数，根据栈帧指针获取该栈帧对应的函数地址
     return vm_read_overwrite(mach_task_self(), (vm_address_t)src, (vm_size_t)numBytes, (vm_address_t)dst, &bytesCopied);
 }
-uintptr_t ft_faultAddress(mcontext_t const machineContext){
+uintptr_t ft_faultAddress(_STRUCT_MCONTEXT *const machineContext){
 #if defined(__i386__) || defined(__x86_64__)
     return 0;
 #else
     return machineContext->__es.__far;
 #endif
 }
-uintptr_t ft_mach_instructionAddress(mcontext_t const machineContext){
+uintptr_t ft_mach_instructionAddress(_STRUCT_MCONTEXT *const machineContext){
     return machineContext->__ss.FT_INSTRUCTION_ADDRESS; ///rip 指令指针
 }
-uintptr_t ft_mach_linkRegister(mcontext_t const machineContext){
+uintptr_t ft_mach_linkRegister(_STRUCT_MCONTEXT *const machineContext){
 #if defined(__i386__) || defined(__x86_64__)
     return 0;
 #else
     return machineContext->__ss.__lr;
 #endif
 }
-uintptr_t ft_mach_framePointer(mcontext_t const machineContext){
+uintptr_t ft_mach_framePointer(_STRUCT_MCONTEXT *const machineContext){
     return machineContext->__ss.FT_FRAME_POINTER; ///rbp 栈帧指针
 }
 
-void ft_backtrace(mcontext_t const machineContext,uintptr_t *backtrace,int* count){
+void ft_backtrace(_STRUCT_MCONTEXT *const machineContext,uintptr_t *backtrace,int* count){
     int i = 0;
     //.获取指针栈帧结构体_STRUCT_CONTEXT._ss，解析得到对应指令指针_STRUCT_CONTEXT._ss.ip;首次个栈帧指针_STRUCT_CONTEXT._ss.bp；栈顶指针_STRUCT_CONTEXT._ss.sp
     const uintptr_t instructionAddress = ft_mach_instructionAddress(machineContext);

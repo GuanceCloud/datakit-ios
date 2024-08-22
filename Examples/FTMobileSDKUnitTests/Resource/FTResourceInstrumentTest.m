@@ -14,6 +14,7 @@
 #import "FTNetworkMock.h"
 #import "FTSessionTaskHandler.h"
 #import <objc/runtime.h>
+#import "OHHTTPStubs.h"
 
 /** This class is used to wrap an NSURLSession object during testing. */
 @interface FTURLSessionProxy : NSProxy {
@@ -72,6 +73,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTMobileAgent sharedInstance] shutDown];
+    [OHHTTPStubs removeAllStubs];
 }
 - (FTSessionTaskHandler *)getTraceHandler:(NSURLSessionTask *)task{
     return [[FTURLSessionInterceptor shared] performSelector:@selector(getTraceHandler:) withObject:task];
