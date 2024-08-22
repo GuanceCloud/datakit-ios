@@ -19,10 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) long long end;
 @property (nonatomic, assign) long long recordsCount;
 @property (nonatomic, assign) BOOL hasFullSnapshot;
-@property (nonatomic, assign) NSNumber *indexInView;
 -(instancetype)initWithData:(NSData *)data;
 - (void)mergeAnother:(FTSegmentJSON *)another;
-- (NSDictionary *)toJSONODict;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTMultipartFormBodyProtocol <NSObject>
 - (NSString *)boundary;
-- (void)addFormField:(NSString *)name value:(NSString *)value;
+- (void)addFormField:(NSString *)name value:(id)value;
 - (void)addFormData:(NSString *)name filename:(NSString *)fileName data:(NSData *)data  mimeType:(NSString *)mimeType;
 - (NSData *)build;
 - (NSData *)newlineByte;

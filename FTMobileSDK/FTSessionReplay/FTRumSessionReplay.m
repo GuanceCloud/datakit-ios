@@ -65,30 +65,28 @@ static dispatch_once_t onceToken;
     if(config.sampleRate<=0){
         return;
     }
-//    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
-//    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
-    
-//    FTFeatureDataStore *dataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
-    [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:nil resourceDataStore:nil];
-//    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
-//    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
     [self.features setValue:sessionReplayFeature forKey:sessionReplayFeature.name];
+    
+    //    FTResourcesFeature *resourcesFeature = [[FTResourcesFeature alloc]init];
+    //    FTFeatureStores *resourceStore = [self registerFeature:resourcesFeature];
+    //    FTFeatureDataStore *resourceDataStore = [[FTFeatureDataStore alloc]initWithFeature:resourcesFeature.name queue:self.readWriteQueue directory:self.coreDirectory];
+    //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
+    //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
+    [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:nil resourceDataStore:nil];
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];
     if(directory){
         FTPerformancePreset *performancePreset = [self.performancePreset updateWithOverride:feature.performanceOverride];
         FTFeatureStorage *storage = [[FTFeatureStorage alloc]initWithFeatureName:feature.name queue:self.readWriteQueue directory:directory performance:performancePreset];
-        FTFeatureDataStore *dataStore = [[FTFeatureDataStore alloc]initWithFeature:feature.name queue:self.readWriteQueue directory:self.coreDirectory];
-        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name 
+        FTFeatureUpload *upload = [[FTFeatureUpload alloc]initWithFeatureName:feature.name
                                                                    fileReader:storage.reader
-                                                               requestBuilder:feature.requestBuilder 
+                                                               requestBuilder:feature.requestBuilder
                                                           maxBatchesPerUpload:10
                                                                   performance:performancePreset
-                                                                    dataStore:dataStore
                                                                       context:[[FTModuleManager sharedInstance] getSRProperty]];
         FTFeatureStores *store = [[FTFeatureStores alloc]initWithStorage:storage upload:upload];
         return store;

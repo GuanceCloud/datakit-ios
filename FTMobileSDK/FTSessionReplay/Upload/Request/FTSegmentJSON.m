@@ -44,16 +44,14 @@
     _recordsCount = _recordsCount + another.recordsCount;
     _hasFullSnapshot = _hasFullSnapshot || another.hasFullSnapshot;
 }
-- (NSDictionary *)toJSONODict{
-    return @{FT_RUM_KEY_SESSION_ID:self.sessionID,
-             FT_KEY_VIEW_ID:self.viewID,
-             FT_APP_ID:self.appId,
-             @"start": [NSString stringWithFormat:@"%lld",self.start],
-             @"end":[NSString stringWithFormat:@"%lld",self.end],
-             @"has_full_snapshot":self.hasFullSnapshot?@"true":@"false",
-             @"records_count":[NSString stringWithFormat:@"%lld",self.recordsCount],
-             @"records":self.records,
-             @"index_in_view":[NSString stringWithFormat:@"%@",self.indexInView],
-    };
++(FTJSONKeyMapper *)keyMapper{
+    FTJSONKeyMapper *keyMapper = [[FTJSONKeyMapper alloc]initWithModelToJSONDictionary:@{
+        @"hasFullSnapshot":@"has_full_snapshot",
+        @"recordsCount":@"records_count",
+        @"sessionID":FT_RUM_KEY_SESSION_ID,
+        @"viewID":FT_KEY_VIEW_ID,
+        @"appId":FT_APP_ID,
+    }];
+    return keyMapper;
 }
 @end

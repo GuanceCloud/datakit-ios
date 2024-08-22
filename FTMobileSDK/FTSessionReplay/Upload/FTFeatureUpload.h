@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
                     requestBuilder:(id<FTFeatureRequestBuilder>)requestBuilder
                maxBatchesPerUpload:(int)maxBatchesPerUpload
                        performance:(FTPerformancePreset *)performance
-                         dataStore:(id<FTDataStore>)dataStore
                            context:(NSDictionary *)context;
 
 @end

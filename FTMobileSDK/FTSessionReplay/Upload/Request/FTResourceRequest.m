@@ -41,12 +41,6 @@
     self.parameters = parameters;
     self.resources = resources;
 }
--(void)requestWithEvent:(id)event parameters:(NSDictionary *)parameters{
-    self.parameters = parameters;
-    if([event isKindOfClass:FTEnrichedResource.class]){
-        self.resources = @[event];
-    }
-}
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
     NSString *date =[[NSDate date] ft_stringWithGMTFormat];
     mutableRequest.HTTPMethod = self.httpMethod;

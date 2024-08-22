@@ -32,9 +32,32 @@
 -(NSString *)contentType{
     return  [[NSString alloc]initWithFormat:@"multipart/form-data; boundary=%@",[self.multipartFormBody boundary]];
 }
-- (void)requestWithEvent:(id)event parameters:(NSDictionary *)parameters{
+-(void)requestWithEvents:(NSArray *)events parameters:(NSDictionary *)parameters{
     self.parameters = parameters;
-    self.segment = event;
+    NSArray *merged = [self mergeSegments:events];
+    self.segment = [merged firstObject];
+}
+- (NSArray *)mergeSegments:(NSArray *)segments{
+    NSMutableArray *ori = [NSMutableArray array];
+    for (NSData *data in segments) {
+        FTSegmentJSON *segment =  [[FTSegmentJSON alloc]initWithData:data];
+        [ori addObject:segment];
+    }
+    NSMutableArray *result = [NSMutableArray array];
+    NSMutableDictionary<NSString*,NSNumber*> *indexes = [NSMutableDictionary new];
+    for (int i=0; i<ori.count; i++) {
+        FTSegmentJSON *segment = ori[i];
+        if(indexes[segment.viewID] != nil){
+            int idx = [indexes[segment.viewID] intValue];
+            FTSegmentJSON *current = result[idx];
+            [current mergeAnother:segment];
+            result[idx] = current;
+        }else{
+            [indexes setValue:@(indexes.count) forKey:segment.viewID];
+            [result addObject:segment];
+        }
+    }
+    return result;
 }
 -(NSURL *)absoluteURL{
     if (FTNetworkInfoManager.sharedInstance.datakitUrl) {
@@ -53,50 +76,19 @@
     //设置请求参数
     [mutableRequest setValue:date forHTTPHeaderField:@"Date"];
     [mutableRequest setValue:[NSString stringWithFormat:@"sdk_package_agent=%@",[FTNetworkInfoManager sharedInstance].sdkVersion] forHTTPHeaderField:@"User-Agent"];
-    if(self.multipartFormBody){
-//        if(self.segments && self.segments.count>0){
-//            NSMutableArray *segmentsArray = [NSMutableArray new];
-//            for (int i=0; i<self.segments.count; i++) {
-//                FTSegmentJSON *segment = self.segments[i];
-//                NSMutableDictionary *segmentJson = [[segment toJSONODict] mutableCopy];
-//                [segmentJson addEntriesFromDictionary:self.parameters];
-//                NSError *error;
-//                NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];
-//                NSMutableData *mutableData = [NSMutableData dataWithData:data];
-//                [mutableData appendData:[self.multipartFormBody newlineByte]];
-//                NSData *compress = [FTCompression compress:mutableData];
-//                [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%@-%lld",segment.sessionID,segment.viewID,segment.start] data:data mimeType:@"application/octet-stream"];
-//                segmentJson[@"records"] = nil;
-//                segmentJson[@"index_in_view"] = nil;
-//                segmentJson[@"raw_segment_size"] = @(data.length);
-//                segmentJson[@"compressed_segment_size"] = @(compress.length);
-//                [segmentsArray addObject:segmentJson];
-//            }
-//            
-//            NSError *error;
-//            NSData *data = [NSJSONSerialization dataWithJSONObject:segmentsArray options:0 error:&error];
-//            [self.multipartFormBody addFormData:@"event"
-//                                       filename:@"blob"
-//                                           data:data
-//                                       mimeType:@"application/json"];
-//            mutableRequest.HTTPBody = [self.multipartFormBody build];
-//        }
-       if (self.segment){
-            NSMutableDictionary *segmentJson = [[self.segment toJSONODict] mutableCopy];
-            NSError *error;
-            NSData *data = [NSJSONSerialization dataWithJSONObject:segmentJson options:0 error:&error];
-            NSMutableData *mutableData = [NSMutableData dataWithData:data];
-            [mutableData appendData:[self.multipartFormBody newlineByte]];
-            NSData *compress = [FTCompression compress:mutableData];
-            [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
-            [segmentJson addEntriesFromDictionary:self.parameters];
-            [segmentJson removeObjectForKey:@"records"];
-            for (NSString *key in segmentJson.allKeys) {
-                [self.multipartFormBody addFormField:key value:segmentJson[key]];
-            }
-            [self.multipartFormBody addFormField:@"raw_segment_size" value:[NSString stringWithFormat:@"%ld",compress.length]];
-            mutableRequest.HTTPBody = [self.multipartFormBody build];
+    if(self.multipartFormBody&&self.segment){
+        NSMutableData *mutableData = [NSMutableData dataWithData:[self.segment toJSONData]];
+        [mutableData appendData:[self.multipartFormBody newlineByte]];
+        NSData *compress = [FTCompression compress:mutableData];
+        [self.multipartFormBody addFormData:@"segment" filename:[NSString stringWithFormat:@"%@-%lld",self.segment.sessionID,self.segment.start] data:compress mimeType:@"application/octet-stream"];
+        NSMutableDictionary *segmentJson = [[self.segment toDictionary] mutableCopy];
+        [segmentJson addEntriesFromDictionary:self.parameters];
+        [segmentJson removeObjectForKey:@"records"];
+        for (NSString *key in segmentJson.allKeys) {
+            [self.multipartFormBody addFormField:key value:segmentJson[key]];
         }
+        [self.multipartFormBody addFormField:@"raw_segment_size" value:@(compress.length)];
+        mutableRequest.HTTPBody = [self.multipartFormBody build];
     }
     return mutableRequest;
 }
