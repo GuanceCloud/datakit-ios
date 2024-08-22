@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol  FTReadableFile <NSObject>
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, strong) NSURL *url;
 - (NSInputStream *)stream;
 - (void)deleteFile;
 @end

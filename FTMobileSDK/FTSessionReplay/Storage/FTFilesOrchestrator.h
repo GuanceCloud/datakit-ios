@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<FTStoragePerformancePreset> performance;
 @property (nonatomic, assign) BOOL ignoreFilesAgeWhenReading;
 - (id<FTWritableFile>)getWritableFile:(long long)writeSize;
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize forceNewFile:(BOOL)force;
 - (NSArray<FTFile *>*)getReadableFiles:(NSSet *)excludedFileNames limit:(int)limit;
 - (void)deleteReadableFile:(id<FTReadableFile>)readableFile;
 @end

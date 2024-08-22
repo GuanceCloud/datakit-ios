@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FTAbstractJSONModelProtocol,FTFilesOrchestratorType;
 @protocol FTWriter <NSObject>
 - (void)write:(NSData *)datas;
+- (void)write:(NSData *)datas forceNewFile:(BOOL)update;
+
 @end
 @interface FTFileWriter : NSObject<FTWriter>
 -(instancetype)initWithOrchestrator:(id<FTFilesOrchestratorType>)orchestrator queue:(dispatch_queue_t)queue;

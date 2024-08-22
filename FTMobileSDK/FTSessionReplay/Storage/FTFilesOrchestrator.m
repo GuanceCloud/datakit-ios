@@ -27,10 +27,17 @@
     }
     return self;
 }
+
 - (id<FTWritableFile>)getWritableFile:(long long)writeSize{
+    return [self getWritableFile:writeSize forceNewFile:NO];
+}
+- (id<FTWritableFile>)getWritableFile:(long long)writeSize forceNewFile:(BOOL)force{
     if(![self validate:writeSize])
         return nil;
-    id<FTWritableFile> lastWritableFile = [self reuseLastWritableFileIfPossible:writeSize];
+    id<FTWritableFile> lastWritableFile = nil;
+    if(!force){
+        lastWritableFile = [self reuseLastWritableFileIfPossible:writeSize];
+    }
     if(lastWritableFile!=nil){
         self.lastWritableFileObjectsCount += 1;
         self.lastWritableFileApproximatedSize += writeSize;

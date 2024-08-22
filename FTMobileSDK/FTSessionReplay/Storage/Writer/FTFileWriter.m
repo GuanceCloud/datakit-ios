@@ -25,12 +25,15 @@
     return self;
 }
 -(void)write:(NSData *)datas{
+    [self write:datas forceNewFile:NO];
+}
+- (void)write:(NSData *)datas forceNewFile:(BOOL)force{
     dispatch_async(self.queue, ^{
         NSData *data = datas;
         FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
         data = [tlv serialize];
         long long fileSize = data.length;
-        id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize];
+        id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize forceNewFile:force];
         [file append:data];
     });
 }

@@ -50,62 +50,64 @@
 }
 
 - (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
-        NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
-        NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
-        for (id<FTSRWireframesBuilder> builder in nodes) {
-            [wireframes addObjectsFromArray:[builder buildWireframes]];
+    NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
+    NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
+    for (id<FTSRWireframesBuilder> builder in nodes) {
+        [wireframes addObjectsFromArray:[builder buildWireframes]];
+    }
+    // 2.将数据转换成存储要求的格式
+    NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
+    BOOL force = NO;
+    // 3.进行判断是新增，还是新的 View
+    // 3.1.新的 view 全量保存
+    if (self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID){
+        force = YES;
+        // meta focus full
+        FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
+        FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+        focusRecord.hasFocus = YES;
+        FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+        fullRecord.wireframes = wireframes;
+        [records addObject:metaRecord];
+        [records addObject:focusRecord];
+        [records addObject:fullRecord];
+    }else if(self.lastSRWireframes){
+        // 3.2.1.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
+        MutationData *mutation = [[MutationData alloc]init];
+        [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
+        if(!mutation.isEmpty){
+            FTSRIncrementalSnapshotRecord *mutationRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:mutation timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
+            [records addObject:mutationRecord];
         }
-        // 2.将数据转换成存储要求的格式
-        NSMutableArray<FTSRRecord> *records =(NSMutableArray<FTSRRecord>*)[[NSMutableArray alloc]init];
-        // 3.进行判断是新增，还是新的 View
-        // 3.1.新的 view 全量保存
-        if (self.lastSnapshot == nil || self.lastSnapshot.context.sessionID != viewTreeSnapshot.context.sessionID || self.lastSnapshot.context.viewID != viewTreeSnapshot.context.viewID){
-            // meta focus full
-            FTSRMetaRecord *metaRecord = [[FTSRMetaRecord alloc]initWithViewTreeSnapshot:viewTreeSnapshot];
-            FTSRFocusRecord *focusRecord = [[FTSRFocusRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
-            focusRecord.hasFocus = YES;
-            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
-            fullRecord.wireframes = wireframes;
-            [records addObject:metaRecord];
-            [records addObject:focusRecord];
-            [records addObject:fullRecord];
-        }else if(self.lastSRWireframes){
-            // 3.2.1.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
-            MutationData *mutation = [[MutationData alloc]init];
-            [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
-            if(!mutation.isEmpty){
-                FTSRIncrementalSnapshotRecord *mutationRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:mutation timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
-                [records addObject:mutationRecord];
-            }
-            // 3.2.3.页面尺寸是否发生变化，横屏竖屏切换
-            if(self.lastSnapshot){
-                if(FTCGSizeAspectRatio(self.lastSnapshot.viewportSize) != FTCGSizeAspectRatio(viewTreeSnapshot.viewportSize)){
-                    ViewportResizeData *viewport = [[ViewportResizeData alloc]initWithViewportSize:viewTreeSnapshot.viewportSize];
-                    FTSRIncrementalSnapshotRecord *viewportRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:viewport timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
-                    [records addObject:viewportRecord];
-                }
-            }
-        }else{
-            //3.3 有 lastSnapshot ,但未采集到 wireframe 的情况
-            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
-            fullRecord.wireframes = wireframes;
-            [records addObject:fullRecord];
-        }
-        // 4.将 touches 看做增量添加
-        if (touches.count>0){
-            for (FTTouchCircle *touch in touches) {
-                PointerInteractionData *pointer = [[PointerInteractionData alloc]initWithTouch:touch];
-                FTSRIncrementalSnapshotRecord *pointerRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:pointer timestamp:touch.timestamp];
-                [records addObject:pointerRecord];
+        // 3.2.3.页面尺寸是否发生变化，横屏竖屏切换
+        if(self.lastSnapshot){
+            if(FTCGSizeAspectRatio(self.lastSnapshot.viewportSize) != FTCGSizeAspectRatio(viewTreeSnapshot.viewportSize)){
+                ViewportResizeData *viewport = [[ViewportResizeData alloc]initWithViewportSize:viewTreeSnapshot.viewportSize];
+                FTSRIncrementalSnapshotRecord *viewportRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:viewport timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
+                [records addObject:viewportRecord];
             }
         }
-        // 5.数据写入
+    }else{
+        //3.3 有 lastSnapshot ,但未采集到 wireframe 的情况
+        FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+        fullRecord.wireframes = wireframes;
+        [records addObject:fullRecord];
+    }
+    // 4.将 touches 看做增量添加
+    if (touches.count>0){
+        for (FTTouchCircle *touch in touches) {
+            PointerInteractionData *pointer = [[PointerInteractionData alloc]initWithTouch:touch];
+            FTSRIncrementalSnapshotRecord *pointerRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:pointer timestamp:touch.timestamp];
+            [records addObject:pointerRecord];
+        }
+    }
+    // 5.数据写入
     if(records.count>0){
         FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
         // 5.1. 将页面采集情况同步给 RUM-View
         NSData *data = [self trackRecord:fullRecord];
         // 5.2. 数据写入文件
-        [self.writer write:data];
+        [self.writer write:data forceNewFile:force];
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
         self.lastSRWireframes = wireframes;
