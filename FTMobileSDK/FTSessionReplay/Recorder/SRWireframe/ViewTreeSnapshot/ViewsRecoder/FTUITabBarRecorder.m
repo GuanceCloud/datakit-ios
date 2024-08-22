@@ -103,7 +103,7 @@
 - (CGRect)inferBarFrame:(UITabBar *)bar context:(FTViewTreeRecordingContext *)context{
     CGRect newRect = bar.frame;
     for (UIView *view in bar.subviews) {
-        CGRect subViewRect = [view convertRect:view.frame toCoordinateSpace:context.coordinateSpace];
+        CGRect subViewRect = [view convertRect:view.bounds toCoordinateSpace:context.coordinateSpace];
         newRect = CGRectUnion(newRect, subViewRect);
     }
     return newRect;

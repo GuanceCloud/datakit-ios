@@ -42,7 +42,7 @@
         return [FTInvisibleElement constant];
     }
     FTUILabelBuilder *builder = [[FTUILabelBuilder alloc]init];
-    builder.text = label.text;
+    builder.text = label.text?:@"";
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:label nodeRecorder:self];
     builder.adjustsFontSizeToFitWidth = label.adjustsFontSizeToFitWidth;

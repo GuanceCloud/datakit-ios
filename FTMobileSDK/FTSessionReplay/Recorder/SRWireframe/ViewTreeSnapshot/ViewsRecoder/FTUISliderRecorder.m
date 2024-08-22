@@ -119,8 +119,8 @@
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
-                                      initWithIdentifier:self.minTrackWireframeID
-                                      frame:realR 
+                                      initWithIdentifier:self.maxTrackWireframeID
+                                      frame:realR
                                       backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
