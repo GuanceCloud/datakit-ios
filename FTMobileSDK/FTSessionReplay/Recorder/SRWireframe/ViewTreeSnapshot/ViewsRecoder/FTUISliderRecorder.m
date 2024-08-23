@@ -10,7 +10,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
@@ -56,9 +55,6 @@
 
 @implementation FTUISliderBuilder
 
-
-/// slider - height:4
-///          circle:28
 - (NSArray<FTSRWireframe *> *)buildWireframes {
     if(self.isMasked){
         return [self createMaskWireframes];

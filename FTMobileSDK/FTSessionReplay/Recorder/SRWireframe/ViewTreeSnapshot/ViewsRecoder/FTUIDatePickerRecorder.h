@@ -20,16 +20,19 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTUIDatePickerRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;
-
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 @end
 @interface FTWheelsStyleDatePickerRecorder : NSObject
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
 @end
 @interface FTInlineStyleDatePickerRecorder : NSObject
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
 @end
 
 @interface FTCompactStyleDatePickerRecorder : NSObject
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 -(void)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context nodes:(NSMutableArray *)nodes resources:(NSMutableArray *)resources;
 @end
 NS_ASSUME_NONNULL_END

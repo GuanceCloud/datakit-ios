@@ -9,7 +9,6 @@
 #import "FTUITextViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
@@ -75,7 +74,6 @@
     wireframe.clip = clip;
     FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.shapeStyle = shapeStyle;
-    // TODO: family
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentLeft vertical:@"top"];
     wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];

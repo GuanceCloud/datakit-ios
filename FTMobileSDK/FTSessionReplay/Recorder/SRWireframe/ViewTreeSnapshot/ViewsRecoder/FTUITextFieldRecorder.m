@@ -9,7 +9,6 @@
 #import "FTUITextFieldRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTUIViewRecorder.h"
@@ -30,10 +29,10 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];
-        _backgroundViewRecorder = [FTUIViewRecorder new];
-        _iconsRecorder = [FTUIImageViewRecorder new];
+        _backgroundViewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:_identifier];
+        _iconsRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:_identifier tintColorProvider:nil shouldRecordImagePredicate:nil];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
-        _subtreeRecorder.nodeRecorders = @[self.backgroundViewRecorder,self.iconsRecorder];
+        _subtreeRecorder.nodeRecorders = @[_backgroundViewRecorder,_iconsRecorder];
     }
     return self;
 }
@@ -120,7 +119,6 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     position.alignment = alignment;
     position.padding = padding;
     wireframe.textPosition = position;
-    // TODO: 字体 family
     FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColor]:[FTSRUtils colorHexString:self.textColor] family:nil];
     wireframe.textStyle = textStyle;
     return @[wireframe];

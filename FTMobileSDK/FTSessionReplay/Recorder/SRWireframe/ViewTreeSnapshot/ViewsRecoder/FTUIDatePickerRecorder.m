@@ -9,7 +9,6 @@
 #import "FTUIDatePickerRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTUIViewRecorder.h"
@@ -26,12 +25,15 @@
 @end
 @implementation FTUIDatePickerRecorder
 -(instancetype)init{
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString];
+}
+-(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
-        _identifier = [NSUUID UUID].UUIDString;
-        _compactRecorder = [[FTCompactStyleDatePickerRecorder alloc] init];
-        _inlineRecorder = [[FTInlineStyleDatePickerRecorder alloc] init];
-        _wheelRecorder = [[FTWheelsStyleDatePickerRecorder alloc] init];
+        _identifier = identifier;
+        _compactRecorder = [[FTCompactStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
+        _inlineRecorder = [[FTInlineStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
+        _wheelRecorder = [[FTWheelsStyleDatePickerRecorder alloc] initWithIdentifier:identifier];
     }
     return self;
 }
@@ -96,11 +98,11 @@
 @property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
 @end
 @implementation FTWheelsStyleDatePickerRecorder
--(instancetype)init{
+-(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUIPickerViewRecorder *recorder = [[FTUIPickerViewRecorder alloc]init];
+        FTUIPickerViewRecorder *recorder = [[FTUIPickerViewRecorder alloc]initWithIdentifier:identifier textObfuscator:nil];
         recorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context) {
             return context.recorder.privacy.staticTextObfuscator;
         };
@@ -122,20 +124,19 @@
 @property (nonatomic, strong) FTViewTreeRecorder *subtreeRecorder;
 @end
 @implementation FTInlineStyleDatePickerRecorder
--(instancetype)init{
+-(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
-        _viewRecorder = [[FTUIViewRecorder alloc]init];
-        _labelRecorder = [[FTUILabelRecorder alloc]init];
-        _labelRecorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context) {
+        _viewRecorder = [[FTUIViewRecorder alloc]initWithIdentifier:identifier];
+        _labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:identifier builderOverride:nil textObfuscator:^id<FTSRTextObfuscatingProtocol>(FTViewTreeRecordingContext *context) {
             return context.recorder.privacy.staticTextObfuscator;
-        };
+        }];
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
         _subtreeRecorder.nodeRecorders = @[
             _viewRecorder,
             _labelRecorder,
-            [[FTUIImageViewRecorder alloc] init],
-            [[FTUISegmentRecorder alloc] init],
+            [[FTUIImageViewRecorder alloc] initWithIdentifier:identifier tintColorProvider:nil shouldRecordImagePredicate:nil],
+            [[FTUISegmentRecorder alloc] initWithIdentifier:identifier],
         ];
     }
     return self;
@@ -169,16 +170,16 @@
 @end
 
 @implementation FTCompactStyleDatePickerRecorder
--(instancetype)init{
+-(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
         _subtreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUILabelRecorder *labelRecorder = [[FTUILabelRecorder alloc]init];
+        FTUILabelRecorder *labelRecorder = [[FTUILabelRecorder alloc]initWithIdentifier:identifier builderOverride:nil textObfuscator:nil];
         labelRecorder.textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
             return context.recorder.privacy.staticTextObfuscator;
         };
         _subtreeRecorder.nodeRecorders = @[
-            [[FTUIViewRecorder alloc] init],
+            [[FTUIViewRecorder alloc] initWithIdentifier:identifier],
             labelRecorder
         ];
     }

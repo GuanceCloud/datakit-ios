@@ -9,13 +9,10 @@
 #import "FTUIProgressViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
-#import "FTSRUtils.h"
 #import "FTViewTreeRecorder.h"
-#import "FTUIImageViewRecorder.h"
 @implementation FTUIProgressViewRecorder
 -(instancetype)init{
     self = [super init];

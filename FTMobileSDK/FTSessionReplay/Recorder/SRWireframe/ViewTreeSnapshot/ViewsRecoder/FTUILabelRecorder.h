@@ -31,7 +31,7 @@ typedef FTUILabelBuilder* _Nullable (^FTBuilderOverride)(FTUILabelBuilder *build
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic,copy) FTTextObfuscator textObfuscator;
 @property (nonatomic,copy) FTBuilderOverride builderOverride;
--(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator;
+-(instancetype)initWithIdentifier:(NSString *)identifier builderOverride:(nullable FTBuilderOverride)builderOverride textObfuscator:(nullable FTTextObfuscator)textObfuscator;
 @end
 
 NS_ASSUME_NONNULL_END

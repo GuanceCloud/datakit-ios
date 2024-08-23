@@ -9,7 +9,6 @@
 #import "FTUILabelRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 
@@ -17,18 +16,18 @@
 @end
 @implementation FTUILabelRecorder
 -(instancetype)init{
-    return [self initWithBuilderOverride:^(FTUILabelBuilder *builder){
-        return builder;
-    } textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
-        return [context.recorder.privacy staticTextObfuscator];
-    }];
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString builderOverride:nil textObfuscator:nil];
 }
--(instancetype)initWithBuilderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
+-(instancetype)initWithIdentifier:(NSString *)identifier builderOverride:(FTBuilderOverride)builderOverride textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
-        _identifier = [[NSUUID UUID] UUIDString];
-        _builderOverride = builderOverride;
-        _textObfuscator = textObfuscator;
+        _identifier = identifier;
+        _builderOverride = builderOverride?builderOverride:^(FTUILabelBuilder *builder){
+            return builder;
+        };
+        _textObfuscator = textObfuscator?textObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext * _Nonnull context) {
+            return [context.recorder.privacy staticTextObfuscator];
+        };
     }
     return self;
 }
@@ -68,7 +67,6 @@
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:self.attributes.layerBorderColor] width:self.attributes.layerBorderWidth];
     wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
-    // TODO: 字体 family
     wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
     FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
     textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];

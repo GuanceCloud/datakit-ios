@@ -7,7 +7,6 @@
 //
 
 #import "FTUIViewRecorder.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRUtils.h"
@@ -16,11 +15,14 @@
 
 @implementation FTUIViewRecorder
 -(instancetype)init{
-    return [self initWithSemanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString];
+}
+-(instancetype)initWithIdentifier:(NSString *)identifier{
+    return [self initWithIdentifier:identifier semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
         return nil;
     }];
 }
--(instancetype)initWithSemanticsOverride:(SemanticsOverride)semanticsOverride{
+-(instancetype)initWithIdentifier:(NSString *)identifier semanticsOverride:(SemanticsOverride)semanticsOverride{
     self = [super init];
     if(self){
         _identifier = [[NSUUID UUID] UUIDString];

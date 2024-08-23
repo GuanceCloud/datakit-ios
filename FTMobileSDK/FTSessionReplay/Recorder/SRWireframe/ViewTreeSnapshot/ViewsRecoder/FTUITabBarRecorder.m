@@ -9,7 +9,6 @@
 #import "FTUITabBarRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTViewTreeRecorder.h"
@@ -42,6 +41,10 @@
     if(![view isKindOfClass:[UITabBar class]]){
         return nil;
     }
+    // TODO: 确认是否在 TabBar hidden 的时候隐藏
+    if(!attributes.isVisible){
+        return [FTInvisibleElement constant];
+    }
     UITabBar *tabBar = (UITabBar *)view;
     FTUITabBarBuilder *builder = [[FTUITabBarBuilder alloc]init];
     builder.color = [self inferTabBarColor:tabBar];
@@ -57,31 +60,28 @@
     return element;
 }
 - (void)recordSubtree:(UITabBar *)tabBar records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
-    if(!self.subtreeRecorder){
-        FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
-        imageViewRecorder.tintColorProvider = ^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
-            if(imageView.image){
-                UITabBarItem *currentItemInSelectedState = nil;
-                NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
-                if(uniqueDescription){
-                    currentItemInSelectedState = [uniqueDescription isEqualToString:imageView.image.uniqueDescription]?tabBar.items.firstObject:nil;
-                }
-                if(currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState){
-                    return tabBar.unselectedItemTintColor?tabBar.unselectedItemTintColor:[[UIColor systemGrayColor] colorWithAlphaComponent:0.5];
-                }
-                return tabBar.tintColor?: [UIColor systemBlueColor];
+    FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
+    FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:self.identifier tintColorProvider:^UIColor * _Nullable(UIImageView * _Nonnull imageView) {
+        if(imageView.image){
+            UITabBarItem *currentItemInSelectedState = nil;
+            NSString *uniqueDescription = tabBar.items.firstObject.selectedImage.uniqueDescription;
+            if(uniqueDescription){
+                currentItemInSelectedState = [uniqueDescription isEqualToString:imageView.image.uniqueDescription]?tabBar.items.firstObject:nil;
             }
-            return nil;
-        };
-        viewTreeRecorder.nodeRecorders = @[
-            imageViewRecorder,
-            [[FTUILabelRecorder alloc] init],
-            [[FTUIViewRecorder alloc] init],
-        ];
-        self.subtreeRecorder = viewTreeRecorder;
-    }
-    [self.subtreeRecorder record:records resources:resources view:tabBar context:context];
+            if(currentItemInSelectedState == nil || tabBar.selectedItem != currentItemInSelectedState){
+                return tabBar.unselectedItemTintColor?tabBar.unselectedItemTintColor:[[UIColor systemGrayColor] colorWithAlphaComponent:0.5];
+            }
+            return tabBar.tintColor?: [UIColor systemBlueColor];
+        }
+        return nil;
+    } shouldRecordImagePredicate:nil];
+    viewTreeRecorder.nodeRecorders = @[
+        imageViewRecorder,
+        [[FTUILabelRecorder alloc] initWithIdentifier:self.identifier builderOverride:nil textObfuscator:nil],
+        [[FTUIViewRecorder alloc] initWithIdentifier:self.identifier],
+    ];
+    
+    [viewTreeRecorder record:records resources:resources view:tabBar context:context];
 }
 - (CGColorRef )inferTabBarColor:(UITabBar *)bar{
     if(bar.backgroundColor){

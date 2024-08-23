@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTUISegmentRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic,copy) FTTextObfuscator textObfuscator;
+-(instancetype)initWithIdentifier:(NSString *)identifier;
 @end
 
 NS_ASSUME_NONNULL_END

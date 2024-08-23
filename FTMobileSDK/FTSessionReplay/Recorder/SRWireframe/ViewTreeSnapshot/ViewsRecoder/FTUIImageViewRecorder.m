@@ -9,7 +9,6 @@
 #import "FTUIImageViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTUIImageResource.h"
@@ -55,14 +54,17 @@
 @end
 @implementation FTUIImageViewRecorder
 -(instancetype)init{
+    return [self initWithIdentifier:[NSUUID UUID].UUIDString tintColorProvider:nil shouldRecordImagePredicate:nil];
+}
+-(instancetype)initWithIdentifier:(NSString *)identifier tintColorProvider:(nullable FTTintColorProvider)tintColorProvider shouldRecordImagePredicate:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicate{
     self = [super init];
     if(self){
-        _identifier = [[NSUUID UUID] UUIDString];
+        _identifier = identifier;
         _semanticsOverride = ^FTSRNodeSemantics*(UIView *view, FTViewAttributes* attributes){
             UIImageView *imageView = (UIImageView *)view;
             return imageView.isSystemShadow?[[FTIgnoredElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore]:nil;
         };
-        _tintColorProvider = ^UIColor*(UIImageView *imageView){
+        _tintColorProvider = tintColorProvider?tintColorProvider: ^UIColor*(UIImageView *imageView){
             if (@available(iOS 13.0, *)) {
                 if(imageView.image){
                     return imageView.image.isTinted?imageView.tintColor:nil;
@@ -70,7 +72,7 @@
             }
             return nil;
         };
-        _shouldRecordImagePredicate = ^BOOL(UIImageView *imageView){
+        _shouldRecordImagePredicate =shouldRecordImagePredicate?shouldRecordImagePredicate: ^BOOL(UIImageView *imageView){
             if (@available(iOS 13.0, *)) {
                 if(imageView.image){
                     return imageView.image.isContextual || imageView.isSystemControlBackground;

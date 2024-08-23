@@ -9,31 +9,29 @@
 #import "FTUIPickerViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTImageDataUtils.h"
 #import "FTViewTreeRecordingContext.h"
 #import "FTViewTreeRecorder.h"
 #import "FTUIViewRecorder.h"
 #import "FTUILabelRecorder.h"
-#import "FTViewTreeRecordingContext.h"
 @interface FTUIPickerViewRecorder()
 @property (nonatomic, strong) FTViewTreeRecorder *selectionRecorder;
 @property (nonatomic, strong) FTViewTreeRecorder *labelsRecorder;
 @end
 @implementation FTUIPickerViewRecorder
 -(instancetype)init{
-    return [self initWithTextObfuscator: ^(FTViewTreeRecordingContext *context){
-        return context.recorder.privacy.inputAndOptionTextObfuscator;
-    }];
+    return [self initWithIdentifier:[[NSUUID UUID] UUIDString] textObfuscator:nil];
 }
--(instancetype)initWithTextObfuscator:(FTTextObfuscator)textObfuscator{
+-(instancetype)initWithIdentifier:(NSString *)identifier textObfuscator:(FTTextObfuscator)textObfuscator{
     self = [super init];
     if(self){
-        _identifier = [[NSUUID UUID] UUIDString];
-        _textObfuscator = textObfuscator;
+        _identifier = identifier;
+        _textObfuscator = textObfuscator?textObfuscator:^(FTViewTreeRecordingContext *context){
+            return context.recorder.privacy.inputAndOptionTextObfuscator;
+        };
         FTViewTreeRecorder *selectionRecorder = [[FTViewTreeRecorder alloc]init];
-        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithSemanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
+        selectionRecorder.nodeRecorders = @[[[FTUIViewRecorder alloc]initWithIdentifier:_identifier semanticsOverride:^FTSRNodeSemantics* _Nullable(UIView *view, FTViewAttributes *attributes) {
             if (@available(iOS 13, *)) {
                 if(!attributes.isVisible || attributes.alpha<1 || !CATransform3DIsIdentity(view.transform3D) ){
                     FTIgnoredElement *element = [[FTIgnoredElement alloc]init];
@@ -48,8 +46,8 @@
         _selectionRecorder = selectionRecorder;
         _labelsRecorder = [[FTViewTreeRecorder alloc]init];
         _labelsRecorder.nodeRecorders = @[
-            [[FTUIViewRecorder alloc]init],
-            [[FTUILabelRecorder alloc]initWithBuilderOverride:^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
+            [[FTUIViewRecorder alloc]initWithIdentifier:_identifier],
+            [[FTUILabelRecorder alloc] initWithIdentifier:_identifier builderOverride:^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
                 builder.textAlignment = NSTextAlignmentCenter;
                 builder.adjustsFontSizeToFitWidth = YES;
                 return builder;

@@ -9,7 +9,6 @@
 #import "FTUIActivityIndicatorRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
@@ -54,10 +53,9 @@
 - (void)recordSubtree:(UIActivityIndicatorView *)activityIndicator records:(NSMutableArray *)records resources:(NSMutableArray *)resources context:(FTViewTreeRecordingContext *)context{
     if(!_subtreeRecorder){
         FTViewTreeRecorder *viewTreeRecorder = [[FTViewTreeRecorder alloc]init];
-        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]init];
-        imageViewRecorder.shouldRecordImagePredicate = ^BOOL(UIImageView * _Nonnull imageView) {
+        FTUIImageViewRecorder *imageViewRecorder = [[FTUIImageViewRecorder alloc]initWithIdentifier:self.identifier tintColorProvider:nil shouldRecordImagePredicate: ^BOOL(UIImageView * _Nonnull imageView) {
             return imageView.image != nil;
-        };
+        }];
         viewTreeRecorder.nodeRecorders = @[imageViewRecorder];
         self.subtreeRecorder = viewTreeRecorder;
     }

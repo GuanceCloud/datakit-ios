@@ -35,7 +35,9 @@ typedef BOOL (^FTShouldRecordImagePredicate)(UIImageView *imageView);
 @property (nonatomic, copy) FTTintColorProvider tintColorProvider;
 
 @property (nonatomic, copy) NSString *identifier;
-
+-(instancetype)initWithIdentifier:(NSString *)identifier
+                tintColorProvider:(nullable FTTintColorProvider)tintColorProvider
+       shouldRecordImagePredicate:(nullable FTShouldRecordImagePredicate)shouldRecordImagePredicate;
 @end
 
 NS_ASSUME_NONNULL_END

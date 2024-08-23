@@ -9,7 +9,6 @@
 #import "FTUINavigationBarRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUINavigationBarRecorder
@@ -60,7 +59,6 @@
     }
     return UIColor.whiteColor.CGColor;
 }
-// TODO: 确认：子视图的 frame 是否有必要添加到 bar 的 frame 上
 - (CGRect)inferNavigationBarFrame:(UINavigationBar *)bar context:(FTViewTreeRecordingContext *)context{
     CGRect newRect = bar.frame;
     for (UIView *view in bar.subviews) {

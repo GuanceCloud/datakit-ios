@@ -9,21 +9,20 @@
 #import "FTUISegmentRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import "FTSystemColors.h"
 #import "FTViewTreeRecordingContext.h"
 @implementation FTUISegmentRecorder
 -(instancetype)init{
-    return [self initWithTextObfuscator:^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
-        return [context.recorder.privacy inputAndOptionTextObfuscator];
-    }];
+    return [self initWithIdentifier:[[NSUUID UUID] UUIDString]];
 }
--(instancetype)initWithTextObfuscator:(FTTextObfuscator)textObfuscator{
+-(instancetype)initWithIdentifier:(NSString *)identifier{
     self = [super init];
     if(self){
-        _identifier = [[NSUUID UUID] UUIDString];
-        _textObfuscator = textObfuscator;
+        _identifier = identifier;
+        _textObfuscator = ^id<FTSRTextObfuscatingProtocol> _Nullable(FTViewTreeRecordingContext *context) {
+            return [context.recorder.privacy inputAndOptionTextObfuscator];
+        };
     }
     return self;
 }

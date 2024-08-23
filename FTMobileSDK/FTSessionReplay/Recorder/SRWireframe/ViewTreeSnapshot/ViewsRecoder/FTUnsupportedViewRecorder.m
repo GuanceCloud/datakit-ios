@@ -9,7 +9,6 @@
 #import "FTUnsupportedViewRecorder.h"
 #import "FTSRWireframe.h"
 #import "FTViewAttributes.h"
-#import "FTSRWireframesBuilder.h"
 #import "FTSRUtils.h"
 #import <WebKit/WebKit.h>
 #import "FTViewTreeRecordingContext.h"
