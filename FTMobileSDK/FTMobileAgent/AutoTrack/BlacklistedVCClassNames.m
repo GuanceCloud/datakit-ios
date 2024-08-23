@@ -11,18 +11,26 @@
 @implementation BlacklistedVCClassNames
 + (NSArray *)ft_blacklistedViewControllerClassNames{
    NSArray *blackList =
-     @[
-      @"SFBrowserRemoteViewController",
-      @"UIAlertController",
-      @"UIInputWindowController",
+    @[@"UIDocumentBrowserViewController",
+      @"UIDocumentPickerViewController",
+      @"UISplitViewController",
+      @"SLComposeViewController",
+      @"UIActivityViewController",
+      @"UIDocumentMenuViewController",
+      @"UIImagePickerController",
+      @"UIReferenceLibraryViewController",
+      @"AVPlayerViewController",
+      @"SFSafariViewController",
       @"UINavigationController",
+      @"UITabBarController",
+      @"UIAlertController",//
+      @"SFBrowserRemoteViewController",
+      @"UIInputWindowController",
       @"UIKeyboardCandidateGridCollectionViewController",
       @"UICompatibilityInputViewController",
       @"UIApplicationRotationFollowingController",
       @"UIApplicationRotationFollowingControllerNoTouches",
-      @"AVPlayerViewController",
       @"UIActivityGroupViewController",
-      @"UIReferenceLibraryViewController",
       @"UIKeyboardCandidateRowViewController",
       @"UIKeyboardHiddenViewController",
       @"_UIAlertControllerTextFieldViewController",
@@ -32,15 +40,12 @@
       @"_UIRemoteDictionaryViewController",
       @"UISystemKeyboardDockController",
       @"_UINoDefinitionViewController",
-      @"UIImagePickerController",
       @"_UIActivityGroupListViewController",
       @"_UIRemoteViewController",
       @"_UIFallbackPresentationViewController",
       @"_UIDocumentPickerRemoteViewController",
       @"_UIAlertShimPresentingViewController",
       @"_UIWaitingForRemoteViewContainerViewController",
-      @"UIDocumentMenuViewController",
-      @"UIActivityViewController",
       @"_UIActivityUserDefaultsViewController",
       @"_UIActivityViewControllerContentController",
       @"_UIRemoteInputViewController",
@@ -59,7 +64,6 @@
       @"DDParsecNoDataViewController",
       @"CAMPreviewViewController",
       @"DDParsecCollectionViewController",
-      @"SLComposeViewController",
       @"DDParsecRemoteCollectionViewController",
       @"AVFullScreenPlaybackControlsViewController",
       @"PLPhotoTileViewController",
@@ -77,7 +81,13 @@
       @"UISystemInputAssistantViewController",
       @"UISystemKeyboardDockController",
       @"UIPredictionViewController",
-     ];
+      @"UIActivityContentViewController",
+      @"SFAirDropViewController",
+      @"UICandidateViewController",//键盘
+//      @"_UIDatePickerContainerViewController",
+      @"_UICursorAccessoryViewController",
+      @"_UIContextMenuActionsOnlyViewController",
+    ];
      return blackList;
 }
 @end

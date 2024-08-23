@@ -9,7 +9,7 @@
 #import "UIApplication+FTAutoTrack.h"
 #import "UIViewController+FTAutoTrack.h"
 #import "UIView+FTAutoTrack.h"
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 @implementation UIApplication (FTAutoTrack)
 -(BOOL)ft_sendAction:(SEL)action to:(id)target from:(id)sender forEvent:(UIEvent *)event{
     [self ftTrack:action to:target from:sender forEvent:event];
@@ -31,13 +31,13 @@
     UIView *view = (UIView *)sender;
     if ([sender isKindOfClass:UISwitch.class] || [sender isKindOfClass:UIStepper.class] ||
         [sender isKindOfClass:UIPageControl.class]||[sender isKindOfClass:[UISegmentedControl class]]) {
-        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-            [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
+        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
         }
     } else if ([event isKindOfClass:[UIEvent class]] && event.type == UIEventTypeTouches &&
                [[[event allTouches] anyObject] phase] == UITouchPhaseEnded) {
-        if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-            [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
+        if([FTAutoTrackHandler sharedInstance].addRumDatasDelegate && [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
+            [[FTAutoTrackHandler sharedInstance].addRumDatasDelegate addClickActionWithName:view.ft_actionName];
         }
     }
     

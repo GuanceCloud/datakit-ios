@@ -650,14 +650,14 @@
 		17E4CC2729CD42E4005C2D99 /* UIScrollView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBB929CD42E4005C2D99 /* UIScrollView+FTAutoTrack.m */; };
 		17E4CC2829CD42E4005C2D99 /* BlacklistedVCClassNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */; };
 		17E4CC2929CD42E4005C2D99 /* UIViewController+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */; };
-		17E4CC2A29CD42E4005C2D99 /* FTTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBC29CD42E4005C2D99 /* FTTrack.m */; };
+		17E4CC2A29CD42E4005C2D99 /* FTAutoTrackHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBC29CD42E4005C2D99 /* FTAutoTrackHandler.m */; };
 		17E4CC2C29CD42E4005C2D99 /* FTAppLaunchTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBBE29CD42E4005C2D99 /* FTAppLaunchTracker.m */; };
 		17E4CC2D29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */; };
 		17E4CC2E29CD42E4005C2D99 /* UIView+FTAutoTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */; };
 		17E4CC3029CD42E4005C2D99 /* UIApplication+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */; };
 		17E4CC3129CD42E4005C2D99 /* FTAutoTrackProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC329CD42E4005C2D99 /* FTAutoTrackProperty.h */; };
 		17E4CC3329CD42E4005C2D99 /* FTAppLaunchTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC529CD42E4005C2D99 /* FTAppLaunchTracker.h */; };
-		17E4CC3529CD42E4005C2D99 /* FTTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC729CD42E4005C2D99 /* FTTrack.h */; };
+		17E4CC3529CD42E4005C2D99 /* FTAutoTrackHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC729CD42E4005C2D99 /* FTAutoTrackHandler.h */; };
 		17E4CC3629CD42E4005C2D99 /* BlacklistedVCClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E4CBC829CD42E4005C2D99 /* BlacklistedVCClassNames.m */; };
 		17E4CC3729CD42E4005C2D99 /* UIViewController+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBC929CD42E4005C2D99 /* UIViewController+FTAutoTrack.h */; };
 		17E4CC3829CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E4CBCA29CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h */; };
@@ -1016,14 +1016,14 @@
 		17E4CBB929CD42E4005C2D99 /* UIScrollView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBBA29CD42E4005C2D99 /* BlacklistedVCClassNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistedVCClassNames.h; sourceTree = "<group>"; };
 		17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+FTAutoTrack.m"; sourceTree = "<group>"; };
-		17E4CBBC29CD42E4005C2D99 /* FTTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTrack.m; sourceTree = "<group>"; };
+		17E4CBBC29CD42E4005C2D99 /* FTAutoTrackHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAutoTrackHandler.m; sourceTree = "<group>"; };
 		17E4CBBE29CD42E4005C2D99 /* FTAppLaunchTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTAppLaunchTracker.m; sourceTree = "<group>"; };
 		17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+FTAutoTrack.h"; sourceTree = "<group>"; };
 		17E4CBC029CD42E4005C2D99 /* UIView+FTAutoTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTAutoTrack.m"; sourceTree = "<group>"; };
 		17E4CBC229CD42E4005C2D99 /* UIApplication+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+FTAutoTrack.h"; sourceTree = "<group>"; };
 		17E4CBC329CD42E4005C2D99 /* FTAutoTrackProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackProperty.h; sourceTree = "<group>"; };
 		17E4CBC529CD42E4005C2D99 /* FTAppLaunchTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTAppLaunchTracker.h; sourceTree = "<group>"; };
-		17E4CBC729CD42E4005C2D99 /* FTTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTrack.h; sourceTree = "<group>"; };
+		17E4CBC729CD42E4005C2D99 /* FTAutoTrackHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTAutoTrackHandler.h; sourceTree = "<group>"; };
 		17E4CBC829CD42E4005C2D99 /* BlacklistedVCClassNames.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistedVCClassNames.m; sourceTree = "<group>"; };
 		17E4CBC929CD42E4005C2D99 /* UIViewController+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+FTAutoTrack.h"; sourceTree = "<group>"; };
 		17E4CBCA29CD42E4005C2D99 /* UIScrollView+FTAutoTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+FTAutoTrack.h"; sourceTree = "<group>"; };
@@ -1691,8 +1691,8 @@
 				17E4CBC829CD42E4005C2D99 /* BlacklistedVCClassNames.m */,
 				17E4CBC929CD42E4005C2D99 /* UIViewController+FTAutoTrack.h */,
 				17E4CBBB29CD42E4005C2D99 /* UIViewController+FTAutoTrack.m */,
-				17E4CBC729CD42E4005C2D99 /* FTTrack.h */,
-				17E4CBBC29CD42E4005C2D99 /* FTTrack.m */,
+				17E4CBC729CD42E4005C2D99 /* FTAutoTrackHandler.h */,
+				17E4CBBC29CD42E4005C2D99 /* FTAutoTrackHandler.m */,
 				17E4CBBF29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.h */,
 				17E4CBCB29CD42E4005C2D99 /* UIGestureRecognizer+FTAutoTrack.m */,
 				17E4CBCD29CD42E4005C2D99 /* UIView+FTAutoTrack.h */,
@@ -1993,7 +1993,7 @@
 				171D2DAB2C3E7AC600E7FBAE /* FTFeature.h in Headers */,
 				171D2D792C3E7AC600E7FBAE /* FTResourceProcessor.h in Headers */,
 				17E4CB4C29CD42DA005C2D99 /* FTResourceContentModel.h in Headers */,
-				17E4CC3529CD42E4005C2D99 /* FTTrack.h in Headers */,
+				17E4CC3529CD42E4005C2D99 /* FTAutoTrackHandler.h in Headers */,
 				1777C3E72A36EED500C0AA45 /* FTLogger.h in Headers */,
 				1759510C2A6FE4DE006FAB9D /* NSNumber+FTAdd.h in Headers */,
 				174BC8792BFC9F8A00478EE1 /* NSDictionary+FTCopyProperties.h in Headers */,
@@ -2501,7 +2501,7 @@
 				1763BD9829DFF04F009EE026 /* FTNetworkManager.m in Sources */,
 				17678E2629D28BD200C1DA98 /* FTMobileConfig.m in Sources */,
 				171D2D6A2C3E7AC600E7FBAE /* FTViewAttributes.m in Sources */,
-				17E4CC2A29CD42E4005C2D99 /* FTTrack.m in Sources */,
+				17E4CC2A29CD42E4005C2D99 /* FTAutoTrackHandler.m in Sources */,
 				17678E2B29D28BD200C1DA98 /* FTTraceManager.m in Sources */,
 				17E4CB3729CD42DA005C2D99 /* FTSwizzler.m in Sources */,
 				171D2D402C3E7AC500E7FBAE /* FTUIStepperRecorder.m in Sources */,
