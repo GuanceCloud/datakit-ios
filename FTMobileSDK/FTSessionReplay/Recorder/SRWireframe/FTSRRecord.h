@@ -77,8 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *applicationID;
 @property (nonatomic, copy) NSString *viewID;
 -(instancetype)initWithContext:(FTSRContext*)context records:(NSArray<FTSRRecord>*)records;
-//-(instancetype)initWithData:(NSData *)data;
-//- (void)mergeAnother:(FTEnrichedRecord *)another;
 @end
 
 @interface FTEnrichedResource : FTSRBaseFrame

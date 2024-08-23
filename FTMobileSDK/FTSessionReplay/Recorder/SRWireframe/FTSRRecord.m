@@ -147,26 +147,15 @@
             na[newIndex] = dict.inOldIndex;
             oa[oldIndex] = dict.inNewIndex;
         }
-        if(oldIndex<0){
-            Adds *add = [[Adds alloc]init];
-            if (newIndex - 1 >= 0){
-                int pre = newWireframes[newIndex-1].identifier;
-                add.previousId = pre;
-            }
-            add.wireframe = newWireframes[newIndex];
-            [adds addObject:add];
-        }
-        if(newIndex<0){
-            Removes *remove = [[Removes alloc]init];
-            remove.identifier = lastWireframes[oldIndex].identifier;
-            [removes addObject:remove];
-        }
     }
     NSMutableArray *removalOffsets = [NSMutableArray new];
     int runningOffset = 0;
     for (int i = 0; i<oa.count; i++) {
         removalOffsets[i] = @(runningOffset);
         if([oa[i] intValue]<0){
+            Removes *remove = [[Removes alloc]init];
+            remove.identifier = lastWireframes[i].identifier;
+            [removes addObject:remove];
             runningOffset += 1;
         }
     }
@@ -174,6 +163,13 @@
     for (int i = 0; i< na.count; i++) {
         int indexInOld = [na[i] intValue];
         if(indexInOld<0){
+            Adds *add = [[Adds alloc]init];
+            if (i - 1 >= 0){
+                int pre = newWireframes[i-1].identifier;
+                add.previousId = pre;
+            }
+            add.wireframe = newWireframes[i];
+            [adds addObject:add];
             runningOffset += 1;
         }else{
             int removalOffset = [removalOffsets[indexInOld] intValue];
@@ -190,9 +186,9 @@
                 [adds addObject:add];
             }else{
                 FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i]];
-                           if(update){
-                               [updates addObject:update];
-                           }
+                if(update){
+                    [updates addObject:update];
+                }
             }
         }
     }

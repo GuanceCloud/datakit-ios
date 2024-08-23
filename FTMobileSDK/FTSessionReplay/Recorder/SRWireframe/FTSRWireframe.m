@@ -193,7 +193,6 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     if ([self isEqual:newWireFrame]){
         return nil;
     }
-    self.type = [self.type isEqualToString:newWireFrame.type]?nil:newWireFrame.type;
     self.clip = [self.clip isEqual:newWireFrame.clip]?nil:newWireFrame.clip;
     self.width = [self.width isEqualToNumber:newWireFrame.width]?nil:newWireFrame.width;
     self.height = [self.height isEqualToNumber:newWireFrame.height]?nil:newWireFrame.height;
