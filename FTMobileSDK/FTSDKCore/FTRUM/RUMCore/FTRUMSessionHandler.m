@@ -149,7 +149,7 @@ static const NSTimeInterval sessionMaxDuration = 4 * 60 * 60; // 4 hours
  */
 - (void)writeLaunchData:(FTRUMLaunchDataModel *)model{
     
-    NSDictionary *sessionViewTag = [self getCurrentSessionInfo];
+    NSDictionary *sessionViewTag = [model.action_type isEqualToString:FT_LAUNCH_HOT]?[self getCurrentSessionInfo]:@{FT_RUM_KEY_SESSION_ID:self.context.session_id,FT_RUM_KEY_SESSION_TYPE:self.context.session_type};
     NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
     NSDictionary *actionTags = @{FT_KEY_ACTION_ID:[FTBaseInfoHandler randomUUID],
                                  FT_KEY_ACTION_NAME:model.action_name,
