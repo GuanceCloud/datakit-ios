@@ -50,6 +50,8 @@
 		1786492A2A1CA79100521187 /* FTMobileSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 178649282A1CA79100521187 /* FTMobileSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1788B11629BAF43B007FDFF1 /* HttpEngineTestUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1788B11429BAF43B007FDFF1 /* HttpEngineTestUtil.m */; };
 		1788B20F29C86D32007FDFF1 /* FTMobileExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */; };
+		1798727E2C57773800EBEA13 /* TestUIControlVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798727D2C57773800EBEA13 /* TestUIControlVC.m */; };
+		179872802C577DAF00EBEA13 /* Province.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1798727F2C577DAF00EBEA13 /* Province.plist */; };
 		17B17151281042B7004002C9 /* FTThreadDispatchTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B17150281042B7004002C9 /* FTThreadDispatchTest.m */; };
 		17B1715528115AE0004002C9 /* FTAppLifeCycleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */; };
 		17B1715A28154A6E004002C9 /* FTRequestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B1715928154A6E004002C9 /* FTRequestTest.m */; };
@@ -204,6 +206,9 @@
 		1788B11529BAF43B007FDFF1 /* HttpEngineTestUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HttpEngineTestUtil.h; path = App/HttpEngineTestUtil.h; sourceTree = SOURCE_ROOT; };
 		1788B20A29C86D24007FDFF1 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1788B20E29C86D32007FDFF1 /* FTMobileExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1798727C2C57773800EBEA13 /* TestUIControlVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestUIControlVC.h; sourceTree = "<group>"; };
+		1798727D2C57773800EBEA13 /* TestUIControlVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestUIControlVC.m; sourceTree = "<group>"; };
+		1798727F2C577DAF00EBEA13 /* Province.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Province.plist; sourceTree = "<group>"; };
 		179FCFF729C989B900DBB66F /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17B17150281042B7004002C9 /* FTThreadDispatchTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTThreadDispatchTest.m; sourceTree = "<group>"; };
 		17B1715428115ADF004002C9 /* FTAppLifeCycleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTAppLifeCycleTest.m; sourceTree = "<group>"; };
@@ -499,12 +504,15 @@
 				7CA16CE226B9110F0079840D /* TestWKProxy.m */,
 				7C2DD68F25F9BFF600BFF757 /* SampleApp-Bridging-Header.h */,
 				7C8CE50A25F8DD2A0043B213 /* PrintHookTest.swift */,
+				1798727F2C577DAF00EBEA13 /* Province.plist */,
 				7C28B877266098E700CECBA6 /* sample.html */,
 				4A116962239113B600C0BC4E /* Main.storyboard */,
 				4A116965239113B900C0BC4E /* Assets.xcassets */,
 				4A116967239113B900C0BC4E /* LaunchScreen.storyboard */,
 				4A11696A239113B900C0BC4E /* Info.plist */,
 				4A11696B239113B900C0BC4E /* main.m */,
+				1798727C2C57773800EBEA13 /* TestUIControlVC.h */,
+				1798727D2C57773800EBEA13 /* TestUIControlVC.m */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -675,6 +683,8 @@
 				172DD33F28F7FC28007AE5E9 /* PBXTargetDependency */,
 			);
 			name = App;
+			packageProductDependencies = (
+			);
 			productName = "ft-sdk-ios";
 			productReference = 4A116956239113B600C0BC4E /* App.app */;
 			productType = "com.apple.product-type.application";
@@ -757,6 +767,8 @@
 				Base,
 			);
 			mainGroup = 4A11694D239113B600C0BC4E;
+			packageReferences = (
+			);
 			productRefGroup = 4A116957239113B600C0BC4E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -795,6 +807,7 @@
 			files = (
 				4A116969239113B900C0BC4E /* LaunchScreen.storyboard in Resources */,
 				4A116966239113B900C0BC4E /* Assets.xcassets in Resources */,
+				179872802C577DAF00EBEA13 /* Province.plist in Resources */,
 				172931D42BF6032900AA9D53 /* GoogleService-Info.plist in Resources */,
 				7C28B878266098E700CECBA6 /* sample.html in Resources */,
 				4A116964239113B600C0BC4E /* Main.storyboard in Resources */,
@@ -895,6 +908,7 @@
 				4A1169842391145B00C0BC4E /* DemoViewController.mm in Sources */,
 				7C6E925425E35E9800D12C12 /* Crasher.mm in Sources */,
 				4A159F3823D3F3BD00804D70 /* RootTabbarVC.m in Sources */,
+				1798727E2C57773800EBEA13 /* TestUIControlVC.m in Sources */,
 				4A85314623AC6B2700B40B5D /* UITestVC.m in Sources */,
 				175C7CFC29E6CE1B00A7F271 /* LoggerVC.m in Sources */,
 				4A49E93E253979C5009C44AD /* TestWKWebViewVC.m in Sources */,

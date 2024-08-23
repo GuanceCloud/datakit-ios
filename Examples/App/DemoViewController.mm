@@ -19,6 +19,7 @@
 #import "ManualRumAndTraceDataAdd.h"
 #import "NetworkTraceVC.h"
 #import "LoggerVC.h"
+#import "TestUIControlVC.h"
 @interface DemoViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic, strong) UITableView *mtableView;
 @property (nonatomic, strong) NSMutableArray<TableViewCellItem*> *dataSource;
@@ -41,7 +42,9 @@
 -(void)createUI{
     __weak typeof(self) weakSelf = self;
     TableViewCellItem *item1 = [[TableViewCellItem alloc]initWithTitle:@"EventFlowLog" handler:^{
+        weakSelf.hidesBottomBarWhenPushed = YES;
         [weakSelf.navigationController pushViewController:[UITestVC new] animated:YES];
+        weakSelf.hidesBottomBarWhenPushed = NO;
     }];
     TableViewCellItem *item2 = [[TableViewCellItem alloc]initWithTitle:@"BindUser" handler:^{
         [[FTMobileAgent sharedInstance] bindUserWithUserID:@"user1" userName:@"用户1" userEmail:@"1@qq.com" extra:@{@"user_age":@21}];
@@ -76,8 +79,15 @@
         [weakSelf.navigationController pushViewController:[ManualRumAndTraceDataAdd new] animated:YES];
 
     }];
+    
+    TableViewCellItem *item13 = [[TableViewCellItem alloc]initWithTitle:@"UI 控件" handler:^{
+        weakSelf.hidesBottomBarWhenPushed = YES;
+        [weakSelf.navigationController pushViewController:[TestUIControlVC new] animated:YES];
+        weakSelf.hidesBottomBarWhenPushed = NO;
+
+    }];
    
-    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12]];
+    [self.dataSource addObjectsFromArray:@[item1,item2,item3,item4,item5,item7,item8,item9,item10,item11,item12,item13]];
     _mtableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
     _mtableView.dataSource = self;
     _mtableView.delegate = self;

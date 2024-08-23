@@ -40,6 +40,7 @@
     _firstButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _firstButton.frame = CGRectMake(x, 40, 100, 30);
     [_firstButton setTitle:@"ActivityStart" forState:UIControlStateNormal];
+    _firstButton.titleLabel.font = [UIFont systemFontOfSize:14];
     [_firstButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     [_firstButton addTarget:self action:@selector(firstAction:) forControlEvents:UIControlEventTouchUpInside];
     _firstButton.isAccessibilityElement = YES;
@@ -80,7 +81,7 @@
     _progressView.frame = CGRectMake(CGRectGetMaxX(_uiswitch.frame)+30, y-40, 120, 20);
     _progressView.progress = 0.5;
     [_scrollView addSubview:_progressView];
-    CGRect frame = CGRectMake(160, 0, 200, 40);
+    CGRect frame = CGRectMake(CGRectGetMaxX(_segmentedControl.frame), 0, 0, 40);
     // 创建 UIDatePicker 对象
     UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:frame];
     // 设置日期选择器模式:日期模式
