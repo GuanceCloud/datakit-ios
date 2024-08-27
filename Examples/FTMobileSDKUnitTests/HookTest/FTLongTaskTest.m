@@ -32,7 +32,7 @@
 }
 -(void)tearDown{
     [[tester waitForViewWithAccessibilityLabel:@"home"] tap];
-    [tester waitForTimeInterval:2];
+    [NSThread sleepForTimeInterval:1];
 }
 - (void)initSDKWithEnableTrackAppANR:(BOOL)enable longTask:(BOOL)longTask{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
@@ -107,7 +107,6 @@
     [self initSDKWithEnableTrackAppANR:YES longTask:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -135,7 +134,6 @@
 - (void)testNoTrackAnr{
     [self initSDKWithEnableTrackAppANR:NO longTask:NO];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
-    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     
     XCTestExpectation *expect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -199,7 +197,6 @@
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];
@@ -238,7 +235,6 @@
     NSString *dataStorePath = [longTaskManager valueForKey:@"dataStorePath"];
     [[tester waitForViewWithAccessibilityLabel:@"TrackAppCrash"] tap];
     long long startTime = [NSDate ft_currentNanosecondTimeStamp];
-    [tester waitForTimeInterval:0.2];
     [[tester waitForViewWithAccessibilityLabel:@"anr"] tap];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfFile:dataStorePath];

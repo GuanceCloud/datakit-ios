@@ -401,6 +401,21 @@
 			path = SwiftApp;
 			sourceTree = "<group>";
 		};
+		176C1BE32C7C802700909C04 /* SessionReplayTest */ = {
+			isa = PBXGroup;
+			children = (
+				176C1BE42C7C837500909C04 /* Recorder */,
+			);
+			path = SessionReplayTest;
+			sourceTree = "<group>";
+		};
+		176C1BE42C7C837500909C04 /* Recorder */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Recorder;
+			sourceTree = "<group>";
+		};
 		177892B829A60CD20007B47F /* PerformanceTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -571,6 +586,7 @@
 		4A85313723AB85FC00B40B5D /* FTMobileSDKUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				176C1BE32C7C802700909C04 /* SessionReplayTest */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
 				17593ADE29068DC200A15CD9 /* Resource */,

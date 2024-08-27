@@ -242,7 +242,7 @@
             XCTAssertTrue(errorCount == 1);
             XCTAssertTrue(longTaskCount == 1);
             XCTAssertTrue(resourceCount == 1);
-            XCTAssertTrue(updateTime == 3);
+            XCTAssertTrue(updateTime == 4);
         }else if([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]){
             trueActionCount ++;
         }

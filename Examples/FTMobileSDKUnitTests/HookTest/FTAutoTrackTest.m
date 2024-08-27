@@ -13,7 +13,7 @@
 #import "FTTrackerEventDBTool.h"
 #import "FTMobileAgent.h"
 #import <objc/runtime.h>
-#import "FTTrack.h"
+#import "FTAutoTrackHandler.h"
 #import "FTMobileAgent+Private.h"
 #import "FTBaseInfoHandler.h"
 #import "FTRecordModel.h"
@@ -119,7 +119,7 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UILabel][lable]"]);
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UILabel][label]"]);
             *stop = YES;
         }
     }];
@@ -152,15 +152,15 @@
 - (void)testButtonClick{
     [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"SecondButton"] tap];
-    [[tester waitForViewWithAccessibilityLabel:@"FirstButton"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"ActivityEnd"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"ActivityEnd"] tap];
+    [[tester waitForViewWithAccessibilityLabel:@"ActivityStart"] tap];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
         if ([source isEqualToString:FT_RUM_SOURCE_ACTION]&&[tags[FT_KEY_ACTION_TYPE] isEqualToString:@"click"]) {
-            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UIButton][SecondButton]"]);
+            XCTAssertTrue([tags[FT_KEY_ACTION_NAME] isEqualToString:@"[UIButton][ActivityEnd]"]);
             *stop = YES;
         }
     }];
@@ -284,9 +284,9 @@
     [self.testVC viewDidAppear:NO];
     
     XCTAssertTrue([self.testVC.uiswitch.ft_actionName isEqualToString:@"[UISwitch]Off"]);
-    XCTAssertTrue([self.testVC.firstButton.ft_actionName isEqualToString:@"[UIButton][FirstButton]"]);
+    XCTAssertTrue([self.testVC.firstButton.ft_actionName isEqualToString:@"[UIButton][ActivityStart]"]);
     XCTAssertTrue([self.testVC.stepper.ft_actionName isEqualToString:@"[UIStepper]0.00"]);
-    XCTAssertTrue([self.testVC.label.ft_actionName isEqualToString:@"[UILabel][lable]"]);
+    XCTAssertTrue([self.testVC.label.ft_actionName isEqualToString:@"[UILabel][label]"]);
     XCTAssertTrue([self.testVC.segmentedControl.ft_actionName isEqualToString:@"[UISegmentedControl]first"]);
     
 }
