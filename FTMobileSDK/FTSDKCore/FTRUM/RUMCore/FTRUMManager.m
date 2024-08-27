@@ -76,6 +76,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property{
     __block NSNumber *duration = @0;
     if (!(viewId&&viewId.length>0&&viewName&&viewName.length>0)) {
+        FTInnerLogError(@"[RUM] Failed to start view due to missing required fields. Please ensure 'viewName' are provided.");
         return;
     }
     [self.preViewDuration concurrentRead:^(NSMutableDictionary * _Nonnull value) {
@@ -136,6 +137,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     if (!actionName || actionName.length == 0 || !actionType || actionType.length == 0) {
+        FTInnerLogError(@"[RUM] Failed to add action due to missing required fields. Please ensure 'actionName' and 'actionType' are provided.");
         return;
     }
     NSDate *time = [NSDate date];
@@ -188,6 +190,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 - (void)startResourceWithKey:(NSString *)key property:(nullable NSDictionary *)property{
     if (!key) {
+        FTInnerLogError(@"[RUM] Failed to start resource due to missing required fields. Please ensure 'key' are provided.");
         return;
     }
     NSDate *time = [NSDate date];
@@ -208,6 +211,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 
 - (void)addResourceWithKey:(NSString *)key metrics:(nullable FTResourceMetricsModel *)metrics content:(FTResourceContentModel *)content spanID:(nullable NSString *)spanID traceID:(nullable NSString *)traceID{
     if (!key) {
+        FTInnerLogError(@"[RUM] Failed to add resource due to missing required fields. Please ensure 'key' are provided.");
         return;
     }
     NSDate *time = [NSDate date];
@@ -313,6 +317,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 - (void)stopResourceWithKey:(NSString *)key property:(NSDictionary *)property{
     if (!key) {
+        FTInnerLogError(@"[RUM] Failed to stop resource due to missing required fields. Please ensure 'key' are provided.");
         return;
     }
     NSDate *time = [NSDate date];
@@ -348,6 +353,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(NSDate *)time fatal:(BOOL)fatal{
     if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
+        FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' and 'stack' are provided.");
         return;
     }
     [self syncProcess:^{
@@ -380,6 +386,7 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
 }
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property{
     if (!stack || stack.length == 0 || (duration == nil)) {
+        FTInnerLogError(@"[RUM] Failed to add longtask due to missing required fields. Please ensure 'stack' and 'duration' are provided.");
         return;
     }
     dispatch_async(self.rumQueue, ^{
