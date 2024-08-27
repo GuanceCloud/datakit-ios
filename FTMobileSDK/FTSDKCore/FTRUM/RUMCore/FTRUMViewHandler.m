@@ -74,6 +74,7 @@
                     self.isActiveView = NO;
                 }
                 self.didReceiveStartData = YES;
+                self.needUpdateView = YES;
             }else if(self.isActiveView == YES){
                 self.isActiveView = NO;
                 self.needUpdateView = YES;
