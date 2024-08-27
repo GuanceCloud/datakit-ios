@@ -37,7 +37,6 @@
     return self.isVisible && (hasBorderAppearance || hasFillAppearance);
 }
 -(BOOL)isTranslucent{
-    //{ !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
     return  !self.isVisible || self.alpha < 1 || ((!self.backgroundColor? 0 : CGColorGetAlpha(self.backgroundColor)) < 1);
 }
 - (instancetype)copyWithZone:(NSZone *)zone {

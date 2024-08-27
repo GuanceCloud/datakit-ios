@@ -118,15 +118,12 @@
     NSString *key = record.viewID;
     NSDictionary *existingValue = [self.recordsCountByViewID valueForKey:key];
     NSUInteger count = record.records.count;
-    NSUInteger segmentsSize = 0;
     if(existingValue!=nil){
         count = [existingValue[FT_RECORDS_COUNT] integerValue] + count;
-        segmentsSize = [existingValue[FT_SEGMENTS_TOTAL_RAW_SIZE] integerValue];
     }
     NSData *data = [record toJSONData];
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
-        FT_SEGMENTS_TOTAL_RAW_SIZE:@(segmentsSize+data.length),
     };
     // TODO: 是否使用协议代理替换单例
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
