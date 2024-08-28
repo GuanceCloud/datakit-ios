@@ -142,7 +142,7 @@ static dispatch_once_t onceToken;
     
     FTSwizzlerInstanceMethod(collectMetricsClass, collectMetricsSelector, FTSWReturnType(void), FTSWArguments(NSURLSession *session, NSURLSessionDataTask *task,NSURLSessionTaskMetrics *metrics), FTSWReplacement({
         if(FTURLSessionInstrumentation.sharedInstance.shouldRUMInterceptor){
-            [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics];
+            [FTURLSessionInstrumentation.sharedInstance.interceptor taskMetricsCollected:task metrics:metrics custom:NO];
         }
         FTSWCallOriginal(session,task,metrics);
     }), FTSwizzlerModeOncePerClassAndSuperclasses, kFTCollectMetricsSelector);

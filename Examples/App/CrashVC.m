@@ -63,7 +63,10 @@
         [crasher pthreadAPICrash];
     }],[[TableViewCellItem alloc]initWithTitle:@"throwUncaughtCPPException" handler:^{
         [crasher throwUncaughtCPPException];
-    }]]];
+    }],[[TableViewCellItem alloc]initWithTitle:@"userException" handler:^{
+        [crasher userException];
+    }]
+                                         ]];
 }
 -(NSMutableArray<TableViewCellItem *> *)dataSource{
     if (!_dataSource) {

@@ -19,7 +19,9 @@
 #import "FTBaseInfoHandler.h"
 #import "FTLogDataCache.h"
 #import "FTJSONUtil.h"
-@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>
+@interface FTTrackDataManager ()<FTAppLifeCycleDelegate>{
+    pthread_rwlock_t _uploadWorkLock;
+}
 @property (atomic, assign) BOOL isUploading;
 @property (nonatomic, strong) dispatch_queue_t networkQueue;
 /// 是否开启自动上传逻辑（启动时、网络状态变化、写入间隔10s）
@@ -29,11 +31,12 @@
 @property (atomic, assign) int syncSleepTime;
 @property (nonatomic, strong) FTNetworkManager *networkManager;
 @property (nonatomic, strong) FTLogDataCache *logDataCache;
-@property (nonatomic, strong) dispatch_semaphore_t uploadDelaySemaphore;
-@property (atomic, assign) BOOL semaphoreWaiting;
-@property (nonatomic, strong) dispatch_source_t uploadDelayTimer;
+@property (nonatomic, strong) dispatch_block_t uploadWork;
+@property (atomic, assign) NSTimeInterval lastDataDate;
 @end
 @implementation FTTrackDataManager
+@synthesize uploadWork = _uploadWork;
+
 static  FTTrackDataManager *sharedInstance;
 static dispatch_once_t onceToken;
 
@@ -59,9 +62,11 @@ static dispatch_once_t onceToken;
         _syncSleepTime = syncSleepTime;
         _networkManager = [[FTNetworkManager alloc]initWithTimeoutIntervalForRequest:syncPageSize>30?syncPageSize:30];
         _logDataCache = [[FTLogDataCache alloc]init];
-        _uploadDelaySemaphore = dispatch_semaphore_create(0);
-        _semaphoreWaiting = NO;
+        pthread_rwlock_init(&_uploadWorkLock, NULL);
         [self listenNetworkChangeAndAppLifeCycle];
+        if(autoSync){
+            [self createUploadDelayTimer];
+        }
     }
     return self;
 }
@@ -70,9 +75,10 @@ static dispatch_once_t onceToken;
     [[FTReachability sharedInstance] startNotifier];
     [[FTAppLifeCycle sharedInstance] addAppLifecycleDelegate:self];
     if(_autoSync){
+        __weak typeof(self) weakSelf = self;
         [FTReachability sharedInstance].networkChanged = ^(){
             if([FTReachability sharedInstance].isReachable){
-                [self uploadTrackData];
+                [weakSelf uploadTrackData];
             }
         };
     }
@@ -112,7 +118,10 @@ static dispatch_once_t onceToken;
         case FTAddDataLogging:
             [self.logDataCache addLogData:data];
             if(self.autoSync&&[self.logDataCache reachHalfLimit]){
-                [self uploadTrackData];
+                //如果正在上传中忽略
+                if(!self.isUploading){
+                    [self uploadTrackData];
+                }
                 return;
             }
             break;
@@ -123,50 +132,49 @@ static dispatch_once_t onceToken;
             [[FTTrackerEventDBTool sharedManger] insertItem:data];
             break;
     }
-    [self autoSyncOperation];
+    _lastDataDate = CACurrentMediaTime();
+}
+- (void)createUploadDelayTimer{
+    __weak typeof(self) weakSelf = self;
+    dispatch_block_t uploadWork = dispatch_block_create(0, ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        NSTimeInterval current = CACurrentMediaTime();
+        if(current-strongSelf.lastDataDate>0.1 && [[FTTrackerEventDBTool sharedManger] getDatasCount]>0){
+            FTInnerLogDebug(@"[NETWORK]: start upload waiting");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), strongSelf.networkQueue, ^{
+                FTInnerLogDebug(@"[NETWORK]: timer -> privateUpload");
+                [weakSelf privateUpload];
+                [weakSelf scheduleNextCycle];
+            });
+        }else{
+            [strongSelf scheduleNextCycle];
+        }
+    });
+    self.uploadWork = uploadWork;
+    dispatch_async(_networkQueue, uploadWork);
+}
+- (void)scheduleNextCycle{
+    if(self.uploadWork){
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(100 * NSEC_PER_MSEC)), self.networkQueue, self.uploadWork);
+    }
+}
+-(void)setUploadWork:(dispatch_block_t)uploadWork{
+    pthread_rwlock_wrlock(&_uploadWorkLock);
+    _uploadWork = uploadWork;
+    pthread_rwlock_unlock(&_uploadWorkLock);
+}
+-(dispatch_block_t)uploadWork{
+    dispatch_block_t block_t;
+    pthread_rwlock_rdlock(&_uploadWorkLock);
+    block_t = _uploadWork;
+    pthread_rwlock_unlock(&_uploadWorkLock);
+    return block_t;
 }
 #pragma mark - Upload -
-- (void)createUploadDelayTimer{
-    if(!_uploadDelayTimer){
-        dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.networkQueue);
-        dispatch_source_set_timer(timer, dispatch_time(DISPATCH_TIME_NOW, 10 *NSEC_PER_SEC), 10 *NSEC_PER_SEC, 0);
-        __weak __typeof(self) weakSelf = self;
-        dispatch_source_set_event_handler(timer, ^{
-            [weakSelf uploadTrackData];
-            [weakSelf cancelUploadDelayTimer];
-        });
-        //启动定时器
-        dispatch_resume(timer);
-        _uploadDelayTimer = timer;
-    }
-}
--(void)cancelUploadDelayTimer{
-    if(_uploadDelayTimer){
-        dispatch_source_cancel(_uploadDelayTimer);
-        _uploadDelayTimer = nil;
-    }
-}
--(void)autoSyncOperation{
-    if(self.isUploading){
-        return;
-    }
-    if(self.autoSync&&!self.uploadDelayTimer){
-        if(self.semaphoreWaiting){
-            dispatch_semaphore_signal(self.uploadDelaySemaphore);
-        }else{
-            self.semaphoreWaiting = YES;
-        }
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            if(self.uploadDelaySemaphore){
-                long result = dispatch_semaphore_wait(self.uploadDelaySemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)FT_TIME_INTERVAL*NSEC_PER_MSEC));
-                if(result!=0){
-                    self.semaphoreWaiting = NO;
-                    [self createUploadDelayTimer];
-                }
-            }
-        });
-    }
-}
+
 - (void)uploadTrackData{
     //无网 返回
     if(![FTReachability sharedInstance].isReachable){
@@ -174,18 +182,22 @@ static dispatch_once_t onceToken;
         return;
     }
     dispatch_async(self.networkQueue, ^{
+        FTInnerLogDebug(@"[NETWORK]: uploadTrackData -> privateUpload");
         [self privateUpload];
     });
 }
 - (void)privateUpload{
     @try {
         if (self.isUploading) {
+            FTInnerLogDebug(@"[NETWORK]: privateUpload ingnore");
             return;
         }
+        FTInnerLogDebug(@"[NETWORK]:privateUpload start upload");
         self.isUploading = YES;
         [self flushWithType:FT_DATA_TYPE_RUM];
         [self flushWithType:FT_DATA_TYPE_LOGGING];
         self.isUploading = NO;
+        FTInnerLogDebug(@"[NETWORK]:privateUpload end upload");
     } @catch (NSException *exception) {
         FTInnerLogError(@"[NETWORK] 执行上传操作失败 %@",exception);
     } @finally {
@@ -249,10 +261,18 @@ static dispatch_once_t onceToken;
 - (void)insertCacheToDB{
     [self.logDataCache insertCacheToDB];
 }
+- (void)cancelSynchronously{
+    __weak typeof(self) weakSelf = self;
+    dispatch_sync(self.networkQueue, ^{
+        if(weakSelf.uploadWork){
+            dispatch_block_cancel(weakSelf.uploadWork);
+            weakSelf.uploadWork = nil;
+        }
+    });
+}
 - (void)shutDown{
-    if(self.uploadDelaySemaphore) dispatch_semaphore_signal(self.uploadDelaySemaphore);
+    [self cancelSynchronously];
     [self.logDataCache insertCacheToDB];
-    [self cancelUploadDelayTimer];
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
     dispatch_sync(self.networkQueue, ^{});
     [[FTTrackerEventDBTool sharedManger] shutDown];

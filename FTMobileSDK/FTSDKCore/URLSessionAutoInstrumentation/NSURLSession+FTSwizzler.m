@@ -26,7 +26,23 @@
 #import "FTSwizzle.h"
 #import "FTSwizzler.h"
 #import <objc/runtime.h>
+static void *const kFTConformsToFTProtocol = (void *)&kFTConformsToFTProtocol;
+
 typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error);
+//conformsToProtocol 方法有损耗，苹果建议本地缓存结果减少调用
+static BOOL delegateConformsToFTProtocol(id delegate){
+    if(!delegate){
+        return NO;
+    }
+    NSNumber *conformNum = objc_getAssociatedObject(delegate, kFTConformsToFTProtocol);
+    if(conformNum){
+        return [conformNum boolValue];
+    }else{
+        BOOL conform = [delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)];
+        objc_setAssociatedObject(delegate, kFTConformsToFTProtocol, @(conform), OBJC_ASSOCIATION_RETAIN);
+        return conform;
+    }
+}
 @implementation NSURLSession (FTSwizzler)
 +(void)load{
     static dispatch_once_t onceToken;
@@ -140,7 +156,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return [self ft_dataTaskWithRequest:request completionHandler:completionHandler];
 }
 - (id<FTURLSessionInterceptorProtocol>)traceInterceptor{
-    if([self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if(delegateConformsToFTProtocol(self.delegate)){
         return ((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
     }else if([FTURLSessionInstrumentation sharedInstance].shouldTraceInterceptor){
         return [FTURLSessionInstrumentation sharedInstance].interceptor;
@@ -148,7 +164,7 @@ typedef void (^CompletionHandler)(NSData * _Nullable data, NSURLResponse * _Null
     return nil;
 }
 - (id<FTURLSessionInterceptorProtocol>)rumInterceptor{
-    if([self.delegate conformsToProtocol:@protocol(FTURLSessionDelegateProviding)]){
+    if(delegateConformsToFTProtocol(self.delegate)){
         return ((id<FTURLSessionDelegateProviding>)self.delegate).ftURLSessionDelegate;
     }else if([FTURLSessionInstrumentation sharedInstance].shouldRUMInterceptor){
         return [FTURLSessionInstrumentation sharedInstance].interceptor;

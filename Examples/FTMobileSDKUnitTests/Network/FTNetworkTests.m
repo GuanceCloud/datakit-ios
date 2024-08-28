@@ -322,11 +322,12 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(count == 21);
     self.expectation = [self expectationWithDescription:@"异步操作timeout"];
-       
+    NSLog(@"addObserver: current isUploading = %@",[[FTTrackDataManager sharedInstance] valueForKey:@"isUploading"]);
     [[FTTrackDataManager sharedInstance] addObserver:self forKeyPath:@"isUploading" options:NSKeyValueObservingOptionNew context:nil];
     [[FTTrackDataManager sharedInstance] uploadTrackData];
 
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+        NSLog(@"isUploading = %@",[[FTTrackDataManager sharedInstance] valueForKey:@"isUploading"]);
         XCTAssertNil(error);
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
@@ -495,7 +496,7 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == 0);
-    XCTAssertTrue(duration>time&&duration<100+time);
+    XCTAssertTrue(duration>time&&duration<150+time);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
 }
 @end

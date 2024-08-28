@@ -9,7 +9,7 @@
 #import "FTRUMHandler.h"
 @class FTRUMViewHandler;
 NS_ASSUME_NONNULL_BEGIN
-typedef void(^FTResourceEventSent)(void);
+typedef void(^FTResourceEventSent)(BOOL);
 typedef void(^FTErrorEventSent)(void);
 
 /// RUM Resource 数据处理者

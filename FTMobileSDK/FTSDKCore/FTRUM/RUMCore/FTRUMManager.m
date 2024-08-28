@@ -11,12 +11,14 @@
 #import "FTMonitorUtils.h"
 #import "FTLog+Private.h"
 #import "FTResourceContentModel.h"
-#import "FTResourceMetricsModel.h"
+#import "FTResourceMetricsModel+Private.h"
 #import "FTSDKCompat.h"
 #import "FTConstants.h"
 #import "FTErrorMonitorInfo.h"
 #import "FTReadWriteHelper.h"
 #import "FTModuleManager.h"
+#import "NSError+FTDescription.h"
+
 NSString * const AppStateStringMap[] = {
     [FTAppStateUnknown] = @"unknown",
     [FTAppStateStartUp] = @"startup",
@@ -212,83 +214,89 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     NSDate *time = [NSDate date];
     dispatch_async(self.rumQueue, ^{
         @try {
-            NSMutableDictionary *tags = [NSMutableDictionary new];
-            NSMutableDictionary *fields = [NSMutableDictionary new];
-            NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
-            [tags setValue:content.url.absoluteString forKey:FT_KEY_RESOURCE_URL];
-            [tags setValue:content.httpMethod forKey:FT_KEY_RESOURCE_METHOD];
-            [tags setValue:content.url.host forKey:FT_KEY_RESOURCE_URL_HOST];
-            if(content.url.path.length>0){
-                [tags setValue:content.url.path forKey:FT_KEY_RESOURCE_URL_PATH];
-            }
-            if(url_path_group.length>0){
-                [tags setValue:url_path_group forKey:FT_KEY_RESOURCE_URL_PATH_GROUP];
-            }
-            [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
-            
-            if (content.error || content.httpStatusCode>=400) {
-                NSString *run = AppStateStringMap[self.appState];
-                NSMutableDictionary *errorField = [NSMutableDictionary new];
-                NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
-                if(content.error){
-                    [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,content.error.localizedDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
-                }else{
-                    [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+            if(metrics.resourceFetchTypeLocalCache){
+                FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceAbandon identifier:key];
+                [self process:resourceSuccess];
+            }else{
+                NSMutableDictionary *tags = [NSMutableDictionary new];
+                NSMutableDictionary *fields = [NSMutableDictionary new];
+                NSString *url_path_group = [FTBaseInfoHandler replaceNumberCharByUrl:content.url];
+                [tags setValue:content.url.absoluteString forKey:FT_KEY_RESOURCE_URL];
+                [tags setValue:content.httpMethod forKey:FT_KEY_RESOURCE_METHOD];
+                [tags setValue:content.url.host forKey:FT_KEY_RESOURCE_URL_HOST];
+                if(content.url.path.length>0){
+                    [tags setValue:content.url.path forKey:FT_KEY_RESOURCE_URL_PATH];
                 }
-                [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
-                [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
-                [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
-                [errorTags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
-                if (content.responseBody.length>0) {
-                    [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
+                if(url_path_group.length>0){
+                    [tags setValue:url_path_group forKey:FT_KEY_RESOURCE_URL_PATH_GROUP];
                 }
+                [tags setValue:@(content.httpStatusCode) forKey:FT_KEY_RESOURCE_STATUS];
                 
-                FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
-                resourceError.time = time;
-                resourceError.tags = errorTags;
-                resourceError.fields = errorField;
-                [self process:resourceError];
+                if (content.error || content.httpStatusCode>=400) {
+                    NSString *run = AppStateStringMap[self.appState];
+                    NSMutableDictionary *errorField = [NSMutableDictionary new];
+                    NSMutableDictionary *errorTags = [NSMutableDictionary dictionaryWithDictionary:tags];
+                    if(content.error){
+                        NSString *errorDescription = [content.error ft_description];
+                        [errorField setValue:[NSString stringWithFormat:@"[%@][%@]",[NSString stringWithFormat:@"%ld:%@",(long)content.error.code,errorDescription],content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    }else{
+                        [errorField setValue:[NSString stringWithFormat:@"[%ld][%@]",content.httpStatusCode,content.url.absoluteString] forKey:FT_KEY_ERROR_MESSAGE];
+                    }
+                    [errorTags setValue:FT_NETWORK forKey:FT_KEY_ERROR_SOURCE];
+                    [errorTags setValue:FT_NETWORK_ERROR forKey:FT_KEY_ERROR_TYPE];
+                    [errorTags setValue:run forKey:FT_KEY_ERROR_SITUATION];
+                    [errorTags addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
+                    if (content.responseBody.length>0) {
+                        [errorField setValue:content.responseBody forKey:FT_KEY_ERROR_STACK];
+                    }
+                    
+                    FTRUMResourceModel *resourceError = [[FTRUMResourceModel alloc]initWithType:FTRUMDataResourceError identifier:key];
+                    resourceError.time = time;
+                    resourceError.tags = errorTags;
+                    resourceError.fields = errorField;
+                    [self process:resourceError];
+                    
+                }
+                [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
+                [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
                 
-            }
-            [tags setValue:[self getResourceStatusGroup:content.httpStatusCode] forKey:FT_KEY_RESOURCE_STATUS_GROUP];
-            [tags setValue:FT_NETWORK forKey:FT_KEY_RESOURCE_TYPE];
-            
-            if(content.responseHeader){
-                [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
-                for (id key in content.responseHeader.allKeys) {
-                    if([key isKindOfClass:NSString.class]){
-                        NSString *lowercaseKey = [(NSString *)key lowercaseString];
-                        if([lowercaseKey isEqualToString:@"connection"]){
-                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
-                        }else if ([lowercaseKey isEqualToString:@"content-type"]){
-                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
-                        }else if([lowercaseKey isEqualToString:@"content-encoding"]){
-                            [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                if(content.responseHeader){
+                    [tags setValue:[content.url query] forKey:FT_KEY_RESOURCE_URL_QUERY];
+                    for (id key in content.responseHeader.allKeys) {
+                        if([key isKindOfClass:NSString.class]){
+                            NSString *lowercaseKey = [(NSString *)key lowercaseString];
+                            if([lowercaseKey isEqualToString:@"connection"]){
+                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONNECTION];
+                            }else if ([lowercaseKey isEqualToString:@"content-type"]){
+                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_TYPE];
+                            }else if([lowercaseKey isEqualToString:@"content-encoding"]){
+                                [tags setValue:content.responseHeader[key] forKey:FT_KEY_RESPONSE_CONTENT_ENCODING];
+                            }
                         }
                     }
+                    if(metrics.responseSize){
+                        [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
+                    }else if(content.responseBody){
+                        NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
+                        [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
+                    }
+                    [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
                 }
-                if(metrics.responseSize){
-                    [fields setValue:metrics.responseSize forKey:FT_KEY_RESOURCE_SIZE];
-                }else if(content.responseBody){
-                    NSData *data = [content.responseBody dataUsingEncoding:NSUTF8StringEncoding];
-                    [fields setValue:@(data.length) forKey:FT_KEY_RESOURCE_SIZE];
+                [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
+                if(self.rumDependencies.enableResourceHostIP){
+                    [fields setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
                 }
-                [fields setValue:[FTBaseInfoHandler convertToStringData:content.responseHeader] forKey:FT_KEY_RESPONSE_HEADER];
+                //add trace info
+                [tags setValue:spanID forKey:FT_KEY_SPANID];
+                [tags setValue:traceID forKey:FT_KEY_TRACEID];
+                
+                FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
+                resourceSuccess.metrics = metrics;
+                resourceSuccess.time = time;
+                resourceSuccess.tags = tags;
+                resourceSuccess.fields = fields;
+                [self process:resourceSuccess];
             }
-            [fields setValue:[FTBaseInfoHandler convertToStringData:content.requestHeader] forKey:FT_KEY_REQUEST_HEADER];
-            if(self.rumDependencies.enableResourceHostIP){
-                [fields setValue:metrics.remoteAddress forKey:FT_KEY_RESOURCE_HOST_IP];
-            }
-            //add trace info
-            [tags setValue:spanID forKey:FT_KEY_SPANID];
-            [tags setValue:traceID forKey:FT_KEY_TRACEID];
-            
-            FTRUMResourceDataModel *resourceSuccess = [[FTRUMResourceDataModel alloc]initWithType:FTRUMDataResourceComplete identifier:key];
-            resourceSuccess.metrics = metrics;
-            resourceSuccess.time = time;
-            resourceSuccess.tags = tags;
-            resourceSuccess.fields = fields;
-            [self process:resourceSuccess];
         } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
