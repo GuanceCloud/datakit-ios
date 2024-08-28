@@ -45,4 +45,6 @@
 #import "FTWebViewJavascriptBridgeBase.h"
 #import "FTWKWebViewHandler.h"
 #import "FTWKWebViewJavascriptBridge.h"
-
+#import "FTRequest.h"
+#import "FTRequestBody.h"
+#import "FTNetworkManager.h"
