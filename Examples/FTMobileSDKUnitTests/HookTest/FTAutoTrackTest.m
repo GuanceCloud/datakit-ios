@@ -133,7 +133,7 @@
     [self setSdkWithRum:YES];
     [[tester waitForViewWithAccessibilityLabel:@"UITEST"] tap];
     [tester waitForTimeInterval:1];
-    [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointZero duration:1];
+    [[tester waitForViewWithAccessibilityLabel:@"IMAGE_CLICK"] longPressAtPoint:CGPointMake(20, 10) duration:1];
     [tester waitForTimeInterval:1];
     [[tester waitForViewWithAccessibilityLabel:@"alert cancel"] tap];
     

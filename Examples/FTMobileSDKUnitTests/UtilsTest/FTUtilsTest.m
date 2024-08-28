@@ -190,9 +190,9 @@
     for (NSDictionary *domain in array) {
         if([domain[@"key"] isEqualToString:@"NSURLErrorDomain"]){
             NSArray *errors = domain[@"errors"];
-            for (NSDictionary *error in errors) {
-                NSInteger code =  [error[@"code"] integerValue];
-                NSString *description = error[@"description"];
+            for (NSDictionary *errorDict in errors) {
+                NSInteger code =  [errorDict[@"code"] integerValue];
+                NSString *description = errorDict[@"description"];
                 NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:@"testErrorDescription" forKey:NSLocalizedDescriptionKey];
                 NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:code userInfo:errorMessage];
                 NSString *ftError = [error ft_description];
