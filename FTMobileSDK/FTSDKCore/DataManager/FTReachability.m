@@ -81,7 +81,10 @@ static void FTReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
             }
         }
     }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         currentStatus = info.currentRadioAccessTechnology;
+#pragma clang diagnostic pop
     }
     if (!currentStatus) {
         return @"unknown";

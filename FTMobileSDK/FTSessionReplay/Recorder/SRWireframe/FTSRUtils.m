@@ -7,7 +7,7 @@
 //
 
 #import "FTSRUtils.h"
-#import "FTRUMSessionReplay.h"
+
 CGRect FTCGRectFitWithContentMode(CGRect rect, CGSize size, UIViewContentMode mode) {
     rect = CGRectStandardize(rect);
     size.width = size.width < 0 ? -size.width : size.width;

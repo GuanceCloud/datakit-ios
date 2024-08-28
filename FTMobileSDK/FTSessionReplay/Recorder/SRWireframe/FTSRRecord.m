@@ -273,11 +273,21 @@
 -(instancetype)initWithData:(NSData *)data{
     self = [super init];
     if(self){
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-        _type = @"resource";
-        _appId = dict[@"appId"];
-        _identifier = dict[@"identifier"];
-        _data = dict[@"data"];
+        if (@available(iOS 11.0, *)) {
+            NSError *error;
+            FTEnrichedResource *resource = [NSKeyedUnarchiver unarchivedObjectOfClass:FTEnrichedResource.class fromData:data error:&error];
+            return resource;
+        }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            NSDictionary  *dict = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+#pragma clang diagnostic pop
+            _type = @"resource";
+            _appId = dict[@"appId"];
+            _identifier = dict[@"identifier"];
+            _data = dict[@"data"];
+        }
+        
     }
     return self;
 }
@@ -285,13 +295,15 @@
 -(NSData *)toJSONData{
     NSData* jsonData = nil;
     @try {
-        NSDictionary* dict = [self toDictionary];
         if (@available(iOS 11.0, *)) {
             NSError *error;
-            jsonData = [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:&error];
+            jsonData = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:NO error:&error];
         } else {
+            NSDictionary* dict = [self toDictionary];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             jsonData = [NSKeyedArchiver archivedDataWithRootObject:dict];
-
+#pragma clang diagnostic pop
         }
     }
     @catch (NSException *exception) {

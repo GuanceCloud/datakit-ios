@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FTRUMSessionReplay.h"
+#import "FTRumSessionReplay.h"
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTSRTextObfuscatingProtocol <NSObject>
 

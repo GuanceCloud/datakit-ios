@@ -11,7 +11,6 @@
 #import <UIKit/UIKit.h>
 #import "FTImageDataUtils.h"
 #import "FTSRViewID.h"
-#import "FTRumSessionReplay.h"
 #import "FTSRTextObfuscatingFactory.h"
 NS_ASSUME_NONNULL_BEGIN
 
