@@ -64,9 +64,9 @@
     }
     return self;
 }
+static dispatch_once_t onceToken;
 + (instancetype)sharedInstance {
     static FTAutoTrackHandler *sharedInstance = nil;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
     });
@@ -208,5 +208,6 @@
     self.addRumDatasDelegate = nil;
     self.viewControllerHandler = nil;
     [[FTAppLifeCycle sharedInstance] removeAppLifecycleDelegate:self];
+    onceToken = 0;
 }
 @end

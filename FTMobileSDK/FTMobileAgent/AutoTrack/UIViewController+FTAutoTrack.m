@@ -55,32 +55,32 @@ static char *viewLoadDuration = "viewLoadDuration";
     [[FTAutoTrackHandler sharedInstance].viewControllerHandler notify_viewDidDisappear:self animated:animated];
 }
 -(BOOL)isBlackListContainsViewController{
-   NSString *lastPathComponent =  [NSBundle bundleForClass:self.class].bundleURL.lastPathComponent;
-    if([lastPathComponent isEqualToString:@"UIKitCore.framework"] || [lastPathComponent isEqualToString:@"SwiftUI.framework"]){
-        return YES;
-    }
-    return NO;
-//    static NSSet * blacklistedClasses  = nil;
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        @try {
-//            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
-//            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
-//            
-//        } @catch(NSException *exception) {  // json加载和解析可能失败
-//            FTInnerLogError(@"error: %@",exception);
-//        }
-//    });
-//    
-//    __block BOOL isContains = NO;
-//    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
-//        NSString *blackClassName = (NSString *)obj;
-//        Class blackClass = NSClassFromString(blackClassName);
-//        if (blackClass && [self isKindOfClass:blackClass]) {
-//            isContains = YES;
-//            *stop = YES;
-//        }
-//    }];
-//    return isContains;
+//   NSString *lastPathComponent =  [NSBundle bundleForClass:self.class].bundleURL.lastPathComponent;
+//    if([lastPathComponent isEqualToString:@"UIKitCore.framework"] || [lastPathComponent isEqualToString:@"SwiftUI.framework"]){
+//        return YES;
+//    }
+//    return NO;
+    static NSSet * blacklistedClasses  = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        @try {
+            NSArray *blacklistedViewControllerClassNames =[BlacklistedVCClassNames ft_blacklistedViewControllerClassNames];
+            blacklistedClasses = [NSSet setWithArray:blacklistedViewControllerClassNames];
+            
+        } @catch(NSException *exception) {  // json加载和解析可能失败
+            FTInnerLogError(@"error: %@",exception);
+        }
+    });
+    
+    __block BOOL isContains = NO;
+    [blacklistedClasses enumerateObjectsUsingBlock:^(id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString *blackClassName = (NSString *)obj;
+        Class blackClass = NSClassFromString(blackClassName);
+        if (blackClass && [self isKindOfClass:blackClass]) {
+            isContains = YES;
+            *stop = YES;
+        }
+    }];
+    return isContains;
 }
 @end
