@@ -1103,7 +1103,7 @@
 			path = Public;
 			sourceTree = "<group>";
 		};
-		171D2CB12C3E7AC500E7FBAE /* ViewsRecoder */ = {
+		171D2CB12C3E7AC500E7FBAE /* ViewsRecorder */ = {
 			isa = PBXGroup;
 			children = (
 				171D2C932C3E7AC500E7FBAE /* FTUIDatePickerRecorder.h */,
@@ -1141,13 +1141,13 @@
 				178693A62C41399C001F87A0 /* FTUIProgressViewRecorder.h */,
 				178693A72C41399C001F87A0 /* FTUIProgressViewRecorder.m */,
 			);
-			path = ViewsRecoder;
+			path = ViewsRecorder;
 			sourceTree = "<group>";
 		};
 		171D2CBA2C3E7AC500E7FBAE /* ViewTreeSnapshot */ = {
 			isa = PBXGroup;
 			children = (
-				171D2CB12C3E7AC500E7FBAE /* ViewsRecoder */,
+				171D2CB12C3E7AC500E7FBAE /* ViewsRecorder */,
 				171D2CB22C3E7AC500E7FBAE /* FTViewTreeRecorder.h */,
 				171D2CB32C3E7AC500E7FBAE /* FTViewTreeRecorder.m */,
 				171D2CB42C3E7AC500E7FBAE /* FTViewTreeRecordingContext.h */,
