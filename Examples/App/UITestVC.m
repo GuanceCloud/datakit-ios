@@ -33,6 +33,8 @@
     _scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.frame), CGRectGetHeight(self.view.frame)/2)];
     _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:_scrollView];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tap)];
+    [_scrollView addGestureRecognizer:tap];
     _segmentedControl.frame = CGRectMake(100, 0, 100, 40);
     _segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"first", @"second", @"third"]];
     [_segmentedControl addTarget:self action:@selector(segmentedAction:) forControlEvents:UIControlEventValueChanged];
@@ -178,7 +180,6 @@
 
 - (void)switchAction:(UISwitch *)sender {
     NSLog(@"UISwitch on:%d", sender.isOn);
-    [_textField resignFirstResponder];
 }
 
 - (void)segmentedAction:(UISegmentedControl *)sender {
@@ -201,6 +202,9 @@
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
     NSLog(@"UIImageView被点击了");
+}
+- (void)tap{
+    [_textField resignFirstResponder];
 }
 #pragma mark -
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
