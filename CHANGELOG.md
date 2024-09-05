@@ -1,3 +1,6 @@
+# 1.6.0-alpha.1
+1. 新增 Session Replay 功能
+---
 # 1.5.2
 1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
 2. 自动采集 RUM-Resource 时，过滤掉直接从本地缓存获取或获取类型未知的 Resource，防止采集重复
