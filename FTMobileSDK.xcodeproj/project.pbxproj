@@ -105,8 +105,6 @@
 		171D2D702C3E7AC600E7FBAE /* UIView+FTSR.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CD62C3E7AC500E7FBAE /* UIView+FTSR.m */; };
 		171D2D712C3E7AC600E7FBAE /* FTSessionReplayTouches.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CD82C3E7AC500E7FBAE /* FTSessionReplayTouches.h */; };
 		171D2D722C3E7AC600E7FBAE /* FTSessionReplayTouches.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CD92C3E7AC500E7FBAE /* FTSessionReplayTouches.m */; };
-		171D2D732C3E7AC600E7FBAE /* FTTouchCircle.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CDA2C3E7AC500E7FBAE /* FTTouchCircle.h */; };
-		171D2D742C3E7AC600E7FBAE /* FTTouchCircle.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CDB2C3E7AC500E7FBAE /* FTTouchCircle.m */; };
 		171D2D752C3E7AC600E7FBAE /* UITouch+FTIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CDC2C3E7AC500E7FBAE /* UITouch+FTIdentifier.h */; };
 		171D2D762C3E7AC600E7FBAE /* UITouch+FTIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CDD2C3E7AC500E7FBAE /* UITouch+FTIdentifier.m */; };
 		171D2D772C3E7AC600E7FBAE /* FTRecorder.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CDF2C3E7AC500E7FBAE /* FTRecorder.h */; };
@@ -174,6 +172,8 @@
 		171D2DBF2C3FDDCB00E7FBAE /* FTModuleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2DBB2C3FDDCB00E7FBAE /* FTModuleManager.m */; };
 		171D2DC02C3FDDCB00E7FBAE /* FTModuleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2DBC2C3FDDCB00E7FBAE /* FTModuleManager.h */; };
 		171D2DC12C3FDDCB00E7FBAE /* FTModuleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2DBC2C3FDDCB00E7FBAE /* FTModuleManager.h */; };
+		1722E4DE2C89599E00B60D91 /* FTTouchSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 1722E4DC2C89599E00B60D91 /* FTTouchSnapshot.h */; };
+		1722E4DF2C89599E00B60D91 /* FTTouchSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 1722E4DD2C89599E00B60D91 /* FTTouchSnapshot.m */; };
 		1733605D2C05FFD600A50C02 /* FTLogDataCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTLogDataCache.h */; };
 		1733605E2C05FFD600A50C02 /* FTLogDataCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 1733605B2C05FFD600A50C02 /* FTLogDataCache.h */; };
 		1733605F2C05FFD600A50C02 /* FTLogDataCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733605C2C05FFD600A50C02 /* FTLogDataCache.m */; };
@@ -767,8 +767,6 @@
 		171D2CD62C3E7AC500E7FBAE /* UIView+FTSR.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+FTSR.m"; sourceTree = "<group>"; };
 		171D2CD82C3E7AC500E7FBAE /* FTSessionReplayTouches.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTSessionReplayTouches.h; sourceTree = "<group>"; };
 		171D2CD92C3E7AC500E7FBAE /* FTSessionReplayTouches.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayTouches.m; sourceTree = "<group>"; };
-		171D2CDA2C3E7AC500E7FBAE /* FTTouchCircle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTTouchCircle.h; sourceTree = "<group>"; };
-		171D2CDB2C3E7AC500E7FBAE /* FTTouchCircle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTTouchCircle.m; sourceTree = "<group>"; };
 		171D2CDC2C3E7AC500E7FBAE /* UITouch+FTIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITouch+FTIdentifier.h"; sourceTree = "<group>"; };
 		171D2CDD2C3E7AC500E7FBAE /* UITouch+FTIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITouch+FTIdentifier.m"; sourceTree = "<group>"; };
 		171D2CDF2C3E7AC500E7FBAE /* FTRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTRecorder.h; sourceTree = "<group>"; };
@@ -834,6 +832,8 @@
 		171D2D242C3E7AC500E7FBAE /* FTSessionReplayFeature.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTSessionReplayFeature.m; sourceTree = "<group>"; };
 		171D2DBB2C3FDDCB00E7FBAE /* FTModuleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTModuleManager.m; sourceTree = "<group>"; };
 		171D2DBC2C3FDDCB00E7FBAE /* FTModuleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTModuleManager.h; sourceTree = "<group>"; };
+		1722E4DC2C89599E00B60D91 /* FTTouchSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FTTouchSnapshot.h; sourceTree = "<group>"; };
+		1722E4DD2C89599E00B60D91 /* FTTouchSnapshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTTouchSnapshot.m; sourceTree = "<group>"; };
 		172C1DD42BC7EB6400412DB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = FTMobileSDK/Info.plist; sourceTree = "<group>"; };
 		1733605B2C05FFD600A50C02 /* FTLogDataCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTLogDataCache.h; sourceTree = "<group>"; };
 		1733605C2C05FFD600A50C02 /* FTLogDataCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLogDataCache.m; sourceTree = "<group>"; };
@@ -1201,10 +1201,10 @@
 			children = (
 				171D2CD82C3E7AC500E7FBAE /* FTSessionReplayTouches.h */,
 				171D2CD92C3E7AC500E7FBAE /* FTSessionReplayTouches.m */,
-				171D2CDA2C3E7AC500E7FBAE /* FTTouchCircle.h */,
-				171D2CDB2C3E7AC500E7FBAE /* FTTouchCircle.m */,
 				171D2CDC2C3E7AC500E7FBAE /* UITouch+FTIdentifier.h */,
 				171D2CDD2C3E7AC500E7FBAE /* UITouch+FTIdentifier.m */,
+				1722E4DC2C89599E00B60D91 /* FTTouchSnapshot.h */,
+				1722E4DD2C89599E00B60D91 /* FTTouchSnapshot.m */,
 			);
 			path = Touch;
 			sourceTree = "<group>";
@@ -2021,6 +2021,7 @@
 				17E4CB3A29CD42DA005C2D99 /* FTThreadDispatchManager.h in Headers */,
 				1776063129D1347500D17137 /* FTWKWebViewJavascriptBridge.h in Headers */,
 				17678E2F29D28BD200C1DA98 /* FTTraceManager.h in Headers */,
+				1722E4DE2C89599E00B60D91 /* FTTouchSnapshot.h in Headers */,
 				171D2D962C3E7AC600E7FBAE /* FTTLV.h in Headers */,
 				17AB76FF29D432DE008FBBF5 /* FTRUMManager.h in Headers */,
 				17E4CB4229CD42DA005C2D99 /* FTBaseInfoHandler.h in Headers */,
@@ -2039,7 +2040,6 @@
 				17AB76DB29D432DE008FBBF5 /* FTMonitorUtils.h in Headers */,
 				17563F9C2AAAC4D00077C067 /* FTMobileSDK.h in Headers */,
 				171D2D672C3E7AC600E7FBAE /* FTSystemColors.h in Headers */,
-				171D2D732C3E7AC600E7FBAE /* FTTouchCircle.h in Headers */,
 				171D2D8A2C3E7AC600E7FBAE /* FTFileWriter.h in Headers */,
 				171D2D6B2C3E7AC600E7FBAE /* UIColor+FTSRIdentifier.h in Headers */,
 				1776BA802B99B668008424FF /* FTOSLogger.h in Headers */,
@@ -2493,6 +2493,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				171D2D502C3E7AC500E7FBAE /* FTViewTreeRecordingContext.m in Sources */,
+				1722E4DF2C89599E00B60D91 /* FTTouchSnapshot.m in Sources */,
 				17E4CB3629CD42DA005C2D99 /* FTSwizzle.m in Sources */,
 				171D2D462C3E7AC500E7FBAE /* FTUITextFieldRecorder.m in Sources */,
 				17E4CC2629CD42E4005C2D99 /* UIApplication+FTAutoTrack.m in Sources */,
@@ -2553,7 +2554,6 @@
 				17E4CB5B29CD42DA005C2D99 /* FTResourceMetricsModel.m in Sources */,
 				17132DBE2C2D652E009DFE8F /* NSError+FTDescription.m in Sources */,
 				1763BDB629DFF050009EE026 /* FTTrackDataManager.m in Sources */,
-				171D2D742C3E7AC600E7FBAE /* FTTouchCircle.m in Sources */,
 				171D2DB12C3E7AC600E7FBAE /* FTResourcesFeature.m in Sources */,
 				1763BDAE29DFF04F009EE026 /* ZY_FMDatabaseAdditions.m in Sources */,
 				171D2DAD2C3E7AC600E7FBAE /* FTPerformancePreset.m in Sources */,

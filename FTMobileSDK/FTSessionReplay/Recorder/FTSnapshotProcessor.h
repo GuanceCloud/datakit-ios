@@ -9,12 +9,12 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class FTViewTreeSnapshot,FTTouchCircle;
+@class FTViewTreeSnapshot,FTTouchSnapshot;
 @protocol FTWriter;
 @interface FTSnapshotProcessor : NSObject
 
 -(instancetype)initWithQueue:(dispatch_queue_t)queue writer:(id<FTWriter>)writer;
-- (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches;
+- (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(nullable FTTouchSnapshot *)touchSnapshot;
 @end
 
 NS_ASSUME_NONNULL_END

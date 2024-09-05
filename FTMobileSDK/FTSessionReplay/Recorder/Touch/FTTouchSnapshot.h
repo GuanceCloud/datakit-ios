@@ -1,13 +1,13 @@
 //
 //  FTTouchSnapshot.h
-//  FTMobileAgent
+//  FTMobileSDK
 //
-//  Created by hulilei on 2022/12/27.
-//  Copyright © 2022 DataFlux-cn. All rights reserved.
+//  Created by hulilei on 2024/9/5.
+//  Copyright © 2024 DataFlux-cn. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger,FTTouchPhase) {
     TouchDown,
@@ -20,6 +20,14 @@ typedef NS_ENUM(NSInteger,FTTouchPhase) {
 @property (nonatomic, assign) FTTouchPhase phase;
 @property (nonatomic, assign) int identifier;
 @property (nonatomic, assign) long long timestamp;
+@end
+
+@interface FTTouchSnapshot : NSObject
+
+@property (nonatomic, assign) long long timestamp;
+@property (nonatomic, strong) NSArray<FTTouchCircle*> *touches;
+- (instancetype)initWithTouches:(NSArray<FTTouchCircle*> *)touches;
+
 @end
 
 NS_ASSUME_NONNULL_END

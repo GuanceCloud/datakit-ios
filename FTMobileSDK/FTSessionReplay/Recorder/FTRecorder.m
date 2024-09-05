@@ -9,7 +9,7 @@
 #import "FTRecorder.h"
 #import "FTWindowObserver.h"
 #import "FTViewAttributes.h"
-#import "FTTouchCircle.h"
+#import "FTTouchSnapshot.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRWireframesBuilder.h"
@@ -36,7 +36,7 @@
     }
     return self;
 }
--(void)taskSnapShot:(FTSRContext *)context touches:(NSMutableArray <FTTouchCircle *> *)touches{
+-(void)taskSnapShot:(FTSRContext *)context touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     
     UIView *rootView = self.windowObserver.keyWindow;
     if(rootView == nil){
@@ -45,7 +45,7 @@
     // 1.采集 view snap shot
     FTViewTreeSnapshot *viewTreeSnapshot = [self.viewSnapShotBuilder takeSnapshot:rootView context:context];
     
-    [self.snapshotProcessor process:viewTreeSnapshot touches:touches];
+    [self.snapshotProcessor process:viewTreeSnapshot touchSnapshot:touchSnapshot];
     [self.resourceProcessor process:viewTreeSnapshot.resources context:context];
 }
 @end

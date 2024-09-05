@@ -8,11 +8,11 @@
 
 #import "FTSessionReplayTouches.h"
 #import "FTSwizzler.h"
-#import "FTTouchCircle.h"
 #import "UITouch+FTIdentifier.h"
 #import "FTWindowObserver.h"
 #import "FTReadWriteHelper.h"
 #import "NSDate+FTUtil.h"
+#import "FTTouchSnapshot.h"
 @interface FTSessionReplayTouches()
 /// 点击事件集合 都在主线程操作，所以不进行锁管理
 @property (nonatomic, strong) NSMutableArray *touches;
@@ -30,10 +30,14 @@
     }
     return self;
 }
--(NSMutableArray <FTTouchCircle *> *)takeTouches{
+-(FTTouchSnapshot *)takeTouchSnapshot{
+    if(self.touches.count==0){
+        return nil;
+    }
     NSMutableArray *array = [NSMutableArray arrayWithArray:self.touches];
+    FTTouchSnapshot *touchSnapshot = [[FTTouchSnapshot alloc]initWithTouches:array];
     [self.touches removeAllObjects];
-    return array;
+    return touchSnapshot;
 }
 - (int)persistNextID:(UITouch *)touch{
     int newID = [self getNextID];

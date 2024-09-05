@@ -9,13 +9,12 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 NS_ASSUME_NONNULL_BEGIN
-@class FTTouchCircle,FTWindowObserver;
+@class FTTouchSnapshot,FTWindowObserver;
 @interface FTSessionReplayTouches : NSObject
 -(instancetype)initWithWindowObserver:(FTWindowObserver *)observer;
 /// 获取点击的点集合 （主线程操作）
--(NSMutableArray <FTTouchCircle *>*)takeTouches;
+-(nullable FTTouchSnapshot *)takeTouchSnapshot;
 
-- (void)swizzleApplicationTouches;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -9,10 +9,10 @@
 #import "FTSRRecord.h"
 #import "FTSRUtils.h"
 #import "FTViewAttributes.h"
-#import "FTTouchCircle.h"
 #import "NSDate+FTUtil.h"
 #import "FTLog+Private.h"
 #import "FTConstants.h"
+#import "FTTouchSnapshot.h"
 @implementation FTSRRecord
 -(instancetype)initWithTimestamp:(long long)timestamp{
     return [self initWithType:0 timestamp:timestamp];

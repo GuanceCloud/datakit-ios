@@ -9,7 +9,6 @@
 #import "FTSnapshotProcessor.h"
 #import "FTViewTreeSnapshotBuilder.h"
 #import "FTViewAttributes.h"
-#import "FTTouchCircle.h"
 #import "FTViewAttributes.h"
 #import "FTSRWireframe.h"
 #import "FTSRWireframesBuilder.h"
@@ -20,7 +19,7 @@
 #import "FTConstants.h"
 #import "FTModuleManager.h"
 #import "FTSRUtils.h"
-
+#import "FTTouchSnapshot.h"
 @interface FTSnapshotProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) id<FTWriter> writer;
@@ -42,14 +41,13 @@
     }
     return self;
 }
-- (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
+- (void)process:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     __weak typeof(self) weakSelf = self;
     dispatch_async(self.queue, ^{
-        [weakSelf processSync:viewTreeSnapshot touches:touches];
+        [weakSelf processSync:viewTreeSnapshot touchSnapshot:touchSnapshot];
     });
 }
-
-- (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touches:(NSMutableArray <FTTouchCircle *> *)touches{
+- (void)processSync:(FTViewTreeSnapshot *)viewTreeSnapshot touchSnapshot:(FTTouchSnapshot *)touchSnapshot{
     NSMutableArray<FTSRWireframe> *wireframes = (NSMutableArray<FTSRWireframe>*)[[NSMutableArray alloc]init];
     NSArray<id <FTSRWireframesBuilder>> *nodes = [self.flattener flattenNodes:viewTreeSnapshot];
     for (id<FTSRWireframesBuilder> builder in nodes) {
@@ -94,10 +92,10 @@
         [records addObject:fullRecord];
     }
     // 4.将 touches 看做增量添加
-    if (touches.count>0){
-        for (FTTouchCircle *touch in touches) {
+    if (touchSnapshot!=nil){
+        for (FTTouchCircle *touch in touchSnapshot.touches) {
             PointerInteractionData *pointer = [[PointerInteractionData alloc]initWithTouch:touch];
-            FTSRIncrementalSnapshotRecord *pointerRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:pointer timestamp:touch.timestamp];
+            FTSRIncrementalSnapshotRecord *pointerRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:pointer timestamp:touchSnapshot.timestamp];
             [records addObject:pointerRecord];
         }
     }

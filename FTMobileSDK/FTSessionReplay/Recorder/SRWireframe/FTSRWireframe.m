@@ -9,8 +9,8 @@
 #import "FTSRWireframe.h"
 #import <UIKit/UIKit.h>
 #import "FTViewAttributes.h"
-#import "FTTouchCircle.h"
 #import "FTSRUtils.h"
+#import "FTTouchSnapshot.h"
 
 NSString * const FT_DEFAULT_COLOR = @"#FF0000FF";
 CGFloat  const FT_DEFAULT_FONT_SIZE = 10;

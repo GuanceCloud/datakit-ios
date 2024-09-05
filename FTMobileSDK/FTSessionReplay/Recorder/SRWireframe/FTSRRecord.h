@@ -9,10 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "FTSRBaseFrame.h"
 #import "FTSRWireframe.h"
-#import "FTTouchCircle.h"
-
 NS_ASSUME_NONNULL_BEGIN
-@class FTViewTreeSnapshot,FTSRContext;
+@class FTViewTreeSnapshot,FTSRContext,FTTouchCircle;
 @protocol FTSRRecord;
 @interface FTSRRecord: FTSRBaseFrame
 @property (nonatomic, assign) int type;

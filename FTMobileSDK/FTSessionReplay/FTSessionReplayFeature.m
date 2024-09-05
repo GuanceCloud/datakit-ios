@@ -110,7 +110,7 @@
     context.viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
     context.applicationID = self.currentRUMContext[FT_APP_ID];
     context.date = [NSDate date];
-    [self.windowRecorder taskSnapShot:context touches:[self.touches takeTouches]];
+    [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshot]];
 }
 -(void)dealloc{
     [self stop];
