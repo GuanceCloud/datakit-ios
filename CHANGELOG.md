@@ -1,5 +1,6 @@
 # 1.6.0-alpha.1
 1. 新增 Session Replay 功能
+2. RUM-View 自动采集逻辑优化，修复 View 采集中断缺失问题
 ---
 # 1.5.2
 1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
