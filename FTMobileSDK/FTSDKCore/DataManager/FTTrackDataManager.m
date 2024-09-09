@@ -236,16 +236,16 @@ static dispatch_once_t onceToken;
             
             [self.networkManager sendRequest:request completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
                 if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                    FTInnerLogError(@"[NETWORK] %@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
+                    FTInnerLogError(@"[NETWORK][%@] %@", type,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Request 初始化失败，请检查数据上报地址是否正确"]);
                     success = NO;
                     dispatch_semaphore_signal(flushSemaphore);
                     return;
                 }
                 NSInteger statusCode = httpResponse.statusCode;
                 success = (statusCode >=200 && statusCode < 500);
-                FTInnerLogDebug(@"[NETWORK] Upload Response statusCode : %ld",(long)statusCode);
+                FTInnerLogDebug(@"[NETWORK][%@] Upload Response statusCode : %ld",type,(long)statusCode);
                 if (statusCode != 200 && data.length>0) {
-                    FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                    FTInnerLogError(@"[NETWORK][%@] 服务器异常 稍后再试 responseData = %@",type,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                 }
                 dispatch_semaphore_signal(flushSemaphore);
             }];

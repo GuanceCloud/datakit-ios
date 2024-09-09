@@ -167,16 +167,16 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
         [self.requestBuilder requestWithEvents:event parameters:parameters];
         [self.networkManager sendRequest:self.requestBuilder completion:^(NSHTTPURLResponse * _Nonnull httpResponse, NSData * _Nullable data, NSError * _Nullable error) {
             if (error || ![httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-                FTInnerLogError(@"%@", [NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
+                FTInnerLogError(@"[NETWORK][%@] %@", self.featureName,[NSString stringWithFormat:@"Network failure: %@", error ? error : @"Unknown error"]);
                 success = NO;
                 dispatch_semaphore_signal(flushSemaphore);
                 return;
             }
             NSInteger statusCode = httpResponse.statusCode;
             success = (statusCode >=200 && statusCode < 500);
-            FTInnerLogDebug(@"[NETWORK][session-replay] Upload Response statusCode : %ld",(long)statusCode);
+            FTInnerLogDebug(@"[NETWORK][%@] Upload Response statusCode : %ld",self.featureName,(long)statusCode);
             if (statusCode != 200 && data.length>0) {
-                FTInnerLogError(@"[NETWORK] 服务器异常 稍后再试 responseData = %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                FTInnerLogError(@"[NETWORK][%@] 服务器异常 稍后再试 responseData = %@",self.featureName,[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             }
             dispatch_semaphore_signal(flushSemaphore);
         }];
