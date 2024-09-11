@@ -41,10 +41,10 @@
             return [FTNOPTextObfuscator new];
             break;
         case FTSRPrivacyMaskOnlyInput:
-            return [FTSpacePreservingMaskObfuscator new];
+            return [FTNOPTextObfuscator new];
             break;
         case FTSRPrivacyMaskAllText:
-            return [FTFixLengthMaskObfuscator new];
+            return [FTSpacePreservingMaskObfuscator new];
             break;
     }
 }
@@ -54,10 +54,10 @@
             return [FTNOPTextObfuscator new];
             break;
         case FTSRPrivacyMaskOnlyInput:
-            return [FTFixLengthMaskObfuscator new];
+            return [FTNOPTextObfuscator new];
             break;
         case FTSRPrivacyMaskAllText:
-            return [FTNOPTextObfuscator new];
+            return [FTFixLengthMaskObfuscator new];
             break;
     }
 }

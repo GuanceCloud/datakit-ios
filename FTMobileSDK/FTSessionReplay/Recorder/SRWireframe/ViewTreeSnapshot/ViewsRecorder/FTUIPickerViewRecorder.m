@@ -51,7 +51,7 @@
                 builder.textAlignment = NSTextAlignmentCenter;
                 builder.adjustsFontSizeToFitWidth = YES;
                 return builder;
-            } textObfuscator:textObfuscator],];
+            } textObfuscator:_textObfuscator],];
     }
     return self;
 }
