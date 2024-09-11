@@ -10,7 +10,7 @@
 #import "FTSessionReplayConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 @interface FTRumSessionReplay : NSObject
-+ (instancetype)sharedInstance;
++ (instancetype)sharedInstance NS_SWIFT_NAME(shared());;
 
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config;
 @end
