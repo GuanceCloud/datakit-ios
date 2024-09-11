@@ -33,29 +33,28 @@
 -(FTSRNodeSemantics *)recorder:(UIView *)view attributes:(FTViewAttributes *)attributes context:(FTViewTreeRecordingContext *)context{
     FTViewAttributes *attr = attributes;
     if ([context.viewControllerContext isRootView:ViewControllerTypeAlert]){
-        attr = [attributes copy];
-        attr.backgroundColor = [FTSystemColors systemBackgroundCGColor];
+        attr.backgroundColor = [FTSystemColors systemBackground];
         attr.layerBorderColor = nil;
         attr.layerBorderWidth = 0;
         attr.layerCornerRadius = 16;
         attr.alpha = 1;
         attr.isHidden = NO;
     }
-    if(!attributes.isVisible){
+    if(!attr.isVisible){
         return [FTInvisibleElement constant];
     }
-    FTSRNodeSemantics *semantics = self.semanticsOverride(view, attributes);
+    FTSRNodeSemantics *semantics = self.semanticsOverride(view, attr);
     if(semantics){
         return semantics;
     }
-    if(!attributes.hasAnyAppearance){
+    if(!attr.hasAnyAppearance){
         FTInvisibleElement *element = [[FTInvisibleElement alloc]init];
         element.subtreeStrategy = NodeSubtreeStrategyRecord;
         return element;
     }
     FTUIViewBuilder *builder = [[FTUIViewBuilder alloc]init];
     builder.wireframeID = [context.viewIDGenerator SRViewID:view nodeRecorder:self];
-    builder.attributes = attributes;
+    builder.attributes = attr;
     
     FTAmbiguousElement *element = [[FTAmbiguousElement alloc]init];
     element.nodes = @[builder];
