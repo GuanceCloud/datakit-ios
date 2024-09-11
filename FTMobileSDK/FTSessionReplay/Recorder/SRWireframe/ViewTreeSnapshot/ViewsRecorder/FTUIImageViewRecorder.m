@@ -122,15 +122,6 @@
     }
     return NO;
 }
-- (BOOL)imageViewIsSystemControlBackground:(UIImageView *)imageView{
-    if([imageView.superview isKindOfClass:UIButton.class]){
-        UIButton *button = (UIButton *)imageView.superview;
-        if(button.buttonType == UIButtonTypeCustom) {
-            return [button backgroundImageForState:button.state] == imageView.image;
-        }
-    }
-    return NO;
-}
 @end
 @implementation FTUIImageViewBuilder
 
