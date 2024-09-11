@@ -84,7 +84,7 @@
       @"UIActivityContentViewController",
       @"SFAirDropViewController",
       @"UICandidateViewController",//键盘
-//      @"_UIDatePickerContainerViewController",
+      @"_UIDatePickerContainerViewController",
       @"_UICursorAccessoryViewController",
       @"_UIContextMenuActionsOnlyViewController",
     ];
