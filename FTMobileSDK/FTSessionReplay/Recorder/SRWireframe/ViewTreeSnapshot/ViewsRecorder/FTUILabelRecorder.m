@@ -46,7 +46,7 @@
     builder.wireframeID = [context.viewIDGenerator SRViewID:label nodeRecorder:self];
     builder.adjustsFontSizeToFitWidth = label.adjustsFontSizeToFitWidth;
     builder.font = label.font;
-    builder.textColor = label.textColor.CGColor;
+    builder.textColor = label.textColor;
     builder.textAlignment = label.textAlignment;
     builder.textObfuscator = self.textObfuscator(context);
     
@@ -66,8 +66,8 @@
 
     wireframe.text = [self.textObfuscator mask:self.text];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:self.attributes.layerBorderColor] width:self.attributes.layerBorderWidth];
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
     FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
     textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
     textPosition.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];

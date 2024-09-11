@@ -28,9 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) float max;
 @property (nonatomic, assign) float value;
 
-@property (nullable) CGColorRef minTrackTintColor;
-@property (nullable) CGColorRef maxTrackTintColor;
-@property (nullable) CGColorRef thumbTintColor;
+@property (nonatomic, strong) UIColor *minTrackTintColor;
+@property (nonatomic, strong) UIColor *maxTrackTintColor;
+@property (nonatomic, strong) UIColor *thumbTintColor;
 
 @end
 @interface FTUISliderRecorder : NSObject<FTSRWireframesRecorder>

@@ -98,7 +98,7 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
     builder.attributes = attributes;
     builder.wireframeID = [context.viewIDGenerator SRViewID:textField nodeRecorder:self];
     builder.text = text;
-    builder.textColor = textField.textColor.CGColor;
+    builder.textColor = textField.textColor;
     builder.textAlignment = textField.textAlignment;
     builder.isPlaceholderText = isPlaceholder;
     builder.font = textField.font;
@@ -112,14 +112,14 @@ typedef id<FTSRTextObfuscatingProtocol>(^FTTextFieldObfuscator)(FTViewTreeRecord
 - (NSArray<FTSRWireframe *> *)buildWireframes {
     FTSRTextWireframe *wireframe = [[FTSRTextWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect];
     wireframe.text = [self.textObfuscator mask:self.text];
-    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    wireframe.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:self.textAlignment vertical:@"center"];
     FTSRContentClip *padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
     position.padding = padding;
     wireframe.textPosition = position;
-    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColor]:[FTSRUtils colorHexString:self.textColor] family:nil];
+    FTSRTextStyle *textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:self.isPlaceholderText? [FTSystemColors placeholderTextColorStr]:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
     wireframe.textStyle = textStyle;
     return @[wireframe];
 }

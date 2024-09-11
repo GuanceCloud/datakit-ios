@@ -12,7 +12,7 @@
 #import <UIKit/UIKit.h>
 @implementation FTSystemColors
 /// The track of a slider.
-+ (NSString *)systemFillColor{
++ (NSString *)systemFillColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor systemFillColor].CGColor];
     } else {
@@ -20,7 +20,7 @@
     }
 }
 /// The background of a switch.
-+ (NSString *)secondarySystemFillColor{
++ (NSString *)secondarySystemFillColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor secondarySystemFillColor].CGColor];
     } else {
@@ -28,65 +28,65 @@
     }
 }
 /// Input fields, search bars, buttons.
-+ (NSString *)tertiarySystemFillColor{
++ (NSString *)tertiarySystemFillColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor tertiarySystemFillColor].CGColor];
     } else {
         return @"#7676801F";
     }
 }
-+ (NSString *)tertiarySystemBackgroundColor{
++ (NSString *)tertiarySystemBackgroundColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor tertiarySystemBackgroundColor].CGColor];
     } else {
         return @"#FFFFFFFF";
     }
 }
-+ (NSString *)secondarySystemGroupedBackgroundColor{
++ (NSString *)secondarySystemGroupedBackgroundColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor secondarySystemGroupedBackgroundColor].CGColor];
     } else {
         return @"#FFFFFFFF";
     }
 }
-+ (CGColorRef)systemBackgroundCGColor{
++ (UIColor *)systemBackground{
     if (@available(iOS 13.0, *)) {
-        return [UIColor systemBackgroundColor].CGColor;
+        return [UIColor systemBackgroundColor];
     } else {
-        return [UIColor colorWithRed:255 / 255 green:255 / 255 blue:255 / 255 alpha:1].CGColor;
+        return [UIColor colorWithRed:255 / 255 green:255 / 255 blue:255 / 255 alpha:1];
     }
 }
-+ (NSString *)systemBackgroundColor{
-    return [FTSRUtils colorHexString:self.systemBackgroundCGColor];
++ (NSString *)systemBackgroundColorStr{
+    return [FTSRUtils colorHexString:self.systemBackground.CGColor];
 }
-+ (CGColorRef)labelColorCGColor{
++ (UIColor *)labelColor{
     if (@available(iOS 13.0, *)) {
-        return [UIColor labelColor].CGColor;
+        return [UIColor labelColor];
     }else{
-        return [UIColor colorWithRed:0/ 255 green:0 / 255 blue:0 / 255 alpha:1].CGColor;
+        return [UIColor colorWithRed:0/ 255 green:0 / 255 blue:0 / 255 alpha:1];
     }
 }
-+ (NSString *)labelColor{
-    return [FTSRUtils colorHexString:[self labelColorCGColor]];
++ (NSString *)labelColorStr{
+    return [FTSRUtils colorHexString:[self labelColor].CGColor];
 }
-+ (NSString *)placeholderTextColor{
++ (NSString *)placeholderTextColorStr{
     if (@available(iOS 13.0, *)) {
         return [FTSRUtils colorHexString:[UIColor placeholderTextColor].CGColor];
     } else {
         return @"#3C3C434C";
     }
 }
-+ (NSString *)tintColor{
++ (NSString *)tintColorStr{
     if (@available(iOS 15.0, *)) {
         return [FTSRUtils colorHexString:[UIColor tintColor].CGColor];
     } else {
         return @"#007AFFFF";
     }
 }
-+ (NSString *)systemGreenColor{
++ (NSString *)systemGreenColorStr{
     return [FTSRUtils colorHexString:[UIColor systemGreenColor].CGColor];
 }
-+ (NSString *)clearColor{
++ (NSString *)clearColorStr{
     return [FTSRUtils colorHexString:[UIColor clearColor].CGColor];
 }
 @end

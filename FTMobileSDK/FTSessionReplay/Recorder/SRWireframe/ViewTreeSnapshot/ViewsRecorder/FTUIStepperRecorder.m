@@ -58,22 +58,22 @@
 @implementation FTUIStepperBuilder
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    FTSRShapeWireframe *backgroundWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect backgroundColor:[FTSystemColors tertiarySystemFillColor] cornerRadius:@(self.cornerRadius) opacity:nil];
+    FTSRShapeWireframe *backgroundWireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect backgroundColor:[FTSystemColors tertiarySystemFillColorStr] cornerRadius:@(self.cornerRadius) opacity:nil];
     CGFloat verticalMargin = 6;
     CGRect dividerRect = CGRectMake(0, verticalMargin, 1, self.wireframeRect.size.height - 2*verticalMargin);
     dividerRect = FTCGRectPutInside(dividerRect,self.wireframeRect,HorizontalAlignmentCenter,VerticalAlignmentMiddle);
-    FTSRShapeWireframe *divider = [[FTSRShapeWireframe alloc]initWithIdentifier:self.dividerWireframeID frame:dividerRect backgroundColor:[FTSystemColors placeholderTextColor] cornerRadius:nil opacity:nil];
+    FTSRShapeWireframe *divider = [[FTSRShapeWireframe alloc]initWithIdentifier:self.dividerWireframeID frame:dividerRect backgroundColor:[FTSystemColors placeholderTextColorStr] cornerRadius:nil opacity:nil];
     CGRect horizontalElementRect = CGRectMake(0, 0, 14, 2);
     CGRect verticalElementRect = CGRectMake(0, 0, 2, 14);
     CGRect leftButtonFrame, rightButtonFrame;
     CGRectDivide(self.wireframeRect, &leftButtonFrame, &rightButtonFrame, self.wireframeRect.size.width / 2,CGRectMinXEdge);
     
-    FTSRShapeWireframe *minus = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minusWireframeID frame:FTCGRectPutInside(horizontalElementRect, leftButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isMinusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor]  cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
+    FTSRShapeWireframe *minus = [[FTSRShapeWireframe alloc]initWithIdentifier:self.minusWireframeID frame:FTCGRectPutInside(horizontalElementRect, leftButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isMinusEnabled?[FTSystemColors labelColorStr]:[FTSystemColors placeholderTextColorStr]  cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
     
-    FTSRShapeWireframe *plusHorizontal = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusHorizontalWireframeID frame:FTCGRectPutInside(horizontalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor] cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
+    FTSRShapeWireframe *plusHorizontal = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusHorizontalWireframeID frame:FTCGRectPutInside(horizontalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColorStr]:[FTSystemColors placeholderTextColorStr] cornerRadius:@(horizontalElementRect.size.height) opacity:nil];
     
 
-    FTSRShapeWireframe *plusVertical = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusVerticalWireframeID frame:FTCGRectPutInside(verticalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColor]:[FTSystemColors placeholderTextColor] cornerRadius:@(verticalElementRect.size.width) opacity:nil];
+    FTSRShapeWireframe *plusVertical = [[FTSRShapeWireframe alloc]initWithIdentifier:self.plusVerticalWireframeID frame:FTCGRectPutInside(verticalElementRect, rightButtonFrame, HorizontalAlignmentCenter, VerticalAlignmentMiddle) backgroundColor:self.isPlusEnabled?[FTSystemColors labelColorStr]:[FTSystemColors placeholderTextColorStr] cornerRadius:@(verticalElementRect.size.width) opacity:nil];
     return @[backgroundWireframe,divider,minus,plusHorizontal,plusVertical];
 }
 @end

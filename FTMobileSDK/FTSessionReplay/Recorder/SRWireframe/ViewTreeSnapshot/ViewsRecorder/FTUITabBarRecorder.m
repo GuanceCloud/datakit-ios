@@ -83,21 +83,21 @@
     
     [viewTreeRecorder record:records resources:resources view:tabBar context:context];
 }
-- (CGColorRef )inferTabBarColor:(UITabBar *)bar{
+- (UIColor *)inferTabBarColor:(UITabBar *)bar{
     if(bar.backgroundColor){
-        return bar.backgroundColor.CGColor;
+        return bar.backgroundColor;
     }
     if (@available(iOS 13.0, *)) {
         switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
             case UIUserInterfaceStyleLight:
-                return [UIColor whiteColor].CGColor;
+                return [UIColor whiteColor];
             case UIUserInterfaceStyleDark:
-                return [UIColor blackColor].CGColor;
+                return [UIColor blackColor];
             default:
-                return [UIColor whiteColor].CGColor;
+                return [UIColor whiteColor];
         }
     }
-    return UIColor.whiteColor.CGColor;
+    return UIColor.whiteColor;
 }
 
 - (CGRect)inferBarFrame:(UITabBar *)bar context:(FTViewTreeRecordingContext *)context{
@@ -112,7 +112,7 @@
 
 @implementation FTUITabBarBuilder
 - (NSArray<FTSRWireframe *> *)buildWireframes{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.color] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.color.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[[UIColor lightGrayColor] colorWithAlphaComponent:0.5].CGColor] width:0.5];
     return @[wireframe];
 }

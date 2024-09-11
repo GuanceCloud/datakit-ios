@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTViewAttributes *attributes;
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int wireframeID;
-@property (nullable) CGColorRef backgroundColor;
+@property (nonatomic, strong) UIColor * backgroundColor;
 @end
 
 @interface FTUIActivityIndicatorRecorder : NSObject<FTSRWireframesRecorder>

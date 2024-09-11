@@ -36,8 +36,8 @@
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.progressTrackWireframeID = [ids[1] intValue];
     builder.progress = progressView.progress;
-    builder.progressTintColor = progressView.progressTintColor.CGColor?progressView.progressTintColor.CGColor:progressView.tintColor.CGColor;
-    builder.backgroundColor = progressView.trackTintColor.CGColor?progressView.trackTintColor.CGColor:progressView.backgroundColor.CGColor;
+    builder.progressTintColor = progressView.progressTintColor?progressView.progressTintColor:progressView.tintColor;
+    builder.backgroundColor = progressView.trackTintColor?progressView.trackTintColor:progressView.backgroundColor;
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
     return element;
@@ -48,11 +48,11 @@
     if(self.progress<0||self.progress>1){
         return @[];
     }
-    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect backgroundColor:self.backgroundColor?[FTSRUtils colorHexString:self.backgroundColor]:[FTSystemColors tertiarySystemFillColor] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(1)];
+    FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect backgroundColor:self.backgroundColor?[FTSRUtils colorHexString:self.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(1)];
     CGRect slice, remainder;
     CGRectDivide(_wireframeRect, &slice, &remainder, _wireframeRect.size.width*self.progress,CGRectMinXEdge);
     CGRect progressTrackFrame = FTCGRectPutInside(slice, _wireframeRect, HorizontalAlignmentLeft, VerticalAlignmentMiddle);
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.progressTrackWireframeID frame:progressTrackFrame backgroundColor:[FTSRUtils colorHexString:self.progressTintColor] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.progressTrackWireframeID frame:progressTrackFrame backgroundColor:[FTSRUtils colorHexString:self.progressTintColor.CGColor] cornerRadius:@(self.wireframeRect.size.height/2) opacity:@(self.attributes.alpha)];
     return @[background,wireframe];
     
 }

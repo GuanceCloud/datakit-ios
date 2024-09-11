@@ -87,8 +87,8 @@
 @implementation FTUIDatePickerBuilder
 
 - (NSArray<FTSRWireframe *> *)buildWireframes {
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemGroupedBackgroundColor]:[FTSystemColors systemBackgroundColor] cornerRadius:@(10) opacity:@(self.attributes.alpha)];
-    wireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemFillColor]:nil width:1];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemGroupedBackgroundColorStr]:[FTSystemColors systemBackgroundColorStr] cornerRadius:@(10) opacity:@(self.attributes.alpha)];
+    wireframe.border = [[FTSRShapeBorder alloc]initWithColor:self.isDisplayedInPopover?[FTSystemColors secondarySystemFillColorStr]:nil width:1];
     return @[wireframe];
 }
 
@@ -158,7 +158,7 @@
     if(context.recorder.privacy.shouldMaskInputElements){
         self.labelRecorder.builderOverride = ^FTUILabelBuilder * _Nullable(FTUILabelBuilder *builder) {
             FTUILabelBuilder *labelBuilder = builder;
-            labelBuilder.textColor = [FTSystemColors labelColorCGColor];
+            labelBuilder.textColor = [FTSystemColors labelColor];
             return labelBuilder;
         };
     }

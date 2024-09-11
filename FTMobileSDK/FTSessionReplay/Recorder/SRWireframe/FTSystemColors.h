@@ -13,22 +13,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTSystemColors : NSObject
 /// The track of a slider.
-+ (NSString *)systemFillColor;
++ (NSString *)systemFillColorStr;
 /// The background of a switch.
-+ (NSString *)secondarySystemFillColor;
++ (NSString *)secondarySystemFillColorStr;
 /// Input fields, search bars, buttons.
-+ (NSString *)tertiarySystemFillColor;
-+ (NSString *)tertiarySystemBackgroundColor;
-+ (NSString *)secondarySystemGroupedBackgroundColor;
-+ (CGColorRef)systemBackgroundCGColor;
++ (NSString *)tertiarySystemFillColorStr;
++ (NSString *)tertiarySystemBackgroundColorStr;
++ (NSString *)secondarySystemGroupedBackgroundColorStr;
++ (UIColor *)systemBackground;
 
-+ (NSString *)systemBackgroundColor;
-+ (CGColorRef)labelColorCGColor;
-+ (NSString *)labelColor;
-+ (NSString *)placeholderTextColor;
-+ (NSString *)tintColor;
-+ (NSString *)systemGreenColor;
-+ (NSString *)clearColor;
++ (NSString *)systemBackgroundColorStr;
++ (UIColor *)labelColor;
++ (NSString *)labelColorStr;
++ (NSString *)placeholderTextColorStr;
++ (NSString *)tintColorStr;
++ (NSString *)systemGreenColorStr;
++ (NSString *)clearColorStr;
 @end
 
 NS_ASSUME_NONNULL_END

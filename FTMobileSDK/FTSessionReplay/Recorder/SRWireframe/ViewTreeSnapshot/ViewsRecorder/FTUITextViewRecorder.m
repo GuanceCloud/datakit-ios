@@ -47,7 +47,7 @@
     builder.attributes = attributes;
     builder.text = textView.text;
     builder.textAlignment = textView.textAlignment;
-    builder.textColor = textView.textColor.CGColor;
+    builder.textColor = textView.textColor;
     builder.font = textView.font;
     builder.contentRect = CGRectMake(textView.contentOffset.x, textView.contentOffset.y, textView.contentSize.width, textView.contentSize.height);
     builder.textObfuscator = self.textObfuscator(context,[FTSRUtils isSensitiveText:textView],textView.isEditable);
@@ -72,10 +72,10 @@
     CGFloat bottom = MIN(self.contentRect.size.height - self.wireframeRect.size.height - top, 0);
     FTSRContentClip *clip = [[FTSRContentClip alloc]initWithLeft:left top:top right:right bottom:bottom];
     wireframe.clip = clip;
-    FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeStyle *shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:[FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.shapeStyle = shapeStyle;
     FTAlignment *alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentLeft vertical:@"top"];
-    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor] family:nil];
+    wireframe.textStyle = [[FTSRTextStyle alloc]initWithSize:self.font.pointSize color:[FTSRUtils colorHexString:self.textColor.CGColor] family:nil];
     FTSRTextPosition *position = [[FTSRTextPosition alloc]init];
     position.alignment = alignment;
     position.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];

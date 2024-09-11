@@ -42,9 +42,9 @@
     builder.min = slider.minimumValue;
     builder.max = slider.maximumValue;
     builder.value = slider.value;
-    builder.minTrackTintColor = slider.minimumTrackTintColor.CGColor?slider.minimumTrackTintColor.CGColor:slider.tintColor.CGColor;
-    builder.maxTrackTintColor = slider.maximumTrackTintColor.CGColor;
-    builder.thumbTintColor = slider.thumbTintColor.CGColor;
+    builder.minTrackTintColor = slider.minimumTrackTintColor?slider.minimumTrackTintColor:slider.tintColor;
+    builder.maxTrackTintColor = slider.maximumTrackTintColor;
+    builder.thumbTintColor = slider.thumbTintColor;
     
     FTSpecificElement *element = [[FTSpecificElement alloc]initWithSubtreeStrategy:NodeSubtreeStrategyIgnore];
     element.nodes = @[builder];
@@ -69,7 +69,7 @@
     FTSRShapeWireframe *sliderWireframe = [[FTSRShapeWireframe alloc]
                                            initWithIdentifier:self.minTrackWireframeID
                                            frame:trackFrame
-                                           backgroundColor:[FTSystemColors tertiarySystemFillColor]
+                                           backgroundColor:[FTSystemColors tertiarySystemFillColorStr]
                                            cornerRadius:@(self.wireframeRect.size.width/2)
                                            opacity:self.isEnabled?@(self.attributes.alpha) : @(0.5)];
     
@@ -93,11 +93,11 @@
     FTSRShapeWireframe *thumbWireframe = [[FTSRShapeWireframe alloc]
                                           initWithIdentifier:self.thumbWireframeID
                                           frame:thumbFrame
-                                          backgroundColor:self.isEnabled?(self.thumbTintColor?[FTSRUtils colorHexString:self.thumbTintColor]:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColor]
+                                          backgroundColor:self.isEnabled?(self.thumbTintColor?[FTSRUtils colorHexString:self.thumbTintColor.CGColor]:[FTSRUtils colorHexString:[UIColor whiteColor].CGColor]):[FTSystemColors tertiarySystemBackgroundColorStr]
                                           cornerRadius:@(cornerRadius)
                                           opacity:@(self.attributes.alpha)];
     thumbWireframe.border = [[FTSRShapeBorder alloc]
-                             initWithColor:self.isEnabled?[FTSystemColors secondarySystemFillColor]:[FTSystemColors tertiarySystemBackgroundColor]
+                             initWithColor:self.isEnabled?[FTSystemColors secondarySystemFillColorStr]:[FTSystemColors tertiarySystemBackgroundColorStr]
                              width:1];
     
     CGRect slice, remainder;
@@ -111,13 +111,13 @@
                                       initWithIdentifier:self.minTrackWireframeID 
                                       frame:realL
                                       backgroundColor:self.minTrackTintColor?[FTSRUtils
-                                                                              colorHexString:self.minTrackTintColor]:[FTSystemColors tintColor]
+                                                                              colorHexString:self.minTrackTintColor.CGColor]:[FTSystemColors tintColorStr]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     FTSRShapeWireframe *rWireframe = [[FTSRShapeWireframe alloc]
                                       initWithIdentifier:self.maxTrackWireframeID
                                       frame:realR
-                                      backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor]:[FTSystemColors tertiarySystemFillColor]
+                                      backgroundColor:self.maxTrackTintColor?[FTSRUtils colorHexString:self.maxTrackTintColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr]
                                       cornerRadius:@(0)
                                       opacity:self.isEnabled?@(self.attributes.alpha):@(0.5)];
     if(self.attributes.hasAnyAppearance){

@@ -38,7 +38,7 @@
         FTUIActivityIndicatorBuilder *builder = [[FTUIActivityIndicatorBuilder alloc]init];
         builder.attributes = attributes;
         builder.wireframeID = [context.viewIDGenerator SRViewID:activityIndicator nodeRecorder:self];
-        builder.backgroundColor = activityIndicator.backgroundColor.CGColor;
+        builder.backgroundColor = activityIndicator.backgroundColor;
         NSMutableArray *records = [NSMutableArray arrayWithArray:@[builder]];
         NSMutableArray *resources = [NSMutableArray array];
         [self recordSubtree:activityIndicator records:records resources:resources context:context];
@@ -66,7 +66,7 @@
 @implementation FTUIActivityIndicatorBuilder
 
 -(NSArray<FTSRWireframe *> *)buildWireframes{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.backgroundColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.backgroundColor.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     return @[wireframe];
 }
 -(CGRect)wireframeRect{

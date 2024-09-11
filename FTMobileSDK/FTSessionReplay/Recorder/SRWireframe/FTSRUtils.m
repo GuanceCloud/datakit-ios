@@ -139,9 +139,8 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
                (NSUInteger)roundf(components[1] * 255.0f),
                (NSUInteger)roundf(components[2] * 255.0f)];
     }
-    
     if (hex) {
-        CGFloat alpha = CGColorGetAlpha(color);;
+        CGFloat alpha = CGColorGetAlpha(color);
         hex = [hex stringByAppendingFormat:@"%02lX",
                (unsigned long)(alpha * 255.0 + 0.5)];
     }
@@ -180,5 +179,24 @@ CGFloat FTCGSizeAspectRatio(CGSize size){
         return [sensitiveContentTypes containsObject:contentType];
     }
     return NO;
+}
++ (nullable CGColorRef)safeCast:(CGColorRef)cgColor{
+    if(cgColor == nil){
+        return nil;
+    }
+    if(CFGetTypeID(cgColor) == CGColorGetTypeID()){
+        return cgColor;
+    }
+    return nil;
+}
++ (CGFloat)getCGColorAlpha:(CGColorRef)color{
+    if(color == nil){
+        return 0;
+    }
+    size_t count = CGColorGetNumberOfComponents(color);
+    if (count==4||count==2){
+        return CGColorGetAlpha(color);
+    }
+    return 0;
 }
 @end

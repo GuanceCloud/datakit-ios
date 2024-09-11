@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGRect wireframeRect;
 @property (nonatomic, assign) int wireframeID;
 @property (nonatomic, copy) NSString *text;
-@property (nullable) CGColorRef textColor;
+@property (nonatomic, strong) UIColor *textColor;
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 @property (nonatomic, assign) BOOL isPlaceholderText;
 @property (nonatomic, strong) UIFont *font;

@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *selectedSegmentIndex;
 @property (nonatomic, strong) NSArray *segmentTitles;
 @property (nonatomic, strong) NSArray *segmentWireframeIDs;
-@property (nullable) CGColorRef selectedSegmentTintColor;
+@property (nonatomic, strong) UIColor *selectedSegmentTintColor;
 @property (nonatomic, strong) id<FTSRTextObfuscatingProtocol> textObfuscator;
 @end
 @interface FTUISegmentRecorder : NSObject<FTSRWireframesRecorder>

@@ -41,7 +41,7 @@
     builder.textObfuscator = self.textObfuscator(context);
     builder.selectedSegmentIndex = @(segment.selectedSegmentIndex);
     if (@available(iOS 13.0, *)) {
-        builder.selectedSegmentTintColor = segment.selectedSegmentTintColor.CGColor;
+        builder.selectedSegmentTintColor = segment.selectedSegmentTintColor;
     }
     builder.backgroundWireframeID = [ids[0] intValue];
     builder.segmentWireframeIDs = [ids subarrayWithRange:NSMakeRange(1, ids.count-1)];
@@ -64,7 +64,7 @@
         return nil;
     }
     FTSRShapeWireframe *background = [[FTSRShapeWireframe alloc]initWithIdentifier:self.backgroundWireframeID frame:self.wireframeRect];
-    NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor]:[FTSystemColors tertiarySystemFillColor];
+    NSString *color = self.attributes.backgroundColor? [FTSRUtils colorHexString:self.attributes.backgroundColor.CGColor]:[FTSystemColors tertiarySystemFillColorStr];
     background.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:color cornerRadius:@(8) opacity:@(self.attributes.alpha)];
     
     CGSize segmentSize = CGSizeMake(self.wireframeRect.size.width/(self.segmentWireframeIDs.count*1.0), self.wireframeRect.size.height*0.96);
@@ -80,10 +80,10 @@
         if (self.selectedSegmentIndex != nil){
             isSelected = [self.selectedSegmentIndex intValue] == i;
         }
-        segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors secondarySystemFillColor]:[FTSystemColors clearColor] width:1];
-        segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor]:[FTSystemColors tertiarySystemBackgroundColor]):[FTSystemColors clearColor] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
+        segment.border = [[FTSRShapeBorder alloc]initWithColor:isSelected?[FTSystemColors secondarySystemFillColorStr]:[FTSystemColors clearColorStr] width:1];
+        segment.shapeStyle = [[FTSRShapeStyle alloc]initWithBackgroundColor:isSelected?(self.selectedSegmentTintColor?[FTSRUtils colorHexString:self.selectedSegmentTintColor.CGColor]:[FTSystemColors tertiarySystemBackgroundColorStr]):[FTSystemColors clearColorStr] cornerRadius:@(8) opacity:@(self.attributes.alpha)];
         segment.text = [self.textObfuscator mask:self.segmentTitles[i]]?:@"";
-        segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColor] family:[UIFont systemFontOfSize:14].familyName];
+        segment.textStyle = [[FTSRTextStyle alloc]initWithSize:14 color:[FTSystemColors labelColorStr] family:[UIFont systemFontOfSize:14].familyName];
         FTSRTextPosition *textPosition = [[FTSRTextPosition alloc]init];
         textPosition.alignment = [[FTAlignment alloc]initWithTextAlignment:NSTextAlignmentCenter vertical:@"center"];
         textPosition.padding = [[FTSRContentClip alloc]initWithLeft:0 top:0 right:0 bottom:0];

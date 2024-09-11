@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isOn;
 @property (nonatomic, assign) BOOL isMasked;
 
-@property (nullable) CGColorRef onTintColor;
-@property (nullable) CGColorRef offTintColor;
-@property (nullable) CGColorRef thumbTintColor;
+@property (nonatomic, strong) UIColor * onTintColor;
+@property (nonatomic, strong) UIColor * offTintColor;
+@property (nonatomic, strong) UIColor * thumbTintColor;
 
 @end
 @interface FTUISwitchRecorder : NSObject<FTSRWireframesRecorder>

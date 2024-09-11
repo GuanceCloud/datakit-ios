@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FTViewAttributes : NSObject
 @property (nonatomic, assign) CGRect frame;
-@property (nullable) CGColorRef backgroundColor;
+@property (nonatomic, strong) UIColor * backgroundColor;
 @property (nullable) CGColorRef layerBorderColor;
 @property (nonatomic, assign) CGFloat layerBorderWidth;
 @property (nonatomic, assign) CGFloat layerCornerRadius;

@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int backgroundWireframeID;
 @property (nonatomic, assign) int progressTrackWireframeID;
 @property (nonatomic, assign) float progress;
-@property (nullable) CGColorRef progressTintColor;
-@property (nullable) CGColorRef backgroundColor;
+@property (nonatomic, strong) UIColor * progressTintColor;
+@property (nonatomic, strong) UIColor * backgroundColor;
 @end
 @interface FTUIProgressViewRecorder : NSObject<FTSRWireframesRecorder>
 @property (nonatomic, copy) NSString *identifier;

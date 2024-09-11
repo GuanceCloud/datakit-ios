@@ -27,6 +27,8 @@ CGFloat FTCGSizeAspectRatio(CGSize size);
 @interface FTSRUtils : NSObject
 + (NSString *)colorHexString:(CGColorRef)color;
 + (BOOL)isSensitiveText:(id<UITextInputTraits>)textInputTraits;
++ (nullable CGColorRef)safeCast:(CGColorRef)cgColor;
++ (CGFloat)getCGColorAlpha:(CGColorRef)color;
 @end
 
 NS_ASSUME_NONNULL_END

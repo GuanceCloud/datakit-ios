@@ -37,27 +37,27 @@
     element.nodes = @[builder];
     return element;
 }
-- (CGColorRef )inferNavigationBarColor:(UINavigationBar *)bar{
+- (UIColor *)inferNavigationBarColor:(UINavigationBar *)bar{
     if (@available(iOS 15.0, *)) {
         // scrollEdgeAppearance
         if(bar.standardAppearance.backgroundColor){
-            return bar.standardAppearance.backgroundColor.CGColor;
+            return bar.standardAppearance.backgroundColor;
         }
     }
     if(bar.barTintColor){
-        return bar.barTintColor.CGColor;
+        return bar.barTintColor;
     }
     if (@available(iOS 13.0, *)) {
         switch ([UITraitCollection currentTraitCollection].userInterfaceStyle) {
             case UIUserInterfaceStyleLight:
-                return [UIColor whiteColor].CGColor;
+                return [UIColor whiteColor];
             case UIUserInterfaceStyleDark:
-                return [UIColor blackColor].CGColor;
+                return [UIColor blackColor];
             default:
-                return [UIColor whiteColor].CGColor;
+                return [UIColor whiteColor];
         }
     }
-    return UIColor.whiteColor.CGColor;
+    return UIColor.whiteColor;
 }
 - (CGRect)inferNavigationBarFrame:(UINavigationBar *)bar context:(FTViewTreeRecordingContext *)context{
     CGRect newRect = bar.frame;
@@ -70,7 +70,7 @@
 @end
 @implementation FTUINavigationBarBuilder
 - (NSArray<FTSRWireframe *> *)buildWireframes{
-    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.color] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
+    FTSRShapeWireframe *wireframe = [[FTSRShapeWireframe alloc]initWithIdentifier:self.wireframeID frame:self.wireframeRect backgroundColor:[FTSRUtils colorHexString:self.color.CGColor] cornerRadius:@(self.attributes.layerCornerRadius) opacity:@(self.attributes.alpha)];
     wireframe.border = [[FTSRShapeBorder alloc]initWithColor:[FTSRUtils colorHexString:[UIColor grayColor].CGColor] width:1];
     return @[wireframe];
 }

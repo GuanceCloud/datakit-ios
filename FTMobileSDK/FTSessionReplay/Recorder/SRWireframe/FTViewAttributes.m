@@ -7,6 +7,7 @@
 //
 
 #import "FTViewAttributes.h"
+#import "FTSRUtils.h"
 @implementation FTSRContext
 @end
 
@@ -16,7 +17,7 @@
     if(self){
         self.frame = frame;
         self.alpha = view.alpha;
-        self.backgroundColor = view.backgroundColor.CGColor;
+        self.backgroundColor = view.backgroundColor;
         self.layerBorderColor = view.layer.borderColor;
         self.layerBorderWidth = view.layer.borderWidth;
         self.layerCornerRadius = view.layer.cornerRadius;
@@ -29,15 +30,15 @@
     return  !self.isHidden && self.alpha > 0 && !CGRectEqualToRect(self.frame, CGRectZero);
 }
 -(BOOL)hasAnyAppearance{
-    CGFloat borderAlpha = CGColorGetAlpha(self.layerBorderColor);
+    CGFloat borderAlpha = [FTSRUtils getCGColorAlpha:self.layerBorderColor];
     BOOL hasBorderAppearance = self.layerBorderWidth > 0 && borderAlpha > 0 ;
     
-    CGFloat fillAlpha = CGColorGetAlpha(self.backgroundColor);
+    CGFloat fillAlpha = [FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor];
     BOOL hasFillAppearance = fillAlpha > 0 ;
     return self.isVisible && (hasBorderAppearance || hasFillAppearance);
 }
 -(BOOL)isTranslucent{
-    return  !self.isVisible || self.alpha < 1 || ((!self.backgroundColor? 0 : CGColorGetAlpha(self.backgroundColor)) < 1);
+    return  !self.isVisible || self.alpha < 1 || ([FTSRUtils getCGColorAlpha:self.backgroundColor.CGColor] < 1);
 }
 - (instancetype)copyWithZone:(NSZone *)zone {
     FTViewAttributes *attributes = [[[self class] allocWithZone:zone] init];
