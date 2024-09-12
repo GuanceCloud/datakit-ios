@@ -89,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTSRImageWireframe : FTSRWireframe
 @property (nonatomic, copy) NSString *mimeType;
 @property (nonatomic, copy) NSString *resourceId;
+@property (nonatomic) BOOL isEmpty;
 @property (nonatomic, strong) FTSRShapeBorder *border;
 @property (nonatomic, strong) FTSRShapeStyle *shapeStyle;
 @end

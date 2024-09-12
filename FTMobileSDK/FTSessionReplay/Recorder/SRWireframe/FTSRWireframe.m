@@ -346,6 +346,8 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     if(self){
         self.type = @"image";
         self.mimeType = @"png";
+        // TODO: 支持 imageData 同步时移除
+        self.isEmpty = YES;
     }
     return self;
 }
