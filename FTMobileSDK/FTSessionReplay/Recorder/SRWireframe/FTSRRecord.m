@@ -205,8 +205,8 @@
     self = [super init];
     if(self){
         self.source = 4;
-        _width = viewportSize.width;
-        _height = viewportSize.height;
+        _width = roundf(viewportSize.width);
+        _height = roundf(viewportSize.height);
     }
     return self;
 
@@ -226,8 +226,8 @@
 -(instancetype)initWithTouch:(FTTouchCircle *)touch{
     self = [self init];
     if(self){
-        self.x = touch.position.x;
-        self.y = touch.position.y;
+        self.x = roundf(touch.position.x);
+        self.y = roundf(touch.position.y);
         self.pointerId = touch.identifier;
         switch (touch.phase) {
             case TouchUp:
@@ -291,7 +291,7 @@
     }
     return self;
 }
-// 字典 Value 为 NSData 类型，使用 NSKeyedArchiver 将N SDictionary 转换成 NSData
+// 字典 Value 为 NSData 类型，使用 NSKeyedArchiver 将NSDictionary 转换成 NSData
 -(NSData *)toJSONData{
     NSData* jsonData = nil;
     @try {

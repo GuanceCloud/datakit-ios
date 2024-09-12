@@ -182,8 +182,10 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     self = [super init];
     if(self){
         self.identifier = identifier;
-        self.width = @(roundf(frame.size.width));
-        self.height = @(roundf(frame.size.height));
+        CGFloat width = roundf(frame.size.width);
+        self.width = width == 0 ? @(frame.size.width):@(width);;
+        CGFloat height = roundf(frame.size.height);
+        self.height = height == 0 ? @(frame.size.height):@(height);
         self.x = @(roundf(CGRectGetMinX(frame)));
         self.y = @(roundf(CGRectGetMinY(frame)));
     }

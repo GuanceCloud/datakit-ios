@@ -61,8 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface PointerInteractionData : FTSRIncrementalData
-@property (nonatomic, assign) int x;
-@property (nonatomic, assign) int y;
+@property (nonatomic, assign) double x;
+@property (nonatomic, assign) double y;
 @property (nonatomic, assign) int pointerId;
 @property (nonatomic, copy) NSString *pointerEventType;
 @property (nonatomic, copy) NSString *pointerType;
