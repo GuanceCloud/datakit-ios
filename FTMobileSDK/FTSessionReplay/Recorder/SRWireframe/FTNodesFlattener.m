@@ -17,7 +17,9 @@
                 [nodes removeObjectAtIndex:idx];
             }
         }];
-        [nodes addObject:node];
+        if (CGRectIntersectsRect(CGRectMake(0, 0,snapShot.viewportSize.width, snapShot.viewportSize.height), node.wireframeRect)){
+            [nodes addObject:node];
+        }
     }
     return nodes;
 }
