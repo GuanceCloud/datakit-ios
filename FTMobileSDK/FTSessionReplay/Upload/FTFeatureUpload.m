@@ -21,7 +21,6 @@
 #import "FTUploadConditions.h"
 #import "FTSegmentJSON.h"
 #import "FTDataStore.h"
-NSString *const FT_IndexInView = @"ft-index-in-view";
 
 @interface FTFeatureUpload()<NSCacheDelegate>{
     pthread_rwlock_t _readWorkLock;
