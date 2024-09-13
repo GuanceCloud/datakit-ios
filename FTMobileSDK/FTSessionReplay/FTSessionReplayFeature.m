@@ -113,7 +113,10 @@
     [self.windowRecorder taskSnapShot:context touchSnapshot:[self.touches takeTouchSnapshot]];
 }
 -(void)dealloc{
-    [self stop];
+    if(self.timer){
+        [self.timer invalidate];
+        self.timer = nil;
+    }
     [[FTModuleManager sharedInstance] removeMessageReceiver:self];
 }
 @end

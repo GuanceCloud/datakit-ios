@@ -63,7 +63,7 @@ NSString *const FTMessageKeySessionHasReplay = @"sr_has_replay";
 }
 
 - (void)removeMessageReceiver:(id<FTMessageReceiver>)receiver{
-    dispatch_async(self.queue, ^{
+    dispatch_sync(self.queue, ^{
         for (NSUInteger i=0; i<self.receiverArray.count; i++) {
             if ([self.receiverArray pointerAtIndex:i] == (__bridge void *)receiver) {
                 [self.receiverArray removePointerAtIndex:i];
