@@ -67,8 +67,10 @@ static dispatch_once_t onceToken;
 }
 - (void)startWithSessionReplayConfig:(FTSessionReplayConfig *)config{
     if(config.sampleRate<=0){
+        FTInnerLogInfo(@"[session-replay] sampleRate: %d",config.sampleRate);
         return;
     }
+    FTInnerLogInfo(@"[session-replay] textPrivacy :%@",FTTextPrivacyStringMap[config.privacy]);
     FTSessionReplayFeature *sessionReplayFeature = [[FTSessionReplayFeature alloc]initWithConfig:config];
     FTFeatureStores *srStore = [self registerFeature:sessionReplayFeature];
     [self.stores setValue:srStore forKey:sessionReplayFeature.name];
@@ -80,6 +82,7 @@ static dispatch_once_t onceToken;
     //    [self.stores setValue:resourceStore forKey:resourcesFeature.name];
     //    [self.features setValue:resourcesFeature forKey:resourcesFeature.name];
     [sessionReplayFeature startWithWriter:srStore.storage.writer resourceWriter:nil resourceDataStore:nil];
+    FTInnerLogInfo(@"[session-replay] initialized success");
 }
 - (FTFeatureStores *)registerFeature:(id<FTRemoteFeature>)feature{
     FTDirectory *directory = [self.coreDirectory createSubdirectoryWithPath:feature.name];

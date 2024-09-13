@@ -84,9 +84,7 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
             [strongSelf.delay increase];
             [strongSelf scheduleNextCycle];
         }else{
-            FTInnerLogDebug(@"-----[%@] Upload Start -----",strongSelf.featureName);
             [strongSelf uploadFile:files parameters:strongSelf.context];
-            FTInnerLogDebug(@"-----[%@] Upload End -----",strongSelf.featureName);
         }
     };
     self.readWork = readWorkItem;
@@ -129,6 +127,7 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
             [strongSelf scheduleNextCycle];
             return;
         }
+        FTInnerLogDebug(@"-----[%@] Upload Start -----",strongSelf.featureName);
         NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
         id<FTReadableFile> file = [mutableFiles firstObject];
         [mutableFiles removeObject:file];
@@ -150,6 +149,7 @@ NSString *const FT_IndexInView = @"ft-index-in-view";
         }else{
             [strongSelf uploadFile:mutableFiles parameters:parameters];
         }
+        FTInnerLogDebug(@"-----[%@] Upload End -----",strongSelf.featureName);
     };
     self.uploadWork = uploadWork;
     dispatch_async(self.queue, uploadWork);

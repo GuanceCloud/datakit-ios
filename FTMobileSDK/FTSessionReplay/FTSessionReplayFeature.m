@@ -23,6 +23,8 @@
 #import "FTSnapshotProcessor.h"
 #import "FTModuleManager.h"
 #import "FTMessageReceiver.h"
+#import "FTLog+Private.h"
+
 @interface FTSessionReplayFeature()<FTMessageReceiver>
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSDictionary *currentRUMContext;
@@ -96,6 +98,7 @@
             [self stop];
         }
         [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
+        FTInnerLogDebug(@"[session-replay] session(id:%@) has replay:%@",message[FT_RUM_KEY_SESSION_ID],(self.isSampled?@"true":@"false"));
     }
     self.currentRUMContext = message;
 }
@@ -118,5 +121,6 @@
         self.timer = nil;
     }
     [[FTModuleManager sharedInstance] removeMessageReceiver:self];
+    FTInnerLogDebug(@"[session-replay] SessionReplayFeature dealloc");
 }
 @end
