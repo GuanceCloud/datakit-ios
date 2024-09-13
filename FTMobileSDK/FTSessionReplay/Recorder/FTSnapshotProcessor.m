@@ -103,8 +103,9 @@
     if(records.count>0){
         FTEnrichedRecord *fullRecord = [[FTEnrichedRecord alloc]initWithContext:viewTreeSnapshot.context records:records];
         // 5.1. 将页面采集情况同步给 RUM-View
-        NSData *data = [self trackRecord:fullRecord];
+        [self trackRecord:fullRecord];
         // 5.2. 数据写入文件
+        NSData *data = [fullRecord toJSONData];
         [self.writer write:data forceNewFile:force];
         // 6.记录本次数据用于与下次数据比较
         self.lastSnapshot = viewTreeSnapshot;
@@ -112,19 +113,17 @@
     }
 }
 
-- (NSData *)trackRecord:(FTEnrichedRecord *)record{
+- (void)trackRecord:(FTEnrichedRecord *)record{
     NSString *key = record.viewID;
     NSDictionary *existingValue = [self.recordsCountByViewID valueForKey:key];
     NSUInteger count = record.records.count;
     if(existingValue!=nil){
         count = [existingValue[FT_RECORDS_COUNT] integerValue] + count;
     }
-    NSData *data = [record toJSONData];
     self.recordsCountByViewID[key] = @{
         FT_RECORDS_COUNT:@(count),
     };
     // TODO: 是否使用协议代理替换单例
     [[FTModuleManager sharedInstance] postMessage:FTMessageKeyRecordsCountByViewID message:[self.recordsCountByViewID mutableCopy]];
-    return data;
 }
 @end

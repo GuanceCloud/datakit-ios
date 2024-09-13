@@ -90,14 +90,14 @@
     }
     if(self.currentRUMContext == nil || ![message[FT_RUM_KEY_SESSION_ID] isEqualToString:self.currentRUMContext[FT_RUM_KEY_SESSION_ID]]){
         self.isSampled = [FTBaseInfoHandler randomSampling:self.sampleRate];
+        if(self.isSampled){
+            [self start];
+        }else{
+            [self stop];
+        }
+        [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
     }
     self.currentRUMContext = message;
-    if(self.isSampled){
-        [self start];
-    }else{
-        [self stop];
-    }
-    [[FTModuleManager sharedInstance] postMessage:FTMessageKeySessionHasReplay message:@{FT_SESSION_HAS_REPLAY:@(self.isSampled)}];
 }
 - (void)captureNextRecord{
     NSString *viewID = self.currentRUMContext[FT_KEY_VIEW_ID];
