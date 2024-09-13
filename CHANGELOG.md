@@ -1,3 +1,8 @@
+# 1.6.0-alpha.2
+1. Session Replay 显示细节优化，text 隐私权限显示效果修改
+2. 修复 CGColor 释放导致的闪退问题
+3. 修复 launch_cold 丢失问题
+___
 # 1.6.0-alpha.1
 1. 新增 Session Replay 功能
 2. RUM-View 自动采集逻辑优化，修复 View 采集中断缺失问题
