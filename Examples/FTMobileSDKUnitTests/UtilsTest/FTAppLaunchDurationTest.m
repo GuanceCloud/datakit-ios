@@ -111,6 +111,7 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
     dependencies.writer = self;
     dependencies.errorMonitorType = ErrorMonitorAll;
     dependencies.sampleRate = 100;
+    dependencies.appId = @"testAppId";
     FTRUMManager *manager = [[FTRUMManager alloc]initWithRumDependencies:dependencies];
     XCTestExpectation *expectation= [self expectationWithDescription:@"异步操作timeout"];
     self.launchDataBlock = ^(NSString *source, NSDictionary *tags, NSDictionary *fields) {
@@ -119,14 +120,17 @@ typedef void(^LaunchDataBlock)(NSString *source, NSDictionary *tags, NSDictionar
                 case FTLaunchHot:
                     XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_HOT]);
                     XCTAssertTrue([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_APP_ID]);
                     break;
                 case FTLaunchWarm:
                     XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_WARM]);
                     XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_APP_ID]);
                     break;
                 case FTLaunchCold:
                     XCTAssertTrue([tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_LAUNCH_COLD]);
                     XCTAssertFalse([tags.allKeys containsObject:FT_KEY_VIEW_ID]);
+                    XCTAssertTrue([tags.allKeys containsObject:FT_APP_ID]);
                     break;
             }
             [expectation fulfill];
