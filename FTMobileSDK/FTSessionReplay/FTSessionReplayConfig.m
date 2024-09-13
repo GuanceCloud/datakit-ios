@@ -13,7 +13,7 @@
     self = [super init];
     if(self){
         _sampleRate = 100;
-        _privacy = FTSRPrivacyMaskAllText;
+        _privacy = FTSRPrivacyMask;
     }
     return self;
 }

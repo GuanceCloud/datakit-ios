@@ -7,7 +7,7 @@
 //
 
 #import "FTRumSessionReplay.h"
-#import "FTLog.h"
+#import "FTLog+Private.h"
 #import "FTResourcesFeature.h"
 #import "FTFeatureUpload.h"
 #import "FTFileWriter.h"
@@ -17,7 +17,11 @@
 #import "FTSessionReplayFeature.h"
 #import "FTFeatureDataStore.h"
 #import "FTModuleManager.h"
-
+NSString * const FTTextPrivacyStringMap[] = {
+    [FTSRPrivacyAllow] = @"Allow",
+    [FTSRPrivacyMaskUserInput] = @"MaskUserInput",
+    [FTSRPrivacyMask] = @"Mask",
+};
 @interface FTFeatureStores : NSObject
 @property (nonatomic, strong) FTFeatureStorage *storage;
 @property (nonatomic, strong) FTFeatureUpload *upload;

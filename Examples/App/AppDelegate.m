@@ -95,7 +95,7 @@
         [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
         
         FTSessionReplayConfig *srConfig = [[FTSessionReplayConfig alloc]init];
-        srConfig.privacy = FTSRPrivacyMaskNone;
+        srConfig.privacy = FTSRPrivacyAllow;
         srConfig.sampleRate = 100;
         
         [[FTRumSessionReplay sharedInstance] startWithSessionReplayConfig:srConfig];

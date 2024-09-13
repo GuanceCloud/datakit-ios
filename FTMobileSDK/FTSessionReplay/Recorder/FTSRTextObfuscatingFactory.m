@@ -24,49 +24,49 @@
 }
 - (id<FTSRTextObfuscatingProtocol>)inputAndOptionTextObfuscator{
     switch (self.privacy) {
-        case FTSRPrivacyMaskNone:
+        case FTSRPrivacyAllow:
             return [FTNOPTextObfuscator new];
             break;
-        case FTSRPrivacyMaskOnlyInput:
+        case FTSRPrivacyMaskUserInput:
             return [FTFixLengthMaskObfuscator new];
             break;
-        case FTSRPrivacyMaskAllText:
+        case FTSRPrivacyMask:
             return [FTFixLengthMaskObfuscator new];
             break;
     }
 }
 - (id<FTSRTextObfuscatingProtocol>)staticTextObfuscator{
     switch (self.privacy) {
-        case FTSRPrivacyMaskNone:
+        case FTSRPrivacyAllow:
             return [FTNOPTextObfuscator new];
             break;
-        case FTSRPrivacyMaskOnlyInput:
+        case FTSRPrivacyMaskUserInput:
             return [FTNOPTextObfuscator new];
             break;
-        case FTSRPrivacyMaskAllText:
+        case FTSRPrivacyMask:
             return [FTSpacePreservingMaskObfuscator new];
             break;
     }
 }
 - (id<FTSRTextObfuscatingProtocol>)hintTextObfuscator{
     switch (self.privacy) {
-        case FTSRPrivacyMaskNone:
+        case FTSRPrivacyAllow:
             return [FTNOPTextObfuscator new];
             break;
-        case FTSRPrivacyMaskOnlyInput:
+        case FTSRPrivacyMaskUserInput:
             return [FTNOPTextObfuscator new];
             break;
-        case FTSRPrivacyMaskAllText:
+        case FTSRPrivacyMask:
             return [FTFixLengthMaskObfuscator new];
             break;
     }
 }
 - (BOOL)shouldMaskInputElements{
     switch (self.privacy) {
-        case FTSRPrivacyMaskNone:
+        case FTSRPrivacyAllow:
             return NO;
-        case FTSRPrivacyMaskOnlyInput:
-        case FTSRPrivacyMaskAllText:
+        case FTSRPrivacyMaskUserInput:
+        case FTSRPrivacyMask:
             return YES;
     }
 }
