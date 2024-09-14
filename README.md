@@ -20,11 +20,12 @@
 ## 使用文档
  [文档中心](https://docs.guance.com/real-user-monitoring/ios/app-access/)   
 
+## 开源代码使用
 
+* [FTSessionReplay](https://github.com/GuanceCloud/datakit-ios/tree/feature-sessionReplay/FTMobileSDK/FTSessionReplay)  基于 datadog [dd-sdk-ios-session-replay](https://github.com/DataDog/dd-sdk-ios/tree/develop/DatadogSessionReplay) 二次开发
 
-   
+## 第三方 Licenses
 
- 
-
+* Datadog [dd-sdk-ios](https://github.com/DataDog/dd-sdk-ios/blob/develop/LICENSE)
 
 
