@@ -39,7 +39,7 @@
     builder.attributes = attributes;
     builder.wireframeRect = attributes.frame;
     builder.textObfuscator = self.textObfuscator(context);
-    builder.selectedSegmentIndex = @(segment.selectedSegmentIndex);
+    builder.selectedSegmentIndex = context.recorder.privacy.shouldMaskInputElements? nil : @(segment.selectedSegmentIndex);
     if (@available(iOS 13.0, *)) {
         builder.selectedSegmentTintColor = segment.selectedSegmentTintColor;
     }
