@@ -14,14 +14,13 @@
 #include "FTStackInfo.h"
 #include <string.h>
 #include <TargetConditionals.h>
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000  // Xcode 16.0
-#include <sys/_types/_ucontext64.h>
-#endif
+
 static FTCrashNotifyCallback g_onCrashNotify;
 static stack_t g_signalStack = {0};
 static struct sigaction* g_previousSignalHandlers = NULL;
  
 #ifdef __arm64__
+#include <sys/_types/_ucontext64.h>
 typedef ucontext64_t SignalUserContext;
 #define UC_MCONTEXT uc_mcontext64
 #else
