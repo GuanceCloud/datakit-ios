@@ -10,12 +10,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger,FTSRPrivacy){
+    /// 屏蔽所有内容.
+    FTSRPrivacyMask,
     /// 除了敏感输入控件外记录所有内容.
     FTSRPrivacyAllow,
     /// 屏蔽输入元素，但记录所有其他内容.
     FTSRPrivacyMaskUserInput,
-    /// 屏蔽所有内容.
-    FTSRPrivacyMask,
 };
 @interface FTSessionReplayConfig : NSObject
 /// 采样配置，属性值：0至100，100则表示百分百采集，不做数据样本压缩。
