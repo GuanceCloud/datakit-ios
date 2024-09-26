@@ -7,7 +7,7 @@
 //
 
 #import "FTSessionReplayConfig.h"
-
+#import "FTSessionReplayConfig+Private.h"
 @implementation FTSessionReplayConfig
 -(instancetype)init{
     self = [super init];
@@ -16,5 +16,8 @@
         _privacy = FTSRPrivacyMask;
     }
     return self;
+}
+-(void)setAdditionalNodeRecorders:(NSArray<id<FTSRWireframesRecorder>> *)additionalNodeRecorders{
+    _additionalNodeRecorders = additionalNodeRecorders;
 }
 @end

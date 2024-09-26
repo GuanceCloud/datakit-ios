@@ -26,11 +26,14 @@
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @end
 @implementation FTRecorder
--(instancetype)initWithWindowObserver:(FTWindowObserver *)observer snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor resourceProcessor:(FTResourceProcessor *)resourceProcessor{
+-(instancetype)initWithWindowObserver:(FTWindowObserver *)observer
+                    snapshotProcessor:(FTSnapshotProcessor *)snapshotProcessor
+                    resourceProcessor:(FTResourceProcessor *)resourceProcessor
+              additionalNodeRecorders:(NSArray<id <FTSRWireframesRecorder>>*)additionalNodeRecorders;{
     self = [super init];
     if(self){
         _windowObserver = observer;
-        _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]init];
+        _viewSnapShotBuilder = [[FTViewTreeSnapshotBuilder alloc]initWithAdditionalNodeRecorders:additionalNodeRecorders];
         _snapshotProcessor = snapshotProcessor;
         _resourceProcessor = resourceProcessor;
     }

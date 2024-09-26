@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTViewTreeSnapshotBuilder : NSObject
 @property (nonatomic, strong) NSArray<id <FTSRWireframesRecorder>> *recorders;
 - (FTViewTreeSnapshot *)takeSnapshot:(UIView *)rootView context:(FTSRContext *)context;
+-(instancetype)initWithAdditionalNodeRecorders:(nullable NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders;
 @end
 
 NS_ASSUME_NONNULL_END

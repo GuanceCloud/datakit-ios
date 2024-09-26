@@ -37,29 +37,20 @@
 @end
 @implementation FTViewTreeSnapshotBuilder
 -(instancetype)init{
-    self = [super init];
+    return [self initWithAdditionalNodeRecorders:nil];
+}
+-(instancetype)initWithAdditionalNodeRecorders:(NSArray <id <FTSRWireframesRecorder>>*)additionalNodeRecorders{
     if(self){
         _idGen = [[FTSRViewID alloc]init];
         _imageDataProvider = [[FTImageDataUtils alloc]init];
         _viewTreeRecorder = [[FTViewTreeRecorder alloc] init];
-        _viewTreeRecorder.nodeRecorders = @[
-            [FTUnsupportedViewRecorder new],
-            [FTUIViewRecorder new],
-            [FTUILabelRecorder new],
-            [FTUIImageViewRecorder new],
-            [FTUITextFieldRecorder new],
-            [FTUITextViewRecorder new],
-            [FTUISwitchRecorder new],
-            [FTUISliderRecorder new],
-            [FTUISegmentRecorder new],
-            [FTUIStepperRecorder new],
-            [FTUINavigationBarRecorder new],
-            [FTUITabBarRecorder new],
-            [FTUIPickerViewRecorder new],
-            [FTUIDatePickerRecorder new],
-            [FTUIProgressViewRecorder new],
-            [FTUIActivityIndicatorRecorder new],
-        ];
+        if(additionalNodeRecorders.count>0){
+            NSMutableArray<id <FTSRWireframesRecorder>> *recorders = [NSMutableArray arrayWithArray:[self createDefaultNodeRecorders]];
+            [recorders addObjectsFromArray:additionalNodeRecorders];
+            _viewTreeRecorder.nodeRecorders = recorders;
+        }else{
+            _viewTreeRecorder.nodeRecorders = [self createDefaultNodeRecorders];
+        }
     }
     return self;
 }
@@ -79,5 +70,25 @@
     viewTree.nodes = node;
     viewTree.resources = resource;
     return viewTree;
+}
+- (NSArray <id <FTSRWireframesRecorder>> *)createDefaultNodeRecorders{
+    return @[
+        [FTUnsupportedViewRecorder new],
+        [FTUIViewRecorder new],
+        [FTUILabelRecorder new],
+        [FTUIImageViewRecorder new],
+        [FTUITextFieldRecorder new],
+        [FTUITextViewRecorder new],
+        [FTUISwitchRecorder new],
+        [FTUISliderRecorder new],
+        [FTUISegmentRecorder new],
+        [FTUIStepperRecorder new],
+        [FTUINavigationBarRecorder new],
+        [FTUITabBarRecorder new],
+        [FTUIPickerViewRecorder new],
+        [FTUIDatePickerRecorder new],
+        [FTUIProgressViewRecorder new],
+        [FTUIActivityIndicatorRecorder new],
+    ];
 }
 @end

@@ -16,7 +16,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTSessionReplayTouches.h"
 #import "FTWindowObserver.h"
-#import "FTSessionReplayConfig.h"
+#import "FTSessionReplayConfig+Private.h"
 #import "FTTLV.h"
 #import "FTResourceProcessor.h"
 #import "FTResourceWriter.h"
@@ -35,6 +35,7 @@
 @property (nonatomic, strong) FTSessionReplayTouches *touches;
 @property (nonatomic, strong) FTWindowObserver *windowObserver;
 @property (nonatomic, strong) dispatch_queue_t processorsQueue;
+@property (nonatomic, strong) FTSessionReplayConfig *config;
 @end
 @implementation FTSessionReplayFeature
 -(instancetype)initWithConfig:(FTSessionReplayConfig *)config{
@@ -53,6 +54,7 @@
         _performanceOverride = performancePresetOverride;
         _windowObserver = [[FTWindowObserver alloc]init];
         _touches = [[FTSessionReplayTouches alloc]initWithWindowObserver:_windowObserver];
+        _config = config;
         [[FTModuleManager sharedInstance] addMessageReceiver:self];
     }
     return self;
@@ -63,7 +65,7 @@
 //    FTResourceWriter *resource = [[FTResourceWriter alloc]initWithWriter:resourceWriter dataStore:dataStore];
 //    FTResourceProcessor *resourceProcessor = [[FTResourceProcessor alloc]initWithQueue:self.processorsQueue resourceWriter:resource];
     FTSnapshotProcessor *srProcessor = [[FTSnapshotProcessor alloc]initWithQueue:self.processorsQueue writer:writer];
-    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil];
+    FTRecorder *windowRecorder = [[FTRecorder alloc]initWithWindowObserver:self.windowObserver snapshotProcessor:srProcessor resourceProcessor:nil additionalNodeRecorders:self.config.additionalNodeRecorders];
     self.windowRecorder = windowRecorder;
 }
 -(void)start{
