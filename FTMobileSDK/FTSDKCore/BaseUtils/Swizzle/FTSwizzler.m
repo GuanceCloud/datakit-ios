@@ -9,7 +9,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <os/lock.h>
-
+#import "FTLog+Private.h"
 #if !__has_feature(objc_arc)
 #error This code needs ARC. Use compiler option -fobjc-arc
 #endif
@@ -229,9 +229,10 @@ static void swizzle(Class classToSwizzle,
     id newIMPBlock = factoryBlock(swizzleInfo);
     
     const char *methodType = method_getTypeEncoding(method);
-    
-    NSCAssert(blockIsCompatibleWithMethodType(newIMPBlock,methodType),
-              @"Block returned from factory is not compatible with method type.");
+
+    if(!blockIsCompatibleWithMethodType(newIMPBlock,methodType)){
+        FTInnerLogWarning(@"Block returned from factory is not compatible with class(%@) method(%@) type(%s).",classToSwizzle,NSStringFromSelector(selector),methodType);
+    }
     
     IMP newIMP = imp_implementationWithBlock(newIMPBlock);
     
