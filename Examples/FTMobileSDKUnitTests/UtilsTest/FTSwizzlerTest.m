@@ -9,6 +9,10 @@
 #import <XCTest/XCTest.h>
 #import "FTSwizzler.h"
 #import "FTLog+Private.h"
+#import <objc/runtime.h>
+static void *IMP_resolved_method_implementation(void){
+    return nil;
+}
 @protocol FTBaseDelegate <NSObject>
 - (NSString *)baseSring:(NSString *)str;
 @end
@@ -228,5 +232,22 @@
     });
     [self waitForExpectations:@[exception]];
     XCTAssertTrue(times == 1000);
+}
+
+- (void)testSwizzlerWrongMethodType{
+    SubSwizzlerClass *base = [SubSwizzlerClass new];
+    SEL addMethod = NSSelectorFromString(@"playing:");
+    IMP replace = (IMP)IMP_resolved_method_implementation;
+
+    class_addMethod(SubSwizzlerClass.class, addMethod, replace, "^v@:");
+    __block NSString *testStr = @"";
+    FTSwizzlerInstanceMethod(SubSwizzlerClass.class, addMethod, FTSWReturnType(void), FTSWArguments(NSString *str), FTSWReplacement({
+        NSLog(@"[testSwizzlerWrongMethodType] %@",str);
+        testStr = str;
+        FTSWCallOriginal(str);
+    }), FTSwizzlerModeOncePerClassAndSuperclasses, "testSwizzlerWrongMethodType");
+    
+    XCTAssertNoThrow([base performSelector:addMethod withObject:@"test"]);
+    XCTAssertTrue([testStr isEqualToString:@"test"]);
 }
 @end
