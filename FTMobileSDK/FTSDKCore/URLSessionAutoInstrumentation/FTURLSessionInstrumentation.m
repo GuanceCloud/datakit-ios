@@ -35,7 +35,7 @@ static void *const kFTCollectMetricsSelector = (void *)&kFTCollectMetricsSelecto
 @property (nonatomic, strong) FTTracer *tracer;
 @property (atomic, assign, readwrite) BOOL shouldTraceInterceptor;
 @property (atomic, assign, readwrite) BOOL shouldRUMInterceptor;
-@property (nonatomic, assign) NSString *serviceName;
+@property (nonatomic, copy) NSString *serviceName;
 @end
 @implementation FTURLSessionInstrumentation
 

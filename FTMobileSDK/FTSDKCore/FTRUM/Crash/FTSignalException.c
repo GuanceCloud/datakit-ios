@@ -14,7 +14,6 @@
 #include "FTStackInfo.h"
 #include <string.h>
 #include <TargetConditionals.h>
-
 static FTCrashNotifyCallback g_onCrashNotify;
 static stack_t g_signalStack = {0};
 static struct sigaction* g_previousSignalHandlers = NULL;

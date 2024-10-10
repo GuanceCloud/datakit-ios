@@ -145,4 +145,24 @@
     XCTAssertTrue([dictValue[@"date"] isEqualToString:[date description]]);
     XCTAssertTrue([dictValue[@"object"] isEqualToString:[self description]]);
 }
+- (void)testDictionaryCopyProperties_Number{
+    float a = 1.00005;
+    double b = 1.00000000005;
+
+    NSDictionary *dict = @{@"test_float":@(a),
+                           @"test_double":@(b),
+                           @"test_bool":@(YES),
+                           @"test_int":@(2),
+    };
+    NSDictionary *copyDict = [dict ft_deepCopy];
+    XCTAssertFalse(copyDict == dict);
+    XCTAssertTrue([copyDict[@"test_float"] isKindOfClass:NSString.class]);
+    XCTAssertTrue([copyDict[@"test_float"] isEqualToString:@"1.00005"]);
+    XCTAssertTrue([copyDict[@"test_double"] isKindOfClass:NSString.class]);
+    XCTAssertTrue([copyDict[@"test_double"] isEqualToString:@"1.00000000005"]);
+    XCTAssertTrue([copyDict[@"test_bool"] isKindOfClass:NSNumber.class]);
+    XCTAssertTrue([copyDict[@"test_int"] isKindOfClass:NSNumber.class]);
+    XCTAssertTrue([copyDict[@"test_bool"] isEqualToNumber:@(YES)]);
+    XCTAssertTrue([copyDict[@"test_int"] isEqualToNumber:@(2)]);
+}
 @end

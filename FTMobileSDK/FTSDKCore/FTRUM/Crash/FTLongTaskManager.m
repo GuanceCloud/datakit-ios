@@ -18,9 +18,9 @@
 @interface FTLongTaskEvent:NSObject
 @property (nonatomic, assign) BOOL isANR;
 @property (nonatomic, strong) NSDate *startDate;
-@property (nonatomic, strong) NSString *backtrace;
-@property (nonatomic, assign) NSDate *lastDate;
-@property (nonatomic, assign) NSNumber *duration;
+@property (nonatomic, copy) NSString *backtrace;
+@property (nonatomic, strong) NSDate *lastDate;
+@property (nonatomic, strong) NSNumber *duration;
 @property (nonatomic, copy) NSString *appState;
 @property (nonatomic, strong) NSDictionary *view;
 @property (nonatomic, strong) NSDictionary *sessionContext;

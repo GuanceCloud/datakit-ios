@@ -152,14 +152,18 @@
     XCTAssertEqualObjects([falseNum ft_toFieldFormat], @"false");
     XCTAssertEqualObjects([falseNum ft_toFieldIntegerCompatibleFormat], @"false");
 
-    NSNumber *floatNum = [NSNumber numberWithFloat:1234567.12];
-    XCTAssertEqualObjects([floatNum ft_toFieldFormat], @"1234567.1");
-    XCTAssertEqualObjects([floatNum ft_toFieldIntegerCompatibleFormat], @"1234567.1");
+    NSNumber *floatNum = [NSNumber numberWithFloat:1234567.123];
+    XCTAssertEqualObjects([floatNum ft_toFieldFormat], @"1234567.12");
+    XCTAssertEqualObjects([floatNum ft_toFieldIntegerCompatibleFormat], @"1234567.12");
+    XCTAssertEqualObjects([floatNum ft_toTagFormat], @"1234567.12");
 
+    
     NSNumber *doubleNum = [NSNumber numberWithDouble:123456789012345.12345];
-    XCTAssertEqualObjects([doubleNum ft_toFieldFormat], @"123456789012345.1");
-    XCTAssertEqualObjects([doubleNum ft_toFieldIntegerCompatibleFormat], @"123456789012345.1");
+    XCTAssertEqualObjects([doubleNum ft_toFieldFormat], @"123456789012345.12");
+    XCTAssertEqualObjects([doubleNum ft_toFieldIntegerCompatibleFormat], @"123456789012345.12");
+    XCTAssertEqualObjects([doubleNum ft_toTagFormat], @"123456789012345.12");
 
+    
     NSNumber *intNum = [NSNumber numberWithInt:2147483647];
     XCTAssertEqualObjects([intNum ft_toFieldFormat], @"2147483647i");
     XCTAssertEqualObjects([[intNum ft_toFieldIntegerCompatibleFormat] stringValue], @"2147483647");
