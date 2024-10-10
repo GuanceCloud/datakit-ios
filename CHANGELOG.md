@@ -1,3 +1,6 @@
+# 1.6.0-alpha.4
+1. 同 1.5.3
+---
 # 1.6.0-alpha.3
 1. 补充 `UISegment` 选定选项时的背景屏蔽
 2. `FTSessionReplayConfig` 添加 `additionalNodeRecorders` 私有方法，辅助 react-native 自定义视图采集
