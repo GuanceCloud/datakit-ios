@@ -199,7 +199,9 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
         NSString *failureReason =
             [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
              self.type,newWireFrame.type];
-        *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
+        if(error){
+            *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
+        }
         return nil;
     }
     self.clip = [self.clip isEqual:newWireFrame.clip]?nil:newWireFrame.clip;
@@ -271,7 +273,7 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(error){
+    if(*error){
         return nil;
     }
     FTSRShapeWireframe *snapWireframe = (FTSRShapeWireframe *)wire;
@@ -319,7 +321,7 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(error){
+    if(*error){
         return nil;
     }
     FTSRTextWireframe *textWireframe = (FTSRTextWireframe *)wire;
@@ -371,7 +373,7 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(error){
+    if(*error){
         return nil;
     }
     FTSRImageWireframe *imageWireframe = (FTSRImageWireframe *)wire;
@@ -426,7 +428,7 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
         return nil;
     }
     FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
-    if(error){
+    if(*error){
         return nil;
     }
     FTSRPlaceholderWireframe *placeholder = (FTSRPlaceholderWireframe *)wire;
