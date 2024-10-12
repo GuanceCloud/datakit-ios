@@ -12,6 +12,7 @@
 #import "FTViewAttributes.h"
 #import "FTFileWriter.h"
 #import "FTResourceWriter.h"
+#import "FTLog+Private.h"
 
 @interface FTResourceProcessor()
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -33,23 +34,28 @@
         return;
     }
     dispatch_async(self.queue, ^{
-        NSMutableArray *addResource = [NSMutableArray new];
-        if(resources && resources.count>0){
-            [resources enumerateObjectsUsingBlock:^(id<FTSRResource>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSString *identifier = [obj calculateIdentifier];
-                if(![self.processedIdentifiers containsObject:identifier]){
-                    [self.processedIdentifiers addObject:identifier];
-                    FTEnrichedResource *resource = [[FTEnrichedResource alloc]init];
-                    resource.identifier = identifier;
-                    resource.data = [obj calculateData];
-                    resource.appId = context.applicationID;
-                    [addResource addObject:resource];
-                }
-            }];
-        }
-        if(addResource.count>0){
-            // resource 写入逻辑
-            [self.resourceWriter write:addResource];
+        @try {
+            NSMutableArray *addResource = [NSMutableArray new];
+            if(resources && resources.count>0){
+                [resources enumerateObjectsUsingBlock:^(id<FTSRResource>  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSString *identifier = [obj calculateIdentifier];
+                    if(![self.processedIdentifiers containsObject:identifier]){
+                        [self.processedIdentifiers addObject:identifier];
+                        FTEnrichedResource *resource = [[FTEnrichedResource alloc]init];
+                        resource.identifier = identifier;
+                        resource.data = [obj calculateData];
+                        resource.appId = context.applicationID;
+                        [addResource addObject:resource];
+                    }
+                }];
+            }
+            if(addResource.count>0){
+                // resource 写入逻辑
+                [self.resourceWriter write:addResource];
+            }
+            
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
         }
     });
 }

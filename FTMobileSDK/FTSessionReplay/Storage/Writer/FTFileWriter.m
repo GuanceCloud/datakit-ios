@@ -11,6 +11,7 @@
 #import "FTTLV.h"
 #import "FTFile.h"
 #import "FTSRBaseFrame.h"
+#import "FTLog+Private.h"
 @interface FTFileWriter()
 @property (nonatomic, strong) id<FTFilesOrchestratorType> orchestrator;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -29,12 +30,16 @@
 }
 - (void)write:(NSData *)datas forceNewFile:(BOOL)force{
     dispatch_async(self.queue, ^{
-        NSData *data = datas;
-        FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
-        data = [tlv serialize];
-        long long fileSize = data.length;
-        id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize forceNewFile:force];
-        [file append:data];
+        @try {
+            NSData *data = datas;
+            FTTLV *tlv = [[FTTLV alloc]initWithType:1 value:data];
+            data = [tlv serialize];
+            long long fileSize = data.length;
+            id<FTWritableFile> file = [self.orchestrator getWritableFile:fileSize forceNewFile:force];
+            [file append:data];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 @end

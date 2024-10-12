@@ -7,6 +7,7 @@
 //
 
 #import "FTDataReader.h"
+#import "FTLog+Private.h"
 @interface FTDataReader()
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) id<FTReader> fileReader;
@@ -22,13 +23,21 @@
 }
 - (void)markBatchAsRead:(nonnull FTBatch *)batch {
     dispatch_sync(self.queue, ^{
-        [self.fileReader markBatchAsRead:batch];
+        @try {
+            [self.fileReader markBatchAsRead:batch];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 - (nonnull FTBatch *)readBatch:(nonnull id<FTReadableFile>)file { 
     __block FTBatch *batch;
     dispatch_sync(self.queue, ^{
-        batch = [self.fileReader readBatch:file];
+        @try {
+            batch = [self.fileReader readBatch:file];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
     return batch;
 }

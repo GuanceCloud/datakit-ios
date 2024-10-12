@@ -14,6 +14,7 @@
 #import "FTDataReader.h"
 #import "FTFileReader.h"
 #import "FTDataReader.h"
+#import "FTLog+Private.h"
 @interface FTFeatureStorage()
 @property (nonatomic, copy) NSString *featureName;
 @property (nonatomic, strong) FTFilesOrchestrator *authorizedFilesOrchestrator;
@@ -48,12 +49,15 @@
     }
     return _authorizedFilesOrchestrator;
 }
-- (void)clearUnauthorizedData{
-    
-}
+
 - (void)clearAllData{
     dispatch_async(self.queue, ^{
-        [self.directory deleteAllFiles];
+        @try {
+            [self.directory deleteAllFiles];
+        }
+        @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 - (void)setIgnoreFilesAgeWhenReading:(BOOL)ignore{

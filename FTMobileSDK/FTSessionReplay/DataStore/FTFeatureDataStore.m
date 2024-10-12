@@ -11,6 +11,7 @@
 #import "FTDataStoreFileReader.h"
 #import "FTDataStoreFileWriter.h"
 #import "FTFile.h"
+#import "FTLog+Private.h"
 @interface FTFeatureDataStore()
 @property (nonatomic, copy) NSString *feature;
 @property (nonatomic, copy) NSString *directoryPath;
@@ -38,7 +39,11 @@
         if (!strongSelf) {
             return;
         }
-        [strongSelf deleteDataForKey:key];
+        @try {
+            [strongSelf deleteDataForKey:key];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 
@@ -49,7 +54,11 @@
         if (!strongSelf) {
             return;
         }
-        [strongSelf write:value forKey:key version:version];
+        @try {
+            [strongSelf write:value forKey:key version:version];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 
@@ -60,7 +69,11 @@
         if (!strongSelf) {
             return;
         }
-        [strongSelf readDataForKey:key callBack:callback];
+        @try {
+            [strongSelf readDataForKey:key callBack:callback];
+        } @catch (NSException *exception) {
+            FTInnerLogError(@"[Session Replay] EXCEPTION: %@", exception.description);
+        }
     });
 }
 - (void)readDataForKey:(NSString *)key callBack:(DataStoreValueResult)callBack{
