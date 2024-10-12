@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<Adds> *adds;
 @property (nonatomic, strong) NSArray<Removes> *removes;
 @property (nonatomic, strong) NSArray<FTSRWireframe> *updates;
+@property (nonatomic, assign,readonly) BOOL isError;
+
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes;
 - (BOOL)isEmpty;
 @end

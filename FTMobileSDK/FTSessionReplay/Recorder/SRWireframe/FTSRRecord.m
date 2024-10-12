@@ -106,10 +106,15 @@
     return self;
 }
 @end
+@interface MutationData ()
+@property (nonatomic, assign,readwrite) BOOL isError;
+
+@end
 @implementation MutationData
 -(instancetype)init{
     self = [super init];
     if(self){
+        self.isError = NO;
         self.source = 0;
     }
     return self;
@@ -119,6 +124,10 @@
 /// 不同的部分考虑 add\remove
 /// 子序列与子序列位置发生变化，对移动到后面的子序列进行 add\remove 操作
 -(void)createIncrementalSnapshotRecords:(NSArray<FTSRWireframe *>*)newWireframes lastWireframes:(NSArray<FTSRWireframe *>*)lastWireframes{
+    if (newWireframes.firstObject.identifier != lastWireframes.firstObject.identifier) {
+        self.isError = YES;
+        return;
+    }
     NSMutableDictionary<NSNumber*,Sampler*> *table = [[NSMutableDictionary alloc]init];
     NSMutableArray<Removes> *removes = (NSMutableArray<Removes> *)[NSMutableArray new];
     NSMutableArray<Adds> *adds = (NSMutableArray<Adds> *)[NSMutableArray new];
@@ -185,7 +194,12 @@
                 add.wireframe = newWireframes[i];
                 [adds addObject:add];
             }else{
-                FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i]];
+                NSError *error = nil;
+                FTSRWireframe *update = [lastWireframes[indexInOld] compareWithNewWireFrame:newWireframes[i] error:&error];
+                if(error){
+                    self.isError = YES;
+                    return;
+                }
                 if(update){
                     [updates addObject:update];
                 }

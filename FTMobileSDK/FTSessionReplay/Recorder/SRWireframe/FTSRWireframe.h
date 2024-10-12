@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) FTSRContentClip *clip;
 
 -(instancetype)initWithIdentifier:(int)identifier frame:(CGRect)frame;
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame;
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError **)error;
 
 @end
 

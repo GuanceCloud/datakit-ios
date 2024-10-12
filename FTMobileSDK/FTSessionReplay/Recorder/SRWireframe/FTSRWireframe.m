@@ -191,8 +191,15 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
     if ([self isEqual:newWireFrame]){
+        return nil;
+    }
+    if(![newWireFrame.type isEqualToString:self.type]){
+        NSString *failureReason =
+            [NSString stringWithFormat:@"FTSRWireframe validation errors: %@ is not Equal to %@",
+             self.type,newWireFrame.type];
+        *error = [NSError errorWithDomain:@"com.guance.session-replay" code:-100 userInfo:@{NSLocalizedDescriptionKey:failureReason}];
         return nil;
     }
     self.clip = [self.clip isEqual:newWireFrame.clip]?nil:newWireFrame.clip;
@@ -259,11 +266,14 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
     if ([self isEqual:newWireFrame]){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(error){
+        return nil;
+    }
     FTSRShapeWireframe *snapWireframe = (FTSRShapeWireframe *)wire;
     FTSRShapeWireframe *newWire = (FTSRShapeWireframe *)newWireFrame;
     snapWireframe.border = [self.border isEqual:newWire.border]?nil:newWire.border;
@@ -304,11 +314,14 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
     if ([self isEqual:newWireFrame]){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(error){
+        return nil;
+    }
     FTSRTextWireframe *textWireframe = (FTSRTextWireframe *)wire;
     FTSRTextWireframe *newWire = (FTSRTextWireframe *)newWireFrame;
     textWireframe.text = [self.text isEqualToString:newWire.text]?nil:newWire.text;
@@ -353,11 +366,14 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
     if ([self isEqual:newWireFrame]){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(error){
+        return nil;
+    }
     FTSRImageWireframe *imageWireframe = (FTSRImageWireframe *)wire;
     FTSRImageWireframe *newWire = (FTSRImageWireframe *)newWireFrame;
     imageWireframe.mimeType = [self.mimeType isEqualToString:newWire.mimeType]?nil:newWire.mimeType;
@@ -405,11 +421,14 @@ NSString * const FT_DEFAULT_FONT_FAMILY = @"-apple-system, BlinkMacSystemFont, '
     }
     return self;
 }
--(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame{
+-(FTSRWireframe *)compareWithNewWireFrame:(FTSRWireframe *)newWireFrame error:(NSError *__autoreleasing  _Nullable * _Nullable)error{
     if ([self isEqual:newWireFrame]){
         return nil;
     }
-    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame];
+    FTSRWireframe *wire = [super compareWithNewWireFrame:newWireFrame error:error];
+    if(error){
+        return nil;
+    }
     FTSRPlaceholderWireframe *placeholder = (FTSRPlaceholderWireframe *)wire;
     FTSRPlaceholderWireframe *newWire = (FTSRPlaceholderWireframe *)newWireFrame;
     placeholder.label = [self.label isEqualToString:newWire.label]?nil:newWire.label;

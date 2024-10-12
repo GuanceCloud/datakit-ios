@@ -73,7 +73,12 @@
         // 3.2.1.已经存在 view ，进行增量判断，算法比较，获取 增量、减量、更新
         MutationData *mutation = [[MutationData alloc]init];
         [mutation createIncrementalSnapshotRecords:wireframes lastWireframes:self.lastSRWireframes];
-        if(!mutation.isEmpty){
+        // 3.2.2.增量判断时如果发生异常，则不做增量处理，添加一个FullSnapshotRecord
+        if(mutation.isError){
+            FTSRFullSnapshotRecord *fullRecord = [[FTSRFullSnapshotRecord alloc]initWithTimestamp:[viewTreeSnapshot.context.date ft_millisecondTimeStamp]];
+            fullRecord.wireframes = wireframes;
+            [records addObject:fullRecord];
+        }else if(!mutation.isEmpty){
             FTSRIncrementalSnapshotRecord *mutationRecord = [[FTSRIncrementalSnapshotRecord alloc]initWithData:mutation timestamp:[viewTreeSnapshot.date ft_millisecondTimeStamp]];
             [records addObject:mutationRecord];
         }
