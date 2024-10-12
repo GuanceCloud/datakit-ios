@@ -1,3 +1,7 @@
+# 1.6.0-alpha.6
+1. 修复增量快照中 `updates` 数据丢失问题
+2. 优化获取 `keyWindow` 方法
+---
 # 1.6.0-alpha.5
 1. 修复 Wireframes 增量判断时 `unrecognized selector` 崩溃问题
 2. 优化 Session Replay 添加 try Catch 防护
