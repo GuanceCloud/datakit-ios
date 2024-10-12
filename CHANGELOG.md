@@ -1,5 +1,6 @@
 # 1.6.0-alpha.5
 1. 修复 Wireframes 增量判断时 `unrecognized selector` 崩溃问题
+2. 优化 Session Replay 添加 try Catch 防护
 ---
 # 1.6.0-alpha.4
 1. 同 1.5.3
