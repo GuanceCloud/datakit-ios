@@ -16,7 +16,7 @@
     self = [super init];
     if(self){
         _maxFileSize = 4*1024*1024;//4MB
-        _maxDirectorySize = 512*1024*1024;//4MB
+        _maxDirectorySize = 512*1024*1024;//512MB
         _maxFileAgeForWrite = meanFileAge * 0.95;
         _minFileAgeForRead = meanFileAge * 1.05;
         _maxFileAgeForRead = 18 * 60 * 60; // 18 hours
