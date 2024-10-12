@@ -12,9 +12,29 @@
 -(UIWindow *)keyWindow{
     UIApplication *app = [UIApplication sharedApplication];
     if (@available(iOS 13.0, *)){
-        for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
-            if(scene.activationState == UISceneActivationStateForegroundActive){
-                return scene.windows.firstObject;
+        UIScene *foregroundActiveScene;
+        UIScene *foregroundInactiveScene;
+        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if (![scene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
+            if (scene.activationState == UISceneActivationStateForegroundActive) {
+                foregroundActiveScene = scene;
+                break;
+            }
+            if (!foregroundInactiveScene && scene.activationState == UISceneActivationStateForegroundInactive) {
+                foregroundInactiveScene = scene;
+                // no break, we can have the active scene later in the set.
+            }
+        }
+        UIScene *sceneToUse = foregroundActiveScene ? foregroundActiveScene : foregroundInactiveScene;
+        UIWindowScene *windowScene = (UIWindowScene *)sceneToUse;
+        if (@available(iOS 15.0, *)) {
+            return windowScene.keyWindow;
+        }
+        for (UIWindow *window in windowScene.windows) {
+            if (window.isKeyWindow) {
+                return window;
             }
         }
         return nil;
