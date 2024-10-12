@@ -114,7 +114,12 @@
     _imageView.userInteractionEnabled = YES;
     _imageView.frame = CGRectMake(x, y, width, 50);
     _imageView.backgroundColor = [UIColor lightGrayColor];
-    _imageView.image = [UIImage imageNamed:@"order_status_top"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.imageView.image = [UIImage imageNamed:@"order_status_top"];
+    });
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.imageView.image = nil;
+    });
     _imageView.userInteractionEnabled = YES;
     _imageView.accessibilityLabel = @"IMAGE_CLICK";
     [_scrollView addSubview:_imageView];
