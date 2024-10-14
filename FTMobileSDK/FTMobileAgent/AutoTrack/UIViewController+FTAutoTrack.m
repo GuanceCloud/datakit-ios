@@ -19,7 +19,6 @@
 static char *viewLoadStartTimeKey = "viewLoadStartTimeKey";
 static char *viewControllerUUID = "viewControllerUUID";
 static char *viewLoadDuration = "viewLoadDuration";
-static char *ignoredLoad = "ignoredLoad";
 
 @implementation UIViewController (FTAutoTrack)
 -(void)setFt_viewLoadStartTime:(NSDate*)viewLoadStartTime{

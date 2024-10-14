@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 绑定用户信息
 ///
 /// - Parameters:
-///   - Id:  用户Id
+///   - userId:  用户Id
 - (void)bindUserWithUserID:(NSString *)userId;
 
 /// 绑定用户信息
@@ -89,6 +89,9 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - extra: 用户的额外信息
 - (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName userEmail:(nullable NSString *)userEmail extra:(nullable NSDictionary *)extra;
 
+/// 注销当前用户
+- (void)unbindUser;
+
 /// 添加 SDK 全局 tag，作用于 RUM、Log 数据
 /// - Parameter context: 自定义数据
 - (void)appendGlobalContext:(NSDictionary *)context;
@@ -100,9 +103,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 添加 Log 全局 tag，作用于 Log 数据
 /// - Parameter context: 自定义数据
 - (void)appendLogGlobalContext:(NSDictionary *)context;
-
-/// 注销当前用户
-- (void)unbindUser;
 
 /// Track App Extension groupIdentifier 中缓存的数据
 /// - Parameters:
