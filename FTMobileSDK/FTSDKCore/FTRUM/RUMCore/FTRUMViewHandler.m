@@ -61,10 +61,10 @@
     }
     return self;
 }
-- (BOOL)process:(FTRUMDataModel *)model{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
    
     self.needUpdateView = NO;
-    self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model];
+    self.actionHandler =(FTRUMActionHandler *)[self.assistant manage:(FTRUMHandler *)self.actionHandler byPropagatingData:model context:context];
     switch (model.type) {
         case FTRUMDataViewStart:{
             FTRUMViewModel *viewModel = (FTRUMViewModel *)model;
@@ -103,7 +103,7 @@
                 }
                 self.viewErrorCount++;
                 self.needUpdateView = YES;
-                [self writeErrorData:model];
+                [self writeErrorData:model context:context];
             }
             break;
         case FTRUMDataResourceStart:
@@ -115,7 +115,7 @@
             if (self.isActiveView) {
                 self.viewLongTaskCount++;
                 self.needUpdateView = YES;
-                [self writeErrorData:model];
+                [self writeErrorData:model context:context];
             }
             break;
         default:
@@ -124,16 +124,16 @@
     if ([model isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newModel = (FTRUMResourceDataModel *)model;
         FTRUMResourceHandler *handler =  self.resourceHandlers[newModel.identifier];
-        self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model];
+        self.resourceHandlers[newModel.identifier] =[handler.assistant manage:handler byPropagatingData:model context:context];
     }
     
     BOOL hasNoPendingResources = self.resourceHandlers.count == 0;
     BOOL shouldComplete = !self.isActiveView && hasNoPendingResources;
     if (shouldComplete) {
-        [self.actionHandler writeActionData:[NSDate date]];
+        [self.actionHandler writeActionData:[NSDate date] context:context];
     }
     if (self.needUpdateView) {
-        [self writeViewData:model];
+        [self writeViewData:model context:context];
     }
     return !shouldComplete;
 }
@@ -162,9 +162,10 @@
     };
     self.resourceHandlers[model.identifier] =resourceHandler;
 }
-- (void)writeErrorData:(FTRUMDataModel *)model{
+- (void)writeErrorData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionViewTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewTag];
     [tags addEntriesFromDictionary:model.tags];
     NSString *error = model.type == FTRUMDataLongTask?FT_RUM_SOURCE_LONG_TASK :FT_RUM_SOURCE_ERROR;
     [self.rumDependencies.writer rumWrite:error tags:tags fields:model.fields time:model.tm];
@@ -172,7 +173,7 @@
         self.errorHandled();
     }
 }
-- (void)writeViewData:(FTRUMDataModel *)model{
+- (void)writeViewData:(FTRUMDataModel *)model context:(NSDictionary *)context{
     if(self.isInitialView){
         return;
     }
@@ -182,7 +183,8 @@
     //纳秒级
     NSNumber *nTimeSpent = [NSNumber numberWithLongLong:sTimeSpent * 1000000000];
 
-    NSMutableDictionary *sessionViewTag = [NSMutableDictionary dictionaryWithDictionary:[self.context getGlobalSessionViewTags]];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:[self.context getGlobalSessionViewTags]];
     FTMonitorValue *cpu = self.monitorItem.cpu;
     FTMonitorValue *memory = self.monitorItem.memory;
     FTMonitorValue *refreshRateInfo = self.monitorItem.refreshDisplay;
@@ -215,8 +217,8 @@
         [field setValue:self.loading_time forKey:FT_KEY_LOADING_TIME];
     }
     long long time = [self.viewStartTime ft_nanosecondTimeStamp];
-    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:sessionViewTag fields:field time:time];
-    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":sessionViewTag,
+    [self.rumDependencies.writer rumWrite:FT_RUM_SOURCE_VIEW tags:tags fields:field time:time];
+    self.rumDependencies.fatalErrorContext.lastViewContext = @{@"tags":tags,
                                                                @"fields":field,
                                                                @"time":[NSNumber numberWithLongLong:time]
     };

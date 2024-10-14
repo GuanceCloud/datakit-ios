@@ -34,7 +34,7 @@
     return self;
 }
 
-- (BOOL)process:(nonnull FTRUMDataModel *)data {
+- (BOOL)process:(nonnull FTRUMDataModel *)data context:(nonnull NSDictionary *)context{
     if ([data isKindOfClass:FTRUMResourceModel.class]) {
         FTRUMResourceDataModel *newData = (FTRUMResourceDataModel *)data;
         if ([newData.identifier isEqualToString:self.identifier]) {
@@ -43,7 +43,7 @@
                     if (self.resourceHandler) {
                         self.resourceHandler(YES);
                     }
-                    [self writeResourceData:data];
+                    [self writeResourceData:data context:context];
                     return NO;
                 case FTRUMDataResourceStop:{
                     if(data.fields && data.fields.allKeys.count>0){
@@ -55,7 +55,7 @@
                     if(self.errorHandler){
                         self.errorHandler();
                     }
-                    [self writeResourceError:data];
+                    [self writeResourceError:data context:context];
                 }
                     break;
                 case FTRUMDataResourceAbandon:
@@ -71,13 +71,14 @@
 
     return YES;
 }
-- (void)writeResourceError:(FTRUMDataModel *)model{
+- (void)writeResourceError:(FTRUMDataModel *)model context:(NSDictionary *)context{
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:model.tags];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ERROR tags:tags fields:model.fields time:model.tm];
 }
-- (void)writeResourceData:(FTRUMDataModel *)data{
+- (void)writeResourceData:(FTRUMDataModel *)data context:(NSDictionary *)context{
     FTRUMResourceDataModel *model = (FTRUMResourceDataModel *)data;
     NSMutableDictionary *fields = [NSMutableDictionary new];
     if(self.resourceProperty && self.resourceProperty.allKeys.count>0){
@@ -97,7 +98,8 @@
         [fields setValue:model.metrics.resource_trans forKey:FT_KEY_RESOURCE_TRANS];
     }
     NSDictionary *sessionTag = [self.context getGlobalSessionViewActionTags];
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionTag];
     [tags addEntriesFromDictionary:data.tags];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_RESOURCE tags:tags fields:fields time:[self.time ft_nanosecondTimeStamp]];
 }
