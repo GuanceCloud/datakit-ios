@@ -229,18 +229,10 @@ static dispatch_once_t onceToken;
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerProperty]];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
         [tagDict setValue:status forKey:FT_KEY_STATUS];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
-        }
-        if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumProperty]];
-            if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
-                NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-                [tagDict addEntriesFromDictionary:rumTag];
-            }
         }
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;

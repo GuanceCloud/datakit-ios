@@ -71,7 +71,9 @@ static FTExtensionManager *sharedInstance = nil;
     if(loggerConfig){
         self.loggerConfig = loggerConfig;
         self.logLevelFilterSet = [NSSet setWithArray:loggerConfig.logLevelFilter];
-        [FTLogger startWithEnablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+        [FTLogger startWithEnablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog
+                                  enableLinkRumData:loggerConfig.enableLinkRumData
+                                     logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
