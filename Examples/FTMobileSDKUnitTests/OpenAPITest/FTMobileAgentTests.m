@@ -298,6 +298,29 @@
     XCTAssertTrue([config.globalContext[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext_mutable"]);
     XCTAssertTrue([context[@"testGlobalContext_mutable"] isEqualToString:@"testGlobalContext"]);
 }
+- (void)testAppendGlobalContext{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    config.enableSDKDebugLog = YES;
+    config.autoSync = NO;
+    config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] appendGlobalContext:@{@"append_global":@"testAppendGlobalContext"}];
+    [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[FT_OPDATA];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
+    XCTAssertTrue([tags[@"append_global"] isEqualToString:@"testAppendGlobalContext"]);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
 - (void)testSyncSleepTimeScope{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
     config.syncSleepTime = -1;

@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - Id:  用户Id
 ///   - userName: 用户名称
-///   - userEmailL: 用户邮箱
+///   - userEmail: 用户邮箱
 - (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName userEmail:(nullable NSString *)userEmail;
 /// 绑定用户信息
 ///
@@ -88,6 +88,18 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - userEmail: 用户邮箱
 ///   - extra: 用户的额外信息
 - (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName userEmail:(nullable NSString *)userEmail extra:(nullable NSDictionary *)extra;
+
+/// 添加 SDK 全局 tag，作用于 RUM、Log 数据
+/// - Parameter context: 自定义数据
+- (void)appendGlobalContext:(NSDictionary *)context;
+
+/// 添加 RUM 自定义 tag，作用于 RUM 数据
+/// - Parameter context: 自定义数据
+- (void)appendRUMGlobalContext:(NSDictionary *)context;
+
+/// 添加 Log 全局 tag，作用于 Log 数据
+/// - Parameter context: 自定义数据
+- (void)appendLogGlobalContext:(NSDictionary *)context;
 
 /// 注销当前用户
 - (void)unbindUser;

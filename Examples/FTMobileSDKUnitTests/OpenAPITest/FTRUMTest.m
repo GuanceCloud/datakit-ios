@@ -892,6 +892,34 @@
     XCTAssertTrue([rumConfig.globalContext[@"testRUMGlobalContext_mutable"] isEqualToString:@"testRUMGlobalContext_mutable"]);
     XCTAssertTrue([context[@"testRUMGlobalContext_mutable"] isEqualToString:@"testRUMGlobalContext"]);
 }
+- (void)testAppendRUMGlobalContext{
+    FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserAction = YES;
+    rumConfig.globalContext = @{@"track_id":@"testGlobalTrack"};
+    [FTMobileAgent startWithConfigOptions:config];
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] appendRUMGlobalContext:@{@"append_global":@"testAppendRUMGlobalContext"}];
+    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    
+    [FTModelHelper startView];
+    [self addErrorData:nil];
+    
+    [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [newArray lastObject];
+    NSDictionary *dict =  [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSString *op = dict[@"op"];
+    XCTAssertTrue([op isEqualToString:@"RUM"]);
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags = opdata[FT_TAGS];
+    XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
+    NSString *custom_keys = tags[@"custom_keys"];
+    NSArray *keys = [NSJSONSerialization JSONObjectWithData:[custom_keys dataUsingEncoding:kCFStringEncodingUTF8] options:0 error:nil];
+    XCTAssertTrue(keys.count == 2);
+    XCTAssertTrue([keys containsObject:@"append_global"]);
+    XCTAssertTrue([keys containsObject:@"track_id"]);
+}
 #pragma mark ========== Property ==========
 - (void)testActionProperty{
     [self setRumConfig];

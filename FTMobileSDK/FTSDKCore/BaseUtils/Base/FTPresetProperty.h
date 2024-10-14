@@ -17,10 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FTPresetProperty : NSObject
 /// 应用唯一 ID
 @property (nonatomic, copy) NSString *appID;
-/// 用户设置的 logger globalContext
-@property (nonatomic, strong) NSDictionary *logContext;
-/// 用户设置的 rum globalContext
-@property (nonatomic, strong) NSDictionary *rumContext;
 /// 读写保护的用户信息
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, copy) NSString *sdkVersion;
@@ -53,12 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - status: 事件等级和状态
 - (NSDictionary *)loggerProperty;
-/// 重新设置 SDK 配置项
-/// - Parameter version: 版本号
-/// - Parameter env: 环境
-/// - Parameter service: 服务
-/// - Parameter globalContext: 全局自定义属性
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
+
+- (void)appendGlobalContext:(NSDictionary *)context;
+
+- (void)appendRUMGlobalContext:(NSDictionary *)context;
+
+- (void)appendLogGlobalContext:(NSDictionary *)context;
 @end
 
 NS_ASSUME_NONNULL_END

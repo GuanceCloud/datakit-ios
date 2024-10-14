@@ -94,7 +94,7 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
         _rumConfig = [rumConfigOptions copy];
         [self.presetProperty setAppID:_rumConfig.appid];
-        self.presetProperty.rumContext = _rumConfig.globalContext;
+        [self.presetProperty appendRUMGlobalContext:_rumConfig.globalContext];
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -105,7 +105,7 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
-        self.presetProperty.logContext = _loggerConfig.globalContext;
+        [self.presetProperty appendLogGlobalContext:_loggerConfig.globalContext];
         [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
@@ -165,6 +165,31 @@ static dispatch_once_t onceToken;
         [value updateUser:Id name:userName email:userEmail extra:safeExtra];
     }];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
+}
+- (void)appendGlobalContext:(NSDictionary *)context{
+    if(!context){
+        FTInnerLogWarning(@"appendGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [self.presetProperty appendGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
+}
+- (void)appendRUMGlobalContext:(NSDictionary *)context{
+    if(!context){
+        FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [self.presetProperty appendRUMGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
+   
+}
+- (void)appendLogGlobalContext:(NSDictionary *)context{
+    if(!context){
+        FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [self.presetProperty appendLogGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendLogGlobalContext : %@",safeDict);
 }
 //用户注销
 - (void)logout{

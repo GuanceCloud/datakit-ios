@@ -99,10 +99,12 @@ static NSString * const FT_VERSION = @"version";
 @property (nonatomic, strong) MobileDevice *mobileDevice;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
-@property (nonatomic, strong) NSDictionary *context;
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @property (nonatomic, copy) NSString *service;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalContext;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalRUMContext;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalLogContext;
 @end
 @implementation FTPresetProperty
 - (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
@@ -112,8 +114,11 @@ static NSString * const FT_VERSION = @"version";
         _env = env;
         _service = service;
         _mobileDevice = [[MobileDevice alloc]init];
-        _context = globalContext;
         _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
+        _globalContext = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        _globalRUMContext = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        _globalLogContext = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        [self appendGlobalContext:globalContext];
     }
     return self;
 }
@@ -131,30 +136,14 @@ static NSString * const FT_VERSION = @"version";
     }
     return _baseCommonPropertyTags;
 }
--(void)setRumContext:(NSDictionary *)rumContext{
-    if (rumContext) {
-        NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:rumContext];
-        NSArray *allKeys = rumContext.allKeys;
-        if (allKeys && allKeys.count>0) {
-            [tags setValue:[FTJSONUtil convertToJsonDataWithObject:allKeys] forKey:@"custom_keys"];
-        }
-        _rumContext = tags;
-    }
-}
 - (NSDictionary *)loggerProperty{
     NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag addEntriesFromDictionary:self.context];
-    [tag addEntriesFromDictionary:self.logContext];
+    [tag addEntriesFromDictionary:self.globalContext.currentValue];
+    [tag addEntriesFromDictionary:self.globalLogContext.currentValue];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:self.env forKey:FT_ENV];
     return tag;
-}
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
-    self.version = version;
-    self.env = env;
-    self.service = service;
-    self.context = [globalContext copy];
 }
 - (NSMutableDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -189,9 +178,33 @@ static NSString * const FT_VERSION = @"version";
 }
 - (NSDictionary *)rumDynamicProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict addEntriesFromDictionary:self.context];
-    [dict addEntriesFromDictionary:self.rumContext];
+    [dict addEntriesFromDictionary:self.globalContext.currentValue];
+    [dict addEntriesFromDictionary:self.globalRUMContext.currentValue];
     return dict;
+}
+- (void)appendGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        [self.globalContext concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+        }];
+    }
+}
+- (void)appendRUMGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        [self.globalRUMContext concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+            NSMutableArray *allKeys = [NSMutableArray arrayWithArray:value.allKeys];
+            [allKeys removeObject:@"custom_keys"];
+            [value setValue:[FTJSONUtil convertToJsonDataWithObject:allKeys] forKey:@"custom_keys"];
+        }];
+    }
+}
+- (void)appendLogGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        [self.globalLogContext concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+        }];
+    }
 }
 - (NSString *)isSignInStr{
     return self.userHelper.currentValue.isSignIn?@"T":@"F";

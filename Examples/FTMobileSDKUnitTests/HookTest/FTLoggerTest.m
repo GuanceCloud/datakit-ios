@@ -302,6 +302,25 @@
 
     [[FTMobileAgent sharedInstance] shutDown];
 }
+- (void)testAppendLogGlobalContext{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableCustomLog = YES;
+    loggerConfig.globalContext = @{@"logger_id":@"logger_id_1"};
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [[FTMobileAgent sharedInstance] appendLogGlobalContext:@{@"append_logger":@"logger_id_2"}];
+    [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [newDatas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *op = dict[@"opdata"];
+    NSDictionary *tags = op[FT_TAGS];
+    XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
+    XCTAssertTrue([tags[@"append_logger"] isEqualToString:@"logger_id_2"]);
+    [[FTMobileAgent sharedInstance] shutDown];
+}
 - (void)testLogger_Property{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
