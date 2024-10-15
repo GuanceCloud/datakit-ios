@@ -797,14 +797,12 @@
 			isa = PBXGroup;
 			children = (
 				1763BD6C29DFF04F009EE026 /* FTNetworkManager.h */,
-				1763BD6D29DFF04F009EE026 /* FTReachability.m */,
 				1763BD6E29DFF04F009EE026 /* FTRequest.m */,
 				1763BD6F29DFF04F009EE026 /* FTNetworkInfoManager.h */,
 				1763BD8329DFF04F009EE026 /* FTTrackerEventDBTool.h */,
 				1763BD7029DFF04F009EE026 /* FTTrackerEventDBTool.m */,
 				1763BD7129DFF04F009EE026 /* FTRequestBody.h */,
 				1763BD7329DFF04F009EE026 /* FTRequest.h */,
-				1763BD7429DFF04F009EE026 /* FTReachability.h */,
 				1763BD7529DFF04F009EE026 /* FTNetworkManager.m */,
 				1763BD7629DFF04F009EE026 /* fmdb */,
 				1763BD8229DFF04F009EE026 /* FTNetworkInfoManager.m */,
@@ -998,6 +996,8 @@
 		17E4CAFA29CD42DA005C2D99 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				1763BD6D29DFF04F009EE026 /* FTReachability.m */,
+				1763BD7429DFF04F009EE026 /* FTReachability.h */,
 				17402E182BAD8F8C00DE3176 /* FTLog */,
 				1776073429D1416200D17137 /* FTUserInfo.h */,
 				1776073529D1416200D17137 /* FTUserInfo.m */,
