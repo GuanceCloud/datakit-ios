@@ -108,9 +108,9 @@ static NSString * const FT_VERSION = @"version";
 @property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalLogContext;
 @end
 @implementation FTPresetProperty
+static FTPresetProperty *sharedInstance = nil;
+static dispatch_once_t onceToken;
 + (instancetype)sharedInstance{
-    static FTPresetProperty *sharedInstance = nil;
-    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[FTPresetProperty alloc]init];
     });
@@ -131,6 +131,7 @@ static NSString * const FT_VERSION = @"version";
     _version = version;
     _env = env;
     _service = service;
+    _sdkVersion = sdkVersion;
     [self appendGlobalContext:globalContext];
 }
 -(NSDictionary *)baseCommonPropertyTags{
@@ -149,11 +150,15 @@ static NSString * const FT_VERSION = @"version";
 }
 - (NSDictionary *)loggerProperty{
     NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag addEntriesFromDictionary:self.globalContext.currentValue];
-    [tag addEntriesFromDictionary:self.globalLogContext.currentValue];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:self.env forKey:FT_ENV];
+    return tag;
+}
+- (NSDictionary *)loggerDynamicProperty{
+    NSMutableDictionary *tag = [NSMutableDictionary new];
+    [tag addEntriesFromDictionary:self.globalContext.currentValue];
+    [tag addEntriesFromDictionary:self.globalLogContext.currentValue];
     return tag;
 }
 - (NSMutableDictionary *)rumProperty{
@@ -653,5 +658,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return  [NSString stringWithFormat:@"%ld.%ld.%ld",major,minor,patch];
 }
 #endif
+
+- (void)shutDown{
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end
 

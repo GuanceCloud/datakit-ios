@@ -74,6 +74,7 @@ static FTExtensionManager *sharedInstance = nil;
         [FTLogger startWithEnablePrintLogsToConsole:loggerConfig.printCustomLogToConsole enableCustomLog:loggerConfig.enableCustomLog
                                   enableLinkRumData:loggerConfig.enableLinkRumData
                                      logLevelFilter:loggerConfig.logLevelFilter sampleRate:loggerConfig.samplerate writer:self];
+        [FTLogger sharedInstance].linkRumDataProvider = self.rumManager;
     }
 }
 - (void)startRumWithConfigOptions:(FTRumConfig *)rumConfigOptions{
@@ -115,11 +116,7 @@ static FTExtensionManager *sharedInstance = nil;
         NSMutableDictionary *tagDict = @{
             @"extension_identifier":bundleIdentifier,
         }.mutableCopy;
-        if (self.loggerConfig.enableLinkRumData) {
-            NSDictionary *rumTag = [self.rumManager getCurrentSessionInfo];
-            [tagDict addEntriesFromDictionary:rumTag];
-        }
-        
+        [tagDict addEntriesFromDictionary:tags];
         FTInnerLogDebug(@"%@\n",@{@"type":FT_LOGGER_SOURCE,
                              @"tags":tagDict,
                              @"content":newContent

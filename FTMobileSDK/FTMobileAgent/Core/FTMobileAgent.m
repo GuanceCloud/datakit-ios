@@ -98,7 +98,9 @@ static dispatch_once_t onceToken;
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[_rumConfig convertToDictionary]];
-        [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
+        if (_loggerConfig) {
+            [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
+        }
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
@@ -290,6 +292,7 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTPresetProperty sharedInstance] shutDown];
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];

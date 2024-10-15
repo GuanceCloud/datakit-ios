@@ -46,12 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - status: 事件等级和状态
 - (NSDictionary *)loggerProperty;
+- (NSDictionary *)loggerDynamicProperty;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
 
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
+
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

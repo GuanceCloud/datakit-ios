@@ -109,7 +109,7 @@ static dispatch_once_t onceToken;
 }
 - (void)_log:(NSString *)content async:(BOOL)async status:(NSString *)status property:(nullable NSDictionary *)property{
     NSMutableDictionary *context = [NSMutableDictionary dictionary];
-    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
+    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
     if(self.enableLinkRumData){
         [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
         [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
