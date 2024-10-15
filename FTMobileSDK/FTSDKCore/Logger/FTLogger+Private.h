@@ -9,11 +9,11 @@
 #import "FTLogger.h"
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
-#import "FTLinkRumDataProtocol.h"
+#import "FTLinkRumDataProvider.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLogger ()
-@property (nonatomic, weak) id<FTLinkRumDataProtocol> linkRumDataProvider;
+@property (nonatomic, weak) id<FTLinkRumDataProvider> linkRumDataProvider;
 /// 在SDK启动时调用，开启 Logger
 /// - Parameters:
 ///   - enable: 是否需要输出到控制台

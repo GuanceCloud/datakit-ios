@@ -11,7 +11,7 @@
 #import "FTErrorDataProtocol.h"
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"
-#import "FTLinkRumDataProtocol.h"
+#import "FTLinkRumDataProvider.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
     /// 预启动，在APP启动前，系统进行了预加载
     FTLaunchWarm
 };
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProtocol>
+@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
