@@ -10,6 +10,7 @@
 #import "FTMobileAgent+Private.h"
 #import "FTConstants.h"
 #import "FTPresetProperty.h"
+#import "FTMobileAgentVersion.h"
 @interface PerformanceBaseTest : XCTestCase
 
 @end
@@ -24,7 +25,9 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
+    [[FTPresetProperty sharedInstance] startWithVersion:config.version sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
+                                         
     [self measureBlock:^{
       [presetProperty rumProperty];
     }];
@@ -33,7 +36,8 @@
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     NSString *url = [processInfo environment][@"ACCESS_SERVER_URL"];
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:url];
-    FTPresetProperty  *presetProperty = [[FTPresetProperty alloc]initWithVersion:config.version env:config.env service:config.service globalContext:config.globalContext];
+    [[FTPresetProperty sharedInstance] startWithVersion:config.version sdkVersion:SDK_VERSION env:config.env service:config.service globalContext:config.globalContext];
+    FTPresetProperty  *presetProperty = [FTPresetProperty sharedInstance];
     [self measureBlock:^{
          [presetProperty loggerProperty];
     }];
