@@ -1,3 +1,6 @@
+# 1.5.4-alpha.2
+1. 优化动态 tags 赋值的时机
+---
 # 1.5.4-alpha.1
 1. 添加全局、log、RUM globalContext 属性动态设置方式
 ---
