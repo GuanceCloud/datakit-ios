@@ -15,6 +15,7 @@
 #import "FTSDKCompat.h"
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTEnumConstant.h"
+#import "FTPresetProperty.h"
 
 void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 
@@ -25,14 +26,18 @@ void *FTLoggerQueueIdentityKey = &FTLoggerQueueIdentityKey;
 @property (nonatomic, strong) NSSet *logLevelFilterSet;
 @property (nonatomic, assign) BOOL enableCustomLog;
 @property (nonatomic, strong) dispatch_queue_t loggerQueue;
-
+@property (nonatomic, assign) BOOL enableLinkRumData;
 @end
 @implementation FTLogger
 static FTLogger *sharedInstance = nil;
 static dispatch_once_t onceToken;
-+ (void)startWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
++ (void)startWithEnablePrintLogsToConsole:(BOOL)enable
+                          enableCustomLog:(BOOL)enableCustomLog
+                        enableLinkRumData:(BOOL)enableLinkRumData
+                           logLevelFilter:(NSArray<NSNumber*>*)filter
+                               sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[FTLogger alloc] initWithEnablePrintLogsToConsole:enable enableCustomLog:enableCustomLog logLevelFilter:filter sampleRate:sampleRate writer:writer];
+        sharedInstance = [[FTLogger alloc] initWithEnablePrintLogsToConsole:enable enableCustomLog:enableCustomLog enableLinkRumData:enableLinkRumData logLevelFilter:filter sampleRate:sampleRate writer:writer];
     });
 }
 + (instancetype)sharedInstance {
@@ -41,7 +46,11 @@ static dispatch_once_t onceToken;
     }
     return sharedInstance;
 }
--(instancetype)initWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate writer:(id<FTLoggerDataWriteProtocol>)writer{
+-(instancetype)initWithEnablePrintLogsToConsole:(BOOL)enable
+                                enableCustomLog:(BOOL)enableCustomLog
+                              enableLinkRumData:(BOOL)enableLinkRumData
+                                 logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampleRate
+                                         writer:(id<FTLoggerDataWriteProtocol>)writer{
     self = [super init];
     if(self){
         _printLogsToConsole = enable;
@@ -49,6 +58,7 @@ static dispatch_once_t onceToken;
         _sampleRate = sampleRate;
         _logLevelFilterSet = [NSSet setWithArray:filter];
         _enableCustomLog = enableCustomLog;
+        _enableLinkRumData = enableLinkRumData;
         _loggerQueue = dispatch_queue_create("com.guance.logger", DISPATCH_QUEUE_SERIAL);
         dispatch_queue_set_specific(_loggerQueue,FTLoggerQueueIdentityKey, &FTLoggerQueueIdentityKey, NULL);
     }
@@ -98,6 +108,16 @@ static dispatch_once_t onceToken;
     [self log:content statusType:StatusOk property:property];
 }
 - (void)_log:(NSString *)content async:(BOOL)async status:(NSString *)status property:(nullable NSDictionary *)property{
+    NSMutableDictionary *context = [NSMutableDictionary dictionary];
+    [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
+    if(self.enableLinkRumData){
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+        if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getCurrentSessionInfo)]) {
+            NSDictionary *rumTag = [self.linkRumDataProvider getCurrentSessionInfo];
+            [context addEntriesFromDictionary:rumTag];
+        }
+    }
     dispatch_block_t logBlock = ^{
         // 上传 datakit
         if(self.loggerWriter && [self.loggerWriter respondsToSelector:@selector(logging:status:tags:field:time:)]){
@@ -107,7 +127,7 @@ static dispatch_once_t onceToken;
             }
             NSString *newContent = [content ft_subStringWithCharacterLength:FT_LOGGING_CONTENT_SIZE];
 
-            [self.loggerWriter logging:newContent status:status tags:nil field:property time:[NSDate ft_currentNanosecondTimeStamp]];
+            [self.loggerWriter logging:newContent status:status tags:context field:property time:[NSDate ft_currentNanosecondTimeStamp]];
         }else{
             FTInnerLogError(@"SDK configuration error, unable to collect custom logs");
         }

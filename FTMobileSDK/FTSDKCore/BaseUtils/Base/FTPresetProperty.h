@@ -23,38 +23,38 @@ NS_ASSUME_NONNULL_BEGIN
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
-+ (NSString*)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
++ (NSString *)CPUArchForMajor:(cpu_type_t)majorCode minor:(cpu_subtype_t)minorCode;
 #if FT_MAC
 + (NSString *)getDeviceUUID;
 + (NSString *)macOSdeviceModel;
 + (NSString *)macOSSystermVersion;
 #endif
-
++ (instancetype)sharedInstance;
 /// 初始化方法
 /// - Parameter version: 版本号
+/// - Parameter sdkVersion: SDK 版本号
 /// - Parameter env: 环境
 /// - Parameter service: 服务
 /// - Parameter globalContext: 全局自定义属性
-- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
-/// 禁用 init 初始化
-- (instancetype)init NS_UNAVAILABLE;
-
-/// 禁用 new 初始化
-+ (instancetype)new NS_UNAVAILABLE;
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext;
 
 /// 获取 Rum ES 公共Tag
 - (NSMutableDictionary *)rumProperty;
+- (NSMutableDictionary *)rumWebViewProperty;
 - (NSDictionary *)rumDynamicProperty;
 /// 获取 logger 数据公共 Tag
 /// - Parameters:
 ///   - status: 事件等级和状态
 - (NSDictionary *)loggerProperty;
+- (NSDictionary *)loggerDynamicProperty;
 
 - (void)appendGlobalContext:(NSDictionary *)context;
 
 - (void)appendRUMGlobalContext:(NSDictionary *)context;
 
 - (void)appendLogGlobalContext:(NSDictionary *)context;
+
+- (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END

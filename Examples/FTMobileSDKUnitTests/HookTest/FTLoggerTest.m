@@ -189,7 +189,7 @@
     XCTAssertTrue(serviceName.length>0);
     [[FTMobileAgent sharedInstance] shutDown];
 }
-- (void)testEnableLinkRumData{
+- (void)testEnableLinkRumData_setLoggerFirst{
     [self setRightSDKConfig];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableLinkRumData = YES;
@@ -212,6 +212,29 @@
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
     [[FTMobileAgent sharedInstance] shutDown];
 
+}
+- (void)testEnableLinkRumData_setRUMFirst{
+    [self setRightSDKConfig];
+    FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
+    loggerConfig.enableLinkRumData = YES;
+    loggerConfig.enableCustomLog = YES;
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
+    rumConfig.enableTraceUserView = YES;
+    [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
+    [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
+    [FTModelHelper startView];
+    [[FTMobileAgent sharedInstance] logging:@"testEnableLinkRumData" status:FTStatusInfo];
+
+    [[FTMobileAgent sharedInstance] syncProcess];
+    [[FTTrackDataManager sharedInstance] insertCacheToDB];
+    NSArray *datas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
+    FTRecordModel *model = [datas lastObject];
+    NSDictionary *dict = [FTJSONUtil dictionaryWithJsonString:model.data];
+    NSDictionary *opdata = dict[@"opdata"];
+    NSDictionary *tags =opdata[FT_TAGS];
+    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
+    XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
+    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testDisableLinkRumData{
     [self setRightSDKConfig];

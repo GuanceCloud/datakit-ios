@@ -9,9 +9,11 @@
 #import "FTLogger.h"
 #import "FTEnumConstant.h"
 #import "FTLoggerDataWriteProtocol.h"
+#import "FTLinkRumDataProvider.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FTLogger ()
+@property (nonatomic, weak) id<FTLinkRumDataProvider> linkRumDataProvider;
 /// 在SDK启动时调用，开启 Logger
 /// - Parameters:
 ///   - enable: 是否需要输出到控制台
@@ -19,7 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///   - filter: 日志过滤规则
 ///   - sampletRate: 采集率
 ///   - writer: 数据写入对象
-+ (void)startWithEnablePrintLogsToConsole:(BOOL)enable enableCustomLog:(BOOL)enableCustomLog logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate writer:(id<FTLoggerDataWriteProtocol>)writer;
++ (void)startWithEnablePrintLogsToConsole:(BOOL)enable
+                          enableCustomLog:(BOOL)enableCustomLog
+                        enableLinkRumData:(BOOL)enableLinkRumData
+                           logLevelFilter:(NSArray<NSNumber*>*)filter sampleRate:(int)sampletRate
+                                   writer:(id<FTLoggerDataWriteProtocol>)writer;
 
 /// 日志传入
 /// - Parameters:

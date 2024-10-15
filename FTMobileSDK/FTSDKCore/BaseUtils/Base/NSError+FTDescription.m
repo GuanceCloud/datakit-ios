@@ -53,7 +53,7 @@
         case NSURLErrorClientCertificateRejected: return @"A server certificate was rejected.";
         case NSURLErrorClientCertificateRequired: return @"A client certificate was required to authenticate an SSL connection during a connection request.";
         case NSURLErrorCannotLoadFromNetwork: return @"A specific request to load an item only from the cache couldn't be satisfied.";
-        case NSURLErrorCannotCreateFile: return @"A download task couldn’t create the downloaded file on disk because of an I\/O failure.";
+        case NSURLErrorCannotCreateFile: return @"A download task couldn’t create the downloaded file on disk because of an I/O failure.";
         case NSURLErrorCannotOpenFile: return @"A downloaded file on disk couldn’t be opened.";
         case NSURLErrorCannotCloseFile: return @"A download task couldn’t close the downloaded file on disk.";
         case NSURLErrorCannotWriteToFile: return @"A download task couldn’t write the file to disk.";
