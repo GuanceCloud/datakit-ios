@@ -72,5 +72,10 @@
         return self;
     };
 }
-
+- (FTNetworkInfoManager *(^)(BOOL value))setEnableCompression{
+    return ^(BOOL value) {
+        self->_enableCompression = value;
+        return self;
+    };
+}
 @end
