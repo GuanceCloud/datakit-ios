@@ -326,9 +326,11 @@
     config.syncSleepTime = -1;
     XCTAssertTrue(config.syncSleepTime == 0);
     config.syncSleepTime = 150;
-    XCTAssertTrue(config.syncSleepTime == 100);
+    XCTAssertTrue(config.syncSleepTime == 150);
     config.syncSleepTime = 99;
     XCTAssertTrue(config.syncSleepTime == 99);
+    config.syncSleepTime = 550;
+    XCTAssertTrue(config.syncSleepTime == 500);
 }
 - (void)testSyncPageSizeScope{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
