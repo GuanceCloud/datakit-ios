@@ -241,7 +241,7 @@
     FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:self.appid];
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -273,7 +273,7 @@
     config.autoSync = NO;
     config.globalContext = @{@"testGlobalContext":@"testGlobalContext"};
     [FTMobileAgent startWithConfigOptions:config];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
     loggerConfig.enableCustomLog = YES;
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
@@ -286,7 +286,7 @@
     NSDictionary *op = dict[FT_OPDATA];
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testGlobalContext_mutable{
     NSMutableDictionary *context = @{@"testGlobalContext_mutable":@"testGlobalContext_mutable"}.mutableCopy;
@@ -319,7 +319,7 @@
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"testGlobalContext"] isEqualToString:@"testGlobalContext"]);
     XCTAssertTrue([tags[@"append_global"] isEqualToString:@"testAppendGlobalContext"]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testSyncSleepTimeScope{
     FTMobileConfig *config = [[FTMobileConfig alloc]initWithDatakitUrl:self.url];
@@ -376,7 +376,7 @@
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count>=oldDatas.count);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     
 }
 - (void)testAutoSync_YES{
@@ -407,7 +407,7 @@
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newDatas.count<oldDatas.count);
     [[FTTrackDataManager sharedInstance] removeObserver:self forKeyPath:@"isUploading"];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if([keyPath isEqualToString:@"isUploading"]){
@@ -572,7 +572,7 @@
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:trace];
     
     [tester waitForTimeInterval:0.5];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     NSInteger count = [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertThrows([FTMobileAgent sharedInstance]);
     // 日志不再采集

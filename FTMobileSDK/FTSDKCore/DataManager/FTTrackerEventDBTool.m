@@ -221,6 +221,14 @@ static dispatch_once_t onceToken;
     }];
     return is;
 }
+-(BOOL)deleteAllDatas{
+    __block BOOL is;
+    [self zy_inDatabase:^{
+        NSString *sqlStr = [NSString stringWithFormat:@"DELETE FROM '%@';",FT_DB_TRACE_EVENT_TABLE_NAME];
+        is = [self.db executeUpdate:sqlStr];
+    }];
+    return is;
+}
 //-(BOOL)deleteItemWithId:(long )Id
 //{   __block BOOL is;
 //    [self zy_inDatabase:^{

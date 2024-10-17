@@ -32,6 +32,7 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTTrackerEventDBTool.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -302,6 +303,23 @@ static dispatch_once_t onceToken;
     [[FTLog sharedInstance] shutDown];
     [[FTTrackDataManager sharedInstance] shutDown];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
+}
++ (void)shutDown{
+    if (onceToken == 0 && sharedInstance == nil) {
+        FTInnerLogInfo(@"[SDK] Uninitialized or already shut down");
+    }else{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [sharedInstance shutDown];
+#pragma clang diagnostic pop
+    }
+}
++ (void)clearAllData{
+    if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+        FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
+    }else{
+        FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");
+    }
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

@@ -349,7 +349,7 @@
     
     
     
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testWrongFormat_NOSource{
     NSDictionary *dict = @{

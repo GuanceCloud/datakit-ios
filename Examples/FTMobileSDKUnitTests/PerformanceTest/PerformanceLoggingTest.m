@@ -20,8 +20,8 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTMobileAgent sharedInstance] shutDown];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [FTMobileAgent shutDown];
+    [FTMobileAgent clearAllData];
 }
 - (void)initSDK:(BOOL)enableLinkRumData{
     NSProcessInfo *processInfo = [NSProcessInfo processInfo];

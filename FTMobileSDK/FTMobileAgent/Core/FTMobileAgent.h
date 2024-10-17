@@ -112,11 +112,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 ///  主动同步数据
 - (void)flushSyncData;
+
 /// 关闭 SDK 内正在运行对象
-- (void)shutDown;
++ (void)shutDown;
+
+/// 清除所有尚未上传至服务器的数据
++ (void)clearAllData;
+
 #pragma mark ========== DEPRECATED ==========
 /// 注销当前用户
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -unbindUser 替换");
+
+/// 关闭 SDK 内正在运行对象
+/// 如果 SDK 未初始化，通过 `[[FTMobileAgent sharedInstance] shutDown]` 操作在测试环境会有断言崩溃，建议使用类方法替代 `[FTMobileAgent shutDown]`
+- (void)shutDown DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 +shutDown 替换");
 @end
 
 NS_ASSUME_NONNULL_END
