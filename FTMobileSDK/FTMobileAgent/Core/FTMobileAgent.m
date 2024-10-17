@@ -162,7 +162,10 @@ static dispatch_once_t onceToken;
     [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
-    NSParameterAssert(Id);
+    if(Id == nil || Id.length==0){
+        FTInnerLogError(@"Failed to bind user ! User ID can't be empty");
+        return;
+    }
     NSDictionary *safeExtra = [extra ft_deepCopy];
     [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:safeExtra];
