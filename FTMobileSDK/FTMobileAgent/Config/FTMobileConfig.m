@@ -237,7 +237,7 @@
     }
 }
 -(void)setSyncSleepTime:(int)syncSleepTime{
-    _syncSleepTime = MAX(0, MIN(syncSleepTime, 500));
+    _syncSleepTime = MAX(0, MIN(syncSleepTime, 5000));
 }
 -(void)setSyncPageSize:(int)syncPageSize{
     _syncPageSize = MAX(5, syncPageSize);

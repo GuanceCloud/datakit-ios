@@ -227,7 +227,7 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) BOOL autoSync;
 /// 数据同步时每条请求同步条数,最小值 5 默认：10
 @property (nonatomic, assign) int syncPageSize;
-/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <500
+/// 数据同步时每条请求间隔时间 单位毫秒 0< syncSleepTime <5000
 @property (nonatomic, assign) int syncSleepTime;
 /// 数据同步时是否开启数据整数兼容
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
