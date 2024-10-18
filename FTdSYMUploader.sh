@@ -17,8 +17,6 @@ FT_ENV="common"
 # 配置文件 datakit.conf 中 dataway 的 token
 FT_TOKEN="YOUR_DATAWAY_TOKEN"
 #
-# 脚本默认配置的版本格式为CFBundleShortVersionString,如果你修改默认的版本格式, 请设置此变量。注意：需要确保在此填写的与SDK设置的一致。
-# FT_VERSION=""
 #
 # Debug模式编译是否上传，1＝上传 0＝不上传，默认不上传
 # UPLOAD_DEBUG_SYMBOLS=0
@@ -46,7 +44,7 @@ UPLOAD_ARCHIVE_ONLY=1
 #  - `<datakit_address>`: DataKit 服务的地址，如 `http://localhost:9529`
 #  - `<app_id>`: 对应 RUM 的 `applicationId`
 #  - `<env>`: 对应 RUM 的 `env`
-#  - `<version>`: 对应 RUM 的 `version`
+#  - `<version>`: 应用的 `version` ，`CFBundleShortVersionString`值
 #  - `<dataway_token>`: 配置文件 `datakit.conf` 中 `dataway` 的 token
 #  - `<dSYMBOL_src_dir>`: 待上传的 `dSYMBOL` 文件夹路径
 #

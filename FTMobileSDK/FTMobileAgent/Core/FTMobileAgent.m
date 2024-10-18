@@ -67,8 +67,8 @@ static dispatch_once_t onceToken;
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
             [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
-            
-            [[FTPresetProperty sharedInstance] startWithVersion:config.version
+            NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+            [[FTPresetProperty sharedInstance] startWithVersion:version
                                                      sdkVersion:SDK_VERSION
                                                             env:config.env
                                                         service:config.service

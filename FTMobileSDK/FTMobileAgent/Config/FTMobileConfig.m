@@ -216,7 +216,6 @@
 -(instancetype)init{
     if (self = [super init]) {
         _enableSDKDebugLog = NO;
-        _version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
         _service = FT_DEFAULT_SERVICE_NAME;
         _env = FTEnvStringMap[FTEnvProd];
         _autoSync = YES;
@@ -263,7 +262,6 @@
     options.clientToken = self.clientToken;
     options.enableSDKDebugLog = self.enableSDKDebugLog;
     options.env = self.env;
-    options.version = self.version;
     options.globalContext = self.globalContext;
     options.groupIdentifiers = self.groupIdentifiers;
     options.service = self.service;

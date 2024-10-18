@@ -219,8 +219,8 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, copy) NSString *env;
 /// 设置是否允许 SDK 打印 Debug 日志。
 @property (nonatomic, assign) BOOL enableSDKDebugLog;
-/// 应用版本号。
-@property (nonatomic, copy) NSString *version;
+/// 应用版本号。默认`CFBundleShortVersionString`值
+@property (nonatomic, copy) NSString *version DEPRECATED_MSG_ATTRIBUTE("已废弃，version 将统一使用`CFBundleShortVersionString`值");
 /// 所属业务或服务的名称 默认：df_rum_ios
 @property (nonatomic, copy) NSString *service;
 /// 数据是否进行自动同步上传 默认：YES
