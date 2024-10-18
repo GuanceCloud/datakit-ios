@@ -259,20 +259,20 @@
     [self addLongTaskData:nil];
     [self addResource];
     [self addErrorData:nil];
-    NSDictionary *dict0 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSDictionary *dict0 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
 
     NSString *view_id = dict0[FT_KEY_VIEW_ID];
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
 
     XCTAssertFalse([dict.allKeys containsObject:FT_KEY_VIEW_ID]);
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
     NSString *view_id2 = dict2[FT_KEY_VIEW_ID];
     XCTAssertTrue(view_id2);
     XCTAssertFalse([view_id2 isEqualToString:view_id]);
@@ -297,14 +297,14 @@
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSDictionary *dict = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
     NSString *view_id = dict[FT_KEY_VIEW_ID];
     XCTAssertTrue(view_id);
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
+    NSDictionary *dict2 = [[FTGlobalRumManager sharedInstance].rumManager getLinkRUMData];
     XCTAssertTrue([view_id isEqualToString:dict2[FT_KEY_VIEW_ID]]);
 }
 #pragma mark ========== Resource ==========
@@ -899,26 +899,42 @@
     rumConfig.globalContext = @{@"track_id":@"testGlobalTrack"};
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTMobileAgent sharedInstance] appendRUMGlobalContext:@{@"append_global":@"testAppendRUMGlobalContext"}];
     [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
     
     [FTModelHelper startView];
     [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
-    FTRecordModel *model = [newArray lastObject];
+    NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *model = [array lastObject];
     NSDictionary *dict =  [FTJSONUtil dictionaryWithJsonString:model.data];
     NSString *op = dict[@"op"];
     XCTAssertTrue([op isEqualToString:@"RUM"]);
     NSDictionary *opdata = dict[@"opdata"];
     NSDictionary *tags = opdata[FT_TAGS];
     XCTAssertTrue([[tags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
-    NSString *custom_keys = tags[@"custom_keys"];
+    NSString *custom_keys = tags[FT_RUM_CUSTOM_KEYS];
     NSArray *keys = [NSJSONSerialization JSONObjectWithData:[custom_keys dataUsingEncoding:kCFStringEncodingUTF8] options:0 error:nil];
-    XCTAssertTrue(keys.count == 2);
-    XCTAssertTrue([keys containsObject:@"append_global"]);
+    XCTAssertTrue(keys.count == 1);
     XCTAssertTrue([keys containsObject:@"track_id"]);
+    
+    [FTMobileAgent appendRUMGlobalContext:@{@"append_global":@"testAppendRUMGlobalContext"}];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
+
+    [self addErrorData:nil];
+
+    NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
+    FTRecordModel *newModel = [newArray lastObject];
+    NSDictionary *newDict =  [FTJSONUtil dictionaryWithJsonString:newModel.data];
+    NSDictionary *nopdata = newDict[@"opdata"];
+    NSDictionary *newTags = nopdata[FT_TAGS];
+    XCTAssertTrue([[newTags valueForKey:@"track_id"] isEqualToString:@"testGlobalTrack"]);
+    NSString *ncustom_keys = newTags[FT_RUM_CUSTOM_KEYS];
+    NSArray *newKeys = [NSJSONSerialization JSONObjectWithData:[ncustom_keys dataUsingEncoding:kCFStringEncodingUTF8] options:0 error:nil];
+    XCTAssertTrue(newKeys.count == 2);
+    XCTAssertTrue([newKeys containsObject:@"track_id"]);
+    XCTAssertTrue([newKeys containsObject:@"append_global"]);
+
 }
 #pragma mark ========== Property ==========
 - (void)testActionProperty{
