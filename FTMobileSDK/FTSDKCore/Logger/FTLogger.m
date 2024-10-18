@@ -111,12 +111,11 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *context = [NSMutableDictionary dictionary];
     [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] loggerDynamicProperty]];
     if(self.enableLinkRumData){
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
-        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
-        if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getCurrentSessionInfo)]) {
-            NSDictionary *rumTag = [self.linkRumDataProvider getCurrentSessionInfo];
+        if (self.linkRumDataProvider && [self.linkRumDataProvider respondsToSelector:@selector(getLinkRUMData)]) {
+            NSDictionary *rumTag = [self.linkRumDataProvider getLinkRUMData];
             [context addEntriesFromDictionary:rumTag];
         }
+        [context addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
     }
     dispatch_block_t logBlock = ^{
         // 上传 datakit

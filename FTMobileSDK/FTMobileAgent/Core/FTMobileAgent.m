@@ -93,7 +93,7 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
         _rumConfig = [rumConfigOptions copy];
         [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
-        [[FTPresetProperty sharedInstance] appendRUMGlobalContext:_rumConfig.globalContext];
+        [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -107,7 +107,7 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
-        [[FTPresetProperty sharedInstance] appendLogGlobalContext:_loggerConfig.globalContext];
+        [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
         [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
@@ -245,10 +245,10 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
-        [tagDict setValue:status forKey:FT_KEY_STATUS];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
+        [tagDict setValue:status forKey:FT_KEY_STATUS];
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
@@ -278,12 +278,23 @@ static dispatch_once_t onceToken;
                     }else{
                         statusStr = status;
                     }
-                    [self logging:dict[@"content"] status:statusStr tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    if (self.loggerConfig.enableLinkRumData) {
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+                    }
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [self logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    [self rumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
                 }
-                
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {
