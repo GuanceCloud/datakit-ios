@@ -362,32 +362,32 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     [self addErrorWithType:type state:self.appState message:message stack:stack property:property time:[NSDate date] fatal:NO];
 }
 - (void)addErrorWithType:(NSString *)type state:(FTAppState)state message:(NSString *)message stack:(NSString *)stack property:(nullable NSDictionary *)property time:(NSDate *)time fatal:(BOOL)fatal{
-    if (!(type && message && stack && type.length>0 && message.length>0 && stack.length>0)) {
-        FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' and 'stack' are provided.");
+    if (!(type && message && type.length>0 && message.length>0)) {
+        FTInnerLogError(@"[RUM] Failed to add error due to missing required fields. Please ensure 'type'、'message' are provided.");
         return;
     }
     NSDictionary *context = [self rumDynamicProperty];
     [self syncProcess:^{
-        @try {
-            NSMutableDictionary *field = @{ FT_KEY_ERROR_MESSAGE:message,
-                                            FT_KEY_ERROR_STACK:stack,
-            }.mutableCopy;
-            if(property && property.allKeys.count>0){
-                [field addEntriesFromDictionary:property];
-            }
-            NSDictionary *tags = @{
-                FT_KEY_ERROR_TYPE:type,
-                FT_KEY_ERROR_SOURCE:FT_LOGGER,
-                FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
-            };
-            NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
-            [errorTag addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
-            FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
-            model.tags = errorTag;
-            model.fields = field;
-            model.fatal = fatal;
-            [self process:model context:context];
-        } @catch (NSException *exception) {
+      @try {
+        NSMutableDictionary *field = [NSMutableDictionary dictionary];
+        [field setValue:stack forKey:FT_KEY_ERROR_STACK];
+        [field setValue:message forKey:FT_KEY_ERROR_MESSAGE];
+        if(property && property.allKeys.count>0){
+          [field addEntriesFromDictionary:property];
+        }
+        NSDictionary *tags = @{
+          FT_KEY_ERROR_TYPE:type,
+          FT_KEY_ERROR_SOURCE:FT_LOGGER,
+          FT_KEY_ERROR_SITUATION:AppStateStringMap[state]
+        };
+        NSMutableDictionary *errorTag = [NSMutableDictionary dictionaryWithDictionary:tags];
+        [errorTag addEntriesFromDictionary:[FTErrorMonitorInfo errorMonitorInfo:self.rumDependencies.errorMonitorType]];
+        FTRUMErrorData *model = [[FTRUMErrorData alloc]initWithType:FTRUMDataError time:time];
+        model.tags = errorTag;
+        model.fields = field;
+        model.fatal = fatal;
+        [self process:model context:context];
+      } @catch (NSException *exception) {
             FTInnerLogError(@"exception %@",exception);
         }
     }];
