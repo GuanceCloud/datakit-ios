@@ -1,3 +1,8 @@
+# 1.5.4-beta.1
+1. 同 1.5.4-alpha.1-1.5.4-alpha.4
+2. SDK `shutDown` 方法内部关闭顺序调整
+3. RUM `addError` 方法参数 `stack` 允许为空
+---
 # 1.5.4-alpha.4
 1. 调整同步间歇支持的最大时间间隔至 5000 毫秒
 2. 全局、log、RUM globalContext 属性动态设置方法修改为类方法
