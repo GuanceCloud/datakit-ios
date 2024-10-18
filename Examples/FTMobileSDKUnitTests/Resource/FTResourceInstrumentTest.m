@@ -438,6 +438,6 @@
         block();
         [expectation fulfill];
     }];
-    [self waitForExpectations:@[expectation]];
+    [self waitForExpectations:@[expectation] timeout:10];
 }
 @end
