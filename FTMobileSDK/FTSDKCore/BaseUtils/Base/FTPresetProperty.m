@@ -20,43 +20,6 @@
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
 #endif
-//设备对象 __class 值
-static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
-//系统版本
-static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
-//操作系统主要版本
-static NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR = @"os_version_major";
-
-//是否是注册用户，属性值：True / False
-static NSString * const FT_IS_SIGNIN = @"is_signin";
-//操作系统
-static NSString * const FT_COMMON_PROPERTY_OS = @"os";
-//设备提供商
-static NSString * const FT_COMMON_PROPERTY_DEVICE = @"device";
-//本地语言
-static NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
-//分辨率，格式 height * width，例子：1920*1080
-static NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
-//agent 版本号
-static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
-//autotrack 版本号
-static NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
-//应用名称
-static NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
-//设备机型
-static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"model";
-//屏幕宽度
-static NSString * const FT_SCREEN_SIZE = @"screen_size";
-//CPU ARCH
-static NSString * const FT_CPU_ARCH = @"arch";
-
-//设备 UUID
-static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
-//应用 ID
-static NSString * const FT_APPLICATION_UUID = @"application_uuid";
-
-static NSString * const FT_ENV = @"env";
-static NSString * const FT_VERSION = @"version";
 
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
