@@ -69,9 +69,9 @@
         [weakSelf.navigationController pushViewController:[TestJsbridgeData new] animated:YES];
     }];
     TableViewCellItem *item11 = [[TableViewCellItem alloc]initWithTitle:@"AppendGlobalContext dynamic tag" handler:^{
-        [[FTMobileAgent sharedInstance] appendGlobalContext:@{@"global_key":@"global_value"}];
-        [[FTMobileAgent sharedInstance] appendLogGlobalContext:@{@"log_key":@"log_value"}];
-        [[FTMobileAgent sharedInstance] appendRUMGlobalContext:@{@"rum_key":@"rum_value"}];
+        [FTMobileAgent appendGlobalContext:@{@"global_key":@"global_value"}];
+        [FTMobileAgent appendLogGlobalContext:@{@"log_key":@"log_value"}];
+        [FTMobileAgent appendRUMGlobalContext:@{@"rum_key":@"rum_value"}];
     }];
     TableViewCellItem *item12 = [[TableViewCellItem alloc]initWithTitle:@"Manual Rum、Trace Data Add" handler:^{
         [weakSelf.navigationController pushViewController:[ManualRumAndTraceDataAdd new] animated:YES];

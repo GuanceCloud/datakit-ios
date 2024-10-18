@@ -94,15 +94,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 添加 SDK 全局 tag，作用于 RUM、Log 数据
 /// - Parameter context: 自定义数据
-- (void)appendGlobalContext:(NSDictionary *)context;
++ (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context;
 
 /// 添加 RUM 自定义 tag，作用于 RUM 数据
 /// - Parameter context: 自定义数据
-- (void)appendRUMGlobalContext:(NSDictionary *)context;
++ (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context;
 
 /// 添加 Log 全局 tag，作用于 Log 数据
 /// - Parameter context: 自定义数据
-- (void)appendLogGlobalContext:(NSDictionary *)context;
++ (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context;
 
 /// Track App Extension groupIdentifier 中缓存的数据
 /// - Parameters:

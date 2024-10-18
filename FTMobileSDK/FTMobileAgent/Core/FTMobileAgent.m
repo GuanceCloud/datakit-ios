@@ -173,7 +173,10 @@ static dispatch_once_t onceToken;
     }];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
-- (void)appendGlobalContext:(NSDictionary *)context{
++ (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendGlobalContext: context is nil");
     }
@@ -181,7 +184,10 @@ static dispatch_once_t onceToken;
     [[FTPresetProperty sharedInstance] appendGlobalContext:safeDict];
     FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
 }
-- (void)appendRUMGlobalContext:(NSDictionary *)context{
++ (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
     }
@@ -190,7 +196,10 @@ static dispatch_once_t onceToken;
     FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
    
 }
-- (void)appendLogGlobalContext:(NSDictionary *)context{
++ (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
     }
@@ -306,13 +315,12 @@ static dispatch_once_t onceToken;
 }
 + (void)shutDown{
     if (onceToken == 0 && sharedInstance == nil) {
-        FTInnerLogInfo(@"[SDK] Uninitialized or already shut down");
-    }else{
+        return;
+    }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [sharedInstance shutDown];
 #pragma clang diagnostic pop
-    }
 }
 + (void)clearAllData{
     if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
