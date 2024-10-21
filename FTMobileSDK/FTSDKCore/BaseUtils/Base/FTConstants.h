@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+/// SDK 常量声明
 #pragma mark ========== agent ==========
 extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString * const FT_DATA_TYPE_LOGGING;
