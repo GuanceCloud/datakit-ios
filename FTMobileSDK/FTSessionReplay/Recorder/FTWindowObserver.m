@@ -10,11 +10,15 @@
 
 @implementation FTWindowObserver
 -(UIWindow *)keyWindow{
-    UIApplication *app = [UIApplication sharedApplication];
+    // 防止在 WidgetExtension 环境无法编译
+    UIApplication *app = [UIApplication valueForKeyPath:@"sharedApplication"];
+    if(app == nil){
+        return nil;
+    }
     if (@available(iOS 13.0, *)){
         UIScene *foregroundActiveScene;
         UIScene *foregroundInactiveScene;
-        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+        for (UIScene *scene in app.connectedScenes) {
             if (![scene isKindOfClass:[UIWindowScene class]]) {
                 continue;
             }
