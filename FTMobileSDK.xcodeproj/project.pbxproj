@@ -124,7 +124,6 @@
 		171D2D862C3E7AC600E7FBAE /* FTFileReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CEF2C3E7AC500E7FBAE /* FTFileReader.m */; };
 		171D2D872C3E7AC600E7FBAE /* FTReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CF02C3E7AC500E7FBAE /* FTReader.h */; };
 		171D2D882C3E7AC600E7FBAE /* FTReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CF12C3E7AC500E7FBAE /* FTReader.m */; };
-		171D2D892C3E7AC600E7FBAE /* FTFeatureDataStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CF32C3E7AC500E7FBAE /* FTFeatureDataStorage.h */; };
 		171D2D8A2C3E7AC600E7FBAE /* FTFileWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CF42C3E7AC500E7FBAE /* FTFileWriter.h */; };
 		171D2D8B2C3E7AC600E7FBAE /* FTFileWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D2CF52C3E7AC500E7FBAE /* FTFileWriter.m */; };
 		171D2D8C2C3E7AC600E7FBAE /* FTResourceWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 171D2CF62C3E7AC500E7FBAE /* FTResourceWriter.h */; };
@@ -788,7 +787,6 @@
 		171D2CEF2C3E7AC500E7FBAE /* FTFileReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTFileReader.m; sourceTree = "<group>"; };
 		171D2CF02C3E7AC500E7FBAE /* FTReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTReader.h; sourceTree = "<group>"; };
 		171D2CF12C3E7AC500E7FBAE /* FTReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTReader.m; sourceTree = "<group>"; };
-		171D2CF32C3E7AC500E7FBAE /* FTFeatureDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTFeatureDataStorage.h; sourceTree = "<group>"; };
 		171D2CF42C3E7AC500E7FBAE /* FTFileWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTFileWriter.h; sourceTree = "<group>"; };
 		171D2CF52C3E7AC500E7FBAE /* FTFileWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTFileWriter.m; sourceTree = "<group>"; };
 		171D2CF62C3E7AC500E7FBAE /* FTResourceWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FTResourceWriter.h; sourceTree = "<group>"; };
@@ -1248,7 +1246,6 @@
 		171D2CF82C3E7AC500E7FBAE /* Writer */ = {
 			isa = PBXGroup;
 			children = (
-				171D2CF32C3E7AC500E7FBAE /* FTFeatureDataStorage.h */,
 				171D2CF42C3E7AC500E7FBAE /* FTFileWriter.h */,
 				171D2CF52C3E7AC500E7FBAE /* FTFileWriter.m */,
 				171D2CF62C3E7AC500E7FBAE /* FTResourceWriter.h */,
@@ -2131,7 +2128,6 @@
 				17E4CBE729CD42E4005C2D99 /* FTURLSessionInterceptor.h in Headers */,
 				17E4CC1F29CD42E4005C2D99 /* FTTracerProtocol.h in Headers */,
 				1763BDA429DFF04F009EE026 /* ZY_FMDatabaseQueue.h in Headers */,
-				171D2D892C3E7AC600E7FBAE /* FTFeatureDataStorage.h in Headers */,
 				171D2D412C3E7AC500E7FBAE /* FTUISwitchRecorder.h in Headers */,
 				171D2D9A2C3E7AC600E7FBAE /* FTFeatureRequestBuilder.h in Headers */,
 				17E4CB3329CD42DA005C2D99 /* FTSwizzler.h in Headers */,
