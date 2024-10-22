@@ -25,7 +25,6 @@ Pod::Spec.new do |s|
 
 		agent.platform = :ios, '10.0'
 		agent.source_files =  'FTMobileSDK/FTMobileAgent/**/*{.h,.m}'
-		agent.public_header_files = core_path+'Core/FTMobileSDK.h',core_path+'Core/FTMobileAgent.h',core_path+'Config/FTMobileConfig.h',core_path+'ExternalData/FTExternalDataManager.h',core_path+'Core/FTTraceManager.h'
 		agent.dependency  'FTMobileSDK/FTSDKCore'
 
 	end
