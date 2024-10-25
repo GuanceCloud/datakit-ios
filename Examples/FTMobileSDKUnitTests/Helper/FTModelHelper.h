@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)stopErrorResource:(NSString *)key;
 + (void)addAction;
 + (void)addActionWithType:(NSString *)type;
-+ (void)addActionWithContext:(NSDictionary *)context;
++ (void)addActionImmediatelyWithContext:(NSDictionary *)context;
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray idxCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSUInteger idx))callBack;
 + (void)resolveModelArray:(NSArray *)modelArray modelIdCallBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop,NSString *modelId))callBack;

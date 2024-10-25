@@ -44,19 +44,19 @@ typedef enum FTAppState:NSUInteger FTAppState;
 /// - Parameter property: 事件自定义属性(可选)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
-/// 添加 Click Action 事件
+/// 添加 Click Action 事件.
 ///
 /// - Parameters:
 ///   - actionName: 事件名称
 - (void)addClickActionWithName:(NSString *)actionName;
 
-/// 添加 Click Action 事件
+/// 添加 Click Action 事件，actionType 默认为 click
 /// - Parameters:
 ///   - actionName: 事件名称
 ///   - property: 事件自定义属性(可选)
 - (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 
-/// 添加 Action 事件
+/// 添加 Action 事件，actionType 默认为 click
 ///
 /// - Parameters:
 ///   - actionName: 事件名称
@@ -69,6 +69,12 @@ typedef enum FTAppState:NSUInteger FTAppState;
 ///   - property: 事件自定义属性(可选)
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 
+/// 添加 Action 事件，没有 duration
+/// - Parameters:
+///   - actionName: 事件名称
+///   - actionType: 事件类型
+///   - property: 事件自定义属性(可选)
+- (void)addActionImmediatelyWithName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
 /// 添加 Error 事件
 ///
 /// - Parameters:

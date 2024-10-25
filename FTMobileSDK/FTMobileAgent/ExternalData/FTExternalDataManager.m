@@ -12,6 +12,7 @@
 #import "FTLog+Private.h"
 #import "NSDate+FTUtil.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTConstants.h"
 @interface FTExternalDataManager()
 @property (nonatomic, weak) id <FTRumDatasProtocol> delegate;
 @property (nonatomic, weak) id <FTExternalResourceProtocol> resourceDelegate;
@@ -60,25 +61,31 @@
     }
 }
 - (void)addClickActionWithName:(NSString *)actionName {
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:)]){
-        [self.delegate addClickActionWithName:actionName];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
+        [self.delegate addActionName:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
     }
 }
 -(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addClickActionWithName:property:)]){
-        [self.delegate addClickActionWithName:actionName property:copyDict];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
+        [self.delegate addActionName:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:copyDict];
     }
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:)]){
-        [self.delegate addActionName:actionName actionType:actionType];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
+        [self.delegate addActionName:actionName actionType:actionType property:nil];
     }
 }
 -(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
         [self.delegate addActionName:actionName actionType:actionType property:copyDict];
+    }
+}
+- (void)addActionImmediatelyWithName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
+    NSDictionary *copyDict = [property ft_deepCopy];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionImmediatelyWithName:actionType:property:)]){
+        [self.delegate addActionImmediatelyWithName:actionName actionType:actionType property:copyDict];
     }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{

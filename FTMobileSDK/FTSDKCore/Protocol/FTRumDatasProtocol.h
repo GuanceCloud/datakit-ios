@@ -45,18 +45,21 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 /// 离开页面
 /// - Parameter property: 事件自定义属性(可选)
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
-/// 添加 Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-///   - actionType: 事件类型
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType;
+
 /// 添加 Action 事件
 /// - Parameters:
 ///   - actionName: 事件名称
 ///   - actionType: 事件类型
 ///   - property: 事件自定义属性(可选)
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+
+
+/// 添加 Action 事件, 无 duration
+/// - Parameters:
+///   - actionName: 事件名称
+///   - actionType: 事件类型
+///   - property: 事件自定义属性(可选)
+- (void)addActionImmediatelyWithName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property;
 
 /// 添加 Error 事件
 ///
@@ -99,21 +102,11 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
-/// 添加 Click Action 事件
-///
-/// - Parameters:
-///   - actionName: 事件名称
-- (void)addClickActionWithName:(NSString *)actionName;
-
-/// 添加 Click Action 事件
-/// - Parameters:
-///   - actionName: 事件名称
-///   - property: 事件自定义属性(可选)
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
 /**
  * 进入页面
  * @param viewId          页面id
  * @param viewName        页面名称
+ * @param property        事件自定义属性(可选)
  */
 -(void)startViewWithViewID:(NSString *)viewId viewName:(NSString *)viewName property:(nullable NSDictionary *)property;
 /**

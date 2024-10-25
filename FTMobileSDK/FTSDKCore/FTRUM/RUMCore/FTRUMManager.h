@@ -101,19 +101,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  */
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
-#pragma mark - action -
-/// 点击事件
-/// @param actionName actionName 点击的事件名称
-- (void)addClickActionWithName:(nonnull NSString *)actionName;
-/**
- * 点击事件
- * @param actionName 点击的事件名称
- */
-- (void)addClickActionWithName:(NSString *)actionName property:(nullable NSDictionary *)property;
-/// action 事件
-/// @param actionName 事件名称
-/// @param actionType 事件类型
-- (void)addActionName:(nonnull NSString *)actionName actionType:(nonnull NSString *)actionType;
 
 /// action 事件
 /// @param actionName 事件名称

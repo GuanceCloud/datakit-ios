@@ -90,10 +90,15 @@
             }
         }
             break;
-        case FTRUMDataClick:
+        case FTRUMDataAddAction:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
+            }else{
+                FTInnerLogDebug(@"RUM Action %@ was dropped, because another action is still active for the same view.",((FTRUMActionModel *)model).action_name);
             }
+            break;
+        case FTRUMDataActionCustom:
+            [self addAction:model context:context];
             break;
         case FTRUMDataError:
             if (self.isActiveView) {
@@ -147,6 +152,16 @@
         weakSelf.context.action_name = nil;
     };
     self.actionHandler = actionHandler;
+}
+- (void)addAction:(FTRUMDataModel *)model context:(NSDictionary *)context{
+    __weak typeof(self) weakSelf = self;
+    FTRUMActionHandler *actionHandler = [[FTRUMActionHandler alloc]initWithModel:(FTRUMActionModel *)model context:self.context dependencies:self.rumDependencies];
+    model.type = FTRUMDataStopAction;
+    actionHandler.handler = ^{
+        weakSelf.viewActionCount +=1;
+        weakSelf.needUpdateView = YES;
+    };
+    [actionHandler.assistant process:model context:context];
 }
 - (void)startResource:(FTRUMResourceDataModel *)model{
     __weak typeof(self) weakSelf = self;

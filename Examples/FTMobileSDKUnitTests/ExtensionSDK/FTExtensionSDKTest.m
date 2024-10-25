@@ -7,6 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <KIF/KIF.h>
 #import "FTMobileAgent.h"
 #import "FTMobileAgent+Private.h"
 #import "FTMobileExtension.h"
@@ -69,6 +70,7 @@
     NSArray *olddatas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
     [[FTExternalDataManager sharedManager] startViewWithName:@"TestRum"];
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick1"];
+    [tester waitForTimeInterval:0.1];
     [[FTExternalDataManager sharedManager] addClickActionWithName:@"extensionClick2"];
     [NSThread sleepForTimeInterval:2];
     NSArray *datas = [[FTExtensionDataManager sharedInstance] readAllEventsWithGroupIdentifier:@"group.com.ft.widget.demo"];
