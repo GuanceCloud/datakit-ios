@@ -222,6 +222,7 @@
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
+        _compressionForUpload = FTHttpRequestCompressionNone;
     }
     return self;
 }

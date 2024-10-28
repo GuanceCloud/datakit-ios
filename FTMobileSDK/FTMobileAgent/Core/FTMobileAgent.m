@@ -77,6 +77,7 @@ static dispatch_once_t onceToken;
                 .setDatawayUrl(config.datawayUrl)
                 .setClientToken(config.clientToken)
                 .setSdkVersion(SDK_VERSION)
+                .setCompression((HttpRequestCompression)config.compressionForUpload)
                 .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];

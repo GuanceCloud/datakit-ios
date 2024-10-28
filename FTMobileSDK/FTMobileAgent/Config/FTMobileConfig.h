@@ -95,6 +95,15 @@ typedef NS_ENUM(NSInteger, FTLogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     FTDiscardOldest
 };
+
+typedef NS_ENUM(NSInteger,FTHttpRequestCompression){
+    /// 不使用压缩
+    FTHttpRequestCompressionNone,
+    /// 使用 gzip 压缩
+    FTHttpRequestCompressionGzip,
+    /// 使用 deflate 压缩
+    FTHttpRequestCompressionDeflate,
+};
 NS_ASSUME_NONNULL_BEGIN
 /// RUM 过滤 resource 回调，返回：NO 表示要采集，YES 表示不需要采集。
 typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
@@ -231,6 +240,9 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int syncSleepTime;
 /// 数据同步时是否开启数据整数兼容
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
+/// 设置数据同步时采用的压缩方式 默认 NONE 不使用压缩
+@property (nonatomic, assign) FTHttpRequestCompression compressionForUpload;
+
 /// 设置 SDK 全局 tag
 ///
 /// 保留标签： sdk_package_flutter、sdk_package_react_native

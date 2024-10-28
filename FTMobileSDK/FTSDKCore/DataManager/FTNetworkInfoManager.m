@@ -72,9 +72,9 @@
         return self;
     };
 }
-- (FTNetworkInfoManager *(^)(BOOL value))setEnableCompression{
-    return ^(BOOL value) {
-        self->_enableCompression = value;
+- (FTNetworkInfoManager *(^)(HttpRequestCompression value))setCompression{
+    return ^(HttpRequestCompression value) {
+        self->_compression = value;
         return self;
     };
 }

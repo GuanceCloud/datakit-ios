@@ -14,6 +14,7 @@
 #import "FTBaseInfoHandler.h"
 #import "FTDataCompression.h"
 #import "FTLog+Private.h"
+#import "FTEnumConstant.h"
 @interface FTRequest()
 @property (nonatomic, strong) NSArray <FTRecordModel *> *events;
 
@@ -58,8 +59,8 @@
 -(BOOL)enableDataIntegerCompatible{
     return FTNetworkInfoManager.sharedInstance.enableDataIntegerCompatible;
 }
--(BOOL)enableCompression{
-    return FTNetworkInfoManager.sharedInstance.enableCompression;
+-(HttpRequestCompression)compression{
+    return FTNetworkInfoManager.sharedInstance.compression;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
      NSString *date =[[NSDate date] ft_stringWithGMTFormat];
@@ -82,14 +83,31 @@
     return [self compression:mutableRequest];
 }
 - (NSMutableURLRequest *)compression:(NSMutableURLRequest *)request{
-    if([self enableCompression]){
-        [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
-        NSData *data = [FTDataCompression deflate:request.HTTPBody];
-        if (data) {
-            request.HTTPBody = data;
-        }else{
-            FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
+    switch (self.compression) {
+        case None:
+            break;
+        case Deflate:{
+            [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
+            NSData *data = [FTDataCompression deflate:request.HTTPBody];
+            if (data) {
+                request.HTTPBody = data;
+            }else{
+                FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
+            }
         }
+            break;
+        case Gzip:{
+            [request setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+            NSData *data = [FTDataCompression gzip:request.HTTPBody];
+            if (data) {
+                request.HTTPBody = data;
+            }else{
+                FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
+            }
+        }
+            break;
+        default:
+            break;
     }
     return request;
 }
