@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+/// SDK 常量声明
 #pragma mark ========== agent ==========
 extern NSString * const FT_DATA_TYPE_RUM;
 extern NSString * const FT_DATA_TYPE_LOGGING;
@@ -34,7 +34,35 @@ extern NSString * const FT_RUM_SOURCE_LONG_TASK;
 extern NSString * const FT_RUM_SOURCE_VIEW;
 extern NSString * const FT_SDK_VERSION;
 extern NSString * const FT_SDK_NAME;
-
+#pragma mark ========== BASE PROPERTY ==========
+//应用名称
+extern NSString * const FT_COMMON_PROPERTY_APP_NAME;
+//系统版本
+extern NSString * const FT_COMMON_PROPERTY_OS_VERSION;
+//操作系统主要版本
+extern NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR;
+//是否是注册用户，属性值：True / False
+extern NSString * const FT_IS_SIGNIN;
+//操作系统
+extern NSString * const FT_COMMON_PROPERTY_OS;
+//设备提供商
+extern NSString * const FT_COMMON_PROPERTY_DEVICE;
+//分辨率，格式 height * width，例子：1920*1080
+extern NSString * const FT_COMMON_PROPERTY_DISPLAY;
+//设备机型
+extern NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL;
+//屏幕宽度
+extern NSString * const FT_SCREEN_SIZE;
+//CPU ARCH
+extern NSString * const FT_CPU_ARCH;
+//设备 UUID
+extern NSString * const FT_COMMON_PROPERTY_DEVICE_UUID;
+//应用 ID
+extern NSString * const FT_APPLICATION_UUID;
+//环境
+extern NSString * const FT_ENV;
+//版本号
+extern NSString * const FT_VERSION;
 #pragma mark ========== rum ==========
 extern NSString * const FT_DURATION;
 extern NSString * const FT_TERMINAL_APP;
@@ -144,6 +172,7 @@ extern NSString * const FT_KEY_STATUS;
 extern NSString * const FT_KEY_CONTENT;
 extern NSString * const FT_KEY_MESSAGE;
 
+extern NSString * const FT_RUM_CUSTOM_KEYS;
 #pragma mark ========== tracing ==========
 extern NSString * const FT_NETWORK_ZIPKIN_TRACEID;
 extern NSString * const FT_NETWORK_ZIPKIN_SPANID;

@@ -32,6 +32,7 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTTrackerEventDBTool.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
@@ -66,8 +67,8 @@ static dispatch_once_t onceToken;
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
             [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
-            
-            [[FTPresetProperty sharedInstance] startWithVersion:config.version
+            NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+            [[FTPresetProperty sharedInstance] startWithVersion:version
                                                      sdkVersion:SDK_VERSION
                                                             env:config.env
                                                         service:config.service
@@ -93,7 +94,7 @@ static dispatch_once_t onceToken;
         FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
         _rumConfig = [rumConfigOptions copy];
         [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
-        [[FTPresetProperty sharedInstance] appendRUMGlobalContext:_rumConfig.globalContext];
+        [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
@@ -107,7 +108,7 @@ static dispatch_once_t onceToken;
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
-        [[FTPresetProperty sharedInstance] appendLogGlobalContext:_loggerConfig.globalContext];
+        [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
         [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
@@ -163,14 +164,20 @@ static dispatch_once_t onceToken;
     [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
-    NSParameterAssert(Id);
+    if(Id == nil || Id.length==0){
+        FTInnerLogError(@"Failed to bind user ! User ID can't be empty");
+        return;
+    }
     NSDictionary *safeExtra = [extra ft_deepCopy];
     [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:safeExtra];
     }];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
 }
-- (void)appendGlobalContext:(NSDictionary *)context{
++ (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendGlobalContext: context is nil");
     }
@@ -178,7 +185,10 @@ static dispatch_once_t onceToken;
     [[FTPresetProperty sharedInstance] appendGlobalContext:safeDict];
     FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
 }
-- (void)appendRUMGlobalContext:(NSDictionary *)context{
++ (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
     }
@@ -187,7 +197,10 @@ static dispatch_once_t onceToken;
     FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
    
 }
-- (void)appendLogGlobalContext:(NSDictionary *)context{
++ (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
     if(!context){
         FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
     }
@@ -233,10 +246,10 @@ static dispatch_once_t onceToken;
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
         NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
-        [tagDict setValue:status forKey:FT_KEY_STATUS];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
+        [tagDict setValue:status forKey:FT_KEY_STATUS];
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
@@ -266,12 +279,23 @@ static dispatch_once_t onceToken;
                     }else{
                         statusStr = status;
                     }
-                    [self logging:dict[@"content"] status:statusStr tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    if (self.loggerConfig.enableLinkRumData) {
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+                    }
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [self logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    [self rumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
                 }
-                
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {
@@ -297,9 +321,25 @@ static dispatch_once_t onceToken;
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [[FTLog sharedInstance] shutDown];
     [[FTTrackDataManager sharedInstance] shutDown];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+}
++ (void)shutDown{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [sharedInstance shutDown];
+#pragma clang diagnostic pop
+}
++ (void)clearAllData{
+    if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+        FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
+    }else{
+        FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");
+    }
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

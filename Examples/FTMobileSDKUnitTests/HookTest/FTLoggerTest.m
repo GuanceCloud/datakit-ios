@@ -331,7 +331,7 @@
     loggerConfig.enableCustomLog = YES;
     loggerConfig.globalContext = @{@"logger_id":@"logger_id_1"};
     [[FTMobileAgent sharedInstance] startLoggerWithConfigOptions:loggerConfig];
-    [[FTMobileAgent sharedInstance] appendLogGlobalContext:@{@"append_logger":@"logger_id_2"}];
+    [FTMobileAgent appendLogGlobalContext:@{@"append_logger":@"logger_id_2"}];
     [[FTMobileAgent sharedInstance] logging:@"testGlobalContext" status:FTStatusInfo];
     [[FTMobileAgent sharedInstance] syncProcess];
     [[FTTrackDataManager sharedInstance] insertCacheToDB];

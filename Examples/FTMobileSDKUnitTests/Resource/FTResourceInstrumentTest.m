@@ -66,13 +66,13 @@
     rumConfig.enableTraceUserResource = YES;
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTNetworkMock registerUrlString:urlStr];
 }
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     [OHHTTPStubs removeAllStubs];
 }
 - (FTSessionTaskHandler *)getTraceHandler:(NSURLSessionTask *)task{
@@ -438,6 +438,6 @@
         block();
         [expectation fulfill];
     }];
-    [self waitForExpectations:@[expectation]];
+    [self waitForExpectations:@[expectation] timeout:10];
 }
 @end

@@ -156,9 +156,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
 
-/// 当 FTTraceConfig、FTLoggerConfig 开启 enableLinkRumData 时 获取 rum 信息
--(NSDictionary *)getCurrentSessionInfo;
-
 /// 等待 rum 正在处理数据全部处理
 - (void)syncProcess;
 @end

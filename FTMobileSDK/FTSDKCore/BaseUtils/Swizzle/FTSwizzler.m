@@ -171,6 +171,10 @@ typedef IMP (^FTSwizzlerImpProvider)(void);
 
 -(FTSwizzlerOriginalIMP)getOriginalImplementation{
     NSAssert(_impProviderBlock,nil);
+    if (!_impProviderBlock) {
+        NSLog(@"_impProviderBlock can't be missing");
+        return NULL;
+    }
     // Casting IMP to FTSwizzlerOriginalIMP to force user casting.
     return (FTSwizzlerOriginalIMP)_impProviderBlock();
 }

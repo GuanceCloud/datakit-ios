@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol FTLinkRumDataProvider <NSObject>
--(NSDictionary *)getCurrentSessionInfo;
+-(NSDictionary *)getLinkRUMData;
 @end
 
 NS_ASSUME_NONNULL_END

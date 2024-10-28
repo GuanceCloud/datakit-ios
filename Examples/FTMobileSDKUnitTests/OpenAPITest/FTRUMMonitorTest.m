@@ -43,7 +43,7 @@
 }
 - (void)shutDownSDK{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testNoneMonitor{
     [self setRumMonitorNone];

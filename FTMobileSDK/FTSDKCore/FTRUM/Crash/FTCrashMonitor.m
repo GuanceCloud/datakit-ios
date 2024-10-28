@@ -13,7 +13,7 @@
 #import "FTNSException.h"
 #include "FTSignalException.h"
 #include "FTMachException.h"
-
+#import "FTLog+Private.h"
 @interface FTCrashMonitor()
 @property (nonatomic, strong) NSHashTable *ftSDKInstances;
 @end
@@ -53,13 +53,19 @@ void crashNotifyCallback(thread_t thread,uintptr_t*backtrace,int count,const cha
     return self;
 }
 - (void)addErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
-    NSParameterAssert(instance != nil);
+    if(instance == nil){
+        FTInnerLogWarning(@"addErrorDataDelegate: instance is nil");
+        return;
+    }
     if (![self.ftSDKInstances containsObject:instance]) {
         [self.ftSDKInstances addObject:instance];
     }
 }
 - (void)removeErrorDataDelegate:(id <FTErrorDataDelegate>)instance{
-    NSParameterAssert(instance != nil);
+    if(instance == nil){
+        FTInnerLogWarning(@"removeErrorDataDelegate: instance is nil");
+        return;
+    }
     if ([self.ftSDKInstances containsObject:instance]) {
         [self.ftSDKInstances removeObject:instance];
     }

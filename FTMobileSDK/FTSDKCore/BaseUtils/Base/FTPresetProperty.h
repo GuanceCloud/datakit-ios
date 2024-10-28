@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 读写保护的用户信息
 @property (nonatomic, strong) FTReadWriteHelper<FTUserInfo*> *userHelper;
 @property (nonatomic, copy) NSString *sdkVersion;
+@property (nonatomic, strong) NSDictionary *rumGlobalContext;
+@property (nonatomic, strong) NSDictionary *logGlobalContext;
 /// 设备名称
 + (NSString *)deviceInfo;
 + (NSString *)cpuArch;
