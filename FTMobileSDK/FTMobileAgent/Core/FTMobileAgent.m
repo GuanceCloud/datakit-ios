@@ -314,6 +314,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
+    [FTNetworkInfoManager shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];

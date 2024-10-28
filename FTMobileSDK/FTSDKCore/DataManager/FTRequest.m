@@ -87,20 +87,20 @@
         case None:
             break;
         case Deflate:{
-            [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
             NSData *data = [FTDataCompression deflate:request.HTTPBody];
             if (data) {
                 request.HTTPBody = data;
+                [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
             }else{
                 FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
             }
         }
             break;
         case Gzip:{
-            [request setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
             NSData *data = [FTDataCompression gzip:request.HTTPBody];
             if (data) {
                 request.HTTPBody = data;
+                [request setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
             }else{
                 FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
             }

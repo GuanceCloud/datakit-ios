@@ -11,24 +11,33 @@
 #import "compression.h"
 #import <zlib.h>
 @implementation FTDataCompression
+NSData *bigEndianUInt32ToData(uint32_t value) {
+    uint8_t bytes[4];
+      
+    // 手动将每个字节放入数组中，以大端顺序
+    bytes[0] = (value >> 24) & 0xFF;
+    bytes[1] = (value >> 16) & 0xFF;
+    bytes[2] = (value >> 8) & 0xFF;
+    bytes[3] = value & 0xFF;
+      
+    return [NSData dataWithBytes:bytes length:sizeof(bytes)];
+}
 + (NSData *)deflate:(NSData *)data{
-    if (data.length == 0 || [self isDeflateData:data]){
+    if (data.length == 0){
         return nil;
     }
     uint8_t bytes[] = {0x78, 0x5e};
     NSData *header = [NSData dataWithBytes:bytes length:sizeof(bytes)];
-    NSData *raw;
-    if (@available(iOS 13.0, *)) {
-        NSError *error;
-        raw = [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
-    } else {
-        raw = [self rowCompress:data];
+    NSData *raw = [self rowCompress:data];
+    if(raw == nil){
+        return nil;
     }
-    NSData *checksum = [self adler32:data];
-    if (data.length>header.length+raw.length+checksum.length){
+    UInt32 checksum = [self adler32:data];
+    NSData *checksumData = bigEndianUInt32ToData(checksum);
+    if (data.length>header.length+raw.length+checksumData.length){
         NSMutableData *result = [NSMutableData dataWithData:header];
         [result appendData:raw];
-        [result appendData:checksum];
+        [result appendData:checksumData];
         return result;
     }
     return nil;
@@ -37,33 +46,27 @@
     if (!data) {
         return nil;
     }
-    NSMutableData* rData = [[NSMutableData alloc] initWithLength:[data length]];
-    rData.length = compression_encode_buffer(rData.mutableBytes, [data length], data.bytes, [data length], nil, COMPRESSION_ZLIB);
-    if (rData.length <= 0) {
-       
-        return nil;
+    if (@available(iOS 13.0, *)) {
+        NSError *error;
+        return [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
+    } else {
+        NSMutableData* rData = [[NSMutableData alloc] initWithLength:[data length]];
+        rData.length = compression_encode_buffer(rData.mutableBytes, [data length], data.bytes, [data length], nil, COMPRESSION_ZLIB);
+        if (rData.length <= 0) {
+            return nil;
+        }
+        return rData;
     }
-    return rData;
 }
-+(NSData *)adler32:(NSData*)data{
-    if (!data) {
-        return nil;
-    }
-    
++(UInt32 )adler32:(NSData*)data{
     const Bytef *bytes = (const Bytef *)[data bytes];
     uInt len = (uInt)[data length];
     uLong adler = adler32(1, Z_NULL, 0); // 初始化Adler-32为1
     adler = adler32(adler, bytes, len); // 计算校验和
-    
-    // 将uLong（通常是uint32_t）转换为NSData
-    UInt32 checksum = (UInt32)adler;
-    NSData *checksumData = [NSData dataWithBytes:&checksum length:sizeof(checksum)];
-    
-    return checksumData;
+    return (UInt32)adler;
 }
-//https://github.com/cysp/STZlib/blob/8b0c280c818febba87ed11b2d8b30be9dca515ad/STZlib/STZlib.m
 + (NSData *)gzip:(NSData *)data{
-    if (data.length == 0 || [self isGzippedData:data]){
+    if (data.length == 0){
         return nil;
     }
     

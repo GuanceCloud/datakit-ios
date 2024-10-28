@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 - (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible;
 - (FTNetworkInfoManager *(^)(HttpRequestCompression value))setCompression;
-
++ (void)shutDown;
 @end
 
 NS_ASSUME_NONNULL_END
