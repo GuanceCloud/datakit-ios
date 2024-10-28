@@ -12,11 +12,20 @@
 #import <zlib.h>
 @implementation FTDataCompression
 + (NSData *)deflate:(NSData *)data{
+    if (data.length == 0 || [self isDeflateData:data]){
+        return nil;
+    }
     uint8_t bytes[] = {0x78, 0x5e};
     NSData *header = [NSData dataWithBytes:bytes length:sizeof(bytes)];
-    NSData *raw = [self rowCompress:data];
+    NSData *raw;
+    if (@available(iOS 13.0, *)) {
+        NSError *error;
+        raw = [data compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:&error];
+    } else {
+        raw = [self rowCompress:data];
+    }
     NSData *checksum = [self adler32:data];
-    if(data.length>header.length+raw.length+checksum.length){
+    if (data.length>header.length+raw.length+checksum.length){
         NSMutableData *result = [NSMutableData dataWithData:header];
         [result appendData:raw];
         [result appendData:checksum];
@@ -28,24 +37,13 @@
     if (!data) {
         return nil;
     }
-    const uint8_t *srcBytes = [data bytes];
-    size_t srcSize = [data length];
-    uint8_t *buffer = malloc(srcSize);
-    if (!buffer) {
+    NSMutableData* rData = [[NSMutableData alloc] initWithLength:[data length]];
+    rData.length = compression_encode_buffer(rData.mutableBytes, [data length], data.bytes, [data length], nil, COMPRESSION_ZLIB);
+    if (rData.length <= 0) {
+       
         return nil;
     }
-    size_t compressedSize = compression_encode_buffer(buffer, srcSize, srcBytes, srcSize, NULL, COMPRESSION_ZLIB);
-    if (compressedSize <= 0) {
-        free(buffer);
-        return nil;
-    }
-    
-    // 创建并返回压缩后的NSData对象
-    NSData *compressedData = [NSData dataWithBytes:buffer length:compressedSize];
-    
-    // 释放临时分配的内存
-    free(buffer);
-    return compressedData;
+    return rData;
 }
 +(NSData *)adler32:(NSData*)data{
     if (!data) {
@@ -62,5 +60,49 @@
     NSData *checksumData = [NSData dataWithBytes:&checksum length:sizeof(checksum)];
     
     return checksumData;
+}
+//https://github.com/cysp/STZlib/blob/8b0c280c818febba87ed11b2d8b30be9dca515ad/STZlib/STZlib.m
++ (NSData *)gzip:(NSData *)data{
+    if (data.length == 0 || [self isGzippedData:data]){
+        return nil;
+    }
+    
+    z_stream stream;
+    stream.zalloc = Z_NULL;
+    stream.zfree = Z_NULL;
+    stream.opaque = Z_NULL;
+    stream.avail_in = (uint)data.length;
+    stream.next_in = (Bytef *)(void *)data.bytes;
+    stream.total_out = 0;
+    stream.avail_out = 0;
+    
+    static const NSUInteger ChunkSize = 16384; // 16kb
+    
+    NSMutableData *output = nil;
+    if (deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY) == Z_OK)
+    {
+        output = [NSMutableData dataWithLength:ChunkSize];
+        while (stream.avail_out == 0)
+        {
+            if (stream.total_out >= output.length)
+            {
+                output.length += ChunkSize;
+            }
+            stream.next_out = (uint8_t *)output.mutableBytes + stream.total_out;
+            stream.avail_out = (uInt)(output.length - stream.total_out);
+            deflate(&stream, Z_FINISH);
+        }
+        deflateEnd(&stream);
+        output.length = stream.total_out;
+    }
+    return output;
+}
++ (BOOL)isGzippedData:(NSData *)data{
+    const UInt8 *bytes = (const UInt8 *)data.bytes;
+    return (data.length >= 2 && bytes[0] == 0x1f && bytes[1] == 0x8b);
+}
++ (BOOL)isDeflateData:(NSData *)data{
+    const UInt8 *bytes = (const UInt8 *)data.bytes;
+    return (data.length >= 2 && bytes[0] == 0x78 && bytes[1] == 0x5e);
 }
 @end
