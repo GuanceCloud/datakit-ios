@@ -101,12 +101,11 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  */
 -(void)stopViewWithProperty:(nullable NSDictionary *)property;
 
+#pragma mark - Action -
 
-/// action 事件
-/// @param actionName 事件名称
-/// @param actionType 事件类型
-/// @param property 事件自定义属性(可选)
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property;
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property;
+
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property;
 /**
  * 应用启动
  * @param type      启动类型

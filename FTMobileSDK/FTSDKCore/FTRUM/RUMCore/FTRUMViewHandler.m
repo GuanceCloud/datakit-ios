@@ -90,14 +90,14 @@
             }
         }
             break;
-        case FTRUMDataAddAction:
+        case FTRUMDataStartAction:
             if (self.isActiveView && self.actionHandler == nil) {
                 [self startAction:model];
             }else{
                 FTInnerLogDebug(@"RUM Action %@ was dropped, because another action is still active for the same view.",((FTRUMActionModel *)model).action_name);
             }
             break;
-        case FTRUMDataActionCustom:
+        case FTRUMDataAddAction:
             [self addAction:model context:context];
             break;
         case FTRUMDataError:

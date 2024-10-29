@@ -171,7 +171,7 @@
 }
 - (void)networkUploadHandlerSession:(NSURLSession *)session trace:(BOOL)trace completionHandler:(void (^)(NSURLResponse *response,NSError *error))completionHandler{
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     
     NSString * urlStr = [[NSProcessInfo processInfo] environment][@"TRACE_URL"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];

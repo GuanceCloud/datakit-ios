@@ -60,32 +60,36 @@
         [self.delegate stopViewWithProperty:copyDict];
     }
 }
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:actionType property:property];
+    }
+}
 - (void)addClickActionWithName:(NSString *)actionName {
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
     }
 }
 -(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
-    NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:copyDict];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
     }
 }
 - (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:actionType property:nil];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:actionType property:nil];
     }
 }
 -(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionName:actionType:property:)]){
-        [self.delegate addActionName:actionName actionType:actionType property:copyDict];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
+        [self.delegate startAction:actionName actionType:actionType property:copyDict];
     }
 }
-- (void)addActionImmediatelyWithName:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
-    if(self.delegate && [self.delegate respondsToSelector:@selector(addActionImmediatelyWithName:actionType:property:)]){
-        [self.delegate addActionImmediatelyWithName:actionName actionType:actionType property:copyDict];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(addAction:actionType:property:)]){
+        [self.delegate addAction:actionName actionType:actionType property:copyDict];
     }
 }
 - (void)addErrorWithType:(NSString *)type message:(NSString *)message stack:(NSString *)stack{

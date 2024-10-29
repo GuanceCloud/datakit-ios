@@ -131,14 +131,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
     });
 }
 #pragma mark - Action -
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+- (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDate *time = [NSDate date];
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.time = time;
-            actionModel.type = FTRUMDataAddAction;
+            actionModel.type = FTRUMDataStartAction;
             actionModel.fields = property;
             [self process:actionModel context:context];
         } @catch (NSException *exception) {
@@ -146,14 +146,14 @@ void *FTRUMQueueIdentityKey = &FTRUMQueueIdentityKey;
         }
     });
 }
-- (void)addActionImmediatelyWithName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+- (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDate *time = [NSDate date];
     NSDictionary *context = [self rumDynamicProperty];
     dispatch_async(self.rumQueue, ^{
         @try {
             FTRUMActionModel *actionModel = [[FTRUMActionModel alloc] initWithActionName:actionName actionType:actionType];
             actionModel.time = time;
-            actionModel.type = FTRUMDataActionCustom;
+            actionModel.type = FTRUMDataAddAction;
             actionModel.fields = property;
             [self process:actionModel context:context];
         } @catch (NSException *exception) {

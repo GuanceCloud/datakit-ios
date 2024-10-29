@@ -137,7 +137,7 @@
     NSString *key = [FTBaseInfoHandler randomUUID];
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"FirstView"];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [FTModelHelper startResource:key];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
@@ -322,7 +322,7 @@
 -(void)testErrorResourceBindView{
     [self setRumConfig];
     [FTModelHelper startViewWithName:@"FirstView"];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     NSString *key = [FTBaseInfoHandler randomUUID];
     [[FTExternalDataManager sharedManager] startResourceWithKey:key];
     [FTModelHelper stopView];
@@ -374,7 +374,7 @@
     ];
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     if(lowercase){
         [self addLowercaseResource];
     }else{
@@ -418,7 +418,7 @@
 - (void)testAddErrorResource{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addErrorResource];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *array = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -436,7 +436,7 @@
 - (void)testStopResourceInBackground{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     NSString *key = [FTBaseInfoHandler randomUUID];
     NSURL *url = [NSURL URLWithString:@"https://www.baidu.com/more/"];
     NSDictionary *traceHeader = [[FTTraceManager sharedInstance] getTraceHeaderWithKey:key url:url];
@@ -596,8 +596,8 @@
     
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
-    [FTModelHelper addActionWithType:@"longTap"];
+    [FTModelHelper startAction];
+    [FTModelHelper startActionWithType:@"longTap"];
     [FTModelHelper startView];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -643,9 +643,9 @@
 - (void)testActionWrongFormat{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addActionWithType:@""];
+    [FTModelHelper startActionWithType:@""];
     [tester waitForTimeInterval:0.1];
-    [FTModelHelper addActionWithType:@"AA"];
+    [FTModelHelper startActionWithType:@"AA"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -662,11 +662,11 @@
     XCTAssertTrue(hasClickAction);
     [FTModelHelper stopView];
 }
-- (void)testAddActionImmediately_NOView{
+- (void)testAddAction_NOView{
     [self setRumConfig];
     [FTMobileAgent clearAllData];
     NSDictionary *property = @{@"action_property":@"testAddAction_NOView"};
-    [FTModelHelper addActionImmediatelyWithContext:property];
+    [FTModelHelper startActionWithContext:property];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count >= 1);
@@ -680,12 +680,12 @@
     }];
     XCTAssertTrue(hasActionData);
 }
-- (void)testAddActionImmediately_HasView{
+- (void)testAddAction_HasView{
     [self setRumConfig];
     [FTMobileAgent clearAllData];
     [FTModelHelper startView];
     NSDictionary *property = @{@"action_property":@"testAddAction_HasView"};
-    [FTModelHelper addActionImmediatelyWithContext:property];
+    [FTModelHelper startActionWithContext:property];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count >= 2);
@@ -699,14 +699,14 @@
     }];
     XCTAssertTrue(hasActionData);
 }
-// addActionImmediately 添加的 Action 不影响 StartA
-- (void)testAddActionImmediately_HasStartAction{
+// addAction 添加的 Action 不影响 StartA
+- (void)testAddAction_HasStartAction{
     [self setRumConfig];
     [FTMobileAgent clearAllData];
     [FTModelHelper startView];
     NSDictionary *property = @{@"action_property":@"addAction"};
     [[FTExternalDataManager sharedManager] addActionName:@"testAddAction_HasStartAction" actionType:@"click" property:nil];
-    [FTModelHelper addActionImmediatelyWithContext:property];
+    [FTModelHelper startActionWithContext:property];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
@@ -732,10 +732,10 @@
     XCTAssertTrue(hasActionData);
 }
 // 验证：action 最长持续 5s
-- (void)testAddAction_AppendingResource_maxDuration{
+- (void)testStartAddAction_AppendingResource_maxDuration{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [FTModelHelper startResource:@"aaa"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
@@ -769,11 +769,11 @@
     XCTAssertTrue(hasLongTask);
     [FTModelHelper stopView];
 }
-- (void)testAddAction_0_1s_ActionAbandon{
+- (void)testStartAction_0_1s_ActionAbandon{
     [self setRumConfig];
     [FTModelHelper startView];
     [[FTExternalDataManager sharedManager] addActionName:@"action1" actionType:@"click" property:nil];
-    [[FTExternalDataManager sharedManager] addActionName:@"action2" actionType:@"click" property:nil];
+    [[FTExternalDataManager sharedManager] startAction:@"action2" actionType:@"click" property:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
@@ -795,7 +795,7 @@
     XCTAssertFalse(hasClickAction);
     [FTModelHelper stopView];
 }
-- (void)testAddAction_0_1s_NoDataBind{
+- (void)testStartAction_0_1s_NoDataBind{
     [self setRumConfig];
     [FTModelHelper startView];
     [[FTExternalDataManager sharedManager] addActionName:@"action1" actionType:@"click" property:nil];
@@ -826,10 +826,10 @@
 /**
  * 验证 resource,error,long_task数据 是否同步到action中
  */
-- (void)testAddAction_0_1s_DataBind{
+- (void)testStartAction_0_1s_DataBind{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addResource];
     [self addLongTaskData:nil];
     [self addErrorData:nil];
@@ -852,11 +852,11 @@
     XCTAssertTrue(hasActionData);
     [FTModelHelper stopView];
 }
-- (void)testAddAction_noView{
+- (void)testStartAction_noView{
     [self setRumConfig];
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -885,9 +885,9 @@
     }];
     XCTAssertTrue(hasViewData);
 }
-- (void)testAddAction_stopBy_stopViewORStartNewView{
+- (void)testStartAction_stopBy_stopViewORStartNewView{
     [self setRumConfig];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [FTModelHelper startView];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -904,7 +904,7 @@
     }];
     XCTAssertTrue(hasActionData);
     [FTMobileAgent clearAllData];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [FTModelHelper startResource:@"aaa"];
     [tester waitForTimeInterval:0.2];
     [FTModelHelper stopView];
@@ -928,7 +928,7 @@
 - (void)testAddErrorData{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
@@ -984,7 +984,7 @@
 - (void)testAddLongTaskData{
     [self setRumConfig];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
@@ -1033,7 +1033,7 @@
     
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -1047,7 +1047,7 @@
     NSArray *oldArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:100 withType:FT_DATA_TYPE_RUM];
     
     [FTModelHelper startView];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
     [self addErrorData:nil];
     
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -1205,7 +1205,7 @@
     [self setRumConfig];
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
-    [FTModelHelper addActionImmediatelyWithContext:@{@"action_property":@"testActionProperty1"}];
+    [FTModelHelper startActionWithContext:@{@"action_property":@"testActionProperty1"}];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     XCTAssertTrue(newArray.count>oldArray.count);
@@ -1221,7 +1221,7 @@
     NSArray *oldArray =[[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     [FTModelHelper startView];
     NSDictionary *property = @{@"action_property":@"testActionProperty1"}.mutableCopy;
-    [FTModelHelper addActionImmediatelyWithContext:property];
+    [FTModelHelper startActionWithContext:property];
     [property setValue:@"add" forKey:@"add"];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
