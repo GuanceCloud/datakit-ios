@@ -10,6 +10,7 @@
 #import "FTSwizzler.h"
 #import "FTTrack.h"
 #import "UIView+FTAutoTrack.h"
+#import "FTConstants.h"
 
 static void *const kFTCollectionViewDidSelect = (void *)&kFTCollectionViewDidSelect;
 static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
@@ -32,8 +33,8 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (tableView && indexPath) {
                                                          UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
+                                                             [[FTTrack sharedInstance].addRumDatasDelegate startAction:cell.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
                                                          }
                                                      }
                                                      FTSWCallOriginal(tableView, indexPath);
@@ -66,8 +67,8 @@ static void *const kFTTableViewDidSelect = (void *)&kFTTableViewDidSelect;
                                  FTSWReplacement({
                                                      if (collectionView && indexPath) {
                                                          UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(addClickActionWithName:)]){
-                                                             [[FTTrack sharedInstance].addRumDatasDelegate addClickActionWithName:cell.ft_actionName];
+                                                         if([FTTrack sharedInstance].addRumDatasDelegate && [[FTTrack sharedInstance].addRumDatasDelegate respondsToSelector:@selector(startAction:actionType:property:)]){
+                                                             [[FTTrack sharedInstance].addRumDatasDelegate startAction:cell.ft_actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
                                                          }
                                                      }
                                                      FTSWCallOriginal(collectionView, indexPath);

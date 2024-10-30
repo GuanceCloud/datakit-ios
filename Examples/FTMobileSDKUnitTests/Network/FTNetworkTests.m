@@ -385,8 +385,8 @@ typedef NS_ENUM(NSInteger, FTNetworkTestsType) {
     [self waitForExpectations:@[expectation]];
 
     [FTModelHelper startView];
-    [FTModelHelper addAction];
-    [FTModelHelper addAction];
+    [FTModelHelper startAction];
+    [FTModelHelper startAction];
     for (int i = 0; i<101; i++) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [[FTLogger sharedInstance] info:[NSString stringWithFormat:@"testLongTimeLogCache%d",i] property:nil];

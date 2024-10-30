@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 @interface FTRUMHandler : NSObject
-@property (nonatomic, weak) id<FTRUMSessionProtocol> assistant;
+@property (nonatomic, weak, nullable) id<FTRUMSessionProtocol> assistant;
 @end
 
 NS_ASSUME_NONNULL_END
