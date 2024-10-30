@@ -232,7 +232,7 @@ typedef BOOL(^FTResourceUrlHandler)(NSURL * url);
 @property (nonatomic, assign) int syncSleepTime;
 /// 数据同步时是否开启数据整数兼容
 @property (nonatomic, assign) BOOL enableDataIntegerCompatible;
-/// 设置内部数据同步时是否开启压缩
+/// 设置内部数据同步时是否开启压缩 默认: NO
 @property (nonatomic, assign) BOOL compressIntakeRequests;
 
 /// 设置 SDK 全局 tag
