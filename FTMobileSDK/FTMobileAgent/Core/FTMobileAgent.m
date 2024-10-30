@@ -78,6 +78,7 @@ static dispatch_once_t onceToken;
                 .setDatawayUrl(config.datawayUrl)
                 .setClientToken(config.clientToken)
                 .setSdkVersion(SDK_VERSION)
+                .setCompression(config.compressIntakeRequests)
                 .setEnableDataIntegerCompatible(config.enableDataIntegerCompatible);
             [[FTURLSessionInstrumentation sharedInstance] setSdkUrlStr:config.datakitUrl.length>0?config.datakitUrl:config.datawayUrl
                                                            serviceName:config.service];
@@ -313,6 +314,7 @@ static dispatch_once_t onceToken;
 }
 #pragma mark - SDK注销
 - (void)shutDown{
+    [FTNetworkInfoManager shutDown];
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
