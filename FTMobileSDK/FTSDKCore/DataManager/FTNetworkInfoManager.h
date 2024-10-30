@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,copy,readonly) NSString *clientToken;
 @property (nonatomic,copy,readonly) NSString *sdkVersion;
 @property (nonatomic,copy,readonly) NSString *processID;
-@property (nonatomic,assign,readonly) HttpRequestCompression compression;
+@property (nonatomic,assign,readonly) BOOL compression;
 @property (nonatomic,assign,readonly) BOOL enableDataIntegerCompatible;
 
 + (instancetype)sharedInstance;
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (FTNetworkInfoManager *(^)(NSString *value))setClientToken;
 - (FTNetworkInfoManager *(^)(NSString *value))setSdkVersion;
 - (FTNetworkInfoManager *(^)(BOOL value))setEnableDataIntegerCompatible;
-- (FTNetworkInfoManager *(^)(HttpRequestCompression value))setCompression;
+- (FTNetworkInfoManager *(^)(BOOL value))setCompression;
 + (void)shutDown;
 @end
 

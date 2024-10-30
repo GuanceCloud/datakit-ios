@@ -59,7 +59,7 @@
 -(BOOL)enableDataIntegerCompatible{
     return FTNetworkInfoManager.sharedInstance.enableDataIntegerCompatible;
 }
--(HttpRequestCompression)compression{
+-(BOOL)compression{
     return FTNetworkInfoManager.sharedInstance.compression;
 }
 - (NSMutableURLRequest *)adaptedRequest:(NSMutableURLRequest *)mutableRequest{
@@ -83,31 +83,14 @@
     return [self compression:mutableRequest];
 }
 - (NSMutableURLRequest *)compression:(NSMutableURLRequest *)request{
-    switch (self.compression) {
-        case None:
-            break;
-        case Deflate:{
-            NSData *data = [FTDataCompression deflate:request.HTTPBody];
-            if (data) {
-                request.HTTPBody = data;
-                [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
-            }else{
-                FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
-            }
+    if(self.compression){
+        NSData *data = [FTDataCompression deflate:request.HTTPBody];
+        if (data) {
+            request.HTTPBody = data;
+            [request setValue:@"deflate" forHTTPHeaderField:@"Content-Encoding"];
+        }else{
+            FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
         }
-            break;
-        case Gzip:{
-            NSData *data = [FTDataCompression gzip:request.HTTPBody];
-            if (data) {
-                request.HTTPBody = data;
-                [request setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
-            }else{
-                FTInnerLogError(@"Failed to compress request payload \n- url: %@\n- uncompressed-size: %lu",request.URL,(unsigned long)request.HTTPBody.length);
-            }
-        }
-            break;
-        default:
-            break;
     }
     return request;
 }

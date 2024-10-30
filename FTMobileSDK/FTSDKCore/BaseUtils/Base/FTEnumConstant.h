@@ -93,14 +93,6 @@ typedef NS_ENUM(NSInteger, LogCacheDiscard)  {
     /// 当日志数据大于最大值时,废弃旧数据
     DiscardOldest
 };
-typedef NS_ENUM(NSInteger,HttpRequestCompression){
-    /// 不使用压缩
-    None,
-    /// 使用 gzip 压缩
-    Gzip,
-    /// 使用 deflate 压缩
-    Deflate,
-};
 extern NSString * const AppStateStringMap[];
 extern NSString * const FTStatusStringMap[];
 extern NSString * const FTNetworkTraceStringMap[];

@@ -221,7 +221,7 @@
         _autoSync = YES;
         _syncPageSize = 10;
         _syncSleepTime = 0;
-        _compressionForUpload = FTHttpRequestCompressionNone;
+        _compressIntakeRequests = NO;
     }
     return self;
 }
@@ -270,6 +270,7 @@
     options.syncPageSize = self.syncPageSize;
     options.syncSleepTime = self.syncSleepTime;
     options.enableDataIntegerCompatible = self.enableDataIntegerCompatible;
+    options.compressIntakeRequests = self.compressIntakeRequests;
     return options;
 }
 @end

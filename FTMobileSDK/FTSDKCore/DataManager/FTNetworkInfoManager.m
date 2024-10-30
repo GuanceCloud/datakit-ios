@@ -72,8 +72,8 @@ static FTNetworkInfoManager *sharedInstance = nil;
         return self;
     };
 }
-- (FTNetworkInfoManager *(^)(HttpRequestCompression value))setCompression{
-    return ^(HttpRequestCompression value) {
+- (FTNetworkInfoManager *(^)(BOOL value))setCompression{
+    return ^(BOOL value) {
         self->_compression = value;
         return self;
     };
