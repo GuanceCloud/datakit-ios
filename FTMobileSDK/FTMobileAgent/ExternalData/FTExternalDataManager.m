@@ -61,30 +61,22 @@
     }
 }
 - (void)startAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [self.delegate startAction:actionName actionType:actionType property:property];
-    }
-}
-- (void)addClickActionWithName:(NSString *)actionName {
-    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [self.delegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
-    }
-}
--(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [self.delegate startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
-    }
-}
-- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
-        [self.delegate startAction:actionName actionType:actionType property:nil];
-    }
-}
--(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
     if(self.delegate && [self.delegate respondsToSelector:@selector(startAction:actionType:property:)]){
         [self.delegate startAction:actionName actionType:actionType property:copyDict];
     }
+}
+- (void)addClickActionWithName:(NSString *)actionName {
+    [self startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:nil];
+}
+-(void)addClickActionWithName:(NSString *)actionName property:(NSDictionary *)property{
+    [self startAction:actionName actionType:FT_KEY_ACTION_TYPE_CLICK property:property];
+}
+- (void)addActionName:(NSString *)actionName actionType:(NSString *)actionType{
+    [self startAction:actionName actionType:actionType property:nil];
+}
+-(void)addActionName:(NSString *)actionName actionType:(NSString *)actionType property:(NSDictionary *)property{
+    [self startAction:actionName actionType:actionType property:property];
 }
 - (void)addAction:(NSString *)actionName actionType:(NSString *)actionType property:(nullable NSDictionary *)property{
     NSDictionary *copyDict = [property ft_deepCopy];
