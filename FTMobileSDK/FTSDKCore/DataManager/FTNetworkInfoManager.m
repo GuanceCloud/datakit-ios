@@ -75,6 +75,7 @@ static FTNetworkInfoManager *sharedInstance = nil;
 - (FTNetworkInfoManager *(^)(BOOL value))setCompression{
     return ^(BOOL value) {
         self->_compression = value;
+        FTInnerLogInfo(@"SDK compressIntakeRequests ：%@",value?@"true":@"false");
         return self;
     };
 }
