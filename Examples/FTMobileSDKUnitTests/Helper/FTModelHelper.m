@@ -86,7 +86,7 @@
 + (void)startActionWithType:(NSString *)type{
     [[FTExternalDataManager sharedManager] addActionName:@"testActionClick2" actionType:type property:nil];
 }
-+ (void)startActionWithContext:(NSDictionary *)context{
++ (void)addActionWithContext:(NSDictionary *)context{
     [[FTExternalDataManager sharedManager] addAction:@"testActionWithContext" actionType:@"click" property:context];
 }
 + (void)resolveModelArray:(NSArray *)modelArray callBack:(void(^)(NSString *source,NSDictionary *tags,NSDictionary *fields,BOOL *stop))callBack{
