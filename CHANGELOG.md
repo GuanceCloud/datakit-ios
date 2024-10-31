@@ -1,3 +1,7 @@
+# 1.5.5-alpha.1
+1. 添加对 SDK 内部数据请求压缩的支持
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+---
 # 1.5.4
 1. 添加全局、log、RUM globalContext 属性动态设置方式
 2. 添加清除数据方法，支持删除所有尚未上传至服务器的数据
