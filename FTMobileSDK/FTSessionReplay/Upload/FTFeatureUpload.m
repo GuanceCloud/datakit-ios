@@ -76,13 +76,16 @@
         if (!strongSelf) {
             return;
         }
-        BOOL canUpload = [strongSelf.uploadConditions checkForUpload];
+        NSArray *conditions = [strongSelf.uploadConditions checkForUpload];
+        BOOL canUpload = conditions.count == 0;
         //读取上传文件
         NSArray<id <FTReadableFile>> *files = canUpload?[strongSelf.fileReader readFiles:strongSelf.maxBatchesPerUpload]:nil;
         if(files == nil || files.count == 0){
+            FTInnerLogDebug(@"[NETWORK][%@] No upload.%@",strongSelf.featureName,canUpload?@"No files to upload":[NSString stringWithFormat:@"[upload was skipped because:%@]",[conditions componentsJoinedByString:@" AND "]]);
             [strongSelf.delay increase];
             [strongSelf scheduleNextCycle];
         }else{
+            FTInnerLogDebug(@"[NETWORK][%@] Uploading batches... ",strongSelf.featureName);
             [strongSelf uploadFile:files parameters:strongSelf.context];
         }
     };
@@ -126,7 +129,6 @@
             [strongSelf scheduleNextCycle];
             return;
         }
-        FTInnerLogDebug(@"-----[%@] Upload Start -----",strongSelf.featureName);
         NSMutableArray<id<FTReadableFile>>*mutableFiles = [[NSMutableArray alloc]initWithArray:files];
         id<FTReadableFile> file = [mutableFiles firstObject];
         [mutableFiles removeObject:file];
@@ -141,6 +143,7 @@
             }else{
                 [self.delay increase];
                 [strongSelf scheduleNextCycle];
+                return;
             }
         }
         if(mutableFiles.count == 0){
@@ -148,7 +151,6 @@
         }else{
             [strongSelf uploadFile:mutableFiles parameters:parameters];
         }
-        FTInnerLogDebug(@"-----[%@] Upload End -----",strongSelf.featureName);
     };
     self.uploadWork = uploadWork;
     dispatch_async(self.queue, uploadWork);

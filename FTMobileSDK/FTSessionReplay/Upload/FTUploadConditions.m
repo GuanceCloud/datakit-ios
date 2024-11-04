@@ -9,7 +9,15 @@
 #import "FTUploadConditions.h"
 #import "FTSDKCompat.h"
 #import "FTReachability.h"
+#import "FTLog+Private.h"
 typedef void (^NotificationBlock)(NSNotification *);
+
+NSString * const FTBatteryStateStringMap[] = {
+    [UIDeviceBatteryStateUnknown] = @"Unknown",
+    [UIDeviceBatteryStateUnplugged] = @"Unplugged",
+    [UIDeviceBatteryStateCharging] = @"Charging",
+    [UIDeviceBatteryStateFull] = @"Full",
+};
 @interface FTUploadConditions()
 @property (nonatomic, assign) BOOL lowPowerModeEnabled;
 @property (nonatomic, strong) UIDevice *device;
@@ -35,6 +43,9 @@ typedef void (^NotificationBlock)(NSNotification *);
         weakSelf.isReachable = [FTReachability sharedInstance].isReachable;
     };
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    self.lowPowerModeEnabled = NSProcessInfo.processInfo.lowPowerModeEnabled;
+    self.batteryState = self.device.batteryState;
+    self.batteryLevel = self.device.batteryLevel;
     NotificationBlock block = ^(NSNotification *notification){
         if([notification.object isKindOfClass:NSProcessInfo.class]){
             NSProcessInfo *info = notification.object;
@@ -58,24 +69,25 @@ typedef void (^NotificationBlock)(NSNotification *);
     [array addObject:processObserver];
     self.observers = array;
 }
-- (BOOL)checkForUpload{
+- (NSArray *)checkForUpload{
+    NSMutableArray *conditions = [[NSMutableArray alloc]init];
     if(!self.isReachable){
-        return NO;
-    }
-    if(self.lowPowerModeEnabled){
-        return NO;
+        [conditions addObject:@"Network Unreachable"];
     }
     if(self.batteryState == UIDeviceBatteryStateUnknown){
-        return YES;
+        return conditions;
     }
     BOOL batteryFullOrCharging = self.batteryState == UIDeviceBatteryStateCharging || self.batteryState == UIDeviceBatteryStateFull;
 
     BOOL batteryLevelIsEnough = self.batteryLevel > 0.1;
     
-    if(!batteryLevelIsEnough && !batteryFullOrCharging){
-        return NO;
+    if(!(batteryLevelIsEnough || batteryFullOrCharging)){
+        [conditions addObject:[NSString stringWithFormat:@"Battery Level: %f ,Battery State: %@",self.batteryLevel*100,FTBatteryStateStringMap[self.batteryState]]];
     }
-    return YES;
+    if(self.lowPowerModeEnabled){
+        [conditions addObject:@"Battery Low Power Mode On"];
+    }
+    return conditions;
 }
 - (void)cancel{
     for (id observer in self.observers) {
