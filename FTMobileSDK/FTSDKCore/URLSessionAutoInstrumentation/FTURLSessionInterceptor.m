@@ -115,32 +115,40 @@ static dispatch_once_t onceToken;
 }
 - (NSURLRequest *)interceptRequest:(NSURLRequest *)request{
     NSURLRequest *backRequest = request;
-    if(_tracer&&_tracer.enableAutoTrace){
-        NSMutableURLRequest *mutableRequest = [backRequest mutableCopy];
-        NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
-        if (traceHeader && traceHeader.allKeys.count>0) {
-            [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-                [mutableRequest setValue:value forHTTPHeaderField:field];
-            }];
+    @try {
+        if(_tracer&&_tracer.enableAutoTrace){
+            NSMutableURLRequest *mutableRequest = [backRequest mutableCopy];
+            NSDictionary *traceHeader = [self.tracer networkTraceHeaderWithUrl:request.URL];
+            if (traceHeader && traceHeader.allKeys.count>0) {
+                [traceHeader enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+                    [mutableRequest setValue:value forHTTPHeaderField:field];
+                }];
+            }
+            backRequest = mutableRequest;
         }
-        backRequest = mutableRequest;
+    }@catch (NSException *exception) {
+        FTInnerLogError(@"exception: %@",exception);
     }
     return backRequest;
 }
 - (void)interceptTask:(NSURLSessionTask *)task{
     dispatch_async(self.queue, ^{
-        if(!task.currentRequest){
-            return;
-        }
-        if(![self isTraceUrl:task.currentRequest.URL]){
-            return;
-        }
-        FTSessionTaskHandler *handler = [self getTraceHandler:task];
-        if(!handler){
-            FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
-            handler.request = task.currentRequest;
-            [self setTraceHandler:handler forKey:task];
-            [self startResourceWithKey:handler.identifier];
+        @try {
+            if(!task.currentRequest){
+                return;
+            }
+            if(![self isTraceUrl:task.currentRequest.URL]){
+                return;
+            }
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!handler){
+                FTSessionTaskHandler *handler = [[FTSessionTaskHandler alloc]init];
+                handler.request = task.currentRequest;
+                [self setTraceHandler:handler forKey:task];
+                [self startResourceWithKey:handler.identifier];
+            }
+        }@catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
         }
     });
 }
@@ -149,20 +157,28 @@ static dispatch_once_t onceToken;
 }
 -(void)taskMetricsCollected:(NSURLSessionTask *)task metrics:(NSURLSessionTaskMetrics *)metrics custom:(BOOL)custom{
     dispatch_async(self.queue, ^{
-        FTSessionTaskHandler *handler = [self getTraceHandler:task];
-        if(!handler){
-            return;
+        @try {
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!handler){
+                return;
+            }
+            [handler taskReceivedMetrics:metrics custom:custom];
+        }@catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
         }
-        [handler taskReceivedMetrics:metrics custom:custom];
     });
 }
 - (void)taskReceivedData:(NSURLSessionTask *)task data:(NSData *)data{
     dispatch_async(self.queue, ^{
-        FTSessionTaskHandler *handler = [self getTraceHandler:task];
-        if(!handler){
-            return;
+        @try {
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!handler){
+                return;
+            }
+            [handler taskReceivedData:data];
+        }@catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
         }
-        [handler taskReceivedData:data];
     });
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error{
@@ -170,25 +186,29 @@ static dispatch_once_t onceToken;
 }
 - (void)taskCompleted:(NSURLSessionTask *)task error:(NSError *)error extraProvider:(nullable ResourcePropertyProvider)extraProvider{
     dispatch_async(self.queue, ^{
-        FTSessionTaskHandler *handler = [self getTraceHandler:task];
-        if(!handler){
-            return;
+        @try {
+            FTSessionTaskHandler *handler = [self getTraceHandler:task];
+            if(!handler){
+                return;
+            }
+            [handler taskCompleted:task error:error];
+            [self removeTraceHandlerWithKey:task];
+            NSDictionary *property;
+            if(extraProvider){
+                property = extraProvider(handler.request, handler.response, handler.data, handler.error);
+            }
+            [self stopResourceWithKey:handler.identifier property:property];
+            __block NSString *span_id = nil,*trace_id=nil;
+            if (self.tracer.enableLinkRumData) {
+                [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
+                    span_id = spanID;
+                    trace_id = traceId;
+                }];
+            }
+            [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
+        }@catch (NSException *exception) {
+            FTInnerLogError(@"exception: %@",exception);
         }
-        [handler taskCompleted:task error:error];
-        [self removeTraceHandlerWithKey:task];
-        NSDictionary *property;
-        if(extraProvider){
-            property = extraProvider(handler.request, handler.response, handler.data, handler.error);
-        }
-        [self stopResourceWithKey:handler.identifier property:property];
-        __block NSString *span_id = nil,*trace_id=nil;
-        if (self.tracer.enableLinkRumData) {
-            [self.tracer unpackTraceHeader:task.currentRequest.allHTTPHeaderFields handler:^(NSString * _Nullable traceId, NSString * _Nullable spanID) {
-                span_id = spanID;
-                trace_id = traceId;
-            }];
-        }
-        [self addResourceWithKey:handler.identifier metrics:handler.metricsModel content:handler.contentModel spanID:span_id traceID:trace_id];
     });
 }
 
