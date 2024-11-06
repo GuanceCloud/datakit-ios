@@ -48,17 +48,17 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     }
     return  self;
 }
-- (BOOL)process:(FTRUMDataModel *)model{
+- (BOOL)process:(FTRUMDataModel *)model context:(nonnull NSDictionary *)context{
    
     if ([self timedOutOrExpired:model.time]&&[self allResourcesCompletedLoading]){
-        [self writeActionData:model.time];
+        [self writeActionData:model.time context:context];
         return NO;
     }
     
     switch (model.type) {
         case FTRUMDataClick:
             if ([self allResourcesCompletedLoading]) {
-                [self writeActionData:model.time];
+                [self writeActionData:model.time context:context];
                 return NO;
             }
             break;
@@ -94,7 +94,7 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
 -(BOOL)allResourcesCompletedLoading{
     return self.activeResourcesCount<=0;
 }
--(void)writeActionData:(NSDate *)endDate{
+-(void)writeActionData:(NSDate *)endDate context:(NSDictionary *)context{
     NSNumber *duration =  [endDate timeIntervalSinceDate:self.actionStartTime] >= actionMaxDuration?@(actionMaxDuration*1000000000):[self.actionStartTime ft_nanosecondTimeIntervalToDate:endDate];
     NSDictionary *sessionViewActionTag = [self.context getGlobalSessionViewActionTags];
     
@@ -106,7 +106,8 @@ static const NSTimeInterval discreteActionTimeoutDuration = 0.1;
     if(self.actionProperty && self.actionProperty.allKeys.count>0){
         [fields addEntriesFromDictionary:self.actionProperty];
     }
-    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:sessionViewActionTag];
+    NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:context];
+    [tags addEntriesFromDictionary:sessionViewActionTag];
     [tags setValue:self.action_type forKey:FT_KEY_ACTION_TYPE];
     [self.dependencies.writer rumWrite:FT_RUM_SOURCE_ACTION tags:tags fields:fields time:[self.actionStartTime ft_nanosecondTimeStamp]];
     if (self.handler) {

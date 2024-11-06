@@ -9,6 +9,7 @@
 #import "NSDictionary+FTCopyProperties.h"
 #import "FTJSONUtil.h"
 #import "FTLog+Private.h"
+#import "NSNumber+FTAdd.h"
 @implementation NSDictionary (FTCopyProperties)
 - (NSDictionary *)ft_deepCopy{
     NSMutableDictionary *properties = [NSMutableDictionary dictionary];
@@ -26,8 +27,9 @@
                 continue;
             }
             if([value isKindOfClass:[NSNumber class]]){
-                id number = [value isEqualToNumber:NSDecimalNumber.notANumber] || [value isEqualToNumber:@(INFINITY)] ? nil : value;
-                properties[key] = number;
+                NSNumber *number = (NSNumber *)value;
+                id rValue = [number isEqualToNumber:NSDecimalNumber.notANumber] || [number isEqualToNumber:@(INFINITY)] ? nil : [number ft_toUserFieldFormat];
+                properties[key] = rValue;
                 continue;
             }
             if ([value isKindOfClass:[NSArray class]] || [value isKindOfClass:[NSDictionary class]]) {

@@ -80,7 +80,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
     [FTMobileAgent startWithConfigOptions:config];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
 }
 /// 1.验证有webview传入数据添加
 /// 2.验证数据格式
@@ -166,7 +166,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         }
     }];
     XCTAssertTrue(hasViewData);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 -(void)testloadFileURL{
     [self setsdk];
@@ -241,7 +241,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
 -(void)testSDKShutDownWebViewBridge{
     [self setsdk];
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"sample" withExtension:@"html"];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     NSInteger oldCount =[[FTTrackerEventDBTool sharedManger] getDatasCount];
     [self.viewController test_loadFileURL:url allowingReadAccessToURL:url];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
@@ -279,7 +279,7 @@ typedef void(^FTTraceRequest)(NSURLRequest *);
         XCTAssertNil(error);
     }];
     self.loadExpect = [self expectationWithDescription:@"请求超时timeout!"];
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     [self.viewController ft_reload];
     [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
         XCTAssertNil(error);

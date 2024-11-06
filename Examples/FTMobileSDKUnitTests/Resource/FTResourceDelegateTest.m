@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
     
 }
 - (void)sdkNormalSet{
@@ -62,7 +62,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTModelHelper startView];
 }
 - (void)sdkInnerURLTestSet{
@@ -80,7 +80,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
     [[FTMobileAgent sharedInstance] startRumWithConfigOptions:rumConfig];
     [[FTMobileAgent sharedInstance] startTraceWithConfigOptions:traceConfig];
     [[FTMobileAgent sharedInstance] unbindUser];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     [FTModelHelper startView];
 }
 - (void)testUseDelegateDirect{
@@ -205,7 +205,7 @@ typedef NS_ENUM(NSUInteger,TestSessionRequestMethod){
         }
     }];
     XCTAssertTrue(hasResource);
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [[FTTrackerEventDBTool sharedManger] deleteAllDatas];
     ResourcePropertyProvider provider2 = ^NSDictionary * _Nullable(NSURLRequest *request, NSURLResponse *response, NSData *data, NSError *error) {
         XCTAssertTrue(request);
         NSString *responseBody = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];

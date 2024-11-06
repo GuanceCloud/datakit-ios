@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 绑定用户信息
 ///
 /// - Parameters:
-///   - Id:  用户Id
+///   - userId:  用户Id
 - (void)bindUserWithUserID:(NSString *)userId;
 
 /// 绑定用户信息
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - Id:  用户Id
 ///   - userName: 用户名称
-///   - userEmailL: 用户邮箱
+///   - userEmail: 用户邮箱
 - (void)bindUserWithUserID:(NSString *)Id userName:(nullable NSString *)userName userEmail:(nullable NSString *)userEmail;
 /// 绑定用户信息
 ///
@@ -92,6 +92,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// 注销当前用户
 - (void)unbindUser;
 
+/// 添加 SDK 全局 tag，作用于 RUM、Log 数据
+/// - Parameter context: 自定义数据
++ (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context;
+
+/// 添加 RUM 自定义 tag，作用于 RUM 数据
+/// - Parameter context: 自定义数据
++ (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context;
+
+/// 添加 Log 全局 tag，作用于 Log 数据
+/// - Parameter context: 自定义数据
++ (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context;
+
 /// Track App Extension groupIdentifier 中缓存的数据
 /// - Parameters:
 ///   - groupIdentifier: groupIdentifier
@@ -100,11 +112,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 ///  主动同步数据
 - (void)flushSyncData;
+
 /// 关闭 SDK 内正在运行对象
-- (void)shutDown;
++ (void)shutDown;
+
+/// 清除所有尚未上传至服务器的数据
++ (void)clearAllData;
+
 #pragma mark ========== DEPRECATED ==========
 /// 注销当前用户
 - (void)logout DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 -unbindUser 替换");
+
+/// 关闭 SDK 内正在运行对象
+/// 如果 SDK 未初始化，通过 `[[FTMobileAgent sharedInstance] shutDown]` 操作在测试环境会有断言崩溃，建议使用类方法替代 `[FTMobileAgent shutDown]`
+- (void)shutDown DEPRECATED_MSG_ATTRIBUTE("已过时，请使用 +shutDown 替换");
 @end
 
 NS_ASSUME_NONNULL_END

@@ -27,7 +27,7 @@
 }
 -(id<FTRumDatasProtocol>)delegate{
     if(!_delegate){
-        FTInnerLogError(@"SDK configuration RUM error, RUM is not supported");
+        FTInnerLogError(@"This operation failed. Please check if RUM is successfully configured.");
     }
     return _delegate;
 }

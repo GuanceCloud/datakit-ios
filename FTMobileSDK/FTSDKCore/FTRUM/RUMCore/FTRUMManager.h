@@ -11,6 +11,7 @@
 #import "FTErrorDataProtocol.h"
 #import "FTRumDatasProtocol.h"
 #import "FTRumResourceProtocol.h"
+#import "FTLinkRumDataProvider.h"
 @class FTRumConfig,FTResourceMetricsModel,FTResourceContentModel,FTRUMMonitor;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,7 +24,7 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
     /// 预启动，在APP启动前，系统进行了预加载
     FTLaunchWarm
 };
-@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol>
+@interface FTRUMManager : FTRUMHandler<FTRumResourceProtocol,FTErrorDataDelegate,FTRumDatasProtocol,FTLinkRumDataProvider>
 @property (nonatomic, assign) FTAppState appState;
 @property (atomic,copy,readwrite) NSString *viewReferrer;
 #pragma mark - init -
@@ -154,9 +155,6 @@ typedef NS_ENUM(NSUInteger, FTLaunchType) {
  */
 - (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
 #pragma mark - get LinkRumData -
-
-/// 当 FTTraceConfig、FTLoggerConfig 开启 enableLinkRumData 时 获取 rum 信息
--(NSDictionary *)getCurrentSessionInfo;
 
 /// 等待 rum 正在处理数据全部处理
 - (void)syncProcess;

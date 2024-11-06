@@ -18,9 +18,9 @@
     if ([self ft_isBool]) {
         return [self boolValue] ? @"true": @"false";
     }if (strcmp([self objCType], @encode(float)) == 0){
-        return [NSString stringWithFormat:@"%.1f",self.floatValue];
+        return [NSString stringWithFormat:@"%.2f",self.floatValue];
     }else if(strcmp([self objCType], @encode(double)) == 0){
-        return [NSString stringWithFormat:@"%.1f",self.doubleValue];
+        return [NSString stringWithFormat:@"%.2f",self.doubleValue];
     }else{
         return [NSString stringWithFormat:@"%@i", self];
     }
@@ -30,17 +30,26 @@
     if ([self ft_isBool]) {
         return [self boolValue] ? @"true": @"false";
     }if (strcmp([self objCType], @encode(float)) == 0){
-        return [NSString stringWithFormat:@"%.1f",self.floatValue];
+        return [NSString stringWithFormat:@"%.2f",self.floatValue];
     }else if(strcmp([self objCType], @encode(double)) == 0){
-        return [NSString stringWithFormat:@"%.1f",self.doubleValue];
+        return [NSString stringWithFormat:@"%.2f",self.doubleValue];
     }
     return self;
 }
 - (id)ft_toTagFormat{
     if ([self ft_isBool]) {
         return [self boolValue] ? @"true": @"false";
-    }else{
-        return self;
+    }else if (strcmp([self objCType], @encode(float)) == 0){
+        return [NSString stringWithFormat:@"%.2f",self.floatValue];
+    }else if(strcmp([self objCType], @encode(double)) == 0){
+        return [NSString stringWithFormat:@"%.2f",self.doubleValue];
     }
+    return self;
+}
+- (id)ft_toUserFieldFormat{
+   if (strcmp([self objCType], @encode(float)) == 0||strcmp([self objCType], @encode(double)) == 0){
+       return self.stringValue;
+    }
+    return self;
 }
 @end

@@ -49,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param tm 删除时间
 -(BOOL)deleteItemWithTm:(long long)tm;
 
+/// 删除所有数据
+-(BOOL)deleteAllDatas;
+
 /// 删除日志数据
 /// @param count 删除前 count 个数据
 -(BOOL)deleteLoggingItem:(NSInteger)count;

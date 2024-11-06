@@ -17,7 +17,6 @@
 #import "FTLog+Private.h"
 #import "NSString+FTAdd.h"
 #import "FTPresetProperty.h"
-#import "FTReachability.h"
 #import "FTTrackDataManager.h"
 #import "FTAppLifeCycle.h"
 #import "FTRUMManager.h"
@@ -33,8 +32,8 @@
 #import "FTMobileConfig+Private.h"
 #import "FTLogger+Private.h"
 #import "NSDictionary+FTCopyProperties.h"
+#import "FTTrackerEventDBTool.h"
 @interface FTMobileAgent ()<FTAppLifeCycleDelegate>
-@property (nonatomic, strong) FTPresetProperty *presetProperty;
 @property (nonatomic, strong) FTLoggerConfig *loggerConfig;
 @property (nonatomic, strong) FTRumConfig *rumConfig;
 @property (nonatomic, strong) FTTraceConfig *traceConfig;
@@ -68,12 +67,12 @@ static dispatch_once_t onceToken;
             [FTExtensionDataManager sharedInstance].groupIdentifierArray = config.groupIdentifiers;
             //开启数据处理管理器
             [FTTrackDataManager startWithAutoSync:config.autoSync syncPageSize:config.syncPageSize syncSleepTime:config.syncSleepTime];
-            
-            _presetProperty = [[FTPresetProperty alloc] initWithVersion:config.version
-                                                                    env:config.env
-                                                                service:config.service
-                                                          globalContext:config.globalContext];
-            _presetProperty.sdkVersion = SDK_VERSION;
+            NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+            [[FTPresetProperty sharedInstance] startWithVersion:version
+                                                     sdkVersion:SDK_VERSION
+                                                            env:config.env
+                                                        service:config.service
+                                                  globalContext:config.globalContext];
             [FTNetworkInfoManager sharedInstance]
                 .setDatakitUrl(config.datakitUrl)
                 .setDatawayUrl(config.datawayUrl)
@@ -93,24 +92,29 @@ static dispatch_once_t onceToken;
         NSAssert((rumConfigOptions.appid.length!=0 ), @"请设置 appid 用户访问监测应用ID");
         FTInnerLogInfo(@"[RUM] APPID:%@",rumConfigOptions.appid);
         _rumConfig = [rumConfigOptions copy];
-        [self.presetProperty setAppID:_rumConfig.appid];
-        self.presetProperty.rumContext = _rumConfig.globalContext;
+        [[FTPresetProperty sharedInstance] setAppID:_rumConfig.appid];
+        [FTPresetProperty sharedInstance].rumGlobalContext = _rumConfig.globalContext;
         [[FTGlobalRumManager sharedInstance] setRumConfig:_rumConfig writer:self];
         [[FTURLSessionInstrumentation sharedInstance] setEnableAutoRumTrace:_rumConfig.enableTraceUserResource resourceUrlHandler:_rumConfig.resourceUrlHandler];
         [[FTURLSessionInstrumentation sharedInstance] setRumResourceHandler:[FTGlobalRumManager sharedInstance].rumManager];
         [FTExternalDataManager sharedManager].resourceDelegate = [FTURLSessionInstrumentation sharedInstance].externalResourceHandler;
         [[FTExtensionDataManager sharedInstance] writeRumConfig:[_rumConfig convertToDictionary]];
+        if (_loggerConfig) {
+            [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
+        }
     }
 }
 - (void)startLoggerWithConfigOptions:(FTLoggerConfig *)loggerConfigOptions{
     if (!_loggerConfig) {
         _loggerConfig = [loggerConfigOptions copy];
-        self.presetProperty.logContext = _loggerConfig.globalContext;
+        [FTPresetProperty sharedInstance].logGlobalContext = _loggerConfig.globalContext;
         [[FTTrackDataManager sharedInstance] setLogCacheLimitCount:_loggerConfig.logCacheLimitCount logDiscardNew:_loggerConfig.discardType == FTDiscard];
         [[FTExtensionDataManager sharedInstance] writeLoggerConfig:[_loggerConfig convertToDictionary]];
         [FTLogger startWithEnablePrintLogsToConsole:_loggerConfig.printCustomLogToConsole
                                     enableCustomLog:_loggerConfig.enableCustomLog
+                                  enableLinkRumData:_loggerConfig.enableLinkRumData
                                      logLevelFilter:_loggerConfig.logLevelFilter sampleRate:_loggerConfig.samplerate writer:self];
+        [FTLogger sharedInstance].linkRumDataProvider = [FTGlobalRumManager sharedInstance].rumManager;
     }
 }
 - (void)startTraceWithConfigOptions:(FTTraceConfig *)traceConfigOptions{
@@ -159,19 +163,56 @@ static dispatch_once_t onceToken;
     [self bindUserWithUserID:Id userName:userName userEmail:userEmail extra:nil];
 }
 -(void)bindUserWithUserID:(NSString *)Id userName:(NSString *)userName userEmail:(nullable NSString *)userEmail extra:(NSDictionary *)extra{
-    NSParameterAssert(Id);
+    if(Id == nil || Id.length==0){
+        FTInnerLogError(@"Failed to bind user ! User ID can't be empty");
+        return;
+    }
     NSDictionary *safeExtra = [extra ft_deepCopy];
-    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value updateUser:Id name:userName email:userEmail extra:safeExtra];
     }];
     FTInnerLogInfo(@"Bind User ID : %@ , Name : %@ , Email : %@ , Extra : %@",Id,userName,userEmail,safeExtra);
+}
++ (void)appendGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
+    if(!context){
+        FTInnerLogWarning(@"appendGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [[FTPresetProperty sharedInstance] appendGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendGlobalContext : %@",safeDict);
+}
++ (void)appendRUMGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
+    if(!context){
+        FTInnerLogWarning(@"appendRUMGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [[FTPresetProperty sharedInstance] appendRUMGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendRUMGlobalContext : %@",safeDict);
+   
+}
++ (void)appendLogGlobalContext:(NSDictionary <NSString*,id>*)context{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
+    if(!context){
+        FTInnerLogWarning(@"appendLogGlobalContext: context is nil");
+    }
+    NSDictionary *safeDict = [context ft_deepCopy];
+    [[FTPresetProperty sharedInstance] appendLogGlobalContext:safeDict];
+    FTInnerLogInfo(@"appendLogGlobalContext : %@",safeDict);
 }
 //用户注销
 - (void)logout{
     [self unbindUser];
 }
 - (void)unbindUser{
-    [self.presetProperty.userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
+    [[FTPresetProperty sharedInstance].userHelper concurrentWrite:^(FTUserInfo * _Nonnull value) {
         [value clearUser];
     }];
     FTInnerLogInfo(@"Unbind User");
@@ -184,16 +225,13 @@ static dispatch_once_t onceToken;
     @try {
         FTAddDataType dataType = [type isEqualToString:FT_RUM_SOURCE_ERROR]?FTAddDataImmediate:FTAddDataNormal;
         NSMutableDictionary *baseTags =[NSMutableDictionary new];
-        [baseTags addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
-        baseTags[@"network_type"] = [FTReachability sharedInstance].net;
         [baseTags addEntriesFromDictionary:tags];
-        NSMutableDictionary *rumProperty = [self.presetProperty rumProperty];
+        NSDictionary *rumProperty;
         // webView 打进的数据
         if([tags.allKeys containsObject:FT_IS_WEBVIEW]){
-            [baseTags setValue:SDK_VERSION forKey:@"package_native"];
-            [rumProperty removeObjectForKey:FT_KEY_SERVICE];
-            [rumProperty removeObjectForKey:FT_SDK_VERSION];
-            [rumProperty removeObjectForKey:FT_SDK_NAME];
+            rumProperty = [[FTPresetProperty sharedInstance] rumWebViewProperty];
+        }else{
+            rumProperty = [[FTPresetProperty sharedInstance] rumProperty];
         }
         [baseTags addEntriesFromDictionary:rumProperty];
         FTRecordModel *model = [[FTRecordModel alloc]initWithSource:type op:FT_DATA_TYPE_RUM tags:baseTags fields:fields tm:time];
@@ -206,19 +244,11 @@ static dispatch_once_t onceToken;
 // FT_DATA_TYPE_LOGGING
 -(void)logging:(NSString *)content status:(NSString *)status tags:(nullable NSDictionary *)tags field:(nullable NSDictionary *)field time:(long long)time{
     @try {
-        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[self.presetProperty loggerProperty]];
-        [tagDict setValue:status forKey:FT_KEY_STATUS];
+        NSMutableDictionary *tagDict = [NSMutableDictionary dictionaryWithDictionary:[[FTPresetProperty sharedInstance] loggerProperty]];
         if (tags) {
             [tagDict addEntriesFromDictionary:tags];
         }
-        if (self.loggerConfig.enableLinkRumData) {
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumDynamicProperty]];
-            [tagDict addEntriesFromDictionary:[self.presetProperty rumProperty]];
-            if(![tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]){
-                NSDictionary *rumTag = [[FTGlobalRumManager sharedInstance].rumManager getCurrentSessionInfo];
-                [tagDict addEntriesFromDictionary:rumTag];
-            }
-        }
+        [tagDict setValue:status forKey:FT_KEY_STATUS];
         NSMutableDictionary *filedDict = @{FT_KEY_MESSAGE:content,
         }.mutableCopy;
         if (field) {
@@ -248,12 +278,23 @@ static dispatch_once_t onceToken;
                     }else{
                         statusStr = status;
                     }
-                    [self logging:dict[@"content"] status:statusStr tags:dict[@"tags"] field:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] loggerDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    if (self.loggerConfig.enableLinkRumData) {
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumDynamicProperty]];
+                        [tags addEntriesFromDictionary:[[FTPresetProperty sharedInstance] rumProperty]];
+                    }
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [self logging:dict[@"content"] status:statusStr tags:tags field:dict[@"fields"] time:time.longLongValue];
                 }else if([dataType isEqualToString:FT_DATA_TYPE_RUM]){
                     NSString *eventType = dict[@"eventType"];
-                    [self rumWrite:eventType tags:dict[@"tags"] fields:dict[@"fields"] time:time.longLongValue];
+                    NSDictionary *dynamicTags = [[FTPresetProperty sharedInstance] rumDynamicProperty];
+                    NSMutableDictionary *tags = [NSMutableDictionary dictionary];
+                    [tags addEntriesFromDictionary:dict[@"tags"]];
+                    [tags addEntriesFromDictionary:dynamicTags];
+                    [self rumWrite:eventType tags:tags fields:dict[@"fields"] time:time.longLongValue];
                 }
-                
             }
             [[FTExtensionDataManager sharedInstance] deleteEventsWithGroupIdentifier:groupIdentifier];
             if (completion) {
@@ -275,12 +316,29 @@ static dispatch_once_t onceToken;
     [[FTGlobalRumManager sharedInstance] shutDown];
     [[FTLogger sharedInstance] shutDown];
     [[FTURLSessionInstrumentation sharedInstance] shutDown];
+    [[FTPresetProperty sharedInstance] shutDown];
     onceToken = 0;
     sharedInstance = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [[FTLog sharedInstance] shutDown];
     [[FTTrackDataManager sharedInstance] shutDown];
     FTInnerLogInfo(@"[SDK] SHUT DOWN");
+    [[FTLog sharedInstance] shutDown];
+}
++ (void)shutDown{
+    if (onceToken == 0 && sharedInstance == nil) {
+        return;
+    }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [sharedInstance shutDown];
+#pragma clang diagnostic pop
+}
++ (void)clearAllData{
+    if([[FTTrackerEventDBTool sharedManger] deleteAllDatas]){
+        FTInnerLogInfo(@"[SDK] Clear All Data Success!!!");
+    }else{
+        FTInnerLogInfo(@"[SDK] Clear All Data Error!!!");
+    }
 }
 - (void)syncProcess{
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];

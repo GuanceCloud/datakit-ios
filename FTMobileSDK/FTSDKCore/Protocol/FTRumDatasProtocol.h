@@ -87,7 +87,8 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 /// - Parameters:
 ///   - stack: 卡顿堆栈
 ///   - duration: 卡顿时长（纳秒）
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time;
+///   - startTime: 卡顿开始时间
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime;
 
 /// 添加 卡顿 事件
 /// - Parameters:
@@ -95,7 +96,7 @@ typedef NS_ENUM(NSUInteger, FTAppState) {
 ///   - duration: 卡顿时长（纳秒）
 ///   - startTime: 卡顿开始时间（纳秒级时间戳）
 ///   - property: 事件自定义属性(可选)
-- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)time property:(nullable NSDictionary *)property;
+- (void)addLongTaskWithStack:(NSString *)stack duration:(NSNumber *)duration startTime:(long long)startTime property:(nullable NSDictionary *)property;
 
 @optional
 /// 添加 Click Action 事件

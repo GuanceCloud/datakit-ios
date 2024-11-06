@@ -17,8 +17,6 @@ FT_ENV="common"
 # 配置文件 datakit.conf 中 dataway 的 token
 FT_TOKEN="YOUR_DATAWAY_TOKEN"
 #
-# 脚本默认配置的版本格式为CFBundleShortVersionString,如果你修改默认的版本格式, 请设置此变量。注意：需要确保在此填写的与SDK设置的一致。
-# FT_VERSION=""
 #
 # Debug模式编译是否上传，1＝上传 0＝不上传，默认不上传
 # UPLOAD_DEBUG_SYMBOLS=0
@@ -38,12 +36,18 @@ UPLOAD_ARCHIVE_ONLY=1
 # 2. 脚本根据输入参数处理
 #######################################################
 #
-# #命令行下输入应用基本信息, .dSYM文件的父目录路径, 输出文件目录即可
+# #命令行下输入应用基本信息
 #
-# sh  dSYMUpload.sh <sdk_url> <rum_app_id> <app_version> <app_env> <dataway_token> <dSYMBOL_src_dir> <dSYMBOL_dest_dir>
+# sh  FTdSYMUpload.sh <datakit_address> <app_id> <version> <env> <dataway_token> <dSYMBOL_src_dir>
 #
+#  变量说明：
+#  - `<datakit_address>`: DataKit 服务的地址，如 `http://localhost:9529`
+#  - `<app_id>`: 对应 RUM 的 `applicationId`
+#  - `<env>`: 对应 RUM 的 `env`
+#  - `<version>`: 应用的 `version` ，`CFBundleShortVersionString`值
+#  - `<dataway_token>`: 配置文件 `datakit.conf` 中 `dataway` 的 token
+#  - `<dSYMBOL_src_dir>`: 待上传的 `dSYMBOL` 文件夹路径
 #
-
 #
 # --- CONTENT OF SCRIPT ---
 #
@@ -64,7 +68,8 @@ function dSYMUpload(){
     P_APP_ENV="$4"
     P_TOKEN="$5"
     P_BSYMBOL_ZIP_FILE="$6"
-    
+    P_DSYM_TEMPORARY_DIR="$7"
+
     #
     P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE##*/}
     P_BSYMBOL_ZIP_FILE_NAME=${P_BSYMBOL_ZIP_FILE_NAME//&/_}
@@ -74,7 +79,7 @@ function dSYMUpload(){
     echo "dSYM upload url: ${DSYM_UPLOAD_URL}"
     
     echo "-----------------------------"
-    STATUS=$(curl -X PUT "${DSYM_UPLOAD_URL}"  -F "file=@${P_BSYMBOL_ZIP_FILE}" -H "Content-Type: multipart/form-data")
+    STATUS=$(curl -X PUT "${DSYM_UPLOAD_URL}"  -F "file=@\"$P_BSYMBOL_ZIP_FILE\"")
     echo "-----------------------------"
     
     UPLOAD_RESULT="FAILTURE"
@@ -89,15 +94,15 @@ function dSYMUpload(){
     echo "Error: Failed to upload the zip archive file to DataKit."
     fi
     #Remove temp dSYM archive
-    echo "Remove temporary zip archive: ${DSYM_ZIP_FPATH}"
-    rm -f "${P_BSYMBOL_ZIP_FILE}"
+    echo "Remove temporary DIR: ${P_DSYM_TEMPORARY_DIR}"
+    rm -rf "${P_DSYM_TEMPORARY_DIR}"
     
     if [ "$?" -ne 0 ]; then
     exitWithMessage "Error: Failed to remove temporary zip archive." 0
     fi
     
     echo "--------------------------------"
-    echo "${UPLOAD_RESULT} - dSYM upload complete."
+    echo "Upload Result: ${UPLOAD_RESULT}."
     
     if [[ "${UPLOAD_RESULT}" == "FAILTURE" ]]; then
     echo "--------------------------------"
@@ -147,7 +152,7 @@ function run() {
     fi
     
     if [ ! -e "${CONFIG_DSYM_DEST_DIR}" ]; then
-    mkdir ${CONFIG_DSYM_DEST_DIR}
+    mkdir "${CONFIG_DSYM_DEST_DIR}"
     fi
     
     DSYM_FOLDER="${CONFIG_DSYM_SOURCE_DIR}"
@@ -175,7 +180,7 @@ function run() {
     zip -r -q $DSYM_SYMBOL_ZIP_FILE *
     popd
     # 上传
-    dSYMUpload $CONFIG_SDK_URL $CONFIG_APP_ID $CONFIG_APP_VERSION $CONFIG_APP_ENV $CONFIG_TOKEN $DSYM_SYMBOL_ZIP_FILE
+    dSYMUpload $CONFIG_SDK_URL $CONFIG_APP_ID $CONFIG_APP_VERSION $CONFIG_APP_ENV $CONFIG_TOKEN "$DSYM_SYMBOL_ZIP_FILE" "$CONFIG_DSYM_DEST_DIR"
     fi
     
     if [ $RET = "F" ]; then
@@ -289,8 +294,6 @@ FT_I_APP_VERSION="$3"
 FT_I_APP_ENV="$4"
 FT_I_DATAWAY_TOKEN="$5"
 DWARF_DSYM_FOLDER_PATH="$6"
-#需要一个空的文件夹,如果不进行设置就默认为 ${DWARF_DSYM_FOLDER_PATH}/SymbolTemp
-SYMBOL_OUTPUT_PATH="$7"
 
-run ${FT_I_DATAKIT_ADDRESS} ${FT_I_RUM_APP_ID} ${FT_I_APP_VERSION} ${FT_I_APP_ENV} ${FT_I_DATAWAY_TOKEN} ${DWARF_DSYM_FOLDER_PATH} ${SYMBOL_OUTPUT_PATH}
+run ${FT_I_DATAKIT_ADDRESS} ${FT_I_RUM_APP_ID} ${FT_I_APP_VERSION} ${FT_I_APP_ENV} ${FT_I_DATAWAY_TOKEN} "$DWARF_DSYM_FOLDER_PATH"
 fi

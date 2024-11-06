@@ -13,10 +13,10 @@
 @class FTRUMHandler;
 NS_ASSUME_NONNULL_BEGIN
 @protocol FTRUMSessionProtocol <NSObject>
-- (BOOL)process:(FTRUMDataModel *)model;
+- (BOOL)process:(FTRUMDataModel *)model context:(NSDictionary *)context;
 @optional
-- (NSMutableArray<FTRUMHandler*>*)manageChildHandlers:(NSMutableArray<FTRUMHandler*> *)childHandlers byPropagatingData:(FTRUMDataModel *)data;
-- (FTRUMHandler *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data;
+- (NSMutableArray<FTRUMHandler*>*)manageChildHandlers:(NSMutableArray<FTRUMHandler*> *)childHandlers byPropagatingData:(FTRUMDataModel *)data context:(NSDictionary *)context;
+- (FTRUMHandler *)manage:(FTRUMHandler *)childHandler byPropagatingData:(FTRUMDataModel *)data context:(NSDictionary *)context;
 
 @end
 @interface FTRUMHandler : NSObject

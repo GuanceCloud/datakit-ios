@@ -19,43 +19,6 @@
 #if FT_MAC
 #import <IOKit/IOKitLib.h>
 #endif
-//设备对象 __class 值
-static NSString * const FT_OBJECT_DEFAULT_CLASS = @"Mobile_Device";
-//系统版本
-static NSString * const FT_COMMON_PROPERTY_OS_VERSION = @"os_version";
-//操作系统主要版本
-static NSString * const FT_COMMON_PROPERTY_OS_VERSION_MAJOR = @"os_version_major";
-
-//是否是注册用户，属性值：True / False
-static NSString * const FT_IS_SIGNIN = @"is_signin";
-//操作系统
-static NSString * const FT_COMMON_PROPERTY_OS = @"os";
-//设备提供商
-static NSString * const FT_COMMON_PROPERTY_DEVICE = @"device";
-//本地语言
-static NSString * const FT_COMMON_PROPERTY_LOCALE = @"locale";
-//分辨率，格式 height * width，例子：1920*1080
-static NSString * const FT_COMMON_PROPERTY_DISPLAY = @"display";
-//agent 版本号
-static NSString * const FT_COMMON_PROPERTY_AGENT = @"agent";
-//autotrack 版本号
-static NSString * const FT_COMMON_PROPERTY_AUTOTRACK = @"autoTrack";
-//应用名称
-static NSString * const FT_COMMON_PROPERTY_APP_NAME = @"app_name";
-//设备机型
-static NSString * const FT_COMMON_PROPERTY_DEVICE_MODEL = @"model";
-//屏幕宽度
-static NSString * const FT_SCREEN_SIZE = @"screen_size";
-//CPU ARCH
-static NSString * const FT_CPU_ARCH = @"arch";
-
-//设备 UUID
-static NSString * const FT_COMMON_PROPERTY_DEVICE_UUID = @"device_uuid";
-//应用 ID
-static NSString * const FT_APPLICATION_UUID = @"application_uuid";
-
-static NSString * const FT_ENV = @"env";
-static NSString * const FT_VERSION = @"version";
 
 @interface MobileDevice : NSObject
 @property (nonatomic,copy,readonly) NSString *os;
@@ -99,23 +62,47 @@ static NSString * const FT_VERSION = @"version";
 @property (nonatomic, strong) MobileDevice *mobileDevice;
 @property (nonatomic, strong) NSMutableDictionary *rumCommonPropertyTags;
 @property (nonatomic, strong) NSDictionary *baseCommonPropertyTags;
-@property (nonatomic, strong) NSDictionary *context;
 @property (nonatomic, copy) NSString *version;
 @property (nonatomic, copy) NSString *env;
 @property (nonatomic, copy) NSString *service;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalContextHelper;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalRUMContextHelper;
+@property (nonatomic, strong) FTReadWriteHelper<NSMutableDictionary*> *globalLogContextHelper;
+@property (nonatomic, strong) NSDictionary *globalContext;
+@property (nonatomic, copy) NSString *rum_custom_keys;
 @end
 @implementation FTPresetProperty
-- (instancetype)initWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+static FTPresetProperty *sharedInstance = nil;
+static dispatch_once_t onceToken;
++ (instancetype)sharedInstance{
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[FTPresetProperty alloc]init];
+    });
+    return sharedInstance;
+}
+-(instancetype)init{
     self = [super init];
-    if (self){
-        _version = version;
-        _env = env;
-        _service = service;
+    if(self){
         _mobileDevice = [[MobileDevice alloc]init];
-        _context = globalContext;
         _userHelper = [[FTReadWriteHelper alloc]initWithValue:[FTUserInfo new]];
+        _globalContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        _globalRUMContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
+        _globalLogContextHelper = [[FTReadWriteHelper alloc]initWithValue:[NSMutableDictionary new]];
     }
     return self;
+}
+- (void)startWithVersion:(NSString *)version sdkVersion:(NSString *)sdkVersion env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
+    _version = version;
+    _env = env;
+    _service = service;
+    _sdkVersion = sdkVersion;
+    _globalContext = globalContext;
+}
+-(void)setRumGlobalContext:(NSDictionary *)rumGlobalContext{
+    _rumGlobalContext = rumGlobalContext;
+    if(rumGlobalContext&&rumGlobalContext.count>0){
+        self.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:rumGlobalContext.allKeys];
+    }
 }
 -(NSDictionary *)baseCommonPropertyTags{
     if (!_baseCommonPropertyTags) {
@@ -131,30 +118,20 @@ static NSString * const FT_VERSION = @"version";
     }
     return _baseCommonPropertyTags;
 }
--(void)setRumContext:(NSDictionary *)rumContext{
-    if (rumContext) {
-        NSMutableDictionary *tags = [NSMutableDictionary dictionaryWithDictionary:rumContext];
-        NSArray *allKeys = rumContext.allKeys;
-        if (allKeys && allKeys.count>0) {
-            [tags setValue:[FTJSONUtil convertToJsonDataWithObject:allKeys] forKey:@"custom_keys"];
-        }
-        _rumContext = tags;
-    }
-}
 - (NSDictionary *)loggerProperty{
     NSMutableDictionary *tag = [NSMutableDictionary new];
-    [tag addEntriesFromDictionary:self.context];
-    [tag addEntriesFromDictionary:self.logContext];
     [tag addEntriesFromDictionary:self.baseCommonPropertyTags];
     [tag setValue:self.version forKey:@"version"];
     [tag setValue:self.env forKey:FT_ENV];
     return tag;
 }
-- (void)resetWithVersion:(NSString *)version env:(NSString *)env service:(NSString *)service globalContext:(NSDictionary *)globalContext{
-    self.version = version;
-    self.env = env;
-    self.service = service;
-    self.context = [globalContext copy];
+- (NSDictionary *)loggerDynamicProperty{
+    NSMutableDictionary *tag = [NSMutableDictionary new];
+    [tag addEntriesFromDictionary:self.globalContextHelper.currentValue];
+    [tag addEntriesFromDictionary:self.globalLogContextHelper.currentValue];
+    [tag addEntriesFromDictionary:self.globalContext];
+    [tag addEntriesFromDictionary:self.logGlobalContext];
+    return tag;
 }
 - (NSMutableDictionary *)rumProperty{
     NSMutableDictionary *dict = [NSMutableDictionary new];
@@ -177,6 +154,31 @@ static NSString * const FT_VERSION = @"version";
     [dict setValue:self.env forKey:FT_ENV];
     [dict setValue:self.version forKey:FT_VERSION];
     [dict setValue:self.appID forKey:FT_APP_ID];
+    return dict;
+}
+- (NSMutableDictionary *)rumWebViewProperty{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    // rum common property tags
+    dict[FT_COMMON_PROPERTY_DEVICE] = self.mobileDevice.device;
+    dict[FT_COMMON_PROPERTY_DEVICE_MODEL] = self.mobileDevice.model;
+    dict[FT_COMMON_PROPERTY_OS] = self.mobileDevice.os;
+    dict[FT_COMMON_PROPERTY_OS_VERSION] = self.mobileDevice.osVersion;
+    dict[FT_COMMON_PROPERTY_OS_VERSION_MAJOR] = self.mobileDevice.osVersionMajor;
+    dict[FT_COMMON_PROPERTY_DEVICE_UUID] = self.mobileDevice.deviceUUID;
+    dict[FT_SCREEN_SIZE] = self.mobileDevice.screenSize;
+    dict[FT_CPU_ARCH] = self.mobileDevice.cpuArch;
+    [dict setValue:self.env forKey:FT_ENV];
+    [dict setValue:self.appID forKey:FT_APP_ID];
+    [dict setValue:self.sdkVersion forKey:@"package_native"];
+    return dict;
+}
+- (NSDictionary *)rumDynamicProperty{
+    NSMutableDictionary *dict = [NSMutableDictionary new];
+    [dict addEntriesFromDictionary:self.globalContextHelper.currentValue];
+    [dict addEntriesFromDictionary:self.globalRUMContextHelper.currentValue];
+    [dict addEntriesFromDictionary:self.globalContext];
+    [dict addEntriesFromDictionary:self.rumGlobalContext];
+    [dict setValue:self.rum_custom_keys forKey:FT_RUM_CUSTOM_KEYS];
     // user
     dict[FT_USER_ID] = self.userHelper.currentValue.userId;
     dict[FT_USER_NAME] = self.userHelper.currentValue.name;
@@ -187,11 +189,32 @@ static NSString * const FT_VERSION = @"version";
     }
     return dict;
 }
-- (NSDictionary *)rumDynamicProperty{
-    NSMutableDictionary *dict = [NSMutableDictionary new];
-    [dict addEntriesFromDictionary:self.context];
-    [dict addEntriesFromDictionary:self.rumContext];
-    return dict;
+- (void)appendGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        [self.globalContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+        }];
+    }
+}
+- (void)appendRUMGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        __weak typeof(self) weakSelf = self;
+        [self.globalRUMContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+            NSMutableArray *allKeys = [NSMutableArray arrayWithArray:value.allKeys];
+            if(weakSelf.rumGlobalContext.count>0){
+                [allKeys addObjectsFromArray:weakSelf.rumGlobalContext.allKeys];
+            }
+            weakSelf.rum_custom_keys = [FTJSONUtil convertToJsonDataWithObject:allKeys];
+        }];
+    }
+}
+- (void)appendLogGlobalContext:(NSDictionary *)context{
+    if(context && context.count>0){
+        [self.globalLogContextHelper concurrentWrite:^(NSMutableDictionary * _Nonnull value) {
+            [value addEntriesFromDictionary:context];
+        }];
+    }
 }
 - (NSString *)isSignInStr{
     return self.userHelper.currentValue.isSignIn?@"T":@"F";
@@ -612,5 +635,10 @@ static uintptr_t firstCmdAfterHeader(const struct mach_header* const header) {
     return  [NSString stringWithFormat:@"%ld.%ld.%ld",major,minor,patch];
 }
 #endif
+
+- (void)shutDown{
+    onceToken = 0;
+    sharedInstance =nil;
+}
 @end
 

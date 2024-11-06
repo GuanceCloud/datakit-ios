@@ -9,7 +9,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <os/lock.h>
-
+#import "FTLog+Private.h"
 #if !__has_feature(objc_arc)
 #error This code needs ARC. Use compiler option -fobjc-arc
 #endif
@@ -171,6 +171,10 @@ typedef IMP (^FTSwizzlerImpProvider)(void);
 
 -(FTSwizzlerOriginalIMP)getOriginalImplementation{
     NSAssert(_impProviderBlock,nil);
+    if (!_impProviderBlock) {
+        NSLog(@"_impProviderBlock can't be missing");
+        return NULL;
+    }
     // Casting IMP to FTSwizzlerOriginalIMP to force user casting.
     return (FTSwizzlerOriginalIMP)_impProviderBlock();
 }
@@ -229,10 +233,11 @@ static void swizzle(Class classToSwizzle,
     id newIMPBlock = factoryBlock(swizzleInfo);
     
     const char *methodType = method_getTypeEncoding(method);
-    
-    NSCAssert(blockIsCompatibleWithMethodType(newIMPBlock,methodType),
-              @"Block returned from factory is not compatible with method type.");
-    
+#if !defined(NS_BLOCK_ASSERTIONS)
+    if(!blockIsCompatibleWithMethodType(newIMPBlock,methodType)){
+        FTInnerLogWarning(@"Block returned from factory is not compatible with class(%@) method(%@) type(%s).",classToSwizzle,NSStringFromSelector(selector),methodType);
+    }
+#endif
     IMP newIMP = imp_implementationWithBlock(newIMPBlock);
     
     // Atomically replace the original method with our new implementation.

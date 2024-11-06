@@ -31,8 +31,8 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
-    [[FTMobileAgent sharedInstance] shutDown];
-    [[FTTrackerEventDBTool sharedManger] deleteItemWithTm:[NSDate ft_currentNanosecondTimeStamp]];
+    [FTMobileAgent shutDown];
+    [FTMobileAgent clearAllData];
 }
 
 - (void)testAddActionEventPerformance{
