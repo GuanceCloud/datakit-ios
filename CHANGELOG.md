@@ -1,3 +1,6 @@
+# 1.5.5
+1. 修复 `FTResourceMetricsModel` 中数组越界导致的崩溃问题
+---
 # 1.5.5-beta.1
 1. 同 1.5.2-hotfix.2
 ---
