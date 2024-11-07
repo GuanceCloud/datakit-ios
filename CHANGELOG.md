@@ -1,3 +1,9 @@
+# 1.5.5
+1. 修复 `FTResourceMetricsModel` 中数组越界导致的崩溃问题
+---
+# 1.5.5-beta.1
+1. 同 1.5.2-hotfix.2
+---
 # 1.5.5-alpha.1
 1. 添加对 SDK 内部数据请求压缩的支持
 2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
@@ -34,6 +40,9 @@
 1. 修复因属性修饰符使用不当引发的内存访问错误导致的崩溃问题
 2. 使用内部警告日志替换 `FTSwizzler` 中方法签名验证断言
 3. 优化采集数据的小数精度
+---
+# 1.5.2-hotfix.2
+1. 修复 `FTResourceMetricsModel` 中数组越界崩溃的问题
 ---
 # 1.5.2
 1. 修复 Xcode 16 编译缺少 `#include <arm/_mcontext.h>` 头文件问题
