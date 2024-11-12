@@ -211,7 +211,7 @@
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
     [tester waitForTimeInterval:0.5];
@@ -244,7 +244,7 @@
     [self networkUploadHandler:^(NSURLResponse *response, NSError *error) {
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:30 handler:^(NSError *error) {
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
            XCTAssertNil(error);
        }];
     [tester waitForTimeInterval:0.5];

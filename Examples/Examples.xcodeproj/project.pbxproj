@@ -26,6 +26,7 @@
 		172DD34028F7FC28007AE5E9 /* WidgetDemoExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 172DD33328F7FC27007AE5E9 /* WidgetDemoExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		172DD34928F7FC56007AE5E9 /* WidgetNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34728F7FC50007AE5E9 /* WidgetNetwork.swift */; };
 		172DD35128F7FEDF007AE5E9 /* NetworkTraceVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */; };
+		173A03FA2CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 173A03F92CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m */; };
 		174058BB28D813190092E096 /* FTLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BA28D813190092E096 /* FTLoggerTest.m */; };
 		174058BD28D813A20092E096 /* FTLongTaskTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BC28D813A20092E096 /* FTLongTaskTest.m */; };
 		174058C028D815810092E096 /* FTJavaScriptBridgeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */; };
@@ -177,6 +178,7 @@
 		172DD34A28F7FCB8007AE5E9 /* WidgetDemoExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetDemoExtension.entitlements; sourceTree = "<group>"; };
 		172DD34D28F7FEDF007AE5E9 /* NetworkTraceVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetworkTraceVC.m; sourceTree = "<group>"; };
 		172DD35028F7FEDF007AE5E9 /* NetworkTraceVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkTraceVC.h; sourceTree = "<group>"; };
+		173A03F92CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskFileHandleTest.m; sourceTree = "<group>"; };
 		174058BA28D813190092E096 /* FTLoggerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLoggerTest.m; sourceTree = "<group>"; };
 		174058BC28D813A20092E096 /* FTLongTaskTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FTLongTaskTest.m; sourceTree = "<group>"; };
 		174058BF28D815810092E096 /* FTJavaScriptBridgeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTJavaScriptBridgeTest.m; sourceTree = "<group>"; };
@@ -187,6 +189,7 @@
 		17593AE12906917700A15CD9 /* FTResourceDelegateTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FTResourceDelegateTest.m; sourceTree = "<group>"; };
 		175C7CF929E6CE1A00A7F271 /* LoggerVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerVC.m; sourceTree = "<group>"; };
 		175C7CFA29E6CE1A00A7F271 /* LoggerVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerVC.h; sourceTree = "<group>"; };
+		1761116B2CE3219D00071CA7 /* FTLongTaskManager+Test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FTLongTaskManager+Test.h"; sourceTree = "<group>"; };
 		1763BD6729DFEAF6009EE026 /* FTMobileSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FTMobileSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1764E3FF29AC9B0400E70DBB /* SwiftApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1764E40129AC9B0500E70DBB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -364,6 +367,16 @@
 			path = WidgetDemo;
 			sourceTree = "<group>";
 		};
+		173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */ = {
+			isa = PBXGroup;
+			children = (
+				174058BC28D813A20092E096 /* FTLongTaskTest.m */,
+				173A03F92CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m */,
+				1761116B2CE3219D00071CA7 /* FTLongTaskManager+Test.h */,
+			);
+			path = LongTaskManagerTest;
+			sourceTree = "<group>";
+		};
 		174058BE28D814D70092E096 /* WKWebView */ = {
 			isa = PBXGroup;
 			children = (
@@ -529,7 +542,6 @@
 		4A2C825F24EFC9AB006D4FC6 /* HookTest */ = {
 			isa = PBXGroup;
 			children = (
-				174058BC28D813A20092E096 /* FTLongTaskTest.m */,
 				174058BA28D813190092E096 /* FTLoggerTest.m */,
 				4A8531A223B3322500B40B5D /* FTAutoTrackTest.m */,
 			);
@@ -576,6 +588,7 @@
 				17F5C5222C60D62A007F2B2C /* FTURLProtocol.h */,
 				17F5C5202C60D62A007F2B2C /* FTURLProtocol.m */,
 				17132DC32C2D8AAD009DFE8F /* errors.json */,
+				173A03F82CDDD32A00E07D53 /* LongTaskManagerTest */,
 				177892B829A60CD20007B47F /* PerformanceTest */,
 				17E0792C291E60830014A420 /* ExtensionSDK */,
 				17593ADE29068DC200A15CD9 /* Resource */,
@@ -938,6 +951,7 @@
 				17E0792E291E60830014A420 /* FTExtensionSDKTest.m in Sources */,
 				17132DC72C2D9093009DFE8F /* FTUtilsTest.m in Sources */,
 				177892BA29A60F2E0007B47F /* PerformanceBaseTest.m in Sources */,
+				173A03FA2CDDD4AF00E07D53 /* FTLongTaskFileHandleTest.m in Sources */,
 				17F5C5232C60D62A007F2B2C /* FTSessionConfiguration.m in Sources */,
 				17593AE22906917700A15CD9 /* FTResourceDelegateTest.m in Sources */,
 				17F5C5242C60D62A007F2B2C /* FTURLProtocol.m in Sources */,
