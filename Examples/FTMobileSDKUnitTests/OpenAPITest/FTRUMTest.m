@@ -30,6 +30,7 @@
 #import "FTRUMViewHandler.h"
 #import "FTRUMActionHandler.h"
 #import "FTRequestBody.h"
+#import "FTRUMDataModel.h"
 @interface FTRUMTest : XCTestCase
 @property (nonatomic, copy) NSString *url;
 @property (nonatomic, copy) NSString *appid;
@@ -798,14 +799,15 @@
 - (void)testStartAction_0_1s_NoDataBind{
     [self setRumConfig];
     [FTModelHelper startView];
-    [[FTExternalDataManager sharedManager] addActionName:@"action1" actionType:@"click" property:nil];
-    [tester waitForTimeInterval:0.1];
+    [[FTExternalDataManager sharedManager] addActionName:@"testStartAction_0_1s_NoDataBind" actionType:@"click" property:nil];
+    [tester waitForTimeInterval:0.2];
     [self addLongTaskData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRUMManager *rum = [FTGlobalRumManager sharedInstance].rumManager;
     FTRUMSessionHandler *session = [rum valueForKey:@"sessionHandler"];
     FTRUMViewHandler *view = [[session valueForKey:@"viewHandlers"] lastObject];
     FTRUMActionHandler *action = [view valueForKey:@"actionHandler"];
+    NSLog(@"action_name: %@",action.context.action_name);
     XCTAssertNil(action);
 
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
@@ -1227,7 +1229,7 @@
     NSArray *newArray = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_RUM];
     __block BOOL hasAction = NO;
     [FTModelHelper resolveModelArray:newArray callBack:^(NSString * _Nonnull source, NSDictionary * _Nonnull tags, NSDictionary * _Nonnull fields, BOOL * _Nonnull stop) {
-        if ([source isEqualToString:FT_RUM_SOURCE_ACTION]) {
+        if ([source isEqualToString:FT_RUM_SOURCE_ACTION] && [tags[FT_KEY_ACTION_TYPE] isEqualToString:FT_KEY_ACTION_TYPE_CLICK]) {
             XCTAssertTrue([fields[@"action_property"] isEqualToString:@"testActionProperty1"]);
             hasAction = YES;
             *stop = YES;

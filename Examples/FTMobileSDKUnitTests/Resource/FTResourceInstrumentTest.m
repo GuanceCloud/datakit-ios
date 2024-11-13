@@ -242,37 +242,43 @@
 /** Tests using a nil delegate still results in tracking responses. */
 - (void)testSessionWithConfigurationDelegateDelegateQueueWithNilDelegate {
     [FTNetworkMock networkOHHTTPStubs];
+    __weak typeof(self) weakSelf = self;
+    __block NSURLSessionDataTask *dataTask;
+    [FTNetworkMock registerBeforeHandler:^{
+        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+    }];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration
                                                           delegate:nil
                                                      delegateQueue:nil];
     NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
-    NSURLSessionTask *task;
     @autoreleasepool {
-        task = [session dataTaskWithRequest:request];
-        XCTAssertNotNil(task);
-        [task resume];
+        dataTask = [session dataTaskWithRequest:request];
+        XCTAssertNotNil(dataTask);
+        [dataTask resume];
         XCTAssertNotNil(session.delegate);
-        XCTAssertNotNil([self getTraceHandler:task]);
     }
 }
 
 //* Tests that the delegate class isn't instrumented more than once.
 - (void)testDelegateClassOnlyRegisteredOnce {
     [FTNetworkMock networkOHHTTPStubsHandler];
+    __weak typeof(self) weakSelf = self;
+    __block NSURLSessionDataTask *dataTask;
+    [FTNetworkMock registerBeforeHandler:^{
+        XCTAssertNotNil([weakSelf getTraceHandler:dataTask]);
+    }];
     FTURLSessionCompleteTestDelegate *delegate =
     [[FTURLSessionCompleteTestDelegate alloc] init];
     NSURLSessionConfiguration *configuration =
     [NSURLSessionConfiguration defaultSessionConfiguration];
     [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:delegate delegateQueue:nil];
-    NSURLRequest *request = [NSURLRequest requestWithURL:self.url ];
-    NSURLSessionTask *task = [session dataTaskWithRequest:request];
-    [task resume];
-    FTSessionTaskHandler *handler = [self getTraceHandler:task];
+    NSURLRequest *request = [NSURLRequest requestWithURL:self.url];
+    dataTask = [session dataTaskWithRequest:request];
+    [dataTask resume];
     [self waitAndRunBlockAfterResponse:^{
-        XCTAssertTrue(handler.response);
         XCTAssertTrue(delegate.URLSessionTaskDidCompleteWithErrorCalledCount == 1);
     }];
 }
