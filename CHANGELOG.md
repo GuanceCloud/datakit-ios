@@ -1,3 +1,8 @@
+# 1.5.6
+1. 支持使用 `FTMobileConfig.compressIntakeRequests` 对同步数据进行 deflate 压缩配置
+2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
+3. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
+---
 # 1.5.6-beta.1
 1. 同 1.5.5-alpha.1
 2. 修复使用 NSFileHandle 废弃 api 导致的崩溃问题
