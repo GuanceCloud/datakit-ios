@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include "FTCrashMachineContext.h"
 
 #if __LP64__
 #define MACH_ERROR_CODE_MASK 0xFFFFFFFFFFFFFFFF
@@ -476,7 +477,7 @@ static bool installMachException(void){
         goto failed;
     }
     g_secondaryMachThread = pthread_mach_thread_np(g_secondaryPThread);
-
+    ftmc_addReservedThread(g_secondaryMachThread);
     error = pthread_create(&g_primaryPThread,
                            &attr,
                            &handleExceptions,
@@ -487,6 +488,7 @@ static bool installMachException(void){
     }
     pthread_attr_destroy(&attr);
     g_primaryMachThread = pthread_mach_thread_np(g_primaryPThread);
+    ftmc_addReservedThread(g_primaryMachThread);
 
     return true;
 
