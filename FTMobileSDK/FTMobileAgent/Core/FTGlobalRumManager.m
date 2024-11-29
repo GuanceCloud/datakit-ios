@@ -70,7 +70,7 @@ static dispatch_once_t onceToken;
     }
     //采集view、resource、jsBridge
     if (rumConfig.enableTrackAppANR||rumConfig.enableTrackAppFreeze) {
-        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze];
+        _longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:rumConfig.enableTrackAppANR enableTrackAppFreeze:rumConfig.enableTrackAppFreeze                     blockDurationMs:rumConfig.blockDurationMs];
     }
     [FTWKWebViewHandler sharedInstance].rumTrackDelegate = self;
     [FTExternalDataManager sharedManager].delegate = self.rumManager;

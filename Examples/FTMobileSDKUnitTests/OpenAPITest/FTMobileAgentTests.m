@@ -460,6 +460,8 @@
     XCTAssertTrue(copyRumConfig.monitorFrequency == rumConfig.monitorFrequency);
     XCTAssertTrue([copyRumConfig.globalContext isEqual:rumConfig.globalContext]);
     XCTAssertTrue([copyRumConfig.resourceUrlHandler isEqual:rumConfig.resourceUrlHandler]);
+    XCTAssertTrue(copyRumConfig.blockDurationMs == rumConfig.blockDurationMs);
+
 }
 - (void)testRUMConfigInitWithDict{
     XCTAssertNil([[FTRumConfig alloc]initWithDictionary:nil]);
@@ -480,6 +482,7 @@
     XCTAssertTrue(rumConfig.monitorFrequency == newRum.monitorFrequency);
     XCTAssertTrue(rumConfig.globalContext == newRum.globalContext);
     XCTAssertTrue(rumConfig.resourceUrlHandler == newRum.resourceUrlHandler);
+    XCTAssertTrue(rumConfig.blockDurationMs == newRum.blockDurationMs);
 }
 - (void)testTraceConfigCopy{
     FTTraceConfig *traceConfig = [[FTTraceConfig alloc]init];

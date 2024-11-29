@@ -49,11 +49,19 @@
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     [FTMobileAgent shutDown];
 }
+#pragma mark ========== RUM CONFIG ==========
+- (void)testRUMFreezeThreshold{
+    FTRumConfig *rumConfig = [[FTRumConfig alloc]initWithAppid:@"appid"];
+    XCTAssertTrue(rumConfig.blockDurationMs == 250);
+    rumConfig.blockDurationMs = 0;
+    XCTAssertTrue(rumConfig.blockDurationMs == 100);
+    rumConfig.blockDurationMs = 5000;
+    XCTAssertTrue(rumConfig.blockDurationMs == 5000);
+}
 #pragma mark ========== Session ==========
 
 - (void)testSessionIdChecks{
     [self setRumConfig];
-    
     [self addErrorData:nil];
     [[FTGlobalRumManager sharedInstance].rumManager syncProcess];
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_RUM] firstObject];

@@ -200,9 +200,13 @@ extern NSString * const FT_USER_EXTRA;
 extern NSUInteger const FT_LOGGING_CONTENT_SIZE;
 extern int const FT_DB_CONTENT_MAX_COUNT;
 extern NSString * const FT_SCRIPT_MESSAGE_HANDLER_NAME;
-
 extern NSUInteger const FT_TIME_INTERVAL;
-/// 超过多少毫秒为一次卡顿,default 5s 记录一次ANR
-extern NSUInteger const MXRMonitorRunloopOneStandstillMillisecond;
-/// 多少次卡顿纪录为一次有效卡顿
-extern NSUInteger const MXRMonitorRunloopStandstillCount;
+/// 超过多少毫秒为一次卡顿,default 250ms
+extern long const FT_DEFAULT_BLOCK_DURATIONS_MS;
+/// 卡顿最小时长 100 ms
+extern long const FT_MINI_DEFAULT_BLOCK_DURATIONS_MS;
+
+extern long long const FT_ANR_THRESHOLD_NS;
+extern long const FT_ANR_THRESHOLD_MS;
+
+

@@ -17,6 +17,8 @@
 #define FTBoundary  @"\n___boundary.info.date___\n"
 @interface FTLongTaskEvent:NSObject
 @property (nonatomic, assign) BOOL isANR;
+@property (nonatomic, assign) BOOL isLongTask;
+@property (nonatomic, assign) long long blockDurationNs;
 @property (nonatomic, strong) NSDate *startDate;
 @property (nonatomic, copy) NSString *backtrace;
 @property (nonatomic, strong) NSDate *lastDate;
@@ -27,10 +29,12 @@
 @property (nonatomic, strong) NSDictionary *errorMonitorInfo;
 @end
 @implementation FTLongTaskEvent
--(instancetype)init{
+-(instancetype)initWithBlockDurationMs:(int)blockDurationMs{
     self = [super init];
     if(self){
+        _blockDurationNs = (long long)blockDurationMs*1000000;
         _isANR = NO;
+        _isLongTask = NO;
     }
     return self;
 }
@@ -42,8 +46,11 @@
 -(void)setLastDate:(NSDate *)lastDate{
     _lastDate = lastDate;
     _duration = [self.startDate ft_nanosecondTimeIntervalToDate:_lastDate];
-    if([_duration longLongValue]>5000000000){
+    if([_duration longLongValue] > FT_ANR_THRESHOLD_NS ){
         _isANR = YES;
+    }
+    if ([_duration longLongValue] > _blockDurationNs) {
+        _isLongTask = YES;
     }
 }
 -(NSDictionary *)convertToDictionary{
@@ -70,12 +77,14 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
 @property (nonatomic, copy) NSString *dataStorePath;
 @property (nonatomic, assign) BOOL enableANR;
 @property (nonatomic, assign) BOOL enableFreeze;
+@property (nonatomic, assign) long blockDurationMs;
 @end
 @implementation FTLongTaskManager
 -(instancetype)initWithDependencies:(FTRUMDependencies *)dependencies
                            delegate:(id<FTRunloopDetectorDelegate>)delegate
                   enableTrackAppANR:(BOOL)enableANR
                enableTrackAppFreeze:(BOOL)enableFreeze
+                    blockDurationMs:(long)blockDurationMs
 {
     self = [super init];
     if(self){
@@ -83,9 +92,11 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         _delegate = delegate;
         _enableANR = enableANR;
         _enableFreeze = enableFreeze;
+        _blockDurationMs = blockDurationMs;
         _queue = dispatch_queue_create("com.guance.read-write", 0);
         dispatch_queue_set_specific(_queue, FTLongTaskManagerQueueTag, &FTLongTaskManagerQueueTag, NULL);
         _longTaskDetector = [[FTLongTaskDetector alloc]initWithDelegate:self];
+        _longTaskDetector.limitFreezeMillisecond = blockDurationMs;
         [self reportFatalWatchDogIfFound];
         [_longTaskDetector startDetecting];
     }
@@ -259,7 +270,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
         if(!self.dependencies.fatalErrorContext.lastSessionContext){
             return;
         }
-        FTLongTaskEvent *event = [[FTLongTaskEvent alloc]init];
+        FTLongTaskEvent *event = [[FTLongTaskEvent alloc]initWithBlockDurationMs:_blockDurationMs];
         event.startDate = startDate;
         event.backtrace = backtrace;
         event.sessionContext = self.dependencies.fatalErrorContext.lastSessionContext;
@@ -301,7 +312,7 @@ void *FTLongTaskManagerQueueTag = &FTLongTaskManagerQueueTag;
             return;
         }
         self.longTaskEvent.lastDate = [NSDate date];
-        if(self.enableFreeze && self.delegate && [self.delegate respondsToSelector:@selector(longTaskStackDetected:duration:time:)]){
+        if(self.longTaskEvent.isLongTask && self.enableFreeze && self.delegate && [self.delegate respondsToSelector:@selector(longTaskStackDetected:duration:time:)]){
             long long startTime = [self.longTaskEvent.startDate ft_nanosecondTimeStamp];
             [self.delegate longTaskStackDetected:self.longTaskEvent.backtrace duration:[self.longTaskEvent.duration longLongValue] time:startTime];
         }

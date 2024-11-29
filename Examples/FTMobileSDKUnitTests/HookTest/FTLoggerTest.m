@@ -20,6 +20,7 @@
 #import "FTLog.h"
 #import "FTLog+Private.h"
 #import "FTFileLogger.h"
+#import "FTTestUtils.h"
 @interface FTLoggerTest : KIFTestCase
 
 @property (nonatomic, copy) NSString *url;
@@ -37,6 +38,7 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [FTMobileAgent shutDown];
 }
 - (void)testEnableCustomLog{
     [self setRightSDKConfig];
@@ -49,10 +51,8 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount=count+1);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
-- (void)testDisbleCustomLog{
+- (void)testDisableCustomLog{
     [self setRightSDKConfig];
     NSInteger count =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -62,8 +62,6 @@
     [[FTMobileAgent sharedInstance] syncProcess];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testLogCacheLimitCount{
     FTLoggerConfig *loggerConfig = [[FTLoggerConfig alloc]init];
@@ -92,8 +90,6 @@
     XCTAssertTrue([model.data isEqualToString:@"testData0"]);
 
     XCTAssertTrue(newCount == 1000);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 
 - (void)testDiscardOldBulk{
@@ -115,8 +111,6 @@
     FTRecordModel *model = [[[FTTrackerEventDBTool sharedManger] getFirstRecords:1 withType:FT_DATA_TYPE_LOGGING] firstObject];
     XCTAssertFalse([model.data isEqualToString:@"testData0"]);
     XCTAssertTrue(newCount == 1000);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testLogLevelFilter{
     [self setRightSDKConfig];
@@ -137,9 +131,6 @@
     [[FTTrackDataManager sharedInstance]insertCacheToDB];
     NSInteger newCount2 =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount2 == newCount);
-    [[FTMobileAgent sharedInstance] shutDown];
-
-
 }
 - (void)testEmptyStringMessageLog{
     [self setRightSDKConfig];
@@ -152,8 +143,6 @@
     [[FTTrackDataManager sharedInstance]insertCacheToDB];
     NSInteger newCount =  [[FTTrackerEventDBTool sharedManger] getDatasCount];
     XCTAssertTrue(newCount == count);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testNotSetLoggerConfig{
     [self setRightSDKConfig];
@@ -187,7 +176,6 @@
     NSDictionary *tags = op[FT_TAGS];
     NSString *serviceName = [tags valueForKey:FT_KEY_SERVICE];
     XCTAssertTrue(serviceName.length>0);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testEnableLinkRumData_setLoggerFirst{
     [self setRightSDKConfig];
@@ -210,8 +198,6 @@
     NSDictionary *tags =opdata[FT_TAGS];
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testEnableLinkRumData_setRUMFirst{
     [self setRightSDKConfig];
@@ -234,7 +220,6 @@
     NSDictionary *tags =opdata[FT_TAGS];
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
     XCTAssertTrue([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testDisableLinkRumData{
     [self setRightSDKConfig];
@@ -255,7 +240,7 @@
     NSDictionary *tags =opdata[FT_TAGS];
     XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_ID]);
     XCTAssertFalse([tags.allKeys containsObject:FT_RUM_KEY_SESSION_TYPE]);
-    [[FTMobileAgent sharedInstance] shutDown];
+    [FTMobileAgent shutDown];
 }
 - (void)testSampleRate0{
     [self setRightSDKConfig];
@@ -270,8 +255,6 @@
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
 
     XCTAssertTrue(oldDatas.count == newDatas.count);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testSampleRate100{
     [self setRightSDKConfig];
@@ -284,8 +267,6 @@
     [[FTTrackDataManager sharedInstance] insertCacheToDB];
     NSArray *newDatas = [[FTTrackerEventDBTool sharedManger] getFirstRecords:10 withType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(oldDatas.count+1 == newDatas.count);
-    [[FTMobileAgent sharedInstance] shutDown];
-
 }
 - (void)testGlobalContext{
     [self setRightSDKConfig];
@@ -302,7 +283,6 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testGlobalContext_mutable{
     [self setRightSDKConfig];
@@ -322,8 +302,6 @@
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
     XCTAssertFalse([tags.allKeys containsObject:@"logger_mutable"]);
-
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testAppendLogGlobalContext{
     [self setRightSDKConfig];
@@ -342,7 +320,6 @@
     NSDictionary *tags = op[FT_TAGS];
     XCTAssertTrue([tags[@"logger_id"] isEqualToString:@"logger_id_1"]);
     XCTAssertTrue([tags[@"append_logger"] isEqualToString:@"logger_id_2"]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLogger_Property{
     [self setRightSDKConfig];
@@ -358,7 +335,6 @@
     NSDictionary *op = dict[@"opdata"];
     NSDictionary *fields = op[FT_FIELDS];
     XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLogger_mutableProperty{
     [self setRightSDKConfig];
@@ -377,7 +353,6 @@
     NSDictionary *fields = op[FT_FIELDS];
     XCTAssertTrue([fields[@"logger_property"] isEqualToString:@"testLoggerProperty"]);
     XCTAssertFalse([fields.allKeys containsObject:@"logger_property_add"]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLoggerStatus{
     [self setRightSDKConfig];
@@ -413,7 +388,6 @@
         }
     }
     XCTAssertTrue(count == 5);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testCustomLoggerStatus{
     [self setRightSDKConfig];
@@ -441,7 +415,6 @@
             break;
         }
     }
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testPrintCustomLogToConsole{
     [[FTLog sharedInstance] registerInnerLogCacheToDefaultPath];
@@ -474,7 +447,6 @@
     NSLog(@"testPrintCustomLogToConsole:logs %@",logs);
     XCTAssertTrue([logs containsString:@"[IOS APP]"]);
     XCTAssertTrue([logs containsString:@"testPrintCustomLogToConsole"]);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testSDKShutDown{
     [self setRightSDKConfig];
@@ -524,7 +496,6 @@
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount == 202);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 // 测试多线程操作存放 log 的数组
 - (void)testLogAsync_insertCacheToDB{
@@ -561,7 +532,6 @@
     }];
     NSInteger newCount = [[FTTrackerEventDBTool sharedManger] getDatasCountWithType:FT_DATA_TYPE_LOGGING];
     XCTAssertTrue(newCount == 202);
-    [[FTMobileAgent sharedInstance] shutDown];
 }
 - (void)testLogFile{
     [FTLog enableLog:YES];

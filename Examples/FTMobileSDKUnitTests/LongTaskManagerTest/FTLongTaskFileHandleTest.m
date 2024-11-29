@@ -40,7 +40,7 @@ typedef void (^FTWriteCallBack)(NSDictionary *fields, NSDictionary *tags);
     };
     dependencies.fatalErrorContext = errorContext;
 
-    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:YES enableTrackAppFreeze:YES];
+    FTLongTaskManager *longTaskManager = [[FTLongTaskManager alloc]initWithDependencies:dependencies delegate:self enableTrackAppANR:YES enableTrackAppFreeze:YES                     blockDurationMs:250];
     NSString *pathString = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
     NSString *dataStorePath = [pathString stringByAppendingPathComponent:@"FTLongTaskTest.txt"];
     longTaskManager.dataStorePath = dataStorePath;

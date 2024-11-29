@@ -16,12 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 @interface FTLongTaskDetector : NSObject
 
-/// 超过多少毫秒为一次 longTask 默认 1000 毫秒
-@property (nonatomic, assign) NSUInteger limitMillisecond;
-/// 超过 1000 毫秒, 记做 ANR 卡顿一次
-@property (nonatomic, assign) NSUInteger limitANRMillisecond;
-/// 多少次 anr 卡顿纪录为一次有效 ANR
-@property (nonatomic, assign) NSUInteger standstillCount;
+/// 超过多少毫秒为一次 longTask 默认 250ms
+@property (nonatomic, assign) long limitFreezeMillisecond;
 
 -(instancetype)initWithDelegate:(id<FTLongTaskProtocol>)delegate;
 
