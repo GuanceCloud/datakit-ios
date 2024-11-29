@@ -1,3 +1,7 @@
+# 1.5.7-alpha.1
+1. 添加设置 longtask 检测时间范围的方法
+2. 优化 SDK 的 `shutDown` 方法，避免主线程同步等待导致的卡顿或 WatchDog 崩溃
+---
 # 1.5.6
 1. 支持使用 `FTMobileConfig.compressIntakeRequests` 对同步数据进行 deflate 压缩配置
 2. RUM 添加 `addAction:actionType:property` 与 `startAction:actionType:property:` 方法，优化 RUM Action 采集逻辑
